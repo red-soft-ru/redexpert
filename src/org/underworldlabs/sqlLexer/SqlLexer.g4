@@ -32,12 +32,13 @@ fragment INT_NUMBER:
 
 
 LINTERAL_VALUE
- : NUMERIC_LITERAL
- | BLOB_LITERAL
+ : BLOB_LITERAL
  | K_NULL
  | K_CURRENT_TIME
  | K_CURRENT_DATE
  | K_CURRENT_TIMESTAMP
+ | K_TRUE
+ | K_FALSE
  ;
 
 UNARY_OPERATOR
@@ -48,10 +49,10 @@ UNARY_OPERATOR
  ;
 
  OPERATOR
- : SCOL
-  | DOT
-  | OPEN_PAR
+ : OPEN_PAR
   | CLOSE_PAR
+  | SCOL
+  | DOT
   | COMMA
   | ASSIGN
   | STAR
@@ -236,13 +237,12 @@ fragment  CHARACTER_SET : CHARACTER ' ' S E T;
 
 //[a-zA-Z_0-9\t \-\[\]\=]+
 
-
+fragment OPEN_PAR : '(';
+fragment CLOSE_PAR : ')';
 
 
 fragment SCOL : ';';
 fragment DOT : '.';
-fragment OPEN_PAR : '(';
-fragment CLOSE_PAR : ')';
 fragment COMMA : ',';
 fragment ASSIGN : '=';
 fragment STAR : '*';
@@ -320,6 +320,7 @@ fragment K_EXECUTE : E X E C U T E;
 fragment K_EXISTS : E X I S T S;
 fragment K_EXPLAIN : E X P L A I N;
 fragment K_FAIL : F A I L;
+fragment K_FALSE : F A L S E;
 fragment K_FOR : F O R;
 fragment K_FOREIGN : F O R E I G N;
 fragment K_FROM : F R O M;
@@ -390,6 +391,7 @@ fragment K_THEN : T H E N;
 fragment K_TO : T O;
 fragment K_TRANSACTION : T R A N S A C T I O N;
 fragment K_TRIGGER : T R I G G E R;
+fragment K_TRUE : T R U E;
 fragment K_TYPE_OF : T Y P E ' ' O F;
 fragment K_UNION : U N I O N;
 fragment K_UNIQUE : U N I Q U E;

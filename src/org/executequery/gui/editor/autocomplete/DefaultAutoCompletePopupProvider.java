@@ -293,6 +293,11 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
             start = 0;
         }
 
+        if (chars[start] == '"')
+            start++;
+        if (start >= end)
+            return "";
+
         return text.substring(start, end).trim();
     }
 
@@ -412,8 +417,13 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
                 caretCoords.x = textComponent.getWidth() - popupPanel.getWidth();
             if (caretCoords.x < 0)
                 caretCoords.x = 0;
+            boolean restart = popupPanel.getWidth() == 0;
             popupPanel.show(textComponent, caretCoords.x, caretCoords.y + heightFont);
             textComponent.requestFocus();
+            if (restart) {
+                popupHidden();
+                firePopupTrigger();
+            }
         } else popupHidden();
 
 

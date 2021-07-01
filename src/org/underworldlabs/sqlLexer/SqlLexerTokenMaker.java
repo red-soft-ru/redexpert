@@ -1,7 +1,10 @@
 package org.underworldlabs.sqlLexer;
 
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.TokenSource;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.underworldlabs.antrlExtentionRsyntxtextarea.AntlrTokenMaker;
 import org.underworldlabs.antrlExtentionRsyntxtextarea.MultiLineTokenInfo;
@@ -42,6 +45,8 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
                 return Token.LITERAL_BOOLEAN;
             case DB_OBJECT:
                 return Token.PREPROCESSOR;
+            case SqlLexer.NUMERIC_LITERAL:
+                return Token.LITERAL_NUMBER_DECIMAL_INT;
             default:
                 /*if (dbobjects != null&&currentToken!=null) {
                         String x = currentToken.getLexeme();
@@ -58,8 +63,10 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
         {
             if (dbobjects != null&&currentToken!=null) {
                 String x = token.getText();
-                if(x.length()>0&&x.charAt(0)>'A'&&x.charAt(0)<'z')
+                if (x.length() > 0 && x.charAt(0) > 'A' && x.charAt(0) < 'z')
                     x = x.toUpperCase();
+                if (x.startsWith("\"") && x.endsWith("\"") && x.length() > 1)
+                    x = x.substring(1, x.length() - 1);
                 if (dbobjects.contains(x))
                     return new org.antlr.v4.runtime.Token() {
                         @Override

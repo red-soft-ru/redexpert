@@ -8,9 +8,6 @@ import org.executequery.gui.browser.TreeFindAction;
 import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.gui.editor.QueryEditorSettings;
 import org.executequery.gui.text.syntax.SQLSyntaxDocument;
-import org.executequery.gui.text.syntax.SyntaxStyle;
-import org.executequery.gui.text.syntax.TokenTypes;
-import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 import org.fife.ui.rsyntaxtextarea.*;
@@ -62,6 +59,8 @@ public class SQLTextArea extends RSyntaxTextArea {
                         String s = token.getLexeme();
                         if (s != null) {
                             s = s.replace("$", "\\$");
+                            if (s.startsWith("\"") && s.endsWith("\""))
+                                s = s.substring(1, s.length() - 1);
                             TreeFindAction action = new TreeFindAction();
                             SchemaTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
                             action.install(tree);
@@ -242,16 +241,31 @@ public class SQLTextArea extends RSyntaxTextArea {
 
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.literal");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.literal");
-        createStyle(Token.LITERAL_BOOLEAN, color,  null,fontName,fontStyle,fontSize,false);
+        createStyle(Token.LITERAL_BOOLEAN, color, null, fontName, fontStyle, fontSize, false);
 
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.operator");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.operator");
-        createStyle(Token.OPERATOR, color,  null,fontName,fontStyle,fontSize,false);
+        createStyle(Token.OPERATOR, color, null, fontName, fontStyle, fontSize, false);
 
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.dbobjects");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.dbobjects");
-        createStyle(Token.PREPROCESSOR, color,  null,fontName,fontStyle,fontSize,true);
+        createStyle(Token.PREPROCESSOR, color, null, fontName, fontStyle, fontSize, true);
+
+        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.number");
+        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.number");
+        createStyle(Token.LITERAL_NUMBER_DECIMAL_INT, color, null, fontName, fontStyle, fontSize, false);
+
+        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.dbobjects");
+        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.dbobjects");
+        createStyle(Token.VARIABLE, color, null, fontName, fontStyle, fontSize, false);
+        //setCurrentLineHighlightColor(SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour"));
         setCurrentLineHighlightColor(SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour"));
+
+        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.datatype");
+        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.datatype");
+        createStyle(Token.DATA_TYPE, color, null, fontName, fontStyle, fontSize, false);
+
+
     }
 
     public DatabaseConnection getDatabaseConnection() {
@@ -260,7 +274,9 @@ public class SQLTextArea extends RSyntaxTextArea {
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
-        setDbobjects(databaseConnection.getListObjectsDB());
+        if (databaseConnection != null)
+            setDbobjects(databaseConnection.getListObjectsDB());
+        else setDbobjects(new TreeSet<>());
     }
 
     protected void setDbobjects(TreeSet<String> dbobjects) {

@@ -47,11 +47,9 @@ public interface Constants {
             "multicomment",
             "number",
             "operator",
-            "braces",
             "literal",
-            "braces.match1",
-            "braces.error",
-            "dbobjects"
+            "dbobjects",
+            "datatype"
     };
 
     /**

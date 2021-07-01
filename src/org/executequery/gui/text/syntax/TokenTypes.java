@@ -79,8 +79,9 @@ public interface TokenTypes {
             BRACKET_HIGHLIGHT = 11,
             BRACKET_HIGHLIGHT_ERR = 12,
             DBOBJECT = 13,
-            DECLARE_BLOCK = 14,
-            BEGIN_END_BLOCK = 15;
+            DATATYPE = 14,
+            DECLARE_BLOCK = 15,
+            BEGIN_END_BLOCK = 16;
 
 
     /**
@@ -101,7 +102,8 @@ public interface TokenTypes {
             "single line comment",
             "bracket highlight at cursor",
             "bracket highlight at cursor error",
-            "object db"
+            "object db",
+            "datatype"
     };
 }
 

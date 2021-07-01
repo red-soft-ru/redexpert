@@ -31,6 +31,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.log.Log;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -41,6 +42,7 @@ import javax.swing.tree.TreeNode;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -706,8 +708,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         return sshHost;
     }
 
-    public List<String> getListObjectsDB() {
-        List<String> list = new CopyOnWriteArrayList<>();
+    public TreeSet<String> getListObjectsDB() {
+        TreeSet<String> list = new TreeSet<>();
         DatabaseObjectNode host = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(this);
         addingChild(list, host);
         return list;

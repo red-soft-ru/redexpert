@@ -31,9 +31,9 @@ import org.underworldlabs.util.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,25 +64,22 @@ public class KeywordRepositoryImpl implements KeywordRepository {
 
     public boolean contains(String word) {
 
-        List<String> keywords = getSQLKeywords();
-        return Collections.binarySearch(keywords, word) >= 0;
+        TreeSet<String> keywords = getSQLKeywords();
+        return keywords.contains(word);
     }
 
-    public List<String> getSQLKeywords() {
+    public TreeSet<String> getSQLKeywords() {
 
-        int sql92Size = getSQL92().size();
-        int userSize = getUserDefinedSQL().size();
-        int firebirdSize = this.firebirdKeyWords.size();
-        int dbSize = this.databaseKeyWords.size();
 
-        List<String> allWords = new ArrayList<String>(sql92Size + userSize + firebirdSize + dbSize);
-
+        TreeSet<String> allWords = new TreeSet<>();
+        if(sql92KeyWords!=null)
         allWords.addAll(sql92KeyWords);
+        if(userDefinedKeyWords!=null)
         allWords.addAll(userDefinedKeyWords);
+        if(firebirdKeyWords!=null)
         allWords.addAll(this.firebirdKeyWords);
+        if(databaseKeyWords!=null)
         allWords.addAll(this.databaseKeyWords);
-
-        Collections.sort(allWords);
 
         return allWords;
     }

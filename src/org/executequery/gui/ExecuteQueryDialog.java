@@ -6,7 +6,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.DerivedQuery;
@@ -62,7 +62,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     DefaultTable tableAction;
 
-    SQLTextPane queryPane;
+    SQLTextArea queryPane;
 
     LoggingOutputPanel errorPane;
 
@@ -103,7 +103,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         copyErrorButton = new JButton();
         commitButton = new JButton();
         rollbackButton = new JButton();
-        queryPane = new SQLTextPane();
+        queryPane = new SQLTextArea();
         errorPane = new LoggingOutputPanel();
         tableAction = new DefaultTable();
         BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();

@@ -195,11 +195,9 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
                 "SampleMulti-lineCommentText",
                 "SampleNumberText",
                 "SampleOperatorText",
-                "SampleBracesText",
                 "SampleLiteralText",
-                "SampleBraceMatch",
-                "SampleBraceMatchError",
                 "SampleObjectsDb",
+                "SampleDatatype",
                 "SampleText"};
 
         return sampleLabels[index];
@@ -428,15 +426,11 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
                 case 6:
                     return "Operator";
                 case 7:
-                    return "Braces";
-                case 8:
                     return "Literal";
-                case 9:
-                    return "BracesMatch";
-                case 10:
-                    return "BracesError";
-                case 11:
+                case 8:
                     return "ObjectsDB";
+                case 9:
+                    return "Datatype";
                 default:
                     return "Text";
 

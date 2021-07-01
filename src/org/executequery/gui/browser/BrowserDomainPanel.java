@@ -8,7 +8,7 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.databaseobjects.CreateDomainPanel;
 import org.executequery.gui.databaseobjects.DefaultDatabaseObjectTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -51,7 +51,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
     private JTextPane descriptionPane;
 
-    private JTextPane sqlPane;
+    private SQLTextArea sqlPane;
 
     private DependenciesPanel dependenciesPanel;
 
@@ -101,7 +101,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        sqlPane = new SQLTextPane();
+        sqlPane = new SQLTextArea();
 
         sqlPanel.add(sqlPane, BorderLayout.CENTER);
 

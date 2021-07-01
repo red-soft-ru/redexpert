@@ -3,7 +3,7 @@ package org.executequery.gui.browser;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DefaultComboBox;
@@ -37,11 +37,11 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
     private JLabel triggerPositionLabel;
     private JComboBox tableNameCombo;
     JTextPane descriptionPane;
-    JTextPane sqlPane;
+    SQLTextArea sqlPane;
 
     private Map cache;
 
-    JTextPane textPane;
+    SQLTextArea textPane;
 
     /**
      * the browser's control object
@@ -72,7 +72,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         JPanel sourcePanel = new JPanel(new BorderLayout());
         sourcePanel.setBorder(BorderFactory.createTitledBorder(bundleString("Source")));
-        textPane = new SQLTextPane();
+        textPane = new SQLTextArea();
         textPane.setEditable(false);
         sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
 
@@ -118,7 +118,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         JPanel sqlPanel = new JPanel(new BorderLayout());
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        sqlPane = new SQLTextPane();
+        sqlPane = new SQLTextArea();
 
         sqlPanel.add(sqlPane, BorderLayout.CENTER);
 

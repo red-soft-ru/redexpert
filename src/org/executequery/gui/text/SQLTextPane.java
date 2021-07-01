@@ -31,7 +31,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.List;
+import java.util.TreeSet;
 
 /**
  * Base SQL text pane object.
@@ -69,7 +69,7 @@ public class SQLTextPane extends JTextPane
         KeywordRepository keywordRepository =
                 (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
 
-        document = new SQLSyntaxDocument(keywordRepository.getSQLKeywords(), this);
+        //document = new SQLSyntaxDocument(keywordRepository.getSQLKeywords(), this);
 
         setDocument(document);
 
@@ -98,7 +98,7 @@ public class SQLTextPane extends JTextPane
         document.setSQLKeywords(keywords().getSQLKeywords());
     }
 
-    public void setDBObjects(List<String> dbObjects) {
+    public void setDBObjects(TreeSet<String> dbObjects) {
         document.setDBObjects(dbObjects);
     }
 
@@ -173,10 +173,10 @@ public class SQLTextPane extends JTextPane
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
 
-                    document.resetBracePosition();
+                    //document.resetBracePosition();
                     if (dot == mark) {
 
-                        document.updateBraces(getCaretPosition());
+                        //document.updateBraces(getCaretPosition());
                     }
 
                 }
@@ -242,7 +242,7 @@ public class SQLTextPane extends JTextPane
         SimpleAttributeSet attributes = new SimpleAttributeSet();
         StyleConstants.setTabSet(attributes, tabSet);
 
-        document.setParagraphAttributes(0, document.getLength(), attributes, true);
+        //document.setParagraphAttributes(0, document.getLength(), attributes, true);
     }
 
 }

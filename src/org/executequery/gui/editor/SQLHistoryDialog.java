@@ -25,7 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.gui.DefaultList;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.SqlCommandHistoryRepository;
@@ -72,7 +72,7 @@ public class SQLHistoryDialog extends AbstractBaseDialog
 
     private JCheckBox newEditorCheck;
 
-    private SQLTextPane textPane;
+    private SQLTextArea textPane;
 
     /**
      * Creates a new object with history data
@@ -130,7 +130,7 @@ public class SQLHistoryDialog extends AbstractBaseDialog
         newEditorCheck = new JCheckBox("Open in new Query Editor");
         newEditorCheck.setToolTipText("Select to paste the query in a new Query Editor panel");
 
-        textPane = new SQLTextPane();
+        textPane = new SQLTextArea();
         textPane.setEditable(false);
 
         JSplitPane splitPane = createSplitPane();

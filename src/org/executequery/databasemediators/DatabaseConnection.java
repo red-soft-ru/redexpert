@@ -23,8 +23,8 @@ package org.executequery.databasemediators;
 import org.executequery.gui.browser.ConnectionsFolder;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Properties;
+import java.util.TreeSet;
 
 /**
  * <p>This class maintains the necessary information for each
@@ -203,7 +203,7 @@ public interface DatabaseConnection extends Serializable {
 
     DatabaseConnection withNewId();
 
-    List<String> getListObjectsDB();
+    TreeSet<String> getListObjectsDB();
 
     int getServerVersion();
 

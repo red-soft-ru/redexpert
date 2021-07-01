@@ -4,7 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
@@ -41,7 +41,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
 
     private JTextPane descriptionPane;
 
-    private JTextPane sqlPane;
+    private SQLTextArea sqlPane;
 
     private Map cache;
 
@@ -107,7 +107,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
 
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        sqlPane = new SQLTextPane();
+        sqlPane = new SQLTextArea();
 
         sqlPanel.add(sqlPane, BorderLayout.CENTER);
 

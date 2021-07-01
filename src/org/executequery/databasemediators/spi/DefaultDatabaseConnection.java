@@ -31,20 +31,16 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.log.Log;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
-import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.tree.TreeNode;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * <p>This class maintains the necessary information for each
@@ -726,22 +722,21 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         this.serverVersion = serverVersion;
     }
 
-    private void addingChild(List<String> list, DatabaseObjectNode root) {
+    private void addingChild(TreeSet<String> list, DatabaseObjectNode root) {
         root.populateChildren();
         Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-            if (!node.isHostNode() && node.getType() != NamedObject.META_TAG)
-                list.add(node.getName().replace("$", "\\$"));
+            if (!node.isHostNode() && node.getType() != NamedObject.META_TAG) {
+                try {
+                    list.add(node.getName());
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
+            }
             if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
-                SwingWorker sw = new SwingWorker() {
-                    @Override
-                    public Object construct() {
-                        addingChild(list, node);
-                        return null;
-                    }
-                };
-                sw.start();
+                addingChild(list, node);
+
             }
         }
     }

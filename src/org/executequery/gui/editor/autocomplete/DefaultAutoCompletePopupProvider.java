@@ -96,7 +96,6 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         databaseObjectFactory = new DatabaseObjectFactoryImpl();
 
         setAutoCompleteOptionFlags();
-        autoCompleteListItems = new ArrayList<AutoCompleteListItem>();
         queryEditorTextComponent().addFocusListener(this);
 
         autoCompletePopupAction = new AutoCompletePopupAction(this);
@@ -837,6 +836,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
     }
 
     public void connectionChanged(DatabaseConnection databaseConnection) {
+        connection = databaseConnection;
 
         if (worker != null) {
 

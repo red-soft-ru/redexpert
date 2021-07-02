@@ -103,7 +103,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
 
             while (st.hasMoreTokens()) {
                 String trim = st.nextToken().trim();
-                if (trim.contains("Firebird")) {
+                if (trim.contains("Firebird") || trim.contains("RedDatabase")) {
 
                     Pattern p = Pattern.compile("(\\d)(\\.)(\\d)", Pattern.CASE_INSENSITIVE);
 

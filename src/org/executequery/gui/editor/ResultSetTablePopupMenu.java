@@ -38,6 +38,7 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.print.Printable;
@@ -95,7 +96,8 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
 
             add(create("Transpose Row", "transposeRow"));
         }
-
+        addSeparator();
+        add(create("Set Null", "setNull"));
         addSeparator();
         add(create("Export Selection", "exportSelection"));
         add(create("Export Table", "exportTable"));
@@ -112,6 +114,29 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     public void setLastPopupPoint(Point lastPopupPoint) {
 
         this.lastPopupPoint = lastPopupPoint;
+    }
+
+    public void setNull(ActionEvent e){
+
+        setNullEvent(lastPopupPoint);
+    }
+
+    private void setNullEvent(Point point) {
+
+        tableCellDataAtPoint(point).setValue("");
+        boolean selected = table.editCellAt(table.getSelectedRow(),table.getSelectedColumn());
+        Robot r = null;
+        try {
+            r = new Robot();
+            if (selected){
+                Component editor = table.getEditorComponent();
+                editor.requestFocusInWindow();
+                r.keyPress(KeyEvent.VK_ENTER);
+            }
+        }
+        catch (AWTException awtException) {
+            awtException.printStackTrace();
+        }
     }
 
     private boolean doubleClickCellOpensDialog() {
@@ -374,7 +399,6 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
 
     public void mouseExited(MouseEvent e) {
     }
-
 
 }
 

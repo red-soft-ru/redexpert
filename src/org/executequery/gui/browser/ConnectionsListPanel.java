@@ -26,6 +26,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.event.*;
 import org.executequery.gui.SortableColumnsTable;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
@@ -486,6 +487,8 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
             } else if (source == properties) {
 
                 controller.setSelectedConnection(selectedConnections.get(0));
+                DatabaseObjectNode node = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(selectedConnections.get(0));
+                controller.valueChanged_(node, selectedConnections.get(0));
             }
 
         }

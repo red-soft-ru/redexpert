@@ -38,6 +38,7 @@ public class SQLTextArea extends RSyntaxTextArea {
     protected DatabaseConnection databaseConnection;
     protected SQLSyntaxDocument document;
     boolean changed = false;
+    boolean autocompleteOnlyHotKey = true;
 
     private boolean doCaretUpdate;
 
@@ -228,6 +229,11 @@ public class SQLTextArea extends RSyntaxTextArea {
 
     }
 
+    public SQLTextArea(boolean autocompleteOnlyHotKey) {
+        this();
+        this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
+    }
+
     public SQLTextArea() {
         super();
         document = new SQLSyntaxDocument(null, tokenMakerFactory, "antlr/sql");
@@ -306,7 +312,7 @@ public class SQLTextArea extends RSyntaxTextArea {
         addCaretListener(new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent e) {
-                if (changed)
+                if (changed && !autocompleteOnlyHotKey)
                     autoCompletePopupAction.actionPerformed(null);
                 changed = false;
             }

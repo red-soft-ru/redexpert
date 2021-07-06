@@ -84,7 +84,7 @@ public class QueryEditorTextPane extends SQLTextArea
     private Map<String, EditorSQLShortcut> editorShortcuts;
 
     public QueryEditorTextPane(QueryEditorTextPanel editorPanel) {
-        super();
+        super(false);
         this.editorPanel = editorPanel;
 
         try {

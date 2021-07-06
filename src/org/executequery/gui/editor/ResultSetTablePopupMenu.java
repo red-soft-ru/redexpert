@@ -38,7 +38,6 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.print.Printable;
@@ -116,26 +115,37 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         this.lastPopupPoint = lastPopupPoint;
     }
 
-    public void setNull(ActionEvent e){
-
+    public void setNull(ActionEvent e) {
         setNullEvent(lastPopupPoint);
     }
 
     private void setNullEvent(Point point) {
+        if(table.hasMultipleColumnAndRowSelections()) {
+            TableModel selected = table.selectedCellsAsTableModel();
+            int rows = selected.getRowCount();
+            int columns = selected.getColumnCount();
 
-        tableCellDataAtPoint(point).setValue("");
-        boolean selected = table.editCellAt(table.getSelectedRow(),table.getSelectedColumn());
-        Robot r = null;
-        try {
-            r = new Robot();
-            if (selected){
-                Component editor = table.getEditorComponent();
-                editor.requestFocusInWindow();
-                r.keyPress(KeyEvent.VK_ENTER);
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < columns; j++) {
+                    RecordDataItem rdiSelected = ((RecordDataItem) selected.getValueAt(i, j));
+                    rdiSelected.valueChanged(null);
+                    selected.setValueAt(null,i,j);
+                    //Debug TableModel
+                    Object test = (selected.getValueAt(i,j));
+                    System.out.println(test);
+                }
+            }
+            for (int i =0;i<table.getRowCount();i++) {
+                for (int j =0;j<table.getColumnCount();j++) {
+                    //Debug table
+                    Object testOrigin = (table.getValueAt(i,j));
+                    System.out.println(testOrigin);
+                }
             }
         }
-        catch (AWTException awtException) {
-            awtException.printStackTrace();
+        else{
+            //tableCellDataAtPoint(point).valueChanged(null); <- Useless
+            table.setValueAt(null, table.getSelectedRow(),table.getSelectedColumn());
         }
     }
 
@@ -365,10 +375,10 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
             lastPopupPoint = e.getPoint();
             openDataItemViewer(null);
         }
-
     }
 
     public void mouseReleased(MouseEvent e) {
+
         maybeShowPopup(e);
     }
 
@@ -401,9 +411,3 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     }
 
 }
-
-
-
-
-
-

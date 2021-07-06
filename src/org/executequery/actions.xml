@@ -89,14 +89,14 @@
             name="Release Notes"
             mnemonic="R"
             accel-editable="false"
-            description="RedXpert version release notes"
+            description="Red Expert version release notes"
             execute-class="org.executequery.actions.helpcommands.ReleaseNotesCommand"/>
 
     <action id="license-command"
             name="License"
             mnemonic="L"
             accel-editable="false"
-            description="RedXpert release license"
+            description="Red Expert release license"
             execute-class="org.executequery.actions.helpcommands.LicenseCommand"/>
 
     <action id="save-as-command"

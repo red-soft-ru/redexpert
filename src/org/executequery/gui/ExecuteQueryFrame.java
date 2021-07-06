@@ -42,7 +42,7 @@ import java.awt.event.WindowEvent;
 public class ExecuteQueryFrame extends JFrame
         implements ComponentListener {
 
-    public static final String TITLE = "RedXpert";
+    public static final String TITLE = "Red Expert";
 
     private static final String APPLICATION_ICON = "ApplicationIcon48.png";
 

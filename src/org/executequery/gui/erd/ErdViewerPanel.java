@@ -687,7 +687,7 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     public String getPrintJobName() {
-        return "RedXpert - ERD";
+        return "Red Expert - ERD";
     }
 
     public Printable getPrintable() {

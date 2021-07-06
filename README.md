@@ -1,10 +1,10 @@
 ![image](red_expert.png)
 
-RedXpert
+RedExpert
 ============
 
 
-RedXpert is based on [Execute Query](http://executequery.org/index.php) and works on Java. The main features are:
+RedExpert is based on [Execute Query](http://executequery.org/index.php) and works on Java. The main features are:
 
 * Concurrent work with multiple databases
 * Development and executing any SQL queries supported by DBMS in SQL editor. Showing result of selective queries.
@@ -12,7 +12,7 @@ RedXpert is based on [Execute Query](http://executequery.org/index.php) and work
 * Autocompletions of commands
 * Designing database structure in visual constructor of ER-diagrams. Supporting of the Reverse Engineering and exporting the diagrams in different formats.
 
-In additional to that in RedXpert implemented:
+In additional to that in RedExpert implemented:
 
 * Supports all versions of RedDatabase and Firebird "out of the box"
 * Creating and altering any database object with visual editor
@@ -25,17 +25,18 @@ Unfortunately [documentation](http://reddatabase.ru/documentation/) is now avail
 
 ## Acknowledgements
 
-Cross platform installer was built with [InstallBuilder](https://installbuilder.bitrock.com/) provided by [BitRock](https://bitrock.com/).
+Cross platform installer was built with [InstallBuilder](https://installbuilder.bitrock.com/) provided
+by [BitRock](https://bitrock.com/).
 
 [![image](installer/logos/installersby_tiny.png)](https://installbuilder.bitrock.com/)
 
-## Download RedXpert
+## Download RedExpert
 
 http://reddatabase.ru/downloads/redexpert/
 
-## Building RedXpert from source
+## Building RedExpert from source
 
-RedXpert requires at least a Java 8 JDK installed and maven
+RedExpert requires at least a Java 8 JDK installed and maven
 
 To create a jar file:
 
@@ -43,20 +44,19 @@ To create a jar file:
 $ mvn package
 ```
 
-To run RedXpert go to target directory and run:
+To run RedExpert go to target directory and run:
 
 ```sh
-$ java -jar RedXpert.jar
+$ java -jar RedExpert.jar
 ```
 
 ## Feedback
 
 Feedback is very welcome and encouraged. Please use  the feedback dialog within the application
-itself at Help | Feedback. 
+itself at Help | Feedback.
 
-If submitting a bug, please include any exception stack traces and other 
-relevant information so that the issue can be more promptly resolved (ie. 
-database, driver, OS, Java version etc).
+If submitting a bug, please include any exception stack traces and other relevant information so that the issue can be
+more promptly resolved (ie. database, driver, OS, Java version etc).
 
 Your email address is important (though optional). Bug reports are often received with information that needs to be
 clarified. Your name and contact details are held with the strictest confidence. Its also much easier to service any
@@ -66,8 +66,7 @@ Please do not hesitate to submit any comments, bugs or feature requests. We resp
 
 ## License
 
-RedXpert is available completely free of charge and will remain so under the GNU Public License
-
+RedExpert is available completely free of charge and will remain so under the GNU Public License
 - http://www.gnu.org/copyleft/gpl.html
 
 Other relevant license files for respective libraries are incldued in this directory as well as within the deployed

@@ -156,7 +156,7 @@ public class GeneratedScriptViewer extends SimpleSqlTextPanel
     }
 
     public String getPrintJobName() {
-        return "RedXpert - SQL scripts";
+        return "Red Expert - SQL scripts";
     }
 
     public int save() {

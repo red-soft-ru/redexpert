@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="RedXpert" default="make" basedir=".">
+<project name="RedExpert" default="make" basedir=".">
 
     <property name="compile.outdir" value="classes"/>
     <property name="src.path" value="src"/>
@@ -19,16 +19,16 @@
 
     <path id="srcpath">
         <pathelement location="${src.path}"/>
-	</path>
+    </path>
 
-	<target name="init" description="Create required directories">
-		<tstamp />
+    <target name="init" description="Create required directories">
+        <tstamp/>
         <delete dir="${compile.outdir}" quiet="true"/>
-		<mkdir dir="${compile.outdir}" />
+        <mkdir dir="${compile.outdir}"/>
 
 
-		<copy todir="${compile.outdir}">
-			<fileset dir="${src.path}" excludes="**/*.java **/*.properties" />
+        <copy todir="${compile.outdir}">
+            <fileset dir="${src.path}" excludes="**/*.java **/*.properties"/>
 		</copy>
 
 		<native2ascii encoding="UTF-8" src="${src.path}"
@@ -43,24 +43,24 @@
 	<target name="compile" depends="init">
 
 		<javac destdir="${compile.outdir}" debug="on">
-			<classpath refid="classpath" />
-			<src refid="srcpath" />
-			<include name="org/**" />
-		</javac>
+            <classpath refid="classpath"/>
+            <src refid="srcpath"/>
+            <include name="org/**"/>
+        </javac>
 
-	</target>
+    </target>
 
-	<target name="make" depends="jar">
-	</target>
+    <target name="make" depends="jar">
+    </target>
 
     <target name="jar" depends="compile" description="generate the jar file">
 
         <manifestclasspath property="manifest.classpath"
-                           jarfile="${dist.outdir}/RedXpert.jar">
+                           jarfile="${dist.outdir}/RedExpert.jar">
             <classpath refid="classpath"/>
         </manifestclasspath>
 
-        <jar jarfile="${dist.outdir}/RedXpert.jar"
+        <jar jarfile="${dist.outdir}/RedExpert.jar"
              basedir="${compile.outdir}"
              compress="false" includes="org/**">
 
@@ -75,15 +75,15 @@
 
     </target>
 
-	<target name="exe" depends="jar">
-		<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar
-		    :${launch4j.dir}/xstream.jar" />
+    <target name="exe" depends="jar">
+        <taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar
+		    :${launch4j.dir}/xstream.jar"/>
         <launch4j>
-            <config headerType="gui" jar="RedXpert.jar" outfile="RedXpert.exe" icon="red_expert.ico">
+            <config headerType="gui" jar="RedExpert.jar" outfile="RedExpert.exe" icon="red_expert.ico">
                 <jre minVersion="1.7.0"/>
             </config>
         </launch4j>
-	</target>
+    </target>
 
     <target name="clean">
         <delete dir="${compile.outdir}" quiet="true"/>

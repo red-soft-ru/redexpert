@@ -25,7 +25,7 @@ mkdir -p $RESULT_DIR
 echo Preparing $VERSION sources
 cd $SOURCES
 
-ARCHIVE_PREFIX=RedXpert-$VERSION
+ARCHIVE_PREFIX=RedExpert-$VERSION
 git log > Changelog
 git add Changelog
 mvn versions:set -DnewVersion=$VERSION

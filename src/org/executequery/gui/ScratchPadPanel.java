@@ -159,7 +159,7 @@ public class ScratchPadPanel extends DefaultTextEditorContainer
     }
 
     public String getPrintJobName() {
-        return "RedXpert - scratch pad";
+        return "Red Expert - scratch pad";
     }
 
     public String getDisplayName() {

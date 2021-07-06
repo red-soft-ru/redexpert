@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!--groupId>org.executequery</groupId-->
-    <artifactId>RedXpert</artifactId>
+    <artifactId>RedExpert</artifactId>
     <!--version>4.3</version-->
     <packaging>jar</packaging>
 
@@ -12,7 +12,7 @@
 
     <parent>
         <groupId>org.executequery</groupId>
-        <artifactId>RedXpert-parent</artifactId>
+        <artifactId>RedExpert-parent</artifactId>
         <relativePath>../../pom.xml</relativePath>
         <version>2021.03</version>
     </parent>
@@ -318,7 +318,7 @@
                             <outputDirectory>${basedir}/target/bin</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${pom.basedir}/../../native/RedXpertNativeLauncher/bin</directory>
+                                    <directory>${pom.basedir}/../../native/RedExpertNativeLauncher/bin</directory>
                                 </resource>
                             </resources>
                         </configuration>

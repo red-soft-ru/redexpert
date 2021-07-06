@@ -269,7 +269,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
     // --------------------------------------------
 
     public String getPrintJobName() {
-        return "RedXpert - system log";
+        return "Red Expert - system log";
     }
 
     public String toString() {

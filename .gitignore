@@ -6,7 +6,7 @@ eq.jar
 /.idea/
 /.settings/
 /executequery.iml
-RedXpert.jar
+RedExpert.jar
 /classes/
 /temp/
 .classpath
@@ -14,7 +14,7 @@ RedXpert.jar
 
 red-expert\.iml
 
-RedXpert\.iml
+RedExpert\.iml
 
 *.iml
 

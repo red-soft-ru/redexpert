@@ -1,15 +1,14 @@
 package org.executequery.gui;
 
-import org.executequery.ApplicationException;
-import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
-import org.executequery.util.SystemWebBrowserLauncher;
+import org.underworldlabs.swing.LinkButton;
 
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.net.URL;
 
 public class LoginPasswordDialog extends BaseDialog {
     private JTextField username;
@@ -88,21 +87,18 @@ public class LoginPasswordDialog extends BaseDialog {
                 finished();
             }
         });
-        button = new JButton(bundledString("register"));
-        mainPanel.add(button, new GridBagConstraints(2, 3,
+        LinkButton linkButton = new LinkButton(bundledString("register"));
+        mainPanel.add(linkButton, new GridBagConstraints(2, 3,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        button.addActionListener(new ActionListener() {
+        linkButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            public void mouseClicked(MouseEvent e) {
                 try {
-                    new SystemWebBrowserLauncher().launch(urlOfRegistration);
-                } catch (ApplicationException applicationException) {
-                    GUIUtilities.displayExceptionErrorDialog(
-                            Bundles.get("AbstractUrlLauncherCommand.error.launchBrowser") +
-                                    applicationException.getMessage(), applicationException);
-
+                    Desktop.getDesktop().browse(new URL(urlOfRegistration).toURI());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
             }
         });

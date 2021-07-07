@@ -116,35 +116,28 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     }
 
     public void setNull(ActionEvent e) {
+
         setNullEvent(lastPopupPoint);
     }
 
     private void setNullEvent(Point point) {
-        if(table.hasMultipleColumnAndRowSelections()) {
-            TableModel selected = table.selectedCellsAsTableModel();
-            int rows = selected.getRowCount();
-            int columns = selected.getColumnCount();
 
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < columns; j++) {
-                    RecordDataItem rdiSelected = ((RecordDataItem) selected.getValueAt(i, j));
-                    rdiSelected.valueChanged(null);
-                    selected.setValueAt(null,i,j);
-                    //Debug TableModel
-                    Object test = (selected.getValueAt(i,j));
-                    System.out.println(test);
-                }
-            }
-            for (int i =0;i<table.getRowCount();i++) {
-                for (int j =0;j<table.getColumnCount();j++) {
-                    //Debug table
-                    Object testOrigin = (table.getValueAt(i,j));
-                    System.out.println(testOrigin);
+        if(table.hasMultipleColumnAndRowSelections()) {
+
+            int[] selectedColumns = table.getSelectedCellsColumnsIndexes();
+
+            int[] selectedRows = table.getSelectedCellsRowsIndexes();
+
+            for (int i = 0; i < selectedRows.length; i++) {
+
+                for (int j = 0; j < selectedColumns.length; j++) {
+
+                    table.setValueAt(null, selectedRows[i], selectedColumns[j]);
                 }
             }
         }
         else{
-            //tableCellDataAtPoint(point).valueChanged(null); <- Useless
+
             table.setValueAt(null, table.getSelectedRow(),table.getSelectedColumn());
         }
     }

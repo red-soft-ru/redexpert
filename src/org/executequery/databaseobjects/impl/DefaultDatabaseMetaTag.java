@@ -164,6 +164,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 || type == SYSTEM_TRIGGER
                 || type == SYSTEM_ROLE
                 || type == GLOBAL_TEMPORARY
+                || type == SYSTEM_PACKAGE
         )
             if (typeTree != TreePanel.DEFAULT) {
                 return new ArrayList<NamedObject>();

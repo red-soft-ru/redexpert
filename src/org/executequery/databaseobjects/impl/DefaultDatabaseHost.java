@@ -1507,8 +1507,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         case NamedObject.USER:
                             return false;
                     }
-                case 3:
-                case 4: // TODO check after the 4 version is released
+                default: // TODO check after the 5 version is released
                     switch (type) {
                         case NamedObject.SYNONYM:
                         case NamedObject.SYSTEM_VIEW:

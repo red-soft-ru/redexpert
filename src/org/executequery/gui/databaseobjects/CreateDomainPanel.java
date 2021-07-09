@@ -6,6 +6,7 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.text.SQLTextPane;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -14,8 +15,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyListener {
-    public static final String CREATE_TITLE = "Create Domain";
-    public static final String EDIT_TITLE = "Edit Domain";
+    public static final String CREATE_TITLE = Bundles.get(CreateDomainPanel.class,"CreateDomain");
+    public static final String EDIT_TITLE = Bundles.get(CreateDomainPanel.class,"AlterDomain");
     private ColumnData columnData;
     private String domain;
     private JScrollPane scrollDefaultValue;

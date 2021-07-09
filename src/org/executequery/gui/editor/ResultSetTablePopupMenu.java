@@ -26,6 +26,7 @@ import org.executequery.UserPreferencesManager;
 import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.resultset.*;
+import org.executequery.localization.Bundles;
 import org.executequery.print.PrintingSupport;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.swing.actions.ActionBuilder;
@@ -72,42 +73,46 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         reflectiveAction = new ReflectiveAction(this);
 
         // the print sub-menu
-        JMenu printMenu = MenuItemFactory.createMenu("Print");
-        create(printMenu, "Selection", "printSelection");
-        create(printMenu, "Table", "printTable");
+        JMenu printMenu = MenuItemFactory.createMenu(bundleString("Print"));
+        create(printMenu, bundleString("PrintSelection"), "printSelection");
+        create(printMenu, bundleString("PrintTable"), "printTable");
 
         JCheckBoxMenuItem cellOpensDialog =
                 MenuItemFactory.createCheckBoxMenuItem(reflectiveAction);
-        cellOpensDialog.setText("Double-Click Opens Item View");
+        cellOpensDialog.setText(bundleString("Double-ClickOpensItemView"));
         cellOpensDialog.setSelected(doubleClickCellOpensDialog());
         cellOpensDialog.setActionCommand("cellOpensDialog");
 
-        add(create("Copy Selected Cells", "copySelectedCells"));
-        add(create("Copy Selected Cells - comma-separated", "copySelectedCellsAsCSV"));
-        add(create("Copy Selected Cells - comma-separated with names", "copySelectedCellsAsCSVWithNames"));
-        add(create("Copy Selected Cells - comma-separated and quoted", "copySelectedCellsAsCSVQuoted"));
-        add(create("Copy Selected Cells - comma-separated and quoted with names", "copySelectedCellsAsCSVQuotedWithNames"));
+        add(create(bundleString("CopySelectedCells"), "copySelectedCells"));
+        add(create(bundleString("CopySelectedCells-CommaSeparated"), "copySelectedCellsAsCSV"));
+        add(create(bundleString("CopySelectedCells-CommaSeparatedWithNames"), "copySelectedCellsAsCSVWithNames"));
+        add(create(bundleString("CopySelectedCells-CommaSeparatedAndQuoted"), "copySelectedCellsAsCSVQuoted"));
+        add(create(bundleString("CopySelectedCells-CommaSeparatedAndQuotedWithNames"), "copySelectedCellsAsCSVQuotedWithNames"));
         addSeparator();
-        add(create("Select Row", "selectRow"));
-        add(create("Select Column", "selectColumn"));
+        add(create(bundleString("SelectRow"), "selectRow"));
+        add(create(bundleString("SelectColumn"), "selectColumn"));
 
         if (resultSetTableContainer.isTransposeAvailable()) {
 
             add(create("Transpose Row", "transposeRow"));
         }
         addSeparator();
-        add(create("Set Null", "setNull"));
+        add(create(bundleString("SetNull"), "setNull"));
         addSeparator();
-        add(create("Export Selection", "exportSelection"));
-        add(create("Export Table", "exportTable"));
+        add(create(bundleString("ExportSelection"), "exportSelection"));
+        add(create(bundleString("ExportTable"), "exportTable"));
         addSeparator();
         add(createFromAction("editor-show-hide-rs-columns-command", "Show/hide result set columns"));
         addSeparator();
-        add(create("View", "openDataItemViewer"));
+        add(create(bundleString("View"), "openDataItemViewer"));
         add(printMenu);
         addSeparator();
         add(cellOpensDialog);
 
+    }
+
+    private String bundleString(String key){
+        return Bundles.get(ResultSetTablePopupMenu.class,key);
     }
 
     public void setLastPopupPoint(Point lastPopupPoint) {
@@ -207,7 +212,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
 
     private void showSimpleRecordDataItemDialog(RecordDataItem recordDataItem) {
 
-        BaseDialog dialog = new BaseDialog("Record Data Item Viewer", true);
+        BaseDialog dialog = new BaseDialog(bundleString("RecordDataItemViewer"), true);
         dialog.addDisplayComponentWithEmptyBorder(
                 new SimpleDataItemViewerPanel(dialog, (SimpleRecordDataItem) recordDataItem));
         dialog.display();
@@ -216,7 +221,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     private void showLobRecordDataItemDialog(RecordDataItem recordDataItem) {
         int row = ((TableSorter) table.getModel()).modelIndex(table.getSelectedRow());
 
-        BaseDialog dialog = new BaseDialog("LOB Record Data Item Viewer", true);
+        BaseDialog dialog = new BaseDialog(bundleString("LOBRecordDataItemViewer"), true);
         dialog.addDisplayComponentWithEmptyBorder(
                 new LobDataItemViewerPanel(dialog, (LobRecordDataItem) recordDataItem, tableObject, ((ResultSetTableModel) ((TableSorter) table.getModel()).getTableModel()).getRowDataForRow(table.getSelectedRow())));
         dialog.display();

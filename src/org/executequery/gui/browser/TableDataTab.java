@@ -56,6 +56,7 @@ import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -64,6 +65,7 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
@@ -110,6 +112,7 @@ public class TableDataTab extends JPanel
 
     private List<org.executequery.databaseobjects.impl.ColumnConstraint> foreigns;
     private Timer timer;
+    public DefaultTableModel myTableModel;
 
     public TableDataTab(boolean displayRowCount) {
 
@@ -481,7 +484,9 @@ public class TableDataTab extends JPanel
                 if (foreigns.size() > 0)
                     for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
                         Vector items = itemsForeign(key);
-                        table.setComboboxColumn(tableModel.getColumnIndex(key.getColumnName()), items);
+                        DefaultTableModel defaultTableModel = tableForeign(key);
+                        //table.setComboboxColumn(tableModel.getColumnIndex(key.getColumnName()), items);
+                        table.setComboboxTable(tableModel.getColumnIndex(key.getColumnName()), defaultTableModel, items);
                     }
 
 
@@ -560,6 +565,39 @@ public class TableDataTab extends JPanel
         }
         items.add(null);
         return items;
+    }
+
+    public DefaultTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+        String query = "SELECT * FROM " + key.getReferencedTable() + " order by 1";
+        DefaultTableModel defaultTableModel = new DefaultTableModel();
+        try {
+            ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
+            defaultTableModel = buildTableModel(rs);
+        } catch (Exception e) {
+            Log.error("Error get Foreign keys:" + e.getMessage());
+        } finally {
+            querySender.releaseResources();
+        }
+        defaultTableModel.addColumn(null);
+        return defaultTableModel;
+    }
+
+    public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
+        ResultSetMetaData metaData = rs.getMetaData();
+        Vector<String> columnNames = new Vector<String>();
+        int columnCount = metaData.getColumnCount();
+        for (int column = 1; column <= columnCount; column++) {
+            columnNames.add(metaData.getColumnName(column));
+        }
+        Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+        while (rs.next()) {
+            Vector<Object> vector = new Vector<Object>();
+            for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+                vector.add(rs.getObject(columnIndex));
+            }
+            data.add(vector);
+        }
+        return new DefaultTableModel(data, columnNames);
     }
 
     private void initialiseModel() {

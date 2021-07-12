@@ -22,7 +22,10 @@ package org.executequery.gui.resultset;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
+import org.executequery.components.table.BrowsingCellEditor;
+import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.gui.StandardTable;
+import org.executequery.gui.browser.TableDataTab;
 import org.underworldlabs.swing.DateCellEditor;
 import org.underworldlabs.swing.DateTimeCellEditor;
 import org.underworldlabs.swing.TimeCellEditor;
@@ -34,13 +37,17 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.table.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
@@ -66,6 +73,8 @@ public class ResultSetTable extends JTable implements StandardTable {
     private ResultSetTableCellRenderer cellRenderer;
 
     private TableColumn dummyColumn = new TableColumn();
+
+    public DefaultTableModel myTableModel = new DefaultTableModel();
 
     public ResultSetTable() {
 
@@ -228,9 +237,9 @@ public class ResultSetTable extends JTable implements StandardTable {
     public void copySelectedCells() {
 
         copySelectedCells('\t', false, false);
-        
+
         /*
-        
+
         StringBuilder sb = new StringBuilder();
 
         int cols = getSelectedColumnCount();
@@ -265,7 +274,7 @@ public class ResultSetTable extends JTable implements StandardTable {
         }
 
         GUIUtilities.copyToClipBoard(sb.toString());
-        
+
         */
     }
 
@@ -442,16 +451,60 @@ public class ResultSetTable extends JTable implements StandardTable {
         return cellRenderer;
     }
 
+    private ArrayList<DefaultTableModel> dtm = new ArrayList<DefaultTableModel>();
+    private ArrayList<Integer> foreignIndex = new ArrayList<Integer>();
+    private ArrayList<Vector<Object>> foreignKeys = new ArrayList<Vector<Object>>();
+
+
     public TableCellEditor getCellEditor(int row, int column) {
+
+        int columnIndex = 0;
+
+
+        for (int i = 0; i < foreignIndex.size(); i++) {
+            if (foreignIndex.get(i) == column) {
+                columnIndex = i;
+            }
+        }
+
+        final  JTable table = new JTable(dtm.get(columnIndex));
+
+        ArrayList<DefaultTableModel> rowTabelModelsList = new ArrayList<DefaultTableModel>();
+
+        class ComboBoxRenderer extends JTable implements ListCellRenderer {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                setFont(list.getFont());
+                setModel(rowTabelModelsList.get(index));
+                return this;
+            }
+        }
 
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
         if (isComboColumn(column)) {
-            JComboBox comboBox = new JComboBox(((JComboBox) ((DefaultCellEditor) columnModel.getComboColumn(column).getCellEditor()).getComponent()).getModel());
+            JComboBox comboBox = new JComboBox();
             comboBox.setEditable(true);
             if (value.getValue() == null)
                 comboBox.setSelectedIndex(0);
             else
                 comboBox.setSelectedItem(value.getValue());
+
+            for (int i = 0; i < dtm.get(columnIndex).getRowCount(); i++) {
+                DefaultTableModel rowTableModel = new DefaultTableModel();
+                for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
+                    rowTableModel.addColumn("");
+                }
+                rowTableModel.insertRow(0, new Object[] {});
+                for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
+                    rowTableModel.setValueAt(dtm.get(columnIndex).getValueAt(i, j), 0, j);
+                }
+                rowTabelModelsList.add(rowTableModel);
+                ComboBoxRenderer renderer = new ComboBoxRenderer();
+                comboBox.setRenderer(renderer);
+                //comboBox.addItem(foreignKeys.get(columnIndex).get(i));
+                comboBox.insertItemAt(foreignKeys.get(columnIndex).get(i), i);
+                System.out.println(comboBox.getItemAt(0));
+            }
             TableCellEditor editor = new DefaultCellEditor(comboBox);
             return editor;
         }
@@ -473,17 +526,18 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.TIME:
                 return timeCellEditor;
             case Types.BOOLEAN:
-                JComboBox comboBox = new JComboBox(new String[]{"true", "false", "null"});
+                //JComboBox comboBox = new JComboBox(new String[]{"true", "false", "null"});
+                JComboBox comboBox1 = new JComboBox(new String[]{"true", "false", "null"});
                 String booleanValue = String.valueOf(value.getValue());
                 if (MiscUtils.isNull(booleanValue))
-                    comboBox.setSelectedItem(2);
+                    comboBox1.setSelectedItem(2);
                 else if (booleanValue.equalsIgnoreCase("true"))
-                    comboBox.setSelectedIndex(0);
+                    comboBox1.setSelectedIndex(0);
                 else if (booleanValue.equalsIgnoreCase("false"))
-                    comboBox.setSelectedIndex(1);
+                    comboBox1.setSelectedIndex(1);
                 else
-                    comboBox.setSelectedItem(2);
-                return new DefaultCellEditor(comboBox);
+                    comboBox1.setSelectedItem(2);
+                return new DefaultCellEditor(comboBox1);
 
         }
 
@@ -514,6 +568,29 @@ public class ResultSetTable extends JTable implements StandardTable {
         TableColumn column = new TableColumn();
         JComboBox comboBox = new JComboBox();
         comboBox.setModel(new DefaultComboBoxModel(items));
+        column.setCellEditor(new DefaultCellEditor(comboBox));
+        columnModel.setColumn(column, ind);
+    }
+
+    public void setComboboxTable(int ind, DefaultTableModel defaultTableModel, Vector<Object> items) {
+        comboboxColumns.add(ind);
+        TableColumn column = new TableColumn();
+        JComboBox comboBox = new JComboBox();
+        dtm.add(defaultTableModel);
+        foreignIndex.add(ind);
+        foreignKeys.add(items);
+        System.out.println(items.elementAt(ind));
+        class ComboBoxRenderer extends JTable implements ListCellRenderer {
+            public DefaultTableModel rowTabelModel;
+
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                setModel(rowTabelModel);
+                return this;
+            }
+        }
+        ComboBoxRenderer renderer = new ComboBoxRenderer();
+        comboBox.setRenderer(renderer);
         column.setCellEditor(new DefaultCellEditor(comboBox));
         columnModel.setColumn(column, ind);
     }

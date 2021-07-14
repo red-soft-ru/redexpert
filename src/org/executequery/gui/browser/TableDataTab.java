@@ -578,7 +578,6 @@ public class TableDataTab extends JPanel
         } finally {
             querySender.releaseResources();
         }
-        defaultTableModel.addColumn(null);
         return defaultTableModel;
     }
 

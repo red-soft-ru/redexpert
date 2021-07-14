@@ -36,6 +36,8 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.*;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -467,13 +469,23 @@ public class ResultSetTable extends JTable implements StandardTable {
             }
         }
 
-        final  JTable table = new JTable(dtm.get(columnIndex));
-
         ArrayList<DefaultTableModel> rowTabelModelsList = new ArrayList<DefaultTableModel>();
 
         class ComboBoxRenderer extends JTable implements ListCellRenderer {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (isSelected) {
+                    setBackground(list.getSelectionBackground());
+                    setForeground(list.getSelectionForeground());
+                } else {
+                    setBackground(list.getBackground());
+                    setForeground(list.getForeground());
+                }
+
+                if (index == 0) {
+                    setBackground(list.getSelectionBackground());
+                }
+
                 setFont(list.getFont());
                 setModel(rowTabelModelsList.get(index));
                 return this;
@@ -482,30 +494,115 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
         if (isComboColumn(column)) {
-            JComboBox comboBox = new JComboBox();
-            comboBox.setEditable(true);
-            if (value.getValue() == null)
-                comboBox.setSelectedIndex(0);
-            else
-                comboBox.setSelectedItem(value.getValue());
+            class SampleJComboBoxWithScrollBar extends JComboBox {
 
-            for (int i = 0; i < dtm.get(columnIndex).getRowCount(); i++) {
+                SampleJComboBoxWithScrollBar() {
+                    super();
+                    this.addPopupMenuListener(this.getPopupMenuListener());
+                    this.adjustScrollBar();
+                }
+
+                private void adjustPopupWidth() {
+                    if (getItemCount() == 0) {
+                        return;
+                    }
+                    Object comp = getUI().getAccessibleChild(this, 0);
+                    if (!(comp instanceof JPopupMenu)) {
+                        return;
+                    }
+                    JPopupMenu popup = (JPopupMenu) comp;
+                    JScrollPane scrollPane = (JScrollPane) popup.getComponent(0);
+                    Object value = getItemAt(0);
+                    Component rendererComp = getRenderer().getListCellRendererComponent(new JList(), value, 0, false, false);
+                    if (rendererComp instanceof JTable) {
+                        scrollPane.setColumnHeaderView(((JTable) rendererComp).getTableHeader());
+                    }
+                    Dimension prefSize = rendererComp.getPreferredSize();
+                    Dimension size = scrollPane.getPreferredSize();
+                    size.width = Math.max(size.width, prefSize.width);
+                    scrollPane.setPreferredSize(size);
+                    scrollPane.setMaximumSize(size);
+                    scrollPane.revalidate();
+                }
+
+                private void adjustScrollBar() {
+                    if (getItemCount() == 0) {
+                        return;
+                    }
+                    Object comp = getUI().getAccessibleChild(this, 0);
+                    if (!(comp instanceof JPopupMenu)) {
+                        return;
+                    }
+                    JPopupMenu popup = (JPopupMenu) comp;
+                    JScrollPane scrollPane = (JScrollPane) popup.getComponent(0);
+                    scrollPane.setHorizontalScrollBar(new JScrollBar(JScrollBar.HORIZONTAL));
+                    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                }
+
+                private PopupMenuListener getPopupMenuListener() {
+
+                    return new PopupMenuListener() {
+
+                        @Override
+                        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                            //adjustPopupWidth();
+                            adjustScrollBar();
+                        }
+
+                        @Override
+                        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                        }
+
+                        @Override
+                        public void popupMenuCanceled(PopupMenuEvent e) {
+                        }
+                    };
+                }
+            }
+
+            SampleJComboBoxWithScrollBar comboBox = new SampleJComboBoxWithScrollBar();
+            comboBox.setEditable(true);
+
+            comboBox.addItem(foreignKeys.get(columnIndex).get(0));
+
+            for (int i = -1; i < dtm.get(columnIndex).getRowCount(); i++) {
                 DefaultTableModel rowTableModel = new DefaultTableModel();
                 for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
                     rowTableModel.addColumn("");
                 }
                 rowTableModel.insertRow(0, new Object[] {});
-                for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
-                    rowTableModel.setValueAt(dtm.get(columnIndex).getValueAt(i, j), 0, j);
+                if (i != -1) {
+                    for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
+                        rowTableModel.setValueAt(dtm.get(columnIndex).getValueAt(i, j), 0, j);
+                    }
                 }
+                else {
+                    for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
+                        rowTableModel.setValueAt(dtm.get(columnIndex).getColumnName(j), 0, j);
+                    }
+                }
+
                 rowTabelModelsList.add(rowTableModel);
-                ComboBoxRenderer renderer = new ComboBoxRenderer();
-                comboBox.setRenderer(renderer);
-                //comboBox.addItem(foreignKeys.get(columnIndex).get(i));
-                comboBox.insertItemAt(foreignKeys.get(columnIndex).get(i), i);
-                System.out.println(comboBox.getItemAt(0));
+
+                if (i == -1) {
+                    continue;
+                }
+
+                comboBox.addItem(foreignKeys.get(columnIndex).get(i));
+
+
             }
+
+            ComboBoxRenderer renderer = new ComboBoxRenderer();
+            comboBox.setRenderer(renderer);
+
             TableCellEditor editor = new DefaultCellEditor(comboBox);
+
+            if (value.getValue() == null)
+                comboBox.setSelectedIndex(0);
+            else
+                comboBox.setSelectedItem(value.getValue());
+
             return editor;
         }
 
@@ -526,7 +623,6 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.TIME:
                 return timeCellEditor;
             case Types.BOOLEAN:
-                //JComboBox comboBox = new JComboBox(new String[]{"true", "false", "null"});
                 JComboBox comboBox1 = new JComboBox(new String[]{"true", "false", "null"});
                 String booleanValue = String.valueOf(value.getValue());
                 if (MiscUtils.isNull(booleanValue))
@@ -579,7 +675,6 @@ public class ResultSetTable extends JTable implements StandardTable {
         dtm.add(defaultTableModel);
         foreignIndex.add(ind);
         foreignKeys.add(items);
-        System.out.println(items.elementAt(ind));
         class ComboBoxRenderer extends JTable implements ListCellRenderer {
             public DefaultTableModel rowTabelModel;
 

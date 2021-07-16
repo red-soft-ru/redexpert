@@ -64,10 +64,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.List;
 import java.util.Timer;
 import java.util.*;
@@ -551,7 +548,7 @@ public class TableDataTab extends JPanel
     }
 
     Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String query = "SELECT distinct " + key.getReferencedColumn() + " FROM " + key.getReferencedTable() + " order by 1";
+        String query = "SELECT " + key.getReferencedColumn() + " FROM " + key.getReferencedTable();
         Vector items = new Vector();
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
@@ -568,7 +565,28 @@ public class TableDataTab extends JPanel
     }
 
     public DefaultTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String query = "SELECT * FROM " + key.getReferencedTable() + " order by 1";
+        String checked_column  = "select R.RDB$FIELD_NAME from RDB$FIELDS F, RDB$RELATION_FIELDS R where (F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE) and (R.RDB$SYSTEM_FLAG = 0) and (R.RDB$RELATION_NAME = " + "'" + key.getReferencedTable() + "'" + ") and (NOT F.RDB$FIELD_NAME IN (select RDB$FIELD_NAME from RDB$FIELD_DIMENSIONS))";
+        ArrayList<String> checked_column_list = new ArrayList<String>();
+        try {
+            ResultSet checked_column_rs = querySender.execute(QueryTypes.SELECT, checked_column).getResultSet();
+            while (checked_column_rs.next()) {
+                checked_column_list.add(checked_column_rs.getObject(1).toString());
+            }
+        } catch (Exception e) {
+            Log.error("Error get Foreign keys:" + e.getMessage());
+        } finally {
+            querySender.releaseResources();
+        }
+
+        String checkedColumns = new String();
+        for (int i = 0; i < checked_column_list.size(); i++) {
+            checkedColumns += checked_column_list.get(i);
+            if (i < checked_column_list.size() - 1) {
+                checkedColumns += " , ";
+            }
+        }
+
+        String query = "SELECT " + checkedColumns + " FROM " + key.getReferencedTable();
         DefaultTableModel defaultTableModel = new DefaultTableModel();
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();

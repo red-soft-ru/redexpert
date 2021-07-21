@@ -237,3 +237,8 @@ Firebird 4.0
     RDB$SYSTEM_PRIVILEGE
     SYSTEM
     TIES
+
+RedDatabase 2.6
+
+    ROLE
+    TRIGGER

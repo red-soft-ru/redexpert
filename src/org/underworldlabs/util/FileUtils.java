@@ -201,7 +201,7 @@ public class FileUtils {
                 input = ClassLoader.getSystemResourceAsStream(path);
             }
 
-            reader = new BufferedReader(new InputStreamReader(input));
+            reader = new BufferedReader(new InputStreamReader(input,"utf-8"));
 
             String line = null;
             StringBuilder buf = new StringBuilder();

@@ -45,7 +45,8 @@ public interface NamedObject extends Named, java.io.Serializable {
     int SEQUENCE = DATABASE_TRIGGER + 1;
     int EXCEPTION = SEQUENCE + 1;
     int UDF = EXCEPTION + 1;
-    int ROLE = UDF + 1;
+    int USER = UDF + 1;
+    int ROLE = USER + 1;
     int INDEX = ROLE + 1;
     int SYSTEM_DOMAIN = INDEX + 1;
     int SYSTEM_TABLE = SYSTEM_DOMAIN + 1;
@@ -57,7 +58,8 @@ public interface NamedObject extends Named, java.io.Serializable {
     int SYSTEM_TRIGGER = SYSTEM_DATE_TIME_FUNCTIONS + 1;
     int SYSTEM_ROLE = SYSTEM_TRIGGER + 1;
     int SYSTEM_INDEX = SYSTEM_ROLE + 1;
-    int SYNONYM = SYSTEM_INDEX + 1;
+    int SYSTEM_PACKAGE = SYSTEM_INDEX + 1;
+    int SYNONYM = SYSTEM_PACKAGE + 1;
 
     int META_TAG = 93;
     int TABLE_COLUMN = 94;
@@ -93,6 +95,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SEQUENCE",
             "EXCEPTION",
             "EXTERNAL FUNCTION",
+            "USER",
             "ROLE",
             "INDEX",
             "SYSTEM DOMAIN",
@@ -105,6 +108,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM TRIGGER",
             "SYSTEM ROLE",
             "SYSTEM INDEX",
+            "SYSTEM PACKAGE",
             "SYNONYM",
     };
     String[] META_TYPES_FOR_BUNDLE = {
@@ -121,6 +125,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SEQUENCE",
             "EXCEPTION",
             "EXTERNAL_FUNCTION",
+            "USER",
             "ROLE",
             "INDEX",
             "SYSTEM_DOMAIN",
@@ -133,6 +138,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM_TRIGGER",
             "SYSTEM_ROLE",
             "SYSTEM_INDEX",
+            "SYSTEM_PACKAGE",
             "SYNONYM",
     };
 

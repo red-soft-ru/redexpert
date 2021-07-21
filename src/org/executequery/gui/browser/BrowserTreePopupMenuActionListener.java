@@ -331,6 +331,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
+                case NamedObject.USER:
+                    if (GUIUtilities.isDialogOpen(CreateUserPanel.CREATE_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateUserPanel.CREATE_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateUserPanel.CREATE_TITLE, false);
+                            CreateUserPanel panel = new CreateUserPanel(currentSelection, dialog);
+                            showDialogCreateObject(panel, dialog);
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
@@ -531,6 +548,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
+                case NamedObject.USER:
+                    if (GUIUtilities.isDialogOpen(CreateUserPanel.EDIT_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateUserPanel.EDIT_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+
+                            BaseDialog dialog = new BaseDialog(CreateUserPanel.EDIT_TITLE, false);
+                            createObjectPanel = new CreateUserPanel(currentSelection, dialog, (DefaultDatabaseUser) node.getDatabaseObject());
+                            showDialogCreateObject(createObjectPanel, dialog);
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
@@ -591,6 +625,17 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     public void disconnect(ActionEvent e) {
         treePanel.disconnect(currentSelection);
+    }
+
+    private BrowserController controller;
+
+
+    public void dataBaseInformation (ActionEvent e) {
+        controller = treePanel.getController();
+        DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        DatabaseConnection connection = currentSelection;
+        controller.valueChanged_(node, connection);
+
     }
 
     public void duplicate(ActionEvent e) {

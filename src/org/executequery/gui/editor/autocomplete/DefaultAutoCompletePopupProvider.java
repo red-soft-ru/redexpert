@@ -8,7 +8,7 @@ import org.executequery.databaseobjects.DatabaseObjectFactory;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.gui.editor.ConnectionChangeListener;
 import org.executequery.gui.editor.QueryWithPosition;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.log.Log;
 import org.executequery.repository.spi.KeywordRepositoryImpl;
 import org.executequery.sql.DerivedQuery;
@@ -82,11 +82,11 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
     private boolean autoCompleteSchema;
 
-    SQLTextPane sqlTextPane;
+    SQLTextArea sqlTextPane;
 
     DatabaseConnection connection;
 
-    public DefaultAutoCompletePopupProvider(DatabaseConnection dc, SQLTextPane textPane) {
+    public DefaultAutoCompletePopupProvider(DatabaseConnection dc, SQLTextArea textPane) {
 
         super();
         connection = dc;
@@ -96,7 +96,6 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         databaseObjectFactory = new DatabaseObjectFactoryImpl();
 
         setAutoCompleteOptionFlags();
-        autoCompleteListItems = new ArrayList<AutoCompleteListItem>();
         queryEditorTextComponent().addFocusListener(this);
 
         autoCompletePopupAction = new AutoCompletePopupAction(this);
@@ -293,6 +292,11 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
             start = 0;
         }
 
+        if (chars[start] == '"')
+            start++;
+        if (start >= end)
+            return "";
+
         return text.substring(start, end).trim();
     }
 
@@ -412,8 +416,13 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
                 caretCoords.x = textComponent.getWidth() - popupPanel.getWidth();
             if (caretCoords.x < 0)
                 caretCoords.x = 0;
+            boolean restart = popupPanel.getWidth() == 0;
             popupPanel.show(textComponent, caretCoords.x, caretCoords.y + heightFont);
             textComponent.requestFocus();
+            if (restart) {
+                popupHidden();
+                firePopupTrigger();
+            }
         } else popupHidden();
 
 
@@ -827,6 +836,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
     }
 
     public void connectionChanged(DatabaseConnection databaseConnection) {
+        connection = databaseConnection;
 
         if (worker != null) {
 

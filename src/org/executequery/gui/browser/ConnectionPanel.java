@@ -29,6 +29,7 @@ import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.ConnectionTester;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.*;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.WidgetFactory;
@@ -103,6 +104,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private JCheckBox saveContPwdCheck;
     private JCheckBox verifyServerCertCheck;
     private JCheckBox namesToUpperBox;
+    private JCheckBox useNewAPI;
 
     private JComboBox authCombo;
     private JComboBox methodCombo;
@@ -265,10 +267,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
         encryptPwdCheck = ActionUtilities.createCheckBox(bundleString("EncryptPassword"), "setEncryptPassword");
         namesToUpperBox = ActionUtilities.createCheckBox(bundleString("namesToUpperCase"), "namesToUpperCase");
         namesToUpperBox.setSelected(true);
+        useNewAPI = ActionUtilities.createCheckBox(bundleString("UseNewAPI"), "setNewAPI");
 
         savePwdCheck.addActionListener(this);
         encryptPwdCheck.addActionListener(this);
         namesToUpperBox.addActionListener(this);
+        useNewAPI.addActionListener(this);
 
         // retrieve the drivers
         buildDriversList();
@@ -345,6 +349,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         mainPanel.add(namesToUpperBox, gbh.nextRowFirstCol().setLabelDefault().setWidth(3).get());
         standardComponents.add(namesToUpperBox);
+
+        mainPanel.add(useNewAPI, gbh.nextRowFirstCol().setLabelDefault().setWidth(3).get());
+        standardComponents.add(useNewAPI);
 
         gbh.setY(2).nextCol().makeCurrentXTheDefaultForNewline().setWidth(1).previousCol();
 
@@ -1254,6 +1261,21 @@ public class ConnectionPanel extends AbstractConnectionPanel
         databaseConnection.setVerifyServerCertCheck(store);
     }
 
+
+    public void setNewAPI() {
+
+        boolean useAPI = useNewAPI.isSelected();
+        int majorVersion = new DefaultDriverLoader().load(jdbcDrivers.get(driverCombo.getSelectedIndex())).getMajorVersion();
+        if (majorVersion < 4 && useAPI) {
+            GUIUtilities.displayWarningMessage(bundleString("warning.useNewAPI"));
+            useNewAPI.setSelected(false);
+            databaseConnection.setUseNewAPI(false);
+        } else {
+            if (databaseConnection != null)
+                databaseConnection.setUseNewAPI(useAPI);
+        }
+    }
+
     /**
      * Sets the values for the tx level on the connection object
      * based on the tx level in the tx combo.
@@ -1302,6 +1324,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
             }
 
         }
+
+        setNewAPI();
     }
 
     /**
@@ -1329,6 +1353,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         certificateFileField.setText(databaseConnection.getCertificate());
         containerPasswordField.setText(databaseConnection.getContainerPassword());
         verifyServerCertCheck.setSelected(databaseConnection.isVerifyServerCertCheck());
+        useNewAPI.setSelected(databaseConnection.useNewAPI());
         authCombo.setSelectedItem(databaseConnection.getAuthMethod());
         methodCombo.setSelectedItem(databaseConnection.getConnectionMethod());
         namesToUpperBox.setSelected(databaseConnection.isNamesToUpperCase());

@@ -24,7 +24,6 @@ import biz.redsoft.IFBDatabasePerformance;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.log.Log;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.SystemProperties;
 
@@ -228,13 +227,13 @@ public class PooledConnection implements Connection {
             } else {
 
                 // reset the original auto-commit mode
-                try {
+               /* try {
 
                     realConnection.setAutoCommit(originalAutoCommit);
 
                 } catch (SQLException e) {
                     e.printStackTrace();
-                }
+                }*/
 
             }
 

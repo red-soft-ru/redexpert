@@ -908,6 +908,7 @@ public class TableDataTab extends JPanel
                         if (row >= 0)
                             tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
                     }
+                    table.clearSelection();
                 }
             }
         });

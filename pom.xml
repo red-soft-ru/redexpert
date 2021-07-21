@@ -12,6 +12,7 @@
 		<module>modules/plugins/fbplugin</module>
         <module>modules/plugins/fbplugin-impl</module>
         <module>modules/plugins/sql-parser</module>
+        <module>modules/plugins/sqlLexer</module>
         <module>modules/plugins/trace-parser</module>
         <module>modules/plugins/procedure-parser</module>
         <module>modules/redexpert</module>

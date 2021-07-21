@@ -22,31 +22,19 @@ package org.executequery.gui.editor;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
-import org.executequery.gui.BaseDialog;
-import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.browser.TreeFindAction;
-import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.gui.editor.autocomplete.AutoCompletePopupProvider;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.TextUtilities;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.GUIUtils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,7 +63,6 @@ public class QueryEditorTextPanel extends JPanel {
      */
     private QueryEditor queryEditor;
 
-    private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
 
     private AutoCompletePopupProvider autoCompletePopup;
 
@@ -106,7 +93,9 @@ public class QueryEditorTextPanel extends JPanel {
 
         // setup the query text panel and associated scroller
         queryPane = new QueryEditorTextPane(this);
-        queryPane.addMouseListener(new MouseAdapter() {
+        queryPane.setSize(new Dimension(400,300));
+        queryPane.setDatabaseConnection(queryEditor.getSelectedConnection());
+        /*queryPane.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() > 1 || e.isControlDown()) {
@@ -140,7 +129,8 @@ public class QueryEditorTextPanel extends JPanel {
                     }
                 }
             }
-        });
+        });*/
+
 
         JScrollPane queryScroller = new JScrollPane();
         queryScroller.getViewport().add(queryPane, BorderLayout.CENTER);
@@ -151,60 +141,9 @@ public class QueryEditorTextPanel extends JPanel {
         add(queryScroller, BorderLayout.CENTER);
     }
 
-    public void deregisterAutoCompletePopup() {
-
-        if (autoCompletePopup != null) {
-
-            Action autoCompletePopupAction = autoCompletePopup.getPopupAction();
-
-            queryPane.getActionMap().remove(AUTO_COMPLETE_POPUP_ACTION_KEY);
-            queryPane.getInputMap().remove((KeyStroke)
-                    autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY));
-
-            autoCompletePopup = null;
-        }
-
-    }
-
-    boolean changed = false;
 
 
-    public void registerAutoCompletePopup(AutoCompletePopupProvider autoCompletePopup) {
 
-        this.autoCompletePopup = autoCompletePopup;
-
-        Action autoCompletePopupAction = autoCompletePopup.getPopupAction();
-
-        queryPane.getActionMap().put(AUTO_COMPLETE_POPUP_ACTION_KEY, autoCompletePopupAction);
-        queryPane.getInputMap().put((KeyStroke)
-                        autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
-                AUTO_COMPLETE_POPUP_ACTION_KEY);
-        queryPane.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                changed = true;
-            }
-        });
-        queryPane.addCaretListener(new CaretListener() {
-            @Override
-            public void caretUpdate(CaretEvent e) {
-                if (changed)
-                    autoCompletePopupAction.actionPerformed(null);
-                changed = false;
-            }
-        });
-
-    }
 
     public void addEditorPaneMouseListener(MouseListener listener) {
 
@@ -292,7 +231,7 @@ public class QueryEditorTextPanel extends JPanel {
         setTextFocus();
     }
 
-    public JTextPane getQueryArea() {
+    public SQLTextArea getQueryArea() {
 
         return queryPane;
     }

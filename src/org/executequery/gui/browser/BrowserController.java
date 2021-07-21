@@ -249,34 +249,37 @@ public class BrowserController {
      * //@param the connection host parent object
      * //@param the selected node
      */
-    public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
 
-        treePanel.setInProcess(true);
 
-        try {
+   /** This void has been moved in BrowserTreePopupMenuActionListener */
 
-            FormObjectView panel = buildPanelView(node);
-            panel.setDatabaseObjectNode(node);
-            String type = "";
-            if (node.getType() < NamedObject.META_TYPES.length)
-                type = NamedObject.META_TYPES[node.getType()];
-            if (connection == null)
-                connection = getDatabaseConnection();
-            if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
-                panel.setObjectName(null);
-            else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
-            panel.setDatabaseConnection(connection);
-            if (panel != null) {
-                viewPanel.setView(panel);
-                checkBrowserPanel();
-            }
+   public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
+       treePanel.setInProcess(true);
 
-        } finally {
+       try {
 
-            treePanel.setInProcess(false);
-        }
+           FormObjectView panel = buildPanelView(node);
+           panel.setDatabaseObjectNode(node);
+           String type = "";
+           if (node.getType() < NamedObject.META_TYPES.length)
+               type = NamedObject.META_TYPES[node.getType()];
+           if (connection == null)
+               connection = getDatabaseConnection();
+           if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
+               panel.setObjectName(null);
+           else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
+           panel.setDatabaseConnection(connection);
+           if (panel != null) {
+               viewPanel.setView(panel);
+               checkBrowserPanel();
+           }
 
-    }
+       } finally {
+
+           treePanel.setInProcess(false);
+       }
+
+   }
 
     /**
      * Determines and builds the object view panel to be
@@ -446,6 +449,18 @@ public class BrowserController {
                     }
                     rolePanel.setValues((DefaultDatabaseRole) databaseObject, this);
                     return rolePanel;
+                case NamedObject.USER:
+                    BrowserUserPanel userPanel = null;
+                    if (!viewPanel.containsPanel(BrowserUserPanel.NAME)) {
+                        userPanel = new BrowserUserPanel(this);
+                        viewPanel.addToLayout(userPanel);
+                    } else {
+                        userPanel = (BrowserUserPanel) viewPanel.
+                                getFormObjectView(BrowserUserPanel.NAME);
+                    }
+
+                    userPanel.setValues((DefaultDatabaseUser) databaseObject);
+                    return userPanel;
                 case NamedObject.EXCEPTION:
                     BrowserExceptionPanel exceptionPanel = null;
                     if (!viewPanel.containsPanel(BrowserExceptionPanel.NAME)) {

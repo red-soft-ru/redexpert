@@ -210,10 +210,10 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
     @Override
     protected String getEmptySqlBody() {
-        return "begin\n" +
-                "  /* Procedure Text */\n" +
-                "  suspend;\n" +
-                "end";
+        return "BEGIN\n" +
+                "  /* PROCEDURE TEXT */\n" +
+                "  SUSPEND;\n" +
+                "END";
     }
 
     @Override

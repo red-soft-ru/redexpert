@@ -21,6 +21,7 @@
 package org.executequery.repository;
 
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  * @author Takis Diakoumis
@@ -33,7 +34,7 @@ public interface KeywordRepository extends Repository {
 
     List<String> getUserDefinedSQL();
 
-    List<String> getSQLKeywords();
+    TreeSet<String> getSQLKeywords();
 
     void setUserDefinedKeywords(List<String> keywords);
 

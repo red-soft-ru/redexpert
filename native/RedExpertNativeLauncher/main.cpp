@@ -2355,10 +2355,8 @@ int main(int argc, char* argv[])
     struct dirent* ent;
     if ((dir = opendir(lib_dir.c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
-            int res = strcmp(ent->d_name, "fbplugin-impl.jar");
-            int res2 = strcmp(ent->d_name, "jaybird-full.jar");
-            int res3 = strcmp(ent->d_name, "jaybird-cryptoapi.jar");
-            if (!res || !res2 || !res3)
+            std::string conv_file(ent->d_name);
+            if (conv_file.rfind("fbplugin-impl", 0) == 0 || conv_file.rfind("fbclient", 0) == 0 || conv_file.rfind("jaybird", 0) == 0)
                 continue;
             paths.append(lib_dir + "/" + ent->d_name);
             paths.append(separator);
@@ -2383,10 +2381,7 @@ int main(int argc, char* argv[])
             WideCharToMultiByte(CP_ACP, 0, data.cFileName, -1, buffer, 260, &def_char,
                 NULL);
             std::string conv_file(buffer);
-            int res = strcmp(conv_file.c_str(), "fbplugin-impl.jar");
-            int res2 = strcmp(conv_file.c_str(), "jaybird-full.jar");
-            int res3 = strcmp(conv_file.c_str(), "jaybird-cryptoapi.jar");
-            if (!res || !res2 || !res3)
+            if (conv_file.rfind("fbplugin-impl", 0) == 0 || conv_file.rfind("fbclient", 0) == 0 || conv_file.rfind("jaybird", 0) == 0)
                 continue;
             if (conv_file != "." && conv_file != "..") {
                 paths.append(lib_dir + "\\");

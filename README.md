@@ -38,7 +38,7 @@ http://reddatabase.ru/downloads/redexpert/
 
 RedExpert requires at least a Java 8 JDK installed and maven
 
-To create a jar file:
+To build a project you need create a jar file:
 
 ```sh
 $ mvn package
@@ -58,11 +58,13 @@ itself at Help | Feedback.
 If submitting a bug, please include any exception stack traces and other relevant information so that the issue can be
 more promptly resolved (ie. database, driver, OS, Java version etc).
 
-Your email address is important (though optional). Bug reports are often received with information that needs to be
-clarified. Your name and contact details are held with the strictest confidence. Its also much easier to service any
-submission if you can be easily raeched.
+Your email address is important (though optional). Bug reports are often 
+received with information that needs to be clarified. Your name and contact 
+details are held with the strictest confidence. Its also much easier to service
+any submission if you can be easily raeched.
 
-Please do not hesitate to submit any comments, bugs or feature requests. We respond to ALL submissions.
+Please do not hesitate to submit any comments, bugs or feature requests. We
+respond to ALL submissions.
 
 ## License
 

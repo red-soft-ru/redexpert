@@ -207,6 +207,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.SYSTEM_ROLE_IMAGE));
                     break;
                 }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("user") == 0) {
+                    setIcon(icons.get(BrowserConstants.USER_IMAGE));
+                    break;
+                }
                 if (databaseObject.getMetaDataKey().compareToIgnoreCase("exception") == 0) {
                     setIcon(icons.get(BrowserConstants.EXCEPTION_IMAGE));
                     break;
@@ -235,6 +239,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.PACKAGE_IMAGE));
                     break;
                 }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system package") == 0) {
+                    setIcon(icons.get(BrowserConstants.SYSTEM_PACKAGE_IMAGE));
+                    break;
+                }
                 if (databaseObject.getMetaDataKey().compareToIgnoreCase("function") == 0) {
                     setIcon(icons.get(BrowserConstants.FUNCTIONS_IMAGE));
                     break;
@@ -248,6 +256,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 break;
 
             case NamedObject.SYSTEM_FUNCTION:
+
+            case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
+            case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
+            case NamedObject.SYSTEM_STRING_FUNCTIONS:
                 setIcon(icons.get(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE));
                 break;
 
@@ -296,6 +308,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 setIcon(icons.get(BrowserConstants.PACKAGE_IMAGE));
                 break;
 
+            case NamedObject.SYSTEM_PACKAGE:
+                setIcon(icons.get(BrowserConstants.SYSTEM_PACKAGE_IMAGE));
+                break;
+
             case NamedObject.DOMAIN:
                 setIcon(icons.get(BrowserConstants.DOMAIN_IMAGE));
                 break;
@@ -305,6 +321,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
             case NamedObject.SYSTEM_ROLE:
                 setIcon(icons.get(BrowserConstants.SYSTEM_ROLE_IMAGE));
+                break;
+
+            case NamedObject.USER:
+                setIcon(icons.get(BrowserConstants.USER_IMAGE));
                 break;
 
             case NamedObject.EXCEPTION:
@@ -376,12 +396,6 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
                 break;
 
-            case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
-            case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
-            case NamedObject.SYSTEM_STRING_FUNCTIONS:
-                setIcon(icons.get(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE));
-                break;
-
             case NamedObject.PRIMARY_KEY:
                 setIcon(icons.get(BrowserConstants.PRIMARY_COLUMNS_IMAGE));
                 break;
@@ -442,10 +456,13 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 }
 
         } else {
-
-            setForeground(selectedTextForeground);
+            if (databaseObject != null)
+                if (node.isSystem())
+                    setForeground(Color.RED);
+                else
+                    setForeground(selectedTextForeground);
         }
-        if (type == NamedObject.META_TAG && node.getChildCount() > 0)
+        if (type == NamedObject.META_TAG && node.getDatabaseObject().getObjects().size() > 0)
             setFont(treeFont.deriveFont(Font.BOLD));
         else setFont(treeFont);
         JTree.DropLocation dropLocation = tree.getDropLocation();

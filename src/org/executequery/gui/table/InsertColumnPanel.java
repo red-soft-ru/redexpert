@@ -66,6 +66,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         descriptionPanel = new SimpleSqlTextPanel();
         sqlPanel = new SimpleSqlTextPanel();
         selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), columnData, false);
+        selectTypePanel.setDisabledCollate(editing);
         autoIncrementPanel = new AutoIncrementPanel(connection, null, columnData.getAutoincrement(), table.getName(), getGenerators());
         tableLabel = new JLabel("Table:");
         tableNameField = new JTextField(table.getName());
@@ -278,6 +279,8 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             column.setTypeName(columnData.getColumnType());
             column.setColumnSize(columnData.getColumnSize());
             column.setColumnScale(columnData.getColumnScale());
+            column.setCharset(columnData.getCharset());
+            column.setCollate(columnData.getCollate());
             sb.append(alterColumn().replace(";", "^"));
             autoIncrementPanel.generateAI();
             if (columnData.isAutoincrement()) {
@@ -360,7 +363,8 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         if (column.isDataTypeChanged()) {
 
             sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()))
-                    .append(" ALTER COLUMN ").append(columnData.getFormattedColumnName()).append(" TYPE ").append(columnData.getFormattedDataType()).append(";\n");
+                    .append(" ALTER COLUMN ").append(columnData.getFormattedColumnName()).append(" TYPE ").append(columnData.getFormattedDataType());
+            sb.append(";\n");
         }
 
         if (column.isRequiredChanged()) {

@@ -27,6 +27,7 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
+import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.table.NumberCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.util.FileUtils;
@@ -95,9 +96,9 @@ public abstract class TableDefinitionPanel extends JPanel
     /**
      * The cell editor for the datatype column
      */
-    protected DataTypeSelectionTableCell dataTypeCell;
+    protected ComboBoxCellEditor dataTypeCell;
 
-    protected DomainSelectionTableCell domainCell;
+    protected ComboBoxCellEditor domainCell;
 
     /**
      * The <code>Vector</code> of <code>ColumnData</code> objects
@@ -304,11 +305,11 @@ public abstract class TableDefinitionPanel extends JPanel
             tcm.getColumn(SIZE_COLUMN).setCellEditor(szEditor);
             tcm.getColumn(SCALE_COLUMN).setCellEditor(scEditor);
             tcm.getColumn(SUBTYPE_COLUMN).setCellEditor(stEditor);
-            domainCell = new DomainSelectionTableCell();
-            tcm.getColumn(DOMAIN_COLUMN).setCellRenderer(domainCell);
+            domainCell = new ComboBoxCellEditor();
+            //tcm.getColumn(DOMAIN_COLUMN).setCellRenderer(domainCell);
             tcm.getColumn(DOMAIN_COLUMN).setCellEditor(domainCell);
-            dataTypeCell = new DataTypeSelectionTableCell();
-            tcm.getColumn(TYPE_COLUMN).setCellRenderer(dataTypeCell);
+            dataTypeCell = new ComboBoxCellEditor();
+            //tcm.getColumn(TYPE_COLUMN).setCellRenderer();
             tcm.getColumn(TYPE_COLUMN).setCellEditor(dataTypeCell);
             tcm.getColumn(ENCODING_COLUMN).setCellEditor(charsetCellEditor);
 
@@ -333,10 +334,10 @@ public abstract class TableDefinitionPanel extends JPanel
                         value = scaleEditor.getEditorValue();
                     } else if (object == subtypeEditor) {
                         value = subtypeEditor.getEditorValue();
-                    } else if (object == dataTypeCell.getComponent()) {
-                        value = dataTypeCell.getEditorValue();
-                    } else if (object == domainCell.getComponent()) {
-                        value = String.valueOf(domainCell.getEditorValue());
+                    } else if (object == dataTypeCell) {
+                        value = (String) dataTypeCell.getCellEditorValue();
+                    } else if (object == domainCell) {
+                        value = (String) domainCell.getCellEditorValue();
                     } else if (object == charsetCellEditor.getComponent()) {
                         value = String.valueOf(charsetCellEditor.getCellEditorValue());
                     }
@@ -407,6 +408,10 @@ public abstract class TableDefinitionPanel extends JPanel
 
     public void setDomains(String[] domains) {
         this.domains = domains;
+        domainCell.removeAllItems();
+        for (int i = 0; i < this.domains.length; i++) {
+            domainCell.addItem(this.domains[i]);
+        }
     }
 
     public void setGenerators(String[] generators) {
@@ -424,6 +429,11 @@ public abstract class TableDefinitionPanel extends JPanel
         this.intDataTypes = intDataTypes;
         sortTypes();
         removeDuplicates();
+        dataTypeCell.removeAllItems();
+        for (int i = 0; i < this.dataTypes.length; i++) {
+            dataTypeCell.addItem(this.dataTypes[i]);
+        }
+
     }
 
     void removeDuplicates() {
@@ -1032,7 +1042,10 @@ public abstract class TableDefinitionPanel extends JPanel
                     break;
                 case DOMAIN_COLUMN:
                     if (value.getClass() == String.class) {
+                        cd.setDatabaseConnection(dc);
                         cd.setDomain((String) value);
+                        cd.setColumnType(getStringType(cd.getDomainType()));
+                        _model.setValueAt(cd.getColumnType(), row, TYPE_COLUMN);
                     } else {
                         cd.setDatabaseConnection(dc);
                         cd.setDomain(domains[(int) value]);

@@ -113,6 +113,10 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
 
     private boolean identity;
 
+    String charset;
+
+    String collate;
+
     public DefaultDatabaseColumn() {
     }
 
@@ -473,6 +477,23 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         }
     }
 
+    @Override
+    public String getCharset() {
+        return charset;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+
+    @Override
+    public String getCollate() {
+        return collate;
+    }
+
+    public void setCollate(String collate) {
+        this.collate = collate;
+    }
 }
 
 

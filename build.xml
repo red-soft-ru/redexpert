@@ -2,13 +2,13 @@
 
 <project name="RedExpert" default="make" basedir=".">
 
-    <property name="compile.outdir" value="classes"/>
-    <property name="src.path" value="src"/>
-    <property name="dist.outdir" value="."/>
-    <property name="lib.dir" value="${dist.outdir}/lib"/>
-    <property name="docs.dir" value="${dist.outdir}/docs"/>
-    <property name="main.class" value="org.executequery.ExecuteQuery"/>
-    <property name="launch4j.dir" value="../launch4j"/>
+	<property name="compile.outdir" value="classes"/>
+	<property name="src.path" value="src"/>
+	<property name="dist.outdir" value="."/>
+	<property name="lib.dir" value="${dist.outdir}/lib"/>
+	<property name="docs.dir" value="${dist.outdir}/docs"/>
+	<property name="main.class" value="org.executequery.ExecuteQuery"/>
+	<property name="launch4j.dir" value="../launch4j"/>
 
     <path id="classpath">
         <pathelement location="${lib.dir}"/>
@@ -24,11 +24,11 @@
     <target name="init" description="Create required directories">
         <tstamp/>
         <delete dir="${compile.outdir}" quiet="true"/>
-        <mkdir dir="${compile.outdir}"/>
+		<mkdir dir="${compile.outdir}" />
 
 
-        <copy todir="${compile.outdir}">
-            <fileset dir="${src.path}" excludes="**/*.java **/*.properties"/>
+		<copy todir="${compile.outdir}">
+			<fileset dir="${src.path}" excludes="**/*.java **/*.properties" />
 		</copy>
 
 		<native2ascii encoding="UTF-8" src="${src.path}"
@@ -53,7 +53,7 @@
     <target name="make" depends="jar">
     </target>
 
-    <target name="jar" depends="compile" description="generate the jar file">
+	<target name="jar" depends="compile" description="generate the jar file">
 
         <manifestclasspath property="manifest.classpath"
                            jarfile="${dist.outdir}/RedExpert.jar">
@@ -64,12 +64,12 @@
              basedir="${compile.outdir}"
              compress="false" includes="org/**">
 
-            <manifest>
-                <attribute name="Main-Class" value="${main.class}"/>
-                <attribute name="Class-Path" value="${manifest.classpath} docs/eqhelp.jar"/>
-            </manifest>
+			<manifest>
+				<attribute name="Main-Class" value="${main.class}"/>
+				<attribute name="Class-Path" value="${manifest.classpath} docs/eqhelp.jar"/>
+			</manifest>
 
-        </jar>
+		</jar>
 
         <delete dir="${compile.outdir}" quiet="true"/>
 

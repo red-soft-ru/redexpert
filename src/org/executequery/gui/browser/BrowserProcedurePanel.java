@@ -28,10 +28,13 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.databaseobjects.impl.SystemDatabaseFunction;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
+import org.fife.ui.rsyntaxtextarea.*;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.sqlLexer.CustomTokenMakerFactory;
+import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
 import org.underworldlabs.swing.DisabledField;
 
 import javax.swing.*;
@@ -61,8 +64,8 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
     private Map cache;
 
-    JTextPane sourceTextPane;
-    JTextPane createSqlPane;
+    SQLTextArea sourceTextPane;
+    SQLTextArea createSqlPane;
 
     /**
      * the browser's control object
@@ -80,6 +83,8 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         }
 
     }
+
+
 
     private void init() {
         dependenciesPanel = new DependenciesPanel();
@@ -104,8 +109,11 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
         JPanel sourcePanel = new JPanel(new BorderLayout());
         sourcePanel.setBorder(BorderFactory.createTitledBorder(bundleString("source")));
-        sourceTextPane = new SQLTextPane();
+        sourceTextPane = new SQLTextArea();
         sourceTextPane.setEditable(false);
+
+
+        //sourceTextPane.getSyntaxScheme().getStyle(Token.LITERAL_STRING_DOUBLE_QUOTE).foreground = Color.GREEN;
         sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
 //        sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
         splitPane.setTopComponent(paramPanel);
@@ -117,7 +125,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         JPanel sqlPanel = new JPanel(new BorderLayout());
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        createSqlPane = new SQLTextPane();
+        createSqlPane = new SQLTextArea();
 
         sqlPanel.add(new JScrollPane(createSqlPane), BorderLayout.CENTER);
 
@@ -240,11 +248,14 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         try {
             procNameField.setText(executeable.getName());
             model.setValues(executeable.getParametersArray());
-            sourceTextPane.setText(executeable.getProcedureSourceCode());
+            String sourceCode = executeable.getProcedureSourceCode();
+            sourceTextPane.setDatabaseConnection(executeable.getHost().getDatabaseConnection());
+            sourceTextPane.setText(sourceCode);
 
             if (executeable instanceof DefaultDatabaseProcedure) {
                 DefaultDatabaseProcedure p = (DefaultDatabaseProcedure) executeable;
                 p.setHost(((DefaultDatabaseProcedure) executeable).getMetaTagParent().getHost());
+                createSqlPane.setDatabaseConnection(executeable.getHost().getDatabaseConnection());
                 createSqlPane.setText(p.getCreateSQLText());
             }
 

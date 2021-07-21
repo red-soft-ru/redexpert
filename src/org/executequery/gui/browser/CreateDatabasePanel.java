@@ -165,7 +165,6 @@ public class CreateDatabasePanel extends ActionPanel
 
     private void init() {
 
-
         multifactorComponents = new ArrayList<>();
         basicComponents = new ArrayList<>();
         gbh = new GridBagHelper();

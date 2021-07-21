@@ -69,7 +69,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
             e.printStackTrace();
         }
 
-        sqlText = createPanel.getSQLTextPanel();
+        sqlText = createPanel.getSQLTextAreal();
         display();
         createPanel.setFocusComponent();
     }
@@ -230,7 +230,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
             super.setSQLText();
         }
 
-        public SimpleSqlTextPanel getSQLTextPanel() {
+        public SimpleSqlTextPanel getSQLTextAreal() {
             return sqlText;
         }
 

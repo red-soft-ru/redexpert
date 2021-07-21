@@ -4,6 +4,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.Parameter;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -11,10 +12,7 @@ import org.executequery.gui.table.TableDefinitionPanel;
 
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Vector;
+import java.util.*;
 
 import static org.executequery.databaseobjects.NamedObject.*;
 import static org.executequery.gui.browser.ColumnConstraint.RESTRICT;
@@ -422,10 +420,52 @@ public final class SQLUtils {
         return cd;
     }
 
+    private static String generateName(String type, List<ColumnConstraint> keys) {
+        String name = "_<TABLE_NAME>";
+        switch (type) {
+            case org.executequery.databaseobjects.impl.ColumnConstraint.PRIMARY:
+                name = "PK" + name;
+                break;
+            case org.executequery.databaseobjects.impl.ColumnConstraint.FOREIGN:
+                name = "FK" + name;
+                break;
+            case org.executequery.databaseobjects.impl.ColumnConstraint.CHECK:
+                name = "CHECK" + name;
+                break;
+            case org.executequery.databaseobjects.impl.ColumnConstraint.UNIQUE:
+                name = "UQ" + name;
+                break;
+        }
+        name = name + "_";
+        int int_number = 0;
+        String number = "0";
+        if (keys != null)
+            for (int i = 0; i < keys.size(); i++) {
+                if (!MiscUtils.isNull(keys.get(i).getName()))
+                    if (keys.get(i).getName().contains(name)) {
+                        number = keys.get(i).getName().replace(name, "");
+                        try {
+                            if (Integer.parseInt(number) > int_number)
+                                int_number = Integer.parseInt(number);
+                        } catch (NumberFormatException e) {
+                            Log.debug(e.getMessage());
+                        }
+                    }
+
+            }
+        number = "" + (int_number + 1);
+        return name + number;
+    }
+
     public static List<ColumnConstraint> removeDuplicatesConstraints(List<ColumnConstraint> columnConstraintList) {
         List<String> cc_names = new ArrayList<>();
         List<ColumnConstraint> columnConstraints = new ArrayList<>();
         for (int i = 0, n = columnConstraintList.size(); i < n; i++) {
+            if (MiscUtils.isNull(columnConstraintList.get(i).getName()) && !MiscUtils.isNull(columnConstraintList.get(i).getTypeName())) {
+                String colType = columnConstraintList.get(i).getTypeName();
+                columnConstraintList.get(i).setName(generateName(colType, columnConstraintList));
+                columnConstraintList.get(i).setGeneratedName(true);
+            }
             int ind = cc_names.indexOf(columnConstraintList.get(i).getName());
             if (ind >= 0) {
                 ColumnConstraint cc_rep = columnConstraintList.get(i);
@@ -452,6 +492,65 @@ public final class SQLUtils {
             }
         }
         return columnConstraints;
+    }
+
+    public static String generateCreateDomain(ColumnData columnData, String name) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE DOMAIN ").append(name).append(" as ").append(columnData.getFormattedDomainDataType()).append("\n");
+        if (!MiscUtils.isNull(columnData.getDefaultValue())) {
+            sb.append(" DEFAULT ").append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
+        }
+        sb.append(columnData.isRequired() ? " NOT NULL" : "");
+        if (!MiscUtils.isNull(columnData.getCheck())) {
+            sb.append(" CHECK ( ").append(columnData.getCheck()).append(")");
+        }
+        sb.append(";");
+        if (!MiscUtils.isNull(columnData.getDescription())) {
+            sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS '")
+                    .append(columnData.getDescription()).append("';");
+        }
+        return sb.toString();
+    }
+
+    public static String generateCreateUser(DefaultDatabaseUser user) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE");
+        sb.append(" USER ").append(MiscUtils.getFormattedObject(user.getName()));
+        if (!MiscUtils.isNull(user.getFirstName()))
+            sb.append("\nFIRSTNAME '").append(user.getFirstName()).append("'");
+        if (!MiscUtils.isNull(user.getMiddleName()))
+            sb.append("\nMIDDLENAME '").append(user.getMiddleName()).append("'");
+        if (!MiscUtils.isNull(user.getLastName()))
+            sb.append("\nLASTNAME '").append(user.getLastName()).append("'");
+        if (!MiscUtils.isNull(user.getPassword())) {
+            sb.append("\nPASSWORD '").append(user.getPassword()).append("'");
+        }
+        if (user.getActive()) {
+            sb.append("\nACTIVE");
+        } else {
+            sb.append("\nINACTIVE");
+        }
+        if (user.getAdministrator()) {
+            sb.append("\nGRANT ADMIN ROLE");
+        }
+        if (!user.getPlugin().equals(""))
+            sb.append("\nUSING PLUGIN ").append(user.getPlugin());
+        Map<String, String> tags = user.getTags();
+        if (tags.size() > 0) {
+            sb.append("\nTAGS (");
+            boolean first = true;
+            for (String tag : tags.keySet()) {
+                if (!first)
+                    sb.append(", ");
+                first = false;
+                sb.append(tag).append(" = '").append(tags.get(tag)).append("'");
+            }
+            sb.append(" )");
+        }
+        sb.append(";\n");
+        if (!MiscUtils.isNull(user.getComment()))
+            sb.append("COMMENT ON USER ").append(MiscUtils.getFormattedObject(user.getName())).append(" is '").append(user.getComment()).append("'");
+        return sb.toString();
     }
 
 }

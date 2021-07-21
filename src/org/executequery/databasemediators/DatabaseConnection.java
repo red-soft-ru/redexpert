@@ -23,8 +23,8 @@ package org.executequery.databasemediators;
 import org.executequery.gui.browser.ConnectionsFolder;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Properties;
+import java.util.TreeSet;
 
 /**
  * <p>This class maintains the necessary information for each
@@ -84,6 +84,10 @@ public interface DatabaseConnection extends Serializable {
     boolean isVerifyServerCertCheck();
 
     void setVerifyServerCertCheck(boolean verifyServer);
+
+    boolean useNewAPI();
+
+    void setUseNewAPI(boolean useNewAPI);
 
     String getContainerPassword();
 
@@ -169,6 +173,10 @@ public interface DatabaseConnection extends Serializable {
 
     DatabaseConnection withSource(String source);
 
+    void setSshHost(String sshHost);
+
+    String getSshHost();
+
     void setSshPasswordStored(boolean sshPasswordStored);
 
     void setSshTunnel(boolean sshTunnel);
@@ -195,7 +203,7 @@ public interface DatabaseConnection extends Serializable {
 
     DatabaseConnection withNewId();
 
-    List<String> getListObjectsDB();
+    TreeSet<String> getListObjectsDB();
 
     int getServerVersion();
 

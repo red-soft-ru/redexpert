@@ -1376,7 +1376,8 @@ public class ScrollingTabPane extends AbstractTabPane
 
                 // check if a close button was pushed
                 Rectangle iconRect = getCloseIconRectangle(tabRects[index]);
-                if (iconRect.contains(x, y)) {
+                if ((iconRect.contains(x, y)) ||
+                        (e.getButton() == MouseEvent.BUTTON2)) {
                     removeIndex(index);
                     return;
                 }

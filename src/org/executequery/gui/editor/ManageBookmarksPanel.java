@@ -27,7 +27,7 @@ import org.executequery.event.DefaultQueryBookmarkEvent;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.DefaultActionButtonsPanel;
 import org.executequery.gui.DefaultPanelButton;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.repository.QueryBookmark;
 import org.executequery.repository.QueryBookmarks;
 import org.executequery.repository.RepositoryException;
@@ -61,7 +61,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
 
     private JList list;
 
-    private SQLTextPane textPane;
+    private SQLTextArea textPane;
 
     private MoveJListItemsStrategy moveStrategy;
 
@@ -139,7 +139,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
 
     private void createTextPane() {
 
-        textPane = new SQLTextPane();
+        textPane = new SQLTextArea();
         textPane.setPreferredSize(new Dimension(300, 350));
     }
 

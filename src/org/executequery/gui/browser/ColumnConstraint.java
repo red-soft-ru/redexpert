@@ -21,6 +21,7 @@
 package org.executequery.gui.browser;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import static org.executequery.databaseobjects.NamedObject.*;
 
@@ -37,12 +38,13 @@ import static org.executequery.databaseobjects.NamedObject.*;
  */
 
 /**
- *
  * @author Takis Diakoumis
  */
 public class ColumnConstraint implements Serializable {
 
     static final long serialVersionUID = 6696138923435851646L;
+
+    private boolean generatedName = false;
 
     /** The name of this constraint */
     private String name;
@@ -119,6 +121,7 @@ public class ColumnConstraint implements Serializable {
             setDeleteRule(RULES[RESTRICT]);
         }
     }
+
     public ColumnConstraint(boolean newConstraint, org.executequery.databaseobjects.impl.ColumnConstraint cc) {
         this.newConstraint = newConstraint;
         type = -1;
@@ -226,6 +229,9 @@ public class ColumnConstraint implements Serializable {
     }
 
     public void setName(String name) {
+        if (!Objects.equals(this.name, name)) {
+            generatedName = false;
+        }
         this.name = name;
     }
 
@@ -287,6 +293,14 @@ public class ColumnConstraint implements Serializable {
 
     public void setSorting(String sorting) {
         this.sorting = sorting;
+    }
+
+    public boolean isGeneratedName() {
+        return generatedName;
+    }
+
+    public void setGeneratedName(boolean generatedName) {
+        this.generatedName = generatedName;
     }
 }
 

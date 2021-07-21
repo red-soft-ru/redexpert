@@ -145,6 +145,14 @@ public interface DatabaseColumn extends DatabaseObjectElement {
 
     void setIdentity(boolean flag);
 
+    String getCharset();
+
+    void setCharset(String charset);
+
+    String getCollate();
+
+    void setCollate(String collate);
+
 }
 
 

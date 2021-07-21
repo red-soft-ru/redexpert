@@ -15,7 +15,16 @@
         <name>Jaybird 3 Driver</name>
         <description>Jaybird 3 Driver</description>
         <type>16</type>
-        <path>./lib/jaybird-full.jar;../lib/jaybird-full.jar</path>
+        <path>./lib/jaybird-3.jar;../lib/jaybird-3.jar;./lib/jaybird-cryptoapi-3.jar;../lib/jaybird-cryptoapi-3.jar</path>
+        <classname>org.firebirdsql.jdbc.FBDriver</classname>
+        <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
+    </databasedrivers>
+    <databasedrivers>
+        <id>2222222</id>
+        <name>Jaybird 4 Driver</name>
+        <description>Jaybird 4 Driver</description>
+        <type>16</type>
+        <path>./lib/jaybird-4.jar;./lib/jaybird-cryptoapi-4.jar;./lib/fbclient-4.jar;../lib/jaybird-4.jar;../lib/jaybird-cryptoapi-4.jar;../lib/fbclient-4.jar</path>
         <classname>org.firebirdsql.jdbc.FBDriver</classname>
         <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
     </databasedrivers>

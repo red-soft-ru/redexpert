@@ -1,5 +1,9 @@
 package org.executequery.gui.browser;
 
+import biz.redsoft.IFBBatch;
+import biz.redsoft.IFBBatchCompletionState;
+import biz.redsoft.IFBCryptoPluginInit;
+import biz.redsoft.IFBDatabaseConnection;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -8,17 +12,23 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.datasource.ConnectionManager;
+import org.executequery.datasource.DefaultDriverLoader;
+import org.executequery.datasource.DriverLoader;
+import org.executequery.datasource.PooledConnection;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.generatortestdata.FieldGenerator;
 import org.executequery.gui.browser.generatortestdata.FieldsPanel;
 import org.executequery.gui.components.OpenConnectionsComboboxPanel;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.DynamicLibraryLoader;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,9 +36,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -55,11 +63,21 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
     private NumberTextField countRecordsField;
 
+    private NumberTextField batchCountField;
+
     private LoggingOutputPanel logPanel;
 
     private JProgressBar progressBar;
 
     private JCheckBox logBox;
+
+    private JLabel batchLabel;
+
+    private JLabel batchNotAvailable;
+
+    private JCheckBox useBatchesBox;
+
+    private JCheckBox printBatchStateBox;
 
     private JCheckBox stopOnErrorBox;
 
@@ -217,62 +235,124 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                                     throw new DataSourceException("no columns selected for generation");
                                 executor.setCommitMode(false);
                                 executor.setKeepAlive(true);
-                                PreparedStatement statement = executor.getPreparedStatement(sql);
-                                boolean lastError = false;
-                                String lastMessage = "";
-                                int i = 0;
-                                for (; i < count; i++) {
-                                    if (stop)
-                                        break;
-                                    if (i % commitAfter == 0 && i != 0) {
-                                        executor.getConnection().commit();
-                                    }
-                                    progressBar.setValue(i);
-                                    for (int g = 0; g < selectedFields.size(); g++) {
-                                        Object param = selectedFields.get(g).getMethodGeneratorPanel().getTestDataObject();
-                                        statement.setObject(g + 1, param);
-                                    }
-                                    SqlStatementResult result = executor.execute(QueryTypes.INSERT, statement);
-                                    String message = sql;// + params;
-                                    if (result.isException()) {
-                                        if (outlog) {
-                                            String errorMessage = result.getSqlException().getMessage();
-                                            if (!lastError) {
-                                                if (!errorMessage.contentEquals(lastMessage)) {
-                                                    message += errorMessage;
-                                                    lastMessage = message;
-                                                    logPanel.appendError(message);
+                                if (useBatchesBox.isSelected()) {
+
+                                    int batchCount = batchCountField.getValue();
+
+                                    Connection realConnection = ConnectionManager.getTemporaryConnection(getSelectedConnection());
+                                    if (realConnection.unwrap(Connection.class).getClass().getName().contains("FBConnection")) { // Red Database or FB
+                                        Connection fbConn = realConnection.unwrap(Connection.class);
+                                        IFBDatabaseConnection db = null;
+                                        try {
+                                            db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(fbConn, "FBDatabaseConnectionImpl4");
+                                        } catch (ClassNotFoundException e) {
+                                            e.printStackTrace();
+                                        }
+                                        db.setConnection(fbConn);
+                                        IFBBatch batch = db.createBatch(sql);
+
+                                        boolean lastError = false;
+                                        String lastMessage = "";
+                                        int i = 0;
+                                        for (; i < count;) {
+
+                                            if (i + batchCount > count)
+                                                batchCount = i + batchCount - count;
+
+                                            for (int bc = 0; bc < batchCount; bc++) {
+                                                for (int g = 0; g < selectedFields.size(); g++) {
+                                                    Object param = selectedFields.get(g).getMethodGeneratorPanel().getTestDataObject();
+                                                    String typeName = selectedFields.get(g).getColumn().getTypeName();
+                                                    if (typeName.contains("BLOB")) {
+                                                        if (((byte[]) param).length == 0)
+                                                            param = new byte[1];
+                                                        batch.addBlob(g + 1, (byte[]) param);
+                                                    } else {
+                                                        batch.setObject(g + 1, param);
+                                                    }
                                                 }
-                                                logPanel.appendError("failed from " + i);
-                                                lastError = true;
+                                                batch.addBatch();
+                                            }
+
+                                            IFBBatchCompletionState execute = batch.execute();
+                                            if (printBatchStateBox.isSelected())
+                                                logPanel.append(execute.printAllStates());
+
+                                            if (stop)
+                                                break;
+                                            if (i % commitAfter == 0 && i != 0) {
+                                                batch.commit();
+                                                batch.startTransaction();
+                                            }
+                                            i += batchCount;
+                                            progressBar.setValue(i);
+                                        }
+
+                                        batch.commit();
+                                        logPanel.append("Execution time: " + (System.currentTimeMillis() - startTime) + " ms");
+                                        GUIUtilities.displayInformationMessage("Batch execution completed. See log panel to details.");
+                                    }
+                                } else {
+                                    PreparedStatement statement = executor.getPreparedStatement(sql);
+                                    boolean lastError = false;
+                                    String lastMessage = "";
+                                    int i = 0;
+                                    for (; i < count; i++) {
+                                        if (stop)
+                                            break;
+                                        if (i % commitAfter == 0 && i != 0) {
+                                            executor.getConnection().commit();
+                                        }
+                                        progressBar.setValue(i);
+                                        for (int g = 0; g < selectedFields.size(); g++) {
+                                            Object param = selectedFields.get(g).getMethodGeneratorPanel().getTestDataObject();
+                                            statement.setObject(g + 1, param);
+                                        }
+                                        SqlStatementResult result = executor.execute(QueryTypes.INSERT, statement);
+                                        String message = sql;// + params;
+                                        if (result.isException()) {
+                                            if (outlog) {
+                                                String errorMessage = result.getSqlException().getMessage();
+                                                if (!lastError) {
+                                                    if (!errorMessage.contentEquals(lastMessage)) {
+                                                        message += errorMessage;
+                                                        lastMessage = message;
+                                                        logPanel.appendError(message);
+                                                    }
+                                                    logPanel.appendError("failed from " + i);
+                                                    lastError = true;
+                                                }
+                                            }
+                                            countError++;
+                                            if (stopOnErrorBox.isSelected()) {
+                                                GUIUtilities.displayExceptionErrorDialog(result.getSqlException().getMessage(), result.getSqlException());
+                                                break;
+                                            }
+                                        } else {
+                                            countSuccess++;
+                                            if (outlog && lastError) {
+                                                logPanel.appendError("to " + (i - 1));
+                                                lastError = false;
                                             }
                                         }
-                                        countError++;
-                                        if (stopOnErrorBox.isSelected()) {
-                                            GUIUtilities.displayExceptionErrorDialog(result.getSqlException().getMessage(), result.getSqlException());
-                                            break;
-                                        }
-                                    } else {
-                                        countSuccess++;
-                                        if (outlog && lastError) {
-                                            logPanel.appendError("to " + (i - 1));
-                                            lastError = false;
-                                        }
                                     }
+                                    if (outlog && lastError) {
+                                        logPanel.appendError("to " + (i - 1));
+                                    }
+                                    executor.getConnection().commit();
+                                    logPanel.append("Execution time: " + (System.currentTimeMillis() - startTime) + " ms");
                                 }
-                                if (outlog && lastError) {
-                                    logPanel.appendError("to " + (i - 1));
+
+                                if (!useBatchesBox.isSelected()) {
+                                    GUIUtilities.displayInformationMessage(countSuccess + " records added successfully\n" + countError + " queries failed");
+                                    logPanel.append(countSuccess + " records added successfully\n" + countError + " queries failed");
                                 }
-                                executor.getConnection().commit();
-                                logPanel.append("Execution time: " + (System.currentTimeMillis() - startTime) + " ms");
                             } catch (Exception ex) {
                                 ex.printStackTrace();
                                 GUIUtilities.displayExceptionErrorDialog("generation error: " + ex.getMessage(), ex);
                             } finally {
                                 executor.releaseResources();
                             }
-                            GUIUtilities.displayInformationMessage(countSuccess + " records added successfully\n" + countError + " queries failed");
-                            logPanel.append(countSuccess + " records added successfully\n" + countError + " queries failed");
                             progressBar.setValue(0);
                         }
                         return null;
@@ -291,11 +371,16 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         countRecordsField = new NumberTextField(false);
         countRecordsField.setText("100");
 
+        batchCountField = new NumberTextField(false);
+        batchCountField.setText("100");
+
         commitAfterField = new NumberTextField(false);
         commitAfterField.setText("500");
 
 
         logBox = new JCheckBox(bundles("OutputLog"));
+        useBatchesBox = new JCheckBox(bundles("useBatchesBox"));
+        printBatchStateBox = new JCheckBox(bundles("printBatchStateBox"));
         stopOnErrorBox = new JCheckBox(bundles("StopOnError"));
 
         tableBoxModel.setElements(fillTables());
@@ -312,7 +397,6 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         gbh.setDefaults(gbc);
 
         topPanel.setLayout(new GridBagLayout());
-
 
         topPanel.add(comboboxPanel, gbh.defaults().spanX().fillHorizontally().setInsets(0, 0, 0, 0).get());
 
@@ -334,6 +418,21 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         topPanel.add(logBox, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 
         topPanel.add(stopOnErrorBox, gbh.defaults().nextCol().setLabelDefault().get());
+
+        topPanel.add(useBatchesBox, gbh.defaults().nextCol().setLabelDefault().get());
+
+        batchLabel = new JLabel(bundles("BatchCount"));
+
+        batchNotAvailable = new JLabel();
+        batchNotAvailable.setVisible(false);
+
+        topPanel.add(batchLabel, gbh.defaults().nextCol().setLabelDefault().anchorEast().anchorCenter().get());
+
+        topPanel.add(batchCountField, gbh.defaults().nextCol().setIpad(40, 0).get());
+
+        topPanel.add(printBatchStateBox, gbh.defaults().nextCol().spanX().get());
+
+        topPanel.add(batchNotAvailable, gbh.defaults().nextRowFirstCol().spanX().get());
 
         topPanel.add(progressBar, gbh.defaults().nextRowFirstCol().spanX().get());
 
@@ -359,7 +458,30 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
         splitPane.setResizeWeight(0.7);
 
-
+        Driver driver = new DefaultDriverLoader().load(executor.getDatabaseConnection().getJDBCDriver());
+        if (driver.getMajorVersion() < 4 || !executor.getDatabaseConnection().useNewAPI() ||
+                executor.getDatabaseConnection().getServerVersion() < 4) {
+            useBatchesBox.setEnabled(false);
+            batchLabel.setEnabled(false);
+            batchCountField.setEnabled(false);
+            printBatchStateBox.setEnabled(false);
+            StringBuilder sb = new StringBuilder();
+            if (driver.getMajorVersion() < 4)
+                sb.append(bundles("UnsupportedDriver"));
+            if (!executor.getDatabaseConnection().useNewAPI()) {
+                if (sb.length() > 0)
+                    sb.append(". ");
+                sb.append(bundles("OOAPINotUsed"));
+            }
+            if (executor.getDatabaseConnection().getServerVersion() < 4) {
+                if (sb.length() > 0)
+                    sb.append(". ");
+                sb.append(bundles("UnsupportedServer"));
+            }
+            batchNotAvailable.setVisible(true);
+            batchNotAvailable.setForeground(Color.RED);
+            batchNotAvailable.setText(sb.toString());
+        }
     }
 
 }

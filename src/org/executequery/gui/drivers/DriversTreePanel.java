@@ -693,6 +693,8 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
                 } else if (source == properties) {
                     reloadView = true;
                     setSelectedDriver(hover);
+                    checkDriversPanel();
+                    getDriverPanelFromBrowser();
                 } else if (source == addNewDriver) {
                     newDriver();
                 }

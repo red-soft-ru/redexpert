@@ -73,7 +73,7 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
             int defaultEndPoint = 256;
             int endPoint = Math.min(charArray.length, defaultEndPoint);
-            if (charset == null || charset.equals(CreateTableSQLSyntax.NONE))
+            /*if (charset == null || charset.equals(CreateTableSQLSyntax.NONE))
                 for (int i = 0; i < endPoint; i++) {
                     if (!CharUtils.isAscii(charArray[i])) {
 
@@ -81,7 +81,7 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
                         break;
                     }
 
-                }
+                }*/
 
             } else {
 

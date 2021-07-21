@@ -22,7 +22,7 @@ package org.executequery.gui.editor;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.sql.SqlMessages;
 import org.underworldlabs.swing.ActionPanel;
 import org.underworldlabs.swing.LinkButton;
@@ -51,7 +51,7 @@ class QueryTextPopup extends JPanel
     /**
      * the text pane area
      */
-    private SQLTextPane textPane;
+    private SQLTextArea textPane;
 
     /**
      * the tabe panel owner
@@ -128,7 +128,7 @@ class QueryTextPopup extends JPanel
         Color shadow = UIUtils.getColour("controlDkShadow", Color.DARK_GRAY);
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, shadow));
 
-        textPane = new SQLTextPane();
+        textPane = new SQLTextArea();
         textPane.setBackground(UIUtils.getColour("executequery.QueryEditor.queryTooltipBackground", new Color(255, 255, 235)));
         textPane.setEditable(false);
 

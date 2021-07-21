@@ -27,6 +27,7 @@ import org.underworldlabs.util.MiscUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author takisd
@@ -57,6 +58,10 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      * an original copy of this object
      */
     private DatabaseTableColumn copy;
+
+    private String charset;
+
+    private String collate;
 
     //private transient static final StatementGenerator STATEMENT_GENERATOR = new LiquibaseStatementGenerator();
 
@@ -103,6 +108,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setDomain(column.getDomain());
         setColumnSubtype(column.getColumnSubtype());
         setIdentity(column.isIdentity());
+        setCharset(column.getCharset());
+        setCollate(column.getCollate());
     }
 
     @Override
@@ -309,7 +316,9 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
         return (!copy.getTypeName().equalsIgnoreCase(getTypeName()))
                 || (copy.getColumnSize() != getColumnSize())
-                || (copy.getColumnScale() != getColumnScale());
+                || (copy.getColumnScale() != getColumnScale()
+                || (!Objects.equals(copy.getCharset(), getCharset()))
+        );
     }
 
     public boolean isComputedChanged() {
@@ -688,6 +697,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         destination.setComputedSource(source.getComputedSource());
         destination.setColumnDescription(source.getColumnDescription());
         destination.setDomain(source.getDomain());
+        destination.setCharset(source.getCharset());
+        destination.setCollate(source.getCollate());
     }
 
     /**
@@ -703,6 +714,22 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     public DatabaseColumn getOriginalColumn() {
 
         return copy;
+    }
+
+    public String getCharset() {
+        return charset;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+
+    public String getCollate() {
+        return collate;
+    }
+
+    public void setCollate(String collate) {
+        this.collate = collate;
     }
 
     public boolean hasConstraints() {

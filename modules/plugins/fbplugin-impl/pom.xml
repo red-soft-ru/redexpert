@@ -16,16 +16,12 @@
   <repositories>
     <repository>
       <id>maven-central</id>
-        <url>http://repo1.maven.org/maven2</url>
+      <url>https://repo1.maven.org/maven2</url>
     </repository>
-      <repository>
-          <snapshots>
-              <enabled>false</enabled>
-          </snapshots>
-          <id>bintray-red-soft-ru-releases</id>
-          <name>bintray</name>
-          <url>https://dl.bintray.com/red-soft-ru/releases</url>
-      </repository>
+    <repository>
+      <id>nexus-red-soft-ru-jaybird</id>
+      <url>http://nexus.red-soft.ru/repository/jaybird</url>
+    </repository>
   </repositories>
 
   <!-- project dependencies -->
@@ -38,12 +34,17 @@
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>jaybird-jdk18</artifactId>
-        <version>3.0.15</version>
+      <version>4.0.7</version>
     </dependency>
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>jaybird-cryptoapi-jdk18</artifactId>
-        <version>3.0.15</version>
+      <version>4.0.7</version>
+    </dependency>
+    <dependency>
+      <groupId>ru.red-soft.jdbc</groupId>
+      <artifactId>fbclient</artifactId>
+      <version>4.0.7</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
@@ -91,16 +92,39 @@
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
                   <artifactId>jaybird-jdk18</artifactId>
+                  <version>3.0.27</version>
                   <type>jar</type>
                   <outputDirectory>../../../lib</outputDirectory>
-                  <destFileName>jaybird-full.jar</destFileName>
+                  <destFileName>jaybird-3.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>ru.red-soft.jdbc</groupId>
+                  <artifactId>jaybird-jdk18</artifactId>
+                  <type>jar</type>
+                  <outputDirectory>../../../lib</outputDirectory>
+                  <destFileName>jaybird-4.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>ru.red-soft.jdbc</groupId>
+                  <artifactId>jaybird-cryptoapi-jdk18</artifactId>
+                  <version>3.0.27</version>
+                  <type>jar</type>
+                  <outputDirectory>../../../lib</outputDirectory>
+                  <destFileName>jaybird-cryptoapi-3.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
                   <artifactId>jaybird-cryptoapi-jdk18</artifactId>
                   <type>jar</type>
                   <outputDirectory>../../../lib</outputDirectory>
-                  <destFileName>jaybird-cryptoapi.jar</destFileName>
+                  <destFileName>jaybird-cryptoapi-4.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>ru.red-soft.jdbc</groupId>
+                  <artifactId>fbclient</artifactId>
+                  <type>jar</type>
+                  <outputDirectory>../../../lib</outputDirectory>
+                  <destFileName>fbclient-4.jar</destFileName>
                 </artifactItem>
               </artifactItems>
             </configuration>
@@ -115,16 +139,39 @@
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
                   <artifactId>jaybird-jdk18</artifactId>
+                  <version>3.0.27</version>
                   <type>jar</type>
                   <outputDirectory>../../redexpert/target/lib</outputDirectory>
-                  <destFileName>jaybird-full.jar</destFileName>
+                  <destFileName>jaybird-3.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>ru.red-soft.jdbc</groupId>
+                  <artifactId>jaybird-jdk18</artifactId>
+                  <type>jar</type>
+                  <outputDirectory>../../redexpert/target/lib</outputDirectory>
+                  <destFileName>jaybird-4.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>ru.red-soft.jdbc</groupId>
+                  <artifactId>jaybird-cryptoapi-jdk18</artifactId>
+                  <version>3.0.27</version>
+                  <type>jar</type>
+                  <outputDirectory>../../redexpert/target/lib</outputDirectory>
+                  <destFileName>jaybird-cryptoapi-3.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
                   <artifactId>jaybird-cryptoapi-jdk18</artifactId>
                   <type>jar</type>
                   <outputDirectory>../../redexpert/target/lib</outputDirectory>
-                  <destFileName>jaybird-cryptoapi.jar</destFileName>
+                  <destFileName>jaybird-cryptoapi-4.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>ru.red-soft.jdbc</groupId>
+                  <artifactId>fbclient</artifactId>
+                  <type>jar</type>
+                  <outputDirectory>../../redexpert/target/lib</outputDirectory>
+                  <destFileName>fbclient-4.jar</destFileName>
                 </artifactItem>
               </artifactItems>
             </configuration>

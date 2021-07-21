@@ -273,9 +273,13 @@ public class BrowserConstants {
 
     public static final String PACKAGE_IMAGE = "package16.png";
 
+    public static final String SYSTEM_PACKAGE_IMAGE = "system_package16.png";
+
     public static final String ROLE_IMAGE = "user_manager_16.png";
 
     public static final String SYSTEM_ROLE_IMAGE = "system_role_16.png";
+
+    public static final String USER_IMAGE = "User16.png";
 
 
     public static final String GRANT_IMAGE = "grant.png";
@@ -318,8 +322,10 @@ public class BrowserConstants {
             PACKAGE_IMAGE,
             ROLE_IMAGE,
             SYSTEM_ROLE_IMAGE,
+            USER_IMAGE,
             DB_TRIGGER_IMAGE,
-            DDL_TRIGGER_IMAGE
+            DDL_TRIGGER_IMAGE,
+            SYSTEM_PACKAGE_IMAGE
     };
 
     private static String bundleString(String key) {

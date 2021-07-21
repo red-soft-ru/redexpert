@@ -164,6 +164,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 || type == SYSTEM_TRIGGER
                 || type == SYSTEM_ROLE
                 || type == GLOBAL_TEMPORARY
+                || type == SYSTEM_PACKAGE
         )
             if (typeTree != TreePanel.DEFAULT) {
                 return new ArrayList<NamedObject>();
@@ -190,6 +191,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadDomains();
 
+            } else if (isUser()) {
+                if (typeTree != TreePanel.DEFAULT)
+                    return new ArrayList<>();
+                children = loadUsers();
             } else if (isSystemRole()) {
                 if (typeTree != TreePanel.DEFAULT)
                     return new ArrayList<>();
@@ -231,6 +236,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadPackages();
 
+            } else if (isSystemPackage()) {
+                children = loadSystemPackages();
             } else {
 
                 String className = getHost().getDatabaseConnection().getJDBCDriver().getClassName();
@@ -371,6 +378,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
+    private List<NamedObject> loadUsers()
+            throws DataSourceException {
+
+        return getUsers();
+
+    }
+
     private List<NamedObject> loadRoles()
             throws DataSourceException {
 
@@ -431,6 +445,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             throws DataSourceException {
 
         return getPackages();
+
+    }
+
+    private List<NamedObject> loadSystemPackages()
+            throws DataSourceException {
+
+        return getSystemPackages();
 
     }
 
@@ -553,6 +574,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         return hasDomains();
                     }
 
+                } else if (isUser()) {
+
+                    if (type == USER) {
+                        return hasUsers();
+                    }
+
                 } else if (isRole()) {
 
                     if (type == ROLE) {
@@ -656,6 +683,17 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private boolean isSystemRole() {
         int type = getSubType();
         return type == SYSTEM_ROLE;
+    }
+
+    private boolean isSystemPackage() {
+        int type = getSubType();
+        return type == SYSTEM_PACKAGE;
+    }
+
+    private boolean isUser() {
+
+        int type = getSubType();
+        return type == USER;
     }
 
     private boolean isRole() {
@@ -860,6 +898,29 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         try {
 
             rs = getSystemRolesResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
+        }
+    }
+
+    private boolean hasUsers() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getUsersResultSet();
             return rs != null && rs.next();
 
         } catch (SQLException e) {
@@ -1380,6 +1441,36 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
+    private List<NamedObject> getUsers() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getUsersResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseUser user = new DefaultDatabaseUser(this, rs.getObject(1).toString());
+                list.add(user);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
+        }
+    }
+
     private List<NamedObject> getRoles() throws DataSourceException {
 
         ResultSet rs = null;
@@ -1617,6 +1708,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
+
     private List<NamedObject> getDDLTriggers() throws DataSourceException {
 
         ResultSet rs = null;
@@ -1661,6 +1753,37 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 DefaultDatabasePackage databasePackage = new DefaultDatabasePackage(this, rs.getString(1).trim());
 
                 list.add(databasePackage);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
+        }
+    }
+
+    private List<NamedObject> getSystemPackages() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSystemPackagesResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabasePackage aPackage = new DefaultDatabasePackage(this, rs.getObject(1).toString());
+                aPackage.setSystemFlag(true);
+                list.add(aPackage);
             }
 
             return list;
@@ -1805,6 +1928,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return getResultSetFromQuery(query);
     }
 
+    private ResultSet getSystemPackagesResultSet() throws SQLException {
+        String query = "SELECT RDB$PACKAGE_NAME FROM RDB$PACKAGES WHERE RDB$SYSTEM_FLAG!=0 AND RDB$SYSTEM_FLAG IS NOT NULL ORDER BY 1";
+        return getResultSetFromQuery(query);
+    }
+
+    private ResultSet getUsersResultSet() throws SQLException {
+        String query = "SELECT SEC$USER_NAME FROM SEC$USERS ORDER BY 1";
+        return getResultSetFromQuery(query);
+    }
+
     private ResultSet getRolesResultSet() throws SQLException {
         String query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG=0 OR RDB$SYSTEM_FLAG IS NULL ORDER BY 1";
         return getResultSetFromQuery(query);
@@ -1897,7 +2030,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getPackagesResultSet() throws SQLException {
         String query = "select p.rdb$package_name \n" +
                 "from rdb$packages p\n" +
-                "order by p.rdb$package_name";
+                "WHERE RDB$SYSTEM_FLAG=0 OR RDB$SYSTEM_FLAG IS NULL ORDER BY 1";
         if (typeTree == TreePanel.DEPENDED_ON)
             query = getDependOnQuery(19);
         else if (typeTree == TreePanel.DEPENDENT)

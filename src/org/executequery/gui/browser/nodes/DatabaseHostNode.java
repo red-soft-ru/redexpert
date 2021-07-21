@@ -21,9 +21,13 @@
 package org.executequery.gui.browser.nodes;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.databaseobjects.DatabaseSchema;
+import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.tree.TreeNode;
 import java.util.ArrayList;
@@ -40,7 +44,9 @@ public class DatabaseHostNode extends DatabaseObjectNode {
     /**
      * the direct descendants of this object
      */
-    private List<DatabaseObjectNode> children;
+    private List<DatabaseObjectNode> visibleChildren;
+    private List<DatabaseObjectNode> allChildren;
+
 
     /**
      * indicates whether to show only default catalogs/schemas
@@ -139,9 +145,9 @@ public class DatabaseHostNode extends DatabaseObjectNode {
      */
     public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
 
-        if (children != null) {
+        if (visibleChildren != null) {
 
-            return children;
+            return visibleChildren;
         }
 
         // check for catalogs - then schemas - then meta tags
@@ -149,24 +155,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
 
         // check for catalogs
         List<?> _children = host.getCatalogs();
-        if (_children == null || _children.isEmpty()) {
 
-            // otherwise get schemas
-            _children = host.getSchemas();
-
-        } else { // have catalogs so add these
-
-            int count = _children.size();
-            children = new ArrayList<DatabaseObjectNode>(count);
-
-            for (int i = 0; i < count; i++) {
-
-                DatabaseCatalog catalog = (DatabaseCatalog) _children.get(i);
-                children.add(new DatabaseCatalogNode(catalog));
-            }
-
-            return children;
-        }
 
         // check we have schemas
         if (_children == null || _children.isEmpty()) {
@@ -177,33 +166,42 @@ public class DatabaseHostNode extends DatabaseObjectNode {
         } else {  // have schemas so return these
 
             int count = _children.size();
-            children = new ArrayList<DatabaseObjectNode>(count);
+            visibleChildren = new ArrayList<DatabaseObjectNode>();
 
             for (int i = 0; i < count; i++) {
 
                 DatabaseSchema schema = (DatabaseSchema) _children.get(i);
-                children.add(new DatabaseSchemaNode(schema));
+                visibleChildren.add(new DatabaseSchemaNode(schema));
             }
 
-            return children;
+            return visibleChildren;
         }
 
         // check we have meta tags
         if (_children != null && !_children.isEmpty()) {
 
             int count = _children.size();
-            children = new ArrayList<DatabaseObjectNode>(count);
-
+            visibleChildren = new ArrayList<>();
+            allChildren = new ArrayList<>();
             for (int i = 0; i < count; i++) {
 
                 DatabaseMetaTag metaTag = (DatabaseMetaTag) _children.get(i);
-                children.add(new DatabaseObjectNode(metaTag));
+                DatabaseObjectNode metaTagNode = new DatabaseObjectNode(metaTag);
+                allChildren.add(metaTagNode);
+                if (!metaTag.getMetaDataKey().contains("SYSTEM") || SystemProperties.getBooleanProperty("user", "browser.show.system.objects"))
+                    visibleChildren.add(new DatabaseObjectNode(metaTag));
             }
 
-            return children;
+            return visibleChildren;
         }
 
         return null;
+    }
+
+    public List<DatabaseObjectNode> getAllChildren() {
+        if (allChildren == null)
+            getChildObjects();
+        return allChildren;
     }
 
     /**
@@ -211,7 +209,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
      */
     public void reset() {
         super.reset();
-        children = null;
+        visibleChildren = null;
     }
 
     public boolean isDefaultCatalogsAndSchemasOnly() {
@@ -228,7 +226,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
 
     private void ensureValidCatalogsAndSchemasVisible() {
 
-        if (children == null) {
+        if (visibleChildren == null) {
 
             return;
         }
@@ -248,7 +246,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
 
         int index = 0;
 
-        for (DatabaseObjectNode node : children) {
+        for (DatabaseObjectNode node : visibleChildren) {
 
             if (!childExists(node)) {
 
@@ -269,7 +267,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
 
         int index = 0;
 
-        for (DatabaseObjectNode node : children) {
+        for (DatabaseObjectNode node : visibleChildren) {
 
             if (isDatabaseSourceNode(node)) {
 
@@ -300,7 +298,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
 
     private boolean hasDefaults() {
 
-        for (DatabaseObjectNode node : children) {
+        for (DatabaseObjectNode node : visibleChildren) {
 
             if (isDatabaseSourceNode(node)) {
 

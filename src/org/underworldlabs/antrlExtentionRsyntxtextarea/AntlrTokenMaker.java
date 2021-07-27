@@ -69,25 +69,30 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
 
         try {
             while (true) {
-                org.antlr.v4.runtime.Token at = lexer.nextToken();
-                at = convertToken(at);
-                setLanguageIndex(lexer._mode);
-                if (at.getType() == CommonToken.EOF) {
-                    if (multilineTokenEnd == null) {
-                        addNullToken();
+                try {
+                    org.antlr.v4.runtime.Token at = lexer.nextToken();
+                    at = convertToken(at);
+                    setLanguageIndex(lexer._mode);
+                    if (at.getType() == CommonToken.EOF) {
+                        if (multilineTokenEnd == null) {
+                            addNullToken();
+                        }
+                        break;
+                    } else {
+                        addToken(
+                                text,
+                                currentArrayOffset,
+                                currentDocumentOffset,
+                                multilineTokenStart,
+                                multilineTokenEnd,
+                                at);
+                        // update from current token
+                        currentArrayOffset = currentToken.textOffset + currentToken.textCount;
+                        currentDocumentOffset = currentToken.getEndOffset();
                     }
-                    break;
-                } else {
-                    addToken(
-                            text,
-                            currentArrayOffset,
-                            currentDocumentOffset,
-                            multilineTokenStart,
-                            multilineTokenEnd,
-                            at);
-                    // update from current token
-                    currentArrayOffset = currentToken.textOffset + currentToken.textCount;
-                    currentDocumentOffset = currentToken.getEndOffset();
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
                 }
             }
         } catch (AlwaysThrowingErrorListener.AntlrException exceptionInstanceNotNeeded) {

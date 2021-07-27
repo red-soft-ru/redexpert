@@ -47,6 +47,8 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
                 return Token.PREPROCESSOR;
             case SqlLexer.NUMERIC_LITERAL:
                 return Token.LITERAL_NUMBER_DECIMAL_INT;
+            case SqlLexer.ERROR_CHAR:
+                return Token.ERROR_IDENTIFIER;
             default:
                 /*if (dbobjects != null&&currentToken!=null) {
                         String x = currentToken.getLexeme();

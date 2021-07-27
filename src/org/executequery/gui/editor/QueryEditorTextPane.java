@@ -757,7 +757,7 @@ public class QueryEditorTextPane extends SQLTextArea
 
     public void setSQLKeywords(boolean reset) {
 
-        document.setSQLKeywords(keywords().getSQLKeywords());
+       resetAutocomplete();
     }
 
 

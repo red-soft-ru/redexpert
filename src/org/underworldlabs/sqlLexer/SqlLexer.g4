@@ -1,5 +1,4 @@
 lexer  grammar SqlLexer;
-
  DATATYPE_SQL
  : K_BIGINT
  | K_BLOB
@@ -989,6 +988,7 @@ BIND_PARAMETER
  IDENTIFIER '.' IDENTIFIER
  ;
 
+
  IDENTIFIER
   : '"' (~'"' | '""')* '"'
   | '`' (~'`' | '``')* '`'
@@ -1048,3 +1048,4 @@ fragment W : [wW];
 fragment X : [xX];
 fragment Y : [yY];
 fragment Z : [zZ];
+ERROR_CHAR:.;

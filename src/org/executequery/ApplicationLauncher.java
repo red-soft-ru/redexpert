@@ -520,16 +520,16 @@ public class ApplicationLauncher {
         Class<?> xtoolkit = toolkit.getClass();
         if (xtoolkit.getName().equals("sun.awt.X11.XToolkit")) {
 
-            try {
+            /*try {
 
                 Field awtAppClassName = xtoolkit.getDeclaredField("awtAppClassName");
                 awtAppClassName.setAccessible(true);
                 awtAppClassName.set(null, ExecuteQueryFrame.TITLE);
 
-            } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e) {
+            } catch (Exception e) {
 
                 e.printStackTrace();
-            }
+            }*/
         }
 
         /*

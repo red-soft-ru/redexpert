@@ -171,6 +171,10 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     deleteObject.setVisible(false);
                     createObject.setVisible(false);
                     editObject.setVisible(false);
+                    moveToFolder.setVisible(true);
+                    duplicate.setVisible(true);
+                    addNewConnection.setVisible(true);
+                    dataBaseInformation.setVisible(true);
                 } else {
 
                     label = node.toString();

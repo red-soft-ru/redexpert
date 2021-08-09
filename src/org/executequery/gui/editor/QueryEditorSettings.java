@@ -187,18 +187,22 @@ public class QueryEditorSettings {
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.dbobjects");
         createStyle(TokenTypes.DBOBJECT, color, fontStyle, null);
 
-        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.braces");
+        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.datatype");
+        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.datatype");
+        createStyle(TokenTypes.DATATYPE, color, fontStyle, null);
+
+        /*color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.braces");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.braces");
         createStyle(TokenTypes.BRACKET, color, fontStyle, null);
 
-        /* bracket highlights */
+
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.braces.match1");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.braces.match1");
         createStyle(TokenTypes.BRACKET_HIGHLIGHT, Color.BLACK, fontStyle, color);
 
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.braces.error");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.braces.error");
-        createStyle(TokenTypes.BRACKET_HIGHLIGHT_ERR, Color.BLACK, fontStyle, color);
+        createStyle(TokenTypes.BRACKET_HIGHLIGHT_ERR, Color.BLACK, fontStyle, color);*/
     }
 
     private static void createStyle(int type, Color fcolor,

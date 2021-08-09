@@ -456,8 +456,11 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 }
 
         } else {
-
-            setForeground(selectedTextForeground);
+            if (databaseObject != null)
+                if (node.isSystem())
+                    setForeground(Color.RED);
+                else
+                    setForeground(selectedTextForeground);
         }
         if (type == NamedObject.META_TAG && node.getDatabaseObject().getObjects().size() > 0)
             setFont(treeFont.deriveFont(Font.BOLD));

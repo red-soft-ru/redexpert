@@ -50,7 +50,7 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     /**
      * The SQL text pane
      */
-    protected SQLTextPane textPane;
+    protected SQLTextArea textPane;
 
     /**
      * Whether test is to be appended
@@ -95,7 +95,7 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
         setBorder(BorderFactory.createTitledBorder("SQL"));
 
-        textPane = new SQLTextPane();
+        textPane = new SQLTextArea();
         textPane.setFont(new Font("monospaced", Font.PLAIN, 12));
 //        textPane.setBackground(null);
         textPane.setDragEnabled(true);
@@ -241,7 +241,7 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
         return "RedXpert - SQL Editor";
     }
 
-    public SQLTextPane getTextPane() {
+    public SQLTextArea getTextPane() {
         return textPane;
     }
 

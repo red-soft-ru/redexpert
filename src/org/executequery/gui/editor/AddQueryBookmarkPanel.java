@@ -24,7 +24,7 @@ import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.event.DefaultQueryBookmarkEvent;
 import org.executequery.gui.*;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.repository.QueryBookmark;
 import org.executequery.repository.QueryBookmarks;
 import org.executequery.repository.RepositoryException;
@@ -46,7 +46,7 @@ public class AddQueryBookmarkPanel extends DefaultActionButtonsPanel
 
     private JComboBox nameField;
 
-    private SQLTextPane textPane;
+    private SQLTextArea textPane;
 
     private final ActionContainer parent;
 
@@ -64,7 +64,7 @@ public class AddQueryBookmarkPanel extends DefaultActionButtonsPanel
 
         createNameComboBox();
 
-        textPane = new SQLTextPane();
+        textPane = new SQLTextArea();
         textPane.setText(queryText);
 
         JPanel panel = new JPanel(new GridBagLayout());

@@ -284,14 +284,8 @@ public class PropertiesEditorSyntax extends AbstractPropertiesBasePanel
                 case 6:
                     return "Operator";
                 case 7:
-                    return "Braces";
-                case 8:
                     return "Literal";
-                case 9:
-                    return "Braces match";
-                case 10:
-                    return "Braces error";
-                case 11:
+                case 8:
                     return "Objects DB";
                 default:
                     return "Text";

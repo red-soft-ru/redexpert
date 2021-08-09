@@ -30,7 +30,7 @@ import org.executequery.databaseobjects.impl.ColumnInformation;
 import org.executequery.databaseobjects.impl.ColumnInformationFactory;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.editor.QueryEditor;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
@@ -147,7 +147,7 @@ public class AutoCompleteSelectionsFactory {
     }
 
     public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteSchema,
-                      SQLTextPane queryEditor) {
+                      SQLTextArea queryEditor) {
 
         tables = new ArrayList<AutoCompleteListItem>();
 

@@ -5,7 +5,7 @@ import org.executequery.databaseobjects.FunctionArgument;
 import org.executequery.databaseobjects.impl.DefaultDatabaseFunction;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -38,8 +38,8 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
 
     private Map cache;
 
-    JTextPane sourceTextPane;
-    JTextPane createSqlPane;
+    SQLTextArea sourceTextPane;
+    SQLTextArea createSqlPane;
 
     /**
      * the browser's control object
@@ -81,7 +81,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
 
         JPanel sourcePanel = new JPanel(new BorderLayout());
         sourcePanel.setBorder(BorderFactory.createTitledBorder(bundleString("Source")));
-        sourceTextPane = new SQLTextPane();
+        sourceTextPane = new SQLTextArea();
         sourceTextPane.setEditable(false);
         sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
 //        sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
@@ -94,7 +94,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         JPanel sqlPanel = new JPanel(new BorderLayout());
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        createSqlPane = new SQLTextPane();
+        createSqlPane = new SQLTextArea();
 
         sqlPanel.add(new JScrollPane(createSqlPane), BorderLayout.CENTER);
 

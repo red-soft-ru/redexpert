@@ -4,7 +4,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
 
@@ -41,7 +41,7 @@ public class AutoIncrementPanel extends JPanel {
     JTextField createGeneratorName;
     JComboBox comboGenerators;
     JScrollPane triggerScroll;
-    SQLTextPane triggerSQLPane;
+    SQLTextArea triggerSQLPane;
     Autoincrement ai;
     String tableName;
     ActionContainer parent;
@@ -103,7 +103,7 @@ public class AutoIncrementPanel extends JPanel {
         identityStartValue = new NumberTextField(0);
         createGeneratorName = new JTextField();
         comboGenerators = new JComboBox(generators);
-        triggerSQLPane = new SQLTextPane();
+        triggerSQLPane = new SQLTextArea();
         triggerScroll = new JScrollPane(triggerSQLPane);
 
         createGeneratorName.addKeyListener(new KeyListener() {

@@ -5,7 +5,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.datatype.SelectTypePanel;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
@@ -24,9 +24,9 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     private JScrollPane scrollCheck;
     private JScrollPane scrollDescription;
     private JScrollPane scrollSQL;
-    private SQLTextPane defaultValueTextPane;
-    private SQLTextPane checkTextPane;
-    private SQLTextPane sqlTextPane;
+    private SQLTextArea defaultValueTextPane;
+    private SQLTextArea checkTextPane;
+    private SQLTextArea sqlTextPane;
     private JTextPane descriptionTextPane;
     private JPanel defaultValuePanel;
     private JPanel checkPanel;
@@ -54,9 +54,9 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         scrollCheck = new JScrollPane();
         scrollDescription = new JScrollPane();
         scrollSQL = new JScrollPane();
-        defaultValueTextPane = new SQLTextPane();
-        checkTextPane = new SQLTextPane();
-        sqlTextPane = new SQLTextPane();
+        defaultValueTextPane = new SQLTextArea();
+        checkTextPane = new SQLTextArea();
+        sqlTextPane = new SQLTextArea();
         descriptionTextPane = new JTextPane();
 
         scrollDefaultValue.setViewportView(defaultValueTextPane);

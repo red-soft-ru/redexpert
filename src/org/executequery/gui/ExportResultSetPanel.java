@@ -34,6 +34,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.event.*;
 import org.executequery.gui.importexport.ImportExportDataException;
 import org.executequery.gui.importexport.ResultSetDelimitedFileWriter;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
@@ -222,7 +223,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         // register as a keyword and connection listener
         EventMediator.registerListener(this);
 
-        JTextPane textPane = sqlText.getTextPane();
+        SQLTextArea textPane = sqlText.getTextPane();
         ActionMap actionMap = textPane.getActionMap();
 
         String actionKey = "executeQueryAction";

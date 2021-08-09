@@ -22,10 +22,10 @@ import java.util.Vector;
 
 public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
-    public static final String CREATE_TITLE = "Create Trigger";
+    public static final String CREATE_TITLE = Bundles.get(CreateTriggerPanel.class,"CreateTrigger");
 
     //common components for table and database trigger
-    public static final String EDIT_TITLE = "Edit Trigger";
+    public static final String EDIT_TITLE = Bundles.get(CreateTriggerPanel.class,"EditTrigger");
 
     private static final String TRIGGER = Bundles.get(CreateTriggerPanel.class, "table-trigger");
     private static final String DB_TRIGGER = Bundles.get(CreateTriggerPanel.class, "database-trigger");

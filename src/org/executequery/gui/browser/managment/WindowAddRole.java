@@ -2,9 +2,11 @@ package org.executequery.gui.browser.managment;
 
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.UserManagerPanel;
+import org.executequery.gui.databaseobjects.CreateViewPanel;
 import org.executequery.localization.Bundles;
 
 import javax.swing.*;
@@ -16,7 +18,7 @@ import java.awt.event.ActionEvent;
  */
 public class WindowAddRole extends JPanel {
 
-    public static final String TITLE = "Create role";
+    public static final String TITLE = Bundles.get(WindowAddRole.class,"CreateRole");
     DatabaseConnection dc;
     ActionContainer parent;
     JTextField nameTextField;
@@ -65,7 +67,7 @@ public class WindowAddRole extends JPanel {
 
     private void okAction() {
         String query = "CREATE ROLE " + nameTextField.getText();
-        ExecuteQueryDialog eqd = new ExecuteQueryDialog("Create Role", query, dc, true);
+        ExecuteQueryDialog eqd = new ExecuteQueryDialog(Bundles.get(WindowAddRole.class,"CreateRole"), query, dc, true);
         eqd.display();
         if (eqd.getCommit())
             parent.finished();

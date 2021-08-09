@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.editor.autocomplete.DefaultAutoCompletePopupProvider;
 import org.executequery.gui.text.SQLTextPane;
 import org.executequery.gui.text.SimpleSqlTextPanel;
@@ -19,8 +20,9 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusListener, KeyListener {
-    public static final String TITLE = "Create View";
-    public static final String EDIT_TITLE = "Alter View";
+
+    public static final String TITLE = Bundles.get(CreateViewPanel.class,"CreateView");
+    public static final String EDIT_TITLE = Bundles.get(CreateViewPanel.class,"AlterView");
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
     private SimpleSqlTextPanel sqlTextPanel;
     private JButton formatSqlButton;
@@ -29,6 +31,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     String notChangedText;
     private DefaultAutoCompletePopupProvider autoCompletePopup;
     private DefaultDatabaseView view;
+
 
     public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);

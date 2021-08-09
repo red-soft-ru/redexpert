@@ -355,6 +355,16 @@ public class ResultSetTable extends JTable implements StandardTable {
         return getValueAt(row, col);
     }
 
+    public int[] getSelectedCellsRowsIndexes() {
+
+        return getSelectedRows();
+    }
+
+    public int[] getSelectedCellsColumnsIndexes() {
+
+        return getSelectedColumns();
+    }
+
     public TableModel selectedCellsAsTableModel() {
 
         int cols = getSelectedColumnCount();

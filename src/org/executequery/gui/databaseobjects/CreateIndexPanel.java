@@ -8,6 +8,7 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
 
@@ -24,8 +25,8 @@ import java.util.Vector;
 
 public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
-    public static final String CREATE_TITLE = "Create Index";
-    public static final String ALTER_TITLE = "Alter Index";
+    public static final String CREATE_TITLE = Bundles.get(CreateIndexPanel.class,"CreateIndex");
+    public static final String ALTER_TITLE = Bundles.get(CreateIndexPanel.class,"AlterIndex");
     private JComboBox tableName;
     private JList<CheckListItem> fields;
     private JPanel fieldsPanel;

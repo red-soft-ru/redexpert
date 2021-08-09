@@ -24,6 +24,8 @@ import org.executequery.Constants;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.databaseobjects.impl.TableColumnConstraint;
+import org.executequery.gui.browser.BrowserConstants;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 
 import java.util.ArrayList;
@@ -36,17 +38,17 @@ import java.util.List;
  */
 public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
 
-    protected String[] header = {"",
+    private static final String[] header = Bundles.get(ColumnConstraintTableModel.class, new String[]{
+            "",
             "Name",
             "Type",
-            "Table Column",
-            "Reference Schema",
-            "Reference Table",
-            "Reference Column",
+            "TableColumn",
+            "ReferenceSchema",
+            "ReferenceTable",
+            "ReferenceColumn",
             "Check",
-            "Update rule",
-            "Delete rule"
-    };
+            "UpdateRule",
+            "DeleteRule"});
 
     /**
      * the constraints list

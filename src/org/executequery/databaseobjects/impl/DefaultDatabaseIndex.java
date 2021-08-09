@@ -2,6 +2,8 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.gui.editor.ResultSetTablePopupMenu;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 
 import javax.swing.event.TableModelListener;
@@ -76,14 +78,19 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
             return 3;
         }
 
+        private String bundleString(String key){
+
+            return Bundles.get(IndexColumnsModel.class,key);
+        }
+
         public String getColumnName(int columnIndex) {
             switch (columnIndex) {
                 case 0:
-                    return "Field Name";
+                    return bundleString("FieldName");
                 case 1:
-                    return "Statistic (selectivity)";
+                    return bundleString("StatisticSelectivity");
                 case 2:
-                    return "Field Position";
+                    return bundleString("FieldPosition");
             }
             return "";
         }

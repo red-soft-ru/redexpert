@@ -18,6 +18,7 @@ import org.executequery.event.KeywordListener;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
@@ -46,9 +47,9 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     /**
      * This objects title as an internal frame
      */
-    public static final String TITLE = "Create Procedure";
+    public static final String TITLE = Bundles.get(CreateProcedurePanel.class,"CreateProcedure");
 
-    public static final String EDIT_TITLE = "Edit Procedure";
+    public static final String EDIT_TITLE = Bundles.get(CreateProcedurePanel.class,"AlterProcedure");
 
     /**
      * This objects icon as an internal frame

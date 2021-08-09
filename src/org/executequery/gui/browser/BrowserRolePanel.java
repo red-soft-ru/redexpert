@@ -12,6 +12,7 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.GUIUtils;
@@ -71,7 +72,19 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
     private boolean enableGrant;
     private Vector<String> roles;
     private String grants = "SUDIXR";
-    private String[] headers = {"Object", "Select", "Update", "Delete", "Insert", "Execute", "References"};
+    private String[] headers = Bundles.get(BrowserRolePanel.class, new String[]{
+            "Object",
+            "Select",
+            "Update",
+            "Delete",
+            "Insert",
+            "Execute",
+            "References"});
+    private String[] comboBoxItems = Bundles.get(BrowserRolePanel.class, new String[]{
+            "AllObjects",
+            "Tables",
+            "Procedures",
+            "Views"});
     private Vector<String> relationNames;
     private Vector<String> relationTypes;
     private Icon grantIcon, noGrantIcon, adminIcon;
@@ -136,7 +149,7 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
         rolesListCombo.addActionListener(e -> rolesListAction());
         rolesListCombo.setToolTipText("List of roles");
         progressBar.setMinimum(0);
-        showSysTablesCheckBox.setText("Show system tables");
+        showSysTablesCheckBox.setText(Bundles.get(BrowserRolePanel.class,"ShowSystemTables"));
         showSysTablesCheckBox.addActionListener(e -> showSysTablesAction());
 
         grantAllToAllButton.setIcon(GUIUtilities.loadIcon("grant_all.png"));
@@ -151,7 +164,7 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
         revokeAllFromAllButton.addActionListener(e -> revokeAllFromAll());
         revokeAllFromAllButton.setToolTipText("REVOKE ALL FROM ALL");
 
-        objectBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{"All objects", "Tables", "Procedures", "Views"}));
+        objectBox.setModel(new javax.swing.DefaultComboBoxModel<>(comboBoxItems));
         objectBox.addActionListener(e -> objectBoxAction());
         objectBox.setToolTipText("Select type of objects");
 

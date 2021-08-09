@@ -20,9 +20,11 @@
 
 package org.executequery.gui.browser;
 
+import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.gui.editor.ResultSetTableContainer;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.table.TableSorter;
 
 import javax.swing.*;
@@ -44,8 +46,13 @@ public class DatabaseObjectMetaDataPanel extends JPanel implements ResultSetTabl
         table.setModel(new TableSorter(tableModel, table.getTableHeader()));
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        setBorder(BorderFactory.createTitledBorder("Database object Meta Data"));
+        setBorder(BorderFactory.createTitledBorder(bundleString("DatabaseObjectMetaData")));
         add(new JScrollPane(table), BorderLayout.CENTER);
+    }
+
+    private String bundleString(String key){
+
+        return Bundles.get(DatabaseObjectMetaDataPanel.class,key);
     }
 
     public void setData(ResultSet resultSet) {

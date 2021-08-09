@@ -8,6 +8,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.procedure.UDFDefinitionPanel;
 import org.executequery.gui.text.SimpleTextArea;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
@@ -23,8 +24,8 @@ import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_VALUE;
 
 public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
-    public static final String CREATE_TITLE = "Create UDF";
-    public static final String EDIT_TITLE = "Edit UDF";
+    public static final String CREATE_TITLE = Bundles.get(CreateUDFPanel.class,"CreateUDF");
+    public static final String EDIT_TITLE = Bundles.get(CreateUDFPanel.class,"EditUDF");
     SimpleTextArea descriptionPanel;
     JTextField nameModuleField;
     JTextField entryPointField;

@@ -22,6 +22,7 @@ package org.executequery.gui.databaseobjects;
 
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.gui.browser.AbstractDatabaseTableViewModel;
+import org.executequery.localization.Bundles;
 
 import java.util.List;
 
@@ -30,8 +31,12 @@ import java.util.List;
  */
 public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
 
-  private static final String[] header = {"", "Index Name",
-          "Indexed Columns", "Expression", "Unique"};
+  private static final String[] header = Bundles.get(TableColumnIndexTableModel.class, new String[]{
+          "",
+          "IndexName",
+          "IndexedColumn",
+          "Expression",
+          "Unique"});
     /**
      * the table indexed columns
      */

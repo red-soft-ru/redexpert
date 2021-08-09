@@ -142,7 +142,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
             setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
 
         } else {
-            imageLabel = new JLabel("Unsupported format", JLabel.CENTER);
+            imageLabel = new JLabel(bundleString("UnsupportedFormat"), JLabel.CENTER);
             imageScroll.setViewportView(imageLabel);
 
             imagePanel.add(imageScroll, BorderLayout.CENTER);
@@ -155,9 +155,9 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
         tabbedPane = new JTabbedPane();
         tabbedPane.addChangeListener(this);
-        tabbedPane.addTab("Text", textPanel);
-        tabbedPane.addTab("Image", imagePanel);
-        tabbedPane.addTab("Binary", binaryPanel);
+        tabbedPane.addTab(bundleString("Text"), textPanel);
+        tabbedPane.addTab(bundleString("Image"), imagePanel);
+        tabbedPane.addTab(bundleString("Binary"), binaryPanel);
 
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setPreferredSize(new Dimension(400, 300));
@@ -177,7 +177,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         JButton okButton = new JButton("OK");
         okButton.setActionCommand("ok");
 
-        openButton = new JButton("Open File");
+        openButton = new JButton(bundleString("OpenFile"));
         openButton.setActionCommand("open");
 
         JButton nullButton = new JButton("NULL");
@@ -206,8 +206,8 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append("LOB Data Type: ").append(recordDataItem.getLobRecordItemName());
-        sb.append("   Total Size: ").append(recordDataItem.length()).append(" bytes");
+        sb.append(bundleString("LOBDataType") + " ").append(recordDataItem.getLobRecordItemName());
+        sb.append("   " + bundleString("TotalSize") + " ").append(recordDataItem.length()).append(" " + bundleString("Bytes"));
 
         return sb.toString();
     }

@@ -50,11 +50,6 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
             case SqlLexer.ERROR_CHAR:
                 return Token.ERROR_IDENTIFIER;
             default:
-                /*if (dbobjects != null&&currentToken!=null) {
-                        String x = currentToken.getLexeme();
-                        if (dbobjects.contains(x))
-                            return Token.FUNCTION;
-                }*/
                 return Token.IDENTIFIER;
         }
     }

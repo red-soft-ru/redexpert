@@ -262,7 +262,10 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         queryEditorTextComponent().requestFocus();
     }
 
+    boolean addingQuote=false;
+
     private String getWordEndingAt(int position) {
+        addingQuote = false;
 
         String text = sqlTextPane.getText();
 
@@ -292,8 +295,10 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
             start = 0;
         }
 
-        if (chars[start] == '"')
+        if (chars[start] == '"') {
             start++;
+            addingQuote = true;
+        }
         if (start >= end)
             return "";
 
@@ -756,7 +761,8 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
             int caretPosition = textComponent.getCaretPosition();
             String wordAtCursor = getWordEndingAt(sqlTextPane.getCaretPosition());
-
+            if(addingQuote)
+                selectedValue +="\"";
             if (StringUtils.isNotBlank(wordAtCursor)) {
 
                 int wordAtCursorLength = wordAtCursor.length();

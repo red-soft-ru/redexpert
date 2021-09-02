@@ -260,6 +260,7 @@ public class QueryEditor extends DefaultTabView
                     else idConnection = oldConnection.getId();
                     QueryEditorHistory.changedConnectionEditor(idConnection, getSelectedConnection().getId(), scriptFile.getAbsolutePath());
                     oldConnection = getSelectedConnection();
+                    editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
                 }
             }
         });

@@ -383,8 +383,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     Object[] getTables() {
         try {
             Vector<String> tables = new Vector<>();
-            String query = "Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS" +
-                    " WHERE RDB$RELATION_TYPE != 1 order by 1";
+            String query = "Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS order by 1";
             ResultSet rs = sender.getResultSet(query).getResultSet();
             while (rs.next()) {
                 tables.add(rs.getString(1));

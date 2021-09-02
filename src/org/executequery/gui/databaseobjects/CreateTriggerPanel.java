@@ -375,7 +375,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     private void changeTypeTrigger() {
         databaseTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DB_TRIGGER);
-        ddlTableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER);
+        ddlTableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER||typeTriggerCombo.getSelectedItem() == TRIGGER);
         tableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == TRIGGER);
         scrolDDL.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER);
     }

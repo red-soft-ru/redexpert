@@ -1499,6 +1499,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         case NamedObject.FUNCTION:
                         case NamedObject.SYSTEM_VIEW:
                         case NamedObject.PACKAGE:
+                        case NamedObject.SYSTEM_PACKAGE:
                         case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
                         case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
                         case NamedObject.SYSTEM_STRING_FUNCTIONS:

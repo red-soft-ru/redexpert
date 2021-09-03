@@ -20,7 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.gui.editor.ResultSetTableContainer;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
@@ -31,6 +30,7 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DatabaseObjectMetaDataPanel extends JPanel implements ResultSetTableContainer {
 
@@ -42,7 +42,11 @@ public class DatabaseObjectMetaDataPanel extends JPanel implements ResultSetTabl
         super(new BorderLayout());
 
         table = new ResultSetTable();
-        tableModel = new ResultSetTableModel(false);
+        try {
+            tableModel = new ResultSetTableModel(false);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         table.setModel(new TableSorter(tableModel, table.getTableHeader()));
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
@@ -57,7 +61,11 @@ public class DatabaseObjectMetaDataPanel extends JPanel implements ResultSetTabl
 
     public void setData(ResultSet resultSet) {
 
-        tableModel.createTable(resultSet);
+        try {
+            tableModel.createTable(resultSet);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public JTable getTable() {

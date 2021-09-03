@@ -96,22 +96,22 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     boolean isTable;
 
-    public ResultSetTableModel(boolean isTable) {
+    public ResultSetTableModel(boolean isTable) throws SQLException {
 
         this(null, -1, isTable);
     }
 
-    public ResultSetTableModel(int maxRecords, boolean isTable) {
+    public ResultSetTableModel(int maxRecords, boolean isTable) throws SQLException {
 
         this(null, maxRecords, isTable);
     }
 
-    public ResultSetTableModel(ResultSet resultSet, int maxRecords, boolean isTable) {
+    public ResultSetTableModel(ResultSet resultSet, int maxRecords, boolean isTable) throws SQLException {
 
         this(resultSet, maxRecords, null, isTable);
     }
 
-    public ResultSetTableModel(ResultSet resultSet, int maxRecords, String query, boolean isTable) {
+    public ResultSetTableModel(ResultSet resultSet, int maxRecords, String query, boolean isTable) throws SQLException {
 
         this.maxRecords = maxRecords;
         this.query = query;
@@ -160,7 +160,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         return query;
     }
 
-    public synchronized void createTable(ResultSet resultSet) {
+    public synchronized void createTable(ResultSet resultSet) throws SQLException {
         createTable(resultSet, null);
     }
 
@@ -171,7 +171,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     int count;
     private int recordCount;
 
-    public synchronized void createTable(ResultSet resultSet, List<ColumnData> columnDataList) {
+    public synchronized void createTable(ResultSet resultSet, List<ColumnData> columnDataList) throws SQLException {
 
         if (!isOpenAndValid(resultSet)) {
 
@@ -213,8 +213,9 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             // TODO make sure that all resources are released
             if (!e.getMessage().equalsIgnoreCase("Look at a column before testing null.")
                     && !e.getMessage().equalsIgnoreCase("Result set is already closed.")) {
-                System.err.println("SQL error populating table model at: " + e.getMessage());
-                Log.debug("Table model error - " + e.getMessage(), e);
+                throw e;
+                //System.err.println("SQL error populating table model at: " + e.getMessage());
+                //Log.debug("Table model error - " + e.getMessage(), e);
             }
 
         } catch (Exception e) {

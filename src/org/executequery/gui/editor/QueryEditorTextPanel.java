@@ -36,6 +36,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -440,7 +441,7 @@ public class QueryEditorTextPanel extends JPanel {
      * @param rset  the table results to display
      * @param query the executed query of the result set
      */
-    public void setResultSet(ResultSet rset, String query) {
+    public void setResultSet(ResultSet rset, String query) throws SQLException {
 
         queryEditor.setResultSet(rset, query);
     }

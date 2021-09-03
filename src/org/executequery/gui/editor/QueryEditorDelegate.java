@@ -30,6 +30,7 @@ import org.executequery.util.ThreadUtils;
 import org.underworldlabs.sqlParser.SqlParser;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Vector;
 
 public class QueryEditorDelegate implements QueryDelegate {
@@ -257,7 +258,7 @@ public class QueryEditorDelegate implements QueryDelegate {
         queryEditor.setResultText(result, type);
     }
 
-    public void setResultSet(ResultSet rs, String query) {
+    public void setResultSet(ResultSet rs, String query) throws SQLException {
 
         queryEditor.setResultSet(rs, query);
     }

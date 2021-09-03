@@ -27,6 +27,7 @@ import org.underworldlabs.swing.plaf.UIUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Displays data types from the current connection.
@@ -47,7 +48,11 @@ public class DataTypesPanel extends ConnectionPropertiesPanel {
 
     private void init() {
 
-        model = new ResultSetTableModel(false);
+        try {
+            model = new ResultSetTableModel(false);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         JTable table = new SortableColumnsTable(model);
 
         setTableProperties(table);
@@ -86,7 +91,11 @@ public class DataTypesPanel extends ConnectionPropertiesPanel {
     public void setDataTypes(ResultSet rs) {
 
         addScrollPane();
-        model.createTable(rs);
+        try {
+            model.createTable(rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         model.fireTableStructureChanged();
 
         validate();

@@ -64,7 +64,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.Timer;
 import java.util.*;
@@ -620,9 +623,13 @@ public class TableDataTab extends JPanel
     private void initialiseModel() {
 
         if (tableModel == null) {
+            try {
+                tableModel = new ResultSetTableModel(SystemProperties.getIntProperty("user", "browser.max.records"), true);
+                tableModel.setHoldMetaData(false);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
 
-            tableModel = new ResultSetTableModel(SystemProperties.getIntProperty("user", "browser.max.records"), true);
-            tableModel.setHoldMetaData(false);
         }
 
     }

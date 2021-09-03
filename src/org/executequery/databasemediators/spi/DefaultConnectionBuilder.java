@@ -64,6 +64,7 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
     public void cancel() {
 
         cancelled = true;
+        databaseConnection.setConnected(false);
         worker.interrupt();
     }
 

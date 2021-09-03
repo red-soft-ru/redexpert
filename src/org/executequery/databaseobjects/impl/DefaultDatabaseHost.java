@@ -111,7 +111,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             countFinishedMetaTags = 0;
 
             boolean connected = connectionMediator().connect(getDatabaseConnection());
-            try {
+            if(connected)
+                try {
                 getDatabaseConnection().setServerVersion(connection.getMetaData().getDatabaseMajorVersion());
             } catch (SQLException e) {
                 e.printStackTrace();

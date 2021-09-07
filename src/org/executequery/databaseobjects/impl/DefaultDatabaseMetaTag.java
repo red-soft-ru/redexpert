@@ -806,7 +806,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         ResultSet rs = null;
         try {
 
-            rs = getSystemDatabaseTriggerResultSet();
+            rs = getDatabaseTriggerResultSet();
             return rs != null && rs.next();
 
         } catch (SQLException e) {
@@ -878,7 +878,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             case PACKAGE: return getPackagesResultSet();
             case TRIGGER: return getTriggersResultSet();
             case DDL_TRIGGER: return getDDLTriggerResultSet();
-            case DATABASE_TRIGGER: return getSystemDatabaseTriggerResultSet();
+            case DATABASE_TRIGGER: return getDatabaseTriggerResultSet();
             case SEQUENCE: return getSequencesResultSet();
             case EXCEPTION: return getExceptionResultSet();
             case UDF: return getUDFResultSet();
@@ -1319,16 +1319,18 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemIndexResultSet() throws SQLException {
         String query = "select " +
-                "RDB$INDEX_NAME\n " +
-                "FROM RDB$INDICES \n" +
-                "where RDB$SYSTEM_FLAG = 1 \n" +
-                "ORDER BY RDB$INDEX_NAME";
+                "I.RDB$INDEX_NAME,\n" +
+                "I.RDB$INDEX_INACTIVE\n" +
+                "FROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
+                "where I.RDB$SYSTEM_FLAG = 1 \n" +
+                "ORDER BY I.RDB$INDEX_NAME";
 
         return getResultSetFromQuery(query);
     }
 
     private ResultSet getSystemTriggerResultSet() throws SQLException {
-        String query = "select t.rdb$trigger_name\n" +
+        String query = "select t.rdb$trigger_name,\n" +
+                "t.rdb$trigger_inactive\n" +
                 "from rdb$triggers t\n" +
                 "where t.rdb$system_flag <> 0" +
                 "order by t.rdb$trigger_name";
@@ -1345,7 +1347,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return getResultSetFromQuery(query);
     }
 
-    private ResultSet getSystemDatabaseTriggerResultSet() throws SQLException {
+    private ResultSet getDatabaseTriggerResultSet() throws SQLException {
         String query = "select t.rdb$trigger_name,\n" +
                 "t.rdb$trigger_inactive\n" +
                 "from rdb$triggers t\n" +

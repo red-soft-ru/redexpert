@@ -957,7 +957,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                    }
                    if(namedObject!=null) {
-                       if (type > SYSTEM_DOMAIN)
+                       if (type >= SYSTEM_DOMAIN)
                            namedObject.setSystemFlag(true);
                        namedObject.setHost(getHost());
                        list.add(namedObject);

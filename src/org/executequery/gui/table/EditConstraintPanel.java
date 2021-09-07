@@ -217,6 +217,8 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         }
         tabbedPane.add(typePanel, 0);
         tabbedPane.setTitleAt(0, "Constraint");
+        if(generate_name)
+            nameField.setText(generateName());
         updateUI();
     }
 
@@ -370,9 +372,9 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         if (editing)
             sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName().trim())).append(" DROP CONSTRAINT ").append(getFormattedName()).append("^");
         sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName().trim())).append("\n");
-        if (generate_name) {
+        /*if (generate_name) {
             cc.setName(generateName());
-        }
+        }*/
         sb.append("ADD  ");
         sb.append(SQLUtils.generateDefinitionColumnConstraint(cc).trim().substring(1).trim());
         displayExecuteQueryDialog(sb.toString(), "^");

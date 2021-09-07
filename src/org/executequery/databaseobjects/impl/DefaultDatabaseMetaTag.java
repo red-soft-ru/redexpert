@@ -172,121 +172,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         if (type != SYSTEM_FUNCTION) {
 
 
-            if (isFunctionOrProcedure()) {
-
-                children = loadFunctionsOrProcedures(type);
-
-            } else if (isIndex()) {
-
-                children = loadIndices();
-
-            } else if (isTrigger()) {
-
-                children = loadTriggers();
-
-            } else if (isSequence()) {
-                children = loadSequences();
-
-            } else if (isDomain()) {
-
-                children = loadDomains();
-
-            } else if (isUser()) {
-                if (typeTree != TreePanel.DEFAULT)
-                    return new ArrayList<>();
-                children = loadUsers();
-            } else if (isSystemRole()) {
-                if (typeTree != TreePanel.DEFAULT)
-                    return new ArrayList<>();
-                children = loadSystemRoles();
-            } else if (isRole()) {
-                if (typeTree != TreePanel.DEFAULT)
-                    return new ArrayList<>();
-                children = loadRoles();
-            } else if (isException()) {
-
-                children = loadExceptions();
-
-            } else if (isUDF()) {
-                if (typeTree != TreePanel.DEFAULT)
-                    return new ArrayList<>();
-                children = loadUDFs();
-
-            } else if (isSystemDomain()) {
-
-                children = loadSystemDomains();
-
-            } else if (isSystemIndex()) {
-
-                children = loadSystemIndices();
-
-            } else if (isSystemTrigger()) {
-
-                children = loadSystemTriggers();
-
-            } else if (isSystemDatabaseTrigger()) {
-
-                children = loadSystemDatabaseTriggers();
-
-            } else if (isDDLTrigger()) {
-
-                children = loadDDLTriggers();
-
-            } else if (isPackage()) {
-
-                children = loadPackages();
-
-            } else if (isSystemPackage()) {
-                children = loadSystemPackages();
-            } else {
-
-                String className = getHost().getDatabaseConnection().getJDBCDriver().getClassName();
-                if (className.contains("FBDriver")) {
-                    // Red Database
-                    children = loadTables(getMetaDataKey());
-
-                } else {
-                    // Another database
-                    children = getHost().getTables(getCatalogName(),
-                            getSchemaName(),
-                            getMetaDataKey());
-                }
-
-                if (children != null && type == TABLE) {
-
-                    // reset as editable tables for a default
-                    // connection and meta type TABLE
-
-                    List<NamedObject> _children = new ArrayList<NamedObject>(children.size());
-                    for (NamedObject i : children) {
-                        DefaultDatabaseTable table = new DefaultDatabaseTable((DatabaseObject) i);
-                        _children.add(table);
-                    }
-
-                    children = _children;
-
-                } else if (type == VIEW) {
-
-                    List<NamedObject> _children = new ArrayList<NamedObject>(children.size());
-                    for (NamedObject i : children) {
-
-                        _children.add(new DefaultDatabaseView((DatabaseObject) i));
-                    }
-
-                    children = _children;
-
-                } else if (type == GLOBAL_TEMPORARY) {
-                    List<NamedObject> _children = new ArrayList<NamedObject>(children.size());
-                    for (NamedObject i : children) {
-
-                        _children.add(new DefaultTemporaryDatabaseTable((DatabaseObject) i));
-                    }
-
-                    children = _children;
-
-                }
-
-            }
+            children = loadObjects(type);
 
         } else {
 
@@ -314,167 +200,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
-    private List<NamedObject> loadFunctionsOrProcedures(int type)
-            throws DataSourceException {
+    private AbstractDatabaseObject getTable(ResultSet rs,String metaDataKey,int type)throws SQLException {
 
-        try {
 
-            if (StringUtils.equalsIgnoreCase(getMetaDataKey(), procedureTerm())) {
-
-                // check what the term is - proc or function
-                if (type == FUNCTION) {
-
-                    return getFunctions();
-
-                } else if (type == PROCEDURE) {
-
-                    return getProcedures();
-                }
-
-            } else if (type == FUNCTION) { // Red Database 3.0
-                return getFunctions();
-            }
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-
-        return new ArrayList<NamedObject>(0);
-    }
-
-    private List<NamedObject> loadIndices()
-            throws DataSourceException {
-
-        return getIndices();
-
-    }
-
-    private List<NamedObject> loadTriggers()
-            throws DataSourceException {
-
-        return getTriggers();
-
-    }
-
-    private List<NamedObject> loadSequences()
-            throws DataSourceException {
-
-        return getSequences();
-
-    }
-
-    private List<NamedObject> loadDomains()
-            throws DataSourceException {
-
-        return getDomains();
-
-    }
-
-    private List<NamedObject> loadSystemRoles()
-            throws DataSourceException {
-
-        return getSystemRoles();
-
-    }
-
-    private List<NamedObject> loadUsers()
-            throws DataSourceException {
-
-        return getUsers();
-
-    }
-
-    private List<NamedObject> loadRoles()
-            throws DataSourceException {
-
-        return getRoles();
-
-    }
-
-    private List<NamedObject> loadExceptions()
-            throws DataSourceException {
-
-        return getExceptions();
-
-    }
-
-    private List<NamedObject> loadUDFs()
-            throws DataSourceException {
-
-        return getUDFs();
-
-    }
-
-    private List<NamedObject> loadSystemDomains()
-            throws DataSourceException {
-
-        return getSystemDomains();
-
-    }
-
-    private List<NamedObject> loadSystemIndices()
-            throws DataSourceException {
-
-        return getSystemIndices();
-
-    }
-
-    private List<NamedObject> loadSystemTriggers()
-            throws DataSourceException {
-
-        return getSystemTriggers();
-
-    }
-
-    private List<NamedObject> loadDDLTriggers()
-            throws DataSourceException {
-
-        return getDDLTriggers();
-
-    }
-
-    private List<NamedObject> loadSystemDatabaseTriggers()
-            throws DataSourceException {
-
-        return getSystemDatabaseTriggers();
-
-    }
-
-    private List<NamedObject> loadPackages()
-            throws DataSourceException {
-
-        return getPackages();
-
-    }
-
-    private List<NamedObject> loadSystemPackages()
-            throws DataSourceException {
-
-        return getSystemPackages();
-
-    }
-
-    private List<NamedObject> loadTables(String metaDataKey)
-            throws DataSourceException {
-
-        return getTables(metaDataKey);
-
-    }
-
-    private List<NamedObject> getTables(String metaDataKey) {
-        ResultSet rs = null;
-        try {
-
-            List<NamedObject> tables = new ArrayList<NamedObject>();
-            String tableName;
-
-            rs = getTablesResultSet(metaDataKey);
-
-
-            while (rs.next()) {
-
-                tableName = rs.getString(1);
+                String tableName = rs.getString(1);
                 DefaultDatabaseObject object = new DefaultDatabaseObject(this.getHost(), metaDataKey);
                 object.setName(tableName);
                 if (typeTree == DEFAULT) {
@@ -489,24 +218,15 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 }
                 if (metaDataKey.contains("SYSTEM"))
                     object.setSystemFlag(true);
-                tables.add(object);
+                switch (type)
+                {
+                    case TABLE: return new DefaultDatabaseTable(object);
+                    case VIEW: return new DefaultDatabaseView(object);
+                    case GLOBAL_TEMPORARY: return new DefaultTemporaryDatabaseTable(object);
+                    default:return object;
+                }
 
-            }
-            return tables;
 
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-
-        }
     }
 
     public boolean hasChildObjects() throws DataSourceException {
@@ -1150,27 +870,98 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
-    /**
-     * Loads the database functions.
-     */
-    private List<NamedObject> getFunctions() throws DataSourceException {
+    private ResultSet getObjectsResultSet(int type) throws SQLException {
+        switch (type) {
+            case DOMAIN: return getDomainsResultSet();
+            case PROCEDURE: return getProceduresResultSet();
+            case FUNCTION: return getFunctionsResultSet();
+            case PACKAGE: return getPackagesResultSet();
+            case TRIGGER: return getTriggersResultSet();
+            case DDL_TRIGGER: return getDDLTriggerResultSet();
+            case DATABASE_TRIGGER: return getSystemDatabaseTriggerResultSet();
+            case SEQUENCE: return getSequencesResultSet();
+            case EXCEPTION: return getExceptionResultSet();
+            case UDF: return getUDFResultSet();
+            case USER: return getUsersResultSet();
+            case ROLE: return getRolesResultSet();
+            case INDEX: return getIndicesResultSet();
+            case SYSTEM_DOMAIN: return getSystemDomainResultSet();
+            case SYSTEM_TRIGGER: return getSystemTriggerResultSet();
+            case SYSTEM_ROLE: return getSystemRolesResultSet();
+            case SYSTEM_INDEX: return getSystemIndexResultSet();
+            case SYSTEM_PACKAGE: return  getSystemPackagesResultSet();
+            default:
+                return  getTablesResultSet(getMetaDataKey());
+        }
+    }
+
+    private List<NamedObject> loadObjects(int type) throws DataSourceException {
 
         ResultSet rs = null;
         try {
 
-            rs = getFunctionsResultSet();
             List<NamedObject> list = new ArrayList<NamedObject>();
+            rs = getObjectsResultSet(type);
             if (rs != null) { // informix returns null rs
 
                 while (rs.next()) {
-                    if (typeTree == TreePanel.DEFAULT) {
-                        DefaultDatabaseFunction function = new DefaultDatabaseFunction(this, rs.getString(3));
-                        function.setRemarks(rs.getString(4));
-                        list.add(function);
-                    } else {
-                        DefaultDatabaseFunction function = new DefaultDatabaseFunction(this, rs.getString(1));
-                        list.add(function);
-                    }
+                    if(!getHost().getDatabaseConnection().isConnected())
+                        return new ArrayList<>();
+                   AbstractDatabaseObject namedObject = null;
+                   switch(type)
+                   {
+                       case DOMAIN:
+                       case SYSTEM_DOMAIN:
+                           namedObject = getDomain(rs);
+                       break;
+                       case TABLE:
+                       case GLOBAL_TEMPORARY:
+                       case VIEW:
+                       case SYSTEM_TABLE:
+                       case SYSTEM_VIEW:
+                           namedObject = getTable(rs,getMetaDataKey(),type);
+                           break;
+                       case PROCEDURE:namedObject = getProcedure(rs);
+                           break;
+                       case FUNCTION: namedObject = getFunction(rs);
+                       break;
+                       case PACKAGE:
+                       case SYSTEM_PACKAGE:
+                           namedObject = getPackage(rs);
+                           break;
+                       case TRIGGER:
+                       case DDL_TRIGGER:
+                       case DATABASE_TRIGGER:
+                       case SYSTEM_TRIGGER:
+                           namedObject = getTrigger(rs);
+                           break;
+                       case SEQUENCE:
+                           namedObject = getSequence(rs);
+                           break;
+                       case EXCEPTION:
+                           namedObject = getException(rs);
+                           break;
+                       case UDF:
+                           namedObject = getUDF(rs);
+                           break;
+                       case USER: namedObject = getUser(rs);
+                       break;
+                       case ROLE:
+                       case SYSTEM_ROLE:
+                           namedObject = getRole(rs);
+                           break;
+                       case INDEX:
+                       case SYSTEM_INDEX:
+                           namedObject = getIndex(rs);
+                           break;
+
+                   }
+                   if(namedObject!=null) {
+                       if (type > SYSTEM_DOMAIN)
+                           namedObject.setSystemFlag(true);
+                       namedObject.setHost(getHost());
+                       list.add(namedObject);
+                   }
                 }
 
             }
@@ -1181,7 +972,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             logThrowable(e);
             return new ArrayList<NamedObject>(0);
 
-        } finally {
+        }
+        finally {
 
             try {
                 releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
@@ -1189,86 +981,44 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 releaseResources(rs, null);
             }
         }
+    }
+
+    /**
+     * Loads the database functions.
+     */
+    private AbstractDatabaseObject getFunction(ResultSet rs) throws SQLException {
+                    if (typeTree == TreePanel.DEFAULT) {
+                        DefaultDatabaseFunction function = new DefaultDatabaseFunction(this, rs.getString(3));
+                        function.setRemarks(rs.getString(4));
+                        return function;
+                    } else {
+                        return new DefaultDatabaseFunction(this, rs.getString(1));
+                    }
     }
 
     /**
      * Loads the database procedures.
      */
-    private List<NamedObject> getProcedures() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getProceduresResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
+    private AbstractDatabaseObject getProcedure(ResultSet rs) throws SQLException {
             if (((PooledResultSet) rs).getResultSet().unwrap(ResultSet.class).getClass().getName().contains("FBResultSet")) {
-                while (rs.next()) {
-
-                    DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(this, rs.getString(1));
-                    procedure.setHost(getHost());
-                    //procedure.setRemarks(rs.getString(2));
-                    list.add(procedure);
-                }
+                    return new DefaultDatabaseProcedure(this, rs.getString(1));
             } else {
-                while (rs.next()) {
-
                     DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(this, rs.getString(3));
-                    procedure.setHost(getHost());
                     procedure.setRemarks(rs.getString(7));
-                    list.add(procedure);
+                    return procedure;
                 }
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
     }
 
     /**
      * Loads the database indices.
      */
-    private List<NamedObject> getIndices() throws DataSourceException {
+    private AbstractDatabaseObject getIndex(ResultSet rs) throws SQLException {
 
-        ResultSet rs = null;
-        try {
 
-            rs = getIndicesResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseIndex index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
-                index.setHost(this.getHost());
-                index.setActive(rs.getInt(2) != 1);
-                list.add(index);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
+        DefaultDatabaseIndex index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
+        index.setHost(this.getHost());
+        index.setActive(rs.getInt(2) != 1);
+        return index;
     }
 
     public DefaultDatabaseIndex getIndexFromName(String name) throws DataSourceException {
@@ -1310,242 +1060,53 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     /**
      * Loads the database triggers.
      */
-    private List<NamedObject> getTriggers() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getTriggersResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
+    private AbstractDatabaseObject getTrigger(ResultSet rs) throws SQLException {
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
                         rs.getString(1).trim());
                 if (typeTree == TreePanel.DEFAULT)
                     trigger.setTriggerActive(rs.getInt(2) != 1);
-                list.add(trigger);
-            }
+                return trigger;
 
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
     }
 
     /**
      * Loads the database triggers.
      */
-    private List<NamedObject> getSequences() throws DataSourceException {
+    private AbstractDatabaseObject getSequence(ResultSet rs) throws SQLException {
 
-        ResultSet rs = null;
-        try {
+        return new DefaultDatabaseSequence(this, rs.getString(1));
+    }
+    private AbstractDatabaseObject getDomain(ResultSet rs) throws SQLException {
+        return new DefaultDatabaseDomain(this, rs.getString(1));
 
-            rs = getSequencesResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
+    }
 
-                DefaultDatabaseSequence sequence = new DefaultDatabaseSequence(this, rs.getString(1));
-                //sequence.setRemarks(rs.getString(3));
-                list.add(sequence);
-            }
 
-            return list;
+    private AbstractDatabaseObject getUser(ResultSet rs) throws SQLException {
 
-        } catch (SQLException e) {
+                return new DefaultDatabaseUser(this, rs.getObject(1).toString());
 
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
+    }
 
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
+    private AbstractDatabaseObject getRole(ResultSet rs) throws SQLException {
+                        return new DefaultDatabaseRole(this, rs.getObject(1).toString());
     }
 
     /**
      * Loads the database triggers.
      */
-    private List<NamedObject> getDomains() throws DataSourceException {
+    private AbstractDatabaseObject getException(ResultSet rs) throws SQLException {
 
-        ResultSet rs = null;
-        try {
-
-            rs = getDomainsResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseDomain domain = new DefaultDatabaseDomain(this, rs.getString(1));
-                list.add(domain);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
+        DefaultDatabaseException exception = new DefaultDatabaseException(this, rs.getString(1));
+        exception.setRemarks(rs.getString(2));
+        return exception;
     }
 
-    private List<NamedObject> getSystemRoles() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemRolesResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseRole role = new DefaultDatabaseRole(this, rs.getObject(1).toString());
-                role.setSystemFlag(true);
-                list.add(role);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private List<NamedObject> getUsers() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getUsersResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseUser user = new DefaultDatabaseUser(this, rs.getObject(1).toString());
-                list.add(user);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private List<NamedObject> getRoles() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getRolesResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseRole role = new DefaultDatabaseRole(this, rs.getObject(1).toString());
-                list.add(role);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    /**
-     * Loads the database triggers.
-     */
-    private List<NamedObject> getExceptions() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getExceptionResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseException exception = new DefaultDatabaseException(this, rs.getString(1));
-                exception.setRemarks(rs.getString(2));
-                list.add(exception);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
 
     /**
      * Loads the database UDFs.
      */
-    private List<NamedObject> getUDFs() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getUDFResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
+    private AbstractDatabaseObject getUDF(ResultSet rs) throws SQLException {
 
                 DefaultDatabaseUDF udf = new DefaultDatabaseUDF(this,
                         rs.getString(1).trim(),
@@ -1559,248 +1120,15 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     udf.setEntryPoint(entryPoint.trim());
                 udf.setReturnArg(rs.getInt(5));
                 udf.setDescription(rs.getString("description"));
-                list.add(udf);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } catch (Exception e) {
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private List<NamedObject> getSystemDomains() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemDomainResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseDomain domain = new DefaultDatabaseDomain(this, rs.getString(1));
-                domain.setSystemFlag(true);
-                list.add(domain);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private List<NamedObject> getSystemIndices() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemIndexResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseIndex index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
-                index.setHost(this.getHost());
-                index.setSystemFlag(true);
-                list.add(index);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private List<NamedObject> getSystemTriggers() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemTriggerResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this, rs.getString(1));
-                trigger.setSystemFlag(true);
-                list.add(trigger);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private List<NamedObject> getSystemDatabaseTriggers() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemDatabaseTriggerResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
-                        rs.getString(1).trim());
-                trigger.setTriggerActive(rs.getInt(2) != 1);
-                list.add(trigger);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
+                return udf;
     }
 
 
-    private List<NamedObject> getDDLTriggers() throws DataSourceException {
 
-        ResultSet rs = null;
-        try {
 
-            rs = getDDLTriggerResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
 
-                DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
-                        rs.getString(1).trim());
-                trigger.setTriggerActive(rs.getInt(2) != 1);
-                list.add(trigger);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private List<NamedObject> getPackages() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getPackagesResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabasePackage databasePackage = new DefaultDatabasePackage(this, rs.getString(1).trim());
-
-                list.add(databasePackage);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private List<NamedObject> getSystemPackages() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemPackagesResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabasePackage aPackage = new DefaultDatabasePackage(this, rs.getObject(1).toString());
-                aPackage.setSystemFlag(true);
-                list.add(aPackage);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
+    private AbstractDatabaseObject getPackage(ResultSet rs) throws SQLException {
+                return new DefaultDatabasePackage(this, rs.getString(1).trim());
     }
 
     private ResultSet getResultSetFromQuery(String query) throws SQLException {
@@ -1955,7 +1283,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return getResultSetFromQuery(query);
     }
 
-    private ResultSet getUDFResultSet() throws Exception {
+    private ResultSet getUDFResultSet() throws SQLException {
 
         ResultSet resultSet = null;
         switch (getHost().getDatabaseMetaData().getDatabaseMajorVersion()) {

@@ -324,6 +324,7 @@ not_query
 :(plan end_line+)?
 (params end_line+)?
 (records_fetched end_line+)?
+(memory_size_rule end_line+)?
 (global_counters end_line+)?
 (table_counters end_line+)?
 ;
@@ -333,6 +334,7 @@ procedure_info
 (params end_line+)?
 ('returns: ' return_value end_line+)?
 (records_fetched end_line+)?
+(memory_size_rule end_line+)?
 (global_counters end_line+)?
 (table_counters end_line+)?
 ;
@@ -424,6 +426,27 @@ time_wait
 
 mode_of_access
 :'READ_ONLY' | 'READ_WRITE'
+;
+
+memory_size_rule:
+'sorting memory usage: total: ' sum_cache ', cached: ' ram_cache ', on disk: ' disk_cache
+;
+
+sum_cache
+: cache;
+
+ram_cache:
+cache;
+
+disk_cache:
+cache;
+
+cache:
+size_cache SPACE 'bytes'
+;
+
+size_cache
+:ID
 ;
 
 global_counters
@@ -601,9 +624,6 @@ end_line
 ;
 
 //keywords
-MINUSES
-:('-')+
-;
 
 CARETS
 :('^')+
@@ -667,12 +687,18 @@ ID
 ;
 
 ANY_NAME
-:(LETTER|DIGIT|'_'|'$')+
+:(LETTER|DIGIT|'_'|'$'|'@'|'.')+
+;
+
+MINUSES
+:('-')+
 ;
 
 PATH
-:(LETTER|DIGIT|CYRILLIC_LETTER|':\\'|':/'|'_'|'-'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|EQUALITY|QUESTION)+
+:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|EQUALITY|QUESTION)+
 ;
+
+
 
 fragment DIGIT:[0-9];
 

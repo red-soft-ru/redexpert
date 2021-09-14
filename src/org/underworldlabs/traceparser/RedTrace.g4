@@ -396,7 +396,7 @@ privilege
 plan
 :'Select Expression' end_line
  ( '->' (~('\n'))+ end_line)+
- |'PLAN' (~('\n'))+ end_line
+ |('PLAN' (~('\n'))+ end_line)+
 ;
 
 params
@@ -404,7 +404,7 @@ params
 ;
 
 records_fetched
-:ID SPACE 'records fetched'
+:ID SPACE 'records fetched' (SPACE 'without sorting')?
 ;
 
 transaction_info

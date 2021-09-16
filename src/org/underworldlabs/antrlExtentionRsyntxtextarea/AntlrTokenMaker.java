@@ -2,10 +2,12 @@ package org.underworldlabs.antrlExtentionRsyntxtextarea;
 
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.Lexer;
+
+import org.executequery.log.Log;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMakerBase;
-import org.underworldlabs.sqlLexer.CustomSqlLexer;
-import org.underworldlabs.sqlLexer.SqlLexer;
+import org.underworldlabs.sqlLexer.CustomToken;
+
 
 import javax.swing.text.Segment;
 import java.util.*;
@@ -50,10 +52,8 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
         }
 
         // check if we have a multi line token start without an end
-        String multilineTokenEnd = getMultilineTokenEnd(line);
-        if (multilineTokenEnd != null) {
-            line += multilineTokenEnd;
-        }
+        String multilineTokenEnd = null;
+
 
         Lexer lexer = createLexer(line);
         for (int mode : modeInfo.modeStack.toArray()) {
@@ -66,7 +66,6 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
 
         int currentArrayOffset = text.getBeginIndex();
         int currentDocumentOffset = startOffset;
-
         try {
             while (true) {
                 try {
@@ -74,6 +73,8 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
                     at = convertToken(at);
                     setLanguageIndex(lexer._mode);
                     if (at.getType() == CommonToken.EOF) {
+                        if(currentToken!=null)
+                            multilineTokenEnd=getMultilineTokenEnd(currentToken);
                         if (multilineTokenEnd == null) {
                             addNullToken();
                         }
@@ -175,6 +176,15 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
         return getMultiLineTokenInfo(getLanguageIndex(), modeInfo.tokenType)
                 .map(i -> i.tokenStart)
                 .orElse(null);
+    }
+    private String getMultilineTokenEnd(Token token) {
+        for (MultiLineTokenInfo mti : multiLineTokenInfos) {
+            if (mti.token == token.getType()) {
+                if (token.getLexeme().equals(mti.tokenEnd) || !token.endsWith(mti.tokenEnd.toCharArray()))
+                    return mti.tokenEnd;
+            }
+        }
+        return null;
     }
 
     private String getMultilineTokenEnd(String line) {

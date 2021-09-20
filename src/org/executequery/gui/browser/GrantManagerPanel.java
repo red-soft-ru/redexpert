@@ -8,19 +8,19 @@ package org.executequery.gui.browser;
 import biz.redsoft.IFBUser;
 import biz.redsoft.IFBUserManager;
 import org.executequery.GUIUtilities;
+import org.executequery.base.TabView;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.datasource.ConnectionManager;
-import org.executequery.gui.browser.managment.ThreadOfGrantManager;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -29,6 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ import java.util.Vector;
 /**
  * @author mikhan808
  */
-public class GrantManagerPanel extends JPanel {
+public class GrantManagerPanel extends JPanel implements TabView {
 
     public static final String TITLE = Bundles.get(GrantManagerPanel.class, "GrantManager");
     public static final String FRAME_ICON = "grant_manager_16.png";
@@ -62,7 +63,7 @@ public class GrantManagerPanel extends JPanel {
     Vector<String> fieldName;
     Vector<String> fieldType;
     int obj_index;
-    StatementExecutor querySender;
+    DefaultStatementExecutor querySender;
     int col_execute = 5;
     int col_usage = 7;
     private JButton cancelButton;
@@ -126,272 +127,8 @@ public class GrantManagerPanel extends JPanel {
         load_connections();
     }
 
-    @SuppressWarnings("unchecked")
-    private void initComponents() {
-
-        //upPanel = new JPanel();
-        //interruptPanel = new JPanel();
-        databaseBox = new JComboBox<>();
-        refreshButton = new JButton(bundleString("Refresh"));
-        leftPanel = new JPanel();
-        recipientsOfPrivilegesBox = new JComboBox<>();
-        recipientsOfPrivilegesScroll = new JScrollPane();
-        userList = new JList<>();
-        rightPanel = new JPanel();
-        revoke_v = new JButton();
-        revoke_h = new JButton();
-        revoke_all = new JButton();
-        grant_v = new JButton();
-        grant_h = new JButton();
-        grant_all = new JButton();
-        grant_option_v = new JButton();
-        grant_option_h = new JButton();
-        grant_option_all = new JButton();
-        objectBox = new JComboBox<>();
-        filterBox = new JComboBox<>();
-        filterField = new JTextField();
-        invertFilterCheckBox = new JCheckBox();
-        systemCheck = new JCheckBox();
-        privilegesScroll = new JScrollPane();
-        tablePrivileges = new JTable();
-        downPanel = new JPanel();
-        revoke_v1 = new JButton();
-        revoke_h1 = new JButton();
-        grant_v1 = new JButton();
-        grant_h1 = new JButton();
-        grant_option_v1 = new JButton();
-        grant_option_h1 = new JButton();
-        privilegesForFieldScroll = new JScrollPane();
-        privilegesForFieldTable = new JTable();
-        jProgressBar1 = new JProgressBar();
-        cancelButton = new JButton();
-
-        databaseBox.setModel(new DefaultComboBoxModel<>(new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
-        databaseBox.addActionListener(evt -> databaseBoxActionPerformed(evt));
-
-        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.png", true));
-        refreshButton.addActionListener(evt -> refreshButtonActionPerformed(evt));
-
-
-        recipientsOfPrivilegesBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"Users", "Roles", "Views", "Triggers", "Procedures"})));
-        recipientsOfPrivilegesBox.addActionListener(evt -> userBoxActionPerformed(evt));
-
-        userList.addListSelectionListener(evt -> userListValueChanged());
-        recipientsOfPrivilegesScroll.setViewportView(userList);
-
-        JSplitPane splitPane = new JSplitPane();
-        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setDividerSize(6);
-
-
-        revoke_v.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png")));
-        revoke_v.addActionListener(evt -> revoke_vActionPerformed(evt));
-
-        revoke_h.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_gorisont.png")));
-        revoke_h.addActionListener(evt -> revoke_gActionPerformed(evt));
-
-        revoke_all.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_all.png")));
-        revoke_all.addActionListener(evt -> revoke_allActionPerformed(evt));
-
-        grant_v.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_vertical.png")));
-        grant_v.addActionListener(evt -> grant_vActionPerformed(evt));
-
-        grant_h.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_gorisont.png")));
-        grant_h.addActionListener(evt -> grant_gActionPerformed(evt));
-
-        grant_all.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_all.png")));
-        grant_all.addActionListener(evt -> grant_allActionPerformed(evt));
-
-        grant_option_v.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_vertical.png")));
-        grant_option_v.addActionListener(evt -> grant_option_vActionPerformed(evt));
-
-        grant_option_h.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_gorisont.png")));
-        grant_option_h.addActionListener(evt -> grant_option_gActionPerformed(evt));
-
-        grant_option_all.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_all.png")));
-        grant_option_all.addActionListener(evt -> grant_option_allActionPerformed(evt));
-
-        objectBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"AllObjects", "Tables", "Views", "Procedures"})));
-        objectBox.addActionListener(evt -> objectBoxActionPerformed(evt));
-
-        filterBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"DisplayAll", "GrantedOnly", "Non-grantedOnly"})));
-        filterBox.addActionListener(evt -> filterBoxActionPerformed(evt));
-
-        filterField.addActionListener(evt -> filterFieldActionPerformed(evt));
-
-        invertFilterCheckBox.setText(bundleString("InvertFilter"));
-        invertFilterCheckBox.addActionListener(evt -> jCheckBox1ActionPerformed(evt));
-
-        systemCheck.setText(bundleString("ShowSystemTables"));
-        systemCheck.addActionListener(evt -> systemCheckActionPerformed(evt));
-
-        tablePrivileges.setModel(new javax.swing.table.DefaultTableModel(
-                new Object[][]{
-
-                },
-                new String[]{
-
-                }
-        ));
-        tablePrivileges.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tablePrivilegesMouseClicked(evt);
-            }
-        });
-        privilegesScroll.setViewportView(tablePrivileges);
-
-        revoke_v1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png"))); // NOI18N
-        revoke_v1.addActionListener(evt -> revoke_v1ActionPerformed(evt));
-
-        revoke_h1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_gorisont.png"))); // NOI18N
-        revoke_h1.addActionListener(evt -> revoke_g1ActionPerformed(evt));
-
-        grant_v1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_vertical.png"))); // NOI18N
-        grant_v1.addActionListener(evt -> grant_v1ActionPerformed(evt));
-
-        grant_h1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_gorisont.png"))); // NOI18N
-        grant_h1.addActionListener(evt -> grant_g1ActionPerformed(evt));
-
-        grant_option_v1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_vertical.png"))); // NOI18N
-        grant_option_v1.addActionListener(evt -> grant_option_v1ActionPerformed(evt));
-
-        grant_option_h1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_gorisont.png"))); // NOI18N
-        grant_option_h1.addActionListener(evt -> grant_option_g1ActionPerformed(evt));
-
-        privilegesForFieldTable.setModel(new javax.swing.table.DefaultTableModel(
-                new Object[][]{},
-                new String[]{}
-        ));
-        privilegesForFieldTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jTable2MouseClicked(evt);
-            }
-        });
-        privilegesForFieldScroll.setViewportView(privilegesForFieldTable);
-
-        cancelButton.setText(bundleString("CancelFill"));
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
-
-        //leftPanel.setBorder(BorderFactory.createTitledBorder(bundleString("PrivelegesFor")));
-        rightPanel.setBorder(BorderFactory.createTitledBorder(bundleString("GrantsOn")));
-        downPanel.setBorder(BorderFactory.createTitledBorder("ColumnsOf"));
-
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridBagLayout());
-
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaults(new GridBagConstraints(0, 0, 1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
-                new Insets(5, 5, 5, 5), 0, 0));
-        setLayout(new GridBagLayout());
-        gbh.defaults();
-
-        buttonPanel.add(revoke_h, gbh.nextCol().setLabelDefault().get());
-
-        buttonPanel.add(revoke_v, gbh.nextCol().setLabelDefault().get());
-
-        buttonPanel.add(revoke_all, gbh.nextCol().setLabelDefault().get());
-
-        buttonPanel.add(grant_h, gbh.nextCol().setLabelDefault().get());
-
-        buttonPanel.add(grant_v, gbh.nextCol().setLabelDefault().get());
-
-        buttonPanel.add(grant_all, gbh.nextCol().setLabelDefault().get());
-
-        buttonPanel.add(grant_option_h, gbh.nextCol().setLabelDefault().get());
-
-        buttonPanel.add(grant_option_v, gbh.nextCol().setLabelDefault().get());
-
-        buttonPanel.add(grant_option_all, gbh.nextCol().setLabelDefault().get());
-
-        gbh.nextCol().fillHorizontally().setMaxWeightX().insertEmptyGap(buttonPanel);
-
-
-        gbh.defaults();
-
-        gbh.addLabelFieldPair(this, Bundles.getCommon("connection"), databaseBox, null);
-
-        add(jProgressBar1, gbh.nextRowFirstCol().fillHorizontally().setMaxWeightX().get());
-        add(cancelButton, gbh.nextCol().setLabelDefault().get());
-
-        gbh.addLabelFieldPair(this, bundleString("PrivelegesFor"), recipientsOfPrivilegesBox, null, true, false);
-
-        add(splitPane, gbh.nextCol().fillBoth().spanX().spanY().get());
-
-        add(recipientsOfPrivilegesScroll, gbh.nextRowFirstCol().setWidth(2).fillBoth().setMaxWeightY().setMaxWeightX().spanY().get());
-
-        gbh.defaults();
-        rightPanel.setLayout(new GridBagLayout());
-
-        rightPanel.add(objectBox, gbh.nextRowFirstCol().fillHorizontally().setMinWeightY().setHeight(1).get());
-
-        rightPanel.add(systemCheck, gbh.nextRow().get());
-
-        rightPanel.add(filterBox, gbh.previousRow().nextCol().fillHorizontally().get());
-
-        rightPanel.add(filterField, gbh.nextCol().fillHorizontally().get());
-
-        rightPanel.add(invertFilterCheckBox, gbh.nextRow().get());
-
-        rightPanel.add(refreshButton, gbh.previousRow().nextCol().setLabelDefault().get());
-
-        gbh.nextRow();
-
-        rightPanel.add(buttonPanel, gbh.nextRowFirstCol().fillHorizontally().spanX().get());
-
-        rightPanel.add(privilegesScroll, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setMaxWeightY().setWidth(6).get());
-
-        GroupLayout downPanelLayout = new GroupLayout(downPanel);
-        downPanel.setLayout(downPanelLayout);
-        downPanelLayout.setHorizontalGroup(
-                downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(downPanelLayout.createSequentialGroup()
-                                .addComponent(revoke_v1)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(revoke_h1)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(grant_v1)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(grant_h1)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(grant_option_v1)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(grant_option_h1)
-                                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addComponent(privilegesForFieldScroll, GroupLayout.Alignment.TRAILING)
-        );
-        downPanelLayout.setVerticalGroup(
-                downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(downPanelLayout.createSequentialGroup()
-                                .addGroup(downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addGroup(downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                                                .addComponent(revoke_v1)
-                                                .addComponent(revoke_h1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(grant_v1, GroupLayout.Alignment.TRAILING)
-                                                .addComponent(grant_h1, GroupLayout.Alignment.TRAILING))
-                                        .addComponent(grant_option_v1, GroupLayout.Alignment.TRAILING)
-                                        .addComponent(grant_option_h1, GroupLayout.Alignment.TRAILING))
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(privilegesForFieldScroll, GroupLayout.PREFERRED_SIZE, 114, GroupLayout.PREFERRED_SIZE))
-        );
-        splitPane.setTopComponent(rightPanel);
-        splitPane.setBottomComponent(downPanel);
-        splitPane.setResizeWeight(0.8);
-    }
-
-    private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
-        if (enabled_dBox) {
-            querySender = new DefaultStatementExecutor(listConnections.get(databaseBox.getSelectedIndex()), true);
-            querySender.setCommitMode(false);
-            dbc = listConnections.get(databaseBox.getSelectedIndex());
-            con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
-            load_userList();
-        }
-    }
+    private boolean isClose = false;
+    private String grantor;
 
     private void userBoxActionPerformed(java.awt.event.ActionEvent evt) {
         load_userList();
@@ -736,84 +473,7 @@ public class GrantManagerPanel extends JPanel {
         get_user_list(query);
     }
 
-    void load_table() {
-        tablePrivileges.setModel(new RoleTableModel(headers, 0));
-        relName.removeAllElements();
-        relType.removeAllElements();
-        relSystem.removeAllElements();
-        relGranted.removeAllElements();
-        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 1)
-            getTables();
-        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 2)
-            getViews();
-        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 3)
-            getProcedures();
-        jProgressBar1.setMaximum(relName.size());
-        for (int i = 0, g = 0; i < relName.size() && !enableElements; g++, i++) {
-            jProgressBar1.setValue(g);
-            try {
-                String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION,RDB$FIELD_NAME from RDB$USER_PRIVILEGES\n" +
-                        "where (rdb$Relation_name='" + relName.elementAt(i) + "') and (rdb$user='"
-                        + userList.getSelectedValue().trim() + "')";
-                ResultSet rs1 = querySender.execute(QueryTypes.SELECT, s, -1).getResultSet();
-                Vector<Object> roleData = new Vector<Object>();
-                Object[] obj = {relName.elementAt(i), Color.BLACK};
-                if (relSystem.elementAt(i))
-                    obj[1] = Color.RED;
-                roleData.add(obj);
-                for (int k = 0; k < 7; k++)
-                    roleData.add(no);
-                boolean adding = true;
-                while (rs1.next()) {
-                    relGranted.set(i, true);
-                    if (filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == relGranted.elementAt(i)) {
-                        try {
-                            if (rs1.getString(3) == null) {
-                                String grant = rs1.getString(1).trim();
-                                int ind = grants.indexOf(grant);
-                                if (ind != 7) {
-                                    Object gr_opt = rs1.getObject(2);
-                                    if (gr_opt == null)
-                                        gr_opt = 0;
-                                    if (gr_opt.equals(0)) {
-                                        roleData.set(ind + 1, gr);
-                                    } else
-                                        roleData.set(ind + 1, adm);
-                                }
-                            }
-                        } catch (Exception e) {
-                            Log.error(e.getMessage());
-                        }
-                    } else {
-                        adding = false;
-                        break;
-                    }
-                }
-                rs1.close();
-                if (adding)
-                    adding = (filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == relGranted.elementAt(i));
-                if (adding)
-                    ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
-                else {
-                    removeRow(i);
-                    i--;
-                }
-                querySender.releaseResources();
-            } catch (NullPointerException e) {
-                Log.error(bundleString("connection.close"));
-            } catch (SQLException e) {
-                Log.error(e.getMessage());
-            } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
-            }
-
-            if (GUIUtilities.getCentralPane(TITLE) == null)
-                setEnableElements(true);
-        }
-        setEnableElements(true);
-        setVisiblePanelOfTable(false);
-
-    }
+    private String grant;
 
     void load_table2(String rname) {
         privilegesForFieldTable.setModel(new RoleTableModel(headers2, 0));
@@ -934,8 +594,357 @@ public class GrantManagerPanel extends JPanel {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private void initComponents() {
+
+        //upPanel = new JPanel();
+        //interruptPanel = new JPanel();
+        databaseBox = new JComboBox<>();
+        refreshButton = new JButton(bundleString("Refresh"));
+        leftPanel = new JPanel();
+        recipientsOfPrivilegesBox = new JComboBox<>();
+        recipientsOfPrivilegesScroll = new JScrollPane();
+        userList = new JList<>();
+        rightPanel = new JPanel();
+        revoke_v = new JButton();
+        revoke_h = new JButton();
+        revoke_all = new JButton();
+        grant_v = new JButton();
+        grant_h = new JButton();
+        grant_all = new JButton();
+        grant_option_v = new JButton();
+        grant_option_h = new JButton();
+        grant_option_all = new JButton();
+        objectBox = new JComboBox<>();
+        filterBox = new JComboBox<>();
+        filterField = new JTextField();
+        invertFilterCheckBox = new JCheckBox();
+        systemCheck = new JCheckBox();
+        privilegesScroll = new JScrollPane();
+        tablePrivileges = new JTable();
+        downPanel = new JPanel();
+        revoke_v1 = new JButton();
+        revoke_h1 = new JButton();
+        grant_v1 = new JButton();
+        grant_h1 = new JButton();
+        grant_option_v1 = new JButton();
+        grant_option_h1 = new JButton();
+        privilegesForFieldScroll = new JScrollPane();
+        privilegesForFieldTable = new JTable();
+        jProgressBar1 = new JProgressBar();
+        cancelButton = new JButton();
+
+        databaseBox.setModel(new DefaultComboBoxModel<>(new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
+        databaseBox.addActionListener(evt -> databaseBoxActionPerformed(evt));
+
+        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.png", true));
+        refreshButton.addActionListener(evt -> refreshButtonActionPerformed(evt));
+
+
+        recipientsOfPrivilegesBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"Users", "Roles", "Views", "Triggers", "Procedures"})));
+        recipientsOfPrivilegesBox.addActionListener(evt -> userBoxActionPerformed(evt));
+
+        userList.addListSelectionListener(evt -> userListValueChanged());
+        recipientsOfPrivilegesScroll.setViewportView(userList);
+
+        JSplitPane splitPane = new JSplitPane();
+        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setDividerSize(6);
+
+
+        revoke_v.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png")));
+        revoke_v.addActionListener(evt -> revoke_vActionPerformed(evt));
+
+        revoke_h.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_gorisont.png")));
+        revoke_h.addActionListener(evt -> revoke_gActionPerformed(evt));
+
+        revoke_all.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_all.png")));
+        revoke_all.addActionListener(evt -> revoke_allActionPerformed(evt));
+
+        grant_v.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_vertical.png")));
+        grant_v.addActionListener(evt -> grant_vActionPerformed(evt));
+
+        grant_h.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_gorisont.png")));
+        grant_h.addActionListener(evt -> grant_gActionPerformed(evt));
+
+        grant_all.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_all.png")));
+        grant_all.addActionListener(evt -> grant_allActionPerformed(evt));
+
+        grant_option_v.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_vertical.png")));
+        grant_option_v.addActionListener(evt -> grant_option_vActionPerformed(evt));
+
+        grant_option_h.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_gorisont.png")));
+        grant_option_h.addActionListener(evt -> grant_option_gActionPerformed(evt));
+
+        grant_option_all.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_all.png")));
+        grant_option_all.addActionListener(evt -> grant_option_allActionPerformed(evt));
+
+        objectBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"AllObjects", "Tables", "Views", "Procedures"})));
+        objectBox.addActionListener(evt -> objectBoxActionPerformed(evt));
+
+        filterBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"DisplayAll", "GrantedOnly", "Non-grantedOnly"})));
+        filterBox.addActionListener(evt -> filterBoxActionPerformed(evt));
+
+        filterField.addActionListener(evt -> filterFieldActionPerformed(evt));
+
+        invertFilterCheckBox.setText(bundleString("InvertFilter"));
+        invertFilterCheckBox.addActionListener(evt -> jCheckBox1ActionPerformed(evt));
+
+        systemCheck.setText(bundleString("ShowSystemTables"));
+        systemCheck.addActionListener(evt -> systemCheckActionPerformed(evt));
+
+        tablePrivileges.setModel(new javax.swing.table.DefaultTableModel(
+                new Object[][]{
+
+                },
+                new String[]{
+
+                }
+        ));
+        tablePrivileges.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tablePrivilegesMouseClicked(evt);
+            }
+        });
+        privilegesScroll.setViewportView(tablePrivileges);
+
+        revoke_v1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png"))); // NOI18N
+        revoke_v1.addActionListener(evt -> revoke_v1ActionPerformed(evt));
+
+        revoke_h1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_gorisont.png"))); // NOI18N
+        revoke_h1.addActionListener(evt -> revoke_g1ActionPerformed(evt));
+
+        grant_v1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_vertical.png"))); // NOI18N
+        grant_v1.addActionListener(evt -> grant_v1ActionPerformed(evt));
+
+        grant_h1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_gorisont.png"))); // NOI18N
+        grant_h1.addActionListener(evt -> grant_g1ActionPerformed(evt));
+
+        grant_option_v1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_vertical.png"))); // NOI18N
+        grant_option_v1.addActionListener(evt -> grant_option_v1ActionPerformed(evt));
+
+        grant_option_h1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_gorisont.png"))); // NOI18N
+        grant_option_h1.addActionListener(evt -> grant_option_g1ActionPerformed(evt));
+
+        privilegesForFieldTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object[][]{},
+                new String[]{}
+        ));
+        privilegesForFieldTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable2MouseClicked(evt);
+            }
+        });
+        privilegesForFieldScroll.setViewportView(privilegesForFieldTable);
+
+        cancelButton.setText(bundleString("CancelFill"));
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+
+        //leftPanel.setBorder(BorderFactory.createTitledBorder(bundleString("PrivelegesFor")));
+        rightPanel.setBorder(BorderFactory.createTitledBorder(bundleString("GrantsOn")));
+        downPanel.setBorder(BorderFactory.createTitledBorder("ColumnsOf"));
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridBagLayout());
+
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaults(new GridBagConstraints(0, 0, 1, 1, 1, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
+                new Insets(5, 5, 5, 5), 0, 0));
+        setLayout(new GridBagLayout());
+        gbh.defaults();
+
+        buttonPanel.add(revoke_h, gbh.nextCol().setLabelDefault().get());
+
+        buttonPanel.add(revoke_v, gbh.nextCol().setLabelDefault().get());
+
+        buttonPanel.add(revoke_all, gbh.nextCol().setLabelDefault().get());
+
+        buttonPanel.add(grant_h, gbh.nextCol().setLabelDefault().get());
+
+        buttonPanel.add(grant_v, gbh.nextCol().setLabelDefault().get());
+
+        buttonPanel.add(grant_all, gbh.nextCol().setLabelDefault().get());
+
+        buttonPanel.add(grant_option_h, gbh.nextCol().setLabelDefault().get());
+
+        buttonPanel.add(grant_option_v, gbh.nextCol().setLabelDefault().get());
+
+        buttonPanel.add(grant_option_all, gbh.nextCol().setLabelDefault().get());
+
+        gbh.nextCol().fillHorizontally().setMaxWeightX().insertEmptyGap(buttonPanel);
+
+
+        gbh.defaults();
+
+        gbh.addLabelFieldPair(this, Bundles.getCommon("connection"), databaseBox, null);
+
+        add(cancelButton, gbh.nextRowFirstCol().setLabelDefault().get());
+        add(jProgressBar1, gbh.nextColWidth().fillHorizontally().spanX().get());
+
+        gbh.addLabelFieldPair(this, bundleString("PrivelegesFor"), recipientsOfPrivilegesBox, null, true, false);
+
+        add(splitPane, gbh.nextCol().fillBoth().spanX().spanY().get());
+
+        add(recipientsOfPrivilegesScroll, gbh.nextRowFirstCol().setWidth(2).fillBoth().setMaxWeightY().setMaxWeightX().spanY().get());
+
+        gbh.defaults();
+        rightPanel.setLayout(new GridBagLayout());
+
+        rightPanel.add(objectBox, gbh.nextRowFirstCol().fillHorizontally().setMinWeightY().setHeight(1).get());
+
+        rightPanel.add(systemCheck, gbh.nextRow().get());
+
+        rightPanel.add(filterBox, gbh.previousRow().nextCol().fillHorizontally().get());
+
+        rightPanel.add(filterField, gbh.nextCol().fillHorizontally().get());
+
+        rightPanel.add(invertFilterCheckBox, gbh.nextRow().get());
+
+        rightPanel.add(refreshButton, gbh.previousRow().nextCol().setLabelDefault().get());
+
+        gbh.nextRow();
+
+        rightPanel.add(buttonPanel, gbh.nextRowFirstCol().fillHorizontally().spanX().get());
+
+        rightPanel.add(privilegesScroll, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setMaxWeightY().setWidth(6).get());
+
+        GroupLayout downPanelLayout = new GroupLayout(downPanel);
+        downPanel.setLayout(downPanelLayout);
+        downPanelLayout.setHorizontalGroup(
+                downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(downPanelLayout.createSequentialGroup()
+                                .addComponent(revoke_v1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(revoke_h1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(grant_v1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(grant_h1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(grant_option_v1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(grant_option_h1)
+                                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(privilegesForFieldScroll, GroupLayout.Alignment.TRAILING)
+        );
+        downPanelLayout.setVerticalGroup(
+                downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(downPanelLayout.createSequentialGroup()
+                                .addGroup(downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addGroup(downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                                .addComponent(revoke_v1)
+                                                .addComponent(revoke_h1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(grant_v1, GroupLayout.Alignment.TRAILING)
+                                                .addComponent(grant_h1, GroupLayout.Alignment.TRAILING))
+                                        .addComponent(grant_option_v1, GroupLayout.Alignment.TRAILING)
+                                        .addComponent(grant_option_h1, GroupLayout.Alignment.TRAILING))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(privilegesForFieldScroll, GroupLayout.PREFERRED_SIZE, 114, GroupLayout.PREFERRED_SIZE))
+        );
+        splitPane.setTopComponent(rightPanel);
+        splitPane.setBottomComponent(downPanel);
+        splitPane.setResizeWeight(0.8);
+    }
+
+    private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
+        if (enabled_dBox) {
+            querySender = new DefaultStatementExecutor(listConnections.get(databaseBox.getSelectedIndex()), true);
+            querySender.setCommitMode(false);
+            querySender.setAutoddl(false);
+            dbc = listConnections.get(databaseBox.getSelectedIndex());
+            con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
+            load_userList();
+        }
+    }
+
+    void load_table() {
+        tablePrivileges.setModel(new RoleTableModel(headers, 0));
+        relName.removeAllElements();
+        relType.removeAllElements();
+        relSystem.removeAllElements();
+        relGranted.removeAllElements();
+        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 1)
+            getTables();
+        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 2)
+            getViews();
+        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 3)
+            getProcedures();
+        jProgressBar1.setMaximum(relName.size());
+        long start = System.currentTimeMillis();
+        try {
+            String query = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION,RDB$FIELD_NAME from RDB$USER_PRIVILEGES\n" +
+                    "where (rdb$Relation_name=?) and (rdb$user='"
+                    + userList.getSelectedValue().trim() + "')";
+            PreparedStatement statement = querySender.getPreparedStatement(query);
+            for (int i = 0, g = 0; i < relName.size() && !enableElements; g++, i++) {
+                jProgressBar1.setValue(g);
+                statement.setString(1, relName.elementAt(i));
+                ResultSet rs1 = querySender.execute(QueryTypes.SELECT, statement).getResultSet();
+                Vector<Object> roleData = new Vector<Object>();
+                Object[] obj = {relName.elementAt(i), Color.BLACK};
+                if (relSystem.elementAt(i))
+                    obj[1] = Color.RED;
+                roleData.add(obj);
+                for (int k = 0; k < 7; k++)
+                    roleData.add(no);
+                boolean adding = true;
+                while (rs1.next()) {
+                    relGranted.set(i, true);
+                    if (filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == relGranted.elementAt(i)) {
+                        try {
+                            if (rs1.getString(3) == null) {
+                                String grant = rs1.getString(1).trim();
+                                int ind = grants.indexOf(grant);
+                                if (ind != 7) {
+                                    Object gr_opt = rs1.getObject(2);
+                                    if (gr_opt == null)
+                                        gr_opt = 0;
+                                    if (gr_opt.equals(0)) {
+                                        roleData.set(ind + 1, gr);
+                                    } else
+                                        roleData.set(ind + 1, adm);
+                                }
+                            }
+                        } catch (Exception e) {
+                            Log.error(e.getMessage());
+                        }
+                    } else {
+                        adding = false;
+                        break;
+                    }
+                }
+                rs1.close();
+                if (adding)
+                    adding = (filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == relGranted.elementAt(i));
+                if (adding)
+                    ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
+                else {
+                    removeRow(i);
+                    i--;
+                }
+
+
+            }
+            querySender.releaseResources();
+        } catch (NullPointerException e) {
+            Log.error(bundleString("connection.close"));
+        } catch (SQLException e) {
+            Log.error(e.getMessage());
+        } catch (Exception e) {
+            GUIUtilities.displayErrorMessage(e.getMessage());
+        }
+        setEnableElements(true);
+        setVisiblePanelOfTable(false);
+
+    }
+
     void setEnableElements(boolean enable) {
-        enableComponents(GUIUtilities.getParentFrame(), enable);
+        //enableComponents(GUIUtilities.getParentFrame(), enable);
         enableElements = enable;
         databaseBox.setEnabled(enable);
         objectBox.setEnabled(enable);
@@ -969,7 +978,7 @@ public class GrantManagerPanel extends JPanel {
     }
 
     void isClose() {
-        if (GUIUtilities.getCentralPane(TITLE) == null)
+        if (isClose)
             if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0) {
                 setEnableElements(true);
 
@@ -982,116 +991,162 @@ public class GrantManagerPanel extends JPanel {
             }
     }
 
-    public void run() {
+    private String getGrantQuery(String user, int typeGrant, int typeObject, String grantX, String relName) throws SQLException {
+        grant = grantX;
+        grantor = user;
+        String query = "";
+        switch (typeGrant) {
+            case 0:
+                if (typeObject == 0) {
+                    query = "REVOKE " + grant + " ON \"" + relName + "\" FROM \"" + grantor + "\";";
+                } else {
+                    query = "REVOKE EXECUTE ON PROCEDURE \"" + relName + "\" FROM \""
+                            + grantor + "\";";
+                }
+                break;
+            case 1:
+                if (typeObject == 0) {
+                    query = "GRANT " + grant + " ON \"" + relName + "\" TO \"" + grantor + "\";";
+                } else {
+                    query = "GRANT EXECUTE ON PROCEDURE \"" + relName + "\" TO \""
+                            + grantor + "\";";
+                }
+                break;
+            case 2:
+                if (typeObject == 0) {
+                    query = "GRANT " + grant + " ON \"" + relName + "\" TO \"" + grantor + "\" WITH GRANT OPTION;";
+                } else {
+                    query = "GRANT EXECUTE ON PROCEDURE \"" + relName + "\" TO \""
+                            + grantor + "\" WITH GRANT OPTION;";
+                }
+        }
+        return query;
+
+    }
+
+
+    public void runToThread() {
         int col;
-        switch (act) {
-            case CREATE_TABLE:
-                load_table();
-                break;
-            case ALL_GRANTS_TO_ALL_OBJECTS: {
-                jProgressBar1.setMaximum(relName.size());
-                for (int row = 0; row < relName.size() && !enableElements; row++) {
-                    jProgressBar1.setValue(row);
-                    isClose();
-                    grant_all_on_role(1, row);
+        try {
+            switch (act) {
+                case CREATE_TABLE:
+                    load_table();
+                    break;
+                case ALL_GRANTS_TO_ALL_OBJECTS:
+                    jProgressBar1.setMaximum(relName.size());
+                    for (int row = 0; row < relName.size() && !enableElements; row++) {
+                        jProgressBar1.setValue(row);
+                        isClose();
+                        grant_all_on_role(1, row);
 
-                }
-                jProgressBar1.setValue(0);
-                setEnableElements(true);
+                    }
+                    jProgressBar1.setValue(0);
+                    setEnableElements(true);
+                    break;
+                case ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION:
+                    jProgressBar1.setMaximum(relName.size());
+                    for (int row = 0; row < relName.size() && !enableElements; row++) {
+                        jProgressBar1.setValue(row);
+                        isClose();
+                        grant_all_on_role(2, row);
+
+                    }
+                    jProgressBar1.setValue(0);
+                    setEnableElements(true);
+                    break;
+                case NO_ALL_GRANTS_TO_ALL_OBJECTS:
+                    jProgressBar1.setMaximum(relName.size());
+                    for (int row = 0; row < relName.size() && !enableElements; row++) {
+                        jProgressBar1.setValue(row);
+                        isClose();
+                        grant_all_on_role(0, row);
+
+                    }
+                    jProgressBar1.setValue(0);
+                    setEnableElements(true);
+                    break;
+                case GRANT_TO_ALL_OBJECTS:
+                    col = tablePrivileges.getSelectedColumn();
+                    jProgressBar1.setMaximum(relName.size());
+                    if (col > 0)
+                        for (int row = 0; row < relName.size() && !enableElements; row++) {
+                            jProgressBar1.setValue(row);
+                            isClose();
+                            grant_on_role(1, row, col);
+                        }
+                    jProgressBar1.setValue(0);
+                    setEnableElements(true);
+                    break;
+                case GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION:
+                    col = tablePrivileges.getSelectedColumn();
+                    jProgressBar1.setMaximum(relName.size());
+                    if (col > 0)
+                        for (int row = 0; row < relName.size() && !enableElements; row++) {
+                            jProgressBar1.setValue(row);
+                            isClose();
+                            grant_on_role(2, row, col);
+                        }
+                    jProgressBar1.setValue(0);
+                    setEnableElements(true);
+                    break;
+                case NO_GRANT_TO_ALL_OBJECTS:
+                    col = tablePrivileges.getSelectedColumn();
+                    jProgressBar1.setMaximum(relName.size());
+                    if (col > 0)
+                        for (int row = 0; row < relName.size() && !enableElements; row++) {
+                            jProgressBar1.setValue(row);
+                            isClose();
+                            grant_on_role(0, row, col);
+                        }
+                    jProgressBar1.setValue(0);
+                    setEnableElements(true);
+                    break;
             }
-            break;
-            case ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION:
-                jProgressBar1.setMaximum(relName.size());
-                for (int row = 0; row < relName.size() && !enableElements; row++) {
-                    jProgressBar1.setValue(row);
-                    isClose();
-                    grant_all_on_role(2, row);
-
-                }
-                jProgressBar1.setValue(0);
-                setEnableElements(true);
-                break;
-            case NO_ALL_GRANTS_TO_ALL_OBJECTS:
-                jProgressBar1.setMaximum(relName.size());
-                for (int row = 0; row < relName.size() && !enableElements; row++) {
-                    jProgressBar1.setValue(row);
-                    isClose();
-                    grant_all_on_role(0, row);
-
-                }
-                jProgressBar1.setValue(0);
-                setEnableElements(true);
-                break;
-            case GRANT_TO_ALL_OBJECTS:
-                col = tablePrivileges.getSelectedColumn();
-                jProgressBar1.setMaximum(relName.size());
-                if (col > 0)
-                    for (int row = 0; row < relName.size() && !enableElements; row++) {
-                        jProgressBar1.setValue(row);
-                        isClose();
-                        grant_on_role(1, row, col);
-                    }
-                jProgressBar1.setValue(0);
-                setEnableElements(true);
-                break;
-            case GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION:
-                col = tablePrivileges.getSelectedColumn();
-                jProgressBar1.setMaximum(relName.size());
-                if (col > 0)
-                    for (int row = 0; row < relName.size() && !enableElements; row++) {
-                        jProgressBar1.setValue(row);
-                        isClose();
-                        grant_on_role(2, row, col);
-                    }
-                jProgressBar1.setValue(0);
-                setEnableElements(true);
-                break;
-            case NO_GRANT_TO_ALL_OBJECTS:
-                col = tablePrivileges.getSelectedColumn();
-                jProgressBar1.setMaximum(relName.size());
-                if (col > 0)
-                    for (int row = 0; row < relName.size() && !enableElements; row++) {
-                        jProgressBar1.setValue(row);
-                        isClose();
-                        grant_on_role(0, row, col);
-                    }
-                jProgressBar1.setValue(0);
-                setEnableElements(true);
-                break;
+            querySender.execute(QueryTypes.COMMIT, (String) null);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            querySender.releaseResources();
         }
     }
 
     void grant_query(String query, Icon icon, int row, int col, JTable t) {
         try {
             querySender.execute(QueryTypes.GRANT, query);
-            querySender.execute(QueryTypes.COMMIT, (String) null);
             t.setValueAt(icon, row, col);
-            querySender.releaseResources();
         } catch (NullPointerException e) {
             Log.error(bundleString("connection.close"));
         } catch (SQLException e) {
             Log.error(e.getMessage());
         } catch (Exception e) {
             Log.error(e.getMessage());
+        } finally {
+            querySender.releaseResources();
         }
     }
 
     void revoke_execute(int row) {
-        String query = "REVOKE EXECUTE ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \""
-                + userList.getSelectedValue() + "\";";
-        grant_query(query, no, row, col_execute, tablePrivileges);
+        try {
+            grant_query(getGrantQuery(userList.getSelectedValue(), 0, 1, "EXECUTE", relName.elementAt(row)), no, row, col_execute, tablePrivileges);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     void grant_execute(int row) {
-        String query = "GRANT EXECUTE ON PROCEDURE \"" +
-                relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";";
-        grant_query(query, gr, row, col_execute, tablePrivileges);
+        try {
+            grant_query(getGrantQuery(userList.getSelectedValue(), 1, 1, "EXECUTE", relName.elementAt(row)), gr, row, col_execute, tablePrivileges);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     void grant_execute_admin(int row) {
-        String query = "GRANT EXECUTE ON PROCEDURE \"" + relName.elementAt(row) +
-                "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;";
-        grant_query(query, adm, row, col_execute, tablePrivileges);
+        try {
+            grant_query(getGrantQuery(userList.getSelectedValue(), 1, 1, "EXECUTE", relName.elementAt(row)), adm, row, col_execute, tablePrivileges);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     void grant_all_query(String query, Icon icon, int row, int grantt) {
@@ -1100,13 +1155,13 @@ public class GrantManagerPanel extends JPanel {
             for (int i = 1; i < headers.length; i++)
                 if (i != col_execute && i != col_usage)
                     tablePrivileges.setValueAt(icon, row, i);
-            querySender.execute(QueryTypes.COMMIT, (String) null);
-            querySender.releaseResources();
         } catch (Exception e) {
             Log.error(e.getMessage());
             for (int i = 1; i < headers.length; i++) {
                 grant_case(grantt, row, i);
             }
+        } finally {
+            querySender.releaseResources();
         }
     }
 
@@ -1125,44 +1180,57 @@ public class GrantManagerPanel extends JPanel {
     }
 
     void revoke_all(int row) {
-        String query = "REVOKE ALL ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";";
-        grant_all_query(query, no, row, 0);
+        try {
+            grant_all_query(getGrantQuery(userList.getSelectedValue(), 0, 0, "ALL", relName.elementAt(row)), no, row, 0);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
     }
 
     void grant_all(int row) {
-        String query = "GRANT ALL ON \"" + relName.elementAt(row)
-                + "\" TO \"" + userList.getSelectedValue() + "\";";
-        grant_all_query(query, gr, row, 1);
+        try {
+            grant_all_query(getGrantQuery(userList.getSelectedValue(), 1, 0, "ALL", relName.elementAt(row)), gr, row, 1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     void grant_all_admin(int row) {
-        String query = "GRANT ALL ON \"" + relName.elementAt(row)
-                + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;";
-        grant_all_query(query, adm, row, 2);
+        try {
+            grant_all_query(getGrantQuery(userList.getSelectedValue(), 2, 0, "ALL", relName.elementAt(row)), adm, row, 2);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     void revoke(int row, int col) {
         if (col > 0 && col < headers.length && col != col_execute && col != col_usage) {
-            String query = "REVOKE " + headers[col] + " ON \"" + relName.elementAt(row)
-                    + "\" FROM \"" + userList.getSelectedValue() + "\";";
-            grant_query(query, no, row, col, tablePrivileges);
+            try {
+                grant_query(getGrantQuery(userList.getSelectedValue(), 0, 0, headers[col], relName.elementAt(row)), no, row, col, tablePrivileges);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     void grant(int row, int col) {
         if (col > 0 && col < headers.length && col != col_execute && col != col_usage) {
-            String query = "GRANT " + headers[col] + " ON \"" + relName.elementAt(row)
-                    + "\" TO \"" + userList.getSelectedValue() + "\";";
-            grant_query(query, gr, row, col, tablePrivileges);
+            try {
+                grant_query(getGrantQuery(userList.getSelectedValue(), 1, 0, headers[col], relName.elementAt(row)), gr, row, col, tablePrivileges);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     void grant_admin(int row, int col) {
         if (col > 0 && col < headers.length && col != col_execute && col != col_usage) {
-            String query = "GRANT " + headers[col] + " ON \"" + relName.elementAt(row)
-                    + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;";
-            grant_query(query, adm, row, col, tablePrivileges);
+            try {
+                grant_query(getGrantQuery(userList.getSelectedValue(), 2, 0, headers[col], relName.elementAt(row)), adm, row, col, tablePrivileges);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -1178,10 +1246,18 @@ public class GrantManagerPanel extends JPanel {
                     break;
                 case 1:
                     if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                        revoke_all(row);
+                        boolean containsAdm = false;
+                        for (int i = 0; i < headers.length; i++)
+                            if (tablePrivileges.getValueAt(row, i).equals(adm)) {
+                                containsAdm = true;
+                                break;
+                            }
+                        if (containsAdm)
+                            revoke_all(row);
                         grant_all(row);
                     } else {
-                        revoke_execute(row);
+                        if (tablePrivileges.getValueAt(row, col_execute).equals(adm))
+                            revoke_execute(row);
                         grant_execute(row);
                     }
 
@@ -1230,33 +1306,32 @@ public class GrantManagerPanel extends JPanel {
                     break;
             }
         }
+        querySender.releaseResources();
     }
 
     void grant_on_role(int grantt, int row, int col, int row2) {
-        String query;
         if (row < tablePrivileges.getRowCount()) {
-            switch (grantt) {
-                case 0:
-                    query = "REVOKE " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
-                            + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";";
-                    grant_query(query, no, row2, col, privilegesForFieldTable);
-                    break;
-                case 1:
-                    if (privilegesForFieldTable.getValueAt(row2, col).equals(adm)) {
-                        query = "REVOKE " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
-                                + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";";
-                        grant_query(query, no, row2, col, privilegesForFieldTable);
-                    }
-                    query = "GRANT " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
-                            + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";";
-                    grant_query(query, gr, row2, col, privilegesForFieldTable);
+            try {
+                switch (grantt) {
+                    case 0:
+                        grant_query(getGrantQuery(userList.getSelectedValue(), 0, 0, headers[col], relName.elementAt(row)), no, row2, col, privilegesForFieldTable);
+                        break;
+                    case 1:
+                        if (privilegesForFieldTable.getValueAt(row2, col).equals(adm)) {
+                            grant_query(getGrantQuery(userList.getSelectedValue(), 0, 0, headers[col], relName.elementAt(row)), no, row2, col, privilegesForFieldTable);
+                        }
+                        grant_query(getGrantQuery(userList.getSelectedValue(), 1, 0, headers[col], relName.elementAt(row)), gr, row2, col, privilegesForFieldTable);
 
-                    break;
-                case 2:
-                    query = "GRANT " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
-                            + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;";
-                    grant_query(query, adm, row2, col, privilegesForFieldTable);
-                    break;
+                        break;
+                    case 2:
+                        grant_query(getGrantQuery(userList.getSelectedValue(), 2, 0, headers[col], relName.elementAt(row)), adm, row2, col, privilegesForFieldTable);
+                        break;
+                }
+                querySender.execute(QueryTypes.COMMIT, (String) null);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                querySender.releaseResources();
             }
         }
     }
@@ -1271,12 +1346,18 @@ public class GrantManagerPanel extends JPanel {
         }
     }
 
+
     void execute_thread() {
         if (enableElements) {
             setEnableElements(false);
-            Runnable r = new ThreadOfGrantManager(this);
-            Thread t = new Thread(r);
-            t.start();
+            SwingWorker sw = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    runToThread();
+                    return "DONE";
+                }
+            };
+            sw.start();
         }
     }
 
@@ -1331,6 +1412,22 @@ public class GrantManagerPanel extends JPanel {
                 key[i] = bundleString(key[i]);
         }
         return key;
+    }
+
+    @Override
+    public boolean tabViewClosing() {
+        isClose = true;
+        return true;
+    }
+
+    @Override
+    public boolean tabViewSelected() {
+        return true;
+    }
+
+    @Override
+    public boolean tabViewDeselected() {
+        return true;
     }
 
     enum Action {

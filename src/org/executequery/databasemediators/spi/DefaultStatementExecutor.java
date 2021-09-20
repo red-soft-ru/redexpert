@@ -1600,6 +1600,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
         return autoddl;
     }
 
+    public void setAutoddl(boolean autoddl) {
+        this.autoddl = autoddl;
+    }
+
     private SqlStatementResult setAutoDDL(boolean autocommit) {
 
         statementResult.reset();
@@ -1610,7 +1614,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
                 if (!conn.isClosed()) {
 
 
-                    autoddl = autocommit;
+                    setAutoddl(autocommit);
                     Log.info("Set autoddl " + autocommit);
                     statementResult.setMessage("Set autoddl " + autocommit);
 

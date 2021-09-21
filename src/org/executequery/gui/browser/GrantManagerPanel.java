@@ -854,6 +854,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
     private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
         if (enabled_dBox) {
             querySender = new DefaultStatementExecutor(listConnections.get(databaseBox.getSelectedIndex()), true);
+            querySender.setCloseConnectionAfterQuery(false);
             querySender.setCommitMode(false);
             querySender.setAutoddl(false);
             dbc = listConnections.get(databaseBox.getSelectedIndex());
@@ -1102,6 +1103,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
                     setEnableElements(true);
                     break;
             }
+            querySender.releaseResources();
             querySender.execute(QueryTypes.COMMIT, (String) null);
         } catch (SQLException e) {
             e.printStackTrace();

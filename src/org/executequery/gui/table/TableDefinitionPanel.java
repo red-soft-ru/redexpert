@@ -409,6 +409,7 @@ public abstract class TableDefinitionPanel extends JPanel
     public void setDomains(String[] domains) {
         this.domains = domains;
         domainCell.removeAllItems();
+        domainCell.addItem("");
         for (int i = 0; i < this.domains.length; i++) {
             domainCell.addItem(this.domains[i]);
         }
@@ -792,11 +793,7 @@ public abstract class TableDefinitionPanel extends JPanel
             ColumnData[] cda = getTableColumnData();
             int row = rowAtPoint(new Point(mouseX, mouseY));
             for (int i = 0; i < cda.length; i++) {
-                if (i == row && !cda[i].isPrimaryKey()) {
-                    cda[i].setPrimaryKey(true);
-                } else {
-                    cda[i].setPrimaryKey(false);
-                }
+                cda[i].setPrimaryKey(i == row && !cda[i].isPrimaryKey());
             }
 
             _model.fireTableRowsUpdated(0, cda.length);
@@ -1103,8 +1100,8 @@ public abstract class TableDefinitionPanel extends JPanel
             return cd.getColumnType() != null && (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
                     || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
                     || cd.getSQLType() == Types.LONGVARBINARY
-                    || cd.getColumnType().toUpperCase().equals("VARCHAR")
-                    || cd.getColumnType().toUpperCase().equals("CHAR"));
+                    || cd.getColumnType().equalsIgnoreCase("VARCHAR")
+                    || cd.getColumnType().equalsIgnoreCase("CHAR"));
         }
 
         boolean isEditScale(int row) {

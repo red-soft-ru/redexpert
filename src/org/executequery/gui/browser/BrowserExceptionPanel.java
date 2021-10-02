@@ -52,7 +52,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     public BrowserExceptionPanel(BrowserController controller) {
         super();
@@ -95,6 +95,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
 
         tabPane = new JTabbedPane(JTabbedPane.TOP);
         tabPane.add(bundleString("Exception"), descPanel);
+        addPrivilegesTab(tabPane);
         JPanel descriptionPanel = new JPanel(new BorderLayout());
 
         descriptionPanel.setBorder(BorderFactory.createEtchedBorder());

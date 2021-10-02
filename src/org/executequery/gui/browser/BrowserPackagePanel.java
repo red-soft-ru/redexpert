@@ -38,7 +38,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     public BrowserPackagePanel(BrowserController controller) {
         super();
@@ -85,6 +85,8 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
         descriptionPane = new StyledLogPane();
 
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
+
+        addPrivilegesTab(tabs);
 
         tabs.add("Description", descriptionPanel);
 

@@ -38,7 +38,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     public BrowserSequencePanel(BrowserController controller) {
         super();
@@ -84,7 +84,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         descPanel.setLayout(new BorderLayout());
         descPanel.add(descriptionPane);
-
+        addPrivilegesTab(tabs);
         tabs.add(Bundles.getCommon("description"), descPanel);
 
         JPanel sqlPanel = new JPanel(new BorderLayout());

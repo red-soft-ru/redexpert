@@ -14,6 +14,7 @@ import org.executequery.databaseobjects.impl.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
@@ -48,10 +49,7 @@ public class BrowserPrivilegesPanel extends JPanel implements ActionListener {
     Icon[] icons;
     Vector<String> fieldName;
     Vector<String> fieldType;
-    int obj_index;
     DefaultStatementExecutor querySender;
-    int col_execute = 1;
-    int col_usage = 1;
     Vector<String> usersVector;
     DatabaseConnection databaseConnection;
     Vector<String> relName;
@@ -626,8 +624,11 @@ public class BrowserPrivilegesPanel extends JPanel implements ActionListener {
 
     void grant_query(String query, Icon icon, int row, int col, JTable t) {
         try {
-            querySender.execute(QueryTypes.GRANT, query);
-            t.setValueAt(icon, row, col);
+            SqlStatementResult result = querySender.execute(QueryTypes.GRANT, query);
+            if (result.isException())
+                result.getSqlException().printStackTrace();
+            else
+                t.setValueAt(icon, row, col);
         } catch (NullPointerException e) {
             Log.error(bundleString("connection.close"));
         } catch (SQLException e) {
@@ -641,9 +642,12 @@ public class BrowserPrivilegesPanel extends JPanel implements ActionListener {
 
     void grant_all_query(String query, Icon icon, int row, int grantt) {
         try {
-            querySender.execute(QueryTypes.GRANT, query, -1);
-            for (int i = 1; i < headers.length; i++)
-                tablePrivileges.setValueAt(icon, row, i);
+            SqlStatementResult result = querySender.execute(QueryTypes.GRANT, query, -1);
+            if (result.isException())
+                result.getSqlException().printStackTrace();
+            else
+                for (int i = 1; i < headers.length; i++)
+                    tablePrivileges.setValueAt(icon, row, i);
         } catch (Exception e) {
             Log.error(e.getMessage());
             for (int i = 1; i < headers.length; i++) {

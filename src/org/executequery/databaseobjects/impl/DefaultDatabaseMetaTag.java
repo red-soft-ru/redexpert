@@ -64,12 +64,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     /**
      * the host object for this meta tag
      */
-    private DatabaseHost host;
+    private final DatabaseHost host;
 
     /**
      * the meta data key name of this object
      */
-    private String metaDataKey;
+    private final String metaDataKey;
 
     /**
      * the child objects of this meta type
@@ -240,13 +240,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             int type = getSubType();
             if (type == DATABASE_TRIGGER
-                    || type == SYSTEM_DOMAIN
-                    || type == SYSTEM_FUNCTION
-                    || type == SYSTEM_INDEX
-                    || type == SYSTEM_TABLE
-                    || type == SYSTEM_VIEW
-                    || type == SYSTEM_TRIGGER
-                    || type == SYSTEM_ROLE
+                    || type >= SYSTEM_DOMAIN
             )
                 if (typeTree != TreePanel.DEFAULT) {
                     return false;
@@ -286,6 +280,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                     if (type == SEQUENCE) {
                         return hasSequences();
+                    }
+
+                } else if (isSystemSequence()) {
+
+                    if (type == SYSTEM_SEQUENCE) {
+                        return hasSystemSequences();
                     }
 
                 } else if (isDomain()) {
@@ -392,6 +392,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == SEQUENCE;
+    }
+
+    private boolean isSystemSequence() {
+
+        int type = getSubType();
+        return type == SYSTEM_SEQUENCE;
     }
 
     private boolean isDomain() {
@@ -588,6 +594,30 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             }
         }
     }
+
+    private boolean hasSystemSequences() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSystemSequencesResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
+        }
+    }
+
 
     private boolean hasDomains() {
 
@@ -877,21 +907,36 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             case FUNCTION: return getFunctionsResultSet();
             case PACKAGE: return getPackagesResultSet();
             case TRIGGER: return getTriggersResultSet();
-            case DDL_TRIGGER: return getDDLTriggerResultSet();
-            case DATABASE_TRIGGER: return getDatabaseTriggerResultSet();
-            case SEQUENCE: return getSequencesResultSet();
-            case EXCEPTION: return getExceptionResultSet();
-            case UDF: return getUDFResultSet();
-            case USER: return getUsersResultSet();
-            case ROLE: return getRolesResultSet();
-            case INDEX: return getIndicesResultSet();
-            case SYSTEM_DOMAIN: return getSystemDomainResultSet();
-            case SYSTEM_TRIGGER: return getSystemTriggerResultSet();
-            case SYSTEM_ROLE: return getSystemRolesResultSet();
-            case SYSTEM_INDEX: return getSystemIndexResultSet();
-            case SYSTEM_PACKAGE: return  getSystemPackagesResultSet();
+            case DDL_TRIGGER:
+                return getDDLTriggerResultSet();
+            case DATABASE_TRIGGER:
+                return getDatabaseTriggerResultSet();
+            case SEQUENCE:
+                return getSequencesResultSet();
+            case EXCEPTION:
+                return getExceptionResultSet();
+            case UDF:
+                return getUDFResultSet();
+            case USER:
+                return getUsersResultSet();
+            case ROLE:
+                return getRolesResultSet();
+            case INDEX:
+                return getIndicesResultSet();
+            case SYSTEM_DOMAIN:
+                return getSystemDomainResultSet();
+            case SYSTEM_TRIGGER:
+                return getSystemTriggerResultSet();
+            case SYSTEM_SEQUENCE:
+                return getSystemSequencesResultSet();
+            case SYSTEM_ROLE:
+                return getSystemRolesResultSet();
+            case SYSTEM_INDEX:
+                return getSystemIndexResultSet();
+            case SYSTEM_PACKAGE:
+                return getSystemPackagesResultSet();
             default:
-                return  getTablesResultSet(getMetaDataKey());
+                return getTablesResultSet(getMetaDataKey());
         }
     }
 
@@ -936,6 +981,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                            namedObject = getTrigger(rs);
                            break;
                        case SEQUENCE:
+                       case SYSTEM_SEQUENCE:
                            namedObject = getSequence(rs);
                            break;
                        case EXCEPTION:
@@ -1221,6 +1267,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSequencesResultSet() throws SQLException {
         String query = "select rdb$generator_name from rdb$generators where ((RDB$SYSTEM_FLAG is NULL) or (RDB$SYSTEM_FLAG = 0))\n" +
+                "     order by  rdb$generator_name";
+        if (typeTree == TreePanel.DEPENDED_ON)
+            query = getDependOnQuery(14);
+        else if (typeTree == TreePanel.DEPENDENT)
+            query = getDependentQuery(14);
+        return getResultSetFromQuery(query);
+    }
+
+    private ResultSet getSystemSequencesResultSet() throws SQLException {
+        String query = "select rdb$generator_name from rdb$generators where ((RDB$SYSTEM_FLAG is not NULL) and (RDB$SYSTEM_FLAG != 0))\n" +
                 "     order by  rdb$generator_name";
         if (typeTree == TreePanel.DEPENDED_ON)
             query = getDependOnQuery(14);

@@ -56,7 +56,8 @@ public interface NamedObject extends Named, java.io.Serializable {
     int SYSTEM_NUMERIC_FUNCTIONS = SYSTEM_STRING_FUNCTIONS + 1;
     int SYSTEM_DATE_TIME_FUNCTIONS = SYSTEM_NUMERIC_FUNCTIONS + 1;
     int SYSTEM_TRIGGER = SYSTEM_DATE_TIME_FUNCTIONS + 1;
-    int SYSTEM_ROLE = SYSTEM_TRIGGER + 1;
+    int SYSTEM_SEQUENCE = SYSTEM_TRIGGER + 1;
+    int SYSTEM_ROLE = SYSTEM_SEQUENCE + 1;
     int SYSTEM_INDEX = SYSTEM_ROLE + 1;
     int SYSTEM_PACKAGE = SYSTEM_INDEX + 1;
     int SYNONYM = SYSTEM_PACKAGE + 1;
@@ -106,6 +107,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM_NUMERIC_FUNCTIONS",
             "SYSTEM_DATE_TIME_FUNCTIONS",
             "SYSTEM TRIGGER",
+            "SYSTEM SEQUENCE",
             "SYSTEM ROLE",
             "SYSTEM INDEX",
             "SYSTEM PACKAGE",
@@ -136,6 +138,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM_NUMERIC_FUNCTIONS",
             "SYSTEM_DATE_TIME_FUNCTIONS",
             "SYSTEM_TRIGGER",
+            "SYSTEM_SEQUENCE",
             "SYSTEM_ROLE",
             "SYSTEM_INDEX",
             "SYSTEM_PACKAGE",

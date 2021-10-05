@@ -634,7 +634,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
         int selection = table.getSelectedRow();
         if (selection == -1) {
-            return;
+            tableVector.insertElementAt(new ColumnData(dc), 0);
         } else {
             tableVector.insertElementAt(new ColumnData(dc), selection);
         }
@@ -697,9 +697,7 @@ public abstract class TableDefinitionPanel extends JPanel
         int selection = table.getSelectedRow();
         int newRow = selection + 1;
 
-        if (selection == -1) {
-            return;
-        } else if (selection == tableVector.size()) {
+        if (selection == -1 || selection == tableVector.size()) {
             tableVector.add(new ColumnData(dc));
         } else {
             tableVector.add(newRow, new ColumnData(dc));

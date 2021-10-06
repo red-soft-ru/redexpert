@@ -529,6 +529,10 @@ public class BrowserPrivilegesPanel extends JPanel implements ActionListener {
                     }
                     setEnableElements(true);
                     break;
+                case ALL_GRANTS_TO_OBJECT:
+                    if (tablePrivileges.getSelectedRow() > 0)
+                        grant_all_on_role(GRANT, tablePrivileges.getSelectedRow());
+                    break;
                 case ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION:
                     for (int row = 0; row < relName.size() && !enableElements; row++) {
                         grant_all_on_role(GRANT_OPTION, row);
@@ -536,12 +540,20 @@ public class BrowserPrivilegesPanel extends JPanel implements ActionListener {
                     }
                     setEnableElements(true);
                     break;
+                case ALL_GRANTS_TO_OBJECT_WITH_GRANT_OPTION:
+                    if (tablePrivileges.getSelectedRow() > 0)
+                        grant_all_on_role(GRANT_OPTION, tablePrivileges.getSelectedRow());
+                    break;
                 case NO_ALL_GRANTS_TO_ALL_OBJECTS:
                     for (int row = 0; row < relName.size() && !enableElements; row++) {
                         grant_all_on_role(REVOKE, row);
 
                     }
                     setEnableElements(true);
+                    break;
+                case NO_ALL_GRANTS_TO_OBJECT:
+                    if (tablePrivileges.getSelectedRow() > 0)
+                        grant_all_on_role(REVOKE, tablePrivileges.getSelectedRow());
                     break;
                 case GRANT_TO_ALL_OBJECTS:
                     col = tablePrivileges.getSelectedColumn();

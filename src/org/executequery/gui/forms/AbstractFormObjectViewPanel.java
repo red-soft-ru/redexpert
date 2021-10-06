@@ -73,16 +73,27 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
         //add(gradientLabel, BorderLayout.NORTH);
     }
 
+    private JTabbedPane tabPaneWithPrivileges;
+    private ChangeListener privilegeListener;
+
     protected void addPrivilegesTab(JTabbedPane tabPane) {
+        tabPaneWithPrivileges = tabPane;
         privilegesPanel = new BrowserPrivilegesPanel();
         tabPane.add(Bundles.getCommon("privileges"), privilegesPanel);
-        tabPane.addChangeListener(new ChangeListener() {
+        privilegeListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 if (tabPane.getSelectedComponent() == privilegesPanel)
                     privilegesPanel.setValues((AbstractDatabaseObject) getDatabaseObjectNode().getDatabaseObject());
             }
-        });
+        };
+        tabPane.addChangeListener(privilegeListener);
+    }
+
+    protected void removePrivilegesTab() {
+        tabPaneWithPrivileges.remove(privilegesPanel);
+        tabPaneWithPrivileges.removeChangeListener(privilegeListener);
+
     }
 
     protected void setContentPanel(JComponent panel) {

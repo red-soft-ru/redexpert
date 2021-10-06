@@ -45,8 +45,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
     public static final String TITLE = Bundles.get(GrantManagerPanel.class, "GrantManager");
     public static final String FRAME_ICON = "grant_manager_16.png";
     public DatabaseConnection dbc;
-    public static final int NO_GRANT_TO_ALL_OBJECTS = 0;
-    public static final int NO_ALL_GRANTS_TO_OBJECT = 1;
     boolean connected;
     List<DatabaseConnection> listConnections;
     Connection con;
@@ -61,7 +59,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
     String[] headers = {bundleString("Object"), "Select", "Update", "Delete", "Insert", "Execute", "References", "Usage"};
     String[] headers2 = {bundleString("Field"), bundleString("Type"), "Update", "References"};
     Icon gr, no, adm;
-    public static final int NO_ALL_GRANTS_TO_ALL_OBJECTS = 2;
     Vector<String> fieldName;
     Vector<String> fieldType;
     int obj_index;
@@ -74,8 +71,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
     private JPanel downPanel;
     private JComboBox<String> filterBox;
     private JTextField filterField;
-    public static final int GRANT_TO_ALL_OBJECTS = 3;
-    public static final int ALL_GRANTS_TO_OBJECT = 4;
     private JCheckBox invertFilterCheckBox;
     private JProgressBar jProgressBar1;
     private JScrollPane recipientsOfPrivilegesScroll;
@@ -90,6 +85,17 @@ public class GrantManagerPanel extends JPanel implements TabView {
     private JTable tablePrivileges;
     private JComboBox<String> recipientsOfPrivilegesBox;
     private JList<String> userList;
+    public static final int NO_GRANT_TO_ALL_OBJECTS = 0;
+    public static final int NO_ALL_GRANTS_TO_OBJECT = 1;
+    public static final int NO_ALL_GRANTS_TO_ALL_OBJECTS = 2;
+    public static final int GRANT_TO_ALL_OBJECTS = 3;
+    public static final int ALL_GRANTS_TO_OBJECT = 4;
+    public static final int ALL_GRANTS_TO_ALL_OBJECTS = 5;
+    public static final int GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION = 6;
+    public static final int ALL_GRANTS_TO_OBJECT_WITH_GRANT_OPTION = 7;
+    public static final int ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION = 8;
+    public static final int CREATE_TABLE = 9;
+    JToolBar grantToolbar;
 
     /**
      * Creates new form GrantManagerPanel
@@ -122,12 +128,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
         load_userList();
     }
 
-    public static final int ALL_GRANTS_TO_ALL_OBJECTS = 5;
-    public static final int ALL_GRANTS_TO_OBJECT_WITH_GRANT_OPTION = 6;
-    public static final int GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION = 7;
-    public static final int ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION = 8;
-    public static final int CREATE_TABLE = 9;
-    JToolBar grantToolbar;
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
         setEnableElements(true);

@@ -2,7 +2,9 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseException;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
@@ -95,6 +97,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
 
         tabPane = new JTabbedPane(JTabbedPane.TOP);
         tabPane.add(bundleString("Exception"), descPanel);
+
         addPrivilegesTab(tabPane);
         JPanel descriptionPanel = new JPanel(new BorderLayout());
 
@@ -156,6 +159,13 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
         setContentPanel(base);
         cache = new HashMap();
 
+    }
+
+    public void setDatabaseObjectNode(DatabaseObjectNode node) {
+        super.setDatabaseObjectNode(node);
+        AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) getDatabaseObjectNode().getDatabaseObject();
+        if (databaseObject.getDatabaseMajorVersion() < 3)
+            removePrivilegesTab();
     }
 
     public String getLayoutName() {

@@ -1,7 +1,9 @@
 package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
@@ -84,6 +86,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         descPanel.setLayout(new BorderLayout());
         descPanel.add(descriptionPane);
+        DatabaseObjectNode don = getDatabaseObjectNode();
         addPrivilegesTab(tabs);
         tabs.add(Bundles.getCommon("description"), descPanel);
 
@@ -140,6 +143,13 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
     }
 
+    public void setDatabaseObjectNode(DatabaseObjectNode node) {
+        super.setDatabaseObjectNode(node);
+        AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) getDatabaseObjectNode().getDatabaseObject();
+        if (databaseObject.getDatabaseMajorVersion() < 3)
+            removePrivilegesTab();
+    }
+
     public String getLayoutName() {
         return NAME;
     }
@@ -170,7 +180,6 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         } catch (DataSourceException e) {
             controller.handleException(e);
         }
-
     }
 
     public void setValues(BaseDatabaseObject metaObject) {

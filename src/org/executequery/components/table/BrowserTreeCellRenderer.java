@@ -427,8 +427,6 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
         }
 
-        setText(label);
-
         if (type == BrowserConstants.HOST_NODE) {
 
             DatabaseConnection connection =
@@ -492,6 +490,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
             selected = true;
         }
+        setText(label);
         return this;
     }
 

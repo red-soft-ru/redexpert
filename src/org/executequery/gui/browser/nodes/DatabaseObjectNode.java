@@ -29,6 +29,7 @@ import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -327,6 +328,10 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
 
     public boolean isCatalog() {
         return this instanceof RootDatabaseObjectNode;
+    }
+
+    public TreePath getTreePath() {
+        return new TreePath(this);
     }
 
 }

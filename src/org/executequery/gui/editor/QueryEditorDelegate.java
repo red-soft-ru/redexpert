@@ -253,9 +253,9 @@ public class QueryEditorDelegate implements QueryDelegate {
         queryEditor.setOutputMessage(type, text, selectTab);
     }
 
-    public void setResult(int result, int type) {
+    public void setResult(int result, int type, String metaName) {
 
-        queryEditor.setResultText(result, type);
+        queryEditor.setResultText(result, type, metaName);
     }
 
     public void setResultSet(ResultSet rs, String query) throws SQLException {

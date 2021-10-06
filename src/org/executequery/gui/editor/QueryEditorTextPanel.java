@@ -446,9 +446,9 @@ public class QueryEditorTextPanel extends JPanel {
         queryEditor.setResultSet(rset, query);
     }
 
-    public void setResult(int updateCount, int type) {
+    public void setResult(int updateCount, int type, String metaName) {
 
-        queryEditor.setResultText(updateCount, type);
+        queryEditor.setResultText(updateCount, type, metaName);
     }
 
     public String getQueryAreaText() {

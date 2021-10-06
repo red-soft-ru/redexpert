@@ -349,13 +349,13 @@ public class ExecuteQueryDialog extends BaseDialog {
         while (querys.trim().length() > 0 && commit) {
             if (querys.contains(delimiter)) {
                 query = querys.substring(0, querys.indexOf(delimiter));
-                querys = querys.substring(querys.indexOf(delimiter) + 1, querys.length());
+                querys = querys.substring(querys.indexOf(delimiter) + 1);
             } else {
                 query = querys;
                 querys = "";
             }
             while (query.indexOf("\n") == 0) {
-                query = query.substring(1, query.length());
+                query = query.substring(1);
             }
             RowAction action = new RowAction(query);
             commit = execute_query(action);
@@ -369,6 +369,7 @@ public class ExecuteQueryDialog extends BaseDialog {
             DerivedQuery q = new DerivedQuery(query.queryAction);
             String queryToExecute = q.getOriginalQuery();
             int type = q.getQueryType();
+            String metaName = q.getMetaName();
             Log.info("Executing:" + queryToExecute);
             SqlStatementResult result = querySender.execute(type, queryToExecute);
             int updateCount = result.getUpdateCount();
@@ -387,7 +388,7 @@ public class ExecuteQueryDialog extends BaseDialog {
                     return false;
                 } else {
                     type = result.getType();
-                    query.SQLmessage = getResultText(updateCount, type);
+                    query.SQLmessage = getResultText(updateCount, type, metaName);
                     query.executed = true;
                     query.status = "Success";
                     return true;
@@ -404,7 +405,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     }
 
-    public String getResultText(int result, int type) {
+    public String getResultText(int result, int type, String metaName) {
 
         String row = " row ";
         if (result > 1 || result == 0) {
@@ -423,32 +424,8 @@ public class ExecuteQueryDialog extends BaseDialog {
             case QueryTypes.DELETE:
                 rText = row + "deleted.";
                 break;
-            case QueryTypes.DROP_TABLE:
-                rText = "Table dropped.";
-                break;
-            case QueryTypes.CREATE_TABLE:
-                rText = "Table created.";
-                break;
-            case QueryTypes.ALTER_TABLE:
-                rText = "Table altered.";
-                break;
-            case QueryTypes.CREATE_SEQUENCE:
-                rText = "Sequence created.";
-                break;
-            case QueryTypes.CREATE_PROCEDURE:
-                rText = "Procedure created.";
-                break;
-            case QueryTypes.CREATE_TRIGGER:
-                rText = "Trigger created.";
-                break;
-            case QueryTypes.CREATE_FUNCTION:
-                rText = "Function created.";
-                break;
             case QueryTypes.GRANT:
                 rText = "Grant succeeded.";
-                break;
-            case QueryTypes.CREATE_SYNONYM:
-                rText = "Synonym created.";
                 break;
             case QueryTypes.COMMIT:
                 rText = "Commit complete.";
@@ -459,24 +436,21 @@ public class ExecuteQueryDialog extends BaseDialog {
             case QueryTypes.SELECT_INTO:
                 rText = "Statement executed successfully.";
                 break;
-            case QueryTypes.CREATE_ROLE:
-                rText = "Role created.";
-                break;
             case QueryTypes.REVOKE:
                 rText = "Revoke succeeded.";
                 break;
             case QueryTypes.DROP_OBJECT:
-                rText = "Object dropped.";
+                rText = metaName + " dropped.";
                 break;
             case QueryTypes.COMMENT:
                 rText = "Description added";
                 break;
             case QueryTypes.CREATE_OBJECT:
             case QueryTypes.CREATE_OR_ALTER:
-                rText = "Object created";
+                rText = metaName + " created";
                 break;
             case QueryTypes.ALTER_OBJECT:
-                rText = "Object altered";
+                rText = metaName + " altered";
                 break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:
@@ -534,11 +508,11 @@ public class ExecuteQueryDialog extends BaseDialog {
             executed = false;
             status = "";
             copyScript = true;
-            ConctructName();
+            constructName();
 
         }
 
-        void ConctructName() {
+        void constructName() {
             DerivedQuery q = new DerivedQuery(queryAction);
 
             int type = q.getQueryType();
@@ -552,32 +526,8 @@ public class ExecuteQueryDialog extends BaseDialog {
                 case QueryTypes.DELETE:
                     nameOperation = "DELETE RECORDS";
                     break;
-                case QueryTypes.DROP_TABLE:
-                    nameOperation = "DROP TABLE";
-                    break;
-                case QueryTypes.CREATE_TABLE:
-                    nameOperation = "CREATE TABLE";
-                    break;
-                case QueryTypes.ALTER_TABLE:
-                    nameOperation = "ALTER TABLE";
-                    break;
-                case QueryTypes.CREATE_TRIGGER:
-                    nameOperation = "CREATE OR ALTER TRIGGER";
-                    break;
-                case QueryTypes.CREATE_SEQUENCE:
-                    nameOperation = "CREATE SEQUENCE";
-                    break;
-                case QueryTypes.CREATE_PROCEDURE:
-                    nameOperation = "CREATE PROCEDURE";
-                    break;
-                case QueryTypes.CREATE_FUNCTION:
-                    nameOperation = "CREATE FUNCTION";
-                    break;
                 case QueryTypes.GRANT:
                     nameOperation = "GRANT PRIVILEGE";
-                    break;
-                case QueryTypes.CREATE_SYNONYM:
-                    nameOperation = "CREATE SYNONYM";
                     break;
                 case QueryTypes.COMMIT:
                     nameOperation = "COMMIT";
@@ -588,17 +538,23 @@ public class ExecuteQueryDialog extends BaseDialog {
                 case QueryTypes.SELECT_INTO:
                     nameOperation = "SELECT INTO";
                     break;
-                case QueryTypes.CREATE_ROLE:
-                    nameOperation = "CREATE ROLE";
-                    break;
                 case QueryTypes.REVOKE:
                     nameOperation = "REVOKE PRIVILEGE";
                     break;
                 case QueryTypes.DROP_OBJECT:
-                    nameOperation = "DROP OBJECT";
+                    nameOperation = "DROP " + q.getMetaName();
                     break;
                 case QueryTypes.COMMENT:
                     nameOperation = "ADD DESCRIPTION";
+                    break;
+                case QueryTypes.CREATE_OBJECT:
+                    nameOperation = "CREATE " + q.getMetaName();
+                    break;
+                case QueryTypes.ALTER_OBJECT:
+                    nameOperation = "ALTER " + q.getMetaName();
+                    break;
+                case QueryTypes.CREATE_OR_ALTER:
+                    nameOperation = "CREATE OR ALTER " + q.getMetaName();
                     break;
                 default:
                     nameOperation = "OPERATION";

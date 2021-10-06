@@ -62,44 +62,10 @@ public final class QueryTypes {
 
 
     /**
-     * An SQL DROP TABLE statement
-     */
-    public static final int DROP_TABLE = 20;
-
-    /**
-     * An SQL CREATE TABLE statement
-     */
-    public static final int CREATE_TABLE = 21;
-
-    /**
-     * An SQL ALTER TABLE statement
-     */
-    public static final int ALTER_TABLE = 22;
-
-    /**
-     * An SQL CREATE SEQUENCE statement
-     */
-    public static final int CREATE_SEQUENCE = 23;
-
-    /**
-     * An SQL CREATE FUNCTION statement
-     */
-    public static final int CREATE_FUNCTION = 26;
-
-    /**
-     * An SQL CREATE PROCEDURE statement
-     */
-    public static final int CREATE_PROCEDURE = 25;
-
-    /**
      * An SQL GRANT statement
      */
     public static final int GRANT = 27;
 
-    /**
-     * An SQL GRANT statement
-     */
-    public static final int CREATE_SYNONYM = 28;
 
     /**
      * An unknown SQL statement
@@ -132,10 +98,6 @@ public final class QueryTypes {
     public static final int SHOW_TABLES = 30;
 
     public static final int REVOKE = 31;
-
-    public static final int CREATE_ROLE = 32;
-
-    public static final int CREATE_TRIGGER = 35;
 
     public static final int DROP_OBJECT = 33;
 

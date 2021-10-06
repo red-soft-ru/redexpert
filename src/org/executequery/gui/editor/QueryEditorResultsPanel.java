@@ -515,7 +515,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         return rowCount;
     }
 
-    public void setResultText(int result, int type) {
+    public void setResultText(int result, int type, String metaName) {
 
         if (hasNoTabs()) {
 
@@ -541,32 +541,8 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
             case QueryTypes.DELETE:
                 rText = row + "deleted.";
                 break;
-            case QueryTypes.DROP_TABLE:
-                rText = "Table dropped.";
-                break;
-            case QueryTypes.CREATE_TABLE:
-                rText = "Table created.";
-                break;
-            case QueryTypes.ALTER_TABLE:
-                rText = "Table altered.";
-                break;
-            case QueryTypes.CREATE_SEQUENCE:
-                rText = "Sequence created.";
-                break;
-            case QueryTypes.CREATE_PROCEDURE:
-                rText = "Procedure created.";
-                break;
-            case QueryTypes.CREATE_TRIGGER:
-                rText = "Trigger created.";
-                break;
-            case QueryTypes.CREATE_FUNCTION:
-                rText = "Function created.";
-                break;
             case QueryTypes.GRANT:
                 rText = "Grant succeeded.";
-                break;
-            case QueryTypes.CREATE_SYNONYM:
-                rText = "Synonym created.";
                 break;
             case QueryTypes.COMMIT:
                 rText = "Commit complete.";
@@ -577,24 +553,21 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
             case QueryTypes.SELECT_INTO:
                 rText = "Statement executed successfully.";
                 break;
-            case QueryTypes.CREATE_ROLE:
-                rText = "Role created.";
-                break;
             case QueryTypes.REVOKE:
                 rText = "Revoke succeeded.";
                 break;
             case QueryTypes.DROP_OBJECT:
-                rText = "Object dropped.";
+                rText = metaName + " dropped.";
                 break;
             case QueryTypes.COMMENT:
                 rText = "Description created.";
                 break;
             case QueryTypes.CREATE_OBJECT:
             case QueryTypes.CREATE_OR_ALTER:
-                rText = "Object Created";
+                rText = metaName + " Created";
                 break;
             case QueryTypes.ALTER_OBJECT:
-                rText = "Object altered";
+                rText = metaName + " altered";
                 break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:

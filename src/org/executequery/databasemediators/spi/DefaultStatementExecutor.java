@@ -95,12 +95,12 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
     /**
      * The specified maximum connection use count
      */
-    private int maxUseCount;
+    private final int maxUseCount;
 
     /**
      * the query result object
      */
-    private SqlStatementResult statementResult;
+    private final SqlStatementResult statementResult;
 
     /**
      * the database connection properties object
@@ -1083,19 +1083,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             case QueryTypes.UPDATE:
             case QueryTypes.DELETE:
                 return updateRecords(query);
-            case QueryTypes.DROP_TABLE:
-            case QueryTypes.CREATE_TABLE:
-            case QueryTypes.ALTER_TABLE:
-            case QueryTypes.CREATE_SEQUENCE:
-            case QueryTypes.CREATE_FUNCTION:
-            case QueryTypes.CREATE_PROCEDURE:
             case QueryTypes.GRANT:
-            case QueryTypes.CREATE_SYNONYM:
-            case QueryTypes.CREATE_ROLE:
             case QueryTypes.REVOKE:
             case QueryTypes.DROP_OBJECT:
             case QueryTypes.COMMENT:
-            case QueryTypes.CREATE_TRIGGER:
             case QueryTypes.CREATE_OBJECT:
             case QueryTypes.RECREATE_OBJECT:
             case QueryTypes.CREATE_OR_ALTER:
@@ -1419,19 +1410,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             case QueryTypes.UPDATE:
             case QueryTypes.DELETE:
                 return updateRecords(statement);
-            case QueryTypes.DROP_TABLE:
-            case QueryTypes.CREATE_TABLE:
-            case QueryTypes.ALTER_TABLE:
-            case QueryTypes.CREATE_SEQUENCE:
-            case QueryTypes.CREATE_FUNCTION:
-            case QueryTypes.CREATE_PROCEDURE:
             case QueryTypes.GRANT:
-            case QueryTypes.CREATE_SYNONYM:
-            case QueryTypes.CREATE_ROLE:
             case QueryTypes.REVOKE:
             case QueryTypes.DROP_OBJECT:
             case QueryTypes.COMMENT:
-            case QueryTypes.CREATE_TRIGGER:
             case QueryTypes.CREATE_OBJECT:
             case QueryTypes.RECREATE_OBJECT:
             case QueryTypes.CREATE_OR_ALTER:

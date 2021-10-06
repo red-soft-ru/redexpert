@@ -310,6 +310,32 @@ public class TableDataTab extends JPanel
 
     }
 
+    private List<RolloverButton> tableButtons;
+
+    void rebuildDataFromMetadata(List<ColumnData> columnDataList) {
+        Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
+        databaseObject.releaseResources();
+        ResultSet resultSet = databaseObject.getMetaData();
+        tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
+    }
+
+    Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+        String query = "SELECT " + key.getReferencedColumn() + " FROM " + key.getReferencedTable();
+        Vector items = new Vector();
+        try {
+            ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
+            while (rs.next()) {
+                items.add(rs.getObject(1));
+            }
+        } catch (Exception e) {
+            Log.error("Error get Foreign keys:" + e.getMessage());
+        } finally {
+            querySender.releaseResources();
+        }
+        items.add(null);
+        return items;
+    }
+
     private Object setTableResultsPanel(DatabaseObject databaseObject) {
         querySender = new DefaultStatementExecutor(databaseObject.getHost().getDatabaseConnection(), true);
         tableDataChanges.clear();
@@ -355,7 +381,9 @@ public class TableDataTab extends JPanel
             if (!isDatabaseTableObject()) {
 
                 canEditTableNotePanel.setVisible(false);
-                buttonsEditingPanel.setVisible(false);
+                for (RolloverButton button : tableButtons)
+                    button.setVisible(false);
+                //buttonsEditingPanel.setVisible(false);
             } else {
                 List<DatabaseColumn> list = asDatabaseTableObject().getColumns();
                 if (columnDataList == null)
@@ -420,8 +448,8 @@ public class TableDataTab extends JPanel
 
                 SortableHeaderRenderer renderer = new SortableHeaderRenderer(sorter) {
 
-                    private ImageIcon primaryKeyIcon = GUIUtilities.loadIcon(BrowserConstants.PRIMARY_COLUMNS_IMAGE);
-                    private ImageIcon foreignKeyIcon = GUIUtilities.loadIcon(BrowserConstants.FOREIGN_COLUMNS_IMAGE);
+                    private final ImageIcon primaryKeyIcon = GUIUtilities.loadIcon(BrowserConstants.PRIMARY_COLUMNS_IMAGE);
+                    private final ImageIcon foreignKeyIcon = GUIUtilities.loadIcon(BrowserConstants.FOREIGN_COLUMNS_IMAGE);
 
                     @Override
                     public Component getTableCellRendererComponent(JTable table,
@@ -541,65 +569,6 @@ public class TableDataTab extends JPanel
         repaint();
 
         return "done";
-    }
-
-    void rebuildDataFromMetadata(List<ColumnData> columnDataList) {
-        Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
-        databaseObject.releaseResources();
-        ResultSet resultSet = databaseObject.getMetaData();
-        tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
-    }
-
-    Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String query = "SELECT " + key.getReferencedColumn() + " FROM " + key.getReferencedTable();
-        Vector items = new Vector();
-        try {
-            ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
-                items.add(rs.getObject(1));
-            }
-        } catch (Exception e) {
-            Log.error("Error get Foreign keys:" + e.getMessage());
-        } finally {
-            querySender.releaseResources();
-        }
-        items.add(null);
-        return items;
-    }
-
-    public DefaultTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String checked_column  = "select R.RDB$FIELD_NAME from RDB$FIELDS F, RDB$RELATION_FIELDS R where (F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE) and (R.RDB$SYSTEM_FLAG = 0) and (R.RDB$RELATION_NAME = " + "'" + key.getReferencedTable() + "'" + ") and (NOT F.RDB$FIELD_NAME IN (select RDB$FIELD_NAME from RDB$FIELD_DIMENSIONS))";
-        ArrayList<String> checked_column_list = new ArrayList<String>();
-        try {
-            ResultSet checked_column_rs = querySender.execute(QueryTypes.SELECT, checked_column).getResultSet();
-            while (checked_column_rs.next()) {
-                checked_column_list.add(checked_column_rs.getObject(1).toString());
-            }
-        } catch (Exception e) {
-            Log.error("Error get Foreign keys:" + e.getMessage());
-        } finally {
-            querySender.releaseResources();
-        }
-
-        String checkedColumns = new String();
-        for (int i = 0; i < checked_column_list.size(); i++) {
-            checkedColumns += checked_column_list.get(i);
-            if (i < checked_column_list.size() - 1) {
-                checkedColumns += " , ";
-            }
-        }
-
-        String query = "SELECT " + checkedColumns + " FROM " + key.getReferencedTable();
-        DefaultTableModel defaultTableModel = new DefaultTableModel();
-        try {
-            ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
-            defaultTableModel = buildTableModel(rs);
-        } catch (Exception e) {
-            Log.error("Error get Foreign keys:" + e.getMessage());
-        } finally {
-            querySender.releaseResources();
-        }
-        return defaultTableModel;
     }
 
     public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
@@ -937,7 +906,43 @@ public class TableDataTab extends JPanel
         }
     }
 
+    public DefaultTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+        String checked_column = "select R.RDB$FIELD_NAME from RDB$FIELDS F, RDB$RELATION_FIELDS R where (F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE) and (R.RDB$SYSTEM_FLAG = 0) and (R.RDB$RELATION_NAME = " + "'" + key.getReferencedTable() + "'" + ") and (NOT F.RDB$FIELD_NAME IN (select RDB$FIELD_NAME from RDB$FIELD_DIMENSIONS))";
+        ArrayList<String> checked_column_list = new ArrayList<String>();
+        try {
+            ResultSet checked_column_rs = querySender.execute(QueryTypes.SELECT, checked_column).getResultSet();
+            while (checked_column_rs.next()) {
+                checked_column_list.add(checked_column_rs.getObject(1).toString());
+            }
+        } catch (Exception e) {
+            Log.error("Error get Foreign keys:" + e.getMessage());
+        } finally {
+            querySender.releaseResources();
+        }
+
+        String checkedColumns = "";
+        for (int i = 0; i < checked_column_list.size(); i++) {
+            checkedColumns += checked_column_list.get(i);
+            if (i < checked_column_list.size() - 1) {
+                checkedColumns += " , ";
+            }
+        }
+
+        String query = "SELECT " + checkedColumns + " FROM " + key.getReferencedTable();
+        DefaultTableModel defaultTableModel = new DefaultTableModel();
+        try {
+            ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
+            defaultTableModel = buildTableModel(rs);
+        } catch (Exception e) {
+            Log.error("Error get Foreign keys:" + e.getMessage());
+        } finally {
+            querySender.releaseResources();
+        }
+        return defaultTableModel;
+    }
+
     private void createButtonsEditingPanel() {
+        tableButtons = new ArrayList<>();
         buttonsEditingPanel = new JPanel(new GridBagLayout());
         PanelToolBar bar = new PanelToolBar();
         RolloverButton addRolloverButton = new RolloverButton();
@@ -954,6 +959,7 @@ public class TableDataTab extends JPanel
             }
         });
         bar.add(addRolloverButton);
+        tableButtons.add(addRolloverButton);
         RolloverButton deleteRolloverButton = new RolloverButton();
         deleteRolloverButton.setIcon(GUIUtilities.loadIcon("delete_16.png"));
         deleteRolloverButton.setToolTipText(bundleString("DeleteRecord"));
@@ -975,6 +981,7 @@ public class TableDataTab extends JPanel
             }
         });
         bar.add(deleteRolloverButton);
+        tableButtons.add(deleteRolloverButton);
         RolloverButton commitRolloverButton = new RolloverButton();
         commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
         commitRolloverButton.setToolTipText(bundleString("Commit"));
@@ -995,6 +1002,7 @@ public class TableDataTab extends JPanel
             }
         });
         bar.add(commitRolloverButton);
+        tableButtons.add(commitRolloverButton);
         RolloverButton rollbackRolloverButton = new RolloverButton();
         rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
         rollbackRolloverButton.setToolTipText(bundleString("Rollback"));
@@ -1006,6 +1014,7 @@ public class TableDataTab extends JPanel
             }
         });
         bar.add(rollbackRolloverButton);
+        tableButtons.add(rollbackRolloverButton);
         RolloverButton fetchAllRolloverButton = new RolloverButton();
         fetchAllRolloverButton.setText(bundleString("FetchAll"));
         fetchAllRolloverButton.addActionListener(new ActionListener() {
@@ -1064,6 +1073,16 @@ public class TableDataTab extends JPanel
             }
         });
         bar.add(fetchAllRolloverButton);
+        RolloverButton refreshButton = new RolloverButton();
+        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.png"));
+        refreshButton.setToolTipText(bundleString("ReloadData"));
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                loadDataForTable(databaseObject);
+            }
+        });
+        bar.add(refreshButton);
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingPanel.add(bar, gbc3);
@@ -1254,7 +1273,7 @@ public class TableDataTab extends JPanel
 
     class InterruptibleProcessPanel extends JPanel implements ActionListener {
 
-        private ProgressBar progressBar;
+        private final ProgressBar progressBar;
 
         public InterruptibleProcessPanel(String labelText) {
 

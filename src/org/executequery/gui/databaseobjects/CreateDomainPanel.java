@@ -233,7 +233,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
                 sqlTextPane.setText(sb.toString());
             }
         } else {
-            sqlTextPane.setText(SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName()));
+            sqlTextPane.setText(SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false));
         }
     }
 }

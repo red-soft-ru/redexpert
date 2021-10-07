@@ -56,7 +56,7 @@ public final class SQLUtils {
 
         }
         if (primary_flag)
-            primary.append(primaryText.toString());
+            primary.append(primaryText);
         primary.append(")");
         StringBuffer description = new StringBuffer(50);
         description.setLength(0);
@@ -414,7 +414,7 @@ public final class SQLUtils {
         String[] dataTypes = metaData.getDataTypesArray();
         int[] intDataTypes = metaData.getIntDataTypesArray();
         for (int i = 0; i < dataTypes.length; i++) {
-            if (dataTypes[i].toLowerCase().equals(parameter.getSqlType().toLowerCase()))
+            if (dataTypes[i].equalsIgnoreCase(parameter.getSqlType()))
                 cd.setSQLType(intDataTypes[i]);
         }
         return cd;
@@ -494,9 +494,13 @@ public final class SQLUtils {
         return columnConstraints;
     }
 
-    public static String generateCreateDomain(ColumnData columnData, String name) {
+    public static String generateCreateDomain(ColumnData columnData, String name, boolean useDomainType) {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE DOMAIN ").append(name).append(" as ").append(columnData.getFormattedDomainDataType()).append("\n");
+        sb.append("CREATE DOMAIN ").append(name).append(" as ");
+        if (useDomainType)
+            sb.append(columnData.getFormattedDomainDataType());
+        else sb.append(columnData.getFormattedDataType());
+        sb.append("\n");
         if (!MiscUtils.isNull(columnData.getDefaultValue())) {
             sb.append(" DEFAULT ").append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
         }

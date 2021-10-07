@@ -25,7 +25,7 @@ public class DependPanel extends TreePanel {
     private SchemaTree tree;
     private DatabaseObject databaseObject;
     private DatabaseConnection databaseConnection;
-    private int treeType;
+    private final int treeType;
 
     public DependPanel(int treeType) {
         this.treeType = treeType;
@@ -137,20 +137,27 @@ public class DependPanel extends TreePanel {
     }
 
     private void twoClicks(MouseEvent e) {
-        String s = ((DatabaseObjectNode) tree.getSelectionPath().getLastPathComponent()).getName();
+        DatabaseObjectNode node = (DatabaseObjectNode) tree.getSelectionPath().getLastPathComponent();
+        String s = node.getName();
         if (s != null) {
             s = s.replace("$", "\\$");
             TreeFindAction action = new TreeFindAction();
             SchemaTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
             action.install(tree);
             action.findString(tree, s, ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection));
-            BaseDialog dialog = new BaseDialog("find", false);
-            JPanel panel = new JPanel();
             JList jList = action.getResultsList();
             if (jList.getModel().getSize() == 1) {
                 jList.setSelectedIndex(0);
                 action.listValueSelected((TreePath) jList.getSelectedValue());
             } else {
+                for (int i = 0; i < jList.getModel().getSize(); i++) {
+                    if (((DatabaseObjectNode) ((TreePath) jList.getModel().getElementAt(i)).getLastPathComponent()).getType() == node.getType()) {
+                        jList.setSelectedIndex(i);
+                        break;
+                    }
+                }
+                action.listValueSelected((TreePath) jList.getSelectedValue());
+                /*
                 jList.addPropertyChangeListener(new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
@@ -161,7 +168,7 @@ public class DependPanel extends TreePanel {
                 JScrollPane scrollPane = new JScrollPane(jList);
                 panel.add(scrollPane);
                 dialog.addDisplayComponent(panel);
-                dialog.display();
+                dialog.display();*/
             }
         }
     }

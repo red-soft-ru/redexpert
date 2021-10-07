@@ -86,7 +86,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateDomain(getDomainData(), getName());
+        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true);
     }
 
     @Override

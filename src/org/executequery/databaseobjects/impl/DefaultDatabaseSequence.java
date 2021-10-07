@@ -51,6 +51,8 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
      * @return the object type
      */
     public int getType() {
+        if (isSystem())
+            return SYSTEM_SEQUENCE;
         return SEQUENCE;
     }
 
@@ -60,6 +62,8 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
      * @return the meta data key name.
      */
     public String getMetaDataKey() {
+        if (isSystem())
+            return META_TYPES[SYSTEM_SEQUENCE];
         return META_TYPES[SEQUENCE];
     }
 

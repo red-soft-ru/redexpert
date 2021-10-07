@@ -21,6 +21,7 @@
 package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.QueryTypes;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.QueryDelegate;
 import org.executequery.sql.QueryDispatcher;
@@ -186,17 +187,17 @@ public class ErdExecuteSQL extends ErdPrintableDialog
         setOutputMessage(type, text);
     }
 
-    public void setResult(int result, int type) {
+    public void setResult(int result, int type, String metaName) {
         String text = null;
 
         switch (type) {
-            case 20:
+            case QueryTypes.DROP_OBJECT:
                 text = "\n\nTable dropped.";
                 break;
-            case 21:
+            case QueryTypes.CREATE_OBJECT:
                 text = "\n\nTable created.";
                 break;
-            case 22:
+            case QueryTypes.ALTER_OBJECT:
                 text = "\n\nTable altered.";
                 break;
             case 24:

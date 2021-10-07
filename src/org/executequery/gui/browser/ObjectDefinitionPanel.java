@@ -26,7 +26,6 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
@@ -95,7 +94,6 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
      */
     private DefaultDatabaseObjectTable tableDescriptionTable;
 
-    private TablePrivilegeTab tablePrivilegePanel;
 
     /**
      * the current database object in view
@@ -132,7 +130,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     private boolean metaDataLoaded;
 
@@ -189,7 +187,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         descBottomPanel.setBorder(BorderFactory.createTitledBorder(Bundles.getCommon("columns")));
 
         tableDataPanel = new TableDataTab(true);
-        tablePrivilegePanel = new TablePrivilegeTab();
+
 
         metaDataPanel = new DatabaseObjectMetaDataPanel();
 
@@ -220,7 +218,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
         tabPane = new JTabbedPane();
         tabPane.add(Bundles.getCommon("description"), descBottomPanel);
-        tabPane.add(Bundles.getCommon("privileges"), tablePrivilegePanel);
+        addPrivilegesTab(tabPane);
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
         tabPane.add(Bundles.getCommon("SQL"), sqlPanel);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
@@ -264,16 +262,8 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
                 return new TablePrinter(tableDescriptionTable,
                         "Table: " + currentObjectView.getName());
 
-            case 1:
-                return new TablePrinter(tablePrivilegePanel.getTable(),
-                        "Access rights for table: " +
-                                currentObjectView.getName());
 
             case 2:
-                return new TablePrinter(tableDataPanel.getTable(),
-                        "Table Data: " + currentObjectView.getName());
-
-            case 3:
                 return new TablePrinter(tableDataPanel.getTable(),
                         "Table Data: " + currentObjectView.getName());
 
@@ -314,13 +304,6 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             if (!dataLoaded) {
 
                 loadData();
-            }
-
-        } else if (selectedIndex == 1) {
-
-            if (!privilegesLoaded) {
-
-                loadPrivileges();
             }
 
         } else if (selectedIndex == 4) {
@@ -367,23 +350,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         }
     }
 
-    private void loadPrivileges() {
 
-        try {
-
-            tablePrivilegePanel.setValues(currentObjectView.getPrivileges());
-
-        } catch (DataSourceException e) {
-
-            controller.handleException(e);
-            tablePrivilegePanel.setValues(new TablePrivilege[0]);
-
-        } finally {
-
-            privilegesLoaded = true;
-        }
-
-    }
 
     /**
      * Create the table description panel if not yet initialised.
@@ -528,8 +495,6 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         switch (tabIndex) {
             case 0:
                 return tableDescriptionTable;
-            case 1:
-                return tablePrivilegePanel.getTable();
             default:
                 return null;
         }

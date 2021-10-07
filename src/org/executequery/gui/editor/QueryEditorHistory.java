@@ -206,14 +206,15 @@ public class QueryEditorHistory {
     }
 
     public static int getMinNumber() {
-        for (int i = 0; i < numbers().size(); i++) {
-            int number = numbers().get(i);
+        List<Integer> nums = numbers();
+        for (int i = 0; i < nums.size(); i++) {
+            int number = nums.get(i);
             if (i == 0) {
                 if (number != 1)
                     return 1;
             } else {
-                if (number - 1 != numbers().get(i - 1)) {
-                    return numbers().get(i - 1) + 1;
+                if ((number - 1) != nums.get(i - 1)&&number!=nums.get(i-1)) {
+                    return nums.get(i - 1) + 1;
                 }
             }
         }

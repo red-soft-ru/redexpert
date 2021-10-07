@@ -50,7 +50,7 @@ public interface QueryDelegate {
      * @param the result of the executed query (update)
      * @param the type of statement executed
      */
-    void setResult(int result, int type);
+    void setResult(int result, int type, String metaName);
 
     /**
      * Sets the text within status bar's left-hand

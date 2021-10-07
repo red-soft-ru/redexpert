@@ -34,10 +34,13 @@ import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledResultSet;
 import org.executequery.datasource.PooledStatement;
+import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.editor.InputParametersDialog;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.editor.autocomplete.Parameter;
@@ -57,10 +60,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -555,7 +555,7 @@ public class QueryDispatcher {
 
                     } else {
 
-                        setResult(updateCount, QueryTypes.UNKNOWN);
+                        setResult(updateCount, QueryTypes.UNKNOWN, null);
                     }
 
                 }
@@ -575,11 +575,12 @@ public class QueryDispatcher {
             executing = true;
 
             String procQuery = sql.toUpperCase();
-
+            String noCommentsQuery = queryTokenizer.removeComments(procQuery);
+            DerivedQuery derivedQuery = new DerivedQuery(noCommentsQuery);
             // check if its a procedure creation or execution
-            if (isCreateProcedureOrFunction(procQuery)) {
+            if (isCreateProcedureOrFunction(derivedQuery)) {
 
-                return executeProcedureOrFunction(sql, procQuery);
+                return executeProcedureOrFunction(sql, derivedQuery);
             }
 
             List<DerivedQuery> queries = queryTokenizer.tokenize(sql);
@@ -739,8 +740,18 @@ public class QueryDispatcher {
                             } else {
 
                                 type = result.getType();
-                                setResultText(updateCount, type);
+                                setResultText(updateCount, query.getQueryType(), query.getMetaName());
+                                if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT) {
+                                    DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
 
+                                    for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
+                                        if (metaTagNode.getMetaDataKey().equals(query.getMetaName()) || metaTagNode.isSystem()) {
+                                            ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+                                        }
+                                    }
+
+
+                                }
 
                                 if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {
 
@@ -925,6 +936,7 @@ public class QueryDispatcher {
             start = System.currentTimeMillis();
             boolean stopOnError = SystemProperties.getBooleanProperty("user", "editor.stop.on.error");
             boolean error = false;
+            TreeSet<String> createsMetaNames = new TreeSet<>();
             for (int i = 0; i < executableQueries.size(); i++) {
                 try {
                     DerivedQuery query = executableQueries.get(i);
@@ -1037,9 +1049,10 @@ public class QueryDispatcher {
                                 } else {
 
                                     type = result.getType();
-                                    setResultText(updateCount, type);
-
-
+                                    setResultText(updateCount, query.getQueryType(), query.getMetaName());
+                                    if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT) {
+                                        createsMetaNames.add(query.getMetaName());
+                                    }
                                     if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {
 
                                         setStatusMessage(" " + result.getMessage());
@@ -1141,7 +1154,13 @@ public class QueryDispatcher {
             long timeTaken = end - start;
             totalDuration += timeTaken;
             logExecutionTime(timeTaken);
+            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
 
+            for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
+                if (createsMetaNames.contains(metaTagNode.getMetaDataKey()) || metaTagNode.isSystem()) {
+                    ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+                }
+            }
             statementExecuted(script);
 
         } catch (InterruptedException e) {
@@ -1419,9 +1438,9 @@ public class QueryDispatcher {
         return MiscUtils.formatDuration(totalDuration);
     }
 
-    private void setResult(int updateCount, int type) {
+    private void setResult(int updateCount, int type, String metaName) {
 
-        delegate.setResult(updateCount, type);
+        delegate.setResult(updateCount, type, metaName);
     }
 
     private void statementExecuted(String sql) {
@@ -1429,7 +1448,7 @@ public class QueryDispatcher {
         delegate.statementExecuted(sql);
     }
 
-    private Object executeProcedureOrFunction(String sql, String procQuery)
+    private Object executeProcedureOrFunction(String sql, DerivedQuery procQuery)
             throws SQLException {
 
         logExecution(sql.trim());
@@ -1465,7 +1484,7 @@ public class QueryDispatcher {
             }
         }, tree);
         PreparedStatement statement = prepareStatementWithParameters(sql, variables.toString());
-        SqlStatementResult result = querySender.execute(QueryTypes.CREATE_PROCEDURE, statement);
+        SqlStatementResult result = querySender.execute(QueryTypes.CREATE_OBJECT, statement);
 
         if (result.getUpdateCount() == -1) {
 
@@ -1473,16 +1492,7 @@ public class QueryDispatcher {
             setStatusMessage(ERROR_EXECUTING);
 
         } else {
-
-            if (isCreateProcedure(procQuery)) {
-
-                setResultText(result.getUpdateCount(), QueryTypes.CREATE_PROCEDURE);
-
-            } else if (isCreateFunction(procQuery)) {
-
-                setResultText(result.getUpdateCount(), QueryTypes.CREATE_FUNCTION);
-            }
-
+            setResultText(result.getUpdateCount(), procQuery.getQueryType(), procQuery.getMetaName());
         }
 
         long end = System.currentTimeMillis();
@@ -1572,10 +1582,10 @@ public class QueryDispatcher {
 
     }
 
-    private void setResultText(final int result, final int type) {
+    private void setResultText(final int result, final int type, String metaName) {
         ThreadUtils.invokeAndWait(new Runnable() {
             public void run() {
-                delegate.setResult(result, type);
+                delegate.setResult(result, type, metaName);
             }
         });
     }
@@ -1700,12 +1710,12 @@ public class QueryDispatcher {
      * @param query - the query to be executed
      * @return true | false
      */
-    private boolean isCreateProcedureOrFunction(String query) {
+    private boolean isCreateProcedureOrFunction(DerivedQuery query) {
 
-        String noCommentsQuery = queryTokenizer.removeComments(query);
-        if (isNotSingleStatementExecution(noCommentsQuery)) {
 
-            return isCreateProcedure(noCommentsQuery) || isCreateFunction(noCommentsQuery);
+        if (isNotSingleStatementExecution(query.getQueryType())) {
+
+            return isCreateProcedure(query) || isCreateFunction(query);
         }
 
         return false;
@@ -1718,16 +1728,9 @@ public class QueryDispatcher {
      * @param query - the query to be executed
      * @return true | false
      */
-    private boolean isCreateProcedure(String query) {
+    private boolean isCreateProcedure(DerivedQuery query) {
 
-        int createIndex = query.indexOf("CREATE");
-        int tableIndex = query.indexOf("TABLE");
-        int procedureIndex = query.indexOf("PROCEDURE");
-        int packageIndex = query.indexOf("PACKAGE");
-
-        return (createIndex != -1) && (tableIndex == -1) &&
-                (procedureIndex > createIndex || packageIndex > createIndex) || (createIndex != -1) &&
-                (tableIndex != -1) && (procedureIndex > createIndex && tableIndex > procedureIndex || packageIndex > createIndex && tableIndex > packageIndex);
+        return query.getTypeObject() == NamedObject.PROCEDURE || query.getTypeObject() == NamedObject.PACKAGE;
     }
 
     /**
@@ -1737,32 +1740,24 @@ public class QueryDispatcher {
      * @param query - the query to be executed
      * @return true | false
      */
-    private boolean isCreateFunction(String query) {
-        int createIndex = query.indexOf("CREATE");
-        int tableIndex = query.indexOf("TABLE");
-        int functionIndex = query.indexOf("FUNCTION");
-        return createIndex != -1 &&
-                tableIndex == -1 &&
-                functionIndex > createIndex || createIndex != -1 &&
-                tableIndex != -1 &&
-                functionIndex > createIndex && functionIndex < tableIndex;
+    private boolean isCreateFunction(DerivedQuery query) {
+        return query.getTypeObject() == NamedObject.FUNCTION;
     }
 
-    private boolean isNotSingleStatementExecution(String query) {
+    private boolean isNotSingleStatementExecution(int typeQuery) {
 
-        DerivedQuery derivedQuery = new DerivedQuery(query);
-        int type = derivedQuery.getQueryType();
 
         int[] nonSingleStatementExecutionTypes = {
-                QueryTypes.CREATE_FUNCTION,
-                QueryTypes.CREATE_PROCEDURE,
+                QueryTypes.CREATE_OBJECT,
+                QueryTypes.ALTER_OBJECT,
+                QueryTypes.CREATE_OR_ALTER,
                 QueryTypes.UNKNOWN,
                 QueryTypes.EXECUTE
         };
 
         for (int i = 0; i < nonSingleStatementExecutionTypes.length; i++) {
 
-            if (type == nonSingleStatementExecutionTypes[i]) {
+            if (typeQuery == nonSingleStatementExecutionTypes[i]) {
 
                 return true;
             }

@@ -358,6 +358,15 @@ public class DatabaseHostNode extends DatabaseObjectNode {
         }
     }
 
+    public List<DatabaseObjectNode> getAllDBObjects(String type) {
+        List<DatabaseObjectNode> childs = getAllChildren();
+        for (DatabaseObjectNode child : childs) {
+            if (child.getMetaDataKey().contains(type))
+                return child.getChildObjects();
+        }
+        return new ArrayList<>();
+    }
+
 }
 
 

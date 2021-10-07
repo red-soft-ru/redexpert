@@ -22,10 +22,10 @@ import java.util.Vector;
 
 public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
-    public static final String CREATE_TITLE = "Create Trigger";
+    public static final String CREATE_TITLE = Bundles.get(CreateTriggerPanel.class,"CreateTrigger");
 
     //common components for table and database trigger
-    public static final String EDIT_TITLE = "Edit Trigger";
+    public static final String EDIT_TITLE = Bundles.get(CreateTriggerPanel.class,"EditTrigger");
 
     private static final String TRIGGER = Bundles.get(CreateTriggerPanel.class, "table-trigger");
     private static final String DB_TRIGGER = Bundles.get(CreateTriggerPanel.class, "database-trigger");
@@ -375,7 +375,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     private void changeTypeTrigger() {
         databaseTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DB_TRIGGER);
-        ddlTableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER);
+        ddlTableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER||typeTriggerCombo.getSelectedItem() == TRIGGER);
         tableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == TRIGGER);
         scrolDDL.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER);
     }
@@ -383,8 +383,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     Object[] getTables() {
         try {
             Vector<String> tables = new Vector<>();
-            String query = "Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS" +
-                    " WHERE RDB$RELATION_TYPE != 1 order by 1";
+            String query = "Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS order by 1";
             ResultSet rs = sender.getResultSet(query).getResultSet();
             while (rs.next()) {
                 tables.add(rs.getString(1));

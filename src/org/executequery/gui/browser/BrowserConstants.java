@@ -214,6 +214,7 @@ public class BrowserConstants {
      * The image icon 'Sequence16.png'
      */
     public static final String SEQUENCES_IMAGE = "Sequence16.png";
+    public static final String SYSTEM_SEQUENCES_IMAGE = "SystemSequence16.png";
 
     /**
      * The image icon 'Synonym16.png'
@@ -325,7 +326,8 @@ public class BrowserConstants {
             USER_IMAGE,
             DB_TRIGGER_IMAGE,
             DDL_TRIGGER_IMAGE,
-            SYSTEM_PACKAGE_IMAGE
+            SYSTEM_PACKAGE_IMAGE,
+            SYSTEM_SEQUENCES_IMAGE
     };
 
     private static String bundleString(String key) {

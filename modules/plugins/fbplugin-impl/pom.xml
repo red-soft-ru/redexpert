@@ -20,7 +20,7 @@
     </repository>
     <repository>
       <id>nexus-red-soft-ru-jaybird</id>
-      <url>http://nexus.red-soft.ru/repository/jaybird</url>
+      <url>https://nexus.red-soft.ru/repository/jaybird</url>
     </repository>
   </repositories>
 

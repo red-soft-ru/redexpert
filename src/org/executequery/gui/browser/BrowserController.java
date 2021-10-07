@@ -64,7 +64,7 @@ public class BrowserController {
     /**
      * the connections tree panel
      */
-    private ConnectionsTreePanel treePanel;
+    private final ConnectionsTreePanel treePanel;
 
     /**
      * the databse viewer panel
@@ -412,6 +412,7 @@ public class BrowserController {
                     return packagePanel;
 
                 case NamedObject.SEQUENCE:
+                case NamedObject.SYSTEM_SEQUENCE:
                     BrowserSequencePanel sequencePanel = null;
                     if (!viewPanel.containsPanel(BrowserSequencePanel.NAME)) {
                         sequencePanel = new BrowserSequencePanel(this);

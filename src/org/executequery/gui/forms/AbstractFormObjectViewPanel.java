@@ -21,12 +21,16 @@
 package org.executequery.gui.forms;
 
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
+import org.executequery.gui.browser.BrowserPrivilegesPanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.GradientLabel;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.print.Printable;
 
@@ -47,7 +51,8 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
 
     protected GradientLabel gradientLabel;
 
-    private static GridBagConstraints panelConstraints;
+    private static final GridBagConstraints panelConstraints;
+    private BrowserPrivilegesPanel privilegesPanel;
 
     static {
         emptyBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
@@ -66,6 +71,29 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
 //        	gradientLabel.setForeground(new ColorUIResource(0x333333));
 //        }
         //add(gradientLabel, BorderLayout.NORTH);
+    }
+
+    private JTabbedPane tabPaneWithPrivileges;
+    private ChangeListener privilegeListener;
+
+    protected void addPrivilegesTab(JTabbedPane tabPane) {
+        tabPaneWithPrivileges = tabPane;
+        privilegesPanel = new BrowserPrivilegesPanel();
+        tabPane.add(Bundles.getCommon("privileges"), privilegesPanel);
+        privilegeListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (tabPane.getSelectedComponent() == privilegesPanel)
+                    privilegesPanel.setValues((AbstractDatabaseObject) getDatabaseObjectNode().getDatabaseObject());
+            }
+        };
+        tabPane.addChangeListener(privilegeListener);
+    }
+
+    protected void removePrivilegesTab() {
+        tabPaneWithPrivileges.remove(privilegesPanel);
+        tabPaneWithPrivileges.removeChangeListener(privilegeListener);
+
     }
 
     protected void setContentPanel(JComponent panel) {

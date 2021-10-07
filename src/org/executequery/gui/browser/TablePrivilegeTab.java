@@ -21,7 +21,10 @@
 package org.executequery.gui.browser;
 
 import org.executequery.databaseobjects.TablePrivilege;
+import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.gui.DefaultTable;
+import org.executequery.gui.databaseobjects.TableColumnIndexTableModel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.table.TableSorter;
 
 import javax.swing.*;
@@ -47,6 +50,11 @@ public class TablePrivilegeTab extends JPanel {
         }
     }
 
+    private String bundleString(String key){
+
+        return Bundles.get(TablePrivilegeTab.class,key);
+    }
+
     private void jbInit() throws Exception {
 
         model = new TablePrivilegeModel();
@@ -57,7 +65,7 @@ public class TablePrivilegeTab extends JPanel {
 
         tablePanel = new JPanel(new BorderLayout());
         tablePanel.add(new JScrollPane(table), BorderLayout.CENTER);
-        tablePanel.setBorder(BorderFactory.createTitledBorder("Table Access Rights"));
+        tablePanel.setBorder(BorderFactory.createTitledBorder(bundleString("TableAccessRights")));
 
         noResultsLabel = new JLabel("No privilege information for this object is available.",
                 JLabel.CENTER);
@@ -97,7 +105,11 @@ public class TablePrivilegeTab extends JPanel {
     private class TablePrivilegeModel extends AbstractDatabaseTableViewModel {
 
         private TablePrivilege[] values;
-        private String[] header = {"Grantor", "Grantee", "Privilege", "Grantable"};
+        private final String[] header = Bundles.get(TablePrivilegeTab.class, new String[]{
+                "Grantor",
+                "Grantee",
+                "Privilege",
+                "Grantable"});
 
         public TablePrivilegeModel() {
             values = new TablePrivilege[0];

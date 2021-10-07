@@ -74,7 +74,7 @@ public class SimpleDataItemViewerPanel extends DefaultActionButtonsPanel {
         textPanel.add(new JScrollPane(textArea), BorderLayout.CENTER);
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Text", textPanel);
+        tabbedPane.addTab(bundleString("Text"), textPanel);
 
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setPreferredSize(new Dimension(400, 300));
@@ -86,7 +86,7 @@ public class SimpleDataItemViewerPanel extends DefaultActionButtonsPanel {
         contentPanel.add(descriptionLabel, BorderLayout.SOUTH);
 
         JButton closeButton = create(Bundles.get("common.close.button"), "close");
-        JButton copyButton = create("Copy to Clipboard", "copy");
+        JButton copyButton = create(Bundles.get("common.copy-to-clipboard.button"), "copy");
         JButton saveButton = create(Bundles.get("common.save-as.button"), "save");
 
         addActionButton(copyButton);
@@ -111,8 +111,8 @@ public class SimpleDataItemViewerPanel extends DefaultActionButtonsPanel {
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Data Type: ").append(recordDataItem.getDataTypeName());
-        sb.append("   Size: ").append(recordDataItem.length());
+        sb.append(bundleString("DataType") + " ").append(recordDataItem.getDataTypeName());
+        sb.append("   " + bundleString("Size") + " ").append(recordDataItem.length());
 
         return sb.toString();
     }

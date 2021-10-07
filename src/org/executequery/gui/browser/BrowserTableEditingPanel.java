@@ -25,7 +25,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.event.ApplicationEvent;
@@ -155,10 +154,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      */
     private ReferencesDiagramPanel referencesPanel;
 
-    /**
-     * table privileges list
-     */
-    private TablePrivilegeTab tablePrivilegePanel;
+
 
     /**
      * the apply changes button
@@ -178,7 +174,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     private DatabaseObjectMetaDataPanel metaDataPanel;
     DependenciesPanel dependenciesPanel;
@@ -267,8 +263,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         // table data panel
         tableDataPanel = new TableDataTab(true);
 
-        // table privileges panel
-        tablePrivilegePanel = new TablePrivilegeTab();
 
         // table references erd panel
         referencesPanel = new ReferencesDiagramPanel();
@@ -347,7 +341,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         GridBagConstraints.BOTH,
                         new Insets(2, 2, 2, 2), 0, 0));
 
-        descriptionTable.addMouseListener(new MouseListener() {
+        descriptionTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() > 1) {
@@ -361,26 +355,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         dialog.display();
                     }
                 }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent mouseEvent) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent mouseEvent) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent mouseEvent) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent mouseEvent) {
-
             }
         });
 
@@ -400,7 +374,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("description"), descTablePanel);
         tabPane.add(Bundles.getCommon("constraints"), constraintsPanel);
         tabPane.add(Bundles.getCommon("indexes"), indexesPanel);
-        tabPane.add(Bundles.getCommon("privileges"), tablePrivilegePanel);
+        addPrivilegesTab(tabPane);
         tabPane.add(Bundles.getCommon("references"), referencesPanel);
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
         tabPane.add(Bundles.getCommon("SQL"), splitPane);
@@ -606,11 +580,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             case 2:
                 return new TablePrinter(columnIndexTable,
                         bundleString("indexes-table") + table.getName());
-
-            case 3:
-                return new TablePrinter(tablePrivilegePanel.getTable(),
-                        bundleString("privileges-table") + table.getName());
-
             case 4:
                 return referencesPanel.getPrintable();
 
@@ -688,9 +657,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         switch (index) {
             case 2:
                 loadIndexes();
-                break;
-            case 3:
-                loadPrivileges();
                 break;
             case 4:
                 loadReferences();
@@ -871,22 +837,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     }
 
-    /**
-     * Loads database table privileges.
-     */
-    private void loadPrivileges() {
 
-        try {
-
-            tablePrivilegePanel.setValues(table.getPrivileges());
-
-        } catch (DataSourceException e) {
-
-            controller.handleException(e);
-            tablePrivilegePanel.setValues(new TablePrivilege[0]);
-        }
-
-    }
 
     private DatabaseTable table;
 
@@ -910,6 +861,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         stateChanged(null);
     }
+
 
     protected void reloadView() {
 

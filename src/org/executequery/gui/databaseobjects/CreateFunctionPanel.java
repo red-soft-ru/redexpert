@@ -10,6 +10,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.datatype.DomainPanel;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import javax.swing.*;
@@ -26,8 +27,8 @@ import java.util.Vector;
  */
 public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
 
-    public static final String CREATE_TITLE = "Create Function";
-    public static final String EDIT_TITLE = "Edit Function";
+    public static final String CREATE_TITLE = Bundles.get(CreateFunctionPanel.class,"CreateFunction");
+    public static final String EDIT_TITLE = Bundles.get(CreateFunctionPanel.class,"EditFunction");
 
     private SelectTypePanel selectTypePanel;
     private DomainPanel domainPanel;

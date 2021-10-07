@@ -93,8 +93,10 @@ public final class ConnectionManager {
             }
 
         } catch (InterruptedException e) {
+            if(Log.isDebugEnabled())
             e.printStackTrace();
         }
+        if(databaseConnection.isConnected())
         Log.info("Data source " + databaseConnection.getName() + " initialized.");
     }
 

@@ -51,13 +51,13 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
     /**
      * Icon collection for nodes
      */
-    private Map<String, Icon> icons;
+    private final Map<String, Icon> icons;
 
-    private Color textForeground;
-    private Color selectedTextForeground;
-    private Color disabledTextForeground;
+    private final Color textForeground;
+    private final Color selectedTextForeground;
+    private final Color disabledTextForeground;
 
-    private Color selectedBackground;
+    private final Color selectedBackground;
     private Font treeFont;
 
     /**
@@ -92,6 +92,11 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
             System.out.println(key);
         }
     }
+
+    /**
+     * tool tip string buffer
+     */
+    private final StringBuilder sb;
 
     /**
      * Sets the value of the current tree cell to value. If
@@ -195,6 +200,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.SEQUENCES_IMAGE));
                     break;
                 }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system sequence") == 0) {
+                    setIcon(icons.get(BrowserConstants.SYSTEM_SEQUENCES_IMAGE));
+                    break;
+                }
                 if (databaseObject.getMetaDataKey().compareToIgnoreCase("domain") == 0) {
                     setIcon(icons.get(BrowserConstants.DOMAIN_IMAGE));
                     break;
@@ -278,6 +287,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
             case NamedObject.SEQUENCE:
                 setIcon(icons.get(BrowserConstants.SEQUENCES_IMAGE));
+                break;
+
+            case NamedObject.SYSTEM_SEQUENCE:
+                setIcon(icons.get(BrowserConstants.SYSTEM_SEQUENCES_IMAGE));
                 break;
 
             case NamedObject.SYNONYM:
@@ -414,8 +427,6 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
         }
 
-        setText(label);
-
         if (type == BrowserConstants.HOST_NODE) {
 
             DatabaseConnection connection =
@@ -479,13 +490,9 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
             selected = true;
         }
+        setText(label);
         return this;
     }
-
-    /**
-     * tool tip string buffer
-     */
-    private StringBuilder sb;
 
     /**
      * Builds a HTML tool tip describing this tree connection.

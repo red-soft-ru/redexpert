@@ -755,11 +755,6 @@ public class QueryEditorTextPane extends SQLTextArea
         setBackground(QueryEditorSettings.getEditorBackground());
     }
 
-    public void setSQLKeywords(boolean reset) {
-
-       resetAutocomplete();
-    }
-
 
     private KeywordRepository keywords() {
 

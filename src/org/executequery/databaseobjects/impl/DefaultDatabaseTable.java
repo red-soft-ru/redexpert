@@ -30,6 +30,7 @@ import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.log.Log;
 import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
+import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
@@ -883,7 +884,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   public String getCreateSQLText() throws DataSourceException {
 
-    return getCreateSQLText(STYLE_CONSTRAINTS_ALTER);
+    return formatter.format(getCreateSQLText(STYLE_CONSTRAINTS_ALTER));
   }
 
   public String getDropSQLText(boolean cascadeConstraints) {
@@ -1195,7 +1196,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
       sb.append(");\n");
 
-      return sb.toString();
+      return getFormatter().format(sb.toString());
 
     } catch (DataSourceException e) {
 
@@ -1234,12 +1235,20 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
       sb.append(";\n");
 
-      return sb.toString();
+      return getFormatter().format(sb.toString());
     } catch (DataSourceException e) {
 
       logThrowable(e);
       return "";
     }
+  }
+
+  TokenizingFormatter formatter;
+
+  protected TokenizingFormatter getFormatter() {
+    if (formatter == null)
+      formatter = new TokenizingFormatter();
+    return formatter;
   }
 
   public String getSelectSQLText() {
@@ -1267,7 +1276,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       sb.append(getNameForQuery());
       sb.append(";\n");
 
-      return sb.toString();
+      return getFormatter().format(sb.toString());
 
     } catch (DataSourceException e) {
 

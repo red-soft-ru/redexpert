@@ -22,6 +22,7 @@ package org.executequery.sql;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databaseobjects.NamedObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,9 +31,9 @@ import java.util.Map;
 
 public final class DerivedQuery {
 
-    private static DerivedTableStrategy defaultDerivedTableStrategy;
+    private static final DerivedTableStrategy defaultDerivedTableStrategy;
 
-    private static Map<Integer, DerivedTableStrategy> derivedTableStrategies;
+    private static final Map<Integer, DerivedTableStrategy> derivedTableStrategies;
 
     private String derivedQuery;
 
@@ -50,8 +51,8 @@ public final class DerivedQuery {
         derivedTableStrategies.put(QueryTypes.INSERT, new InsertDerivedTableStrategy());
         derivedTableStrategies.put(QueryTypes.UPDATE, new UpdateDerivedTableStrategy());
         derivedTableStrategies.put(QueryTypes.DELETE, new DeleteDerivedTableStrategy());
-        derivedTableStrategies.put(QueryTypes.DROP_TABLE, new DropTableDerivedTableStrategy());
-        derivedTableStrategies.put(QueryTypes.ALTER_TABLE, new AlterTableDerivedTableStrategy());
+        derivedTableStrategies.put(QueryTypes.DROP_OBJECT, new DropTableDerivedTableStrategy());
+        derivedTableStrategies.put(QueryTypes.ALTER_OBJECT, new AlterTableDerivedTableStrategy());
     }
 
     public DerivedQuery(String originalQuery) {
@@ -100,22 +101,7 @@ public final class DerivedQuery {
         return StringUtils.isNotBlank(getDerivedQuery());
     }
 
-    private void deriveTables() {
-
-        if (queryTables != null) {
-
-            return;
-        }
-
-        int queryType = getQueryType();
-        DerivedTableStrategy derivedTableStrategy = derivedTableStrategies.get(queryType);
-        if (derivedTableStrategy == null) {
-
-            derivedTableStrategy = defaultDerivedTableStrategy;
-        }
-
-        queryTables = derivedTableStrategy.deriveTables(derivedQuery);
-    }
+    private int typeObject;
 
     public List<QueryTable> tableForWord(String word) {
 
@@ -161,6 +147,49 @@ public final class DerivedQuery {
     }
 
     int type = -1;
+    private String metaName;
+
+    private void deriveTables() {
+
+        if (queryTables != null) {
+
+            return;
+        }
+
+        int queryType = getQueryType();
+        if (typeObject == NamedObject.TABLE) {
+            DerivedTableStrategy derivedTableStrategy = derivedTableStrategies.get(queryType);
+            if (derivedTableStrategy == null) {
+
+                derivedTableStrategy = defaultDerivedTableStrategy;
+            }
+
+            queryTables = derivedTableStrategy.deriveTables(derivedQuery);
+        }
+    }
+
+    public int getTypeObject() {
+        return typeObject;
+    }
+
+    public String getMetaName() {
+        return metaName;
+    }
+
+    private void setTypeObject(String query, String firstOperator) {
+        query = query.substring(firstOperator.length()).trim();
+        int ind = query.indexOf(" ");
+        if (ind == -1)
+            ind = query.length();
+        metaName = query.substring(0, ind);
+        for (int i = 0; i < NamedObject.META_TYPES.length; i++)
+            if (metaName.equals(NamedObject.META_TYPES[i])) {
+                typeObject = i;
+                break;
+            }
+
+    }
+
     public int getQueryType() {
 
         if (type != -1)
@@ -188,39 +217,6 @@ public final class DerivedQuery {
         } else if (query.indexOf("DELETE ") == 0) {
 
             type = QueryTypes.DELETE;
-
-        } else if (query.indexOf("CREATE TABLE ") == 0) {
-
-            type = QueryTypes.CREATE_TABLE;
-
-        } else if (query.indexOf("CREATE TRIGGER") == 0 || query.indexOf("CREATE OR ALTER TRIGGER") == 0) {
-
-            type = QueryTypes.CREATE_TRIGGER;
-
-        } else if (query.indexOf("CREATE ") == 0 && (query.indexOf("PROCEDURE ") != -1 &&
-                query.indexOf("PACKAGE ") == -1)) {
-
-            type = QueryTypes.CREATE_PROCEDURE;
-
-        } else if (query.indexOf("CREATE ") == 0 && query.indexOf("FUNCTION ") != -1) {
-
-            type = QueryTypes.CREATE_FUNCTION;
-
-        } else if (query.indexOf("DROP TABLE ") == 0) {
-
-            type = QueryTypes.DROP_TABLE;
-
-        } else if (query.indexOf("ALTER TABLE ") == 0) {
-
-            type = QueryTypes.ALTER_TABLE;
-
-        } else if (query.indexOf("CREATE SEQUENCE ") == 0) {
-
-            type = QueryTypes.CREATE_SEQUENCE;
-
-        } else if (query.indexOf("CREATE SYNONYM ") == 0) {
-
-            type = QueryTypes.CREATE_SYNONYM;
 
         } else if (query.indexOf("GRANT ") == 0) {
 
@@ -254,13 +250,10 @@ public final class DerivedQuery {
 
             type = QueryTypes.SHOW_TABLES;
 
-        } else if (query.indexOf("CREATE ROLE ") == 0) {
-
-            type = QueryTypes.CREATE_ROLE;
-
         } else if (query.indexOf("DROP ") == 0) {
 
             type = QueryTypes.DROP_OBJECT;
+            setTypeObject(query, "DROP");
 
         } else if (query.indexOf("REVOKE ") == 0) {
 
@@ -277,18 +270,22 @@ public final class DerivedQuery {
         } else if (query.indexOf("CREATE OR ALTER") == 0) {
 
             type = QueryTypes.CREATE_OR_ALTER;
+            setTypeObject(query, "CREATE OR ALTER");
 
         } else if (query.indexOf("CREATE") == 0) {
 
             type = QueryTypes.CREATE_OBJECT;
+            setTypeObject(query, "CREATE");
 
         } else if (query.indexOf("RECREATE") == 0) {
 
             type = QueryTypes.RECREATE_OBJECT;
+            setTypeObject(query, "RECREATE");
 
         } else if (query.indexOf("ALTER") == 0) {
 
             type = QueryTypes.ALTER_OBJECT;
+            setTypeObject(query, "ALTER");
 
         } else if (query.indexOf("SET SQL DIALECT") == 0) {
 

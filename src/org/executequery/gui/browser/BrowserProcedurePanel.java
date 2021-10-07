@@ -31,10 +31,7 @@ import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
-import org.fife.ui.rsyntaxtextarea.*;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.sqlLexer.CustomTokenMakerFactory;
-import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
 import org.underworldlabs.swing.DisabledField;
 
 import javax.swing.*;
@@ -70,7 +67,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     public BrowserProcedurePanel(BrowserController controller) {
         super();
@@ -121,6 +118,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
         tabs.add(Bundles.getCommon("description"), splitPane);
+        addPrivilegesTab(tabs);
 
         JPanel sqlPanel = new JPanel(new BorderLayout());
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -321,14 +319,14 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
     class ProcedureTableModel extends AbstractTableModel {
 
-        private String UNKNOWN = "UNKNOWN";
-        private String RETURN = "RETURN";
-        private String RESULT = "RESULT";
-        private String IN = "IN";
-        private String INOUT = "INOUT";
-        private String OUT = "OUT";
+        private final String UNKNOWN = "UNKNOWN";
+        private final String RETURN = "RETURN";
+        private final String RESULT = "RESULT";
+        private final String IN = "IN";
+        private final String INOUT = "INOUT";
+        private final String OUT = "OUT";
 
-        private String[] columns = Bundles.getCommons(new String[]{"parameter", "data-type", "mode"});
+        private final String[] columns = Bundles.getCommons(new String[]{"parameter", "data-type", "mode"});
         private ProcedureParameter[] procParams;
 
         public ProcedureTableModel() {

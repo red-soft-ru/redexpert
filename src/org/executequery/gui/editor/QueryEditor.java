@@ -88,7 +88,7 @@ public class QueryEditor extends DefaultTabView
     /**
      * editor open count for title numbering
      */
-    private static int editorCountSequence = 1;
+    private static final int editorCountSequence = 1;
 
     /**
      * The editor's status bar
@@ -105,7 +105,7 @@ public class QueryEditor extends DefaultTabView
      */
     private QueryEditorResultsPanel resultsPanel;
 
-    private ScriptFile scriptFile;
+    private final ScriptFile scriptFile;
 
     /**
      * flags the content as having being changed
@@ -157,7 +157,7 @@ public class QueryEditor extends DefaultTabView
      */
     private QueryEditorDelegate delegate;
 
-    private TokenizingFormatter formatter;
+    private final TokenizingFormatter formatter;
 
     private JPanel toolsPanel;
 
@@ -260,6 +260,7 @@ public class QueryEditor extends DefaultTabView
                     else idConnection = oldConnection.getId();
                     QueryEditorHistory.changedConnectionEditor(idConnection, getSelectedConnection().getId(), scriptFile.getAbsolutePath());
                     oldConnection = getSelectedConnection();
+                    editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
                 }
             }
         });
@@ -606,11 +607,7 @@ public class QueryEditor extends DefaultTabView
                 && !userProperties.containsKey("editor.autocomplete.schema.on")) {
 
             // old property key
-            boolean allOn = true;
-            if (!userProperties.getBooleanProperty("editor.autocomplete.on")) {
-
-                allOn = false;
-            }
+            boolean allOn = userProperties.getBooleanProperty("editor.autocomplete.on");
             userProperties.setBooleanProperty("editor.autocomplete.keywords.on", allOn);
             userProperties.setBooleanProperty("editor.autocomplete.schema.on", allOn);
 
@@ -776,7 +773,7 @@ public class QueryEditor extends DefaultTabView
      * @param whether to return the result set row count
      * @param the     executed query of the result set
      */
-    public int setResultSet(ResultSet rset, boolean showRowNumber, String query) {
+    public int setResultSet(ResultSet rset, boolean showRowNumber, String query) throws SQLException {
 
         int rowCount = resultsPanel.setResultSet(rset, showRowNumber, getMaxRecords());
         revalidate();
@@ -788,7 +785,7 @@ public class QueryEditor extends DefaultTabView
      *
      * @param rset the executed result set
      */
-    public void setResultSet(ResultSet rset) {
+    public void setResultSet(ResultSet rset) throws SQLException {
 
         resultsPanel.setResultSet(rset, true, getMaxRecords());
         revalidate();
@@ -800,7 +797,7 @@ public class QueryEditor extends DefaultTabView
      * @param the executed result set
      * @param the executed query of the result set
      */
-    public void setResultSet(ResultSet rset, String query) {
+    public void setResultSet(ResultSet rset, String query) throws SQLException {
 
         resultsPanel.setResultSet(rset, true, getMaxRecords(), query);
     }
@@ -863,9 +860,9 @@ public class QueryEditor extends DefaultTabView
         return resultsPanel.getResultSetTable();
     }
 
-    public void setResultText(int updateCount, int type) {
+    public void setResultText(int updateCount, int type, String metaName) {
 
-        resultsPanel.setResultText(updateCount, type);
+        resultsPanel.setResultText(updateCount, type, metaName);
     }
 
     /**

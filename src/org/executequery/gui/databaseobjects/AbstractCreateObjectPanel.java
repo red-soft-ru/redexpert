@@ -6,6 +6,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
@@ -207,8 +208,9 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
                 DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
                 if (node.getDatabaseObject() instanceof DefaultDatabaseMetaTag)
                     treePanel.reloadPath(currentPath);
-                else
-                    treePanel.reloadPath(currentPath.getParentPath());
+                else if (editing) {
+                    treePanel.reloadPath(currentPath);
+                } else treePanel.reloadPath(currentPath.getParentPath());
             }
             parent.finished();
         }

@@ -50,11 +50,6 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
             case SqlLexer.ERROR_CHAR:
                 return Token.ERROR_IDENTIFIER;
             default:
-                /*if (dbobjects != null&&currentToken!=null) {
-                        String x = currentToken.getLexeme();
-                        if (dbobjects.contains(x))
-                            return Token.FUNCTION;
-                }*/
                 return Token.IDENTIFIER;
         }
     }
@@ -70,57 +65,12 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
                 if (x.startsWith("\"") && x.endsWith("\"") && x.length() > 1)
                     x = x.substring(1, x.length() - 1);
                 if (dbobjects.contains(x))
-                    return new org.antlr.v4.runtime.Token() {
-                        @Override
-                        public String getText() {
-                            return token.getText();
-                        }
+                {
+                    CustomToken customToken = new CustomToken(token);
+                    customToken.setType(DB_OBJECT);
+                    return customToken;
+                }
 
-                        @Override
-                        public int getType() {
-                            return DB_OBJECT;
-                        }
-
-                        @Override
-                        public int getLine() {
-                            return token.getLine();
-                        }
-
-                        @Override
-                        public int getCharPositionInLine() {
-                            return token.getCharPositionInLine();
-                        }
-
-                        @Override
-                        public int getChannel() {
-                            return token.getChannel();
-                        }
-
-                        @Override
-                        public int getTokenIndex() {
-                            return token.getTokenIndex();
-                        }
-
-                        @Override
-                        public int getStartIndex() {
-                            return token.getStartIndex();
-                        }
-
-                        @Override
-                        public int getStopIndex() {
-                            return token.getStopIndex();
-                        }
-
-                        @Override
-                        public TokenSource getTokenSource() {
-                            return token.getTokenSource();
-                        }
-
-                        @Override
-                        public CharStream getInputStream() {
-                            return token.getInputStream();
-                        }
-                    };
             }
         }
         return token;

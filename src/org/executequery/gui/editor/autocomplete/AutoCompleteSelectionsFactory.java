@@ -26,9 +26,13 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseSource;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnInformation;
 import org.executequery.databaseobjects.impl.ColumnInformationFactory;
 import org.executequery.datasource.DefaultDriverLoader;
+import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.nodes.DatabaseHostNode;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.log.Log;
@@ -261,8 +265,8 @@ public class AutoCompleteSelectionsFactory {
 
     private void databaseTablesForHost(DatabaseHost databaseHost) {
 
-        databaseObjectsForHost(databaseHost, "TABLE", DATABASE_TABLE_DESCRIPTION, AutoCompleteListItemType.DATABASE_TABLE);
-        databaseObjectsForHost(databaseHost, "VIEW", DATABASE_TABLE_VIEW, AutoCompleteListItemType.DATABASE_VIEW);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.TABLE], DATABASE_TABLE_DESCRIPTION, AutoCompleteListItemType.DATABASE_TABLE);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.VIEW], DATABASE_TABLE_VIEW, AutoCompleteListItemType.DATABASE_VIEW);
 
         DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
         DefaultDriverLoader driverLoader = new DefaultDriverLoader();
@@ -271,7 +275,7 @@ public class AutoCompleteSelectionsFactory {
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
         if (driver.getClass().getName().contains("FBDriver")) {
-            databaseObjectsForHost(databaseHost, "SYSTEM TABLE", DATABASE_TABLE_VIEW, AutoCompleteListItemType.DATABASE_TABLE);
+            databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.SYSTEM_TABLE], DATABASE_TABLE_VIEW, AutoCompleteListItemType.DATABASE_TABLE);
         }
     }
 
@@ -323,72 +327,15 @@ public class AutoCompleteSelectionsFactory {
                                         String databaseObjectDescription, AutoCompleteListItemType autocompleteType) {
 
         trace("Building autocomplete object list using [ " + databaseHost.getName() + " ] for type - " + type);
-
-        ResultSet rs = null;
-        DatabaseMetaData databaseMetaData = databaseHost.getDatabaseMetaData();
-        try {
-            String catalog = databaseHost.getCatalogNameForQueries(defaultCatalogForHost(databaseHost));
-            String schema = databaseHost.getSchemaNameForQueries(defaultSchemaForHost(databaseHost));
-
-            String typeName = null;
-            List<String> tableNames = new ArrayList<String>();
-            List<AutoCompleteListItem> list = new ArrayList<AutoCompleteListItem>();
-            String[] types = new String[]{type};
-
-            int count = 0;
-
-            rs = databaseMetaData.getTables(catalog, schema, null, types);
-            if (rs == null)
-                return;
-            while (rs.next()) {
-
-                try {
-                    if (Thread.interrupted() || databaseMetaData.getConnection().isClosed()) {
-
-                        return;
-                    }
-                } catch (SQLException e) {
-                }
-
-                typeName = rs.getString(4);
-
-                // only include if the returned reported type matches
-                if (type != null && type.equalsIgnoreCase(typeName)) {
-
-                    tableNames.add(rs.getString(3));
-                    count++;
-                }
-
-                if (count >= INCREMENT) {
-
-                    addTablesToProvider(databaseObjectDescription, autocompleteType, tableNames, list);
-                    count = 0;
-                    list.clear();
-                    tableNames.clear();
-                }
-
-            }
-
-            addTablesToProvider(databaseObjectDescription, autocompleteType, tableNames, list);
-
-        } catch (SQLException e) {
-
-            try {
-                if (rs != null)
-                    if (!rs.isClosed())
-                        error("Tables not available for type " + type + " - driver returned: " + e.getMessage());
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            }
-        } catch (Exception e) {
-
-            // nothing to do
-
-        } finally {
-
-            releaseResources(rs);
-            trace("Finished autocomplete object list using [ " + databaseHost.getName() + " ] for type - " + type);
+        List<String> tableNames = new ArrayList<String>();
+        List<AutoCompleteListItem> list = new ArrayList<AutoCompleteListItem>();
+        DatabaseHostNode hostNode = (DatabaseHostNode) ConnectionsTreePanel.getPanelFromBrowser().getHostNode(databaseHost.getDatabaseConnection());
+        List<DatabaseObjectNode> tables = hostNode.getAllDBObjects(type);
+        for (DatabaseObjectNode table : tables) {
+            tableNames.add(table.getName());
         }
+        addTablesToProvider(databaseObjectDescription, autocompleteType, tableNames, list);
+
 
     }
 

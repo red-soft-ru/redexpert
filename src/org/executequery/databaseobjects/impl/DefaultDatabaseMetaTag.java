@@ -1319,6 +1319,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getUsersResultSet() throws SQLException {
         String query = "SELECT SEC$USER_NAME FROM SEC$USERS ORDER BY 1";
+        if (typeTree == TreePanel.DEPENDED_ON)
+            query = getDependOnQuery(8);
+        else if (typeTree == TreePanel.DEPENDENT)
+            query = getDependentQuery(8);
         return getResultSetFromQuery(query);
     }
 

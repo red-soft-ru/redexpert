@@ -884,7 +884,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   public String getCreateSQLText() throws DataSourceException {
 
-    return formatter.format(getCreateSQLText(STYLE_CONSTRAINTS_ALTER));
+    return getFormatter().format(getCreateSQLText(STYLE_CONSTRAINTS_ALTER));
   }
 
   public String getDropSQLText(boolean cascadeConstraints) {

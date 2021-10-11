@@ -31,6 +31,7 @@ import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.table.NumberCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -969,7 +970,17 @@ public abstract class TableDefinitionPanel extends JPanel
                 case TYPE_COLUMN:
                     if (value.getClass() == String.class) {
                         cd.setColumnType((String) value);
+                        int intValue = 0;
+                        for (int i = 0; i < intDataTypes.length; i++) {
+                            if (((String) value).equalsIgnoreCase(dataTypes[i])) {
+                                intValue = intDataTypes[i];
+                                break;
+                            }
+
+                        }
+                        cd.setSQLType(intValue);
                         if (cd.getSQLType() != cd.getDomainType()) {
+                            _model.setValueAt("", row, DOMAIN_COLUMN);
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
@@ -1039,8 +1050,10 @@ public abstract class TableDefinitionPanel extends JPanel
                     if (value.getClass() == String.class) {
                         cd.setDatabaseConnection(dc);
                         cd.setDomain((String) value);
-                        cd.setColumnType(getStringType(cd.getDomainType()));
-                        _model.setValueAt(cd.getColumnType(), row, TYPE_COLUMN);
+                        if (!MiscUtils.isNull((String) value)) {
+                            cd.setColumnType(getStringType(cd.getDomainType()));
+                            _model.setValueAt(cd.getColumnType(), row, TYPE_COLUMN);
+                        }
                     } else {
                         cd.setDatabaseConnection(dc);
                         cd.setDomain(domains[(int) value]);

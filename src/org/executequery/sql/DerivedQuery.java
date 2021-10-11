@@ -157,7 +157,6 @@ public final class DerivedQuery {
         }
 
         int queryType = getQueryType();
-        if (typeObject == NamedObject.TABLE) {
             DerivedTableStrategy derivedTableStrategy = derivedTableStrategies.get(queryType);
             if (derivedTableStrategy == null) {
 
@@ -165,7 +164,6 @@ public final class DerivedQuery {
             }
 
             queryTables = derivedTableStrategy.deriveTables(derivedQuery);
-        }
     }
 
     public int getTypeObject() {

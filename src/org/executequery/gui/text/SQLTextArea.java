@@ -24,6 +24,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -34,7 +35,7 @@ public class SQLTextArea extends RSyntaxTextArea {
 
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
 
-    private CustomTokenMakerFactory tokenMakerFactory = new CustomTokenMakerFactory();
+    private final CustomTokenMakerFactory tokenMakerFactory = new CustomTokenMakerFactory();
     protected DatabaseConnection databaseConnection;
     protected SQLSyntaxDocument document;
     boolean changed = false;
@@ -312,9 +313,11 @@ public class SQLTextArea extends RSyntaxTextArea {
         addCaretListener(new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent e) {
+
                 if (changed && !autocompleteOnlyHotKey)
                     autoCompletePopupAction.actionPerformed(null);
                 changed = false;
+
             }
         });
 
@@ -395,5 +398,11 @@ public class SQLTextArea extends RSyntaxTextArea {
     public SQLSyntaxDocument getSQLSyntaxDocument() {
 
         return document;
+    }
+
+    protected void processKeyEvent(KeyEvent e) {
+
+        doCaretUpdate = (e.getID() != KeyEvent.KEY_TYPED);
+        super.processKeyEvent(e);
     }
 }

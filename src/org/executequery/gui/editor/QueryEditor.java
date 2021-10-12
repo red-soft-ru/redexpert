@@ -222,10 +222,14 @@ public class QueryEditor extends DefaultTabView
 
         formatter = new TokenizingFormatter();
         if (getSelectedConnection() != null)
-             editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
+            editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
         if (text != null) {
             loadText(text);
         }
+    }
+
+    public void resetAutocompletePopup() {
+        editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
     }
 
     private String defaultScriptName() {

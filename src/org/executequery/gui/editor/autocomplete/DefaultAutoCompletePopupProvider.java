@@ -66,13 +66,13 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
     private static final String LIST_SELECTION_ACTION_KEY = "selectionActionKey";
 
-    private AutoCompleteSelectionsFactory selectionsFactory;
+    private final AutoCompleteSelectionsFactory selectionsFactory;
 
-    private AutoCompletePopupAction autoCompletePopupAction;
+    private final AutoCompletePopupAction autoCompletePopupAction;
 
     private QueryEditorAutoCompletePopupPanel autoCompletePopup;
 
-    private DatabaseObjectFactory databaseObjectFactory;
+    private final DatabaseObjectFactory databaseObjectFactory;
 
     private DatabaseHost databaseHost;
 
@@ -546,7 +546,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         return itemsStartingWith;
     }
 
-    private DefaultAutoCompletePopupProvider.AutoCompleteListItemComparator autoCompleteListItemComparator = new DefaultAutoCompletePopupProvider.AutoCompleteListItemComparator();
+    private final DefaultAutoCompletePopupProvider.AutoCompleteListItemComparator autoCompleteListItemComparator = new DefaultAutoCompletePopupProvider.AutoCompleteListItemComparator();
 
     static class AutoCompleteListItemComparator implements Comparator<AutoCompleteListItem> {
 
@@ -672,7 +672,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
     enum ListScrollType {
 
-        UP, DOWN, PAGE_DOWN, PAGE_UP;
+        UP, DOWN, PAGE_DOWN, PAGE_UP
     }
 
     private final DefaultAutoCompletePopupProvider.ListScrollAction listScrollActionDown = new DefaultAutoCompletePopupProvider.ListScrollAction(DefaultAutoCompletePopupProvider.ListScrollType.DOWN);
@@ -850,7 +850,9 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         }
 
         if (autoCompleteListItems != null) {
-
+            if (worker != null)
+                worker.interrupt();
+            rebuildingList = false;
             autoCompleteListItems.clear();
         }
 

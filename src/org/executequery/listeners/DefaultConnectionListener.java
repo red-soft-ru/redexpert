@@ -27,10 +27,8 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
-import org.executequery.gui.ComponentPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.gui.editor.QueryEditor;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -57,11 +55,6 @@ public class DefaultConnectionListener implements ConnectionListener {
                     if (e.wasConnectionClosed())
                         Log.info("Connection was closed");
                     else e.printStackTrace();
-                }
-                for (ComponentPanel cp : GUIUtilities.getOpenPanels()) {
-                    if (cp.getComponent() instanceof QueryEditor) {
-                        ((QueryEditor) cp.getComponent()).resetAutocompletePopup();
-                    }
                 }
                 return null;
             }

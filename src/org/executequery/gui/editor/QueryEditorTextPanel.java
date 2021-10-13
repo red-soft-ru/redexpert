@@ -95,42 +95,6 @@ public class QueryEditorTextPanel extends JPanel {
         // setup the query text panel and associated scroller
         queryPane = new QueryEditorTextPane(this);
         queryPane.setSize(new Dimension(400,300));
-        queryPane.setDatabaseConnection(queryEditor.getSelectedConnection());
-        /*queryPane.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1 || e.isControlDown()) {
-                    int cursor = queryPane.getCurrentPosition();
-                    String s = queryPane.getSQLSyntaxDocument().getNameDBObjectFromPosition(cursor, queryPane.getText());
-                    if (s != null) {
-                        s = s.replace("$", "\\$");
-                        TreeFindAction action = new TreeFindAction();
-                        SchemaTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
-                        action.install(tree);
-                        action.findString(tree, s, ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(queryEditor.getSelectedConnection()));
-                        BaseDialog dialog = new BaseDialog("find", false);
-                        JPanel panel = new JPanel();
-                        JList jList = action.getResultsList();
-                        if (jList.getModel().getSize() == 1) {
-                            jList.setSelectedIndex(0);
-                            action.listValueSelected((TreePath) jList.getSelectedValue());
-                        } else {
-                            jList.addPropertyChangeListener(new PropertyChangeListener() {
-                                @Override
-                                public void propertyChange(PropertyChangeEvent evt) {
-                                    if (jList.getModel().getSize() == 0)
-                                        dialog.finished();
-                                }
-                            });
-                            JScrollPane scrollPane = new JScrollPane(jList);
-                            panel.add(scrollPane);
-                            dialog.addDisplayComponent(panel);
-                            dialog.display();
-                        }
-                    }
-                }
-            }
-        });*/
 
 
         JScrollPane queryScroller = new JScrollPane();

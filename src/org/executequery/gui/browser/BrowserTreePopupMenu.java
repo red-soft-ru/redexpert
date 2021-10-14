@@ -106,7 +106,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         copyName = createMenuItem(bundleString("copyName"), "copyName", listener);
         add(copyName);
 
-        addSeparator();
+        //addSeparator();
 
         createSqlMenu(listener);
         createExportMenu(listener);
@@ -196,8 +196,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     createObject.setVisible(createObjectEnabled);
                     editObject.setVisible(deleteObjectEnabled);
                     if (deleteObjectEnabled) {
-                        deleteObject.setText(bundleString("delete") + " " + node.toString());
-                        editObject.setText(bundleString("edit") + " " + node.toString());
+                        deleteObject.setText(bundleString("delete") + " " + node);
+                        editObject.setText(bundleString("edit") + " " + node);
                     }
                     if (createObjectEnabled) {
                         String str = "";

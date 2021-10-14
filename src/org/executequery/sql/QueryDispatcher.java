@@ -1493,6 +1493,13 @@ public class QueryDispatcher {
 
         } else {
             setResultText(result.getUpdateCount(), procQuery.getQueryType(), procQuery.getMetaName());
+            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
+
+            for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
+                if (metaTagNode.getMetaDataKey().equals(procQuery.getMetaName()) || metaTagNode.isSystem()) {
+                    ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+                }
+            }
         }
 
         long end = System.currentTimeMillis();

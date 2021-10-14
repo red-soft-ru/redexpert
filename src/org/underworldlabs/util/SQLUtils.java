@@ -496,7 +496,7 @@ public final class SQLUtils {
 
     public static String generateCreateDomain(ColumnData columnData, String name, boolean useDomainType) {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE DOMAIN ").append(name).append(" as ");
+        sb.append("CREATE DOMAIN ").append(name).append(" AS ");
         if (useDomainType)
             sb.append(columnData.getFormattedDomainDataType());
         else sb.append(columnData.getFormattedDataType());
@@ -506,7 +506,7 @@ public final class SQLUtils {
         }
         sb.append(columnData.isRequired() ? " NOT NULL" : "");
         if (!MiscUtils.isNull(columnData.getCheck())) {
-            sb.append(" CHECK ( ").append(columnData.getCheck()).append(")");
+            sb.append(" CHECK (").append(columnData.getCheck()).append(")");
         }
         sb.append(";");
         if (!MiscUtils.isNull(columnData.getDescription())) {

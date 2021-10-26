@@ -138,6 +138,13 @@ public class BrowserPrivilegesPanel extends JPanel implements ActionListener {
                             } else {
                                 grant_on_role(GRANT, row, col);
                             }
+                            try {
+                                querySender.execute(QueryTypes.COMMIT, (String) null);
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                            } finally {
+                                querySender.releaseResources();
+                            }
                         }
                     }
                 }

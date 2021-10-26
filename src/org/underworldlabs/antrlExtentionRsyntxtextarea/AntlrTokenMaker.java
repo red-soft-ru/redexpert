@@ -2,8 +2,6 @@ package org.underworldlabs.antrlExtentionRsyntxtextarea;
 
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.Lexer;
-
-import org.executequery.log.Log;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMakerBase;
 import org.underworldlabs.sqlLexer.CustomToken;

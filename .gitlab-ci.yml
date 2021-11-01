@@ -16,46 +16,40 @@ variables:
   TAG_BRANCH: stable
   MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository"
 
-.prepare_template: &prepare_template
+prepare:
   tags:
     - docker
     - builder
   stage: prepare
-  image: redsoftru/relmanager_client
+  image: registry.red-soft.biz:5000/utils/red-release-manager/client:master
   script:
-    - m4 -DVERSION=${VERSION} ci/artifacts.m4 > .ci/artifacts
-    - echo ${VERSION} > .ci/version
-    - echo ${BRANCH} > .ci/branch
-    - echo ${CONTEXT} > .ci/context
-  artifacts:
-    expire_in: 1 day
-    paths:
-      - .ci/
-
-prepare:snapshot:
-  <<: *prepare_template
-  before_script:
     - mkdir .ci
-    - VERSION=$(date +"%Y.%m")
-    - BUILDNO=$(relmanager_client genbuildno ${RELEASE_HUB_PROJECT} ${VERSION}-SNAPSHOT)
-    - export VERSION=${VERSION}-SNAPSHOT.${BUILDNO}
-    - export BRANCH=${CI_COMMIT_REF_NAME}
-    - export CONTEXT=commit
-  except:
-    - tags
-
-prepare:release:
-  <<: *prepare_template
-  before_script:
     - apk --update add sed
-    - mkdir .ci
-    - VERSION_IN_POM=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
-    - export VERSION=$(echo ${CI_COMMIT_TAG}|sed 's/v//')
-    - "[ \"$VERSION\" = \"$VERSION_IN_POM\" ] || (echo Project version in pom.xml and tag do not match!; exit 1)"
-    - export BRANCH=${TAG_BRANCH}
-    - export CONTEXT=tag
-  only:
-    - tags
+    - |
+      if [ "${CI_COMMIT_TAG}" ]; then
+        VERSION_IN_POM=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
+        VERSION=$(echo ${CI_COMMIT_TAG}|sed 's/v//')
+        "[ \"$VERSION\" = \"$VERSION_IN_POM\" ] || (echo Project version in pom.xml and tag do not match!; exit 1)"
+        BRANCH=${TAG_BRANCH}
+        CONTEXT=tag
+        STAGE=release
+      else
+        BUILDNO=$(relmanager_client genbuildno ${RELEASE_HUB_PROJECT} ${VERSION}-SNAPSHOT)
+        VERSION=${VERSION}-SNAPSHOT.${BUILDNO}
+        BRANCH=${CI_COMMIT_REF_NAME}
+        CONTEXT=commit
+        STAGE=snapshot
+      fi
+    - m4 -DVERSION=${VERSION} ci/artifacts.m4 > .ci/artifacts
+    - echo VERSION=${VERSION} > vars.env
+    - echo BRANCH=${BRANCH} >> vars.env
+    - echo CONTEXT=${CONTEXT} >> vars.env
+    - echo STAGE=${STAGE} >> vars.env
+  artifacts:
+    paths:
+      - .ci
+    reports:
+      dotenv: vars.env
 
 sources:
   tags:
@@ -67,7 +61,6 @@ sources:
     - apk --update add bash git
     - git config --global user.name "Dummy Name"
     - git config --global user.email "dummy@email.org"
-    - export VERSION=`cat .ci/version`
   script:
     - ./ci/prepare-src.sh
   artifacts:
@@ -98,7 +91,6 @@ sources:
     - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
     - tar xzf apache-maven-3.5.4-bin.tar.gz
     - export PATH=${M2_HOME}/bin:${PATH}
-    - export VERSION=`cat ${CI_PROJECT_DIR}/.ci/version`
     - export JAVA_HOME=`java -XshowSettings:properties -version 2>&1|grep "java.home"|cut -d "=" -f 2|tr -d " "|rev | cut -c 4- | rev`
   script:
     - cd "${CI_PROJECT_DIR}"
@@ -145,7 +137,6 @@ build:linux:x86:
     ErrorActionPreference: STOP
     JAVA_HOME: c:\Program Files\Java\jdk8
   before_script:
-    - $VERSION = (get-content .ci\version -Raw).trim()
     - $env:RE_VERSION = $VERSION
     - unzip -q dist-src\RedXpert-$VERSION-src.zip
     - mkdir ${DIST}
@@ -206,7 +197,6 @@ repackage:
   image: alpine:3.8
   before_script:
     - apk --update add bash tar zip
-    - export VERSION=`cat .ci/version`
   script:
     - ./ci/repackage.sh linux-x86_64 linux-x86 windows-x86_64 windows-x86
   artifacts:
@@ -219,14 +209,9 @@ deploy:
     - docker
     - builder
   stage: deploy
-  image: redsoftru/relmanager_client
+  image: registry.red-soft.biz:5000/utils/red-release-manager/client:master
   script:
-    - relmanager_client deploy ${RELEASE_HUB_PROJECT} $(cat .ci/version) --artifacts .ci/artifacts --ci_url ${CI_URL} --context $(cat .ci/context) --branch $(cat .ci/branch) --commit ${CI_COMMIT_SHA}
+    - relmanager_client deploy ${RELEASE_HUB_PROJECT} ${VERSION} --artifacts .ci/artifacts --ci_url ${CI_URL} --context ${CONTEXT} --branch ${BRANCH} --commit ${CI_COMMIT_SHA} --stage ${STAGE}
   only:
     variables:
       - "$RELEASE_HUB_KEY"
-  dependencies:
-    - prepare:snapshot
-    - prepare:release
-    - sources
-    - repackage

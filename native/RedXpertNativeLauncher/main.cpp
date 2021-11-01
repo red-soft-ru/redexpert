@@ -1496,7 +1496,9 @@ int try_dlopen(std::vector<std::string> potential_paths, void*& out_handle, bool
         if(!suffixes.at(i).empty())
             java_bin_path=replaceFirstOccurrence(java_bin_path,suffixes.at(i)+"/libjvm.so","/bin/");
     }
-    setenv("PATH",java_bin_path.c_str(),1);
+    std::stringstream path_env;
+    path_env<<getenv("PATH")<<";"<<java_bin_path.c_str();
+    setenv("PATH",path_env.str().c_str(),1);
     return 1;
 }
 SharedLibraryHandle checkParameters(bool from_file)

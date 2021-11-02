@@ -18,7 +18,7 @@ variables:
   MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository"
   http_proxy: "http://git.red-soft.biz:3128"
   https_proxy: "http://git.red-soft.biz:3128"
-  no_proxy: localhost,172.0.0.0/8,127.0.0.0/8,.red-soft.biz
+  no_proxy: localhost,172.0.0.0/8,127.0.0.0/8,10.0.0.0/8,.red-soft.biz
 
 prepare:
   tags:

@@ -18,6 +18,7 @@ if(-Not (Test-Path Env:\QMAKE)){
 
 $SRC_DIR="$PSScriptRoot\.."
 $QMAKE=$env:QMAKE
+$ARCH=$env:ARCH
 
 echo "JAVA_HOME=$Env:JAVA_HOME"
 echo "SRC_DIR=$SRC_DIR"
@@ -25,7 +26,13 @@ echo "QMAKE=$QMAKE"
 
 cd "$SRC_DIR\native\RedXpertNativeLauncher\"
 
-Import-VisualStudioVars -VisualStudioVersion 2013 -Architecture $env:ARCH
+if ($ARCH -eq "x86_64")
+{
+    $ARCH="amd64"
+}
+
+
+Import-VisualStudioVars -VisualStudioVersion 2013 -Architecture $ARCH
 
 & "$QMAKE"
 if (-Not$?)

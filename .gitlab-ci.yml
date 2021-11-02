@@ -69,21 +69,23 @@ sources:
     paths:
       - dist-src/
 
-.build_template: &build_template
+.build_template:
   stage: build
   artifacts:
     expire_in: 1 day
     paths:
       - dist/
 
-.build_linux_template: &build_linux_template
+build:linux:
+  extends: .build_template
+  image: ${BUILD_IMAGE}
   tags:
     - docker
     - builder
-  <<: *build_template
-  variables: &build_linux_template_variables
+  variables:
     M2_HOME: /opt/apache-maven-3.5.4/
     QMAKE: qmake-qt4
+    DIST: ${CI_PROJECT_DIR}/dist/linux-${ARCH}
   before_script:
     - yum -y update
     - yum install -y java-1.8.0-openjdk-devel qt-devel gtk3-devel wget libcurl-devel
@@ -113,30 +115,23 @@ sources:
     - mv modules/redexpert/target/red_expert.png "${DIST}"
     - mv modules/redexpert/target/RedXpert.jar "${DIST}"
     - ./ci/build_installer.sh
+  parallel:
+    matrix:
+      - BUILD_IMAGE: amd64/centos:7
+        ARCH: x86_64
+      - BUILD_IMAGE: i386/centos:7
+        ARCH: x86
 
-build:linux:x86_64:
-  <<: *build_linux_template
-  image: amd64/centos:7
-  variables:
-    DIST: ${CI_PROJECT_DIR}/dist/linux-x86_64
-    ARCH: x86_64
-    <<: *build_linux_template_variables
-
-build:linux:x86:
-  <<: *build_linux_template
-  image: i386/centos:7
-  variables:
-    DIST: ${CI_PROJECT_DIR}/dist/linux-x86
-    ARCH: x86
-    <<: *build_linux_template_variables
-
-.build_windows_template: &build_windows_template
+build:windows:
+  extends: .build_template
   tags:
     - windows
     - proxmox
-  variables: &build_windows_template_vars
+  variables:
     ErrorActionPreference: STOP
     JAVA_HOME: c:\Program Files\Java\jdk8
+    DIST: ${CI_PROJECT_DIR}\dist\windows-${ARCH}
+    URL_INSTALLBUILDER: http://builds.red-soft.biz/release_hub/installbuilder/20.12.0/download/installbuilder:windows-${ARCH}:20.12.0:exe
   before_script:
     - $env:RE_VERSION = $VERSION
     - unzip -q dist-src\RedXpert-$VERSION-src.zip
@@ -169,26 +164,12 @@ build:linux:x86:
     - mv modules/redexpert/target/red_expert.png "${DIST}"
     - mv modules/redexpert/target/RedXpert.jar "${DIST}"
     - powershell -ExecutionPolicy ByPass -file ci\build_installer.ps1
-
-build:windows:x86_64:
-  <<: *build_template
-  <<: *build_windows_template
-  variables:
-    DIST: ${CI_PROJECT_DIR}\dist\windows-x86_64
-    QMAKE: c:\Qt\Qt5.6.3\5.6.3\msvc2013_64\bin\qmake.exe
-    ARCH: amd64
-    URL_INSTALLBUILDER: http://builds.red-soft.biz/release_hub/installbuilder/20.12.0/download/installbuilder:windows-x86_64:20.12.0:exe
-    <<: *build_windows_template_vars
-
-build:windows:x86:
-  <<: *build_template
-  <<: *build_windows_template
-  variables:
-    DIST: ${CI_PROJECT_DIR}\dist\windows-x86
-    QMAKE: c:\Qt\Qt5.6.3_x86\5.6.3\msvc2013\bin\qmake.exe
-    ARCH: x86
-    URL_INSTALLBUILDER: http://builds.red-soft.biz/release_hub/installbuilder/20.12.0/download/installbuilder:windows-x86:20.12.0:exe
-    <<: *build_windows_template_vars
+  parallel:
+    matrix:
+      - ARCH: x86_64
+        QMAKE: c:\Qt\Qt5.6.3\5.6.3\msvc2013_64\bin\qmake.exe
+      - ARCH: x86
+        QMAKE: c:\Qt\Qt5.6.3_x86\5.6.3\msvc2013\bin\qmake.exe
 
 repackage:
   tags:

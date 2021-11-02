@@ -16,7 +16,7 @@ $VERSION=$env:RE_VERSION
 echo "version=$VERSION"
 $INSTALLER_NAME="RedXpert-$VERSION-installer-windows-$ARCH.exe"
 $exec_file="RedXpert"
-if ($ARCH -eq "amd64")
+if ($ARCH -eq "x86_64")
 {
     $exec_file="RedXpert64"
 }

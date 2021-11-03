@@ -75,6 +75,11 @@ public class StatusBarPanel extends AbstractStatusBarPanel {
         setLabelText(2, text);
     }
 
+    public void addComponent(JComponent component, int index) {
+        removeComponent(index);
+        addComponent(component, index, 150, false);
+    }
+
     public void setSecondLabelText(String text) {
 
         setLabelText(1, text);

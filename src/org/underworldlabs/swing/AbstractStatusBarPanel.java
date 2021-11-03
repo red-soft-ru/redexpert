@@ -85,6 +85,12 @@ public abstract class AbstractStatusBarPanel extends JPanel {
         components.add(index, c);
     }
 
+    protected void removeComponent(int index) {
+        remove(index);
+
+        components.remove(index);
+    }
+
     protected JLabel getLabel(int index) {
 
         Object object = components.get(index);

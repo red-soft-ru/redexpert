@@ -2,6 +2,7 @@ cache:
   paths:
     - .m2/repository
 
+
 stages:
 - prepare
 - sources
@@ -15,47 +16,45 @@ variables:
   CONTEXT: commit
   TAG_BRANCH: stable
   MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository"
+  http_proxy: "http://git.red-soft.biz:3128"
+  https_proxy: "http://git.red-soft.biz:3128"
+  no_proxy: localhost,172.0.0.0/8,127.0.0.0/8,10.0.0.0/8,.red-soft.biz
 
-.prepare_template: &prepare_template
+prepare:
   tags:
     - docker
     - builder
   stage: prepare
-  image: redsoftru/relmanager_client
+  image: registry.red-soft.biz:5000/utils/red-release-manager/client:master
   script:
-    - m4 -DVERSION=${VERSION} ci/artifacts.m4 > .ci/artifacts
-    - echo ${VERSION} > .ci/version
-    - echo ${BRANCH} > .ci/branch
-    - echo ${CONTEXT} > .ci/context
-  artifacts:
-    expire_in: 1 day
-    paths:
-      - .ci/
-
-prepare:snapshot:
-  <<: *prepare_template
-  before_script:
     - mkdir .ci
-    - VERSION=$(date +"%Y.%m")
-    - BUILDNO=$(relmanager_client genbuildno ${RELEASE_HUB_PROJECT} ${VERSION}-SNAPSHOT)
-    - export VERSION=${VERSION}-SNAPSHOT.${BUILDNO}
-    - export BRANCH=${CI_COMMIT_REF_NAME}
-    - export CONTEXT=commit
-  except:
-    - tags
-
-prepare:release:
-  <<: *prepare_template
-  before_script:
     - apk --update add sed
-    - mkdir .ci
-    - VERSION_IN_POM=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
-    - export VERSION=$(echo ${CI_COMMIT_TAG}|sed 's/v//')
-    - "[ \"$VERSION\" = \"$VERSION_IN_POM\" ] || (echo Project version in pom.xml and tag do not match!; exit 1)"
-    - export BRANCH=${TAG_BRANCH}
-    - export CONTEXT=tag
-  only:
-    - tags
+    - |
+      if [ "${CI_COMMIT_TAG}" ]; then
+        VERSION_IN_POM=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
+        VERSION=$(echo ${CI_COMMIT_TAG}|sed 's/v//')
+        "[ \"$VERSION\" = \"$VERSION_IN_POM\" ] || (echo Project version in pom.xml and tag do not match!; exit 1)"
+        BRANCH=${TAG_BRANCH}
+        CONTEXT=tag
+        STAGE=release
+      else
+        VERSION=$(date +"%Y.%m")
+        BUILDNO=$(relmanager_client genbuildno ${RELEASE_HUB_PROJECT} ${VERSION}-SNAPSHOT)
+        VERSION=${VERSION}-SNAPSHOT.${BUILDNO}
+        BRANCH=${CI_COMMIT_REF_NAME}
+        CONTEXT=commit
+        STAGE=snapshot
+      fi
+    - m4 -DVERSION=${VERSION} ci/artifacts.m4 > .ci/artifacts
+    - echo VERSION=${VERSION} > vars.env
+    - echo BRANCH=${BRANCH} >> vars.env
+    - echo CONTEXT=${CONTEXT} >> vars.env
+    - echo STAGE=${STAGE} >> vars.env
+  artifacts:
+    paths:
+      - .ci
+    reports:
+      dotenv: vars.env
 
 sources:
   tags:
@@ -67,7 +66,6 @@ sources:
     - apk --update add bash git
     - git config --global user.name "Dummy Name"
     - git config --global user.email "dummy@email.org"
-    - export VERSION=`cat .ci/version`
   script:
     - ./ci/prepare-src.sh
   artifacts:
@@ -75,21 +73,23 @@ sources:
     paths:
       - dist-src/
 
-.build_template: &build_template
+.build_template:
   stage: build
   artifacts:
     expire_in: 1 day
     paths:
       - dist/
 
-.build_linux_template: &build_linux_template
+build:linux:
+  extends: .build_template
+  image: ${BUILD_IMAGE}
   tags:
     - docker
     - builder
-  <<: *build_template
-  variables: &build_linux_template_variables
+  variables:
     M2_HOME: /opt/apache-maven-3.5.4/
     QMAKE: qmake-qt4
+    DIST: ${CI_PROJECT_DIR}/dist/linux-${ARCH}
   before_script:
     - yum -y update
     - yum install -y java-1.8.0-openjdk-devel qt-devel gtk3-devel wget libcurl-devel
@@ -98,7 +98,6 @@ sources:
     - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
     - tar xzf apache-maven-3.5.4-bin.tar.gz
     - export PATH=${M2_HOME}/bin:${PATH}
-    - export VERSION=`cat ${CI_PROJECT_DIR}/.ci/version`
     - export JAVA_HOME=`java -XshowSettings:properties -version 2>&1|grep "java.home"|cut -d "=" -f 2|tr -d " "|rev | cut -c 4- | rev`
   script:
     - cd "${CI_PROJECT_DIR}"
@@ -120,39 +119,43 @@ sources:
     - mv modules/redexpert/target/red_expert.png "${DIST}"
     - mv modules/redexpert/target/RedExpert.jar "${DIST}"
     - ./ci/build_installer.sh
+  parallel:
+    matrix:
+      - BUILD_IMAGE: amd64/centos:7
+        ARCH: x86_64
+      - BUILD_IMAGE: i386/centos:7
+        ARCH: x86
 
-build:linux:x86_64:
-  <<: *build_linux_template
-  image: amd64/centos:7
-  variables:
-    DIST: ${CI_PROJECT_DIR}/dist/linux-x86_64
-    ARCH: x86_64
-    <<: *build_linux_template_variables
-
-build:linux:x86:
-  <<: *build_linux_template
-  image: i386/centos:7
-  variables:
-    DIST: ${CI_PROJECT_DIR}/dist/linux-x86
-    ARCH: x86
-    <<: *build_linux_template_variables
-
-.build_windows_template: &build_windows_template
+build:windows:
+  extends: .build_template
   tags:
     - windows
     - proxmox
-  variables: &build_windows_template_vars
+  variables:
     ErrorActionPreference: STOP
     JAVA_HOME: c:\Program Files\Java\jdk8
+    DIST: ${CI_PROJECT_DIR}\dist\windows-${ARCH}
+    URL_INSTALLBUILDER: http://builds.red-soft.biz/release_hub/installbuilder/20.12.0/download/installbuilder:windows-${ARCH}:20.12.0:exe
   before_script:
-    - $VERSION = (get-content .ci\version -Raw).trim()
     - $env:RE_VERSION = $VERSION
-    - $env:Path="c:\Program Files (x86)\BitRock InstallBuilder Enterprise 17.10.0\bin;" + $env:Path
     - unzip -q dist-src\RedExpert-$VERSION-src.zip
     - mkdir ${DIST}
     - mkdir ${DIST}/guide/
+    - cd ${CI_PROJECT_DIR}\RedExpert-$VERSION
+    - echo "downloading installbuilder from ${URL_INSTALLBUILDER}"
+    - $client=new-object System.Net.WebClient
+    - $client.DownloadFile(${URL_INSTALLBUILDER}, "${CI_PROJECT_DIR}\RedExpert-$VERSION\ib.exe")
+    - echo "installing installbuilder"
+    - $pwd=pwd
+    - $pwd=$pwd.path
+    - $prefix_installbuilder="$pwd\ib"
+    - echo $prefix_installbuilder
+    - .\ib.exe --mode unattended  --prefix $prefix_installbuilder
+    - $env:PATH="$prefix_installbuilder\bin\;"+$env:PATH
+    - echo $env:PATH
   script:
     - cd ${CI_PROJECT_DIR}\RedExpert-$VERSION
+    - ls
     - powershell -ExecutionPolicy ByPass -file ci\build_native.ps1
     - powershell -ExecutionPolicy ByPass -file ci\build_jar.ps1
     - mv modules/redexpert/target/bin "${DIST}"
@@ -165,24 +168,12 @@ build:linux:x86:
     - mv modules/redexpert/target/red_expert.png "${DIST}"
     - mv modules/redexpert/target/RedExpert.jar "${DIST}"
     - powershell -ExecutionPolicy ByPass -file ci\build_installer.ps1
-
-build:windows:x86_64:
-  <<: *build_template
-  <<: *build_windows_template
-  variables:
-    DIST: ${CI_PROJECT_DIR}\dist\windows-x86_64
-    QMAKE: c:\Qt\Qt5.6.3\5.6.3\msvc2013_64\bin\qmake.exe
-    ARCH: amd64
-    <<: *build_windows_template_vars
-
-build:windows:x86:
-  <<: *build_template
-  <<: *build_windows_template
-  variables:
-    DIST: ${CI_PROJECT_DIR}\dist\windows-x86
-    QMAKE: c:\Qt\Qt5.6.3_x86\5.6.3\msvc2013\bin\qmake.exe
-    ARCH: x86
-    <<: *build_windows_template_vars
+  parallel:
+    matrix:
+      - ARCH: x86_64
+        QMAKE: c:\Qt\Qt5.6.3\5.6.3\msvc2013_64\bin\qmake.exe
+      - ARCH: x86
+        QMAKE: c:\Qt\Qt5.6.3_x86\5.6.3\msvc2013\bin\qmake.exe
 
 repackage:
   tags:
@@ -192,7 +183,6 @@ repackage:
   image: alpine:3.8
   before_script:
     - apk --update add bash tar zip
-    - export VERSION=`cat .ci/version`
   script:
     - ./ci/repackage.sh linux-x86_64 linux-x86 windows-x86_64 windows-x86
   artifacts:
@@ -205,14 +195,9 @@ deploy:
     - docker
     - builder
   stage: deploy
-  image: redsoftru/relmanager_client
+  image: registry.red-soft.biz:5000/utils/red-release-manager/client:master
   script:
-    - relmanager_client deploy ${RELEASE_HUB_PROJECT} $(cat .ci/version) --artifacts .ci/artifacts --ci_url ${CI_URL} --context $(cat .ci/context) --branch $(cat .ci/branch) --commit ${CI_COMMIT_SHA}
+    - relmanager_client deploy ${RELEASE_HUB_PROJECT} ${VERSION} --artifacts .ci/artifacts --ci_url ${CI_URL} --context ${CONTEXT} --branch ${BRANCH} --commit ${CI_COMMIT_SHA} --stage ${STAGE}
   only:
     variables:
       - "$RELEASE_HUB_KEY"
-  dependencies:
-    - prepare:snapshot
-    - prepare:release
-    - sources
-    - repackage

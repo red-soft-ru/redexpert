@@ -508,7 +508,7 @@ public final class SQLUtils {
         if (!MiscUtils.isNull(columnData.getCheck())) {
             sb.append(" CHECK (").append(columnData.getCheck()).append(")");
         }
-        if(columnData.getCollate()!=null)
+        if (columnData.getCollate() != null)
             sb.append(" COLLATE ").append(columnData.getCollate());
         sb.append(";");
         if (!MiscUtils.isNull(columnData.getDescription())) {

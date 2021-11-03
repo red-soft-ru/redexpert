@@ -6,7 +6,9 @@ import org.executequery.http.ReddatabaseAPI;
 import org.executequery.log.Log;
 import org.executequery.util.ApplicationProperties;
 import org.executequery.util.UserProperties;
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
@@ -15,6 +17,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -51,6 +54,11 @@ public class UpdateLoader extends JFrame {
     private JScrollPane scrollPane;
     private JPanel panel1;
     private JPanel panel2;
+
+    public void setProgressBar(JProgressBar progressBar) {
+        this.progressBar = progressBar;
+    }
+
     private JProgressBar progressBar;
     private String repoArg;
 
@@ -64,7 +72,16 @@ public class UpdateLoader extends JFrame {
 
     private String externalArg;
 
+
     private String root = "update/";
+
+    public String getRoot() {
+        return root;
+    }
+
+    public void setRoot(String root) {
+        this.root = root;
+    }
 
     public UpdateLoader(String repository) {
         initComponents();
@@ -184,11 +201,16 @@ public class UpdateLoader extends JFrame {
                 int i = arg.indexOf('=');
                 String external = arg.substring(i + 1);
                 updateLoader.setExternalArg(external);
+            } else if (arg.contains("-root")) {
+                int i = arg.indexOf('=');
+                String root = arg.substring(i + 1);
+                updateLoader.setRoot(root);
             }
 
         }
-        updateLoader.setVisible(true);
-        updateLoader.update();
+        //updateLoader.setVisible(true);
+        updateLoader.replaceFiles();
+        updateLoader.launch();
     }
 
     private static void applySystemProperties() {
@@ -209,17 +231,17 @@ public class UpdateLoader extends JFrame {
         ApplicationContext.getInstance().setBuild(build);
     }
 
-    private void launch() {
+    public void launch() {
         ProcessBuilder pb = null;
         try {
             StringBuilder sb = new StringBuilder("./RedExpert");
-            if (System.getProperty("os.arch").toLowerCase().contains("amd64"))
+            if (System.getProperty("os.arch").toLowerCase().contains("64"))
                 sb.append("64");
             if (System.getProperty("os.name").toLowerCase().contains("win"))
                 sb.append(".exe");
             if (repoArg == null)
                 repoArg = "-repo=";
-            System.out.println("Executing: " + sb.toString());
+            System.out.println("Executing: " + sb);
             pb = new ProcessBuilder(sb.toString(), repoArg);
             pb.directory(new File(System.getProperty("user.dir")));
             pb.start();
@@ -295,7 +317,7 @@ public class UpdateLoader extends JFrame {
         out.close();
     }
 
-    private void unzip() {
+    private void unzip(boolean useLog) {
         int BUFFER = 2048;
         BufferedOutputStream dest = null;
         BufferedInputStream is;
@@ -306,6 +328,8 @@ public class UpdateLoader extends JFrame {
             (new File(root)).mkdir();
             while (e.hasMoreElements()) {
                 entry = (ZipEntry) e.nextElement();
+                if (useLog)
+                    Log.info("\nExtracting: " + entry);
                 outText.setText(outText.getText() + "\nExtracting: " + entry);
                 if (entry.isDirectory())
                     (new File(root + entry.getName())).mkdir();
@@ -327,9 +351,15 @@ public class UpdateLoader extends JFrame {
                     } catch (FileNotFoundException ex) {
                         outText.setText(outText.getText() + "\nExtracting " + entry + " error. " +
                                 ex.getMessage());
+                        if (useLog)
+                            Log.info("\nExtracting " + entry + " error. " +
+                                    ex.getMessage());
                     } catch (IOException ex) {
                         outText.setText(outText.getText() + "\nExtracting " + entry + "error." +
                                 ex.getMessage());
+                        if (useLog)
+                            Log.info("\nExtracting " + entry + " error. " +
+                                    ex.getMessage());
                     }
                     if (dest != null) {
                         dest.flush();
@@ -389,6 +419,45 @@ public class UpdateLoader extends JFrame {
         return ApplicationProperties.getInstance();
     }
 
+    public void downloadUpdate() {
+        Log.info("Contacting Download Server...");
+        if (releaseHub) {
+
+            try {
+                JSONObject obj = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(
+                                "http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
+                        "artifact_id",
+                        "red_expert:bin:" + version + ":zip");
+                downloadLink = "http://builds.red-soft.biz/" + obj.getString("file");
+                downloadArchive();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            if (!MiscUtils.isNull(repo)) {
+                this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
+                downloadArchive();
+            } else {
+                try {
+                    //изменить эту строку в соответствии с форматом имени файла на сайте
+                    String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
+                    Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
+                    if (heads != null) {
+                        String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
+                        JSONArray jsa = JSONAPI.getJsonArray(prop + version,
+                                heads);
+                        JSONObject js = JSONAPI.getJsonObjectFromArray(jsa, "filename", filename);
+                        String url = js.getString("url");
+                        downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
+                        downloadArchive();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     void update() {
         this.setTitle("Updating");
         if (releaseHub) {
@@ -396,7 +465,7 @@ public class UpdateLoader extends JFrame {
             try {
 
                 JSONObject obj = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(
-                        "http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
+                                "http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
                         "artifact_id",
                         "red_expert:bin:" + version + ":zip");
                 downloadLink = "http://builds.red-soft.biz/" + obj.getString("file");
@@ -466,6 +535,7 @@ public class UpdateLoader extends JFrame {
         URLConnection conn = url.openConnection();
         InputStream is = conn.getInputStream();
         long max = conn.getContentLength();
+        Log.info("Downloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
         outText.setText(outText.getText() + "\n" + "Downloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
         BufferedOutputStream fOut = new BufferedOutputStream(new FileOutputStream(new File("update.zip")));
         byte[] buffer = new byte[32 * 1024];
@@ -476,10 +546,12 @@ public class UpdateLoader extends JFrame {
         progressBar.setMaximum((int) (max / delimiter));
         progressBar.setMinimum(0);
         progressBar.setValue(0);
+        progressBar.setStringPainted(true);
         String textOut = outText.getText();
         while ((bytesRead = is.read(buffer)) != -1) {
             in += bytesRead;
             fOut.write(buffer, 0, bytesRead);
+            progressBar.setString(getUsabilitySize(in));
             outText.setText(textOut + "\n" + getUsabilitySize(in));
             progressBar.setValue((int) (in / delimiter));
         }
@@ -515,6 +587,39 @@ public class UpdateLoader extends JFrame {
         } else return countByte + "b";
     }
 
+    public void unzipLocale() {
+        unzip(true);
+    }
+
+    private void downloadArchive() {
+        try {
+            String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+            parent += "/";
+            File aNew = new File(parent);
+            root = parent + "/update/";
+            downloadFile(downloadLink);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void replaceFiles() {
+        String parent = null;
+        try {
+            parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+
+            parent += "/";
+            File aNew = new File(parent);
+            aNew.mkdir();
+            copyFiles(new File(root), aNew.getAbsolutePath());
+            cleanup();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void download() {
         worker = new Thread(
                 () -> {
@@ -524,7 +629,7 @@ public class UpdateLoader extends JFrame {
                         File aNew = new File(parent);
                         root = parent + "/update/";
                         downloadFile(downloadLink);
-                        unzip();
+                        unzip(false);
                         aNew.mkdir();
                         copyFiles(new File(root), aNew.getAbsolutePath());
                         cleanup();

@@ -1407,7 +1407,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       DatabaseColumn column = cols.get(i);
       String col = MiscUtils.getFormattedObject(cols.get(i).getName());
       RecordDataItem rdi = changes.get(i);
-      if (column.isGenerated())
+      if (column.isGenerated() || column.isIdentity() && rdi.isNewValueNull())
         rdi.setGenerated(true);
       else {
         if (applied) {

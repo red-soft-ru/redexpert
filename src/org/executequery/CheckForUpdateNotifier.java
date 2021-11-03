@@ -235,26 +235,34 @@ public class CheckForUpdateNotifier implements Interruptible {
                         repo = "-repo=" + instance.getRepo();
                         argsList.add(repo);
                     }
+                    JProgressBar progbar = new JProgressBar();
+                    updateLoader.setProgressBar(progbar);
+                    statusBar().addComponent(progbar, LABEL_INDEX);
+                    updateLoader.downloadUpdate();
+                    updateLoader.unzipLocale();
+                    argsList.add("-root=" + updateLoader.getRoot());
+                    if (GUIUtilities.displayYesNoDialog(bundledString("restart.message"), bundledString("restart.message.title")) == JOptionPane.YES_OPTION) {
+                        String[] args = argsList.toArray(new String[0]);
+                        String[] run;
+                        File file = new File("RedExpert.jar");
+                        if (!file.exists())
+                            file = new File("../RedExpert.jar");
+                        run = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
+                        run = (String[]) ArrayUtils.addAll(run, args);
+                        try {
+                            File outputLog = new File(ApplicationContext.getInstance().getUserSettingsHome() + System.getProperty("file.separator") + "updater.log");
+                            ProcessBuilder pb = new ProcessBuilder(run);
+                            pb.redirectOutput(ProcessBuilder.Redirect.appendTo(outputLog));
+                            pb.redirectError(ProcessBuilder.Redirect.appendTo(outputLog));
+                            pb.start();
 
-                    String[] args = argsList.toArray(new String[0]);
-                    String[] run;
-                    File file = new File("RedExpert.jar");
-                    if (!file.exists())
-                        file = new File("../RedExpert.jar");
-                    run = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
-                    run = (String[]) ArrayUtils.addAll(run, args);
-                    try {
-                        File outputLog = new File(ApplicationContext.getInstance().getUserSettingsHome() + System.getProperty("file.separator") + "updater.log");
-                        ProcessBuilder pb = new ProcessBuilder(run);
-                        pb.redirectOutput(ProcessBuilder.Redirect.appendTo(outputLog));
-                        pb.redirectError(ProcessBuilder.Redirect.appendTo(outputLog));
-                        pb.start();
-
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        GUIUtilities.displayExceptionErrorDialog("update error", ex);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            GUIUtilities.displayExceptionErrorDialog("update error", ex);
+                        }
+                        System.exit(0);
                     }
-                    System.exit(0);
+
                     return Constants.WORKER_SUCCESS;
                 }
 

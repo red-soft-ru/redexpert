@@ -25,6 +25,7 @@ import org.executequery.ApplicationContext;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.io.XMLFile;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.LogRepository;
 import org.executequery.repository.RepositoryCache;
@@ -54,7 +55,7 @@ public class SystemResources {
     /**
      * resource bundle cache
      */
-    private static Map<String, StringBundle> bundles = new HashMap<String, StringBundle>();
+    private static final Map<String, StringBundle> bundles = new HashMap<String, StringBundle>();
 
     /**
      * Loads the resource bundle for the specified class.
@@ -303,8 +304,7 @@ public class SystemResources {
             // files to the new build number dir
 
             if (copyOldFiles && oldConfDir.exists()) {
-                int option = GUIUtilities.displayConfirmCancelDialog("The settings of the previous version of RedExpert were found.\n" +
-                        "Apply these settings in this version?");
+                int option = GUIUtilities.displayConfirmCancelDialog(Bundles.get(SystemResources.class, "findedOldSettings"));
                 switch (option) {
                     case JOptionPane.YES_OPTION:
 

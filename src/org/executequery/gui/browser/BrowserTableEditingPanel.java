@@ -27,6 +27,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
+import org.executequery.databaseobjects.impl.TransactionAgnosticResultSet;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
@@ -67,6 +68,8 @@ import java.awt.print.Printable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Timer;
 import java.util.*;
@@ -1347,6 +1350,25 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingIndexesPanel.add(bar, gbc3);
+    }
+
+
+    public boolean commitResultSet() {
+        try {
+            if (tableDataPanel.resultSet != null) {
+                if (tableDataPanel.resultSet instanceof TransactionAgnosticResultSet) {
+                    Connection con = ((TransactionAgnosticResultSet) tableDataPanel.resultSet).getConnection();
+                    if (con != null && !con.isClosed()) {
+                        con.commit();
+                        con.close();
+                    }
+                }
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 
 }

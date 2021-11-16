@@ -53,7 +53,7 @@ class DelegatingResultSet implements ResultSet {
     /**
      * My delegate.
      **/
-    private ResultSet _res;
+    private final ResultSet _res;
 
     /**
      * The Statement that created me, if any.
@@ -105,7 +105,7 @@ class DelegatingResultSet implements ResultSet {
         this._res = res;
     }
 
-    protected Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
 
         if (_conn != null) {
 

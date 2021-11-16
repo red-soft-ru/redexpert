@@ -20,7 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import org.executequery.Application;
 import org.executequery.EventMediator;
 import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -57,7 +56,7 @@ public class BrowserViewPanel extends FormObjectViewContainer
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     /**
      * Creates a new instance of DatabaseViewPanel
@@ -99,6 +98,8 @@ public class BrowserViewPanel extends FormObjectViewContainer
                 new DefaultConnectionRepositoryEvent(
                         this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) null));
         ConnectionHistory.remove(currentView);
+        if (currentView instanceof BrowserTableEditingPanel)
+            return ((BrowserTableEditingPanel) currentView).commitResultSet();
         return true;
     }
 

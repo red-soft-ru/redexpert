@@ -417,6 +417,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         dataLoaded = false;
         metaDataLoaded = false;
 
+        sqlTextPanel.getTextPane().setDatabaseConnection(object.getHost().getDatabaseConnection());
         sqlTextPanel.setSQLText(Constants.EMPTY);
 
         // header values

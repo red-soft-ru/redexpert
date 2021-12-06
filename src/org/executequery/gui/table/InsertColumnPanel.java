@@ -360,7 +360,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
                     .append(" ALTER COLUMN ").append(MiscUtils.getFormattedObject(column.getOriginalColumn().getName())).append(" TO ").append(columnData.getFormattedColumnName()).append(";\n");
         }
 
-        if (column.isDataTypeChanged()) {
+        if (column.isDataTypeChanged() && !column.isDomainChanged() && !column.isGenerated()) {
 
             sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()))
                     .append(" ALTER COLUMN ").append(columnData.getFormattedColumnName()).append(" TYPE ").append(columnData.getFormattedDataType());
@@ -399,7 +399,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
                     " IS '" + column.getColumnDescription() + "';\n");
         }
 
-        if (column.isDomainChanged()) {
+        if (column.isDomainChanged() && !column.isGenerated()) {
             sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
                     "\nALTER COLUMN " + columnData.getFormattedColumnName() + " TYPE " + columnData.getFormattedDomain() + ";\n");
         }

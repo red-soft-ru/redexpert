@@ -27,6 +27,7 @@ import org.underworldlabs.jdbc.DataSourceException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -227,6 +228,8 @@ public interface DatabaseHost extends NamedObject {
      * Get database product version.
      */
     String getDatabaseProductVersion();
+
+    int getDatabaseMajorVersion() throws SQLException;
 
     /**
      * Returns the default prefix name value for objects from this host.

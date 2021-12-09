@@ -20,7 +20,7 @@ import static org.executequery.gui.browser.ColumnConstraint.RULES;
 import static org.executequery.gui.table.CreateTableSQLSyntax.*;
 
 public final class SQLUtils {
-    public static String generateCreateTable(String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList, boolean existTable, boolean temporary, String typeTemporary, String externalFile, String adapter) {
+    public static String generateCreateTable(String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList, boolean existTable, boolean temporary, String typeTemporary, String externalFile, String adapter, String tablespace) {
         StringBuilder sqlText = new StringBuilder();
         StringBuilder sqlBuffer = new StringBuilder();
         List<String> descriptions = new ArrayList<>();
@@ -84,11 +84,13 @@ public final class SQLUtils {
 
         }
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
+        if (tablespace != null)
+            sqlBuffer.append("\nTABLESPACE ").append(MiscUtils.getFormattedObject(tablespace));
         if (temporary)
             sqlBuffer.append("\nON COMMIT ").append(typeTemporary);
         sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
         sqlBuffer.append("\n").append(description);
-        if(autoincrementSQLText!=null)
+        if (autoincrementSQLText != null)
             sqlBuffer.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
         return sqlBuffer.toString();
     }
@@ -556,6 +558,15 @@ public final class SQLUtils {
         sb.append(";\n");
         if (!MiscUtils.isNull(user.getComment()))
             sb.append("COMMENT ON USER ").append(MiscUtils.getFormattedObject(user.getName())).append(" is '").append(user.getComment()).append("'");
+        return sb.toString();
+    }
+
+    public static String generateCreateTablespace(String name, String file) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE");
+        sb.append(" TABLESPACE ").append(MiscUtils.getFormattedObject(name));
+        sb.append(" FILE '").append(file).append("'");
+        sb.append(";\n");
         return sb.toString();
     }
 

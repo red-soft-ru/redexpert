@@ -2,7 +2,6 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.gui.editor.ResultSetTablePopupMenu;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 
@@ -58,9 +57,9 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     public static class IndexColumnsModel implements TableModel {
 
-        private Set<TableModelListener> listeners = new HashSet<TableModelListener>();
+        private final Set<TableModelListener> listeners = new HashSet<TableModelListener>();
 
-        private List<DatabaseIndexColumn> columns;
+        private final List<DatabaseIndexColumn> columns;
 
         public IndexColumnsModel(List<DatabaseIndexColumn> columns) {
             this.columns = columns;
@@ -135,6 +134,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     private String expression;
     private String constraint_type;
     private boolean markedReloadActive;
+    private String tablespace;
 
     public DefaultDatabaseIndex(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
@@ -272,6 +272,13 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     protected String queryForInfo() {
+        String tablespace_query = "";
+        try {
+            if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase") && getHost().getDatabaseMajorVersion() >= 4)
+                tablespace_query = ", I.RDB$TABLESPACE_NAME";
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return "select " +
                 "0, " +
                 "I.RDB$RELATION_NAME, " +
@@ -280,9 +287,11 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
                 "I.RDB$UNIQUE_FLAG," +
                 "I.RDB$INDEX_INACTIVE," +
                 "I.RDB$DESCRIPTION," +
-                "C.RDB$CONSTRAINT_TYPE\n" +
-                "FROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
+                "C.RDB$CONSTRAINT_TYPE" +
+                tablespace_query +
+                "\nFROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
                 "where I.RDB$INDEX_NAME='" + getName().trim() + "'";
+
     }
 
     @Override
@@ -295,6 +304,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
                 setUnique(rs.getInt(5) == 1);
                 setRemarks(rs.getString(7));
                 setConstraint_type(rs.getString(8));
+                setTablespace(rs.getString(9));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -326,6 +336,14 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         } finally {
             setMarkedForReload(false);
         }
+    }
+
+    public String getTablespace() {
+        return tablespace;
+    }
+
+    public void setTablespace(String tablespace) {
+        this.tablespace = tablespace;
     }
 
     public void reset() {

@@ -69,13 +69,6 @@ public interface DatabaseMetaTag extends NamedObject {
      */
     int getSubType();
 
-    /**
-     * Indicates whether child objects exist for this meta tag.
-     *
-     * @return true | false
-     * @throws DataSourceException
-     */
-    boolean hasChildObjects() throws DataSourceException;
 
 }
 

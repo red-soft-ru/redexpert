@@ -21,7 +21,6 @@
 package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseConnection;
-import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
@@ -165,8 +164,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 || type == SYSTEM_ROLE
                 || type == GLOBAL_TEMPORARY
                 || type == SYSTEM_PACKAGE
+                || type == ROLE
+                || type == TABLESPACE
         )
-            if (typeTree != TreePanel.DEFAULT) {
+            if (typeTree == TreePanel.DEPENDENT || typeTree == TreePanel.DEPENDED_ON) {
                 return new ArrayList<NamedObject>();
             }
         if (type != SYSTEM_FUNCTION) {
@@ -229,676 +230,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
-    public boolean hasChildObjects() throws DataSourceException {
 
-        if (!isMarkedForReload() && children != null) {
 
-            return !children.isEmpty();
-        }
-
-        try {
-
-            int type = getSubType();
-            if (type == DATABASE_TRIGGER
-                    || type >= SYSTEM_DOMAIN
-            )
-                if (typeTree != TreePanel.DEFAULT) {
-                    return false;
-                }
-            if (type != SYSTEM_FUNCTION) {
-
-                if (isFunctionOrProcedure()) {
-
-                    if (StringUtils.equalsIgnoreCase(getMetaDataKey(), procedureTerm())) {
-
-                        if (type == FUNCTION) {
-
-                            return hasFunctions();
-
-                        } else if (type == PROCEDURE) {
-
-                            return hasProcedures();
-                        }
-
-                    }
-
-                    return false;
-
-                } else if (isIndex()) {
-
-                    if (type == INDEX) {
-                        return hasIndices();
-                    }
-
-                } else if (isTrigger()) {
-
-                    if (type == TRIGGER) {
-                        return hasTriggers();
-                    }
-
-                } else if (isSequence()) {
-
-                    if (type == SEQUENCE) {
-                        return hasSequences();
-                    }
-
-                } else if (isSystemSequence()) {
-
-                    if (type == SYSTEM_SEQUENCE) {
-                        return hasSystemSequences();
-                    }
-
-                } else if (isDomain()) {
-
-                    if (type == DOMAIN) {
-                        return hasDomains();
-                    }
-
-                } else if (isUser()) {
-
-                    if (type == USER) {
-                        return hasUsers();
-                    }
-
-                } else if (isRole()) {
-
-                    if (type == ROLE) {
-                        return hasRoles();
-                    }
-
-                } else if (isSystemRole()) {
-
-                    if (type == SYSTEM_ROLE) {
-                        return hasSystemRoles();
-                    }
-
-                } else if (isException()) {
-
-                    if (type == EXCEPTION) {
-                        return hasException();
-                    }
-
-                } else if (isUDF()) {
-
-                    if (type == UDF) {
-                        return hasUDF();
-                    }
-
-                } else if (isSystemDomain()) {
-
-                    if (type == SYSTEM_DOMAIN) {
-                        return hasSystemDomain();
-                    }
-
-                } else if (isSystemIndex()) {
-
-                    if (type == SYSTEM_INDEX) {
-                        return hasSystemIndex();
-                    }
-
-                } else if (isSystemTrigger()) {
-
-                    if (type == SYSTEM_TRIGGER) {
-                        return hasSystemTrigger();
-                    }
-
-                } else if (isSystemDatabaseTrigger()) {
-
-                    if (type == DATABASE_TRIGGER) {
-                        return hasSystemDatabaseTrigger();
-                    }
-
-                } else if (isPackage()) {
-
-                    if (type == PACKAGE) {
-                        return hasPackages();
-                    }
-
-                } else {
-
-                    return getHost().hasTablesForType(getCatalogName(), getSchemaName(), getMetaDataKey());
-                }
-
-            }
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean isFunctionOrProcedure() {
-
-        int type = getSubType();
-        return type == FUNCTION || type == PROCEDURE;
-    }
-
-    private boolean isIndex() {
-
-        int type = getSubType();
-        return type == INDEX;
-    }
-
-    private boolean isTrigger() {
-
-        int type = getSubType();
-        return type == TRIGGER;
-    }
-
-    private boolean isSequence() {
-
-        int type = getSubType();
-        return type == SEQUENCE;
-    }
-
-    private boolean isSystemSequence() {
-
-        int type = getSubType();
-        return type == SYSTEM_SEQUENCE;
-    }
-
-    private boolean isDomain() {
-
-        int type = getSubType();
-        return type == DOMAIN;
-    }
-
-    private boolean isSystemRole() {
-        int type = getSubType();
-        return type == SYSTEM_ROLE;
-    }
-
-    private boolean isSystemPackage() {
-        int type = getSubType();
-        return type == SYSTEM_PACKAGE;
-    }
-
-    private boolean isUser() {
-
-        int type = getSubType();
-        return type == USER;
-    }
-
-    private boolean isRole() {
-
-        int type = getSubType();
-        return type == ROLE;
-    }
-
-    private boolean isException() {
-
-        int type = getSubType();
-        return type == EXCEPTION;
-    }
-
-    private boolean isUDF() {
-
-        int type = getSubType();
-        return type == UDF;
-    }
-
-    private boolean isSystemDomain() {
-
-        int type = getSubType();
-        return type == SYSTEM_DOMAIN;
-    }
-
-    private boolean isSystemIndex() {
-
-        int type = getSubType();
-        return type == SYSTEM_INDEX;
-    }
-
-    private boolean isSystemTrigger() {
-
-        int type = getSubType();
-        return type == SYSTEM_TRIGGER;
-    }
-
-    private boolean isDDLTrigger() {
-
-        int type = getSubType();
-        return type == DDL_TRIGGER;
-    }
-
-    private boolean isSystemDatabaseTrigger() {
-
-        int type = getSubType();
-        return type == DATABASE_TRIGGER;
-    }
-
-    private boolean isPackage() {
-
-        int type = getSubType();
-        return type == PACKAGE;
-    }
-
-    private String procedureTerm() throws SQLException {
-        return getHost().getDatabaseMetaData().getProcedureTerm();
-    }
-
-    private boolean hasFunctions() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getFunctionsResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasProcedures() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getProceduresResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasIndices() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getIndicesResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasTriggers() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getTriggersResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasSequences() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSequencesResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasSystemSequences() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemSequencesResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-
-    private boolean hasDomains() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getDomainsResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasSystemRoles() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemRolesResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasUsers() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getUsersResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasRoles() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getRolesResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasException() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getExceptionResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasUDF() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getUDFResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } catch (Exception e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasSystemDomain() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemDomainResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasSystemIndex() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemIndexResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasSystemTrigger() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemTriggerResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasSystemDatabaseTrigger() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getDatabaseTriggerResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasDDLTriggers() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getDDLTriggerResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private boolean hasPackages() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getPackagesResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
 
     private ResultSet getObjectsResultSet(int type) throws SQLException {
         switch (type) {
@@ -923,6 +256,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 return getRolesResultSet();
             case INDEX:
                 return getIndicesResultSet();
+            case TABLESPACE:
+                return getTablespacesResultSet();
             case SYSTEM_DOMAIN:
                 return getSystemDomainResultSet();
             case SYSTEM_TRIGGER:
@@ -947,68 +282,74 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             List<NamedObject> list = new ArrayList<NamedObject>();
             rs = getObjectsResultSet(type);
-            if (rs != null) { // informix returns null rs
+            if (rs != null) {
 
                 while (rs.next()) {
-                    if(!getHost().getDatabaseConnection().isConnected())
+                    if (!getHost().getDatabaseConnection().isConnected())
                         return new ArrayList<>();
-                   AbstractDatabaseObject namedObject = null;
-                   switch(type)
-                   {
-                       case DOMAIN:
-                       case SYSTEM_DOMAIN:
-                           namedObject = getDomain(rs);
-                       break;
-                       case TABLE:
-                       case GLOBAL_TEMPORARY:
-                       case VIEW:
-                       case SYSTEM_TABLE:
-                       case SYSTEM_VIEW:
-                           namedObject = getTable(rs,getMetaDataKey(),type);
-                           break;
-                       case PROCEDURE:namedObject = getProcedure(rs);
-                           break;
-                       case FUNCTION: namedObject = getFunction(rs);
-                       break;
-                       case PACKAGE:
-                       case SYSTEM_PACKAGE:
-                           namedObject = getPackage(rs);
-                           break;
-                       case TRIGGER:
-                       case DDL_TRIGGER:
-                       case DATABASE_TRIGGER:
-                       case SYSTEM_TRIGGER:
-                           namedObject = getTrigger(rs);
-                           break;
-                       case SEQUENCE:
-                       case SYSTEM_SEQUENCE:
-                           namedObject = getSequence(rs);
-                           break;
-                       case EXCEPTION:
-                           namedObject = getException(rs);
-                           break;
-                       case UDF:
-                           namedObject = getUDF(rs);
-                           break;
-                       case USER: namedObject = getUser(rs);
-                       break;
-                       case ROLE:
-                       case SYSTEM_ROLE:
-                           namedObject = getRole(rs);
-                           break;
-                       case INDEX:
-                       case SYSTEM_INDEX:
-                           namedObject = getIndex(rs);
-                           break;
+                    AbstractDatabaseObject namedObject = null;
+                    switch (type) {
+                        case DOMAIN:
+                        case SYSTEM_DOMAIN:
+                            namedObject = getDomain(rs);
+                            break;
+                        case TABLE:
+                        case GLOBAL_TEMPORARY:
+                        case VIEW:
+                        case SYSTEM_TABLE:
+                        case SYSTEM_VIEW:
+                            namedObject = getTable(rs, getMetaDataKey(), type);
+                            break;
+                        case PROCEDURE:
+                            namedObject = getProcedure(rs);
+                            break;
+                        case FUNCTION: namedObject = getFunction(rs);
+                            break;
+                        case PACKAGE:
+                        case SYSTEM_PACKAGE:
+                            namedObject = getPackage(rs);
+                            break;
+                        case TRIGGER:
+                        case DDL_TRIGGER:
+                        case DATABASE_TRIGGER:
+                        case SYSTEM_TRIGGER:
+                            namedObject = getTrigger(rs);
+                            break;
+                        case SEQUENCE:
+                        case SYSTEM_SEQUENCE:
+                            namedObject = getSequence(rs);
+                            break;
+                        case EXCEPTION:
+                            namedObject = getException(rs);
+                            break;
+                        case UDF:
+                            namedObject = getUDF(rs);
+                            break;
+                        case USER:
+                            namedObject = getUser(rs);
+                            break;
+                        case ROLE:
+                        case SYSTEM_ROLE:
+                            namedObject = getRole(rs);
+                            break;
+                        case INDEX:
+                        case SYSTEM_INDEX:
+                            namedObject = getIndex(rs);
+                            break;
+                        case TABLESPACE:
+                            namedObject = getTablespace(rs);
+                            break;
 
-                   }
-                   if(namedObject!=null) {
-                       if (type >= SYSTEM_DOMAIN)
-                           namedObject.setSystemFlag(true);
-                       namedObject.setHost(getHost());
-                       list.add(namedObject);
-                   }
+                    }
+                    if (namedObject != null) {
+                        if (type >= SYSTEM_DOMAIN)
+                            namedObject.setSystemFlag(true);
+                        namedObject.setHost(getHost());
+                        list.add(namedObject);
+                    }
                 }
+
+            } else {
 
             }
             return list;
@@ -1130,12 +471,18 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private AbstractDatabaseObject getUser(ResultSet rs) throws SQLException {
 
-                return new DefaultDatabaseUser(this, rs.getObject(1).toString());
+        return new DefaultDatabaseUser(this, rs.getObject(1).toString());
+
+    }
+
+    private AbstractDatabaseObject getTablespace(ResultSet rs) throws SQLException {
+
+        return new DefaultDatabaseTablespace(this, rs.getObject(1).toString());
 
     }
 
     private AbstractDatabaseObject getRole(ResultSet rs) throws SQLException {
-                        return new DefaultDatabaseRole(this, rs.getObject(1).toString());
+        return new DefaultDatabaseRole(this, rs.getObject(1).toString());
     }
 
     /**
@@ -1227,6 +574,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             query = getDependOnQuery(10);
         else if (typeTree == TreePanel.DEPENDENT)
             query = getDependentQuery(10);
+        else if (typeTree == TreePanel.TABLESPACE)
+            query = ((DefaultDatabaseTablespace) dependedObject).getIndexesQuery();
         return getResultSetFromQuery(query);
     }
 
@@ -1331,6 +680,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return getResultSetFromQuery(query);
     }
 
+    private ResultSet getTablespacesResultSet() throws SQLException {
+        String query = "SELECT RDB$TABLESPACE_NAME FROM RDB$TABLESPACES ORDER BY 1";
+        return getResultSetFromQuery(query);
+    }
+
     private ResultSet getExceptionResultSet() throws SQLException {
         String query = "select RDB$EXCEPTION_NAME, " +
                 "RDB$DESCRIPTION\n" +
@@ -1357,6 +711,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         "from RDB$FUNCTIONS\n" +
                         "where RDB$SYSTEM_FLAG =0 or RDB$SYSTEM_FLAG is null\n" +
                         "order by RDB$FUNCTION_NAME";
+                if (typeTree == TreePanel.DEPENDED_ON)
+                    query = getDependOnQuery(15);
+                else if (typeTree == TreePanel.DEPENDENT)
+                    query = getDependentQuery(15);
                 resultSet = getResultSetFromQuery(query);
                 break;
             case 3:
@@ -1370,6 +728,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         "from RDB$FUNCTIONS\n" +
                         "where RDB$LEGACY_FLAG = 1 and (RDB$MODULE_NAME is not NULL) and (RDB$SYSTEM_FLAG =0 or RDB$SYSTEM_FLAG is null)\n" +
                         "order by RDB$FUNCTION_NAME";
+                if (typeTree == TreePanel.DEPENDED_ON)
+                    query = getDependOnQuery(15);
+                else if (typeTree == TreePanel.DEPENDENT)
+                    query = getDependentQuery(15);
                 resultSet = getResultSetFromQuery(query);
                 break;
         }
@@ -1431,17 +793,23 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getTablesResultSet(String metaDataKey) throws SQLException {
         ResultSet resultSet = null;
         if (metaDataKey.equals("TABLE")) {
+            String rel_type = " and (rdb$relation_type=0 or rdb$relation_type=2 or rdb$relation_type is NULL)";
+            if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() < 2)
+                rel_type = "";
             String query = "select rdb$relation_name, \n" +
                     "rdb$description,\n" +
                     "rdb$view_source\n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is null \n" +
-                    "and (rdb$system_flag is null or rdb$system_flag = 0) and (rdb$relation_type=0 or rdb$relation_type=2 or rdb$relation_type is NULL)\n" +
-                    "order by rdb$relation_name";
+                    "and (rdb$system_flag is null or rdb$system_flag = 0)" +
+                    rel_type +
+                    "\norder by rdb$relation_name";
             if (typeTree == TreePanel.DEPENDED_ON)
                 query = getDependOnQuery(0);
             else if (typeTree == TreePanel.DEPENDENT)
                 query = getDependentQuery(0);
+            else if (typeTree == TreePanel.TABLESPACE)
+                query = ((DefaultDatabaseTablespace) dependedObject).getTablesQuery();
             resultSet = getResultSetFromQuery(query);
         } else if (metaDataKey.equals("SYSTEM TABLE")) {
             String query = "select rdb$relation_name, \n" +

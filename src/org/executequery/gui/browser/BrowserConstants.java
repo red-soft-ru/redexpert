@@ -282,6 +282,8 @@ public class BrowserConstants {
 
     public static final String USER_IMAGE = "User16.png";
 
+    public static final String TABLESPACE_IMAGE = "tablespace16.png";
+
 
     public static final String GRANT_IMAGE = "grant.png";
     public static final String NO_GRANT_IMAGE = "no_grant.png";
@@ -324,6 +326,7 @@ public class BrowserConstants {
             ROLE_IMAGE,
             SYSTEM_ROLE_IMAGE,
             USER_IMAGE,
+            TABLESPACE_IMAGE,
             DB_TRIGGER_IMAGE,
             DDL_TRIGGER_IMAGE,
             SYSTEM_PACKAGE_IMAGE,

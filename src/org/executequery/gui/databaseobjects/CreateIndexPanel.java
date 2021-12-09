@@ -4,12 +4,15 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTablespace;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -35,6 +38,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     private SimpleSqlTextPanel computedPanel;
     private JScrollPane scrollList;
     private JComboBox sortingBox;
+    private JComboBox tablespaceBox;
     private JCheckBox uniqueBox;
     private JCheckBox computedBox;
     private JCheckBox activeBox;
@@ -96,6 +100,10 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         uniqueBox.setSelected(databaseIndex.isUnique());
         activeBox.setSelected(databaseIndex.isActive());
         sortingBox.setSelectedIndex(databaseIndex.getIndexType());
+        if (databaseIndex.getTablespace() != null)
+            for (NamedObject ts : tss)
+                if (ts.getName().equals(databaseIndex.getName()))
+                    tablespaceBox.setSelectedItem(ts);
 
     }
 
@@ -131,14 +139,25 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         }
     }
 
+    private List<NamedObject> tss;
+
     protected void init() {
         fieldsPanel = new JPanel();
         descriptionPanel = new JPanel();
         tableName = new JComboBox(new Vector());
         sortingBox = new JComboBox(new String[]{bundleString("ascending"), bundleString("descending")});
+        tablespaceBox = new JComboBox();
+        tablespaceBox.addItem(null);
+        tss = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection)
+                .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.TABLESPACE]);
+        if (tss != null) {
+            for (int i = 0; i < tss.size(); i++)
+                tablespaceBox.addItem(tss.get(i));
+        }
         uniqueBox = new JCheckBox(bundleString("unique"));
         computedBox = new JCheckBox(bundlesString("computed"));
         activeBox = new JCheckBox(bundlesString("active"));
+        activeBox.setSelected(true);
         fields = new JList<>();
         fields.setModel(new DefaultListModel<>());
         scrollList = new JScrollPane(fields);
@@ -191,24 +210,17 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
         centralPanel.setLayout(new GridBagLayout());
 
-        JLabel tableLabel = new JLabel(bundlesString("table"));
-        centralPanel.add(tableLabel, new GridBagConstraints(0, 0,
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaults(new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        centralPanel.add(tableName, new GridBagConstraints(1, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        JLabel sortLabel = new JLabel(bundleString("sorting"));
-        centralPanel.add(sortLabel, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(sortingBox, new GridBagConstraints(1, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        gbh.defaults();
+        gbh.addLabelFieldPair(centralPanel, bundlesString("table"), tableName, null);
+        gbh.addLabelFieldPair(centralPanel, bundleString("sorting"), sortingBox, null);
+        if (tss != null)
+            gbh.addLabelFieldPair(centralPanel, bundleString("tablespace"), tablespaceBox, null);
+
 
         JPanel checksPanel = new JPanel(new GridBagLayout());
 
@@ -227,10 +239,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        centralPanel.add(checksPanel, new GridBagConstraints(0, 2,
-                2, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        centralPanel.add(checksPanel, gbh.nextRowFirstCol().spanX().anchorNorthWest().get());
         tabbedPane.add(bundleString("fields"), fieldsPanel);
         fieldsPanel.setLayout(new BorderLayout());
         fieldsPanel.add(scrollList);
@@ -324,7 +333,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             query += "INDEX " + getFormattedName() +
                     " ON " + MiscUtils.getFormattedObject(((String) tableName.getSelectedItem()).trim()) + " ";
             if (computedBox.isSelected()) {
-                query += "COMPUTED BY (" + computedPanel.getSQLText() + ");";
+                query += "COMPUTED BY (" + computedPanel.getSQLText() + ")";
             } else {
                 query += "(";
                 DefaultListModel model = ((DefaultListModel) fields.getModel());
@@ -339,8 +348,11 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                         fieldss.append(MiscUtils.getFormattedObject(item.label));
                     }
                 }
-                query += fieldss + ");";
+                query += fieldss + ")";
             }
+            if (tablespaceBox.getSelectedItem() != null)
+                query += "\nTABLESPACE " + MiscUtils.getFormattedObject(((DefaultDatabaseTablespace) tablespaceBox.getSelectedItem()).getName());
+            query += ";";
             if (!activeBox.isSelected())
                 query += "ALTER INDEX " + getFormattedName() + " INACTIVE;";
         }
@@ -352,7 +364,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     class CheckListItem {
 
-        private String label;
+        private final String label;
         private boolean isSelected = false;
 
         public CheckListItem(String label) {

@@ -78,15 +78,17 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   private String externalFile;
 
-    public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
+  private String tablespace;
 
-      this(object.getHost(), metaDataKey);
+  public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
 
-      setCatalogName(object.getCatalogName());
-      setSchemaName(object.getSchemaName());
-      setName(object.getName());
-      setRemarks(object.getRemarks());
-      if (object instanceof DefaultDatabaseObject) {
+    this(object.getHost(), metaDataKey);
+
+    setCatalogName(object.getCatalogName());
+    setSchemaName(object.getSchemaName());
+    setName(object.getName());
+    setRemarks(object.getRemarks());
+    if (object instanceof DefaultDatabaseObject) {
         DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
         setTypeTree(ddo.getTypeTree());
         setDependObject(ddo.getDependObject());
@@ -748,6 +750,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   }
 
   private boolean loadedInfoAboutExternalFile = false;
+  private boolean loadedInfoAboutTablespace = false;
 
   private void loadInfoAboutExternalFile() {
     DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
@@ -769,6 +772,26 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     } finally {
       querySender.releaseResources();
       loadedInfoAboutExternalFile = true;
+    }
+  }
+
+  private void loadInfoAboutTablespace() {
+    DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+    try {
+      if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase") && getHost().getDatabaseMajorVersion() >= 4) {
+        PreparedStatement statement = querySender.getPreparedStatement("select rdb$tablespace_name from rdb$relations where rdb$relation_name = ?");
+        statement.setString(1, getName());
+        ResultSet rs = querySender.getResultSet(-1, statement).getResultSet();
+        if (rs.next()) {
+          setTablespace(rs.getString(1));
+        }
+
+      }
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();
+    } finally {
+      querySender.releaseResources();
+      loadedInfoAboutTablespace = true;
     }
   }
 
@@ -1028,7 +1051,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
     }
 
-    return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, null, getExternalFile(), getAdapter());
+    return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, null, getExternalFile(), getAdapter(), getTablespace());
 
     }
 
@@ -1751,6 +1774,15 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
   }
 
+  public String getTablespace() {
+    if (!loadedInfoAboutTablespace)
+      loadInfoAboutTablespace();
+    return tablespace;
+  }
+
+  public void setTablespace(String tablespace) {
+    this.tablespace = tablespace;
+  }
 
   static final long serialVersionUID = -963831243178078154L;
 

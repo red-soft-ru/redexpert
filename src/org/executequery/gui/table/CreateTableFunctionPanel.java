@@ -25,11 +25,13 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.FocusComponentPanel;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
@@ -69,24 +71,16 @@ public abstract class CreateTableFunctionPanel extends JPanel
     protected JTextField nameField;
 
     /**
-     * The schema combo box
-     */
-    protected JComboBox schemaCombo;
-
-    /**
-     * the schema combo box model
-     */
-    protected DynamicComboBoxModel schemaModel;
-
-    /**
      * The connection combo selection
      */
     protected JComboBox connectionsCombo;
 
-    /**
-     * the schema combo box model
-     */
+
     protected DynamicComboBoxModel connectionsModel;
+
+    protected JComboBox tablespacesCombo;
+
+    protected DynamicComboBoxModel tablespaceComboModel;
 
     /**
      * The table column definition panel
@@ -161,9 +155,9 @@ public abstract class CreateTableFunctionPanel extends JPanel
         connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
         connectionsCombo.addItemListener(this);
 
-        schemaModel = new DynamicComboBoxModel();
-        schemaCombo = WidgetFactory.createComboBox(schemaModel);
-        schemaCombo.addItemListener(this);
+        tablespaceComboModel = new DynamicComboBoxModel(new Vector<>());
+        tablespacesCombo = WidgetFactory.createComboBox(tablespaceComboModel);
+        tablespacesCombo.addItemListener(this);
 
         // create tab pane
         tableTabs = new JTabbedPane();
@@ -202,8 +196,8 @@ public abstract class CreateTableFunctionPanel extends JPanel
         gbc.anchor = GridBagConstraints.NORTHWEST;
 
         WidgetFactory.addLabelFieldPair(mainPanel, bundledString("Connection"), connectionsCombo, gbc);
-        //WidgetFactory.addLabelFieldPair(mainPanel, "Schema:", schemaCombo, gbc);
         WidgetFactory.addLabelFieldPair(mainPanel, bundledString("TableName"), nameField, gbc);
+        WidgetFactory.addLabelFieldPair(mainPanel, Bundles.get(TableDefinitionPanel.class, "Tablespace"), tablespacesCombo, gbc);
         if (temporary)
             WidgetFactory.addLabelFieldPair(mainPanel, bundledString("TypeTemporaryTable"), typeTemporaryBox, gbc);
 
@@ -254,24 +248,17 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
         // check initial values for possible value inits
         if (connections == null || connections.isEmpty()) {
-            schemaCombo.setEnabled(false);
             connectionsCombo.setEnabled(false);
         } else {
             DatabaseConnection connection =
                     connections.elementAt(0);
             metaData.setDatabaseConnection(connection);
-            Vector schemas = metaData.getHostedSchemasVector();
-            if (schemas == null || schemas.size() == 0) {
-                schemas = metaData.getHostedCatalogsVector();
-            }
-            schemaModel.setElements(schemas);
-            if (schemas.size() != 0)
-                schemaCombo.setSelectedIndex(0);
 
             tablePanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
             tablePanel.setDomains(getDomains());
             tablePanel.setGenerators(getGenerators());
             tablePanel.setDatabaseConnection(connection);
+            populateTablespaces(connection);
             //metaData
         }
 
@@ -348,20 +335,21 @@ public abstract class CreateTableFunctionPanel extends JPanel
         }
 
         final Object source = event.getSource();
-        GUIUtils.startWorker(new Runnable() {
-            public void run() {
-                try {
-                    setInProcess(true);
-                    if (source == connectionsCombo) {
-                        connectionChanged();
-                    } else if (source == schemaCombo) {
-                        setSQLText();
+        if (event.getSource() == tablespacesCombo) {
+            setSQLText();
+        } else
+            GUIUtils.startWorker(new Runnable() {
+                public void run() {
+                    try {
+                        setInProcess(true);
+                        if (source == connectionsCombo) {
+                            connectionChanged();
+                        }
+                    } finally {
+                        setInProcess(false);
                     }
-                } finally {
-                    setInProcess(false);
                 }
-            }
-        });
+            });
     }
 
     private void columnChangeConnection(DatabaseConnection dc) {
@@ -382,20 +370,6 @@ public abstract class CreateTableFunctionPanel extends JPanel
         columnChangeConnection(connection);
 
         // reset schema values
-        try {
-            Vector schemas = metaData.getHostedSchemasVector();
-            if (schemas == null || schemas.isEmpty()) {
-                // try catalogs (ie. for mysql and others where schema not used)
-                schemas = metaData.getHostedCatalogsVector();
-            }
-            populateSchemaValues(schemas);
-        } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the catalog/schema names for the " +
-                            "selected connection.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e);
-            populateSchemaValues(new Vector<String>(0));
-        }
 
         // reset data types
         try {
@@ -406,7 +380,22 @@ public abstract class CreateTableFunctionPanel extends JPanel
                     e);
             populateDataTypes(new String[0], new int[0]);
         }
+        populateTablespaces(connection);
 
+
+    }
+
+    private void populateTablespaces(DatabaseConnection connection) {
+        List<NamedObject> tss = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection)
+                .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.TABLESPACE]);
+        if (tss == null)
+            tablespacesCombo.setEnabled(false);
+        else {
+            Vector<NamedObject> vector = new Vector<>();
+            vector.add(null);
+            vector.addAll(tss);
+            tablespaceComboModel.setElements(vector);
+        }
     }
 
     private void populateDataTypes(final String[] dataTypes, final int[] intDataTypes) {
@@ -415,16 +404,6 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 tablePanel.setDataTypes(dataTypes, intDataTypes);
                 tablePanel.setDomains(getDomains());
                 tablePanel.setGenerators(getGenerators());
-            }
-        });
-    }
-
-    private void populateSchemaValues(final Vector schemas) {
-        GUIUtils.invokeAndWait(new Runnable() {
-            public void run() {
-                schemaModel.setElements(schemas);
-                schemaCombo.setSelectedIndex(0);
-                schemaCombo.setEnabled(true);
             }
         });
     }
@@ -490,9 +469,11 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
     public void setSQLText() {
         if (getSelectedConnection().isNamesToUpperCase())
-        nameField.setText(nameField.getText().toUpperCase());
-
-        setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(), false, temporary, (String) typeTemporaryBox.getSelectedItem(), null, null));
+            nameField.setText(nameField.getText().toUpperCase());
+        String tablespace = null;
+        if (tablespacesCombo.getSelectedItem() != null)
+            tablespace = ((NamedObject) tablespacesCombo.getSelectedItem()).getName();
+        setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(), false, temporary, (String) typeTemporaryBox.getSelectedItem(), null, null, tablespace));
     }
 
     private void setSQLText(final String text) {

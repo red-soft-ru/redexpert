@@ -53,7 +53,7 @@ import java.util.Objects;
  */
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
-    private ConnectionsTreePanel treePanel;
+    private final ConnectionsTreePanel treePanel;
 
     private StatementToEditorWriter statementWriter;
 
@@ -348,6 +348,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
+                case NamedObject.TABLESPACE:
+                    if (GUIUtilities.isDialogOpen(CreateTablespacePanel.CREATE_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateTablespacePanel.CREATE_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateTablespacePanel.CREATE_TITLE, false);
+                            CreateTablespacePanel panel = new CreateTablespacePanel(currentSelection, dialog);
+                            showDialogCreateObject(panel, dialog);
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
@@ -559,6 +576,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
                             BaseDialog dialog = new BaseDialog(CreateUserPanel.EDIT_TITLE, false);
                             createObjectPanel = new CreateUserPanel(currentSelection, dialog, (DefaultDatabaseUser) node.getDatabaseObject());
+                            showDialogCreateObject(createObjectPanel, dialog);
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                case NamedObject.TABLESPACE:
+                    if (GUIUtilities.isDialogOpen(CreateTablespacePanel.EDIT_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateTablespacePanel.EDIT_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+
+                            BaseDialog dialog = new BaseDialog(CreateTablespacePanel.EDIT_TITLE, false);
+                            createObjectPanel = new CreateTablespacePanel(currentSelection, dialog, node.getDatabaseObject());
                             showDialogCreateObject(createObjectPanel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();

@@ -12,14 +12,13 @@ import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -31,12 +30,10 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     public static final String CREATE_TITLE = Bundles.get(CreateIndexPanel.class,"CreateIndex");
     public static final String ALTER_TITLE = Bundles.get(CreateIndexPanel.class,"AlterIndex");
     private JComboBox tableName;
-    private JList<CheckListItem> fields;
-    private JPanel fieldsPanel;
+    private ListSelectionPanel fieldsPanel;
     private JPanel descriptionPanel;
     private SimpleTextArea description;
     private SimpleSqlTextPanel computedPanel;
-    private JScrollPane scrollList;
     private JComboBox sortingBox;
     private JComboBox tablespaceBox;
     private JCheckBox uniqueBox;
@@ -83,13 +80,14 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         if (databaseIndex.getExpression() == null) {
             for (int i = 0; i < databaseIndex.getIndexColumns().size(); i++) {
                 DefaultDatabaseIndex.DatabaseIndexColumn column = databaseIndex.getIndexColumns().get(i);
-                for (int g = 0; g < fields.getModel().getSize(); g++) {
-                    CheckListItem item = ((DefaultListModel<CheckListItem>) fields.getModel()).elementAt(g);
-                    if (column.getFieldName().trim().equals(item.label))
-                        item.setSelected(true);
+                for (int g = 0; g < fieldsPanel.getAvailableValues().size(); g++) {
+                    String item = (String) fieldsPanel.getAvailableValues().get(g);
+                    if (column.getFieldName().trim().contentEquals(item)) {
+                        fieldsPanel.selectOneAction(g);
+                        g--;
+                    }
                 }
             }
-            fields.repaint();
         } else {
             computedBox.setSelected(true);
             computedPanel.setSQLText(databaseIndex.getExpression());
@@ -142,7 +140,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     private List<NamedObject> tss;
 
     protected void init() {
-        fieldsPanel = new JPanel();
+        fieldsPanel = new ListSelectionPanel();
         descriptionPanel = new JPanel();
         tableName = new JComboBox(new Vector());
         sortingBox = new JComboBox(new String[]{bundleString("ascending"), bundleString("descending")});
@@ -158,9 +156,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         computedBox = new JCheckBox(bundlesString("computed"));
         activeBox = new JCheckBox(bundlesString("active"));
         activeBox.setSelected(true);
-        fields = new JList<>();
-        fields.setModel(new DefaultListModel<>());
-        scrollList = new JScrollPane(fields);
         this.description = new SimpleTextArea();
         computedPanel = new SimpleSqlTextPanel();
 
@@ -175,22 +170,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             tabbedPane.setSelectedIndex(0);
             edited = true;
 
-        });
-
-        fields.setCellRenderer(new CheckListRenderer());
-        fields.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        fields.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent event) {
-                JList list = (JList) event.getSource();
-                int index = list.locationToIndex(event.getPoint());// Get index of item
-                // clicked
-                CheckListItem item = (CheckListItem) list.getModel()
-                        .getElementAt(index);
-                item.setSelected(!item.isSelected());// Toggle selected state
-                list.repaint(list.getCellBounds(index, index));// Repaint cell
-                edited = true;
-            }
         });
         tableName.addItemListener(event -> {
             if (event.getStateChange() == ItemEvent.DESELECTED) {
@@ -241,8 +220,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
         centralPanel.add(checksPanel, gbh.nextRowFirstCol().spanX().anchorNorthWest().get());
         tabbedPane.add(bundleString("fields"), fieldsPanel);
-        fieldsPanel.setLayout(new BorderLayout());
-        fieldsPanel.add(scrollList);
         tabbedPane.add(bundlesString("description"), descriptionPanel);
         descriptionPanel.setLayout(new BorderLayout());
         descriptionPanel.add(description);
@@ -289,7 +266,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                         "where\n" +
                         "    RRF.rdb$relation_name = '" + tableName.getSelectedItem() + "'\n order by 3";
                 ResultSet rs = sender.getResultSet(query).getResultSet();
-                ((DefaultListModel<CheckListItem>) fields.getModel()).clear();
+                fieldsPanel.clear();
                 List<ColumnData> cols = new ArrayList<>();
                 while (rs.next()) {
                     ColumnData col = new ColumnData(rs.getString(1).trim(), connection);
@@ -301,7 +278,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                     ColumnData col = cols.get(i);
                     col.setDomain(col.getDescription());
                     if (!col.isLOB() && col.getSQLType() != Types.ARRAY && col.getDomainComputedBy() == null) {
-                        ((DefaultListModel<CheckListItem>) fields.getModel()).addElement(new CheckListItem(col.getColumnName()));
+                        fieldsPanel.addAvailableItem(col.getColumnName().trim());
                     }
                 }
             } catch (Exception e) {
@@ -336,17 +313,13 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 query += "COMPUTED BY (" + computedPanel.getSQLText() + ")";
             } else {
                 query += "(";
-                DefaultListModel model = ((DefaultListModel) fields.getModel());
                 StringBuilder fieldss = new StringBuilder();
                 boolean first = true;
-                for (int i = 0; i < model.getSize(); i++) {
-                    CheckListItem item = (CheckListItem) model.elementAt(i);
-                    if (item.isSelected) {
-                        if (!first)
-                            fieldss.append(",");
-                        first = false;
-                        fieldss.append(MiscUtils.getFormattedObject(item.label));
-                    }
+                for (int i = 0; i < fieldsPanel.getSelectedValues().size(); i++) {
+                    if (!first)
+                        fieldss.append(",");
+                    first = false;
+                    fieldss.append(MiscUtils.getFormattedObject((String) fieldsPanel.getSelectedValues().get(i)));
                 }
                 query += fieldss + ")";
             }
@@ -362,40 +335,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     }
 
-    class CheckListItem {
 
-        private final String label;
-        private boolean isSelected = false;
 
-        public CheckListItem(String label) {
-            this.label = label;
-        }
-
-        public boolean isSelected() {
-            return isSelected;
-        }
-
-        public void setSelected(boolean isSelected) {
-            this.isSelected = isSelected;
-        }
-
-        @Override
-        public String toString() {
-            return label;
-        }
-    }
-
-    class CheckListRenderer extends JCheckBox implements ListCellRenderer {
-        public Component getListCellRendererComponent(JList list, Object value,
-                                                      int index, boolean isSelected, boolean hasFocus) {
-            setEnabled(list.isEnabled());
-            setSelected(((CheckListItem) value).isSelected());
-            setFont(list.getFont());
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
-            setText(value.toString());
-            return this;
-        }
-    }
 
 }

@@ -291,6 +291,15 @@ public class ListSelectionPanel extends ActionPanel
         selectedList.setListData(selections);
     }
 
+    public void addAvailableItem(Object obj) {
+        if (available == null)
+            available = new Vector();
+        available.add(obj);
+        availableList.setListData(available);
+        selections.clear();
+        selectedList.setListData(selections);
+    }
+
     public void removeAllAction() {
         if (selections == null || selections.size() == 0) {
             return;
@@ -350,8 +359,22 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setSelectedIndex(index);
     }
 
+    public void selectOneAction(int indexAvailable) {
+
+        Object selection = available.get(indexAvailable);
+        selections.add(selection);
+        available.remove(selection);
+
+        availableList.setListData(available);
+        selectedList.setListData(selections);
+    }
+
     public Vector getSelectedValues() {
         return selections;
+    }
+
+    public Vector getAvailableValues() {
+        return available;
     }
 
     public boolean hasSelections() {

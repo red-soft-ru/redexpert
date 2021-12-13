@@ -2,7 +2,6 @@ package org.executequery.gui.browser;
 
 import biz.redsoft.IFBBatch;
 import biz.redsoft.IFBBatchCompletionState;
-import biz.redsoft.IFBCryptoPluginInit;
 import biz.redsoft.IFBDatabaseConnection;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
@@ -14,14 +13,11 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
-import org.executequery.datasource.DriverLoader;
-import org.executequery.datasource.PooledConnection;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.generatortestdata.FieldGenerator;
 import org.executequery.gui.browser.generatortestdata.FieldsPanel;
 import org.executequery.gui.components.OpenConnectionsComboboxPanel;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DynamicComboBoxModel;
@@ -432,7 +428,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
         topPanel.add(printBatchStateBox, gbh.defaults().nextCol().spanX().get());
 
-        topPanel.add(batchNotAvailable, gbh.defaults().nextRowFirstCol().spanX().get());
+       // topPanel.add(batchNotAvailable, gbh.defaults().nextRowFirstCol().spanX().get());
 
         topPanel.add(progressBar, gbh.defaults().nextRowFirstCol().spanX().get());
 

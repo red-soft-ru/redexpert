@@ -177,7 +177,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     dataBaseInformation.setVisible(true);
                 } else {
 
-                    label = node.toString();
+                    label = node.getName();
+                    if (node.getType() == NamedObject.META_TAG)
+                        label = label.toLowerCase();
                     disconnect.setVisible(false);
                     dataBaseInformation.setVisible(false);
                     reload.setVisible(true);
@@ -196,16 +198,16 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     createObject.setVisible(createObjectEnabled);
                     editObject.setVisible(deleteObjectEnabled);
                     if (deleteObjectEnabled) {
-                        deleteObject.setText(bundleString("delete") + " " + node);
-                        editObject.setText(bundleString("edit") + " " + node);
+                        deleteObject.setText(bundleString("delete", node.getName()));
+                        editObject.setText(bundleString("edit", node.getName()));
                     }
                     if (createObjectEnabled) {
                         String str = "";
                         if (type == NamedObject.META_TAG)
-                            str = node.getMetaDataKey();
+                            str = NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) node.getDatabaseObject()).getSubType()];
                         else
-                            str = NamedObject.META_TYPES[node.getType()];
-                        createObject.setText(bundleString("create") + " " + str);
+                            str = NamedObject.META_TYPES_FOR_BUNDLE[node.getType()];
+                        createObject.setText(bundleString("create", bundleString(str)));
                     }
 
 

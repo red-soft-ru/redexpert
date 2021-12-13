@@ -872,6 +872,7 @@ public class QueryDispatcher {
 
         waiting = false;
         long totalDuration = 0l;
+        querySender.setCloseConnectionAfterQuery(false);
 
         try {
 

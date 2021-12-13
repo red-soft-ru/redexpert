@@ -72,6 +72,7 @@ UNARY_OPERATOR
 
 KEYWORD
   : K_ABS
+  | K_ABSENT
   | K_ABSOLUTE
   | K_ACCENT
   | K_ACOS
@@ -86,6 +87,7 @@ KEYWORD
   | K_AND
   | K_ANY
   | K_ARE
+  | K_ARRAY
   | K_AS
   | K_ASC
   | K_ASCII_CHAR
@@ -101,9 +103,13 @@ KEYWORD
   | K_AUTONOMOUS
   | K_AVG
   | K_BACKUP
+  | K_BASE64_DECODE
+  | K_BASE64_ENCODE
   | K_BEGIN
   | K_BETWEEN
+  | K_BIGINT
   | K_BINARY
+  | K_BIND
   | K_BIN_AND
   | K_BIN_NOT
   | K_BIN_OR
@@ -112,8 +118,10 @@ KEYWORD
   | K_BIN_XOR
   | K_BIT
   | K_BIT_LENGTH
+  | K_BLOB
   | K_BLOCK
   | K_BODY
+  | K_BOOLEAN
   | K_BOTH
   | K_BREAK
   | K_BY
@@ -127,6 +135,8 @@ KEYWORD
   | K_CATALOG_NAME
   | K_CEIL
   | K_CEILING
+  | K_CHAR
+  | K_CHARACTER
   | K_CHARACTER_LENGTH
   | K_CHARACTER_SET_CATALOG
   | K_CHARACTER_SET_NAME
@@ -135,6 +145,7 @@ KEYWORD
   | K_CHAR_TO_UUID
   | K_CHECK
   | K_CLASS_ORIGIN
+  | K_CLEAR
   | K_CLOSE
   | K_COALESCE
   | K_COBOL
@@ -144,21 +155,27 @@ KEYWORD
   | K_COLLATION_NAME
   | K_COLLATION_SCHEMA
   | K_COLUMN
+  | K_COLUMNS
   | K_COLUMN_NAME
+  | K_COMMAND
   | K_COMMAND_FUNCTION
   | K_COMMENT
   | K_COMMIT
   | K_COMMITTED
   | K_COMMON
+  | K_COMPARE_DECFLOAT
   | K_CONDITION_NUMBER
   | K_CONNECT
   | K_CONNECTION
+  | K_CONNECTIONS
   | K_CONNECTION_NAME
+  | K_CONSISTENCY
   | K_CONSTRAINT
   | K_CONSTRAINTS
   | K_CONSTRAINT_CATALOG
   | K_CONSTRAINT_NAME
   | K_CONSTRAINT_SCHEMA
+  | K_CONTENTS
   | K_CONTINUE
   | K_CONVERT
   | K_CORR
@@ -167,10 +184,15 @@ KEYWORD
   | K_COSH
   | K_COT
   | K_COUNT
+  | K_COUNTER
   | K_COVAR_POP
   | K_COVAR_SAMP
   | K_CREATE
   | K_CROSS
+  | K_CRYPT_HASH
+  | K_CTR_BIG_ENDIAN
+  | K_CTR_LENGTH
+  | K_CTR_LITTLE_ENDIAN
   | K_CUME_DIST
   | K_CURRENT
   | K_CURRENT_CONNECTION
@@ -183,6 +205,7 @@ KEYWORD
   | K_CURSOR
   | K_CURSOR_NAME
   | K_DATA
+  | K_DATE
   | K_DATEADD
   | K_DATEDIFF
   | K_DATETIME_INTERVAL_CODE
@@ -190,7 +213,10 @@ KEYWORD
   | K_DAY
   | K_DDL
   | K_DEALLOCATE
+  | K_DEBUG
   | K_DEC
+  | K_DECFLOAT
+  | K_DECIMAL
   | K_DECLARE
   | K_DECODE
   | K_DECRYPT
@@ -206,31 +232,40 @@ KEYWORD
   | K_DETERMINISTIC
   | K_DIAGNOSTICS
   | K_DIFFERENCE
+  | K_DISABLE
   | K_DISCONNECT
   | K_DISTINCT
   | K_DOMAIN
+  | K_DOUBLE
   | K_DROP
   | K_DYNAMIC_FUNCTION
   | K_ELSE
+  | K_EMPTY
+  | K_ENABLE
   | K_ENCRYPT
   | K_END
   | K_END_EXEC
   | K_ENGINE
+  | K_ERROR
   | K_ESCAPE
   | K_EXCEPT
   | K_EXCEPTION
+  | K_EXCESS
   | K_EXCLUDE
   | K_EXEC
   | K_EXECUTE
   | K_EXISTS
   | K_EXP
+  | K_EXTENDED
   | K_EXTERNAL
   | K_EXTRACT
   | K_FALSE
   | K_FETCH
   | K_FIRST
   | K_FIRSTNAME
+  | K_FIRST_DAY
   | K_FIRST_VALUE
+  | K_FLOAT
   | K_FLOOR
   | K_FOLLOWING
   | K_FOR
@@ -244,17 +279,24 @@ KEYWORD
   | K_GET
   | K_GLOBAL
   | K_GO
+  | K_GOSTPASSWORD
   | K_GOTO
   | K_GRANT
   | K_GRANTED
   | K_GROUP
+  | K_GSS
   | K_HASH
   | K_HAVING
+  | K_HEX_DECODE
+  | K_HEX_ENCODE
   | K_HOUR
   | K_IDENTITY
+  | K_IDLE
   | K_IIF
   | K_IMMEDIATE
   | K_IN
+  | K_INCLUDE
+  | K_INCLUDING
   | K_INCREMENT
   | K_INDEX
   | K_INDICATOR
@@ -264,24 +306,46 @@ KEYWORD
   | K_INSENSITIVE
   | K_INSERT
   | K_INSERTING
+  | K_INT
+  | K_INT128
+  | K_INTEGER
   | K_INTERSECT
   | K_INTERVAL
   | K_INTO
   | K_IS
   | K_ISOLATION
+  | K_IS_JSON
+  | K_IV
+  | K_JOB
   | K_JOIN
+  | K_JSON
+  | K_JSON_ARRAY
+  | K_JSON_ARRAYAGG
+  | K_JSON_EXISTS
+  | K_JSON_MODIFY
+  | K_JSON_OBJECT
+  | K_JSON_OBJECTAGG
+  | K_JSON_QUERY
+  | K_JSON_TABLE
+  | K_JSON_VALUE
+  | K_KEEP
   | K_KEY
+  | K_KEYS
   | K_LAG
   | K_LANGUAGE
   | K_LAST
   | K_LASTNAME
+  | K_LAST_DAY
   | K_LAST_VALUE
+  | K_LATERAL
   | K_LEAD
   | K_LEADING
   | K_LEAVE
   | K_LEFT
+  | K_LEGACY
   | K_LENGTH
   | K_LEVEL
+  | K_LIFETIME
   | K_LIKE
   | K_LINGER
   | K_LIST
@@ -292,12 +356,14 @@ KEYWORD
   | K_LOG10
   | K_LOWER
   | K_LPAD
+  | K_LPARAM
   | K_MAPPING
   | K_MATCH
   | K_MATCHED
   | K_MATCHING
   | K_MAX
   | K_MAXVALUE
+  | K_MESSAGE
   | K_MESSAGE_LENGTH
   | K_MESSAGE_OCTET_LENGTH
   | K_MESSAGE_TEXT
@@ -307,15 +373,20 @@ KEYWORD
   | K_MINUTE
   | K_MINVALUE
   | K_MOD
+  | K_MODE
   | K_MODULE
   | K_MONTH
   | K_MORE
   | K_MUMPS
   | K_NAME
   | K_NAMES
+  | K_NATIONAL
+  | K_NATIVE
   | K_NATURAL
+  | K_NCHAR
   | K_NEXT
   | K_NO
+  | K_NORMALIZE_DECFLOAT
   | K_NOT
   | K_NTH_VALUE
   | K_NTILE
@@ -324,10 +395,17 @@ KEYWORD
   | K_NULLIF
   | K_NULLS
   | K_NUMBER
+  | K_NUMERIC
+  | K_OBJECT
   | K_OCTET_LENGTH
   | K_OF
+  | K_OFFLINE
   | K_OFFSET
+  | K_OLDEST
+  | K_OMIT
   | K_ON
+  | K_ONCE
+  | K_ONLINE
   | K_ONLY
   | K_OPEN
   | K_OPTION
@@ -340,6 +418,7 @@ KEYWORD
   | K_OVER
   | K_OVERLAPS
   | K_OVERLAY
+  | K_OVERRIDING
   | K_PACKAGE
   | K_PAD
   | K_PARTIAL
@@ -347,12 +426,15 @@ KEYWORD
   | K_PASCAL
   | K_PERCENT_RANK
   | K_PI
+  | K_PKCS_1_5
   | K_PLACING
   | K_PLI
   | K_PLUGIN
+  | K_POOL
   | K_POSITION
   | K_POWER
   | K_PRECEDING
+  | K_PRECISION
   | K_PREPARE
   | K_PRESERVE
   | K_PRIMARY
@@ -361,12 +443,17 @@ KEYWORD
   | K_PRIVILEGES
   | K_PROCEDURE
   | K_PUBLIC
+  | K_PUBLICATION
+  | K_QUANTIZE
+  | K_QUOTES
   | K_RAND
   | K_RANGE
   | K_RANK
+  | K_RDB_ERROR
+  | K_RDB_GET_TRANSACTION_CN
+  | K_RDB_SYSTEM_PRIVILEGE
   | K_RDB_RECORD_VERSION
   | K_RDB_ROLE_IN_USE
-  | K_RDB_SYSTEM_PRIVILEGE
   | K_READ
   | K_REAL
   | K_RECREATE
@@ -385,6 +472,7 @@ KEYWORD
   | K_RELEASE
   | K_REPEATABLE
   | K_REPLACE
+  | K_RESETTING
   | K_RESTART
   | K_RESTRICT
   | K_RETURN
@@ -403,6 +491,14 @@ KEYWORD
   | K_ROW_COUNT
   | K_ROW_NUMBER
   | K_RPAD
+  | K_RSA_DECRYPT
+  | K_RSA_ENCRYPT
+  | K_RSA_PRIVATE
+  | K_RSA_PUBLIC
+  | K_RSA_SIGN_HASH
+  | K_RSA_VERIFY_HASH
+  | K_RUN
+  | K_SALT_LENGTH
   | K_SAVEPOINT
   | K_SCALAR_ARRAY
   | K_SCALE
@@ -421,11 +517,13 @@ KEYWORD
   | K_SESSION_USER
   | K_SET
   | K_SIGN
+  | K_SIGNATURE
   | K_SIMILAR
   | K_SIN
   | K_SINH
   | K_SIZE
   | K_SKIP
+  | K_SMALLINT
   | K_SOME
   | K_SOURCE
   | K_SPACE
@@ -434,6 +532,7 @@ KEYWORD
   | K_SQLERROR
   | K_SQLSTATE
   | K_SQRT
+  | K_SRP
   | K_START
   | K_STATEMENT
   | K_STDDEV_POP
@@ -444,6 +543,7 @@ KEYWORD
   | K_SYSTEM
   | K_SYSTEM_USER
   | K_TABLE
+  | K_TABLESPACE
   | K_TABLE_NAME
   | K_TAGS
   | K_TAN
@@ -451,13 +551,17 @@ KEYWORD
   | K_TEMPORARY
   | K_THEN
   | K_TIES
+  | K_TIME
+  | K_TIMESTAMP
   | K_TIMEZONE_HOUR
   | K_TIMEZONE_MINUTE
   | K_TO
+  | K_TOTALORDER
   | K_TRAILING
   | K_TRANSACTION
   | K_TRANSLATE
   | K_TRANSLATION
+  | K_TRAPS
   | K_TRIGGER
   | K_TRIM
   | K_TRUE
@@ -467,6 +571,7 @@ KEYWORD
   | K_TYPE
   | K_UNBOUNDED
   | K_UNCOMMITTED
+  | K_UNCONDITIONAL
   | K_UNION
   | K_UNIQUE
   | K_UNKNOWN
@@ -481,16 +586,22 @@ KEYWORD
   | K_VALUE
   | K_VALUES
   | K_VARBINARY
+  | K_VARCHAR
+  | K_VARYING
   | K_VAR_POP
   | K_VAR_SAMP
+  | K_VERIFYSERVER
   | K_VIEW
   | K_WEEK
   | K_WHEN
   | K_WHENEVER
   | K_WHERE
   | K_WINDOW
+  | K_WIN_SSPI
   | K_WITH
+  | K_WITHOUT
   | K_WORK
+  | K_WRAPPER
   | K_WRITE
   | K_YEAR
   | K_ZONE
@@ -529,6 +640,7 @@ fragment NOT_EQ1 : '!=';
 fragment NOT_EQ2 : '<>';
 
 fragment K_ABS : A B S ;
+fragment K_ABSENT : A B S E N T ;
 fragment K_ABSOLUTE : A B S O L U T E ;
 fragment K_ACCENT : A C C E N T ;
 fragment K_ACOS : A C O S ;
@@ -543,6 +655,7 @@ fragment K_ALWAYS : A L W A Y S ;
 fragment K_AND : A N D ;
 fragment K_ANY : A N Y ;
 fragment K_ARE : A R E ;
+fragment K_ARRAY : A R R A Y ;
 fragment K_AS : A S ;
 fragment K_ASC : A S C ;
 fragment K_ASCII_CHAR : A S C I I '_' C H A R ;
@@ -558,10 +671,13 @@ fragment K_AUTHORIZATION : A U T H O R I Z A T I O N ;
 fragment K_AUTONOMOUS : A U T O N O M O U S ;
 fragment K_AVG : A V G ;
 fragment K_BACKUP : B A C K U P ;
+fragment K_BASE64_DECODE : B A S E '6' '4' '_' D E C O D E ;
+fragment K_BASE64_ENCODE : B A S E '6' '4' '_' E N C O D E ;
 fragment K_BEGIN : B E G I N ;
 fragment K_BETWEEN : B E T W E E N ;
 fragment K_BIGINT : B I G I N T ;
 fragment K_BINARY : B I N A R Y ;
+fragment K_BIND : B I N D ;
 fragment K_BIN_AND : B I N '_' A N D ;
 fragment K_BIN_NOT : B I N '_' N O T ;
 fragment K_BIN_OR : B I N '_' O R ;
@@ -597,6 +713,7 @@ fragment K_CHAR_LENGTH : C H A R '_' L E N G T H ;
 fragment K_CHAR_TO_UUID : C H A R '_' T O '_' U U I D ;
 fragment K_CHECK : C H E C K ;
 fragment K_CLASS_ORIGIN : C L A S S '_' O R I G I N ;
+fragment K_CLEAR : C L E A R ;
 fragment K_CLOSE : C L O S E ;
 fragment K_COALESCE : C O A L E S C E ;
 fragment K_COBOL : C O B O L ;
@@ -606,21 +723,27 @@ fragment K_COLLATION_CATALOG : C O L L A T I O N '_' C A T A L O G ;
 fragment K_COLLATION_NAME : C O L L A T I O N '_' N A M E ;
 fragment K_COLLATION_SCHEMA : C O L L A T I O N '_' S C H E M A ;
 fragment K_COLUMN : C O L U M N ;
+fragment K_COLUMNS : C O L U M N S ;
 fragment K_COLUMN_NAME : C O L U M N '_' N A M E ;
+fragment K_COMMAND : C O M M A N D ;
 fragment K_COMMAND_FUNCTION : C O M M A N D '_' F U N C T I O N ;
 fragment K_COMMENT : C O M M E N T ;
 fragment K_COMMIT : C O M M I T ;
 fragment K_COMMITTED : C O M M I T T E D ;
 fragment K_COMMON : C O M M O N ;
+fragment K_COMPARE_DECFLOAT : C O M P A R E '_' D E C F L O A T ;
 fragment K_CONDITION_NUMBER : C O N D I T I O N '_' N U M B E R ;
 fragment K_CONNECT : C O N N E C T ;
 fragment K_CONNECTION : C O N N E C T I O N ;
+fragment K_CONNECTIONS : C O N N E C T I O N S ;
 fragment K_CONNECTION_NAME : C O N N E C T I O N '_' N A M E ;
+fragment K_CONSISTENCY : C O N S I S T E N C Y ;
 fragment K_CONSTRAINT : C O N S T R A I N T ;
 fragment K_CONSTRAINTS : C O N S T R A I N T S ;
 fragment K_CONSTRAINT_CATALOG : C O N S T R A I N T '_' C A T A L O G ;
 fragment K_CONSTRAINT_NAME : C O N S T R A I N T '_' N A M E ;
 fragment K_CONSTRAINT_SCHEMA : C O N S T R A I N T '_' S C H E M A ;
+fragment K_CONTENTS : C O N T E N T S ;
 fragment K_CONTINUE : C O N T I N U E ;
 fragment K_CONVERT : C O N V E R T ;
 fragment K_CORR : C O R R ;
@@ -629,10 +752,15 @@ fragment K_COS : C O S ;
 fragment K_COSH : C O S H ;
 fragment K_COT : C O T ;
 fragment K_COUNT : C O U N T ;
+fragment K_COUNTER : C O U N T E R ;
 fragment K_COVAR_POP : C O V A R '_' P O P ;
 fragment K_COVAR_SAMP : C O V A R '_' S A M P ;
 fragment K_CREATE : C R E A T E ;
 fragment K_CROSS : C R O S S ;
+fragment K_CRYPT_HASH : C R Y P T '_' H A S H ;
+fragment K_CTR_BIG_ENDIAN : C T R '_' B I G '_' E N D I A N ;
+fragment K_CTR_LENGTH : C T R '_' L E N G T H ;
+fragment K_CTR_LITTLE_ENDIAN : C T R '_' L I T T L E '_' E N D I A N ;
 fragment K_CUME_DIST : C U M E '_' D I S T ;
 fragment K_CURRENT : C U R R E N T ;
 fragment K_CURRENT_CONNECTION : C U R R E N T '_' C O N N E C T I O N ;
@@ -653,7 +781,9 @@ fragment K_DATETIME_INTERVAL_PRECISION : D A T E T I M E '_' I N T E R V A L '_'
 fragment K_DAY : D A Y ;
 fragment K_DDL : D D L ;
 fragment K_DEALLOCATE : D E A L L O C A T E ;
+fragment K_DEBUG : D E B U G ;
 fragment K_DEC : D E C ;
+fragment K_DECFLOAT : D E C F L O A T ;
 fragment K_DECIMAL : D E C I M A L ;
 fragment K_DECLARE : D E C L A R E ;
 fragment K_DECODE : D E C O D E ;
@@ -670,6 +800,7 @@ fragment K_DESCRIPTOR : D E S C R I P T O R ;
 fragment K_DETERMINISTIC : D E T E R M I N I S T I C ;
 fragment K_DIAGNOSTICS : D I A G N O S T I C S ;
 fragment K_DIFFERENCE : D I F F E R E N C E ;
+fragment K_DISABLE : D I S A B L E ;
 fragment K_DISCONNECT : D I S C O N N E C T ;
 fragment K_DISTINCT : D I S T I N C T ;
 fragment K_DOMAIN : D O M A I N ;
@@ -677,24 +808,30 @@ fragment K_DOUBLE : D O U B L E ;
 fragment K_DROP : D R O P ;
 fragment K_DYNAMIC_FUNCTION : D Y N A M I C '_' F U N C T I O N ;
 fragment K_ELSE : E L S E ;
+fragment K_EMPTY : E M P T Y ;
+fragment K_ENABLE : E N A B L E ;
 fragment K_ENCRYPT : E N C R Y P T ;
 fragment K_END : E N D ;
 fragment K_END_EXEC : E N D '-' E X E C ;
 fragment K_ENGINE : E N G I N E ;
+fragment K_ERROR : E R R O R ;
 fragment K_ESCAPE : E S C A P E ;
 fragment K_EXCEPT : E X C E P T ;
 fragment K_EXCEPTION : E X C E P T I O N ;
+fragment K_EXCESS : E X C E S S ;
 fragment K_EXCLUDE : E X C L U D E ;
 fragment K_EXEC : E X E C ;
 fragment K_EXECUTE : E X E C U T E ;
 fragment K_EXISTS : E X I S T S ;
 fragment K_EXP : E X P ;
+fragment K_EXTENDED : E X T E N D E D ;
 fragment K_EXTERNAL : E X T E R N A L ;
 fragment K_EXTRACT : E X T R A C T ;
 fragment K_FALSE : F A L S E ;
 fragment K_FETCH : F E T C H ;
 fragment K_FIRST : F I R S T ;
 fragment K_FIRSTNAME : F I R S T N A M E ;
+fragment K_FIRST_DAY : F I R S T '_' D A Y ;
 fragment K_FIRST_VALUE : F I R S T '_' V A L U E ;
 fragment K_FLOAT : F L O A T ;
 fragment K_FLOOR : F L O O R ;
@@ -710,17 +847,24 @@ fragment K_GEN_UUID : G E N '_' U U I D ;
 fragment K_GET : G E T ;
 fragment K_GLOBAL : G L O B A L ;
 fragment K_GO : G O ;
+fragment K_GOSTPASSWORD : G O S T P A S S W O R D ;
 fragment K_GOTO : G O T O ;
 fragment K_GRANT : G R A N T ;
 fragment K_GRANTED : G R A N T E D ;
 fragment K_GROUP : G R O U P ;
+fragment K_GSS : G S S ;
 fragment K_HASH : H A S H ;
 fragment K_HAVING : H A V I N G ;
+fragment K_HEX_DECODE : H E X '_' D E C O D E ;
+fragment K_HEX_ENCODE : H E X '_' E N C O D E ;
 fragment K_HOUR : H O U R ;
 fragment K_IDENTITY : I D E N T I T Y ;
+fragment K_IDLE : I D L E ;
 fragment K_IIF : I I F ;
 fragment K_IMMEDIATE : I M M E D I A T E ;
 fragment K_IN : I N ;
+fragment K_INCLUDE : I N C L U D E ;
+fragment K_INCLUDING : I N C L U D I N G ;
 fragment K_INCREMENT : I N C R E M E N T ;
 fragment K_INDEX : I N D E X ;
 fragment K_INDICATOR : I N D I C A T O R ;
@@ -731,25 +875,45 @@ fragment K_INSENSITIVE : I N S E N S I T I V E ;
 fragment K_INSERT : I N S E R T ;
 fragment K_INSERTING : I N S E R T I N G ;
 fragment K_INT : I N T ;
+fragment K_INT128 : I N T '1' '2' '8' ;
 fragment K_INTEGER : I N T E G E R ;
 fragment K_INTERSECT : I N T E R S E C T ;
 fragment K_INTERVAL : I N T E R V A L ;
 fragment K_INTO : I N T O ;
 fragment K_IS : I S ;
 fragment K_ISOLATION : I S O L A T I O N ;
+fragment K_IS_JSON : I S '_' J S O N ;
+fragment K_IV : I V ;
+fragment K_JOB : J O B ;
 fragment K_JOIN : J O I N ;
+fragment K_JSON : J S O N ;
+fragment K_JSON_ARRAY : J S O N '_' A R R A Y ;
+fragment K_JSON_ARRAYAGG : J S O N '_' A R R A Y A G G ;
+fragment K_JSON_EXISTS : J S O N '_' E X I S T S ;
+fragment K_JSON_MODIFY : J S O N '_' M O D I F Y ;
+fragment K_JSON_OBJECT : J S O N '_' O B J E C T ;
+fragment K_JSON_OBJECTAGG : J S O N '_' O B J E C T A G G ;
+fragment K_JSON_QUERY : J S O N '_' Q U E R Y ;
+fragment K_JSON_TABLE : J S O N '_' T A B L E ;
+fragment K_JSON_VALUE : J S O N '_' V A L U E ;
+fragment K_KEEP : K E E P ;
 fragment K_KEY : K E Y ;
+fragment K_KEYS : K E Y S ;
 fragment K_LAG : L A G ;
 fragment K_LANGUAGE : L A N G U A G E ;
 fragment K_LAST : L A S T ;
 fragment K_LASTNAME : L A S T N A M E ;
+fragment K_LAST_DAY : L A S T '_' D A Y ;
 fragment K_LAST_VALUE : L A S T '_' V A L U E ;
+fragment K_LATERAL : L A T E R A L ;
 fragment K_LEAD : L E A D ;
 fragment K_LEADING : L E A D I N G ;
 fragment K_LEAVE : L E A V E ;
 fragment K_LEFT : L E F T ;
+fragment K_LEGACY : L E G A C Y ;
 fragment K_LENGTH : L E N G T H ;
 fragment K_LEVEL : L E V E L ;
+fragment K_LIFETIME : L I F E T I M E ;
 fragment K_LIKE : L I K E ;
 fragment K_LINGER : L I N G E R ;
 fragment K_LIST : L I S T ;
@@ -760,12 +924,14 @@ fragment K_LOG : L O G ;
 fragment K_LOG10 : L O G '10' ;
 fragment K_LOWER : L O W E R ;
 fragment K_LPAD : L P A D ;
+fragment K_LPARAM : L P A R A M ;
 fragment K_MAPPING : M A P P I N G ;
 fragment K_MATCH : M A T C H ;
 fragment K_MATCHED : M A T C H E D ;
 fragment K_MATCHING : M A T C H I N G ;
 fragment K_MAX : M A X ;
 fragment K_MAXVALUE : M A X V A L U E ;
+fragment K_MESSAGE : M E S S A G E ;
 fragment K_MESSAGE_LENGTH : M E S S A G E '_' L E N G T H ;
 fragment K_MESSAGE_OCTET_LENGTH : M E S S A G E '_' O C T E T '_' L E N G T H ;
 fragment K_MESSAGE_TEXT : M E S S A G E '_' T E X T ;
@@ -775,6 +941,7 @@ fragment K_MIN : M I N ;
 fragment K_MINUTE : M I N U T E ;
 fragment K_MINVALUE : M I N V A L U E ;
 fragment K_MOD : M O D ;
+fragment K_MODE : M O D E ;
 fragment K_MODULE : M O D U L E ;
 fragment K_MONTH : M O N T H ;
 fragment K_MORE : M O R E ;
@@ -782,10 +949,12 @@ fragment K_MUMPS : M U M P S ;
 fragment K_NAME : N A M E ;
 fragment K_NAMES : N A M E S ;
 fragment K_NATIONAL : N A T I O N A L ;
+fragment K_NATIVE : N A T I V E ;
 fragment K_NATURAL : N A T U R A L ;
 fragment K_NCHAR : N C H A R ;
 fragment K_NEXT : N E X T ;
 fragment K_NO : N O ;
+fragment K_NORMALIZE_DECFLOAT : N O R M A L I Z E '_' D E C F L O A T ;
 fragment K_NOT : N O T ;
 fragment K_NTH_VALUE : N T H '_' V A L U E ;
 fragment K_NTILE : N T I L E ;
@@ -795,10 +964,16 @@ fragment K_NULLIF : N U L L I F ;
 fragment K_NULLS : N U L L S ;
 fragment K_NUMBER : N U M B E R ;
 fragment K_NUMERIC : N U M E R I C ;
+fragment K_OBJECT : O B J E C T ;
 fragment K_OCTET_LENGTH : O C T E T '_' L E N G T H ;
 fragment K_OF : O F ;
+fragment K_OFFLINE : O F F L I N E ;
 fragment K_OFFSET : O F F S E T ;
+fragment K_OLDEST : O L D E S T ;
+fragment K_OMIT : O M I T ;
 fragment K_ON : O N ;
+fragment K_ONCE : O N C E ;
+fragment K_ONLINE : O N L I N E ;
 fragment K_ONLY : O N L Y ;
 fragment K_OPEN : O P E N ;
 fragment K_OPTION : O P T I O N ;
@@ -811,6 +986,7 @@ fragment K_OUTPUT : O U T P U T ;
 fragment K_OVER : O V E R ;
 fragment K_OVERLAPS : O V E R L A P S ;
 fragment K_OVERLAY : O V E R L A Y ;
+fragment K_OVERRIDING : O V E R R I D I N G ;
 fragment K_PACKAGE : P A C K A G E ;
 fragment K_PAD : P A D ;
 fragment K_PARTIAL : P A R T I A L ;
@@ -818,9 +994,11 @@ fragment K_PARTITION : P A R T I T I O N ;
 fragment K_PASCAL : P A S C A L ;
 fragment K_PERCENT_RANK : P E R C E N T '_' R A N K ;
 fragment K_PI : P I ;
+fragment K_PKCS_1_5 : P K C S '_' '1' '_' '5' ;
 fragment K_PLACING : P L A C I N G ;
 fragment K_PLI : P L I ;
 fragment K_PLUGIN : P L U G I N ;
+fragment K_POOL : P O O L ;
 fragment K_POSITION : P O S I T I O N ;
 fragment K_POWER : P O W E R ;
 fragment K_PRECEDING : P R E C E D I N G ;
@@ -833,12 +1011,17 @@ fragment K_PRIVILEGE : P R I V I L E G E ;
 fragment K_PRIVILEGES : P R I V I L E G E S ;
 fragment K_PROCEDURE : P R O C E D U R E ;
 fragment K_PUBLIC : P U B L I C ;
+fragment K_PUBLICATION : P U B L I C A T I O N ;
+fragment K_QUANTIZE : Q U A N T I Z E ;
+fragment K_QUOTES : Q U O T E S ;
 fragment K_RAND : R A N D ;
 fragment K_RANGE : R A N G E ;
 fragment K_RANK : R A N K ;
+fragment K_RDB_ERROR : R D B '$' E R R O R ;
+fragment K_RDB_GET_TRANSACTION_CN : R D B '$' G E T '_' T R A N S A C T I O N '_' C N ;
+fragment K_RDB_SYSTEM_PRIVILEGE : R D B '$' S Y S T E M '_' P R I V I L E G E ;
 fragment K_RDB_RECORD_VERSION : R D B '$' R E C O R D '_' V E R S I O N ;
 fragment K_RDB_ROLE_IN_USE : R D B '$' R O L E '_' I N '_' U S E ;
-fragment K_RDB_SYSTEM_PRIVILEGE : R D B '$' S Y S T E M '_' P R I V I L E G E ;
 fragment K_READ : R E A D ;
 fragment K_REAL : R E A L ;
 fragment K_RECREATE : R E C R E A T E ;
@@ -857,6 +1040,7 @@ fragment K_RELATIVE : R E L A T I V E ;
 fragment K_RELEASE : R E L E A S E ;
 fragment K_REPEATABLE : R E P E A T A B L E ;
 fragment K_REPLACE : R E P L A C E ;
+fragment K_RESETTING : R E S E T T I N G ;
 fragment K_RESTART : R E S T A R T ;
 fragment K_RESTRICT : R E S T R I C T ;
 fragment K_RETURN : R E T U R N ;
@@ -875,6 +1059,14 @@ fragment K_ROWS : R O W S ;
 fragment K_ROW_COUNT : R O W '_' C O U N T ;
 fragment K_ROW_NUMBER : R O W '_' N U M B E R ;
 fragment K_RPAD : R P A D ;
+fragment K_RSA_DECRYPT : R S A '_' D E C R Y P T ;
+fragment K_RSA_ENCRYPT : R S A '_' E N C R Y P T ;
+fragment K_RSA_PRIVATE : R S A '_' P R I V A T E ;
+fragment K_RSA_PUBLIC : R S A '_' P U B L I C ;
+fragment K_RSA_SIGN_HASH : R S A '_' S I G N '_' H A S H ;
+fragment K_RSA_VERIFY_HASH : R S A '_' V E R I F Y '_' H A S H ;
+fragment K_RUN : R U N ;
+fragment K_SALT_LENGTH : S A L T '_' L E N G T H ;
 fragment K_SAVEPOINT : S A V E P O I N T ;
 fragment K_SCALAR_ARRAY : S C A L A R '_' A R R A Y ;
 fragment K_SCALE : S C A L E ;
@@ -893,6 +1085,7 @@ fragment K_SESSION : S E S S I O N ;
 fragment K_SESSION_USER : S E S S I O N '_' U S E R ;
 fragment K_SET : S E T ;
 fragment K_SIGN : S I G N ;
+fragment K_SIGNATURE : S I G N A T U R E ;
 fragment K_SIMILAR : S I M I L A R ;
 fragment K_SIN : S I N ;
 fragment K_SINH : S I N H ;
@@ -907,6 +1100,7 @@ fragment K_SQLCODE : S Q L C O D E ;
 fragment K_SQLERROR : S Q L E R R O R ;
 fragment K_SQLSTATE : S Q L S T A T E ;
 fragment K_SQRT : S Q R T ;
+fragment K_SRP : S R P ;
 fragment K_START : S T A R T ;
 fragment K_STATEMENT : S T A T E M E N T ;
 fragment K_STDDEV_POP : S T D D E V '_' P O P ;
@@ -917,6 +1111,7 @@ fragment K_SUM : S U M ;
 fragment K_SYSTEM : S Y S T E M ;
 fragment K_SYSTEM_USER : S Y S T E M '_' U S E R ;
 fragment K_TABLE : T A B L E ;
+fragment K_TABLESPACE : T A B L E S P A C E ;
 fragment K_TABLE_NAME : T A B L E '_' N A M E ;
 fragment K_TAGS : T A G S ;
 fragment K_TAN : T A N ;
@@ -929,10 +1124,12 @@ fragment K_TIMESTAMP : T I M E S T A M P ;
 fragment K_TIMEZONE_HOUR : T I M E Z O N E '_' H O U R ;
 fragment K_TIMEZONE_MINUTE : T I M E Z O N E '_' M I N U T E ;
 fragment K_TO : T O ;
+fragment K_TOTALORDER : T O T A L O R D E R ;
 fragment K_TRAILING : T R A I L I N G ;
 fragment K_TRANSACTION : T R A N S A C T I O N ;
 fragment K_TRANSLATE : T R A N S L A T E ;
 fragment K_TRANSLATION : T R A N S L A T I O N ;
+fragment K_TRAPS : T R A P S ;
 fragment K_TRIGGER : T R I G G E R ;
 fragment K_TRIM : T R I M ;
 fragment K_TRUE : T R U E ;
@@ -942,6 +1139,7 @@ fragment K_TWO_PHASE : T W O '_' P H A S E ;
 fragment K_TYPE : T Y P E ;
 fragment K_UNBOUNDED : U N B O U N D E D ;
 fragment K_UNCOMMITTED : U N C O M M I T T E D ;
+fragment K_UNCONDITIONAL : U N C O N D I T I O N A L ;
 fragment K_UNION : U N I O N ;
 fragment K_UNIQUE : U N I Q U E ;
 fragment K_UNKNOWN : U N K N O W N ;
@@ -960,14 +1158,18 @@ fragment K_VARCHAR : V A R C H A R ;
 fragment K_VARYING : V A R Y I N G ;
 fragment K_VAR_POP : V A R '_' P O P ;
 fragment K_VAR_SAMP : V A R '_' S A M P ;
+fragment K_VERIFYSERVER : V E R I F Y S E R V E R ;
 fragment K_VIEW : V I E W ;
 fragment K_WEEK : W E E K ;
 fragment K_WHEN : W H E N ;
 fragment K_WHENEVER : W H E N E V E R ;
 fragment K_WHERE : W H E R E ;
 fragment K_WINDOW : W I N D O W ;
+fragment K_WIN_SSPI : W I N '_' S S P I ;
 fragment K_WITH : W I T H ;
+fragment K_WITHOUT : W I T H O U T ;
 fragment K_WORK : W O R K ;
+fragment K_WRAPPER : W R A P P E R ;
 fragment K_WRITE : W R I T E ;
 fragment K_YEAR : Y E A R ;
 fragment K_ZONE : Z O N E ;

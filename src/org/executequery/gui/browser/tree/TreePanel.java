@@ -10,6 +10,7 @@ public abstract class TreePanel extends AbstractDockedTabActionPanel {
     public final static int DEFAULT = 0;
     public final static int DEPENDED_ON = 1;
     public final static int DEPENDENT = 2;
+    public final static int TABLESPACE = 3;
 
     public TreePanel() {
     }

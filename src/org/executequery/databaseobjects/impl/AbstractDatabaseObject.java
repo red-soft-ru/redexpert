@@ -414,9 +414,10 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         }
     }
 
+    Connection connection;
+
     private ResultSet executeQuery(String query) throws DataSourceException {
 
-        Connection connection = null;
         ResultSet rs = null;
 
         try {
@@ -429,8 +430,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 } catch (SQLException e) {
                 }
             }
-
-            connection = getHost().getTemporaryConnection();
+            if (connection == null || connection.isClosed())
+                connection = getHost().getTemporaryConnection();
+            else connection.commit();
             statement = ((PooledConnection) connection).createIndividualStatement();
 
             rs = statement.executeQuery(query);

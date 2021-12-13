@@ -462,6 +462,18 @@ public class BrowserController {
 
                     userPanel.setValues((DefaultDatabaseUser) databaseObject);
                     return userPanel;
+                case NamedObject.TABLESPACE:
+                    BrowserTablespacePanel tablespacePanel = null;
+                    if (!viewPanel.containsPanel(BrowserTablespacePanel.NAME)) {
+                        tablespacePanel = new BrowserTablespacePanel(this);
+                        viewPanel.addToLayout(tablespacePanel);
+                    } else {
+                        tablespacePanel = (BrowserTablespacePanel) viewPanel.
+                                getFormObjectView(BrowserTablespacePanel.NAME);
+                    }
+
+                    tablespacePanel.setValues((DefaultDatabaseTablespace) databaseObject);
+                    return tablespacePanel;
                 case NamedObject.EXCEPTION:
                     BrowserExceptionPanel exceptionPanel = null;
                     if (!viewPanel.containsPanel(BrowserExceptionPanel.NAME)) {

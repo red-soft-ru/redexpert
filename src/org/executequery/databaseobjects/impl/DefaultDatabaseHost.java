@@ -51,12 +51,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     private int countFinishedMetaTags;
 
-    private int typeTree;
+    private final int typeTree;
 
     /**
      * the database connection wrapper for this host
      */
-    private transient DatabaseConnection databaseConnection;
+    private final transient DatabaseConnection databaseConnection;
 
     /**
      * the SQL connection for this host
@@ -640,7 +640,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     }
 
-    private transient ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
+    private final transient ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
 
     /**
      * Returns the column names of the specified database object.
@@ -1400,9 +1400,11 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      *
      * @return the meta type objects
      */
+    List<DatabaseMetaTag> metaTags;
     public List<DatabaseMetaTag> getMetaObjects() throws DataSourceException {
-
-        return getMetaObjects(null, null);
+        if (metaTags == null)
+            metaTags = getMetaObjects(null, null);
+        return metaTags;
     }
 
     /**
@@ -1478,6 +1480,13 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
     boolean supportedObject(int type) throws Exception {
+        if (typeTree == TreePanel.TABLESPACE) {
+            return type == TABLE || type == INDEX;
+        }
+        if (typeTree == TreePanel.DEPENDED_ON || typeTree == TreePanel.DEPENDENT) {
+            if (type >= SYSTEM_DOMAIN)
+                return false;
+        }
         DefaultDriverLoader driverLoader = new DefaultDriverLoader();
         Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
         DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
@@ -1520,6 +1529,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                             return false;
                     }
             }
+            if (type == NamedObject.TABLESPACE)
+                return getDatabaseProductName().toUpperCase().contains("REDDATABASE") && db.getMajorVersion() >= 4;
         }
         return true;
     }
@@ -1659,6 +1670,11 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         }
 
         return getDatabaseConnection().getDatabaseType();
+    }
+
+    @Override
+    public int getDatabaseMajorVersion() throws SQLException {
+        return getDatabaseMetaData().getDatabaseMajorVersion();
     }
 
     public boolean isConnected() {
@@ -1820,4 +1836,11 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         }
     }
 
+    public List<NamedObject> getDatabaseObjectsForMetaTag(String metadatakey) {
+        for (DatabaseMetaTag metaTag : getMetaObjects()) {
+            if (metadatakey.equals(metaTag.getMetaDataKey()))
+                return metaTag.getObjects();
+        }
+        return null;
+    }
 }

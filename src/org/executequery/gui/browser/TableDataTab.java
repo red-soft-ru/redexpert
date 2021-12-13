@@ -114,6 +114,8 @@ public class TableDataTab extends JPanel
     private Timer timer;
     public DefaultTableModel myTableModel;
 
+    public ResultSet resultSet;
+
     public TableDataTab(boolean displayRowCount) {
 
         super(new GridBagLayout());
@@ -320,7 +322,7 @@ public class TableDataTab extends JPanel
     }
 
     Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String query = "SELECT " + key.getReferencedColumn() + " FROM " + key.getReferencedTable();
+        String query = "SELECT " + key.getReferencedColumn() + " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
         Vector items = new Vector();
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
@@ -392,10 +394,9 @@ public class TableDataTab extends JPanel
                 for (DatabaseColumn column : list)
                     columnDataList.add(new ColumnData(databaseObject.getHost().getDatabaseConnection(), column));
             }
-
             Log.debug("Retrieving data for table - " + databaseObject.getName());
             try {
-                ResultSet resultSet = databaseObject.getData();
+                resultSet = databaseObject.getData();
                 tableModel.createTable(resultSet, columnDataList);
 
             } catch (DataSourceException e) {
@@ -922,13 +923,13 @@ public class TableDataTab extends JPanel
 
         String checkedColumns = "";
         for (int i = 0; i < checked_column_list.size(); i++) {
-            checkedColumns += checked_column_list.get(i);
+            checkedColumns += MiscUtils.getFormattedObject(checked_column_list.get(i));
             if (i < checked_column_list.size() - 1) {
                 checkedColumns += " , ";
             }
         }
 
-        String query = "SELECT " + checkedColumns + " FROM " + key.getReferencedTable();
+        String query = "SELECT " + checkedColumns + " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
         DefaultTableModel defaultTableModel = new DefaultTableModel();
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();

@@ -26,6 +26,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.table.NumberCellEditor;
@@ -132,31 +133,31 @@ public abstract class TableDefinitionPanel extends JPanel
 
     public static final int PK_COLUMN = 0;
 
-    public static final int NAME_COLUMN = 1;
+    public static final int NAME_COLUMN = PK_COLUMN + 1;
 
-    public static final int TYPE_COLUMN = 2;
+    public static final int TYPE_COLUMN = NAME_COLUMN + 1;
 
-    public static final int DOMAIN_COLUMN = 3;
+    public static final int DOMAIN_COLUMN = TYPE_COLUMN + 1;
 
-    public static final int SIZE_COLUMN = 4;
+    public static final int SIZE_COLUMN = DOMAIN_COLUMN + 1;
 
-    public static final int SCALE_COLUMN = 5;
+    public static final int SCALE_COLUMN = SIZE_COLUMN + 1;
 
-    public static final int SUBTYPE_COLUMN = 6;
+    public static final int SUBTYPE_COLUMN = SCALE_COLUMN + 1;
 
-    public static final int REQUIRED_COLUMN = 7;
+    public static final int REQUIRED_COLUMN = SUBTYPE_COLUMN + 1;
 
-    public static final int CHECK_COLUMN = 8;
+    public static final int CHECK_COLUMN = REQUIRED_COLUMN + 1;
 
-    public static final int DESCRIPTION_COLUMN = 9;
+    public static final int DESCRIPTION_COLUMN = CHECK_COLUMN + 1;
 
-    public static final int COMPUTED_BY_COLUMN = 10;
+    public static final int COMPUTED_BY_COLUMN = DESCRIPTION_COLUMN + 1;
 
-    public static final int AUTOINCREMENT_COLUMN = 11;
+    public static final int AUTOINCREMENT_COLUMN = COMPUTED_BY_COLUMN + 1;
 
-    public static final int DEFAULT_COLUMN = 12;
+    public static final int DEFAULT_COLUMN = AUTOINCREMENT_COLUMN + 1;
 
-    public static final int ENCODING_COLUMN = 13;
+    public static final int ENCODING_COLUMN = DEFAULT_COLUMN + 1;
 
     public static final String SUBSTITUTE_NAME = "<TABLE_NAME>";
 
@@ -307,10 +308,8 @@ public abstract class TableDefinitionPanel extends JPanel
             tcm.getColumn(SCALE_COLUMN).setCellEditor(scEditor);
             tcm.getColumn(SUBTYPE_COLUMN).setCellEditor(stEditor);
             domainCell = new ComboBoxCellEditor();
-            //tcm.getColumn(DOMAIN_COLUMN).setCellRenderer(domainCell);
             tcm.getColumn(DOMAIN_COLUMN).setCellEditor(domainCell);
             dataTypeCell = new ComboBoxCellEditor();
-            //tcm.getColumn(TYPE_COLUMN).setCellRenderer();
             tcm.getColumn(TYPE_COLUMN).setCellEditor(dataTypeCell);
             tcm.getColumn(ENCODING_COLUMN).setCellEditor(charsetCellEditor);
 
@@ -824,10 +823,11 @@ public abstract class TableDefinitionPanel extends JPanel
      */
     protected class CreateTableModel extends AbstractPrintableTableModel {
 
-        protected String[] header = {"PK", "Name", "Datatype", "Domain",
-                "Size", "Scale", "Subtype", "Required", "Check",
-                "Description", "Computed by", "Autoincrement", "Default Value",
-                "Encoding"};
+        protected String[] header = Bundles.get(TableDefinitionPanel.class, new String[]
+                {"PK", "Name", "Datatype", "Domain",
+                        "Size", "Scale", "Subtype", "Required", "Check",
+                        "Description", "ComputedBy", "Autoincrement", "DefaultValue",
+                        "Encoding"});
 
         public CreateTableModel() {
             tableVector = new Vector<ColumnData>();

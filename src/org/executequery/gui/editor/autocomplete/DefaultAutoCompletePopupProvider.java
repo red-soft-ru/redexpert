@@ -298,7 +298,10 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         if (chars[start] == '"') {
             start++;
             addingQuote = true;
+        } else if (start != 0 && !Character.isSpaceChar(chars[start])) {
+            start++;
         }
+
         if (start >= end)
             return "";
 

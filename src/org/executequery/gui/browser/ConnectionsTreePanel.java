@@ -30,6 +30,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObjectFactory;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.event.*;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
@@ -1194,6 +1195,10 @@ public class ConnectionsTreePanel extends TreePanel
     }
 
     return null;
+  }
+
+  public DefaultDatabaseHost getDefaultDatabaseHostFromConnection(DatabaseConnection dc) {
+    return (DefaultDatabaseHost) getHostNode(dc).getDatabaseObject();
   }
 
   public DatabaseObjectNode getHostNode(DatabaseConnection dc) {

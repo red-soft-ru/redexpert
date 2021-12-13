@@ -17,8 +17,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 
 public class CreateTablespacePanel extends AbstractCreateObjectPanel {
-    public static final String CREATE_TITLE = "Create tablespace";
-    public static final String EDIT_TITLE = "Edit tablespace";
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.TABLESPACE);
+    public static final String EDIT_TITLE = getEditTitle(NamedObject.TABLESPACE);
     private FileChooserDialog fileChooserDialog;
     private JTextField fileField;
     private JButton fileButton;

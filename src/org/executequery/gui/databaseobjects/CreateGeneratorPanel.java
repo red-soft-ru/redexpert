@@ -8,7 +8,6 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SimpleTextArea;
-import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
 
@@ -18,8 +17,8 @@ import java.sql.SQLException;
 
 public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
 
-    public static final String CREATE_TITLE = Bundles.get(CreateGeneratorPanel.class,"CreateSequence");
-    public static final String ALTER_TITLE = Bundles.get(CreateGeneratorPanel.class,"AlterSequence");
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.SEQUENCE);
+    public static final String ALTER_TITLE = getEditTitle(NamedObject.SEQUENCE);
     private NumberTextField startValueText;
     private NumberTextField incrementText;
     private SimpleTextArea description;

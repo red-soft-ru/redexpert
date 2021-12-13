@@ -13,8 +13,8 @@ import java.awt.event.KeyListener;
 
 public class CreatePackagePanel extends AbstractCreateObjectPanel implements KeyListener {
 
-    public static final String CREATE_TITLE = "Create package";
-    public static final String ALTER_TITLE = "Alter package";
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.PACKAGE);
+    public static final String ALTER_TITLE = getEditTitle(NamedObject.PACKAGE);
     private static final String replacing_name = "<name_package>";
     private SimpleSqlTextPanel headerPanel;
     private SimpleSqlTextPanel bodyPanel;

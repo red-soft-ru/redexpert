@@ -6,13 +6,14 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.BrowserTreePopupMenu;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
@@ -244,5 +245,13 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
 
     public void setCurrentPath(TreePath currentPath) {
         this.currentPath = currentPath;
+    }
+
+    protected static String getCreateTitle(int type) {
+        return Bundles.get(BrowserTreePopupMenu.class, "create", Bundles.get(BrowserTreePopupMenu.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+    }
+
+    protected static String getEditTitle(int type) {
+        return Bundles.get(BrowserTreePopupMenu.class, "edit", Bundles.get(BrowserTreePopupMenu.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
     }
 }

@@ -2,13 +2,13 @@ package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.procedure.UDFDefinitionPanel;
 import org.executequery.gui.text.SimpleTextArea;
-import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
@@ -24,8 +24,8 @@ import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_VALUE;
 
 public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
-    public static final String CREATE_TITLE = Bundles.get(CreateUDFPanel.class,"CreateUDF");
-    public static final String EDIT_TITLE = Bundles.get(CreateUDFPanel.class,"EditUDF");
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.UDF);
+    public static final String EDIT_TITLE = getEditTitle(NamedObject.UDF);
     SimpleTextArea descriptionPanel;
     JTextField nameModuleField;
     JTextField entryPointField;

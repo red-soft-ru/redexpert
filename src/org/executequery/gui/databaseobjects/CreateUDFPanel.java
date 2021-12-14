@@ -58,7 +58,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         mechanismBox = new JComboBox(mechanismModel);
         mechanismModel.setElements(new String[]{"BY REFERENCE", "BY VALUE", "BY DESCRIPTOR",});
         freeItBox = new JCheckBox("FREE IT");
-        parameterBox = new JCheckBox("Parameter");
+        parameterBox = new JCheckBox(bundleString("Parameter"));
         cstringBox = new JCheckBox("CSTRING");
         parameterNumberField = new NumberTextField();
         parameterNumberField.setValue(0);
@@ -77,10 +77,10 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             cstringBoxChanged();
         });
 
-        tabbedPane.insertTab("Input Parameters", null, parametersPanel, null, 0);
-        tabbedPane.add("Description", descriptionPanel);
+        tabbedPane.insertTab(bundleString("InputParameters"), null, parametersPanel, null, 0);
+        tabbedPane.add(bundleString("Description"), descriptionPanel);
         centralPanel.setLayout(new GridBagLayout());
-        centralPanel.add(new JLabel("Module Name"), new GridBagConstraints(0, 0,
+        centralPanel.add(new JLabel(bundleString("ModuleName")), new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -88,7 +88,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 5, 1, 1, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        centralPanel.add(new JLabel("Entry Point"), new GridBagConstraints(0, 1,
+        centralPanel.add(new JLabel(bundleString("EntryPoint")), new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -96,7 +96,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 5, 1, 1, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        centralPanel.add(new JLabel("Mechanism"), new GridBagConstraints(0, 2,
+        centralPanel.add(new JLabel(bundleString("Mechanism")), new GridBagConstraints(0, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -108,7 +108,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        centralPanel.add(new JLabel("Position"), new GridBagConstraints(1, 3,
+        centralPanel.add(new JLabel(bundleString("Position")), new GridBagConstraints(1, 3,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -120,7 +120,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        centralPanel.add(new JLabel("Max Count Characters"), new GridBagConstraints(4, 3,
+        centralPanel.add(new JLabel(bundleString("MaxCountCharacters")), new GridBagConstraints(4, 3,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -301,7 +301,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             cstringBox.setSelected(false);
             cstringBoxChanged();
         } else if (!cstringBox.isSelected()) {
-            tabbedPane.insertTab("Returns Type", null, selectTypePanel, null, 1);
+            tabbedPane.insertTab(bundleString("ReturnsType"), null, selectTypePanel, null, 1);
             tabbedPane.setSelectedIndex(0);
         }
     }
@@ -316,7 +316,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             parameterBox.setSelected(false);
             parameterBoxChanged();
         } else if (!parameterBox.isSelected()) {
-            tabbedPane.insertTab("Returns Type", null, selectTypePanel, null, 1);
+            tabbedPane.insertTab(bundleString("ReturnsType"), null, selectTypePanel, null, 1);
             tabbedPane.setSelectedIndex(0);
         }
     }

@@ -92,9 +92,9 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
         bodyPanel = new SimpleSqlTextPanel();
         bodyPanel.getTextPane().addKeyListener(this);
         descriptionPanel = new SimpleTextArea();
-        tabbedPane.add("Header", headerPanel);
-        tabbedPane.add("Body", bodyPanel);
-        tabbedPane.add("Description", descriptionPanel);
+        tabbedPane.add(bundleString("Header"), headerPanel);
+        tabbedPane.add(bundleString("Body"), bodyPanel);
+        tabbedPane.add(bundleString("Description"), descriptionPanel);
         String headerText = "create or alter package " + replacing_name + "\n" +
                 "as\n" +
                 "begin\n" +

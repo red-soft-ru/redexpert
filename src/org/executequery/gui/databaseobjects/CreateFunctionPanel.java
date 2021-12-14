@@ -10,6 +10,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.datatype.DomainPanel;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import javax.swing.*;
@@ -46,16 +47,16 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                                String procedure, DefaultDatabaseFunction databaseFunction) {
         super(dc, dialog, procedure, new Object[]{databaseFunction});
         parametersTabs.remove(outputParametersPanel);
-        parametersTabs.setTitleAt(0, "Arguments");
+        parametersTabs.setTitleAt(0, bundledString("Arguments"));
         selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(),
                 metaData.getIntDataTypesArray(), returnType, true);
         returnType.setDomain(returnType.getDomain());
         selectTypePanel.refresh();
         domainPanel = new DomainPanel(returnType, returnType.getDomain());
         returnTypeTabPane = new JTabbedPane();
-        returnTypeTabPane.add("Domain", domainPanel);
-        returnTypeTabPane.add("Type", selectTypePanel);
-        tabbedPane.insertTab("Returns type", null, returnTypeTabPane, null, 1);
+        returnTypeTabPane.add(bundledString("Domain"), domainPanel);
+        returnTypeTabPane.add(bundledString("Type"), selectTypePanel);
+        tabbedPane.insertTab(bundledString("ReturnsType"), null, returnTypeTabPane, null, 1);
     }
 
     public CreateFunctionPanel(DatabaseConnection dc, ActionContainer dialog) {
@@ -308,6 +309,10 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                 e.printStackTrace();
             }
         }
+    }
+
+    public String bundledString(String key) {
+        return Bundles.get(CreateFunctionPanel.class, key);
     }
 
     @Override

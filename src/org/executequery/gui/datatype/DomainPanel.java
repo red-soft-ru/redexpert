@@ -5,6 +5,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.databaseobjects.CreateDomainPanel;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 
 import javax.swing.*;
@@ -18,9 +19,9 @@ public class DomainPanel extends JPanel {
     private JComboBox domainBox;
     private JButton editDomainButton;
     private JButton newDomainButton;
-    private ColumnData columnData;
-    private boolean editing;
-    private String currentDomain;
+    private final ColumnData columnData;
+    private final boolean editing;
+    private final String currentDomain;
 
     public DomainPanel(ColumnData cd, String currentDomain) {
         columnData = cd;
@@ -37,8 +38,8 @@ public class DomainPanel extends JPanel {
                 editDomainButton.setEnabled(!columnData.getDomain().equals(""));
             }
         });
-        editDomainButton = new JButton("Edit Domain");
-        newDomainButton = new JButton("New Domain");
+        editDomainButton = new JButton(bundleString("EditDomain"));
+        newDomainButton = new JButton(bundleString("NewDomain"));
         newDomainButton.addActionListener(actionEvent -> {
             BaseDialog dialog = new BaseDialog(CreateDomainPanel.CREATE_TITLE, true);
             CreateDomainPanel panel = new CreateDomainPanel(columnData.getDatabaseConnection(), dialog);
@@ -55,7 +56,7 @@ public class DomainPanel extends JPanel {
             domainBox.setModel(new DefaultComboBoxModel(getEditingDomains()));
         else domainBox.setModel(new DefaultComboBoxModel(getDomains()));
         this.setLayout(new GridBagLayout());
-        this.add(new Label("Domain:"), new GridBagConstraints(0, 0, 1, 1, 0, 0,
+        this.add(new Label(bundleString("Domain")), new GridBagConstraints(0, 0, 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
         this.add(domainBox, new GridBagConstraints(1, 0, 1, 1, 0.5, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
@@ -122,5 +123,9 @@ public class DomainPanel extends JPanel {
             Log.error("Error loading domains:" + e.getMessage());
             return null;
         }
+    }
+
+    private String bundleString(String key) {
+        return Bundles.get(DomainPanel.class, key);
     }
 }

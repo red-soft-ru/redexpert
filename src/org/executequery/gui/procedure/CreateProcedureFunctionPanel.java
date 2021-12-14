@@ -20,6 +20,7 @@ import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.procedureParser.ProcedureParserBaseListener;
@@ -252,17 +253,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         // create the column definition panel
         // and add this to the tabbed pane
         inputParametersPanel = new NewProcedurePanel(ColumnData.INPUT_PARAMETER);
-        parametersTabs.add("Input parameters", inputParametersPanel);
+        parametersTabs.add(bundleString("InputParameters"), inputParametersPanel);
 
         outputParametersPanel = new NewProcedurePanel(ColumnData.OUTPUT_PARAMETER);
-        parametersTabs.add("Output parameters", outputParametersPanel);
+        parametersTabs.add(bundleString("OutputParameters"), outputParametersPanel);
 
         variablesPanel = new NewProcedurePanel(ColumnData.VARIABLE);
-        parametersTabs.add("Variables", variablesPanel);
+        parametersTabs.add(bundleString("Variables"), variablesPanel);
 
         sqlBodyText = new SimpleSqlTextPanel();
         sqlBodyText.appendSQLText(getEmptySqlBody());
-        sqlBodyText.setBorder(BorderFactory.createTitledBorder(getTypeObject() + " body"));
+        sqlBodyText.setBorder(BorderFactory.createTitledBorder(bundleString("Body", bundleString(getTypeObject()))));
 
         outSqlText = new SimpleSqlTextPanel();
 
@@ -317,9 +318,9 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
         descriptionPanel.add(descriptionArea, gbc1);
 
-        tabbedPane.insertTab("Edit", null, containerPanel, null, 0);
+        tabbedPane.insertTab(bundleString("Edit"), null, containerPanel, null, 0);
 
-        tabbedPane.insertTab("Description", null, descriptionPanel, null, 1);
+        tabbedPane.insertTab(bundleString("Description"), null, descriptionPanel, null, 1);
 
         ddlTextPanel = new SimpleSqlTextPanel();
 
@@ -335,7 +336,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         gbc2.insets.bottom = 5;
 
         ddlPanel.add(ddlTextPanel, gbc2);
-        tabbedPane.insertTab("DDL", null, ddlPanel, null, 2);
+        tabbedPane.insertTab(bundleString("DDL"), null, ddlPanel, null, 2);
 
         tabbedPane.addChangeListener(changeEvent -> generateScript());
 
@@ -739,4 +740,11 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         }
     }
 
+    public String bundleString(String key) {
+        return Bundles.get(CreateProcedureFunctionPanel.class, key);
+    }
+
+    public String bundleString(String key, Object... args) {
+        return Bundles.get(CreateProcedureFunctionPanel.class, key, args);
+    }
 }

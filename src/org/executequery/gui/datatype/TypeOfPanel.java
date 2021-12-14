@@ -1,13 +1,15 @@
 package org.executequery.gui.datatype;
 
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.table.TableDefinitionPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class TypeOfPanel extends JPanel {
-    private ColumnData columnData;
+    private final ColumnData columnData;
     private JComboBox tablesBox;
     private JComboBox columnBox;
     private DynamicComboBoxModel tableModel;
@@ -36,7 +38,7 @@ public class TypeOfPanel extends JPanel {
                 columnData.setColumnTable(getColumn()));
         if (tableModel.getSize() > 0)
             tablesBox.setSelectedIndex(0);
-        typeOfBox = new JCheckBox("Type Of");
+        typeOfBox = new JCheckBox(bundleString("TypeOf"));
         typeOfBox.addActionListener(actionEvent -> {
             columnData.setTypeOf(typeOfBox.isSelected());
             tablesBox.setEnabled(columnData.isTypeOf());
@@ -50,7 +52,7 @@ public class TypeOfPanel extends JPanel {
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        this.add(new JLabel("Table"), new GridBagConstraints(0, 1,
+        this.add(new JLabel(bundleString("Table")), new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -58,7 +60,7 @@ public class TypeOfPanel extends JPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        this.add(new JLabel("Column"), new GridBagConstraints(0, 2,
+        this.add(new JLabel(bundleString("Column")), new GridBagConstraints(0, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -75,6 +77,10 @@ public class TypeOfPanel extends JPanel {
             columnBox.setEnabled(cd.isTypeOf());
         }
 
+    }
+
+    private String bundleString(String key) {
+        return Bundles.get(TableDefinitionPanel.class, key);
     }
 
     public String getTable() {

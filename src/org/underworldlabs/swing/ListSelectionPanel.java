@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.util.IconUtilities;
 
@@ -76,7 +77,8 @@ public class ListSelectionPanel extends ActionPanel
     }
 
     public ListSelectionPanel(Vector v) {
-        this("Available Columns:", "Selected Columns:", v);
+        this(Bundles.get(ListSelectionPanel.class, "AvailableColumns"),
+                Bundles.get(ListSelectionPanel.class, "SelectedColumns"), v);
     }
 
     public ListSelectionPanel(String availLabel, String selectLabel) {
@@ -106,26 +108,26 @@ public class ListSelectionPanel extends ActionPanel
                 "selectOneAction",
 //                    IconUtilities.loadDefaultIconResource("SelectOne16.png", true),
                 IconUtilities.loadDefaultIconResource("Forward16.png", true),
-                "Select one");
+                bundleString("selectOneAction"));
 
         JButton selectAllButton = ActionUtilities.createButton(
                 this,
                 "selectAllAction",
                 IconUtilities.loadDefaultIconResource("SelectAll16.png", true),
-                "Select all");
+                bundleString("selectAllAction"));
 
         JButton removeOneButton = ActionUtilities.createButton(
                 this,
                 "removeOneAction",
 //                    IconUtilities.loadDefaultIconResource("RemoveOne16.png", true),
                 IconUtilities.loadDefaultIconResource("Previous16.png", true),
-                "Remove one");
+                bundleString("removeOneAction"));
 
         JButton removeAllButton = ActionUtilities.createButton(
                 this,
                 "removeAllAction",
                 IconUtilities.loadDefaultIconResource("RemoveAll16.png", true),
-                "Remove all");
+                bundleString("removeAllAction"));
 
         // reset the button insets
         Insets buttonInsets = UIManager.getInsets("Button.margin");
@@ -139,13 +141,13 @@ public class ListSelectionPanel extends ActionPanel
         JButton moveUpButton = ActionUtilities.createButton(
                 this,
                 "Up16.png",
-                "Move selection up",
+                bundleString("moveSelectionUp"),
                 "moveSelectionUp");
 
         JButton moveDownButton = ActionUtilities.createButton(
                 this,
                 "Down16.png",
-                "Move selection down",
+                bundleString("moveSelectionDown"),
                 "moveSelectionDown");
 
         // initialise the lists
@@ -233,7 +235,7 @@ public class ListSelectionPanel extends ActionPanel
         buttonMovePanel.add(moveUpButton, gbc);
         gbc.gridy++;
         gbc.insets.top = 0;
-        buttonMovePanel.add(new JLabel("Move"), gbc);
+        buttonMovePanel.add(new JLabel(bundleString("Move")), gbc);
         gbc.gridy++;
         buttonMovePanel.add(moveDownButton, gbc);
 

@@ -5,6 +5,8 @@ import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
+import org.executequery.gui.table.TableDefinitionPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 import org.underworldlabs.swing.table.NumberCellEditor;
@@ -549,7 +551,9 @@ public class UDFDefinitionPanel extends JPanel
      */
     public class UDFParameterModel extends AbstractPrintableTableModel {
 
-        protected String[] header = {"Datatype", "Size", "Scale", "Subtype", "Encoding", "By Descriptor", "NULL", "CSTRING"};
+        protected String[] header = Bundles.get(TableDefinitionPanel.class,
+                new String[]
+                        {"Datatype", "Size", "Scale", "Subtype", "Encoding", "ByDescriptor", "NULL", "CSTRING"});
 
         public UDFParameterModel() {
             tableVector = new Vector<>();
@@ -721,8 +725,8 @@ public class UDFDefinitionPanel extends JPanel
             return cd.getColumnType() != null && (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
                     || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
                     || cd.getSQLType() == Types.LONGVARBINARY
-                    || cd.getColumnType().toUpperCase().equals("VARCHAR")
-                    || cd.getColumnType().toUpperCase().equals("CHAR"))
+                    || cd.getColumnType().equalsIgnoreCase("VARCHAR")
+                    || cd.getColumnType().equalsIgnoreCase("CHAR"))
                     || cd.isCstring();
         }
 

@@ -24,6 +24,7 @@ import org.executequery.Constants;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
@@ -285,15 +286,17 @@ public abstract class TableConstraintsPanel extends JPanel
 
     class ColumnConstraintModel extends AbstractTableModel {
 
-        private String[] header = {"",
-                "Type",
-                "Name",
-                "Table Column",
-                "Reference Table",
-                "Reference Column",
-                "Update rule",
-                "Delete rule"
-        };
+        private final String[] header = Bundles.get(TableConstraintsPanel.class,
+                new String[]
+                        {"X",
+                                "Type",
+                                "Name",
+                                "TableColumn",
+                                "ReferenceTable",
+                                "ReferenceColumn",
+                                "UpdateRule",
+                                "DeleteRule"
+                        });
 
         private Vector keys;
 

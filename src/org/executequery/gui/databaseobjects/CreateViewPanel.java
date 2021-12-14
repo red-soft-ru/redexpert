@@ -18,8 +18,8 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusListener, KeyListener {
-    public static final String TITLE = Bundles.get(CreateViewPanel.class,"CreateView");
-    public static final String EDIT_TITLE = Bundles.get(CreateViewPanel.class,"AlterView");
+    public static final String TITLE = getCreateTitle(NamedObject.VIEW);
+    public static final String EDIT_TITLE = getEditTitle(NamedObject.VIEW);
 
     private SimpleSqlTextPanel sqlTextPanel;
     private JButton formatSqlButton;

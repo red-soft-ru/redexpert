@@ -22,10 +22,10 @@ import java.util.Vector;
 
 public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
-    public static final String CREATE_TITLE = Bundles.get(CreateTriggerPanel.class,"CreateTrigger");
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.TRIGGER);
 
     //common components for table and database trigger
-    public static final String EDIT_TITLE = Bundles.get(CreateTriggerPanel.class,"EditTrigger");
+    public static final String EDIT_TITLE = getEditTitle(NamedObject.TRIGGER);
 
     private static final String TRIGGER = Bundles.get(CreateTriggerPanel.class, "table-trigger");
     private static final String DB_TRIGGER = Bundles.get(CreateTriggerPanel.class, "database-trigger");
@@ -315,7 +315,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 updateBox.setSelected(trigger.getStringTriggerType().contains("UPDATE"));
                 deleteBox.setSelected(trigger.getStringTriggerType().contains("DELETE"));
                 for (int i = 0; i < tablesCombo.getItemCount(); i++) {
-                    if (((String) tablesCombo.getModel().getElementAt(i)).trim().toUpperCase().equals(trigger.getTriggerTableName().trim().toUpperCase())) {
+                    if (((String) tablesCombo.getModel().getElementAt(i)).trim().equalsIgnoreCase(trigger.getTriggerTableName().trim())) {
                         tablesCombo.setSelectedIndex(i);
                         tablesCombo.setEnabled(false);
                         break;

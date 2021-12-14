@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public class CreateUserPanel extends AbstractCreateObjectPanel {
-    public static final String CREATE_TITLE = "Create User";
-    public static final String EDIT_TITLE = "Edit User";
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.USER);
+    public static final String EDIT_TITLE = getEditTitle(NamedObject.USER);
     DefaultDatabaseUser user;
     DefaultDatabaseUser beginUser;
     private JPanel mainPanel;

@@ -27,12 +27,12 @@ import java.util.Vector;
  */
 public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
 
-    public static final String CREATE_TITLE = Bundles.get(CreateFunctionPanel.class,"CreateFunction");
-    public static final String EDIT_TITLE = Bundles.get(CreateFunctionPanel.class,"EditFunction");
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.FUNCTION);
+    public static final String EDIT_TITLE = getEditTitle(NamedObject.FUNCTION);
 
-    private SelectTypePanel selectTypePanel;
-    private DomainPanel domainPanel;
-    private JTabbedPane returnTypeTabPane;
+    private final SelectTypePanel selectTypePanel;
+    private final DomainPanel domainPanel;
+    private final JTabbedPane returnTypeTabPane;
     private ColumnData returnType;
     private DefaultDatabaseFunction function;
 
@@ -47,16 +47,16 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                                String procedure, DefaultDatabaseFunction databaseFunction) {
         super(dc, dialog, procedure, new Object[]{databaseFunction});
         parametersTabs.remove(outputParametersPanel);
-        parametersTabs.setTitleAt(0, "Arguments");
+        parametersTabs.setTitleAt(0, bundledString("Arguments"));
         selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(),
                 metaData.getIntDataTypesArray(), returnType, true);
         returnType.setDomain(returnType.getDomain());
         selectTypePanel.refresh();
         domainPanel = new DomainPanel(returnType, returnType.getDomain());
         returnTypeTabPane = new JTabbedPane();
-        returnTypeTabPane.add("Domain", domainPanel);
-        returnTypeTabPane.add("Type", selectTypePanel);
-        tabbedPane.insertTab("Returns type", null, returnTypeTabPane, null, 1);
+        returnTypeTabPane.add(bundledString("Domain"), domainPanel);
+        returnTypeTabPane.add(bundledString("Type"), selectTypePanel);
+        tabbedPane.insertTab(bundledString("ReturnsType"), null, returnTypeTabPane, null, 1);
     }
 
     public CreateFunctionPanel(DatabaseConnection dc, ActionContainer dialog) {
@@ -309,6 +309,10 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                 e.printStackTrace();
             }
         }
+    }
+
+    public String bundledString(String key) {
+        return Bundles.get(CreateFunctionPanel.class, key);
     }
 
     @Override

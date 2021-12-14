@@ -5,12 +5,11 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseException;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SimpleTextArea;
-import org.executequery.localization.Bundles;
 
 public class CreateExceptionPanel extends AbstractCreateObjectPanel {
 
-    public static final String CREATE_TITLE = Bundles.get(CreateExceptionPanel.class,"CreateException");
-    public static final String ALTER_TITLE = Bundles.get(CreateExceptionPanel.class,"AlterException");
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.EXCEPTION);
+    public static final String ALTER_TITLE = getEditTitle(NamedObject.EXCEPTION);
     private SimpleTextArea textExceptionPanel;
     private SimpleTextArea descriptionPanel;
     private DefaultDatabaseException exception;

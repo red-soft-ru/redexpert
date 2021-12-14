@@ -9,6 +9,8 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.table.DataTypeSelectionListener;
 import org.executequery.gui.table.DataTypesDialog;
+import org.executequery.gui.table.TableDefinitionPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 import org.underworldlabs.swing.table.NumberCellEditor;
@@ -787,8 +789,10 @@ public abstract class ProcedureDefinitionPanel extends JPanel
      */
     public class ProcedureParameterModel extends AbstractPrintableTableModel {
 
-        protected String[] header = {"Name", "Datatype", "Type of", "Domain", "Table", "Column",
-                "Size", "Scale", "Subtype", "Description", "Default Value", "Encoding", "Required"};
+        protected String[] header = Bundles.get(TableDefinitionPanel.class,
+                new String[]
+                        {"Name", "Datatype", "TypeOf", "Domain", "Table", "Column",
+                                "Size", "Scale", "Subtype", "Description", "DefaultValue", "Encoding", "Required"});
 
         public ProcedureParameterModel(int parameterType) {
             tableVector = new Vector<>();
@@ -1043,8 +1047,8 @@ public abstract class ProcedureDefinitionPanel extends JPanel
             return cd.getColumnType() != null && (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
                     || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
                     || cd.getSQLType() == Types.LONGVARBINARY
-                    || cd.getColumnType().toUpperCase().equals("VARCHAR")
-                    || cd.getColumnType().toUpperCase().equals("CHAR"));
+                    || cd.getColumnType().equalsIgnoreCase("VARCHAR")
+                    || cd.getColumnType().equalsIgnoreCase("CHAR"));
         }
 
         boolean isEditScale(int row) {

@@ -6,24 +6,26 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTablespace;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
 public class CreateTablespacePanel extends AbstractCreateObjectPanel {
-    public static final String CREATE_TITLE = "Create tablespace";
-    public static final String EDIT_TITLE = "Edit tablespace";
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.TABLESPACE);
+    public static final String EDIT_TITLE = getEditTitle(NamedObject.TABLESPACE);
     private FileChooserDialog fileChooserDialog;
     private JTextField fileField;
     private JButton fileButton;
     private SimpleSqlTextPanel sqlTextPanel;
-    private JPanel mainPanel;
 
     public CreateTablespacePanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);
@@ -39,7 +41,6 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void init() {
-        mainPanel = new JPanel();
         sqlTextPanel = new SimpleSqlTextPanel();
         fileChooserDialog = new FileChooserDialog();
         fileField = new JTextField();
@@ -56,8 +57,6 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
                 }
             }
         });
-
-        mainPanel.setLayout(new GridBagLayout());
         GridBagHelper gbh = new GridBagHelper();
         gbh.setDefaults(new GridBagConstraints(
                 0, 0, 1, 1, 0, 0,
@@ -65,23 +64,36 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
                 GridBagConstraints.HORIZONTAL,
                 new Insets(5, 5, 5, 5), 0, 0));
         gbh.defaults();
-        mainPanel.add(new JLabel("File:"), gbh.nextRowFirstCol().setLabelDefault().get());
-        mainPanel.add(fileField, gbh.nextCol().setMaxWeightX().fillHorizontally().get());
-        mainPanel.add(fileButton, gbh.nextCol().setLabelDefault().get());
-        tabbedPane.add("File", mainPanel);
-        tabbedPane.add("SQL", sqlTextPanel);
-        tabbedPane.addChangeListener(changeEvent -> {
-            if (tabbedPane.getSelectedComponent() == sqlTextPanel) {
+        centralPanel.setLayout(new GridBagLayout());
+        centralPanel.add(new JLabel(Bundles.getCommon("file")), gbh.nextRowFirstCol().setLabelDefault().get());
+        centralPanel.add(fileField, gbh.nextCol().setMaxWeightX().fillHorizontally().get());
+        centralPanel.add(fileButton, gbh.nextCol().setLabelDefault().get());
+        tabbedPane.add(sqlTextPanel);
+        fileField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                generateSQL();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                generateSQL();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
                 generateSQL();
             }
         });
 
+        generateSQL();
     }
 
     @Override
     protected void initEdited() {
         nameField.setText(tablespace.getName());
         fileField.setText(tablespace.getAttribute(DefaultDatabaseTablespace.FILE_NAME));
+        generateSQL();
     }
 
     private void generateSQL() {

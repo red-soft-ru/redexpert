@@ -25,16 +25,16 @@ import org.executequery.GUIUtilities;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.GlassPanePanel;
-import org.underworldlabs.swing.util.IconUtilities;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.net.URL;
+import java.io.IOException;
 
 /**
  * Main application frame.
@@ -97,8 +97,12 @@ public class ExecuteQueryFrame extends JFrame
         setLayout(new BorderLayout());
         getRootPane().setGlassPane(new GlassPanePanel());
         Toolkit toolkit = Toolkit.getDefaultToolkit();
-        URL url = IconUtilities.class.getResource(GUIUtilities.ICON_PATH + "DedMoroz.png");
-        Image image = toolkit.getImage(url.getPath());
+        Image image = null;
+        try {
+            image = ImageIO.read(getClass().getResource(GUIUtilities.ICON_PATH + "DedMoroz.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Cursor c = toolkit.createCustomCursor(image, new Point(getRootPane().getX(),
                 getRootPane().getY()), "img");
         getRootPane().setCursor(c);

@@ -2,11 +2,13 @@ package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.Parameter;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.table.TableDefinitionPanel;
 
@@ -422,7 +424,30 @@ public final class SQLUtils {
         return cd;
     }
 
-    private static String generateName(String type, List<ColumnConstraint> keys) {
+    public static String generateNameForDBObject(String type, DatabaseConnection databaseConnection) {
+        String name = "NEW_" + type + "_";
+        int int_number = 0;
+        String number = "0";
+        List<NamedObject> keys = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectsForMetaTag(type);
+        if (keys != null)
+            for (int i = 0; i < keys.size(); i++) {
+                if (!MiscUtils.isNull(keys.get(i).getName()))
+                    if (keys.get(i).getName().contains(name)) {
+                        number = keys.get(i).getName().replace(name, "");
+                        try {
+                            if (Integer.parseInt(number) > int_number)
+                                int_number = Integer.parseInt(number);
+                        } catch (NumberFormatException e) {
+                            Log.debug(e.getMessage());
+                        }
+                    }
+
+            }
+        number = "" + (int_number + 1);
+        return name + number;
+    }
+
+    private static String generateNameForConstraint(String type, List<ColumnConstraint> keys) {
         String name = "_<TABLE_NAME>";
         switch (type) {
             case org.executequery.databaseobjects.impl.ColumnConstraint.PRIMARY:
@@ -465,7 +490,7 @@ public final class SQLUtils {
         for (int i = 0, n = columnConstraintList.size(); i < n; i++) {
             if (MiscUtils.isNull(columnConstraintList.get(i).getName()) && !MiscUtils.isNull(columnConstraintList.get(i).getTypeName())) {
                 String colType = columnConstraintList.get(i).getTypeName();
-                columnConstraintList.get(i).setName(generateName(colType, columnConstraintList));
+                columnConstraintList.get(i).setName(generateNameForConstraint(colType, columnConstraintList));
                 columnConstraintList.get(i).setGeneratedName(true);
             }
             int ind = cc_names.indexOf(columnConstraintList.get(i).getName());

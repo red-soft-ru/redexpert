@@ -97,6 +97,25 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         return arguments;
     }
 
+    private String entryPoint;
+    private String engine;
+
+    public String getEntryPoint() {
+        return entryPoint;
+    }
+
+    public void setEntryPoint(String entryPoint) {
+        this.entryPoint = entryPoint;
+    }
+
+    public String getEngine() {
+        return engine;
+    }
+
+    public void setEngine(String engine) {
+        this.engine = engine;
+    }
+
     void loadFunctionArguments() {
         ResultSet rs = null;
         try {
@@ -119,6 +138,10 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         rs.getString("RN"),
                         rs.getString("FN")
                 );
+                int return_arg = rs.getInt("RETURN_ARGUMENT");
+                if (return_arg == fp.getPosition())
+                    fp.setType(DatabaseMetaData.procedureColumnReturn);
+                else fp.setType(DatabaseMetaData.procedureColumnIn);
                 String domain = rs.getString("FS");
                 if (domain != null && !domain.startsWith("RDB$"))
                     fp.setDomain(domain.trim());
@@ -136,6 +159,10 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 arguments.add(fp);
                 if (functionSourceCode == null || functionSourceCode.isEmpty())
                     functionSourceCode = rs.getString(2);
+                if ((entryPoint == null || entryPoint.isEmpty()) && rs.getString("ENTRY_POINT") != null)
+                    entryPoint = rs.getString("ENTRY_POINT").trim();
+                if ((engine == null || engine.isEmpty()) && rs.getString("ENGINE") != null)
+                    engine = rs.getString("ENGINE").trim();
             }
 
         } catch (SQLException e) {
@@ -194,11 +221,11 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "fa.rdb$field_name as FN,\n" +
                 "co2.rdb$collation_name,\n" +
                 "cr.rdb$default_collate_name,\n" +
-                "fnc.rdb$return_argument,\n" +
+                "fnc.rdb$return_argument as RETURN_ARGUMENT,\n" +
                 "fa.rdb$argument_position,\n" +
                 "fnc.rdb$deterministic_flag,\n" +
-                "fnc.rdb$engine_name,\n" +
-                "fnc.rdb$entrypoint\n" +
+                "fnc.rdb$engine_name as ENGINE,\n" +
+                "fnc.rdb$entrypoint as ENTRY_POINT\n" +
                 "from rdb$functions fnc\n" +
                 "left join rdb$function_arguments fa on fa.rdb$function_name = fnc.rdb$function_name\n" +
                 "and (fa.rdb$package_name is null)\n" +
@@ -206,7 +233,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id\n" +
                 "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id))\n" +
                 "left join rdb$collations co2 on ((fa.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                "where fnc.rdb$function_name = '" + name +"'\n" +
+                "where fnc.rdb$function_name = '" + name + "'\n" +
                 "and (fnc.rdb$package_name is null)\n" +
                 "order by fa.rdb$argument_position";
 
@@ -352,12 +379,18 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
             sb.append("\n");
         }
 
+        if (getEntryPoint() != null) {
+            sb.append("EXTERNAL NAME '");
+            sb.append(getEntryPoint()).append("'");
+            sb.append(" ENGINE ").append(getEngine());
+        } else {
+            sb.append("as");
+            sb.append("\n");
 
-        sb.append("as");
-        sb.append("\n");
+            sb.append(getFunctionSourceCode());
 
-        sb.append(getFunctionSourceCode());
 
+        }
         sb.append("\n\n");
         sb.append("set term ; ^");
 

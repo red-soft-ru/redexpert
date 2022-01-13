@@ -594,6 +594,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
             popupMenu().reset(itemsStartingWith);
         }
+        noProposals = noProposals || (itemsStartingWith.size() == 1 && wordAtCursor.toLowerCase().contentEquals(itemsStartingWith.get(0).getDisplayValue().toLowerCase()));
         if (noProposals)
             popupMenu().hidePopup();
 

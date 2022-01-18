@@ -271,12 +271,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             case SYSTEM_PACKAGE:
                 return getSystemPackagesResultSet();
             default:
-                ResultSet rs;
-                try {
-                    rs = getTablesResultSet(getMetaDataKey(), false);
-                } catch (SQLException e) {
+                ResultSet rs = getTablesResultSet(getMetaDataKey(), false);
+                if (rs == null)
                     rs = getTablesResultSet(getMetaDataKey(), true);
-                }
                 return rs;
         }
     }

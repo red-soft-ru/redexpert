@@ -19,6 +19,7 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
@@ -86,7 +87,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
 
     private void initComponents() {
         nameField = new JTextField();
-        nameField.setText("NEW_" + getTypeObject());
+        nameField.setText(SQLUtils.generateNameForDBObject(getTypeObject(), connection));
         tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(700, 400));
         Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();

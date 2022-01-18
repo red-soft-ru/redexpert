@@ -271,7 +271,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             case SYSTEM_PACKAGE:
                 return getSystemPackagesResultSet();
             default:
-                return getTablesResultSet(getMetaDataKey());
+                ResultSet rs = getTablesResultSet(getMetaDataKey(), false);
+                if (rs == null)
+                    rs = getTablesResultSet(getMetaDataKey(), true);
+                return rs;
         }
     }
 
@@ -790,11 +793,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return getResultSetFromQuery(query);
     }
 
-    private ResultSet getTablesResultSet(String metaDataKey) throws SQLException {
+    private ResultSet getTablesResultSet(String metaDataKey, boolean repeat) throws SQLException {
         ResultSet resultSet = null;
         if (metaDataKey.equals("TABLE")) {
             String rel_type = " and (rdb$relation_type=0 or rdb$relation_type=2 or rdb$relation_type is NULL)";
-            if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() < 2)
+            if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() < 2 || repeat)
                 rel_type = "";
             String query = "select rdb$relation_name, \n" +
                     "rdb$description,\n" +

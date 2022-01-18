@@ -18,6 +18,7 @@ import org.underworldlabs.util.MiscUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -151,6 +152,12 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             for (int i = 0; i < tss.size(); i++)
                 tablespaceBox.addItem(tss.get(i));
         }
+        tablespaceBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                edited = true;
+            }
+        });
         uniqueBox = new JCheckBox(bundleString("unique"));
         computedBox = new JCheckBox(bundlesString("computed"));
         activeBox = new JCheckBox(bundlesString("active"));

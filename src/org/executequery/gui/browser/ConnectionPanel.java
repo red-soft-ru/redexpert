@@ -78,6 +78,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private List<String> charsets;
 
+
     // -------------------------------
     // text fields and combos
 
@@ -172,7 +173,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     private SSHTunnelConnectionPanel sshTunnelConnectionPanel;
 
@@ -195,6 +196,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         multifactorComponents = new ArrayList<>();
         jdbcUrlComponents = new ArrayList<>();
         standardComponents = new ArrayList<>();
+        List<Component> orderList = new ArrayList<>();
         gbh = new GridBagHelper();
         redBorder = BorderFactory.createLineBorder(Color.RED);
         blackBorder = new JTextField().getBorder();
@@ -300,26 +302,29 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbh.addLabelFieldPair(mainPanel, bundleString("statusLabel"),
                 statusLabel, bundleString("statusLabel.tool-tip"), true, false, fieldWidth);
 
-
+        orderList.add(driverCombo);
         gbh.addLabelFieldPair(mainPanel, bundleString("nameField"),
                 nameField, bundleString("nameField.tool-tip"), true, false, fieldWidth);
+        orderList.add(nameField);
 
 
         JLabel hostLabel = new JLabel(bundleString("hostField"));
         standardComponents.add(hostLabel);
         standardComponents.add(hostField);
         gbh.addLabelFieldPair(mainPanel, hostLabel, hostField, null, true, false, fieldWidth);
+        orderList.add(hostField);
 
 
         JLabel portLabel = new JLabel(bundleString("portField"));
         standardComponents.add(portLabel);
         standardComponents.add(portField);
         gbh.addLabelFieldPair(mainPanel, portLabel, portField, null, true, false, fieldWidth);
+        orderList.add(portField);
 
 
         JButton openFile = new JButton("...");
         openFile.addActionListener(new ActionListener() {
-            FileChooserDialog fileChooser = new FileChooserDialog();
+            final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -340,18 +345,23 @@ public class ConnectionPanel extends AbstractConnectionPanel
         mainPanel.add(dataSourceLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         mainPanel.add(sourceField, gbh.nextCol().setMaxWeightX().get());
         mainPanel.add(openFile, gbh.nextCol().setLabelDefault().get());
+        orderList.add(sourceField);
+        orderList.add(openFile);
 
         standardComponents.addAll(multifactorComponents);
         JLabel charsetLabel = new JLabel(bundleString("CharacterSet"));
         standardComponents.add(charsetLabel);
         standardComponents.add(charsetsCombo);
         gbh.addLabelFieldPair(mainPanel, charsetLabel, charsetsCombo, null, true, false, fieldWidth);
+        orderList.add(charsetsCombo);
 
         mainPanel.add(namesToUpperBox, gbh.nextRowFirstCol().setLabelDefault().setWidth(3).get());
         standardComponents.add(namesToUpperBox);
+        orderList.add(namesToUpperBox);
 
         mainPanel.add(useNewAPI, gbh.nextRowFirstCol().setLabelDefault().setWidth(3).get());
         standardComponents.add(useNewAPI);
+        orderList.add(useNewAPI);
 
         gbh.setY(2).nextCol().makeCurrentXTheDefaultForNewline().setWidth(1).previousCol();
 
@@ -359,26 +369,31 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         gbh.addLabelFieldPair(mainPanel, bundleString("ConnectionParameters"),
                 methodCombo, bundleString("ConnectionParameters.tool-tip"), true, true);
+        orderList.add(methodCombo);
 
         JLabel authLabel = new JLabel(bundleString("Authentication"));
         standardComponents.add(authLabel);
         standardComponents.add(authCombo);
         gbh.addLabelFieldPair(mainPanel, authLabel, authCombo, null, true, true);
+        orderList.add(authCombo);
 
         JLabel roleLabel = new JLabel(bundleString("Role"));
         standardComponents.add(roleLabel);
         standardComponents.add(roleField);
         gbh.addLabelFieldPair(mainPanel, roleLabel, roleField, null, true, true);
+        orderList.add(roleField);
 
         JLabel userLabel = new JLabel(bundleString("userField"));
         basicComponents.add(userLabel);
         basicComponents.add(userField);
         gbh.addLabelFieldPair(mainPanel, userLabel, userField, null, true, true);
+        orderList.add(userField);
 
         JLabel passwordLabel = new JLabel(bundleString("passwordField"));
         basicComponents.add(passwordLabel);
         basicComponents.add(passwordField);
         gbh.addLabelFieldPair(mainPanel, passwordLabel, passwordField, null, true, true);
+        orderList.add(passwordField);
 
 
         JButton showPassword = new LinkButton(bundleString("ShowPassword"));
@@ -390,6 +405,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
                 new ComponentToolTipPair(encryptPwdCheck, bundleString("EncryptPassword.tool-tip")),
                 new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip")));
+        orderList.add(savePwdCheck);
+        orderList.add(encryptPwdCheck);
+        orderList.add(showPassword);
 
         basicComponents.add(passwordOptionsPanel);
         mainPanel.add(passwordOptionsPanel, gbh.nextRowFirstCol().fillHorizontally().setMaxWeightX().setWidth(2).get());
@@ -398,12 +416,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
         multifactorComponents.add(contLabel);
         multifactorComponents.add(containerPasswordField);
         gbh.addLabelFieldPair(mainPanel, contLabel, containerPasswordField, null, true, true);
+        orderList.add(containerPasswordField);
 
         JLabel certLabel = new JLabel(bundleString("certLabel"));
         mainPanel.add(certLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         multifactorComponents.add(certLabel);
         mainPanel.add(certificateFileField, gbh.nextCol().setMaxWeightX().get());
         multifactorComponents.add(certificateFileField);
+        orderList.add(certificateFileField);
 
         FileChooserDialog fileChooser = new FileChooserDialog();
         fileChooser.setAcceptAllFileFilterUsed(false);
@@ -425,12 +445,15 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         mainPanel.add(openCertFile, gbh.nextColWidth().setLabelDefault().get());
         multifactorComponents.add(openCertFile);
+        orderList.add(openCertFile);
 
         mainPanel.add(saveContPwdCheck, gbh.nextRowFirstCol().setLabelDefault().get());
         multifactorComponents.add(saveContPwdCheck);
+        orderList.add(saveContPwdCheck);
 
         mainPanel.add(verifyServerCertCheck, gbh.nextCol().setLabelDefault().get());
         multifactorComponents.add(verifyServerCertCheck);
+        orderList.add(verifyServerCertCheck);
 
         JLabel urlLabel = new JLabel(bundleString("urlField"));
 
@@ -441,6 +464,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         mainPanel.add(urlField, gbh.nextCol().spanX().get());
         jdbcUrlComponents.add(urlField);
+        orderList.add(urlField);
 
         standardComponents.addAll(jdbcUrlComponents);
 
@@ -448,6 +472,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
         JButton testButton = createButton(Bundles.getCommon("test.button"), "test", -1);
         connectButton = createButton(Bundles.getCommon("connect.button"), CONNECT_ACTION_COMMAND, 'T');
         disconnectButton = createButton(Bundles.getCommon("disconnect.button"), "disconnect", 'D');
+        orderList.add(connectButton);
+        orderList.add(disconnectButton);
+        orderList.add(testButton);
 
         JPanel buttons = new JPanel(new GridBagLayout());
         GridBagHelper gbh_b = new GridBagHelper();
@@ -458,7 +485,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         buttons.add(disconnectButton, gbh_b.nextCol().get());
         buttons.add(testButton, gbh_b.nextCol().setWidth(1).get());
         buttons.add(new JPanel(), gbh_b.setMaxWeightX().fillHorizontally().setWidth(4).nextCol().anchorNorthWest().get());
-
+        mainPanel.setFocusTraversalPolicy(new CustomFocusTraversalPolicy(orderList));
+        mainPanel.setFocusTraversalPolicyProvider(true);
 
         // ---------------------------------
         // create the advanced panel
@@ -1131,7 +1159,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
      * @param certificate certificate body
      */
     private boolean checkBase64Format(String certificate) {
-        return StringUtils.contains(certificate, "-----BEGIN CERTIFICATE-----") ? true : false;
+        return StringUtils.contains(certificate, "-----BEGIN CERTIFICATE-----");
     }
 
     /**
@@ -1609,7 +1637,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     class DeleteButtonEditor extends DefaultCellEditor {
 
-        private JButton button;
+        private final JButton button;
         private boolean isPushed;
         private final JTable table;
 
@@ -1690,6 +1718,42 @@ public class ConnectionPanel extends AbstractConnectionPanel
         }
 
     } // DeleteButtonRenderer
+
+    class CustomFocusTraversalPolicy extends FocusTraversalPolicy {
+
+        private final List<Component> componentOrder = new ArrayList<>();
+
+        public CustomFocusTraversalPolicy(final List<Component> componentOrder) {
+            this.componentOrder.addAll(componentOrder);
+        }
+
+        public Component getComponentAfter(final Container focusCycleRoot, final Component aComponent) {
+            Component c = componentOrder.get((componentOrder.indexOf(aComponent) + 1) % componentOrder.size());
+            if (c.isEnabled() && c.isVisible())
+                return c;
+            return getComponentAfter(focusCycleRoot, c);
+        }
+
+        public Component getComponentBefore(final Container focusCycleRoot, final Component aComponent) {
+            final int currentIndex = componentOrder.indexOf(aComponent);
+            Component c = componentOrder.get(currentIndex > 0 ? currentIndex - 1 : componentOrder.size() - 1);
+            if (c.isEnabled() && c.isVisible())
+                return c;
+            return getComponentBefore(focusCycleRoot, c);
+        }
+
+        public Component getFirstComponent(final Container focusCycleRoot) {
+            return componentOrder.get(0);
+        }
+
+        public Component getLastComponent(final Container focusCycleRoot) {
+            return componentOrder.get(componentOrder.size() - 1);
+        }
+
+        public Component getDefaultComponent(final Container focusCycleRoot) {
+            return getFirstComponent(focusCycleRoot);
+        }
+    }
 
 
 }

@@ -323,8 +323,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         }
     }
 
-    @Override
-    public void createObject() {
+    protected String generateQuery() {
         org.executequery.gui.browser.ColumnConstraint cc = new org.executequery.gui.browser.ColumnConstraint();
         cc.setName(nameField.getText());
         switch ((String) Objects.requireNonNull(typeBox.getSelectedItem())) {
@@ -377,7 +376,13 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         }*/
         sb.append("ADD  ");
         sb.append(SQLUtils.generateDefinitionColumnConstraint(cc).trim().substring(1).trim());
-        displayExecuteQueryDialog(sb.toString(), "^");
+        return sb.toString();
+    }
+
+    @Override
+    public void createObject() {
+
+        displayExecuteQueryDialog(generateQuery(), "^");
     }
 
     private String getColumnsFromCheckBoxMap(Map<String, JCheckBox> checkBoxMap) {

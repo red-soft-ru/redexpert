@@ -39,15 +39,20 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
         descriptionPanel.getTextAreaComponent().setText(databasePackage.getDescription());
     }
 
+    protected String generateQuery() {
+        String header = headerPanel.getSQLText().replace(replacing_name, getFormattedName());
+        String body = bodyPanel.getSQLText().replace(replacing_name, getFormattedName());
+        StringBuilder sb = new StringBuilder();
+        sb.append(header).append("^\n");
+        sb.append(body).append("^\n");
+        sb.append("COMMENT ON PACKAGE " + getFormattedName() + " IS '" + descriptionPanel.getTextAreaComponent().getText() + "'");
+        return sb.toString();
+    }
+
     @Override
     public void createObject() {
-        headerPanel.setSQLText(headerPanel.getSQLText().replace(replacing_name, getFormattedName()));
-        bodyPanel.setSQLText(bodyPanel.getSQLText().replace(replacing_name, getFormattedName()));
-        StringBuilder sb = new StringBuilder();
-        sb.append(headerPanel.getSQLText()).append("^\n");
-        sb.append(bodyPanel.getSQLText()).append("^\n");
-        sb.append("COMMENT ON PACKAGE " + getFormattedName() + " IS '" + descriptionPanel.getTextAreaComponent().getText() + "'");
-        displayExecuteQueryDialog(sb.toString(), "^");
+
+        displayExecuteQueryDialog(generateQuery(), "^");
 
     }
 

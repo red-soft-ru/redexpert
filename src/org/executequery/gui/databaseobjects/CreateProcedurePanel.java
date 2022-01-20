@@ -218,9 +218,14 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
     @Override
     protected void generateScript() {
-            ddlTextPanel.setSQLText(SQLUtils.generateCreateProcedure(nameField.getText(),inputParametersPanel.getProcedureParameterModel().getTableVector(),outputParametersPanel.getProcedureParameterModel().getTableVector(),variablesPanel.getProcedureParameterModel().getTableVector(),sqlBodyText.getSQLText(),descriptionArea.getTextAreaComponent().getText()));
+        ddlTextPanel.setSQLText(generateQuery());
 
     }
+
+    protected String generateQuery() {
+        return SQLUtils.generateCreateProcedure(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(), outputParametersPanel.getProcedureParameterModel().getTableVector(), variablesPanel.getProcedureParameterModel().getTableVector(), sqlBodyText.getSQLText(), descriptionArea.getTextAreaComponent().getText());
+    }
+
 
     /**
      * <p>Initializes the state of this instance.

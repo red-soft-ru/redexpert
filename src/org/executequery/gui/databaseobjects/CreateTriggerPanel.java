@@ -396,7 +396,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         }
     }
 
-    private void generateScript() {
+    protected String generateQuery() {
         StringBuilder query = new StringBuilder("CREATE OR ALTER TRIGGER " + getFormattedName());
         String selectedItem = (String) typeTriggerCombo.getSelectedItem();
         if (selectedItem == TRIGGER)
@@ -451,7 +451,12 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             comment = comment.replace("'", "''");
             query.append("COMMENT ON TRIGGER ").append(getFormattedName()).append(" IS '").append(comment).append("'^");
         }
-        displayExecuteQueryDialog(query.toString(), "^");
+        return query.toString();
+    }
+
+    private void generateScript() {
+
+        displayExecuteQueryDialog(generateQuery(), "^");
     }
 
 }

@@ -188,12 +188,8 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         }
     }
 
-    protected void generateSQL() {
-        if (!editing && passTextField.getPassword().length < 1) {
-            GUIUtilities.displayErrorMessage(bundleString("error.empty-pwd"));
-            passTextField.requestFocus();
-            return;
-        }
+    protected String generateQuery() {
+
         user.setName(nameField.getText());
         user.setPassword(new String(passTextField.getPassword()));
         user.setFirstName(firstNameField.getText());
@@ -261,7 +257,16 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
             if (!Objects.equals(user.getComment(), beginUser.getComment()) && !(beginUser.getComment() == null && MiscUtils.isNull(user.getComment())))
                 sb.append("COMMENT ON USER ").append(MiscUtils.getFormattedObject(user.getName())).append(" is '").append(user.getComment()).append("'");
         } else sb.append(SQLUtils.generateCreateUser(user));
-        sqlTextPanel.setSQLText(sb.toString());
+        return sb.toString();
+    }
+
+    protected void generateSQL() {
+        if (!editing && passTextField.getPassword().length < 1) {
+            GUIUtilities.displayErrorMessage(bundleString("error.empty-pwd"));
+            passTextField.requestFocus();
+            return;
+        }
+        sqlTextPanel.setSQLText(generateQuery());
     }
 
     @Override

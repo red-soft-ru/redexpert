@@ -57,6 +57,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         returnTypeTabPane.add(bundledString("Domain"), domainPanel);
         returnTypeTabPane.add(bundledString("Type"), selectTypePanel);
         tabbedPane.insertTab(bundledString("ReturnsType"), null, returnTypeTabPane, null, 1);
+        firstQuery = generateQuery();
     }
 
     public CreateFunctionPanel(DatabaseConnection dc, ActionContainer dialog) {
@@ -179,8 +180,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                 "end";
     }
 
-    @Override
-    protected void generateScript() {
+    protected String generateQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("create or alter function ");
         sb.append(getFormattedName());
@@ -223,8 +223,12 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                 sb.append("^\n");
             }
         }
+        return sb.toString();
+    }
 
-        ddlTextPanel.setSQLText(sb.toString());
+    @Override
+    protected void generateScript() {
+        ddlTextPanel.setSQLText(generateQuery());
     }
 
     @Override

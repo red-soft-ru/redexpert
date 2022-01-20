@@ -116,9 +116,9 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         return host.getDatabaseMetaData().getDatabaseMajorVersion();
     }
 
-    private void createGenerator() throws SQLException {
-        if (!MiscUtils.isNull(nameField.getText().trim())) {
-            String query;
+    protected String generateQuery() {
+        String query = "";
+        try {
             if (getVersion() == 3) {
                 query = "CREATE OR ALTER SEQUENCE " + getFormattedName() + " START WITH " + startValueText.getStringValue()
                         + " INCREMENT BY " + incrementText.getStringValue() + ";";
@@ -128,10 +128,18 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
                 else query = "";
                 query += "\nALTER SEQUENCE " + getFormattedName() + " RESTART WITH " + startValueText.getStringValue() + ";";
             }
-            if (!MiscUtils.isNull(description.getTextAreaComponent().getText().trim()))
-                query += "\nCOMMENT ON SEQUENCE " + getFormattedName() + " IS '" + description.getTextAreaComponent().getText() + "'";
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (!MiscUtils.isNull(description.getTextAreaComponent().getText().trim()))
+            query += "\nCOMMENT ON SEQUENCE " + getFormattedName() + " IS '" + description.getTextAreaComponent().getText() + "'";
 
-            displayExecuteQueryDialog(query, ";");
+        return query;
+    }
+
+    private void createGenerator() throws SQLException {
+        if (!MiscUtils.isNull(nameField.getText().trim())) {
+            displayExecuteQueryDialog(generateQuery(), ";");
         } else
             GUIUtilities.displayErrorMessage("Name can not be empty");
     }

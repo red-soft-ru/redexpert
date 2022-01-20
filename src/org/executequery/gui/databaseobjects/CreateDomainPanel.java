@@ -177,6 +177,12 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
     private void generateSQL() {
+
+        sqlTextPane.setText(generateQuery());
+
+    }
+
+    protected String generateQuery() {
         StringBuilder sb = new StringBuilder();
         columnData.setColumnName(nameField.getText());
         sb.setLength(0);
@@ -229,10 +235,10 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
                     }
                     sb.append(";");
                 }
-                sqlTextPane.setText(sb.toString());
             }
+            return sb.toString();
         } else {
-            sqlTextPane.setText(SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false));
+            return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false);
         }
     }
 }

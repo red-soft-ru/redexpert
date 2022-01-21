@@ -133,7 +133,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         combosGroup = new TableSelectionCombosGroup(connectionsCombo);
         connectionsCombo.setEnabled(false);
 
-        sqlText = new SimpleSqlTextPanel();
+        sqlText = new SimpleSqlTextPanel(false, false);
         sqlText.setBorder(null);
         sqlText.setScrollPaneBorder(BorderFactory.createMatteBorder(1, 1, 0, 1, UIUtils.getDefaultBorderColour()));
 
@@ -249,10 +249,10 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
 
         int minimumButtonWidth = 85;
-        startButton = new MinimumWidthActionButton(minimumButtonWidth, this, "Start", "start");
-        rollbackButton = new MinimumWidthActionButton(minimumButtonWidth, this, "Commit", "commit");
-        commitButton = new MinimumWidthActionButton(minimumButtonWidth, this, "Rollback", "rollback");
-        stopButton = new MinimumWidthActionButton(minimumButtonWidth, this, "Stop", "stop");
+        startButton = new MinimumWidthActionButton(minimumButtonWidth, this, bundleString("Start"), "start");
+        rollbackButton = new MinimumWidthActionButton(minimumButtonWidth, this, bundleString("Commit"), "commit");
+        commitButton = new MinimumWidthActionButton(minimumButtonWidth, this, bundleString("Rollback"), "rollback");
+        stopButton = new MinimumWidthActionButton(minimumButtonWidth, this, bundleString("Stop"), "stop");
 
         rollbackButton.setEnabled(false);
         commitButton.setEnabled(false);
@@ -279,10 +279,14 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
     }
 
     public void activateConnUsage() {
-        if (useConnection.isSelected())
+        if (useConnection.isSelected()) {
             connectionsCombo.setEnabled(true);
-        else
+            if (connectionsCombo.getSelectedItem() != null)
+                sqlText.getTextPane().setDatabaseConnection(((DatabaseHost) connectionsCombo.getSelectedItem()).getDatabaseConnection());
+        } else {
             connectionsCombo.setEnabled(false);
+            sqlText.getTextPane().setDatabaseConnection(null);
+        }
     }
 
     public void fileNameChanged() {
@@ -447,7 +451,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
                             if (resetButtons)
                                 enableButtons(true, false, false, false);
                             else
-                                enableButtons(false, false, true, true);
+                                enableButtons(true, false, true, true);
                         }
                     }
                 };

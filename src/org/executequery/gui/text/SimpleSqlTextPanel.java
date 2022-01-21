@@ -60,7 +60,7 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     /**
      * The StringBuffer if appending
      */
-    private StringBuffer sqlBuffer;
+    private final StringBuffer sqlBuffer;
 
     /**
      * The text area's scroller
@@ -73,12 +73,13 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     private Border defaultBorder;
 
     private SimpleTextComponentPopUpMenu popup;
+    private final boolean autocompleteOnlyHotKey;
 
     public SimpleSqlTextPanel() {
-        this(false);
+        this(false, true);
     }
 
-    public SimpleSqlTextPanel(boolean appending) {
+    public SimpleSqlTextPanel(boolean appending, boolean autocompleteOnlyHotKey) {
         super(new BorderLayout());
 
         try {
@@ -89,13 +90,14 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
         sqlBuffer = new StringBuffer();
         this.appending = appending;
+        this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
     }
 
     private void init() throws Exception {
 
         setBorder(BorderFactory.createTitledBorder("SQL"));
 
-        textPane = new SQLTextArea();
+        textPane = new SQLTextArea(autocompleteOnlyHotKey);
         textPane.setFont(new Font("monospaced", Font.PLAIN, 12));
 //        textPane.setBackground(null);
         textPane.setDragEnabled(true);

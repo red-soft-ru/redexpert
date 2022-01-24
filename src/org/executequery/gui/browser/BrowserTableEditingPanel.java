@@ -665,7 +665,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 loadReferences();
                 break;
             case 5:
-                tableDataPanel.loadDataForTable(table);
+                if (!tableDataPanel.isLoaded())
+                    tableDataPanel.loadDataForTable(table);
                 break;
             case 6:
                 try {

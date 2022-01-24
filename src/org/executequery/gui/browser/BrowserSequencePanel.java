@@ -111,6 +111,8 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx++;
         gbc.insets = insets;
+        gbc.gridy = 0;
+        base.add(editButton, gbc);
         gbc.gridy++;
         base.add(objectNameLabel, gbc);
         gbc.gridy++;
@@ -130,7 +132,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 10;
         gbc.gridwidth = 1;
         gbc.weighty = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         gbc.gridx = 1;
         base.add(sequenceNameField, gbc);
         ++gbc.gridy;

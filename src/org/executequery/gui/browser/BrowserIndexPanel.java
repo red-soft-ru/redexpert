@@ -64,7 +64,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     public BrowserIndexPanel(BrowserController controller) {
         super();
@@ -124,6 +124,8 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
         JPanel base = new JPanel(new GridBagLayout());
         gbh.defaults();
+        base.add(editButton, gbh.get());
+        gbh.nextRowFirstCol();
         gbh.addLabelFieldPair(base, objectNameLabel, indexNameField, null);
         gbh.addLabelFieldPair(base, bundleString("TableName"), tableField, null);
         gbh.addLabelFieldPair(base, bundleString("Sorting"), sortingComboBox, null);

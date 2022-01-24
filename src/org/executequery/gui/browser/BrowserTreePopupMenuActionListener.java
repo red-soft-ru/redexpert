@@ -378,231 +378,236 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     public void editObject(ActionEvent e) {
         if (currentPath != null && currentSelection != null) {
             DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-            AbstractCreateObjectPanel createObjectPanel = null;
-            int type = node.getType();
-            if (type == NamedObject.META_TAG)
-                for (int i = 0; i < NamedObject.META_TYPES.length; i++)
-                    if (Objects.equals(NamedObject.META_TYPES[i], node.getName())) {
-                        type = i;
-                        break;
+            editObject(node, currentSelection);
+        }
+
+    }
+
+    public void editObject(DatabaseObjectNode node, DatabaseConnection currentSelection) {
+        AbstractCreateObjectPanel createObjectPanel = null;
+        int type = node.getType();
+        if (type == NamedObject.META_TAG)
+            for (int i = 0; i < NamedObject.META_TYPES.length; i++)
+                if (Objects.equals(NamedObject.META_TYPES[i], node.getName())) {
+                    type = i;
+                    break;
+                }
+        switch (type) {
+            case NamedObject.TABLE:
+            case NamedObject.GLOBAL_TEMPORARY:
+            case NamedObject.ROLE:
+                treePanel.valueChanged(node, currentSelection);
+                break;
+            case NamedObject.SEQUENCE:
+                if (GUIUtilities.isDialogOpen(CreateGeneratorPanel.ALTER_TITLE)) {
+
+                    GUIUtilities.setSelectedDialog(CreateGeneratorPanel.ALTER_TITLE);
+
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
+                        BaseDialog dialog =
+                                new BaseDialog(CreateGeneratorPanel.ALTER_TITLE, false);
+                        createObjectPanel = new CreateGeneratorPanel(currentSelection, dialog, (DefaultDatabaseSequence) node.getDatabaseObject());
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-            switch (type) {
-                case NamedObject.TABLE:
-                case NamedObject.GLOBAL_TEMPORARY:
-                case NamedObject.ROLE:
-                    treePanel.valueChanged(node, currentSelection);
-                    break;
-                case NamedObject.SEQUENCE:
-                    if (GUIUtilities.isDialogOpen(CreateGeneratorPanel.ALTER_TITLE)) {
+                }
+                break;
+            case NamedObject.VIEW:
+                if (GUIUtilities.isDialogOpen(CreateViewPanel.EDIT_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateGeneratorPanel.ALTER_TITLE);
+                    GUIUtilities.setSelectedDialog(CreateViewPanel.EDIT_TITLE);
 
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateGeneratorPanel.ALTER_TITLE, false);
-                            createObjectPanel = new CreateGeneratorPanel(currentSelection, dialog, (DefaultDatabaseSequence) node.getDatabaseObject());
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
+                        BaseDialog dialog =
+                                new BaseDialog(CreateViewPanel.EDIT_TITLE, false);
+                        createObjectPanel = new CreateViewPanel(currentSelection, dialog, (DefaultDatabaseView) node.getDatabaseObject());
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-                    break;
-                case NamedObject.VIEW:
-                    if (GUIUtilities.isDialogOpen(CreateViewPanel.EDIT_TITLE)) {
+                }
+                break;
+            case NamedObject.PROCEDURE:
+                if (GUIUtilities.isDialogOpen(CreateProcedurePanel.EDIT_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateViewPanel.EDIT_TITLE);
+                    GUIUtilities.setSelectedDialog(CreateProcedurePanel.EDIT_TITLE);
 
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateViewPanel.EDIT_TITLE, false);
-                            createObjectPanel = new CreateViewPanel(currentSelection, dialog, (DefaultDatabaseView) node.getDatabaseObject());
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
+
+                        BaseDialog dialog = new BaseDialog(CreateProcedurePanel.EDIT_TITLE, false);
+                        createObjectPanel = new CreateProcedurePanel(currentSelection, dialog, node.getName().trim());
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-                    break;
-                case NamedObject.PROCEDURE:
-                    if (GUIUtilities.isDialogOpen(CreateProcedurePanel.EDIT_TITLE)) {
+                }
+                break;
+            case NamedObject.DOMAIN:
+                if (GUIUtilities.isDialogOpen(CreateDomainPanel.EDIT_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateProcedurePanel.EDIT_TITLE);
+                    GUIUtilities.setSelectedDialog(CreateDomainPanel.EDIT_TITLE);
 
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
 
-                            BaseDialog dialog = new BaseDialog(CreateProcedurePanel.EDIT_TITLE, false);
-                            createObjectPanel = new CreateProcedurePanel(currentSelection, dialog, node.getName().trim());
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
+                        BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, false);
+                        createObjectPanel = new CreateDomainPanel(currentSelection, dialog, node.getName().trim());
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-                    break;
-                case NamedObject.DOMAIN:
-                    if (GUIUtilities.isDialogOpen(CreateDomainPanel.EDIT_TITLE)) {
+                }
+                break;
+            case NamedObject.TRIGGER:
+            case NamedObject.DATABASE_TRIGGER:
+            case NamedObject.DDL_TRIGGER:
+                if (GUIUtilities.isDialogOpen(CreateTriggerPanel.EDIT_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateDomainPanel.EDIT_TITLE);
+                    GUIUtilities.setSelectedDialog(CreateTriggerPanel.EDIT_TITLE);
 
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
 
-                            BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, false);
-                            createObjectPanel = new CreateDomainPanel(currentSelection, dialog, node.getName().trim());
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
+                        BaseDialog dialog = new BaseDialog(CreateTriggerPanel.EDIT_TITLE, false);
+                        createObjectPanel = new CreateTriggerPanel(currentSelection, dialog,
+                                (DefaultDatabaseTrigger) node.getDatabaseObject(), type);
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-                    break;
-                case NamedObject.TRIGGER:
-                case NamedObject.DATABASE_TRIGGER:
-                case NamedObject.DDL_TRIGGER:
-                    if (GUIUtilities.isDialogOpen(CreateTriggerPanel.EDIT_TITLE)) {
+                }
+                break;
+            case NamedObject.EXCEPTION:
+                if (GUIUtilities.isDialogOpen(CreateExceptionPanel.ALTER_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateTriggerPanel.EDIT_TITLE);
+                    GUIUtilities.setSelectedDialog(CreateExceptionPanel.ALTER_TITLE);
 
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-
-                            BaseDialog dialog = new BaseDialog(CreateTriggerPanel.EDIT_TITLE, false);
-                            createObjectPanel = new CreateTriggerPanel(currentSelection, dialog,
-                                    (DefaultDatabaseTrigger) node.getDatabaseObject(), type);
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
+                        BaseDialog dialog =
+                                new BaseDialog(CreateExceptionPanel.ALTER_TITLE, false);
+                        createObjectPanel = new CreateExceptionPanel(currentSelection, dialog, (DefaultDatabaseException) node.getDatabaseObject());
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-                    break;
-                case NamedObject.EXCEPTION:
-                    if (GUIUtilities.isDialogOpen(CreateExceptionPanel.ALTER_TITLE)) {
+                }
+                break;
+            case NamedObject.INDEX:
+                if (GUIUtilities.isDialogOpen(CreateIndexPanel.ALTER_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateExceptionPanel.ALTER_TITLE);
+                    GUIUtilities.setSelectedDialog(CreateIndexPanel.ALTER_TITLE);
 
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateExceptionPanel.ALTER_TITLE, false);
-                            createObjectPanel = new CreateExceptionPanel(currentSelection, dialog, (DefaultDatabaseException) node.getDatabaseObject());
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
+                        BaseDialog dialog =
+                                new BaseDialog(CreateIndexPanel.ALTER_TITLE, false);
+                        createObjectPanel = new CreateIndexPanel(currentSelection, dialog, (DefaultDatabaseIndex) node.getDatabaseObject());
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-                    break;
-                case NamedObject.INDEX:
-                    if (GUIUtilities.isDialogOpen(CreateIndexPanel.ALTER_TITLE)) {
+                }
+                break;
+            case NamedObject.FUNCTION:
+                if (GUIUtilities.isDialogOpen(CreateFunctionPanel.EDIT_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateIndexPanel.ALTER_TITLE);
+                    GUIUtilities.setSelectedDialog(CreateFunctionPanel.EDIT_TITLE);
 
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateIndexPanel.ALTER_TITLE, false);
-                            createObjectPanel = new CreateIndexPanel(currentSelection, dialog, (DefaultDatabaseIndex) node.getDatabaseObject());
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
+
+                        BaseDialog dialog = new BaseDialog(CreateFunctionPanel.EDIT_TITLE, false);
+                        createObjectPanel = new CreateFunctionPanel(currentSelection, dialog, node.getName().trim(), (DefaultDatabaseFunction) node.getDatabaseObject());
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-                    break;
-                case NamedObject.FUNCTION:
-                    if (GUIUtilities.isDialogOpen(CreateFunctionPanel.EDIT_TITLE)) {
+                }
+                break;
+            case NamedObject.UDF:
+                if (GUIUtilities.isDialogOpen(CreateUDFPanel.EDIT_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateFunctionPanel.EDIT_TITLE);
+                    GUIUtilities.setSelectedDialog(CreateUDFPanel.EDIT_TITLE);
 
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
 
-                            BaseDialog dialog = new BaseDialog(CreateFunctionPanel.EDIT_TITLE, false);
-                            createObjectPanel = new CreateFunctionPanel(currentSelection, dialog, node.getName().trim(), (DefaultDatabaseFunction) node.getDatabaseObject());
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
+                        BaseDialog dialog = new BaseDialog(CreateUDFPanel.EDIT_TITLE, false);
+                        createObjectPanel = new CreateUDFPanel(currentSelection, dialog, node.getDatabaseObject());
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-                    break;
-                case NamedObject.UDF:
-                    if (GUIUtilities.isDialogOpen(CreateUDFPanel.EDIT_TITLE)) {
+                }
+                break;
+            case NamedObject.PACKAGE:
+                if (GUIUtilities.isDialogOpen(CreatePackagePanel.ALTER_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateUDFPanel.EDIT_TITLE);
+                    GUIUtilities.setSelectedDialog(CreatePackagePanel.ALTER_TITLE);
 
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
 
-                            BaseDialog dialog = new BaseDialog(CreateUDFPanel.EDIT_TITLE, false);
-                            createObjectPanel = new CreateUDFPanel(currentSelection, dialog, node.getDatabaseObject());
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
+                        BaseDialog dialog = new BaseDialog(CreatePackagePanel.ALTER_TITLE, false);
+                        createObjectPanel = new CreatePackagePanel(currentSelection, dialog, (DefaultDatabasePackage) node.getDatabaseObject());
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-                    break;
-                case NamedObject.PACKAGE:
-                    if (GUIUtilities.isDialogOpen(CreatePackagePanel.ALTER_TITLE)) {
+                }
+                break;
+            case NamedObject.USER:
+                if (GUIUtilities.isDialogOpen(CreateUserPanel.EDIT_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreatePackagePanel.ALTER_TITLE);
+                    GUIUtilities.setSelectedDialog(CreateUserPanel.EDIT_TITLE);
 
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
 
-                            BaseDialog dialog = new BaseDialog(CreatePackagePanel.ALTER_TITLE, false);
-                            createObjectPanel = new CreatePackagePanel(currentSelection, dialog, (DefaultDatabasePackage) node.getDatabaseObject());
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
+                        BaseDialog dialog = new BaseDialog(CreateUserPanel.EDIT_TITLE, false);
+                        createObjectPanel = new CreateUserPanel(currentSelection, dialog, (DefaultDatabaseUser) node.getDatabaseObject());
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-                    break;
-                case NamedObject.USER:
-                    if (GUIUtilities.isDialogOpen(CreateUserPanel.EDIT_TITLE)) {
+                }
+                break;
+            case NamedObject.TABLESPACE:
+                if (GUIUtilities.isDialogOpen(CreateTablespacePanel.EDIT_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateUserPanel.EDIT_TITLE);
+                    GUIUtilities.setSelectedDialog(CreateTablespacePanel.EDIT_TITLE);
 
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
+                } else {
+                    try {
+                        GUIUtilities.showWaitCursor();
 
-                            BaseDialog dialog = new BaseDialog(CreateUserPanel.EDIT_TITLE, false);
-                            createObjectPanel = new CreateUserPanel(currentSelection, dialog, (DefaultDatabaseUser) node.getDatabaseObject());
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
+                        BaseDialog dialog = new BaseDialog(CreateTablespacePanel.EDIT_TITLE, false);
+                        createObjectPanel = new CreateTablespacePanel(currentSelection, dialog, node.getDatabaseObject());
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
                     }
-                    break;
-                case NamedObject.TABLESPACE:
-                    if (GUIUtilities.isDialogOpen(CreateTablespacePanel.EDIT_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateTablespacePanel.EDIT_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-
-                            BaseDialog dialog = new BaseDialog(CreateTablespacePanel.EDIT_TITLE, false);
-                            createObjectPanel = new CreateTablespacePanel(currentSelection, dialog, node.getDatabaseObject());
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                default:
-                    GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
-                    break;
-            }
+                }
+                break;
+            default:
+                GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
+                break;
         }
 
     }

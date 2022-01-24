@@ -23,6 +23,7 @@ package org.executequery.gui.forms;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.gui.browser.BrowserPrivilegesPanel;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.GradientLabel;
@@ -32,6 +33,8 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.print.Printable;
 
 /**
@@ -53,6 +56,7 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
 
     private static final GridBagConstraints panelConstraints;
     private BrowserPrivilegesPanel privilegesPanel;
+    protected JButton editButton;
 
     static {
         emptyBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
@@ -71,6 +75,13 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
 //        	gradientLabel.setForeground(new ColorUIResource(0x333333));
 //        }
         //add(gradientLabel, BorderLayout.NORTH);
+        editButton = new JButton(Bundles.getCommon("edit"));
+        editButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ConnectionsTreePanel.getPanelFromBrowser().getBrowserTreePopupMenu().getListener().editObject(getDatabaseObjectNode(), getDatabaseConnection());
+            }
+        });
     }
 
     private JTabbedPane tabPaneWithPrivileges;

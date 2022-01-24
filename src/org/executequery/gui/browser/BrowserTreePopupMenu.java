@@ -314,4 +314,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         return Bundles.get(getClass(), key, args);
     }
 
+    public BrowserTreePopupMenuActionListener getListener() {
+        return listener;
+    }
 }

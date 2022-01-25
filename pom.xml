@@ -7,7 +7,7 @@
     <groupId>org.executequery</groupId>
     <artifactId>RedExpert-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2021.10</version>
+    <version>2022.01-RC.1</version>
     <modules>
 		<module>modules/plugins/fbplugin</module>
         <module>modules/plugins/fbplugin-impl</module>

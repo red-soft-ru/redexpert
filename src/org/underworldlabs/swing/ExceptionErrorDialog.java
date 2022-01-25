@@ -21,6 +21,7 @@
 package org.underworldlabs.swing;
 
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.util.IconUtilities;
 
@@ -49,12 +50,12 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
     /**
      * the error message
      */
-    private String message;
+    private final String message;
 
     /**
      * the exception list
      */
-    private Vector<Throwable> exceptions;
+    private final Vector<Throwable> exceptions;
 
     /**
      * empty exception indicating the last in a chain
@@ -115,7 +116,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
 
     public ExceptionErrorDialog(Frame owner, String message, Throwable exception) {
 
-        super(owner, "Error Message", true);
+        super(owner, Bundles.getCommon("error-message"), true);
         this.message = message;
 
         exceptions = new Vector<Throwable>();
@@ -141,8 +142,8 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             errorIcon = UIManager.getIcon("OptionPane.warningIcon");
         }
 
-        closeButton = WidgetFactory.createButton(this, "Close");
-        showStackButton = WidgetFactory.createButton(this, "Show Stack Trace");
+        closeButton = WidgetFactory.createButton(this, Bundles.getCommon("close.button"));
+        showStackButton = WidgetFactory.createButton(this, bundleString("ShowStackTrace"));
 
         // format the text
         StringBuilder sb = new StringBuilder();
@@ -272,7 +273,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
 
             pasteButton = new RolloverButton(
                     IconUtilities.loadDefaultIconResource("Paste16.png", true),
-                    "Paste stack to clipboard");
+                    bundleString("pasteToClipboard"));
             pasteButton.addActionListener(this);
 
             gbc.gridy++;
@@ -288,9 +289,9 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             if (exceptions.get(selectedIndex) instanceof SQLException) {
                 SQLException sqlExc = (SQLException) exceptions.get(selectedIndex);
                 if (sqlExc.getNextException() != null) {
-                    nextButton = new JButton("Next Exception");
+                    nextButton = new JButton(bundleString("NextException"));
                     nextButton.addActionListener(this);
-                    previousButton = new JButton("Previous Exception");
+                    previousButton = new JButton(bundleString("PreviousException"));
                     previousButton.addActionListener(this);
                     previousButton.setEnabled(false);
 
@@ -331,7 +332,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             e.printStackTrace(out);
             textPane.setText(sw.toString());
         } else {
-            textPane.setText("Exception stack trace not available.");
+            textPane.setText(bundleString("stackNotAvailable"));
         }
         textPane.setCaretPosition(0);
     }
@@ -345,10 +346,10 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             if (stackTracePanel.isVisible()) {
                 stackTracePanel.setVisible(false);
                 setSize(new Dimension(getWidth(), defaultHeight));
-                showStackButton.setText("Show Stack Trace");
+                showStackButton.setText(bundleString("ShowStackTrace"));
             } else {
                 stackTracePanel.setVisible(true);
-                showStackButton.setText("Hide Stack Trace");
+                showStackButton.setText(bundleString("HideStackTrace"));
                 setSize(new Dimension(
                         getWidth(), defaultHeight + (STACK_HEIGHT + 30)));
 
@@ -436,6 +437,10 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
      * Invoked when the component has been made invisible.
      */
     public void componentHidden(ComponentEvent e) {
+    }
+
+    private String bundleString(String key) {
+        return Bundles.get(ExceptionErrorDialog.class, key);
     }
 
 }

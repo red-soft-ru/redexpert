@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.Constants;
 import org.underworldlabs.swing.util.Interruptible;
@@ -39,7 +40,7 @@ public class InterruptibleProgressDialog extends JDialog
     /**
      * The event parent to this object
      */
-    private Interruptible process;
+    private final Interruptible process;
 
     /**
      * The progress bar widget
@@ -54,7 +55,7 @@ public class InterruptibleProgressDialog extends JDialog
     /**
      * The progress bar label text
      */
-    private String labelText;
+    private final String labelText;
 
     public InterruptibleProgressDialog(Frame parentFrame,
                                        String title,
@@ -166,11 +167,11 @@ public class InterruptibleProgressDialog extends JDialog
 
     class CancelButton extends JButton {
 
-        private int DEFAULT_WIDTH = 75;
-        private int DEFAULT_HEIGHT = 30;
+        private final int DEFAULT_WIDTH = 75;
+        private final int DEFAULT_HEIGHT = 30;
 
         public CancelButton() {
-            super("Cancel");
+            super(Bundles.getCommon("cancel.button"));
             setMargin(Constants.EMPTY_INSETS);
         }
 

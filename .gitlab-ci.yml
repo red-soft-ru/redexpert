@@ -34,9 +34,14 @@ prepare:
         VERSION_IN_POM=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
         VERSION=$(echo ${CI_COMMIT_TAG}|sed 's/v//')
         "[ \"$VERSION\" = \"$VERSION_IN_POM\" ] || (echo Project version in pom.xml and tag do not match!; exit 1)"
+        SUFFIX=$(echo $VERSION|awk -F- '{print $2}')
+        if [ "${SUFFIX}" ]; then
+          STAGE=rc
+        else
+          STAGE=release
+        fi
         BRANCH=${TAG_BRANCH}
         CONTEXT=tag
-        STAGE=release
       else
         VERSION=$(date +"%Y.%m")
         BUILDNO=$(relmanager_client genbuildno ${RELEASE_HUB_PROJECT} ${VERSION}-SNAPSHOT)

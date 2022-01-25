@@ -127,12 +127,17 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             GUIUtils.requestFocusInWindow(sqlTextPanel);
     }
 
-    @Override
-    public void createObject() {
+    protected String generateQuery() {
         String query = sqlTextPanel.getSQLText().trim().replace(replacing_name, getFormattedName());
         query = query + "^";
         query += "COMMENT ON VIEW " + getFormattedName() + " IS '" + descriptionTextArea.getTextAreaComponent().getText() + "'";
-        displayExecuteQueryDialog(query, "^");
+        return query;
+    }
+
+    @Override
+    public void createObject() {
+
+        displayExecuteQueryDialog(generateQuery(), "^");
     }
 
     @Override

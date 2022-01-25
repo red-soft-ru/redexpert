@@ -240,6 +240,16 @@ public class TableDataTab extends JPanel
 
     }
 
+    private boolean loaded = false;
+
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(boolean loaded) {
+        this.loaded = loaded;
+    }
+
     private void load(final DatabaseObject databaseObject) {
 
         ConnectionsTreePanel treePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
@@ -272,6 +282,7 @@ public class TableDataTab extends JPanel
 
                     ConnectionsTreePanel treePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
                     treePanel.getTree().setEnabled(true);
+                    loaded = true;
                 }
 
             };

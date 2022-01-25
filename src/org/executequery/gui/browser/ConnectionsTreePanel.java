@@ -1826,10 +1826,10 @@ public class ConnectionsTreePanel extends TreePanel
     return tree.getPathForLocation(x, y);
   }
 
-  private BrowserTreePopupMenu getBrowserTreePopupMenu() {
+  public BrowserTreePopupMenu getBrowserTreePopupMenu() {
     if (popupMenu == null) {
       popupMenu = new BrowserTreePopupMenu(
-          new BrowserTreePopupMenuActionListener(this));
+              new BrowserTreePopupMenuActionListener(this));
     }
     return popupMenu;
   }

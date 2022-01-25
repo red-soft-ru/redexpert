@@ -205,8 +205,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         }
     }
 
-    @Override
-    public void createObject() {
+    protected String generateQuery() {
         StringBuilder sb = new StringBuilder();
         if (editing)
             sb.append("DROP EXTERNAL FUNCTION ").append(getFormattedName()).append(";\n");
@@ -263,7 +262,13 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             text = text.replace("'", "''");
             sb.append(text).append("'");
         }
-        displayExecuteQueryDialog(sb.toString(), ";");
+        return sb.toString();
+    }
+
+    @Override
+    public void createObject() {
+
+        displayExecuteQueryDialog(generateQuery(), ";");
     }
 
     @Override

@@ -270,7 +270,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
 
-    void generateSQL() {
+    protected String generateQuery() {
         sb.setLength(0);
         if (editing) {
             columnData.setColumnName(nameField.getText());
@@ -286,7 +286,6 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             if (columnData.isAutoincrement()) {
                 sb.append(columnData.getAutoincrement().getSqlAutoincrement());
             }
-            sqlPanel.setSQLText(sb.toString());
         } else {
             columnData.setColumnName(nameField.getText());
             sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName())).append("\nADD ").append(columnData.getFormattedColumnName()).append("\n");
@@ -347,8 +346,13 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             if (columnData.isAutoincrement()) {
                 sb.append(columnData.getAutoincrement().getSqlAutoincrement());
             }
-            sqlPanel.setSQLText(sb.toString());
         }
+        return sb.toString();
+    }
+
+    void generateSQL() {
+
+        sqlPanel.setSQLText(generateQuery());
     }
 
     private String alterColumn() {

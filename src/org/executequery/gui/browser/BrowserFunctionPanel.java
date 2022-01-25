@@ -44,7 +44,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     public BrowserFunctionPanel(BrowserController controller) {
         super();
@@ -116,6 +116,8 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         gbc.gridx++;
         gbc.insets = insets;
         gbc.gridy++;
+        base.add(editButton);
+        gbc.gridy++;
         base.add(objectNameLabel, gbc);
         gbc.gridy++;
         gbc.insets.top = 0;
@@ -134,7 +136,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 10;
         gbc.gridwidth = 1;
         gbc.weighty = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         gbc.gridx = 1;
         base.add(funcNameField, gbc);
         ++gbc.gridy;
@@ -248,14 +250,14 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
 
     class FunctionTableModel extends AbstractTableModel {
 
-        private String UNKNOWN = "UNKNOWN";
-        private String RETURN = "RETURN";
-        private String RESULT = "RESULT";
-        private String IN = "IN";
-        private String INOUT = "INOUT";
-        private String OUT = "OUT";
+        private final String UNKNOWN = "UNKNOWN";
+        private final String RETURN = "RETURN";
+        private final String RESULT = "RESULT";
+        private final String IN = "IN";
+        private final String INOUT = "INOUT";
+        private final String OUT = "OUT";
 
-        private String[] columns = Bundles.getCommons(new String[]{"parameter", "data-type", "mode"});
+        private final String[] columns = Bundles.getCommons(new String[]{"parameter", "data-type", "mode"});
         private FunctionArgument[] funcParams;
 
         public FunctionTableModel() {

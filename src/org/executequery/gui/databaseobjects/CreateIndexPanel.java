@@ -41,7 +41,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     private JCheckBox activeBox;
     private DefaultDatabaseIndex databaseIndex;
     private String table_name;
-    private boolean edited;
+    private boolean changed = false;
     private boolean free_sender = true;
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog) {
@@ -54,12 +54,10 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseIndex index) {
         super(dc, dialog, index);
-        edited = false;
     }
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseIndex index, String tableName) {
         super(dc, dialog, index, new Object[]{tableName});
-        edited = false;
     }
 
     protected void initEdited() {
@@ -102,6 +100,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             for (NamedObject ts : tss)
                 if (ts.getName().equals(databaseIndex.getName()))
                     tablespaceBox.setSelectedItem(ts);
+        changed = false;
 
     }
 
@@ -155,7 +154,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         tablespaceBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                edited = true;
+                changed = true;
             }
         });
         uniqueBox = new JCheckBox(bundleString("unique"));
@@ -174,7 +173,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 tabbedPane.insertTab(bundleString("fields"), null, fieldsPanel, null, 0);
             }
             tabbedPane.setSelectedIndex(0);
-            edited = true;
+            changed = true;
 
         });
         tableName.addItemListener(event -> {
@@ -190,7 +189,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             if (event.getStateChange() == ItemEvent.DESELECTED) {
                 return;
             }
-            edited = true;
+            changed = true;
         });
 
         centralPanel.setLayout(new GridBagLayout());
@@ -240,6 +239,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             }
             tableName.setEnabled(false);
         }
+        changed = false;
     }
 
 
@@ -295,9 +295,17 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     }
 
-    private void createIndex() {
+    protected String generateQuery() {
+        if (fieldsPanel.getSelectedValues().size() != databaseIndex.getIndexColumns().size())
+            changed = true;
+        else {
+            for (int i = 0; i < databaseIndex.getIndexColumns().size(); i++) {
+                if (!databaseIndex.getIndexColumns().get(i).getFieldName().trim().contentEquals(fieldsPanel.getSelectedValues().get(i).toString()))
+                    changed = true;
+            }
+        }
         String query = "";
-        if (editing && !edited) {
+        if (editing && !changed) {
             if (activeBox.isSelected() != databaseIndex.isActive()) {
                 String act;
                 if (activeBox.isSelected())
@@ -337,11 +345,14 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         }
         if (!MiscUtils.isNull(description.getTextAreaComponent().getText()))
             query += new StringBuilder().append("COMMENT ON INDEX ").append(getFormattedName()).append(" IS '").append(description.getTextAreaComponent().getText()).append("'").toString();
-        displayExecuteQueryDialog(query, ";");
-
+        return query;
     }
 
+    private void createIndex() {
 
+        displayExecuteQueryDialog(generateQuery(), ";");
+
+    }
 
 
 }

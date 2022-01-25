@@ -26,7 +26,7 @@ public class BrowserUserPanel extends AbstractFormObjectViewPanel {
     int version;
     DefaultDatabaseUser user;
     boolean edit;
-    private BrowserController controller;
+    private final BrowserController controller;
     private JTextField firstNameField;
     private NumberTextField groupIDField;
     private JLabel tagLabel;
@@ -141,7 +141,8 @@ public class BrowserUserPanel extends AbstractFormObjectViewPanel {
         gbh.setDefaults(gbConst).defaults();
 
         gbh.insertEmptyRow(userPanel, 10);
-
+        userPanel.add(editButton, gbh.setLabelDefault().get());
+        gbh.nextRowFirstCol();
         gbh.addLabelFieldPair(userPanel, bundleString("UserName"), nameTextField, null, true, false);
         gbh.addLabelFieldPair(userPanel, bundleString("FirstName"), firstNameField, null, true, false);
         gbh.addLabelFieldPair(userPanel, bundleString("MiddleName"), middleNameField, null, true, false);

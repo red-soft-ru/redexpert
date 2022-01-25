@@ -60,7 +60,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     public BrowserDomainPanel(BrowserController controller) {
         super();
@@ -151,13 +151,14 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
         Insets insets = new Insets(10, 10, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridx++;
+        gbc.gridx = 0;
         gbc.insets = insets;
+        gbc.gridy = 0;
+        base.add(editButton, gbc);
         gbc.gridy++;
         base.add(objectNameLabel, gbc);
         gbc.gridy++;
         gbc.insets.top = 0;
-        gbc.insets.right = 5;
         gbc.insets.right = 10;
         gbc.gridy++;
         gbc.weightx = 1.0;
@@ -171,7 +172,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 10;
         gbc.gridwidth = 1;
         gbc.weighty = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         gbc.gridx = 1;
         base.add(domainNameField, gbc);
         ++gbc.gridy;

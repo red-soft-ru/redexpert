@@ -39,6 +39,8 @@ public class BrowserTablespacePanel extends AbstractFormObjectViewPanel {
                 GridBagConstraints.HORIZONTAL,
                 new Insets(2, 2, 2, 2), 0, 0));
         gbh.insertEmptyRow(this, 5);
+        add(editButton, gbh.get());
+        gbh.nextRowFirstCol();
         gbh.addLabelFieldPair(this, Bundles.getCommon("name"), new DisabledField(tablespace.getName()), null);
         gbh.insertEmptyRow(this, 20);
         DefaultTableModel model = new DefaultTableModel();

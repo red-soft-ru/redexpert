@@ -146,10 +146,10 @@ public class CheckForUpdateNotifier implements Interruptible {
             Log.warning("Error checking for update: " + e.getMessage());
         } catch (UnknownHostException e) {
             if (progressDialog != null) {
-                GUIUtilities.displayExceptionErrorDialog("There is no internet connection. Please check for updates later", e);
+                GUIUtilities.displayExceptionErrorDialog(bundledString("noInternetMessage"), e);
                 closeProgressDialog();
             }
-            Log.error("There is no internet connection. Please check for updates later");
+            Log.error(bundledString("noInternetMessage"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -446,7 +446,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         progressDialog = new InterruptibleProgressDialog(
                 GUIUtilities.getParentFrame(),
-                "Check for update",
+                bundledString("checkingUpdatesTitle"),
                 bundledString("checkingUpdatesMessage"),
                 this);
     }

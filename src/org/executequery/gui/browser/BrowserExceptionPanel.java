@@ -131,6 +131,8 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
         gbc.gridx++;
         gbc.insets = insets;
         gbc.gridy++;
+        base.add(editButton, gbc);
+        gbc.gridy++;
         base.add(objectNameLabel, gbc);
         gbc.gridy++;
         gbc.insets.top = 0;
@@ -148,7 +150,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 10;
         gbc.gridwidth = 1;
         gbc.weighty = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         gbc.gridx = 1;
         base.add(exceptionNameField, gbc);
         ++gbc.gridy;

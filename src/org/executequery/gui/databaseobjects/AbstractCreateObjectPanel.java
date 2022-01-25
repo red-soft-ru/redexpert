@@ -11,6 +11,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.BrowserTreePopupMenu;
@@ -24,10 +25,7 @@ import org.underworldlabs.util.SQLUtils;
 import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.sql.SQLException;
 import java.util.Vector;
 
@@ -46,6 +44,8 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     private ConnectionsTreePanel treePanel;
     private TreePath currentPath;
     private boolean commit;
+    protected boolean edited = false;
+    protected String firstQuery;
 
     public AbstractCreateObjectPanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject) {
         this(dc, dialog, databaseObject, null);
@@ -83,6 +83,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         this.registerKeyboardAction(escListener,
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        firstQuery = generateQuery();
     }
 
     private void initComponents() {
@@ -141,9 +142,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         bottomButtonPanel.setCancelButtonAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (GUIUtilities.displayConfirmDialog(Bundles.getCommon("confirmation-request")) == JOptionPane.YES_OPTION) {
-                    parent.finished();
-                }
+                closeDialog();
             }
         });
         bottomButtonPanel.setCancelButtonText(Bundles.getCommon("cancel.button"));
@@ -165,7 +164,27 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
 
         this.add(panel, BorderLayout.CENTER);
         this.add(bottomButtonPanel, BorderLayout.SOUTH);
+        ((BaseDialog) parent).setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        ((BaseDialog) parent).addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                closeDialog();
+            }
+        });
 
+    }
+
+    protected void checkChanges() {
+        String query = generateQuery();
+        edited = !firstQuery.contentEquals(query);
+    }
+
+    public void closeDialog() {
+        checkChanges();
+        if (edited && GUIUtilities.displayConfirmDialog(Bundles.getCommon("confirmation-request")) == JOptionPane.YES_OPTION) {
+            parent.finished();
+        } else if (!edited)
+            parent.finished();
     }
 
 
@@ -184,6 +203,8 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     public abstract void setDatabaseObject(Object databaseObject);
 
     public abstract void setParameters(Object[] params);
+
+    protected abstract String generateQuery();
 
     public String getFormattedName() {
         return MiscUtils.getFormattedObject(nameField.getText());

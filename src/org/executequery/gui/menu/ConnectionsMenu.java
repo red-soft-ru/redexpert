@@ -102,7 +102,7 @@ public class ConnectionsMenu extends MainMenu
 
         resetConnectionMenuItemList();
 
-        for (DatabaseConnection connection : connections()) {
+        /*for (DatabaseConnection connection : connections()) {
 
             String connectionName = connection.getName();
 
@@ -114,7 +114,7 @@ public class ConnectionsMenu extends MainMenu
 
             connectionMenuItemList.add(menuItem);
         }
-        addSeparator();
+        addSeparator();*/
 
     }
 

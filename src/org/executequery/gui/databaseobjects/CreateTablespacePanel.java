@@ -96,16 +96,20 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
         generateSQL();
     }
 
-    private void generateSQL() {
+    protected String generateQuery() {
         if (editing) {
             StringBuilder sb = new StringBuilder();
             sb.append("ALTER");
             sb.append(" TABLESPACE ").append(MiscUtils.getFormattedObject(nameField.getText()));
             sb.append(" FILE '").append(fileField.getText()).append("'");
             sb.append(";\n");
-            sqlTextPanel.setSQLText(sb.toString());
+            return sb.toString();
         } else
-            sqlTextPanel.setSQLText(SQLUtils.generateCreateTablespace(nameField.getText(), fileField.getText()));
+            return SQLUtils.generateCreateTablespace(nameField.getText(), fileField.getText());
+    }
+
+    private void generateSQL() {
+        sqlTextPanel.setSQLText(generateQuery());
     }
 
     @Override

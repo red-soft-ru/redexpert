@@ -1529,8 +1529,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                             return false;
                     }
             }
-            if (type == NamedObject.TABLESPACE)
-                return getDatabaseProductName().toUpperCase().contains("REDDATABASE") && db.getMajorVersion() >= 4;
+            return type != NamedObject.TABLESPACE;
+            //return getDatabaseProductName().toUpperCase().contains("REDDATABASE") && db.getMajorVersion() >= 4;
         }
         return true;
     }

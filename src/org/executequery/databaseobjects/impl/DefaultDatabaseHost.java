@@ -943,6 +943,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 //                            .at(9).set(RADIX_BINARY);
                     break;
             }
+            column.setColumnSize(rs.getInt("FIELD_LENGTH"));
+            if (rs.getInt("FIELD_PRECISION") != 0)
+                column.setColumnSize(rs.getInt("FIELD_PRECISION"));
 
             final short nullFlag = rs.getShort("NULL_FLAG");
             final short sourceNullFlag = rs.getShort("SOURCE_NULL_FLAG");

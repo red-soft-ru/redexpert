@@ -23,6 +23,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.underworldlabs.util.MiscUtils;
 
 import java.util.ArrayList;
@@ -313,12 +314,16 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
             return false;
         }
-
-        return (!copy.getTypeName().equalsIgnoreCase(getTypeName()))
+        boolean changed = (!copy.getTypeName().equalsIgnoreCase(getTypeName()))
                 || (copy.getColumnSize() != getColumnSize())
-                || (copy.getColumnScale() != getColumnScale()
-                || (!Objects.equals(copy.getCharset(), getCharset()))
-        );
+                || (copy.getColumnScale() != getColumnScale());
+        if (!changed) {
+            if (!((MiscUtils.isNull(copy.getCharset()) || copy.getCharset().contentEquals(CreateTableSQLSyntax.NONE))
+                    && (MiscUtils.isNull(getCharset()) || getCharset().contentEquals(CreateTableSQLSyntax.NONE))))
+                changed = !Objects.equals(copy.getCharset(), getCharset());
+        }
+
+        return changed;
     }
 
     public boolean isComputedChanged() {

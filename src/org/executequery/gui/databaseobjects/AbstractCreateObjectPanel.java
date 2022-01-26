@@ -73,9 +73,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (GUIUtilities.displayConfirmDialog(Bundles.getCommon("confirmation-request")) == JOptionPane.YES_OPTION) {
-                    dialog.finished();
-                }
+                closeDialog();
 
             }
         };
@@ -219,24 +217,27 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     }
 
     protected void displayExecuteQueryDialog(String query, String delimiter) {
-        String titleDialog;
-        if (editing)
-            titleDialog = getEditTitle();
-        else titleDialog = getCreateTitle();
-        ExecuteQueryDialog eqd = new ExecuteQueryDialog(titleDialog, query, connection, true, delimiter);
-        eqd.display();
-        if (eqd.getCommit()) {
-            commit = true;
-            if (treePanel != null && currentPath != null) {
-                DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-                if (node.getDatabaseObject() instanceof DefaultDatabaseMetaTag)
-                    treePanel.reloadPath(currentPath);
-                else if (editing) {
-                    treePanel.reloadPath(currentPath);
-                } else treePanel.reloadPath(currentPath.getParentPath());
+        if (query != null && !query.isEmpty()) {
+            String titleDialog;
+
+            if (editing)
+                titleDialog = getEditTitle();
+            else titleDialog = getCreateTitle();
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog(titleDialog, query, connection, true, delimiter);
+            eqd.display();
+            if (eqd.getCommit()) {
+                commit = true;
+                if (treePanel != null && currentPath != null) {
+                    DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+                    if (node.getDatabaseObject() instanceof DefaultDatabaseMetaTag)
+                        treePanel.reloadPath(currentPath);
+                    else if (editing) {
+                        treePanel.reloadPath(currentPath);
+                    } else treePanel.reloadPath(currentPath.getParentPath());
+                }
+                parent.finished();
             }
-            parent.finished();
-        }
+        } else parent.finished();
     }
 
     public boolean isCommit() {

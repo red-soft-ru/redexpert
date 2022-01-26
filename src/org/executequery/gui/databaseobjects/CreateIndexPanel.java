@@ -296,12 +296,14 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     }
 
     protected String generateQuery() {
-        if (fieldsPanel.getSelectedValues().size() != databaseIndex.getIndexColumns().size())
-            changed = true;
-        else {
-            for (int i = 0; i < databaseIndex.getIndexColumns().size(); i++) {
-                if (!databaseIndex.getIndexColumns().get(i).getFieldName().trim().contentEquals(fieldsPanel.getSelectedValues().get(i).toString()))
-                    changed = true;
+        if (databaseIndex != null) {
+            if (fieldsPanel.getSelectedValues().size() != databaseIndex.getIndexColumns().size())
+                changed = true;
+            else {
+                for (int i = 0; i < databaseIndex.getIndexColumns().size(); i++) {
+                    if (!databaseIndex.getIndexColumns().get(i).getFieldName().trim().contentEquals(fieldsPanel.getSelectedValues().get(i).toString()))
+                        changed = true;
+                }
             }
         }
         String query = "";
@@ -349,7 +351,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     }
 
     private void createIndex() {
-
         displayExecuteQueryDialog(generateQuery(), ";");
 
     }

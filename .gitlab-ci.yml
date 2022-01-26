@@ -33,7 +33,10 @@ prepare:
       if [ "${CI_COMMIT_TAG}" ]; then
         VERSION_IN_POM=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
         VERSION=$(echo ${CI_COMMIT_TAG}|sed 's/v//')
-        "[ \"$VERSION\" = \"$VERSION_IN_POM\" ] || (echo Project version in pom.xml and tag do not match!; exit 1)"
+        if [ "$VERSION" != "$VERSION_IN_POM" ]; then
+          echo Project versions in pom.xml $VERSION_IN_POM and tag $VERSION do not match!
+          exit 1
+        fi
         SUFFIX=$(echo $VERSION|awk -F- '{print $2}')
         if [ "${SUFFIX}" ]; then
           STAGE=rc

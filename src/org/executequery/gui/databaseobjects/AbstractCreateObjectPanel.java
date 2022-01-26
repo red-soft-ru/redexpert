@@ -217,7 +217,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     }
 
     protected void displayExecuteQueryDialog(String query, String delimiter) {
-        if (query != null && !query.isEmpty()) {
+        if (query != null && !query.isEmpty() && (!editing || !query.contentEquals(firstQuery))) {
             String titleDialog;
 
             if (editing)

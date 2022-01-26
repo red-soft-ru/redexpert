@@ -425,6 +425,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
             if (caretCoords.x < 0)
                 caretCoords.x = 0;
             boolean restart = popupPanel.getWidth() == 0;
+            popupPanel.focusAndSelectList();
             popupPanel.show(textComponent, caretCoords.x, caretCoords.y + heightFont);
             textComponent.requestFocus();
             if (restart) {
@@ -597,6 +598,12 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         noProposals = noProposals || (itemsStartingWith.size() == 1 && wordAtCursor.toLowerCase().contentEquals(itemsStartingWith.get(0).getDisplayValue().toLowerCase()));
         if (noProposals)
             popupMenu().hidePopup();
+        else itemsStartingWith.sort(new Comparator<AutoCompleteListItem>() {
+            @Override
+            public int compare(AutoCompleteListItem o1, AutoCompleteListItem o2) {
+                return o1.getDisplayValue().compareTo(o2.getDisplayValue());
+            }
+        });
 
     }
 

@@ -883,7 +883,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             column.setColumnScale(fieldScale);
             column.setName(rs.getString("FIELD_NAME").trim());
             column.setTypeName(DatabaseTypeConverter.getDataTypeName(fieldType, fieldSubType, fieldScale));
-
             switch (dataType) {
                 case Types.DECIMAL:
                 case Types.NUMERIC:
@@ -896,7 +895,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 case Types.VARBINARY:
                     //valueBuilder.at(15).set(createInt(rs.getShort("FIELD_LENGTH")));
                     column.setColumnSize(rs.getShort("FIELD_LENGTH"));
-                    short charLen = rs.getShort("CHAR_LEN");
                     break;
                 case Types.FLOAT:
                     // TODO column precision
@@ -946,6 +944,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             column.setColumnSize(rs.getInt("FIELD_LENGTH"));
             if (rs.getInt("FIELD_PRECISION") != 0)
                 column.setColumnSize(rs.getInt("FIELD_PRECISION"));
+            if (rs.getInt("CHAR_LEN") != 0)
+                column.setColumnSize(rs.getInt("CHAR_LEN"));
 
             final short nullFlag = rs.getShort("NULL_FLAG");
             final short sourceNullFlag = rs.getShort("SOURCE_NULL_FLAG");
@@ -965,10 +965,14 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             }
 
             column.setIdentity(rs.getInt("IDENTITY") == 1);
-
-            column.setCharset(rs.getString("RDB$CHARACTER_SET_NAME"));
-            column.setCollate(rs.getString("RDB$COLLATION_NAME"));
-
+            String charset = rs.getString("RDB$CHARACTER_SET_NAME");
+            String collate = rs.getString("RDB$COLLATION_NAME");
+            if (charset != null)
+                charset = charset.trim();
+            if (collate != null)
+                collate = collate.trim();
+            column.setCharset(charset);
+            column.setCollate(collate);
             columns.add(column);
         }
 

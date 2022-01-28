@@ -264,6 +264,7 @@ public class ColumnData implements Serializable {
      */
     boolean typeOf;
 
+
     /**
      * Whether column is type of domain or column
      */
@@ -281,6 +282,13 @@ public class ColumnData implements Serializable {
     List<String> tables;
     String columnTable;
     List<String> columns;
+
+    private boolean cursor;
+
+    private boolean scroll;
+
+    private String selectOperator;
+
     DefaultStatementExecutor executor;
 
     public ColumnData(DatabaseConnection databaseConnection) {
@@ -777,8 +785,8 @@ public class ColumnData implements Serializable {
         return getColumnType() != null && (getSQLType() == Types.NUMERIC || getSQLType() == Types.CHAR || getSQLType() == Types.VARCHAR
                 || getSQLType() == Types.DECIMAL || getSQLType() == Types.BLOB || getSQLType() == Types.LONGVARCHAR
                 || getSQLType() == Types.LONGVARBINARY
-                || getColumnType().toUpperCase().equals("VARCHAR")
-                || getColumnType().toUpperCase().equals("CHAR"));
+                || getColumnType().equalsIgnoreCase("VARCHAR")
+                || getColumnType().equalsIgnoreCase("CHAR"));
     }
 
     public void setCheck(String Check) {
@@ -1084,6 +1092,30 @@ public class ColumnData implements Serializable {
 
     public void setDomainTypeName(String domainTypeName) {
         this.domainTypeName = domainTypeName;
+    }
+
+    public boolean isCursor() {
+        return cursor;
+    }
+
+    public void setCursor(boolean cursor) {
+        this.cursor = cursor;
+    }
+
+    public boolean isScroll() {
+        return scroll;
+    }
+
+    public void setScroll(boolean scroll) {
+        this.scroll = scroll;
+    }
+
+    public String getSelectOperator() {
+        return selectOperator;
+    }
+
+    public void setSelectOperator(String selectOperator) {
+        this.selectOperator = selectOperator;
     }
 }
 

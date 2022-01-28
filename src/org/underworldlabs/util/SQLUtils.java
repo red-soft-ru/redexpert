@@ -317,7 +317,13 @@ public final class SQLUtils {
             if (!MiscUtils.isNull(cd.getColumnName())) {
                 if (variable)
                     sqlText.append("DECLARE ");
-                sqlText.append(formattedParameter(cd));
+                if (cd.isCursor()) {
+                    sqlText.append(cd.getColumnName()).append(" CURSOR FOR ");
+                    if (cd.isScroll())
+                        sqlText.append("SCROLL ");
+                    sqlText.append("(").append(cd.getSelectOperator()).append(")");
+                } else
+                    sqlText.append(formattedParameter(cd));
                 if (variable) {
                     sqlText.append(";");
                     if (cd.getDescription() != null && !cd.getDescription().isEmpty()) {

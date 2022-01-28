@@ -429,7 +429,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             }
           }
         } catch (Exception e) {
-          Log.error("Error loading check-constraints:" + result.getErrorMessage(), e);
+          Log.error("Error loading check-constraints:" + (result != null ? result.getErrorMessage() : e.getMessage()), e);
         } finally {
           executor.releaseResources();
         }

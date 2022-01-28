@@ -68,6 +68,24 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
                 e.printStackTrace();
             }
         }
+        treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(connection);
+
+        for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
+            if (metaTagNode.getMetaDataKey().equals(getTypeObject())) {
+                if (editing) {
+                    for (DatabaseObjectNode node : metaTagNode.getChildObjects()) {
+                        if (node.getDatabaseObject() == databaseObject) {
+                            currentPath = node.getTreePath();
+                            break;
+                        }
+                    }
+                } else {
+                    currentPath = metaTagNode.getTreePath();
+                }
+                break;
+            }
+        }
 
         ActionListener escListener = new ActionListener() {
 

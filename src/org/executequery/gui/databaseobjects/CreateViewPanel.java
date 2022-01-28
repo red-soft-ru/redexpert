@@ -12,6 +12,7 @@ import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SQLFormatter;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,6 +54,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             }
         });
         sqlTextPanel = new SimpleSqlTextPanel();
+        sqlTextPanel.getTextPane().setDatabaseConnection(connection);
         sqlTextPanel.addFocusListener(this);
         sqlTextPanel.getTextPane().addKeyListener(this);
 
@@ -130,7 +132,9 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     protected String generateQuery() {
         String query = sqlTextPanel.getSQLText().trim().replace(replacing_name, getFormattedName());
         query = query + "^";
-        query += "COMMENT ON VIEW " + getFormattedName() + " IS '" + descriptionTextArea.getTextAreaComponent().getText() + "'";
+        if (!descriptionTextArea.getTextAreaComponent().getText().isEmpty()
+                || (editing && descriptionTextArea.getTextAreaComponent().getText().isEmpty() && !MiscUtils.isNull(view.getRemarks())))
+            query += "COMMENT ON VIEW " + getFormattedName() + " IS '" + descriptionTextArea.getTextAreaComponent().getText() + "'";
         return query;
     }
 

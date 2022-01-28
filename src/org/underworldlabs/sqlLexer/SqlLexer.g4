@@ -480,6 +480,7 @@ KEYWORD
   | K_RETURNED_OCTET_LENGTH
   | K_RETURNED_SQLSTATE
   | K_RETURNING
+  | K_RETURNS
   | K_REVERSE
   | K_REVOKE
   | K_RIGHT
@@ -540,6 +541,7 @@ KEYWORD
   | K_SUBCLASS_ORIGIN
   | K_SUBSTRING
   | K_SUM
+  | K_SUSPEND
   | K_SYSTEM
   | K_SYSTEM_USER
   | K_TABLE
@@ -1048,6 +1050,7 @@ fragment K_RETURNED_LENGTH : R E T U R N E D '_' L E N G T H ;
 fragment K_RETURNED_OCTET_LENGTH : R E T U R N E D '_' O C T E T '_' L E N G T H ;
 fragment K_RETURNED_SQLSTATE : R E T U R N E D '_' S Q L S T A T E ;
 fragment K_RETURNING : R E T U R N I N G ;
+fragment K_RETURNS: R E T U R N S;
 fragment K_REVERSE : R E V E R S E ;
 fragment K_REVOKE : R E V O K E ;
 fragment K_RIGHT : R I G H T ;
@@ -1108,6 +1111,7 @@ fragment K_STDDEV_SAMP : S T D D E V '_' S A M P ;
 fragment K_SUBCLASS_ORIGIN : S U B C L A S S '_' O R I G I N ;
 fragment K_SUBSTRING : S U B S T R I N G ;
 fragment K_SUM : S U M ;
+fragment K_SUSPEND: S U S P E N D;
 fragment K_SYSTEM : S Y S T E M ;
 fragment K_SYSTEM_USER : S Y S T E M '_' U S E R ;
 fragment K_TABLE : T A B L E ;

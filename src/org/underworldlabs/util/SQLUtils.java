@@ -89,7 +89,7 @@ public final class SQLUtils {
         if (tablespace != null)
             sqlBuffer.append("\nTABLESPACE ").append(MiscUtils.getFormattedObject(tablespace));
         if (temporary)
-            sqlBuffer.append("\nON COMMIT ").append(typeTemporary);
+            sqlBuffer.append("\n").append(typeTemporary);
         sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
         sqlBuffer.append("\n").append(description);
         if (autoincrementSQLText != null)
@@ -249,16 +249,18 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE OR ALTER PROCEDURE ");
         sb.append(MiscUtils.getFormattedObject(name));
-        sb.append(" (");
-        sb.append(formattedParameters(inputParameters, false));
-        sb.append(")\n");
+        if (inputParameters != null && inputParameters.size() > 0 && (inputParameters.size() == 1 && !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
+            sb.append(" (");
+            sb.append(formattedParameters(inputParameters, false));
+            sb.append(")\n");
+        }
         String output = formattedParameters(outputParameters, false);
         if (!MiscUtils.isNull(output.trim())) {
             sb.append("RETURNS (");
             sb.append(output);
             sb.append(")\n");
         }
-        sb.append("AS\n");
+        sb.append("\nAS\n");
         sb.append(fullProcedureBody);
         sb.append("^\n");
 
@@ -317,7 +319,13 @@ public final class SQLUtils {
             if (!MiscUtils.isNull(cd.getColumnName())) {
                 if (variable)
                     sqlText.append("DECLARE ");
-                sqlText.append(formattedParameter(cd));
+                if (cd.isCursor()) {
+                    sqlText.append(cd.getColumnName()).append(" CURSOR FOR ");
+                    if (cd.isScroll())
+                        sqlText.append("SCROLL ");
+                    sqlText.append("(").append(cd.getSelectOperator()).append(")");
+                } else
+                    sqlText.append(formattedParameter(cd));
                 if (variable) {
                     sqlText.append(";");
                     if (cd.getDescription() != null && !cd.getDescription().isEmpty()) {
@@ -382,8 +390,11 @@ public final class SQLUtils {
                 if (str) {
                     value += "'";
                 }
-                if(MiscUtils.checkKeyword(cd.getDefaultValue()))
-                    value=cd.getDefaultValue();
+                if (MiscUtils.checkKeyword(cd.getDefaultValue()))
+                    value = cd.getDefaultValue();
+                if (cd.getDefaultValue().trim().toLowerCase().contentEquals("= null")
+                        || cd.getDefaultValue().trim().toLowerCase().contentEquals("=null"))
+                    value = cd.getDefaultValue();
                 sb.append(" DEFAULT ").append(value);
             }
             if (!MiscUtils.isNull(cd.getCheck())) {

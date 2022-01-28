@@ -346,7 +346,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 query += "ALTER INDEX " + getFormattedName() + " INACTIVE;";
         }
         if (!MiscUtils.isNull(description.getTextAreaComponent().getText()))
-            query += new StringBuilder().append("COMMENT ON INDEX ").append(getFormattedName()).append(" IS '").append(description.getTextAreaComponent().getText()).append("'").toString();
+            query += "COMMENT ON INDEX " + getFormattedName() + " IS '" + description.getTextAreaComponent().getText() + "'";
         return query;
     }
 

@@ -64,6 +64,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
      */
     protected NewProcedurePanel variablesPanel;
 
+    protected CursorsPanel cursorsPanel;
+
     /**
      * The body of procedure
      */
@@ -171,65 +173,94 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                     sqlBodyText.setSQLText(bodyContext.getText());
                     List<ProcedureParserParser.Local_variableContext> vars = ctx.local_variable();
                     if (!vars.isEmpty()) {
-                        variablesPanel.deleteEmptyRow();
                         for (int i = 0; i < vars.size(); i++) {
                             ProcedureParserParser.Local_variableContext var = vars.get(i);
-                            ProcedureParameter variable = new ProcedureParameter("", DatabaseMetaData.procedureColumnUnknown,
-                                    0, "", 0, 0);
-                            variable.setName(var.variable_name().getText());
-                            ProcedureParserParser.DatatypeContext type = var.datatype();
-                            if (type != null && !type.isEmpty()) {
-                                if (type.domain_name() != null && !type.domain_name().isEmpty()) {
-                                    variable.setDomain(type.domain_name().getText());
-                                }
-                                if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
-                                    List<ParseTree> children = type.datatypeSQL().children;
-                                    variable.setSqlType(children.get(0).getText());
-                                    if (type.datatypeSQL().type_size() != null && !type.datatypeSQL().type_size().isEmpty()) {
-                                        variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText()));
+                            if (var.cursor() == null) {
+                                ProcedureParameter variable = new ProcedureParameter("", DatabaseMetaData.procedureColumnUnknown,
+                                        0, "", 0, 0);
+                                variable.setName(var.variable_name().getText());
+                                ProcedureParserParser.DatatypeContext type = var.datatype();
+                                if (type != null && !type.isEmpty()) {
+                                    if (type.domain_name() != null && !type.domain_name().isEmpty()) {
+                                        String domain = type.domain_name().getText();
+                                        if (!domain.startsWith("\""))
+                                            domain = domain.toUpperCase();
+                                        variable.setDomain(domain);
                                     }
-                                    if (type.datatypeSQL().scale() != null && !type.datatypeSQL().scale().isEmpty()) {
-                                        variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText()));
-                                    }
-                                    if (type.datatypeSQL().subtype() != null && !type.datatypeSQL().subtype().isEmpty()) {
-                                        if (type.datatypeSQL().subtype().any_name() != null && !type.datatypeSQL().subtype().any_name().isEmpty()) {
-                                            variable.setSubType(1);
+                                    if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
+                                        List<ParseTree> children = type.datatypeSQL().children;
+                                        variable.setSqlType(children.get(0).getText());
+                                        if (type.datatypeSQL().type_size() != null && !type.datatypeSQL().type_size().isEmpty()) {
+                                            variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText()));
                                         }
-                                        if (type.datatypeSQL().subtype().int_number() != null && !type.datatypeSQL().subtype().int_number().isEmpty()) {
-                                            variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText()));
+                                        if (type.datatypeSQL().scale() != null && !type.datatypeSQL().scale().isEmpty()) {
+                                            variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText()));
+                                        }
+                                        if (type.datatypeSQL().subtype() != null && !type.datatypeSQL().subtype().isEmpty()) {
+                                            if (type.datatypeSQL().subtype().any_name() != null && !type.datatypeSQL().subtype().any_name().isEmpty()) {
+                                                variable.setSubType(1);
+                                            }
+                                            if (type.datatypeSQL().subtype().int_number() != null && !type.datatypeSQL().subtype().int_number().isEmpty()) {
+                                                variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText()));
+                                            }
+                                        }
+                                        if (type.datatypeSQL().charset_name() != null && !type.datatypeSQL().charset_name().isEmpty()) {
+                                            variable.setEncoding(type.datatypeSQL().charset_name().getText());
                                         }
                                     }
-                                    if (type.datatypeSQL().charset_name() != null && !type.datatypeSQL().charset_name().isEmpty()) {
-                                        variable.setEncoding(type.datatypeSQL().charset_name().getText());
+                                    if (type.type_of() != null && !type.type_of().isEmpty()) {
+                                        if (type.type_of().domain_name() != null && !type.type_of().domain_name().isEmpty()) {
+                                            variable.setDomain(type.type_of().domain_name().getText());
+                                            variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
+                                        }
+                                        if (type.type_of().column_name() != null && !type.type_of().column_name().isEmpty()) {
+                                            variable.setRelationName(type.type_of().table_name().getText());
+                                            variable.setFieldName(type.type_of().column_name().getText());
+                                            variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                                        }
                                     }
                                 }
-                                if (type.type_of() != null && !type.type_of().isEmpty()) {
-                                    if (type.type_of().domain_name() != null && !type.type_of().domain_name().isEmpty()) {
-                                        variable.setDomain(type.type_of().domain_name().getText());
-                                        variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
-                                    }
-                                    if (type.type_of().column_name() != null && !type.type_of().column_name().isEmpty()) {
-                                        variable.setRelationName(type.type_of().table_name().getText());
-                                        variable.setFieldName(type.type_of().column_name().getText());
-                                        variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
-                                    }
+                                if (var.notnull() != null && !var.notnull().isEmpty()) {
+                                    variable.setNullable(0);
+                                } else variable.setNullable(1);
+                                if (var.default_value() != null)
+                                    variable.setDefaultValue(var.default_value().getText());
+                                if (var.comment() != null) {
+                                    String description = var.comment().getText();
+                                    if (description.startsWith("--")) {
+                                        description = description.substring(2);
+                                        variable.setDescriptionAsSingleComment(true);
+                                    } else if (description.startsWith("/*"))
+                                        description = description.substring(2, description.length() - 2);
+                                    variable.setDescription(description);
                                 }
+                                variablesPanel.deleteEmptyRow();
+                                variablesPanel.addRow(variable);
+                            } else {
+                                ColumnData cursor = new ColumnData(connection);
+                                cursor.setCursor(true);
+                                if (var.variable_name() != null) {
+                                    cursor.setColumnName(var.variable_name().getText());
+                                }
+                                if (var.cursor().scroll() != null)
+                                    cursor.setScroll(var.cursor().scroll().getText().contentEquals("SCROLL"));
+                                else cursor.setScroll(false);
+                                if (var.cursor().operator_select() != null) {
+                                    cursor.setSelectOperator(var.cursor().operator_select().operator_select_in().getText());
+                                }
+                                if (var.comment() != null) {
+                                    String description = var.comment().getText();
+                                    if (description.startsWith("--")) {
+                                        description = description.substring(2);
+                                        cursor.setDescriptionAsSingleComment(true);
+                                    } else if (description.startsWith("/*"))
+                                        description = description.substring(2, description.length() - 2);
+                                    cursor.setDescription(description);
+                                }
+                                cursorsPanel.deleteEmptyRow();
+                                cursorsPanel.addRow(cursor);
+
                             }
-                            if (var.notnull() != null && !var.notnull().isEmpty()) {
-                                variable.setNullable(0);
-                            } else variable.setNullable(1);
-                            if (var.default_value() != null)
-                                variable.setDefaultValue(var.default_value().getText());
-                            if (var.comment() != null) {
-                                String description = var.comment().getText();
-                                if (description.startsWith("--")) {
-                                    description = description.substring(2);
-                                    variable.setDescriptionAsSingleComment(true);
-                                } else if (description.startsWith("/*"))
-                                    description = description.substring(2, description.length() - 2);
-                                variable.setDescription(description);
-                            }
-                            variablesPanel.addRow(variable);
                         }
                     }
                 }
@@ -260,6 +291,9 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
         variablesPanel = new NewProcedurePanel(ColumnData.VARIABLE);
         parametersTabs.add(bundleString("Variables"), variablesPanel);
+
+        cursorsPanel = new CursorsPanel();
+        parametersTabs.add(bundleString("Cursors"), cursorsPanel);
 
         sqlBodyText = new SimpleSqlTextPanel();
         sqlBodyText.appendSQLText(getEmptySqlBody());

@@ -129,6 +129,8 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
                 domainData.setDomainSize(rs.getInt(FIELD_PRECISION));
             if (rs.getInt(CHAR_LENGTH) != 0)
                 domainData.setDomainSize(rs.getInt(CHAR_LENGTH));
+            if (rs.getInt(SEGMENT_LENGTH) != 0)
+                domainData.setDomainSize(rs.getInt(SEGMENT_LENGTH));
             domainData.setDomainScale(Math.abs(rs.getInt(SCALE)));
             domainData.setDomainSubType(rs.getInt(SUB_TYPE));
             String domainCharset = rs.getString(CHARSET);

@@ -53,6 +53,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             }
         });
         sqlTextPanel = new SimpleSqlTextPanel();
+        sqlTextPanel.getTextPane().setDatabaseConnection(connection);
         sqlTextPanel.addFocusListener(this);
         sqlTextPanel.getTextPane().addKeyListener(this);
 

@@ -390,8 +390,11 @@ public final class SQLUtils {
                 if (str) {
                     value += "'";
                 }
-                if(MiscUtils.checkKeyword(cd.getDefaultValue()))
-                    value=cd.getDefaultValue();
+                if (MiscUtils.checkKeyword(cd.getDefaultValue()))
+                    value = cd.getDefaultValue();
+                if (cd.getDefaultValue().trim().toLowerCase().contentEquals("= null")
+                        || cd.getDefaultValue().trim().toLowerCase().contentEquals("=null"))
+                    value = cd.getDefaultValue();
                 sb.append(" DEFAULT ").append(value);
             }
             if (!MiscUtils.isNull(cd.getCheck())) {

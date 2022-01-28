@@ -460,6 +460,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             }
 
             sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText());
+            sqlTextPanel.getTextPane().setEditable(false);
 
         } catch (DataSourceException e) {
 

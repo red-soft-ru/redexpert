@@ -89,7 +89,7 @@ public final class SQLUtils {
         if (tablespace != null)
             sqlBuffer.append("\nTABLESPACE ").append(MiscUtils.getFormattedObject(tablespace));
         if (temporary)
-            sqlBuffer.append("\nON COMMIT ").append(typeTemporary);
+            sqlBuffer.append("\n").append(typeTemporary);
         sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
         sqlBuffer.append("\n").append(description);
         if (autoincrementSQLText != null)

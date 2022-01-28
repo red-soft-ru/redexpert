@@ -249,16 +249,18 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE OR ALTER PROCEDURE ");
         sb.append(MiscUtils.getFormattedObject(name));
-        sb.append(" (");
-        sb.append(formattedParameters(inputParameters, false));
-        sb.append(")\n");
+        if (inputParameters != null && inputParameters.size() > 0 && (inputParameters.size() == 1 && !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
+            sb.append(" (");
+            sb.append(formattedParameters(inputParameters, false));
+            sb.append(")\n");
+        }
         String output = formattedParameters(outputParameters, false);
         if (!MiscUtils.isNull(output.trim())) {
             sb.append("RETURNS (");
             sb.append(output);
             sb.append(")\n");
         }
-        sb.append("AS\n");
+        sb.append("\nAS\n");
         sb.append(fullProcedureBody);
         sb.append("^\n");
 

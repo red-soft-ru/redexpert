@@ -182,7 +182,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                 ProcedureParserParser.DatatypeContext type = var.datatype();
                                 if (type != null && !type.isEmpty()) {
                                     if (type.domain_name() != null && !type.domain_name().isEmpty()) {
-                                        variable.setDomain(type.domain_name().getText());
+                                        String domain = type.domain_name().getText();
+                                        if (!domain.startsWith("\""))
+                                            domain = domain.toUpperCase();
+                                        variable.setDomain(domain);
                                     }
                                     if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
                                         List<ParseTree> children = type.datatypeSQL().children;

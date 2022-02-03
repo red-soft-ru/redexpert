@@ -14,7 +14,7 @@ variables:
   RELEASE_HUB_PROJECT: red_expert
   CI_URL: ${CI_PROJECT_URL}/pipelines/${CI_PIPELINE_ID}
   CONTEXT: commit
-  TAG_BRANCH: stable
+  TAG_BRANCH: test_branch
   MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository"
   http_proxy: "http://git.red-soft.biz:3128"
   https_proxy: "http://git.red-soft.biz:3128"

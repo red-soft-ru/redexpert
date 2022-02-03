@@ -63,6 +63,8 @@ public class Parameter {
             case Types.BINARY:
             case Types.BLOB:
             case Types.LONGVARBINARY:
+            case Types.VARCHAR:
+            case Types.LONGVARCHAR:
                 return value == null;
             default:
                 return MiscUtils.isNull((String) value);

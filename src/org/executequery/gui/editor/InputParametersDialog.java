@@ -19,7 +19,7 @@ import java.util.List;
 
 public class InputParametersDialog extends BaseDialog {
 
-    private List<Parameter> parameters;
+    private final List<Parameter> parameters;
     private JScrollPane scrollPanel;
     private JPanel mainPanel;
     private JPanel panel;
@@ -88,7 +88,7 @@ public class InputParametersDialog extends BaseDialog {
                     ((RDBFieldFileChooser) component).setFile(((File) parameter.getValue()));
                     break;
                 default:
-                    ((JTextField) component).setText((String) parameter.getValue());
+                    ((ValueOrNullParameterField) component).setValue((String) parameter.getValue());
                     break;
             }
     }
@@ -126,10 +126,10 @@ public class InputParametersDialog extends BaseDialog {
             case Types.BIGINT:
             case Types.INTEGER:
             case Types.SMALLINT:
-                component = new NumberTextField();
+                component = new ValueOrNullParameterField(new NumberTextField());
                 break;
             default:
-                component = new JTextField(14);
+                component = new ValueOrNullParameterField(new JTextField(14));
                 break;
         }
         setValueToComponent(parameter, component);
@@ -165,7 +165,7 @@ public class InputParametersDialog extends BaseDialog {
                     parameter.setValue(file);
                     break;
                 default:
-                    parameter.setValue(((JTextField) component).getText());
+                    parameter.setValue(((ValueOrNullParameterField) component).getValue());
                     break;
             }
         }

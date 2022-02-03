@@ -64,6 +64,7 @@ public class InputParametersDialog extends BaseDialog {
         for (int i = 0; i < parameters.size(); i++)
             addParameter(parameters.get(i));
         addDisplayComponent(mainPanel);
+        bottomButtonPanel.setHelpButtonVisible(false);
     }
 
     private void setValueToComponent(Parameter parameter, JComponent component) {

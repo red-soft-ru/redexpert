@@ -252,7 +252,7 @@ public class CreateDatabasePanel extends ActionPanel
         gbh.insertEmptyRow(mainPanel, 0);
 
         gbh.addLabelFieldPair(mainPanel, bundledString("nameField"),
-                nameField, bundleString("nameField.tool-tip"), true, false, fieldWidth);
+                nameField, bundledString("nameField.tool-tip"), true, false, fieldWidth);
 
 
         JLabel hostLabel = new JLabel(bundledString("hostField"));
@@ -784,7 +784,7 @@ public class CreateDatabasePanel extends ActionPanel
     }
 
     private boolean checkBase64Format(String certificate) {
-        return StringUtils.contains(certificate, "-----BEGIN CERTIFICATE-----") ? true : false;
+        return StringUtils.contains(certificate, "-----BEGIN CERTIFICATE-----");
     }
 
     private void loadCertificate(Properties properties, String certificatePath) {
@@ -862,7 +862,6 @@ public class CreateDatabasePanel extends ActionPanel
             odb = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
                     "biz.redsoft.FBCreateDatabaseImpl",
                     "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            ;
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | MalformedURLException e) {
             e.printStackTrace();
         }

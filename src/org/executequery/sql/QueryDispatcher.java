@@ -48,6 +48,7 @@ import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
 import org.executequery.util.UserProperties;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.sqlParser.REDDATABASESqlBaseListener;
 import org.underworldlabs.sqlParser.REDDATABASESqlLexer;
 import org.underworldlabs.sqlParser.REDDATABASESqlParser;
@@ -1227,6 +1228,10 @@ public class QueryDispatcher {
         if (!displayParams.isEmpty()) {
             InputParametersDialog spd = new InputParametersDialog(displayParams);
             spd.display();
+            if (spd.isCanceled()) {
+                statementCancelled = true;
+                throw new DataSourceException("Canceled");
+            }
         }
         for (int i = 0; i < params.size(); i++) {
             if (params.get(i).isNull())
@@ -1267,6 +1272,10 @@ public class QueryDispatcher {
         if (!displayParams.isEmpty()) {
             InputParametersDialog spd = new InputParametersDialog(displayParams);
             spd.display();
+            if (spd.isCanceled()) {
+                statementCancelled = true;
+                throw new DataSourceException("Canceled");
+            }
         }
         for (int i = 0; i < params.size(); i++) {
             if (params.get(i).isNull())

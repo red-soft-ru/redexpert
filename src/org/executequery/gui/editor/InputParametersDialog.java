@@ -4,6 +4,7 @@ import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.editor.autocomplete.Parameter;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.*;
 
 import javax.swing.*;
@@ -24,7 +25,7 @@ public class InputParametersDialog extends BaseDialog {
     private JPanel mainPanel;
     private JPanel panel;
     private List<JComponent> componentList;
-    private List<JCheckBox> nullBoxes;
+    private boolean canceled = false;
 
     public InputParametersDialog(List<Parameter> parameters) {
         super("Input Parameters", true, true);
@@ -39,7 +40,6 @@ public class InputParametersDialog extends BaseDialog {
         scrollPanel.setViewportView(panel);
         panel.setLayout(new GridBagLayout());
         componentList = new ArrayList<>();
-        nullBoxes = new ArrayList<>();
         mainPanel.setLayout(new GridBagLayout());
         mainPanel.add(scrollPanel, new GridBagConstraints(0, 0,
                 1, 1, 1, 0,
@@ -57,6 +57,15 @@ public class InputParametersDialog extends BaseDialog {
             }
         });
         bottomButtonPanel.setOkButtonText("OK");
+        bottomButtonPanel.setCancelButtonAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canceled = true;
+                dispose();
+
+            }
+        });
+        bottomButtonPanel.setCancelButtonText(Bundles.getCommon("cancel.button"));
         mainPanel.add(bottomButtonPanel, new GridBagConstraints(0, 2,
                 1, 1, 1, 0,
                 GridBagConstraints.SOUTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
@@ -171,5 +180,9 @@ public class InputParametersDialog extends BaseDialog {
             }
         }
         finished();
+    }
+
+    public boolean isCanceled() {
+        return canceled;
     }
 }

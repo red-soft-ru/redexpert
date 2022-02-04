@@ -46,6 +46,7 @@ import org.executequery.gui.editor.QueryEditorResultsPanel;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlStatementResult;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.sqlParser.SqlParser;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
@@ -540,8 +541,8 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
                     }
 
                 } catch (Exception e) {
-
-                    e.printStackTrace();
+                    if (!e.getMessage().contentEquals("Canceled"))
+                        e.printStackTrace();
 
                 } finally {
                     statementExecutor.releaseResources();
@@ -582,6 +583,8 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         if (!displayParams.isEmpty()) {
             InputParametersDialog spd = new InputParametersDialog(displayParams);
             spd.display();
+            if (spd.isCanceled())
+                throw new DataSourceException("Canceled");
         }
         for (int i = 0; i < params.size(); i++) {
             if (params.get(i).isNull())
@@ -716,14 +719,14 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
 
     class ParameterTableModel extends AbstractTableModel {
 
-        private String UNKNOWN = "UNKNOWN";
-        private String RETURN = "RETURN";
-        private String RESULT = "RESULT";
-        private String IN = "IN";
-        private String INOUT = "INOUT";
-        private String OUT = "OUT";
+        private final String UNKNOWN = "UNKNOWN";
+        private final String RETURN = "RETURN";
+        private final String RESULT = "RESULT";
+        private final String IN = "IN";
+        private final String INOUT = "INOUT";
+        private final String OUT = "OUT";
 
-        private String[] columns = bundleStrings(new String[]{"Parameter", "DataType", "Mode"});
+        private final String[] columns = bundleStrings(new String[]{"Parameter", "DataType", "Mode"});
         private org.executequery.databaseobjects.Parameter[] values;
 
         public ParameterTableModel() {

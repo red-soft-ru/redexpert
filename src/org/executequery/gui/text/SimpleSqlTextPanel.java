@@ -81,7 +81,7 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
     public SimpleSqlTextPanel(boolean appending, boolean autocompleteOnlyHotKey) {
         super(new BorderLayout());
-
+        this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
         try {
             init();
         } catch (Exception e) {
@@ -90,7 +90,6 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
         sqlBuffer = new StringBuffer();
         this.appending = appending;
-        this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
     }
 
     private void init() throws Exception {

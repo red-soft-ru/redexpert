@@ -4,11 +4,11 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.Lexer;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMakerBase;
-import org.underworldlabs.sqlLexer.CustomToken;
-
 
 import javax.swing.text.Segment;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 public abstract class AntlrTokenMaker extends TokenMakerBase {
 
@@ -64,6 +64,7 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
 
         int currentArrayOffset = text.getBeginIndex();
         int currentDocumentOffset = startOffset;
+        boolean first = true;
         try {
             while (true) {
                 try {
@@ -84,7 +85,7 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
                                 currentDocumentOffset,
                                 multilineTokenStart,
                                 multilineTokenEnd,
-                                at);
+                                at, first);
                         // update from current token
                         currentArrayOffset = currentToken.textOffset + currentToken.textCount;
                         currentDocumentOffset = currentToken.getEndOffset();
@@ -93,6 +94,7 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
                 {
                     e.printStackTrace();
                 }
+                first = false;
             }
         } catch (AlwaysThrowingErrorListener.AntlrException exceptionInstanceNotNeeded) {
             // mark the rest of the line as error
@@ -144,11 +146,11 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
             int startOffset,
             String multilineTokenStart,
             String multilineTokenEnd,
-            org.antlr.v4.runtime.Token at) {
+            org.antlr.v4.runtime.Token at, boolean first) {
         addToken(
                 text,
                 start,
-                calculateTokenEnd(multilineTokenStart, multilineTokenEnd, start, at),
+                calculateTokenEnd(multilineTokenStart, multilineTokenEnd, start, at, first),
                 getClosestStandardTokenTypeForInternalType(at.getType()),
                 startOffset);
     }
@@ -157,9 +159,9 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
             String multilineTokenStart,
             String multilineTokenEnd,
             int currentArrayOffset,
-            org.antlr.v4.runtime.Token at) {
+            org.antlr.v4.runtime.Token at, boolean first) {
         int end = currentArrayOffset + at.getText().length() - 1;
-        if (multilineTokenStart != null && at.getText().startsWith(multilineTokenStart)) {
+        if (multilineTokenStart != null && at.getText().startsWith(multilineTokenStart) && first) {
             // need to subtract our inserted token start
             end -= multilineTokenStart.length();
         }

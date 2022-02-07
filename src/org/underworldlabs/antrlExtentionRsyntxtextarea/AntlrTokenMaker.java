@@ -64,7 +64,6 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
 
         int currentArrayOffset = text.getBeginIndex();
         int currentDocumentOffset = startOffset;
-        boolean first = true;
         try {
             while (true) {
                 try {
@@ -73,7 +72,7 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
                     setLanguageIndex(lexer._mode);
                     if (at.getType() == CommonToken.EOF) {
                         if(currentToken!=null)
-                            multilineTokenEnd=getMultilineTokenEnd(currentToken);
+                            multilineTokenEnd = getMultilineTokenEnd(currentToken, initialTokenType);
                         if (multilineTokenEnd == null) {
                             addNullToken();
                         }
@@ -85,7 +84,7 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
                                 currentDocumentOffset,
                                 multilineTokenStart,
                                 multilineTokenEnd,
-                                at, first);
+                                at);
                         // update from current token
                         currentArrayOffset = currentToken.textOffset + currentToken.textCount;
                         currentDocumentOffset = currentToken.getEndOffset();
@@ -94,7 +93,6 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
                 {
                     e.printStackTrace();
                 }
-                first = false;
             }
         } catch (AlwaysThrowingErrorListener.AntlrException exceptionInstanceNotNeeded) {
             // mark the rest of the line as error
@@ -146,11 +144,11 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
             int startOffset,
             String multilineTokenStart,
             String multilineTokenEnd,
-            org.antlr.v4.runtime.Token at, boolean first) {
+            org.antlr.v4.runtime.Token at) {
         addToken(
                 text,
                 start,
-                calculateTokenEnd(multilineTokenStart, multilineTokenEnd, start, at, first),
+                calculateTokenEnd(multilineTokenStart, multilineTokenEnd, start, at),
                 getClosestStandardTokenTypeForInternalType(at.getType()),
                 startOffset);
     }
@@ -159,9 +157,9 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
             String multilineTokenStart,
             String multilineTokenEnd,
             int currentArrayOffset,
-            org.antlr.v4.runtime.Token at, boolean first) {
+            org.antlr.v4.runtime.Token at) {
         int end = currentArrayOffset + at.getText().length() - 1;
-        if (multilineTokenStart != null && at.getText().startsWith(multilineTokenStart) && first) {
+        if (multilineTokenStart != null && at.getText().startsWith(multilineTokenStart) && at.getCharPositionInLine() == 0) {
             // need to subtract our inserted token start
             end -= multilineTokenStart.length();
         }
@@ -177,11 +175,18 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
                 .map(i -> i.tokenStart)
                 .orElse(null);
     }
-    private String getMultilineTokenEnd(Token token) {
+
+    private String getMultilineTokenEnd(Token token, int initialTypeToken) {
         for (MultiLineTokenInfo mti : multiLineTokenInfos) {
             if (mti.token == token.getType()) {
-                if (token.getLexeme().equals(mti.tokenEnd) || !token.endsWith(mti.tokenEnd.toCharArray()))
+                if (!token.endsWith(mti.tokenEnd.toCharArray()))
                     return mti.tokenEnd;
+                if (mti.tokenStart.contentEquals(mti.tokenEnd)) {
+                    if (token.getOffset() == 0 && initialTypeToken == mti.token) {
+                        return null;
+                    } else if (token.getLexeme().equals(mti.tokenEnd))
+                        return mti.tokenEnd;
+                }
             }
         }
         return null;

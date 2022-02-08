@@ -28,7 +28,6 @@ import org.underworldlabs.swing.plaf.UIUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,15 +35,12 @@ public class QueryEditorAutoCompletePopupPanel extends JPopupMenu implements Typ
 
     private static final Dimension PREFERRED_SIZE = new Dimension(460, 150);
 
-    private static final int TIMER_DELAY = 1000;
-
     private TypeAheadList list;
 
     private List<AutoCompletePopupListener> listeners;
 
     private List<AutoCompleteListItem> values;
 
-    private Timer timer;
 
     public QueryEditorAutoCompletePopupPanel() {
 
@@ -66,12 +62,6 @@ public class QueryEditorAutoCompletePopupPanel extends JPopupMenu implements Typ
 
         add(scrollPane, BorderLayout.CENTER);
         setPreferredSize(PREFERRED_SIZE);
-
-        timer = new Timer(0, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                reset();
-            }
-        });
 
         listeners = new ArrayList<AutoCompletePopupListener>();
     }
@@ -99,7 +89,7 @@ public class QueryEditorAutoCompletePopupPanel extends JPopupMenu implements Typ
 
     protected void done() {
 
-        timer.stop();
+        //timer.stop();
     }
 
     protected void reset(List<AutoCompleteListItem> values) {
@@ -111,16 +101,6 @@ public class QueryEditorAutoCompletePopupPanel extends JPopupMenu implements Typ
     protected void scheduleReset(List<AutoCompleteListItem> values) {
 
         this.values = values;
-        if (!timer.isRunning()) {
-
-            timer.start();
-
-        } else if (timer.getDelay() != TIMER_DELAY) {
-
-            timer.stop();
-            timer.setDelay(TIMER_DELAY);
-            timer.restart();
-        }
 
     }
 

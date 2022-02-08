@@ -93,11 +93,11 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         checkPanel.add(scrollCheck, gbcFull);
         descriptionPanel.add(scrollDescription, gbcFull);
         sqlPanel.add(scrollSQL, gbcFull);
-        tabbedPane.add(bundlesString("type"), selectTypePanel);
-        tabbedPane.add(bundlesString("default-value"), defaultValuePanel);
-        tabbedPane.add(bundlesString("check"), checkPanel);
-        tabbedPane.add(bundlesString("description"), descriptionPanel);
-        tabbedPane.add(bundlesString("SQL"), sqlPanel);
+        tabbedPane.add(bundleStaticString("type"), selectTypePanel);
+        tabbedPane.add(bundleStaticString("default-value"), defaultValuePanel);
+        tabbedPane.add(bundleStaticString("check"), checkPanel);
+        tabbedPane.add(bundleStaticString("description"), descriptionPanel);
+        tabbedPane.add(bundleStaticString("SQL"), sqlPanel);
     }
 
     protected void initEdited() {

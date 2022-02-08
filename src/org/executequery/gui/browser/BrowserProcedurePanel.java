@@ -273,31 +273,31 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
     public void setValues(BaseDatabaseObject metaObject, DefaultDatabaseProcedure procedure) {
         int type = metaObject.getType();
         switch (type) {
-            case BrowserConstants.FUNCTIONS_NODE:
+            case NamedObject.FUNCTION:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("function"));
                 setHeaderIcon("Function24.png");
                 break;
 
-            case BrowserConstants.PROCEDURE_NODE:
+            case NamedObject.PROCEDURE:
                 objectNameLabel.setText(bundleString("procedure-name"));
                 setHeaderText(bundleString("procedure"));
                 setHeaderIcon("Procedure24.png");
                 break;
 
-            case BrowserConstants.SYSTEM_STRING_FUNCTIONS_NODE:
+            case NamedObject.SYSTEM_STRING_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-string-function"));
                 setHeaderIcon("SystemFunction24.png");
                 break;
 
-            case BrowserConstants.SYSTEM_NUMERIC_FUNCTIONS_NODE:
+            case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-numeric-function"));
                 setHeaderIcon("SystemFunction24.png");
                 break;
 
-            case BrowserConstants.SYSTEM_DATE_TIME_FUNCTIONS_NODE:
+            case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-date-function"));
                 setHeaderIcon("SystemFunction24.png");

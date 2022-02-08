@@ -1,14 +1,17 @@
 package org.executequery.gui.table;
 
+import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.TableColumnConstraint;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.CheckBoxPanel;
+import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
@@ -21,15 +24,17 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Vector;
 
 import static org.executequery.gui.browser.ColumnConstraint.RULES;
 
 
 public class EditConstraintPanel extends AbstractCreateObjectPanel implements KeyListener {
-    public static final String CREATE_TITLE = "Create Constraint";
-    public static final String EDIT_TITLE = "Edit Constraint";
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.CONSTRAINT);
+    public static final String EDIT_TITLE = getEditTitle(NamedObject.CONSTRAINT);
     boolean generate_name;
     private JScrollPane primaryPanel;
     private JPanel foreignPanel;
@@ -45,12 +50,12 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
     private JComboBox primarySortingBox;
     private JTextField foreignIndexField;
     private JComboBox foreignSortingBox;
-    private CheckBoxPanel onFieldPrimaryPanel;
+    private ListSelectionPanel onFieldPrimaryPanel;
     private JComboBox referenceTable;
     private JComboBox updateRuleBox;
     private JComboBox deleteRuleBox;
-    private CheckBoxPanel referenceColumn;
-    private CheckBoxPanel fieldConstraint;
+    private ListSelectionPanel referenceColumn;
+    private ListSelectionPanel fieldConstraint;
 
     public EditConstraintPanel(DatabaseTable table, ActionContainer dialog) {
         super(table.getHost().getDatabaseConnection(), dialog, null, new Object[]{table});
@@ -62,11 +67,11 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
 
     protected void init() {
         generate_name = true;
-        tableLabel = new JLabel("Table:");
+        tableLabel = new JLabel(bundleString("Table"));
         tableNameField = new JTextField(table.getName());
         tableNameField.setEnabled(false);
         nameField.addKeyListener(this);
-        typeLabel = new JLabel("Type:");
+        typeLabel = new JLabel(bundleString("Type"));
         primaryIndexField = new JTextField();
         foreignIndexField = new JTextField();
         String[] sorting = new String[]{Bundles.get("CreateIndexPanel.ascending"), Bundles.get("CreateIndexPanel.descending")};
@@ -89,7 +94,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         JPanel panel = new JPanel();
         primaryPanel = new JScrollPane(panel);
         panel.setLayout(new GridBagLayout());
-        JLabel label = new JLabel("Index");
+        JLabel label = new JLabel(bundleString("Index"));
         GridBagHelper gbh = new GridBagHelper();
         gbh.setDefaults(new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
@@ -98,12 +103,13 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         gbh.defaults().setXY(0, 0);
         panel.add(label, gbh.get());
         panel.add(primaryIndexField, gbh.nextCol().spanX().get());
-        label = new JLabel("Sorting");
+        label = new JLabel(bundleString("Sorting"));
         panel.add(label, gbh.nextRowFirstCol().setLabelDefault().get());
         panel.add(primarySortingBox, gbh.nextCol().spanX().get());
-        onFieldPrimaryPanel = new CheckBoxPanel(table.getColumns().toArray(), 6, false);
-        onFieldPrimaryPanel.setBorder(BorderFactory.createTitledBorder("On Field"));
-        panel.add(onFieldPrimaryPanel, gbh.nextRowFirstCol().spanX().get());
+        onFieldPrimaryPanel = new ListSelectionPanel();
+        onFieldPrimaryPanel.createAvailableList(getColumnNamesFromColumns(table.getColumns()));
+        onFieldPrimaryPanel.setBorder(BorderFactory.createTitledBorder(bundleString("OnField")));
+        panel.add(new JScrollPane(onFieldPrimaryPanel), gbh.nextRowFirstCol().spanX().get());
         //TODO CHECK MOVE TO END
         panel.add(new JPanel(), new GridBagConstraints(0, 10,
                 1, 1, 0, 1,
@@ -120,44 +126,50 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
 
         foreignPanel = new JPanel();
         foreignPanel.setLayout(new GridBagLayout());
-        label = new JLabel("Index");
+        label = new JLabel(bundleString("Index"));
         gbh.defaults().setXY(0, 0);
         foreignPanel.add(label, gbh.setLabelDefault().get());
         foreignPanel.add(foreignIndexField, gbh.nextCol().spanX().get());
-        label = new JLabel("Sorting");
+        label = new JLabel(bundleString("Sorting"));
         foreignPanel.add(label, gbh.nextRowFirstCol().setLabelDefault().get());
         foreignPanel.add(foreignSortingBox, gbh.nextCol().spanX().get());
-        label = new JLabel("Update rule");
+        label = new JLabel(bundleString("UpdateRule"));
         foreignPanel.add(label, gbh.setLabelDefault().nextRowFirstCol().get());
         foreignPanel.add(updateRuleBox, gbh.nextCol().spanX().get());
-        label = new JLabel("Delete rule");
+        label = new JLabel(bundleString("DeleteRule"));
         foreignPanel.add(label, gbh.setLabelDefault().nextRowFirstCol().get());
         foreignPanel.add(deleteRuleBox, gbh.nextCol().spanX().get());
         //TODO CHECK MOVE TO END
-        foreignPanel.add(new JPanel(), new GridBagConstraints(1, 12,
+        /*foreignPanel.add(new JPanel(), new GridBagConstraints(1, 12,
                 1, 1, 1, 1,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        fieldConstraint = new CheckBoxPanel(table.getColumns().toArray(), 6, false);
-        String[] tables = metaData.getTables(null, null, "TABLE");
-        referenceTable = new JComboBox(tables);
-        referenceColumn = new CheckBoxPanel(metaData.getColumnNames((String) referenceTable.getSelectedItem(), null), 6, false);
+                0, 0));*/
+        JTabbedPane tabbedPane = new JTabbedPane();
+
+        fieldConstraint = new ListSelectionPanel();
+        fieldConstraint.createAvailableList(getColumnNamesFromColumns(table.getColumns()));
+        List<String> tables = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]);
+        DynamicComboBoxModel referenceTableModel = new DynamicComboBoxModel();
+        referenceTableModel.setElements(tables);
+        referenceTable = new JComboBox(referenceTableModel);
+        referenceColumn = new ListSelectionPanel();
+        referenceColumn.createAvailableList(metaData.getColumnNames((String) referenceTable.getSelectedItem(), null));
         referenceTable.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    referenceColumn.setNamesBox(metaData.getColumnNames((String) referenceTable.getSelectedItem(), null));
+                    referenceColumn.createAvailableList(metaData.getColumnNames((String) referenceTable.getSelectedItem(), null));
 
                 }
             }
         });
-        fieldConstraint.setBorder(BorderFactory.createTitledBorder("On Field"));
-        foreignPanel.add(fieldConstraint, gbh.nextRowFirstCol().spanX().get());
-        label = new JLabel("Reference Table");
+        tabbedPane.addTab(bundleString("OnField"), fieldConstraint);
+        tabbedPane.addTab(bundleString("ReferenceColumn"), referenceColumn);
+        label = new JLabel(bundleString("ReferenceTable"));
         foreignPanel.add(label, gbh.setLabelDefault().nextRowFirstCol().get());
         foreignPanel.add(referenceTable, gbh.nextCol().spanX().get());
-        referenceColumn.setBorder(BorderFactory.createTitledBorder("Reference Column"));
-        foreignPanel.add(referenceColumn, gbh.nextRowFirstCol().spanX().get());
+        foreignPanel.add(tabbedPane, gbh.nextRowFirstCol().spanX().spanY().get());
+
 
 
 
@@ -216,7 +228,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                 break;
         }
         tabbedPane.add(typePanel, 0);
-        tabbedPane.setTitleAt(0, "Constraint");
+        tabbedPane.setTitleAt(0, bundleString("Constraint"));
         if(generate_name)
             nameField.setText(generateName());
         updateUI();
@@ -241,7 +253,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                         "order by rc.rdb$relation_name, i.rdb$field_position";
                 ResultSet rs = sender.getResultSet(query).getResultSet();
                 while (rs.next()) {
-                    onFieldPrimaryPanel.getCheckBoxMap().get(rs.getString("RDB$FIELD_NAME").trim()).setSelected(true);
+                    onFieldPrimaryPanel.selectOneStringAction(rs.getString("RDB$FIELD_NAME").trim());
                     primaryIndexField.setText(rs.getString("RDB$INDEX_NAME").trim());
                     primarySortingBox.setSelectedIndex(rs.getInt("RDB$INDEX_TYPE"));
                 }
@@ -279,8 +291,8 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                     foreignIndexField.setText(rs.getString("RDB$INDEX_NAME").trim());
                     String fieldName = rs.getString("OnField").trim();
                     String refCol = rs.getString("FK_Field").trim();
-                    fieldConstraint.getCheckBoxMap().get(fieldName).setSelected(true);
-                    referenceColumn.getCheckBoxMap().get(refCol).setSelected(true);
+                    fieldConstraint.selectOneStringAction(fieldName);
+                    referenceColumn.selectOneStringAction(refCol);
                     foreignSortingBox.setSelectedIndex(rs.getInt("RDB$INDEX_TYPE"));
                     updateRuleBox.setSelectedItem(constraint.getUpdateRule());
                     deleteRuleBox.setSelectedItem(constraint.getDeleteRule());
@@ -311,7 +323,12 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                         "order by rc.rdb$relation_name, i.rdb$field_position";
                 ResultSet rs = sender.getResultSet(query).getResultSet();
                 while (rs.next()) {
-                    onFieldPrimaryPanel.getCheckBoxMap().get(rs.getString("RDB$FIELD_NAME").trim()).setSelected(true);
+                    for (int i = 0; i < onFieldPrimaryPanel.getAvailableValues().size(); i++) {
+                        if (onFieldPrimaryPanel.getAvailableValues().get(i).toString().trim().contentEquals(rs.getString("RDB$FIELD_NAME").trim())) {
+                            onFieldPrimaryPanel.selectOneAction(i);
+                            break;
+                        }
+                    }
                     primaryIndexField.setText(rs.getString("RDB$INDEX_NAME").trim());
                     primarySortingBox.setSelectedIndex(rs.getInt("RDB$INDEX_TYPE"));
                 }
@@ -332,7 +349,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                 if (typeBox.getSelectedItem() == ColumnConstraint.PRIMARY)
                     cc.setType(NamedObject.PRIMARY_KEY);
                 else cc.setType(NamedObject.UNIQUE_KEY);
-                cc.setColumn(getColumnsFromCheckBoxMap(onFieldPrimaryPanel.getCheckBoxMap()));
+                cc.setColumn(getColumnsFromVector(onFieldPrimaryPanel.getSelectedValues()));
                 if (!primaryIndexField.getText().isEmpty()) {
                     String sorting = "";
                     if (primarySortingBox.getSelectedIndex() == 0) {
@@ -346,9 +363,9 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                 break;
             case ColumnConstraint.FOREIGN:
                 cc.setType(NamedObject.FOREIGN_KEY);
-                cc.setColumn(getColumnsFromCheckBoxMap(fieldConstraint.getCheckBoxMap()));
+                cc.setColumn(getColumnsFromVector(fieldConstraint.getSelectedValues()));
                 cc.setRefTable((String) referenceTable.getSelectedItem());
-                cc.setRefColumn(getColumnsFromCheckBoxMap(referenceColumn.getCheckBoxMap()));
+                cc.setRefColumn(getColumnsFromVector(referenceColumn.getSelectedValues()));
                 if (!foreignIndexField.getText().isEmpty()) {
                     String sorting = "";
                     if (foreignSortingBox.getSelectedIndex() == 0) {
@@ -379,22 +396,28 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         return sb.toString();
     }
 
+    private List<String> getColumnNamesFromColumns(List<DatabaseColumn> columns) {
+        List<String> list = new ArrayList<>();
+        for (DatabaseColumn col : columns)
+            list.add(col.getName());
+        return list;
+    }
+
     @Override
     public void createObject() {
 
         displayExecuteQueryDialog(generateQuery(), "^");
     }
 
-    private String getColumnsFromCheckBoxMap(Map<String, JCheckBox> checkBoxMap) {
+    private String getColumnsFromVector(Vector<String> columns) {
         boolean first = true;
         StringBuilder sb = new StringBuilder();
-        for (String key : checkBoxMap.keySet()) {
-            if (checkBoxMap.get(key).isSelected()) {
-                if (!first)
-                    sb.append(", ");
-                first = false;
-                sb.append(MiscUtils.getFormattedObject(key));
-            }
+        for (String key : columns) {
+
+            if (!first)
+                sb.append(", ");
+            first = false;
+            sb.append(MiscUtils.getFormattedObject(key));
         }
         return sb.toString();
     }
@@ -411,7 +434,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
 
     @Override
     public String getTypeObject() {
-        return "CONSTRAINT";
+        return NamedObject.META_TYPES[NamedObject.CONSTRAINT];
     }
 
     @Override

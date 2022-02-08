@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SQLTextArea;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
 
@@ -90,14 +91,14 @@ public class AutoIncrementPanel extends JPanel {
         useIdentityPanel = new JPanel();
         useGeneratorPanel = new JPanel();
         triggerPanel = new JPanel();
-        systemGeneratorBox = new JCheckBox("System Generator");
-        createGeneratorBox = new JCheckBox("Create Sequence");
-        useIdentityBox = new JCheckBox("Use Identity");
-        useGeneratorBox = new JCheckBox("Use Existed Sequence");
-        createTriggerBox = new JCheckBox("Create Trigger");
-        createProcedureBox = new JCheckBox("Create Procedure");
-        okButton = new JButton("OK");
-        cancelButton = new JButton("Cancel");
+        systemGeneratorBox = new JCheckBox(bundleString("SystemGenerator"));
+        createGeneratorBox = new JCheckBox(bundleString("CreateSequence"));
+        useIdentityBox = new JCheckBox(bundleString("UseIdentity"));
+        useGeneratorBox = new JCheckBox(bundleString("UseExistedSequence"));
+        createTriggerBox = new JCheckBox(bundleString("CreateTrigger"));
+        createProcedureBox = new JCheckBox(bundleString("CreateProcedure"));
+        okButton = new JButton(Bundles.getCommon("ok.button"));
+        cancelButton = new JButton(Bundles.getCommon("cancel.button"));
         systemStartValue = new NumberTextField(0);
         createStartValue = new NumberTextField(0);
         identityStartValue = new NumberTextField(0);
@@ -240,7 +241,7 @@ public class AutoIncrementPanel extends JPanel {
 
         GroupLayout systemGeneratorPanelLayout = new GroupLayout(systemGeneratorPanel);
         systemGeneratorPanel.setLayout(systemGeneratorPanelLayout);
-        JLabel label = new JLabel("Start Value");
+        JLabel label = new JLabel(bundleString("StartValue"));
         systemGeneratorPanelLayout.setHorizontalGroup(systemGeneratorPanelLayout.createSequentialGroup()
                 .addGap(10)
                 .addComponent(label)
@@ -258,8 +259,8 @@ public class AutoIncrementPanel extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
         );
 
-        label = new JLabel("Start Value");
-        JLabel label1 = new JLabel("Name");
+        label = new JLabel(bundleString("StartValue"));
+        JLabel label1 = new JLabel(Bundles.getCommon("name"));
         GroupLayout createGeneratorPanelLayout = new GroupLayout(createGeneratorPanel);
         createGeneratorPanel.setLayout(createGeneratorPanelLayout);
         createGeneratorPanelLayout.setHorizontalGroup(createGeneratorPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -291,7 +292,7 @@ public class AutoIncrementPanel extends JPanel {
 
         GridBagLayout useIdentityPanelLayout = new GridBagLayout();
         useIdentityPanel.setLayout(useIdentityPanelLayout);
-        label = new JLabel("Start Value");
+        label = new JLabel(bundleString("StartValue"));
         useIdentityPanel.add(label, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -302,7 +303,7 @@ public class AutoIncrementPanel extends JPanel {
                 0, 0));
 
 
-        label = new JLabel("Generators:");
+        label = new JLabel(bundleString("Generators"));
         GroupLayout useGeneratorPanelLayout = new GroupLayout(useGeneratorPanel);
         useGeneratorPanel.setLayout(useGeneratorPanelLayout);
         useGeneratorPanelLayout.setHorizontalGroup(useGeneratorPanelLayout.createSequentialGroup()
@@ -345,7 +346,7 @@ public class AutoIncrementPanel extends JPanel {
                 .addComponent(useIdentityPanel)
         );
 
-        tabPanel.add("Generator", generatorPanel);
+        tabPanel.add(bundleString("Generator"), generatorPanel);
 
         GroupLayout triggerLayout = new GroupLayout(triggerPanel);
         triggerPanel.setLayout(triggerLayout);
@@ -360,7 +361,7 @@ public class AutoIncrementPanel extends JPanel {
                 .addGap(10)
                 .addComponent(triggerScroll)
         );
-        tabPanel.add("Trigger", triggerPanel);
+        tabPanel.add(bundleString("Trigger"), triggerPanel);
 
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
@@ -399,5 +400,9 @@ public class AutoIncrementPanel extends JPanel {
         ai.setSqlAutoincrement(sql);
         if (parent != null)
             parent.finished();
+    }
+
+    private String bundleString(String key) {
+        return Bundles.get(AutoIncrementPanel.class, key);
     }
 }

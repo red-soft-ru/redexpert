@@ -230,7 +230,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         return Bundles.get(getClass(), key);
     }
 
-    public String bundlesString(String key) {
+    public String bundleStaticString(String key) {
         return Bundles.get(AbstractCreateObjectPanel.class, key);
     }
 

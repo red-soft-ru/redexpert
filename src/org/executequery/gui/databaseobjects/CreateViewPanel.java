@@ -93,8 +93,8 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
         });
 
         //create location elements
-        tabbedPane.add(bundlesString("SQL"), sqlPanel);
-        tabbedPane.add(bundlesString("description"), descriptionTextArea);
+        tabbedPane.add(bundleStaticString("SQL"), sqlPanel);
+        tabbedPane.add(bundleStaticString("description"), descriptionTextArea);
 
     }
 

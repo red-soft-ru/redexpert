@@ -436,7 +436,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
         }
 
-        if (type == BrowserConstants.HOST_NODE) {
+        if (type == NamedObject.HOST) {
 
             DatabaseConnection connection =
                     ((DatabaseHost) databaseObject).getDatabaseConnection();

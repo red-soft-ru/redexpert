@@ -36,125 +36,26 @@ public class BrowserConstants {
     // parent labels and hashtable keys for images
     // --------------------------------------------
 
-    public static final int ROOT_NODE = 96;
-    public static final int CATALOG_NODE = 98;
-    public static final int HOST_NODE = 99;
-    public static final int SCHEMA_NODE = 97;
-
-    public static final int FUNCTIONS_NODE = 0;
-    public static final int INDEX_NODE = 1;
-    public static final int PROCEDURE_NODE = 2;
-    public static final int SEQUENCE_NODE = 3;
-    public static final int SYNONYM_NODE = 4;
-    public static final int SYSTEM_TABLE_NODE = 5;
-    public static final int TABLE_NODE = 6;
-    public static final int TRIGGER_NODE = 7;
-    public static final int VIEW_NODE = 8;
-
-    public static final int SYSTEM_FUNCTION_NODE = 9;
-
-    public static final int SYSTEM_STRING_FUNCTIONS_NODE = 10;
-
-    public static final int SYSTEM_NUMERIC_FUNCTIONS_NODE = 11;
-
-    public static final int SYSTEM_DATE_TIME_FUNCTIONS_NODE = 12;
-
-    public static final int OTHER_NODE = 95;
-
-    public static final int COLUMN_NODE = 94;
 
 
-    // same index as node values above
-    public static final String[] META_TYPES = Bundles.get(BrowserConstants.class, new String[]{"FUNCTION",
-            "INDEX",
-            "PROCEDURE",
-            "SEQUENCE",
-            "SYNONYM",
-            "SYSTEM-TABLE",
-            "TABLE",
-            "TRIGGER",
-            "VIEW",
-            "SYSTEM FUNCTIONS"});
+
 
     // ------------------------------------------
     // to add a new node - ALL icons must be in same order as META_TYPES
     // ------------------------------------------
 
-    public static final String[] META_TYPE_ICONS = {"Function24.png",
-            "TableIndex24.png",
-            "Procedure24.png",
-            "Sequence24.png",
-            "Synonym24.png",
-            "SystemTable24.png",
-            "DatabaseTable24.png",
-            "DatabaseTable24.png",
-            "Trigger.png",
-            "TableView24.png",
-            "TableColumn24.png",
-            "SystemFunction24.png"}; // system function
+     // system function
 
     /** The String 'All Types' */
     //  String ALL_TYPES = "All Types";
     /**
      * The String 'All Types Closed'
-     */
-    public static final String ALL_TYPES_CLOSED = bundleString("ALL_TYPES_CLOSED");
-
-    /**
-     * The String 'Functions'
-     */
-    public static final String SYSTEM_FUNCTIONS_STRING = bundleString("SYSTEM_FUNCTIONS_STRING");
-
-    /**
-     * The String 'Functions'
-     */
-    public static final String FUNCTIONS_STRING = bundleString("FUNCTIONS_STRING");
-    /**
-     * The String 'Indexes'
-     */
-    public static final String INDEXES_STRING = bundleString("INDEXES_STRING");
-    /** The String 'Packages' */
-    //String PACKAGES_STRING = "Packages";
-    /**
-     * The String 'Procedures'
-     */
-    public static final String PROCEDURES_STRING = bundleString("PROCEDURES_STRING");
-    /**
-     * The String 'Sequences'
-     */
-    public static final String SEQUENCES_STRING = bundleString("SEQUENCES_STRING");
-    /**
-     * The String 'Synonyms'
-     */
-    public static final String SYNONYMS_STRING = bundleString("SYNONYMS_STRING");
-    /**
-     * The String 'System Tables'
-     */
-    public static final String SYSTEM_TABLES_STRING = bundleString("SYSTEM_TABLES_STRING");
-    /**
-     * The String 'Tables'
-     */
-    public static final String TABLES_STRING = bundleString("TABLES_STRING");
-    /**
-     * The String 'Triggers'
-     */
-    public static final String TRIGGERS_STRING = bundleString("TRIGGERS_STRING");
-    /**
-     * The String 'Views'
-     */
-    public static final String VIEWS_STRING = bundleString("VIEWS_STRING");
-    /**
-     * The String 'Source'
-     */
-    public static final String SOURCE_STRING = bundleString("SOURCE_STRING");
-    /**
-     * The String 'Schema'
-     */
-    public static final String SCHEMA_STRING = bundleString("SCHEMA_STRING");
+     *
 
     // -----------------------------
     // image icons for tree nodes
     // -----------------------------
+     */
 
     public static final String DATABASE_OBJECT_IMAGE = "DatabaseObject16.png";
 

@@ -115,7 +115,6 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     /**
      * header icons
      */
-    private ImageIcon[] icons;
 
     /**
      * whether we have privilege data loaded
@@ -238,13 +237,9 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         tabPane.addChangeListener(this);
         //tableDescPanel = new SimpleTableDescriptionPanel();
 
-        icons = new ImageIcon[BrowserConstants.META_TYPE_ICONS.length];
 
-        for (int i = 0; i < BrowserConstants.META_TYPE_ICONS.length; i++) {
-            icons[i] = GUIUtilities.loadIcon(BrowserConstants.META_TYPE_ICONS[i]);
-        }
 
-        setHeader("Database Object", icons[0]);
+        setHeader("Database Object", GUIUtilities.loadIcon(BrowserConstants.DATABASE_OBJECT_IMAGE));
         setContentPanel(descPanel);
         //cache = new HashMap();
     }
@@ -432,14 +427,9 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         //schemaNameField.setText(object.getSchemaName());
 
         int type = object.getType();
-        if (type < icons.length) {
 
-            setHeaderIcon(icons[type]);
+        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.TABLES_IMAGE));
 
-        } else {
-
-            setHeaderIcon(icons[BrowserConstants.TABLE_NODE]);
-        }
 
         descBottomPanel.removeAll();
 

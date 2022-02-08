@@ -2,6 +2,7 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.FunctionArgument;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseFunction;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
@@ -203,31 +204,31 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
     public void setValues(BaseDatabaseObject metaObject, DefaultDatabaseFunction function) {
         int type = metaObject.getType();
         switch (type) {
-            case BrowserConstants.FUNCTIONS_NODE:
+            case NamedObject.FUNCTION:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("function"));
                 setHeaderIcon("Function24.png");
                 break;
 
-            case BrowserConstants.PROCEDURE_NODE:
+            case NamedObject.PROCEDURE:
                 objectNameLabel.setText(bundleString("procedure-name"));
                 setHeaderText(bundleString("procedure"));
                 setHeaderIcon("Procedure24.png");
                 break;
 
-            case BrowserConstants.SYSTEM_STRING_FUNCTIONS_NODE:
+            case NamedObject.SYSTEM_STRING_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-string-function"));
                 setHeaderIcon("SystemFunction24.png");
                 break;
 
-            case BrowserConstants.SYSTEM_NUMERIC_FUNCTIONS_NODE:
+            case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-numeric-function"));
                 setHeaderIcon("SystemFunction24.png");
                 break;
 
-            case BrowserConstants.SYSTEM_DATE_TIME_FUNCTIONS_NODE:
+            case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-date-function"));
                 setHeaderIcon("SystemFunction24.png");

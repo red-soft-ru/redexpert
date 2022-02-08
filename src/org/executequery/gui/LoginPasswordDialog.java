@@ -2,6 +2,7 @@ package org.executequery.gui;
 
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.LinkButton;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
@@ -13,10 +14,10 @@ import java.net.URL;
 public class LoginPasswordDialog extends BaseDialog {
     private JTextField username;
     private JPasswordField password;
-    private String message;
-    private String user;
+    private final String message;
+    private final String user;
     private boolean closedDialog = false;
-    private String urlOfRegistration;
+    private final String urlOfRegistration;
 
     public LoginPasswordDialog(String name, String message, String urlOfRegistration) {
         this(name, message, urlOfRegistration, null);
@@ -35,15 +36,16 @@ public class LoginPasswordDialog extends BaseDialog {
         JTextPane pane = new JTextPane();
         pane.setEditable(false);
         pane.setText(message);
-        mainPanel.add(pane, new GridBagConstraints(0, 0,
-                3, 1, 1, 0,
+
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaults(new GridBagConstraints(0, 0,
+                1, 1, 1, 0,
                 GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
+        gbh.defaults();
+        mainPanel.add(pane, gbh.spanX().get());
         JLabel label = new JLabel(bundledString("username"));
-        mainPanel.add(label, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        mainPanel.add(label, gbh.nextRowFirstCol().setLabelDefault().get());
         username = new JTextField();
         if (user != null) {
             username.setText(user);
@@ -55,15 +57,9 @@ public class LoginPasswordDialog extends BaseDialog {
                     password.requestFocusInWindow();
             }
         });
-        mainPanel.add(username, new GridBagConstraints(1, 1,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        mainPanel.add(username, gbh.nextCol().spanX().get());
         label = new JLabel(bundledString("password"));
-        mainPanel.add(label, new GridBagConstraints(0, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        mainPanel.add(label, gbh.nextRowFirstCol().setLabelDefault().get());
         password = new JPasswordField();
         password.addKeyListener(new KeyAdapter() {
             @Override
@@ -72,26 +68,9 @@ public class LoginPasswordDialog extends BaseDialog {
                     finished();
             }
         });
-        mainPanel.add(password, new GridBagConstraints(1, 2,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        JButton button = new JButton(bundledString("login"));
-        mainPanel.add(button, new GridBagConstraints(1, 3,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                finished();
-            }
-        });
+        mainPanel.add(password, gbh.nextCol().spanX().get());
         LinkButton linkButton = new LinkButton(bundledString("register"));
-        mainPanel.add(linkButton, new GridBagConstraints(2, 3,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        mainPanel.add(linkButton, gbh.nextRowFirstCol().setLabelDefault().get());
         linkButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -100,6 +79,24 @@ public class LoginPasswordDialog extends BaseDialog {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+            }
+        });
+        linkButton.setVisible(urlOfRegistration != null);
+        JButton okButton = new JButton(bundledString("login"));
+        mainPanel.add(okButton, gbh.nextCol().get());
+        okButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                finished();
+            }
+        });
+        JButton cancelButton = new JButton(Bundles.getCommon("cancel.button"));
+        mainPanel.add(cancelButton, gbh.nextCol().get());
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                setClosedDialog(true);
+                finished();
             }
         });
         setResizable(false);

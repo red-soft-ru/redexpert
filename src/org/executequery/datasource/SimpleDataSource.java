@@ -27,6 +27,8 @@ import org.executequery.ApplicationContext;
 import org.executequery.ExecuteQuery;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.gui.LoginPasswordDialog;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.DynamicLibraryLoader;
@@ -57,7 +59,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
     private Properties properties = new Properties();
 
-    private Driver driver;
+    private final Driver driver;
     private IFBDataSource dataSource;
     private final String url;
     private final DatabaseConnection databaseConnection;
@@ -83,8 +85,28 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     }
 
     public Connection getConnection() throws SQLException {
-
-        return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword());
+        while (MiscUtils.isNull(databaseConnection.getUnencryptedPassword())
+                && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
+            LoginPasswordDialog lpd = new LoginPasswordDialog(Bundles.getCommon("title-enter-password"), Bundles.getCommon("message-enter-password"),
+                    null, databaseConnection.getUserName());
+            lpd.display();
+            if (lpd.isClosedDialog())
+                throw new DataSourceException("Connection cancelled");
+            else {
+                databaseConnection.setUserName(lpd.getUsername());
+                databaseConnection.setPassword(lpd.getPassword());
+            }
+        }
+        try {
+            return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword());
+        } catch (SQLException e) {
+            if (e.getSQLState().contentEquals("28000")
+                    && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
+                databaseConnection.setPassword("");
+                return getConnection();
+            }
+            throw e;
+        }
     }
 
     public Connection getConnection(String username, String password) throws SQLException {

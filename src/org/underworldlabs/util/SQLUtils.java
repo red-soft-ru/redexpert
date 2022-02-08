@@ -177,7 +177,7 @@ public final class SQLUtils {
 
         if (hasName) {
 
-            sqlBuffer.append(COMMA).append(NEW_LINE_2).append(CONSTRAINT);
+            sqlBuffer.append(COMMA).append(NEW_LINE_2).append(CreateTableSQLSyntax.CONSTRAINT);
             sqlBuffer.append(MiscUtils.getFormattedObject(nameConstraint)).append(SPACE);
 
             if (cc.getType() != -1) {

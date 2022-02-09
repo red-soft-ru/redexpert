@@ -227,13 +227,13 @@ public class AutoIncrementPanel extends JPanel {
                 ai.setCreateTrigger(createTriggerBox.isSelected());
                 triggerScroll.setVisible(ai.isCreateTrigger());
                 if (ai.isCreateTrigger()) {
-                    String sql = "create trigger " + MiscUtils.getFormattedObject(tableName + "_bi") + " for " + MiscUtils.getFormattedObject(tableName) + "\n" +
-                            "active before insert position 0\n" +
-                            "as\n" +
-                            "begin\n" +
-                            "if (new." + MiscUtils.getFormattedObject(ai.getFieldName()) + " is null) then\n" +
-                            "new." + MiscUtils.getFormattedObject(ai.getFieldName()) + " = gen_id(" + MiscUtils.getFormattedObject(ai.getGeneratorName()) + ",1);\n" +
-                            "end";
+                    String sql = "CREATE TRIGGER " + MiscUtils.getFormattedObject(tableName + "_BI") + " FOR " + MiscUtils.getFormattedObject(tableName) + "\n" +
+                            "ACTIVE BEFORE INSERT POSITION 0\n" +
+                            "AS\n" +
+                            "BEGIN\n" +
+                            "IF (NEW." + MiscUtils.getFormattedObject(ai.getFieldName()) + " IS NULL) THEN\n" +
+                            "NEW." + MiscUtils.getFormattedObject(ai.getFieldName()) + " = GEN_ID(" + MiscUtils.getFormattedObject(ai.getGeneratorName()) + ",1);\n" +
+                            "END";
                     triggerSQLPane.setText(sql);
                 }
             }

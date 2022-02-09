@@ -924,12 +924,91 @@ public class CreateDatabasePanel extends ActionPanel
             databaseConnection.setContainerPasswordStored(saveContPwdCheck.isSelected());
             databaseConnection.setVerifyServerCertCheck(verifyServerCertCheck.isSelected());
             databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
+            storeJdbcProperties(databaseConnection);
 
             connectionsTreePanel.newConnection(databaseConnection);
 
             GUIUtilities.closeSelectedCentralPane();
         }
         return;
+    }
+
+    private void storeJdbcProperties(DatabaseConnection databaseConnection) {
+
+        Properties properties = databaseConnection.getJdbcProperties();
+        if (properties == null) {
+
+            properties = new Properties();
+
+        } else {
+
+            properties.clear();
+        }
+
+        for (int i = 0; i < advancedProperties.length; i++) {
+
+            String key = advancedProperties[i][0];
+            String value = advancedProperties[i][1];
+
+            if (!MiscUtils.isNull(key) && !MiscUtils.isNull(value)) {
+
+                if (key.equalsIgnoreCase("lc_ctype")
+                        || key.equalsIgnoreCase("useGSSAuth")
+                        || key.equalsIgnoreCase("roleName")
+                        || key.equalsIgnoreCase("isc_dpb_trusted_auth")
+                        || key.equalsIgnoreCase("isc_dpb_multi_factor_auth")
+                        || key.equalsIgnoreCase("isc_dpb_certificate_base64"))
+                    continue;
+                properties.setProperty(key, value);
+            }
+
+        }
+
+        if (!properties.containsKey("lc_ctype"))
+            properties.setProperty("lc_ctype", charsetsCombo.getSelectedItem().toString());
+
+        if (!properties.containsKey("useGSSAuth") && authCombo.getSelectedItem().toString().equalsIgnoreCase("gss"))
+            properties.setProperty("useGSSAuth", "true");
+
+        if (!properties.containsKey("isc_dpb_trusted_auth")
+                && !properties.containsKey("isc_dpb_multi_factor_auth")
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor")) {
+            properties.setProperty("isc_dpb_trusted_auth", "1");
+            properties.setProperty("isc_dpb_multi_factor_auth", "1");
+        }
+        if (!certificateFileField.getText().isEmpty()
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
+            loadCertificate(properties, certificateFileField.getText());
+
+        if (containerPasswordField.getPassword() != null && containerPasswordField.getPassword().length != 0
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
+            properties.setProperty("isc_dpb_repository_pin", MiscUtils.charsToString(containerPasswordField.getPassword()));
+
+        if (verifyServerCertCheck.isSelected()
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
+            properties.setProperty("isc_dpb_verify_server", "1");
+
+        String name = ManagementFactory.getRuntimeMXBean().getName();
+        String pid = name.split("@")[0];
+        String path = null;
+        if (ApplicationContext.getInstance().getExternalProcessName() != null &&
+                !ApplicationContext.getInstance().getExternalProcessName().isEmpty()) {
+            path = ApplicationContext.getInstance().getExternalProcessName();
+        }
+        if (ApplicationContext.getInstance().getExternalPID() != null &&
+                !ApplicationContext.getInstance().getExternalPID().isEmpty()) {
+            pid = ApplicationContext.getInstance().getExternalPID();
+        }
+        properties.setProperty("process_id", pid);
+        try {
+            if (path == null)
+                path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            properties.setProperty("process_name", path);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        databaseConnection.setJdbcProperties(properties);
     }
 
     public void showPassword() {

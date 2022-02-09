@@ -906,6 +906,7 @@ public class CreateDatabasePanel extends ActionPanel
             String name = this.nameField.getText();
             ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) GUIUtilities.
                     getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+            String pathDB = sourceField.getText().replace("\\", "/");
             DatabaseConnection databaseConnection = databaseConnectionFactory.create(name);
             databaseConnection.setDriverId(databaseDriver.getId());
             databaseConnection.setDriverName(databaseDriver.getName());
@@ -916,7 +917,7 @@ public class CreateDatabasePanel extends ActionPanel
             databaseConnection.setPasswordEncrypted(this.encryptPwdCheck.isSelected());
             databaseConnection.setPassword(MiscUtils.charsToString(this.passwordField.getPassword()));
             databaseConnection.setPort(this.portField.getStringValue());
-            databaseConnection.setSourceName(this.sourceField.getText());
+            databaseConnection.setSourceName(pathDB);
             databaseConnection.setCharset(this.charsetsCombo.getSelectedItem().toString());
             databaseConnection.setCertificate(certificateFileField.getText());
             databaseConnection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));

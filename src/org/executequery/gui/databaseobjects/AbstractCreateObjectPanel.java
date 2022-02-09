@@ -23,6 +23,10 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
@@ -55,11 +59,11 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         parent = dialog;
         connection = dc;
         commit = false;
+        editing = databaseObject != null;
         initComponents();
         setDatabaseObject(databaseObject);
         if (params != null)
             setParameters(params);
-        editing = databaseObject != null;
         init();
         if (editing) {
             try {
@@ -103,8 +107,12 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     }
 
     private void initComponents() {
-        nameField = new JTextField();
+        nameField = new JFormattedTextField();
         nameField.setText(SQLUtils.generateNameForDBObject(getTypeObject(), connection));
+        if (connection.isNamesToUpperCase() && !editing) {
+            PlainDocument doc = (PlainDocument) nameField.getDocument();
+            doc.setDocumentFilter(new UpperFilter());
+        }
         tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(700, 400));
         Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
@@ -294,5 +302,17 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
 
     protected static String getEditTitle(int type) {
         return Bundles.get(BrowserTreePopupMenu.class, "edit", Bundles.get(BrowserTreePopupMenu.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+    }
+
+    class UpperFilter extends DocumentFilter {
+        public void insertString(FilterBypass fb, int offset, String string,
+                                 AttributeSet attr) throws BadLocationException {
+            super.insertString(fb, offset, string.toUpperCase(), attr);
+        }
+
+        public void replace(FilterBypass fb, int offset, int length, String text,
+                            AttributeSet attrs) throws BadLocationException {
+            super.replace(fb, offset, length, text.toUpperCase(), attrs);
+        }
     }
 }

@@ -3,7 +3,6 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.util.MiscUtils;
 
@@ -13,8 +12,7 @@ import java.sql.SQLException;
 /**
  * Created by vasiliy on 26.01.17.
  */
-public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
-        implements DatabaseProcedure {
+public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
 
     private String triggerSourceCode;
     private boolean triggerActive;
@@ -30,7 +28,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     public final static long TRIGGER_TYPE_DB = 8192;
     public final static long RDB_TRIGGER_TYPE_MASK = 24576;
 
-    private static String[][] DDL_TRIGGER_ACTION_NAMES =
+    private static final String[][] DDL_TRIGGER_ACTION_NAMES =
             {
                     {null, null},
                     {"CREATE", "TABLE"},
@@ -140,11 +138,6 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     public static final int TABLE_TRIGGER = 0;
     public static final int DDL_TRIGGER = 2;
 
-    /**
-     * Creates a new instance.
-     */
-    public DefaultDatabaseTrigger() {
-    }
 
     /**
      * Creates a new instance.
@@ -153,14 +146,6 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
         super(metaTagParent, name);
     }
 
-    /**
-     * Creates a new instance with
-     * the specified values.
-     */
-    public DefaultDatabaseTrigger(String schema, String name) {
-        setName(name);
-        setSchemaName(schema);
-    }
 
     /**
      * Returns the database object type.
@@ -189,6 +174,11 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
+    }
+
+    @Override
+    public boolean allowsChildren() {
+        return false;
     }
 
     public String getTriggerSourceCode() {

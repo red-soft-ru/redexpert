@@ -139,10 +139,10 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         ddlTableTriggerPanel = new JPanel(new GridBagLayout());
         ddlCheckBoxes = new ArrayList<>();
         anyDdlBox = new JCheckBox("ANY DDL STATEMENT");
-        sqlBodyText.setSQLText("as\n" +
-                "begin\n" +
+        sqlBodyText.setSQLText("AS\n" +
+                "BEGIN\n" +
                 "  /* Trigger text */\n" +
-                "end");
+                "END");
 
 
         typeTriggerCombo.addActionListener(actionEvent -> changeTypeTrigger());

@@ -616,6 +616,10 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     public void setSource(String source) {
         this.source = source;
     }
+
+    public DatabaseMetaTag getMetaTagParent() {
+        return metaTagParent;
+    }
 }
 
 

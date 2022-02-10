@@ -34,7 +34,7 @@ public class SQLTextArea extends RSyntaxTextArea {
 
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
 
-    private CustomTokenMakerFactory tokenMakerFactory = new CustomTokenMakerFactory();
+    private final CustomTokenMakerFactory tokenMakerFactory = new CustomTokenMakerFactory();
     protected DatabaseConnection databaseConnection;
     protected SQLSyntaxDocument document;
     boolean changed = false;
@@ -348,7 +348,8 @@ public class SQLTextArea extends RSyntaxTextArea {
         if (databaseConnection != null)
             setDbobjects(databaseConnection.getListObjectsDB());
         else setDbobjects(new TreeSet<>());
-        autoCompletePopup.connectionChanged(databaseConnection);
+        if (autoCompletePopup != null)
+            autoCompletePopup.connectionChanged(databaseConnection);
     }
 
     protected void setDbobjects(TreeSet<String> dbobjects) {

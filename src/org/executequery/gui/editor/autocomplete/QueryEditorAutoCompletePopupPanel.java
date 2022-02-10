@@ -33,7 +33,7 @@ import java.util.List;
 
 public class QueryEditorAutoCompletePopupPanel extends JPopupMenu implements TypeAheadListProvider {
 
-    private static final Dimension PREFERRED_SIZE = new Dimension(460, 150);
+    public static final Dimension PREFERRED_SIZE = new Dimension(460, 150);
 
     private TypeAheadList list;
 

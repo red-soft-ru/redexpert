@@ -9,7 +9,7 @@ import org.underworldlabs.swing.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.sql.Types;
 import java.time.LocalDate;
@@ -65,6 +65,25 @@ public class InputParametersDialog extends BaseDialog {
 
             }
         });
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                canceled = true;
+                super.windowClosing(e);
+            }
+        });
+        ActionListener escListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canceled = true;
+                dispose();
+            }
+        };
+
+        mainPanel.registerKeyboardAction(escListener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         bottomButtonPanel.setCancelButtonText(Bundles.getCommon("cancel.button"));
         mainPanel.add(bottomButtonPanel, new GridBagConstraints(0, 2,
                 1, 1, 1, 0,

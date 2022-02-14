@@ -1782,6 +1782,11 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
     public void releaseResources() {
 
         try {
+            try {
+                commitLast(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             if (stmnt != null) {
 

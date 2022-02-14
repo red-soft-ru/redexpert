@@ -33,7 +33,6 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
@@ -85,7 +84,7 @@ public class QueryDispatcher {
     /**
      * the query sender database mediator
      */
-    private StatementExecutor querySender;
+    private DefaultStatementExecutor querySender;
 
     /**
      * indicates verbose logging output
@@ -194,6 +193,7 @@ public class QueryDispatcher {
                 querySender.closeConnection();
             }
         } catch (SQLException sqlExc) {
+            sqlExc.printStackTrace();
         }
     }
 
@@ -283,7 +283,7 @@ public class QueryDispatcher {
                     delegate.setStatusMessage(" Statement cancelled");
                 }
                 querySender.setCloseConnectionAfterQuery(false);
-                querySender.releaseResources();
+                querySender.releaseResourcesWithoutCommit();
                 executing = false;
             }
 

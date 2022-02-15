@@ -97,8 +97,8 @@ build_docs:
   before_script:
     - tar xf dist-src/RedExpert-$VERSION-src.tar.gz
   script:
-    - cd RedExpert-$VERSION-src && ./ci/build_docs.sh && cd ..
-    - mv RedExpert-$VERSION-src/dist .
+    - cd RedExpert-$VERSION && ./ci/build_docs.sh && cd ..
+    - mv RedExpert-$VERSION/dist .
 
 
 .build_template:

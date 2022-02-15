@@ -18,13 +18,13 @@ check_variable VERSION
 RESULT_DIR=`pwd`/dist/guide
 rm -rf "$RESULT_DIR" out
 mkdir -p "$RESULT_DIR"
-sed -i "s/\${VERSION}/$VERSION/" general_defs.tex
+sed -i "s/\${VERSION}/$VERSION/" guide/general_defs.tex
 
 
-pushd guides
+pushd guide
 make clean
 make package
 popd
 
 mkdir out
-cp guides/out/RedExpert_Guide-ru.pdf out/RedExpert-$VERSION-Guide-ru.pdf
+cp guide/out/RedExpert_Guide-ru.pdf out/RedExpert-$VERSION-Guide-ru.pdf

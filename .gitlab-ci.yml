@@ -141,7 +141,7 @@ build:linux:
     - mv modules/redexpert/target/config "${DIST}"
     - mv modules/redexpert/target/lib "${DIST}"
     - cp -r license/ "${DIST}"
-    - cp "${CI_PROJECT_DIR}"/dist/guide "${DIST}"
+    - cp -r "${CI_PROJECT_DIR}"/dist/guide/ "${DIST}"
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"
     - mv modules/redexpert/target/red_expert.png "${DIST}"
@@ -190,7 +190,7 @@ build:windows:
     - mv modules/redexpert/target/config "${DIST}"
     - mv modules/redexpert/target/lib "${DIST}"
     - cp -r license/ "${DIST}"
-    - cp "${CI_PROJECT_DIR}"/dist/guide "${DIST}"
+    - cp -r "${CI_PROJECT_DIR}"/dist/guide/ "${DIST}"
     - cp guide/RedExpert_Guide-ru.pdf ${DIST}/guide/
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"

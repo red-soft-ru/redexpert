@@ -66,7 +66,7 @@ Red Expert обладает рядом полезных компонентов: 
 \begin{itemize}[leftmargin=15pt]
 	\item На Linux системах для автоматического скачивания Java должен быть установлен пакет \ttt{libcurl4}.
 	\item На Windows Server для автоматического скачивания Java нужно отключить усиленную безопасность InternetExplorer.
-	\item Если для вашей системы не предусмотрен инсталятор, то можно запустить приложение командой "java -jar RedExpert.jar" из каталога в котором находится RedExpert.jar
+	\item Если для вашей системы не предусмотрен инсталятор или возникают ошибки с запуском, то можно запустить приложение командой "java -jar RedExpert.jar" из каталога в котором находится RedExpert.jar
 \end{itemize}
 \end{redremark}
 \end{enumerate}	
@@ -74,18 +74,9 @@ Red Expert обладает рядом полезных компонентов: 
 \newpage
 
 \section{Обновление Red Expert}
-Для того, чтобы не пропускать появление свежих версий Red Expert:
-
 \begin{enumerate}[leftmargin=25pt]
-\item  В настройках приложения (\textit{Инструменты} $\rightarrow$ \textit{Настройки} $\rightarrow$ \textit{Общие}) поставьте галочку \ttt{Загружать нестабильные версии}.
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width = 0.85\linewidth]{img/load_versions.png}
-\end{figure}
-
 \item При выходе новой версии приложения в строке состояния (внизу главного окна)
-будет появляться мигающая точка желтого цвета с надписью \ttt{Update available}:
+будет появляться мигающая точка желтого цвета с надписью \ttt{Доступно обновление}:
 \begin{figure}[H]
 	\begin{flushright}
 		\includegraphics[width = 0.94\linewidth]{img/status_bar.png}
@@ -117,7 +108,7 @@ Red Expert обладает рядом полезных компонентов: 
 	\end{figure}
 \anonsubsubsection[Компонент для установки JDBC драйверов]{\hyperref[sec:new_driver]{Компонент для установки JDBC драйверов}}
 
-Предназначен для регистрации в Red Expert других JDBC драйверов помимо Jaybird 3 Driver, а также просмотра и редактирования их настроек.
+Предназначен для регистрации в Red Expert других JDBC драйверов помимо Jaybird Driver, а также просмотра и редактирования их настроек.
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width = 0.8\linewidth]{img/new_drivers.png}
@@ -802,7 +793,7 @@ Red Expert позволяет одновременно использовать 
 Чтобы открыть редактор запросов в центральной панели, выберите пункт меню \textit{Инструменты} $\rightarrow$ \textit{Редактор запросов} или нажмите кнопку \begin{tikzpicture}
 \pgftext{\includegraphics[width=12pt]{img/Edit16.png}} at (0pt,0pt)
 \end{tikzpicture} 
-на главной панели инструментов. Он открывается в виде вкладки с названием \textit{Query Editor -- script<N>.sql}. Файл с запросами к базе данных \ttt{script<N>.sql} можно сохранить (по умолчанию файл сохраняется в \ttt{\$HOME\textbackslash .redexpert\textbackslash2000\textbackslash QueryEditor}). 
+на главной панели инструментов. Он открывается в виде вкладки с названием \textit{Query Editor -- script<N>.sql}. Файл с запросами к базе данных \ttt{script<N>.sql} можно сохранить (по умолчанию файл сохраняется в \ttt{\$HOME\textbackslash .redexpert\textbackslash<buildNumber>\textbackslash QueryEditor}). 
 
 Редактор запросов представляет собой настраиваемый инструмент просмотра и выполнения операторов SQL. В любой момент времени может быть открыто любое количество редакторов.
 
@@ -810,7 +801,7 @@ Red Expert позволяет одновременно использовать 
 \begin{itemize}
 	\item Настраиваемая подсветка синтаксиса SQL;
 	\item Согласованность скобок;
-	\item Подсказки ключевых слов и имен объектов базы данных по нажатию \ttt{Ctrl+Space};
+	\item Подсказки ключевых слов и имен объектов базы данных;
 	\item Выполнение нескольких запросов;
 	\item Выполнение и отображение нескольких запросов с множеством результатов (\hyperref[sec:resultset]{Result Set});
 	\item Поддержка \hyperref[sec:param_queries]{параметризованных запросов};

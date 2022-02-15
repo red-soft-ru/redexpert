@@ -4,11 +4,12 @@ cache:
 
 
 stages:
-- prepare
-- sources
-- build
-- repackage
-- deploy
+  - prepare
+  - sources
+  - build_docs
+  - build
+  - repackage
+  - deploy
 
 variables:
   RELEASE_HUB_PROJECT: red_expert
@@ -80,6 +81,25 @@ sources:
     expire_in: 1 day
     paths:
       - dist-src/
+
+
+
+build_docs:
+  stage: build-docs
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - dist/
+  tags:
+    - docker
+    - builder
+  image: registry.red-soft.biz:5000/docker-images/texlive-alpine/texlive2018-alpine:20190305
+  before_script:
+    - tar xf dist-src/RedExpert-$VERSION-src.tar.gz
+  script:
+    - cd RedExpert-$VERSION-src && ./ci/build_docs.sh && cd ..
+    - mv RedExpert-$VERSION-src/dist .
+
 
 .build_template:
   stage: build

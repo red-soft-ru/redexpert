@@ -28,3 +28,5 @@ popd
 
 mkdir out
 cp guide/out/RedExpert_Guide-ru.pdf out/RedExpert-$VERSION-Guide-ru.pdf
+cd out
+cp RedExpert-$VERSION-Guide-ru.pdf $RESULT_DIR

@@ -2,7 +2,7 @@ CLEAN_FILES=pdf aux log toc
 
 %.pdf:
 	echo Compiling $@
-	for i in `seq 4`; do pdflatex --interaction=nonstopmode -halt-on-error -file-line-error $(basename $@); done
+	for i in `seq 1`; do pdflatex --interaction=nonstopmode -halt-on-error -file-line-error $(basename $@); done
 
 %.dir:
 	echo Going to $(basename $@)

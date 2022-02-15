@@ -158,6 +158,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
                 grant_on_role(1, row, col);
             }
         }
+        querySender.releaseResources();
     }
 
     private JButton[] grantButtons;
@@ -176,6 +177,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
             for (int col = 1; col < headers.length; col++) {
                 grant_on_role(2, row, col);
             }
+            querySender.releaseResources();
         }
     }
 
@@ -198,6 +200,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
                         grant_on_role(1, row, col);
                     }
                 }
+                querySender.releaseResources();
             }
             if (row >= 0) {
                 setVisiblePanelOfTable(!relType.elementAt(row).equals(objectBox.getItemAt(3)));
@@ -664,7 +667,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
     public void runToThread() {
         int col;
-        try {
             switch (act) {
                 case CREATE_TABLE:
                     load_table();
@@ -740,12 +742,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
                     break;
             }
             querySender.releaseResources();
-            querySender.execute(QueryTypes.COMMIT, (String) null);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            querySender.releaseResources();
-        }
     }
 
     void grant_query(String query, Icon icon, int row, int col, JTable t) {
@@ -759,7 +755,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
         } catch (Exception e) {
             Log.error(e.getMessage());
         } finally {
-            querySender.releaseResources();
+            querySender.releaseResourcesWithoutCommit();
         }
     }
 
@@ -799,7 +795,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
                 grant_case(grantt, row, i);
             }
         } finally {
-            querySender.releaseResources();
+            querySender.releaseResourcesWithoutCommit();
         }
     }
 
@@ -944,7 +940,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
                     break;
             }
         }
-        querySender.releaseResources();
+        querySender.releaseResourcesWithoutCommit();
     }
 
     void grant_on_role(int grantt, int row, int col, int row2) {

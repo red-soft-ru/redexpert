@@ -85,7 +85,7 @@ sources:
 
 
 build_docs:
-  stage: build-docs
+  stage: build_docs
   artifacts:
     expire_in: 1 day
     paths:

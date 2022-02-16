@@ -95,6 +95,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             else {
                 databaseConnection.setUserName(lpd.getUsername());
                 databaseConnection.setPassword(lpd.getPassword());
+                databaseConnection.setPasswordStored(lpd.isStorePassword());
             }
         }
         try {

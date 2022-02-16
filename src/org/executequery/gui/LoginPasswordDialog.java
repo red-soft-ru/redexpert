@@ -1,5 +1,6 @@
 package org.executequery.gui;
 
+import org.executequery.gui.browser.ConnectionPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.LinkButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -14,6 +15,7 @@ import java.net.URL;
 public class LoginPasswordDialog extends BaseDialog {
     private JTextField username;
     private JPasswordField password;
+    private JCheckBox storePassword;
     private final String message;
     private final String user;
     private boolean closedDialog = false;
@@ -69,6 +71,8 @@ public class LoginPasswordDialog extends BaseDialog {
             }
         });
         mainPanel.add(password, gbh.nextCol().spanX().get());
+        storePassword= new JCheckBox(Bundles.get(ConnectionPanel.class,"StorePassword"));
+        mainPanel.add(storePassword, gbh.nextRow().get());
         LinkButton linkButton = new LinkButton(bundledString("register"));
         mainPanel.add(linkButton, gbh.nextRowFirstCol().setLabelDefault().get());
         linkButton.addMouseListener(new MouseAdapter() {
@@ -82,6 +86,7 @@ public class LoginPasswordDialog extends BaseDialog {
             }
         });
         linkButton.setVisible(urlOfRegistration != null);
+        storePassword.setVisible(urlOfRegistration==null);
         JButton okButton = new JButton(bundledString("login"));
         mainPanel.add(okButton, gbh.nextCol().get());
         okButton.addActionListener(new ActionListener() {
@@ -138,6 +143,8 @@ public class LoginPasswordDialog extends BaseDialog {
     public String getPassword() {
         return new String(password.getPassword());
     }
+
+    public boolean isStorePassword(){return storePassword.isSelected();}
 
     public boolean isClosedDialog() {
         return closedDialog;

@@ -168,7 +168,6 @@ build:windows:
     - $env:RE_VERSION = $VERSION
     - unzip -q dist-src\RedExpert-$VERSION-src.zip
     - mkdir ${DIST}
-    - mkdir ${DIST}/guide/
     - cd ${CI_PROJECT_DIR}\RedExpert-$VERSION
     - echo "downloading installbuilder from ${URL_INSTALLBUILDER}"
     - $client=new-object System.Net.WebClient

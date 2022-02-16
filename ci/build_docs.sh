@@ -27,6 +27,6 @@ make package
 popd
 
 mkdir out
-cp guide/out/RedExpert_Guide-ru.pdf out/RedExpert-$VERSION-Guide-ru.pdf
+cp guide/out/RedExpert_Guide-ru.pdf out/RedExpert_Guide-ru.pdf
 cd out
-cp RedExpert-$VERSION-Guide-ru.pdf $RESULT_DIR
+cp RedExpert_Guide-ru.pdf $RESULT_DIR

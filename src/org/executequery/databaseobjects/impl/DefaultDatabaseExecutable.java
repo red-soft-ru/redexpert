@@ -407,14 +407,6 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         return META_TYPES[PROCEDURE];
     }
 
-    /**
-     * Returns the parent meta tag object.
-     *
-     * @return the parent meta tag
-     */
-    public DatabaseMetaTag getMetaTagParent() {
-        return metaTagParent;
-    }
 
     /**
      * Returns the parent named object of this object.

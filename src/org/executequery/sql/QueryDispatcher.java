@@ -33,7 +33,6 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
@@ -48,6 +47,7 @@ import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
 import org.executequery.util.UserProperties;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.sqlParser.REDDATABASESqlBaseListener;
 import org.underworldlabs.sqlParser.REDDATABASESqlLexer;
 import org.underworldlabs.sqlParser.REDDATABASESqlParser;
@@ -84,7 +84,7 @@ public class QueryDispatcher {
     /**
      * the query sender database mediator
      */
-    private StatementExecutor querySender;
+    private DefaultStatementExecutor querySender;
 
     /**
      * indicates verbose logging output
@@ -193,6 +193,7 @@ public class QueryDispatcher {
                 querySender.closeConnection();
             }
         } catch (SQLException sqlExc) {
+            sqlExc.printStackTrace();
         }
     }
 
@@ -282,7 +283,7 @@ public class QueryDispatcher {
                     delegate.setStatusMessage(" Statement cancelled");
                 }
                 querySender.setCloseConnectionAfterQuery(false);
-                querySender.releaseResources();
+                querySender.releaseResourcesWithoutCommit();
                 executing = false;
             }
 
@@ -1227,6 +1228,10 @@ public class QueryDispatcher {
         if (!displayParams.isEmpty()) {
             InputParametersDialog spd = new InputParametersDialog(displayParams);
             spd.display();
+            if (spd.isCanceled()) {
+                statementCancelled = true;
+                throw new DataSourceException("Canceled");
+            }
         }
         for (int i = 0; i < params.size(); i++) {
             if (params.get(i).isNull())
@@ -1267,6 +1272,10 @@ public class QueryDispatcher {
         if (!displayParams.isEmpty()) {
             InputParametersDialog spd = new InputParametersDialog(displayParams);
             spd.display();
+            if (spd.isCanceled()) {
+                statementCancelled = true;
+                throw new DataSourceException("Canceled");
+            }
         }
         for (int i = 0; i < params.size(); i++) {
             if (params.get(i).isNull())

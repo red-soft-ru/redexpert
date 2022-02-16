@@ -1470,7 +1470,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             metaTag.setCatalog(catalog);
             metaTag.setSchema(schema);
-            DatabaseConnection databaseConnection = metaTag.getHost().getDatabaseConnection();
             if (supportedObject(i)) {
                 metaObjects.add(metaTag);
                 //!NamedObject.META_TYPES[type].contains("SYSTEM") || SystemProperties.getBooleanProperty("user", "browser.show.system.objects");
@@ -1536,7 +1535,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                             return false;
                     }
             }
-            return type != NamedObject.TABLESPACE;
+            return type != NamedObject.TABLESPACE && type != NamedObject.TABLE_COLUMN && type != NamedObject.CONSTRAINT;
             //return getDatabaseProductName().toUpperCase().contains("REDDATABASE") && db.getMajorVersion() >= 4;
         }
         return true;
@@ -1849,5 +1848,14 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 return metaTag.getObjects();
         }
         return null;
+    }
+
+    public List<String> getDatabaseObjectNamesForMetaTag(String metadatakey) {
+        List<String> list = new ArrayList<>();
+        List<NamedObject> databaseObjects = getDatabaseObjectsForMetaTag(metadatakey);
+        for (NamedObject namedObject : databaseObjects) {
+            list.add(namedObject.getName().trim());
+        }
+        return list;
     }
 }

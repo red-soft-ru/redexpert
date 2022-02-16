@@ -27,7 +27,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.gui.ErrorMessagePublisher;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -72,9 +71,9 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
      */
     private boolean interrupted;
 
-    private List<ResultSetColumnHeader> columnHeaders;
+    private final List<ResultSetColumnHeader> columnHeaders;
 
-    private List<ResultSetColumnHeader> visibleColumnHeaders;
+    private final List<ResultSetColumnHeader> visibleColumnHeaders;
 
     /**
      * The table values
@@ -95,6 +94,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     private List<ColumnData> columnDataList;
 
     boolean isTable;
+
+    DefaultStatementExecutor executor;
 
     public ResultSetTableModel(boolean isTable) throws SQLException {
 
@@ -328,6 +329,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             addingRecord(resultSet, count);
         else {
             resultSet.close();
+            if (executor != null)
+                executor.releaseResources();
             rsClose = true;
         }
     }
@@ -337,6 +340,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             addingRecord(resultSet, count);
         fireTableDataChanged();
         resultSet.close();
+        if (executor != null)
+            executor.releaseResources();
         rsClose = true;
     }
 
@@ -347,7 +352,9 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             clearData();
             return;
         }
-        StatementExecutor executor = new DefaultStatementExecutor(dc, true);
+        if (executor != null)
+            executor.releaseResources();
+        executor = new DefaultStatementExecutor(dc, true);
 
         try {
             resetMetaData();

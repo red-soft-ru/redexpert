@@ -1,0 +1,21 @@
+CLEAN_FILES=pdf aux log toc
+
+%.pdf:
+	echo Compiling $@
+	for i in `seq 4`; do pdflatex --interaction=nonstopmode -halt-on-error -file-line-error $(basename $@); done
+
+%.dir:
+	echo Going to $(basename $@)
+	make -C $(basename $@)
+
+%.clean_dir:
+	echo Cleaning $(basename $@)
+	make -C $(basename $@) clean
+
+%.package_dir:
+	make -C $(basename $@) package
+
+.PHONY: prepare_dirs
+
+prepare_dirs:
+	mkdir -p $(ROOT)/out

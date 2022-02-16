@@ -43,7 +43,6 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.*;
 
@@ -307,6 +306,7 @@ public class ApplicationLauncher {
         String build = stringApplicationProperty("eq.build");
         System.setProperty("executequery.build", build);
         ApplicationContext.getInstance().setBuild(build);
+        UIManager.put("Tree.timeFactor", 5000L);
     }
 
     private void aaFonts() {

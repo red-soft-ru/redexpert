@@ -446,12 +446,21 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     public void releaseResources() {
+        {
+            try {
+                if (connection != null && !connection.isClosed())
+                    connection.commit();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
         if (statement != null) {
 
             try {
-                if (!statement.isClosed())
+                if (!statement.isClosed()) {
                     //Log.info("Close statement");
                     statement.close();
+                }
                 statement = null;
 
             } catch (SQLException e) {
@@ -615,6 +624,10 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public DatabaseMetaTag getMetaTagParent() {
+        return metaTagParent;
     }
 }
 

@@ -60,7 +60,7 @@ class ConnectionsTreeToolBar extends PanelToolBar {
 
     private JButton connectButton;
 
-    private ConnectionsTreePanel treePanel;
+    private final ConnectionsTreePanel treePanel;
 
     private ImageIcon connectedIcon;
 
@@ -78,7 +78,7 @@ class ConnectionsTreeToolBar extends PanelToolBar {
 
         connectButton = addButton(treePanel, "connectDisconnect",
                 GUIUtilities.getAbsoluteIconPath("Connected.png"),
-                Bundles.get("action.connect-to-database"));
+                Bundles.get("action.connect-to-database-command"));
 
         newConnectionButton = addButton(
                 treePanel, "newConnection",

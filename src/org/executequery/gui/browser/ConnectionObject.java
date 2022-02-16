@@ -21,6 +21,7 @@
 package org.executequery.gui.browser;
 
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.NamedObject;
 
 /**
  * @author Takis Diakoumis
@@ -46,7 +47,7 @@ public class ConnectionObject extends BaseDatabaseObject {
      * Creates a new instance of HostMetaObject
      */
     public ConnectionObject(DatabaseConnection databaseConnection) {
-        super(BrowserConstants.HOST_NODE, databaseConnection.getName());
+        super(NamedObject.HOST, databaseConnection.getName());
         this.databaseConnection = databaseConnection;
     }
 

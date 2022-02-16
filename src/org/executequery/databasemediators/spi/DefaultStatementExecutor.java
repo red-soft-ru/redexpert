@@ -1558,6 +1558,33 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
     }
 
+    private void commitTransaction(boolean commit) {
+        if (conn != null)
+            try {
+
+                if (!conn.isClosed()) {
+
+
+                    if (conn.getAutoCommit()) {
+                        return;
+                    }
+
+                    if (commit) {
+
+                        conn.commit();
+
+                    } else {
+
+                        conn.rollback();
+                    }
+
+                }
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+    }
+
     public SqlStatementResult executeDDL(PreparedStatement statement) throws SQLException {
         stmnt = statement;
         if (statement == null || statement.isClosed()) {
@@ -1739,7 +1766,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
      * Closes the database connection of this object.
      */
     @Override
-    public void closeConnection() {
+    public void closeConnection() throws SQLException {
         // if set to keep the connection open
         // for this instance - return
         if (keepAlive) {
@@ -1778,8 +1805,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
     /**
      * <p>Releases database resources held by this class.
      */
-    @Override
-    public void releaseResources() {
+    public void releaseResourcesWithoutCommit() {
 
         try {
 
@@ -1802,6 +1828,17 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
             handleException(e);
         }
+
+    }
+
+    public void releaseResources() {
+        try {
+            commitTransaction(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        releaseResourcesWithoutCommit();
 
     }
 

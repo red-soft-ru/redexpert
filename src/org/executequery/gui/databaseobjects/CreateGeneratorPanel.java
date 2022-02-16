@@ -103,7 +103,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        tabbedPane.add(bundlesString("description"), description);
+        tabbedPane.add(bundleStaticString("description"), description);
         if (getDatabaseVersion() < 3) {
             labelIncrement.setVisible(false);
             incrementText.setVisible(false);

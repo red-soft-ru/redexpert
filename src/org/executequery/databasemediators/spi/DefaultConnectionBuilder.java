@@ -49,7 +49,7 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
     /**
      * The database connection object
      */
-    private DatabaseConnection databaseConnection;
+    private final DatabaseConnection databaseConnection;
 
     /**
      * The exception on error
@@ -114,7 +114,7 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
 
             public void finished() {
 
-                if (!cancelled && progressDialog != null) {
+                if (progressDialog != null) {
 
                     progressDialog.dispose();
                 }
@@ -136,6 +136,9 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
         } catch (DataSourceException e) {
 
             dataSourceException = e;
+            if (e.getMessage().contentEquals("Connection cancelled")) {
+                cancel();
+            }
         }
 
     }

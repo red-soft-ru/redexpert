@@ -118,7 +118,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         SpinnerModel model = new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1);
         positionField = new JSpinner(model);
         positionField.setValue(0);
-        activeBox = new JCheckBox(bundlesString("active"));
+        activeBox = new JCheckBox(bundleStaticString("active"));
         activeBox.setSelected(true);
         databaseTriggerPanel = new JPanel();
         actionCombo = new JComboBox(new String[]{"CONNECT", "DISCONNECT", "TRANSACTION START", "TRANSACTION COMMIT", "TRANSACTION ROLLBACK"});
@@ -128,7 +128,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         insertBox = new JCheckBox("INSERT");
         updateBox = new JCheckBox("UPDATE");
         deleteBox = new JCheckBox("DELETE");
-        labelTable = new JLabel(bundlesString("table"));
+        labelTable = new JLabel(bundleStaticString("table"));
         beforeAfterlabel = new JLabel(bundleString("before-after"));
         tablesCombo = new JComboBox(getTables());
         sqlBodyText = new SimpleSqlTextPanel();
@@ -139,10 +139,10 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         ddlTableTriggerPanel = new JPanel(new GridBagLayout());
         ddlCheckBoxes = new ArrayList<>();
         anyDdlBox = new JCheckBox("ANY DDL STATEMENT");
-        sqlBodyText.setSQLText("as\n" +
-                "begin\n" +
+        sqlBodyText.setSQLText("AS\n" +
+                "BEGIN\n" +
                 "  /* Trigger text */\n" +
-                "end");
+                "END");
 
 
         typeTriggerCombo.addActionListener(actionEvent -> changeTypeTrigger());
@@ -186,8 +186,8 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        tabbedPane.add(bundlesString("SQL"), sqlBodyText);
-        tabbedPane.add(bundlesString("description"), descriptionText);
+        tabbedPane.add(bundleStaticString("SQL"), sqlBodyText);
+        tabbedPane.add(bundleStaticString("description"), descriptionText);
 
         GridBagConstraints gbc = new GridBagConstraints();
         databaseTriggerPanel.setLayout(new GridBagLayout());

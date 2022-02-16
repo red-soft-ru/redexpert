@@ -173,6 +173,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                     sqlBodyText.setSQLText(bodyContext.getText());
                     List<ProcedureParserParser.Local_variableContext> vars = ctx.local_variable();
                     if (!vars.isEmpty()) {
+                        boolean first_var = true, first_cursor = true;
                         for (int i = 0; i < vars.size(); i++) {
                             ProcedureParserParser.Local_variableContext var = vars.get(i);
                             if (var.cursor() == null) {
@@ -234,7 +235,9 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                         description = description.substring(2, description.length() - 2);
                                     variable.setDescription(description);
                                 }
-                                variablesPanel.deleteEmptyRow();
+                                if (first_var)
+                                    variablesPanel.deleteEmptyRow();
+                                first_var = false;
                                 variablesPanel.addRow(variable);
                             } else {
                                 ColumnData cursor = new ColumnData(connection);
@@ -257,7 +260,9 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                         description = description.substring(2, description.length() - 2);
                                     cursor.setDescription(description);
                                 }
-                                cursorsPanel.deleteEmptyRow();
+                                if (first_cursor)
+                                    cursorsPanel.deleteEmptyRow();
+                                first_cursor = false;
                                 cursorsPanel.addRow(cursor);
 
                             }

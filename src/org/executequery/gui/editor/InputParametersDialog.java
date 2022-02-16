@@ -4,11 +4,12 @@ import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.editor.autocomplete.Parameter;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.sql.Types;
 import java.time.LocalDate;
@@ -19,12 +20,12 @@ import java.util.List;
 
 public class InputParametersDialog extends BaseDialog {
 
-    private List<Parameter> parameters;
+    private final List<Parameter> parameters;
     private JScrollPane scrollPanel;
     private JPanel mainPanel;
     private JPanel panel;
     private List<JComponent> componentList;
-    private List<JCheckBox> nullBoxes;
+    private boolean canceled = false;
 
     public InputParametersDialog(List<Parameter> parameters) {
         super("Input Parameters", true, true);
@@ -39,7 +40,6 @@ public class InputParametersDialog extends BaseDialog {
         scrollPanel.setViewportView(panel);
         panel.setLayout(new GridBagLayout());
         componentList = new ArrayList<>();
-        nullBoxes = new ArrayList<>();
         mainPanel.setLayout(new GridBagLayout());
         mainPanel.add(scrollPanel, new GridBagConstraints(0, 0,
                 1, 1, 1, 0,
@@ -57,6 +57,34 @@ public class InputParametersDialog extends BaseDialog {
             }
         });
         bottomButtonPanel.setOkButtonText("OK");
+        bottomButtonPanel.setCancelButtonAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canceled = true;
+                dispose();
+
+            }
+        });
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                canceled = true;
+                super.windowClosing(e);
+            }
+        });
+        ActionListener escListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canceled = true;
+                dispose();
+            }
+        };
+
+        mainPanel.registerKeyboardAction(escListener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        bottomButtonPanel.setCancelButtonText(Bundles.getCommon("cancel.button"));
         mainPanel.add(bottomButtonPanel, new GridBagConstraints(0, 2,
                 1, 1, 1, 0,
                 GridBagConstraints.SOUTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
@@ -64,6 +92,7 @@ public class InputParametersDialog extends BaseDialog {
         for (int i = 0; i < parameters.size(); i++)
             addParameter(parameters.get(i));
         addDisplayComponent(mainPanel);
+        bottomButtonPanel.setHelpButtonVisible(false);
     }
 
     private void setValueToComponent(Parameter parameter, JComponent component) {
@@ -88,7 +117,7 @@ public class InputParametersDialog extends BaseDialog {
                     ((RDBFieldFileChooser) component).setFile(((File) parameter.getValue()));
                     break;
                 default:
-                    ((JTextField) component).setText((String) parameter.getValue());
+                    ((ValueOrNullParameterField) component).setValue((String) parameter.getValue());
                     break;
             }
     }
@@ -126,10 +155,10 @@ public class InputParametersDialog extends BaseDialog {
             case Types.BIGINT:
             case Types.INTEGER:
             case Types.SMALLINT:
-                component = new NumberTextField();
+                component = new ValueOrNullParameterField(new NumberTextField());
                 break;
             default:
-                component = new JTextField(14);
+                component = new ValueOrNullParameterField(new JTextField(14));
                 break;
         }
         setValueToComponent(parameter, component);
@@ -165,10 +194,14 @@ public class InputParametersDialog extends BaseDialog {
                     parameter.setValue(file);
                     break;
                 default:
-                    parameter.setValue(((JTextField) component).getText());
+                    parameter.setValue(((ValueOrNullParameterField) component).getValue());
                     break;
             }
         }
         finished();
+    }
+
+    public boolean isCanceled() {
+        return canceled;
     }
 }

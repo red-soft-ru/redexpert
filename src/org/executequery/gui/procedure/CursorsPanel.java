@@ -4,15 +4,14 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.TableDefinitionPanel;
+import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 import org.underworldlabs.swing.table.StringCellEditor;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import javax.swing.event.*;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -28,6 +27,8 @@ public class CursorsPanel extends JPanel
      * The table containing all column descriptions
      */
     protected DatabaseTable table;
+
+    protected SimpleSqlTextPanel sqlTextPanel;
 
     /**
      * The table's _model
@@ -89,7 +90,7 @@ public class CursorsPanel extends JPanel
         _model.setColumnDataArray(cda);
     }
 
-
+    private int selectedRow = -1;
     private void jbInit() {
         // set the table model to use
         _model = new ProcedureParameterModel();
@@ -100,7 +101,34 @@ public class CursorsPanel extends JPanel
         tcm.getColumn(SCROLL_COLUMN).setMaxWidth(70);
         tcm.getColumn(SELECT_OPERATOR_COLUMN).setPreferredWidth(200);
         tcm.getColumn(DESCRIPTION_COLUMN).setPreferredWidth(200);
+        sqlTextPanel = new SimpleSqlTextPanel();
+        ListSelectionModel selModel = table.getSelectionModel();
+        selModel.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (table.getSelectedRow() >= 0) {
+                    selectedRow = table.getSelectedRow();
+                    sqlTextPanel.setSQLText(_model.getTableVector().get(selectedRow).getSelectOperator());
+                }
+            }
+        });
+        sqlTextPanel.getTextPane().getSQLSyntaxDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
 
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                if (selectedRow >= 0)
+                    _model.setValueAt(sqlTextPanel.getSQLText(), selectedRow, SELECT_OPERATOR_COLUMN);
+            }
+        });
 
         // add the editors if editing
         if (editing) {
@@ -170,7 +198,11 @@ public class CursorsPanel extends JPanel
                 GridBagConstraints.BOTH,
                 new Insets(2, 2, 2, 2), 0, 0));
 
-        add(definitionPanel, new GridBagConstraints(
+        JSplitPane splitPane = new JSplitPane();
+        splitPane.setLeftComponent(definitionPanel);
+        splitPane.setRightComponent(sqlTextPanel);
+
+        add(splitPane, new GridBagConstraints(
                 1, 1, 1, 1, 1.0, 1.0,
                 GridBagConstraints.NORTHEAST,
                 GridBagConstraints.BOTH,
@@ -660,6 +692,8 @@ public class CursorsPanel extends JPanel
 
 
         public boolean isCellEditable(int row, int col) {
+            if (col == SELECT_OPERATOR_COLUMN)
+                return false;
             return editing;
         }
 

@@ -4,17 +4,18 @@ cache:
 
 
 stages:
-- prepare
-- sources
-- build
-- repackage
-- deploy
+  - prepare
+  - sources
+  - build_docs
+  - build
+  - repackage
+  - deploy
 
 variables:
   RELEASE_HUB_PROJECT: red_expert
   CI_URL: ${CI_PROJECT_URL}/pipelines/${CI_PIPELINE_ID}
   CONTEXT: commit
-  TAG_BRANCH: stable
+  TAG_BRANCH: test_branch
   MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository"
   http_proxy: "http://git.red-soft.biz:3128"
   https_proxy: "http://git.red-soft.biz:3128"
@@ -81,6 +82,25 @@ sources:
     paths:
       - dist-src/
 
+
+
+build_docs:
+  stage: build_docs
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - dist/
+  tags:
+    - docker
+    - builder
+  image: registry.red-soft.biz:5000/docker-images/texlive-alpine/texlive2018-alpine:20190305
+  before_script:
+    - tar xf dist-src/RedExpert-$VERSION-src.tar.gz
+  script:
+    - cd RedExpert-$VERSION && ./ci/build_docs.sh && cd ..
+    - mv RedExpert-$VERSION/dist .
+
+
 .build_template:
   stage: build
   artifacts:
@@ -121,7 +141,7 @@ build:linux:
     - mv modules/redexpert/target/config "${DIST}"
     - mv modules/redexpert/target/lib "${DIST}"
     - cp -r license/ "${DIST}"
-    - cp guide/RedExpert_Guide-ru.pdf "${DIST}"/guide/
+    - cp -r "${CI_PROJECT_DIR}"/dist/guide/ "${DIST}"
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"
     - mv modules/redexpert/target/red_expert.png "${DIST}"
@@ -148,7 +168,6 @@ build:windows:
     - $env:RE_VERSION = $VERSION
     - unzip -q dist-src\RedExpert-$VERSION-src.zip
     - mkdir ${DIST}
-    - mkdir ${DIST}/guide/
     - cd ${CI_PROJECT_DIR}\RedExpert-$VERSION
     - echo "downloading installbuilder from ${URL_INSTALLBUILDER}"
     - $client=new-object System.Net.WebClient
@@ -170,7 +189,7 @@ build:windows:
     - mv modules/redexpert/target/config "${DIST}"
     - mv modules/redexpert/target/lib "${DIST}"
     - cp -r license/ "${DIST}"
-    - cp guide/RedExpert_Guide-ru.pdf ${DIST}/guide/
+    - cp -r ${CI_PROJECT_DIR}/dist/guide/ ${DIST}/
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"
     - mv modules/redexpert/target/red_expert.png "${DIST}"

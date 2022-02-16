@@ -24,6 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
+import org.executequery.databaseobjects.NamedObject;
 
 import java.sql.SQLException;
 
@@ -60,43 +61,43 @@ public class BrowserQueryExecuter {
         int type = object.getType();
         switch (type) {
 
-            case BrowserConstants.CATALOG_NODE:
-            case BrowserConstants.SCHEMA_NODE:
-            case BrowserConstants.OTHER_NODE:
+            case NamedObject.CATALOG:
+            case NamedObject.SCHEMA:
+            case NamedObject.OTHER:
                 GUIUtilities.displayErrorMessage(
                         "Dropping objects of this type is not currently supported");
                 return UPDATE_CANCELLED;
 
-            case BrowserConstants.FUNCTIONS_NODE:
+            case NamedObject.FUNCTION:
                 queryStart = "DROP FUNCTION ";
                 break;
 
-            case BrowserConstants.INDEX_NODE:
+            case NamedObject.INDEX:
                 queryStart = "DROP INDEX ";
                 break;
 
-            case BrowserConstants.PROCEDURE_NODE:
+            case NamedObject.PROCEDURE:
                 queryStart = "DROP PROCEDURE ";
                 break;
 
-            case BrowserConstants.SEQUENCE_NODE:
+            case NamedObject.SEQUENCE:
                 queryStart = "DROP SEQUENCE ";
                 break;
 
-            case BrowserConstants.SYNONYM_NODE:
+            case NamedObject.SYNONYM:
                 queryStart = "DROP SYNONYM ";
                 break;
 
-            case BrowserConstants.SYSTEM_TABLE_NODE:
-            case BrowserConstants.TABLE_NODE:
+            case NamedObject.SYSTEM_TABLE:
+            case NamedObject.TABLE:
                 queryStart = "DROP TABLE ";
                 break;
 
-            case BrowserConstants.TRIGGER_NODE:
+            case NamedObject.TRIGGER:
                 queryStart = "DROP TRIGGER ";
                 break;
 
-            case BrowserConstants.VIEW_NODE:
+            case NamedObject.VIEW:
                 queryStart = "DROP VIEW ";
                 break;
 

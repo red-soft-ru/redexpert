@@ -4,6 +4,7 @@ import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
@@ -26,8 +27,8 @@ import java.util.List;
 
 
 public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyListener {
-    public static final String CREATE_TITLE = "Insert Column";
-    public static final String EDIT_TITLE = "Edit Column";
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.TABLE_COLUMN);
+    public static final String EDIT_TITLE = getEditTitle(NamedObject.TABLE_COLUMN);
     private DomainPanel domainPanel;
     private SimpleTextArea defaultValuePanel;
     private SimpleSqlTextPanel checkPanel;
@@ -68,10 +69,10 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), columnData, false);
         selectTypePanel.setDisabledCollate(editing);
         autoIncrementPanel = new AutoIncrementPanel(connection, null, columnData.getAutoincrement(), table.getName(), getGenerators());
-        tableLabel = new JLabel("Table:");
+        tableLabel = new JLabel(bundleString("Table"));
         tableNameField = new JTextField(table.getName());
-        notNullBox = new JCheckBox("Not Null");
-        primaryBox = new JCheckBox("Primary Key");
+        notNullBox = new JCheckBox(bundleString("NotNull"));
+        primaryBox = new JCheckBox(bundleString("PrimaryKey"));
 
         tableNameField.setEnabled(false);
 
@@ -124,17 +125,17 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        tabbedPane.add("Domain", domainPanel);
+        tabbedPane.add(bundleString("Domain"), domainPanel);
         if (!editing || columnEdited.getDomain().toUpperCase().startsWith("RDB$"))
-            tabbedPane.add("Type", selectTypePanel);
-        tabbedPane.add("Default Value", defaultValuePanel);
+            tabbedPane.add(bundleString("Type"), selectTypePanel);
+        tabbedPane.add(bundleString("DefaultValue"), defaultValuePanel);
         if (!editing)
-            tabbedPane.add("Check", checkPanel);
+            tabbedPane.add(bundleString("Check"), checkPanel);
         if (!editing || !MiscUtils.isNull(columnEdited.getComputedSource()))
-            tabbedPane.add("Computed by", computedPanel);
-        tabbedPane.add("Autoincrement", autoIncrementPanel);
-        tabbedPane.add("Description", descriptionPanel);
-        tabbedPane.add("SQL", sqlPanel);
+            tabbedPane.add(bundleString("ComputedBy"), computedPanel);
+        tabbedPane.add(bundleString("Autoincrement"), autoIncrementPanel);
+        tabbedPane.add(bundleString("Description"), descriptionPanel);
+        tabbedPane.add(bundleString("SQL"), sqlPanel);
         columnData.setColumnName(nameField.getText());
     }
 

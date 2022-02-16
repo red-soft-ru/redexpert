@@ -968,80 +968,90 @@ public abstract class TableDefinitionPanel extends JPanel
                     cd.setColumnName((String) value);
                     break;
                 case TYPE_COLUMN:
-                    if (value.getClass() == String.class) {
-                        cd.setColumnType((String) value);
-                        int intValue = 0;
-                        for (int i = 0; i < intDataTypes.length; i++) {
-                            if (((String) value).equalsIgnoreCase(dataTypes[i])) {
-                                intValue = intDataTypes[i];
-                                break;
+                    if (value != null) {
+                        if (value.getClass() == String.class) {
+                            cd.setColumnType((String) value);
+                            int intValue = 0;
+                            for (int i = 0; i < intDataTypes.length; i++) {
+                                if (((String) value).equalsIgnoreCase(dataTypes[i])) {
+                                    intValue = intDataTypes[i];
+                                    break;
+                                }
+
                             }
+                            cd.setSQLType(intValue);
+                            if (cd.getSQLType() != cd.getDomainType()) {
+                                _model.setValueAt("", row, DOMAIN_COLUMN);
+                                if (!isEditSize(row))
+                                    _model.setValueAt("-1", row, SIZE_COLUMN);
+                                else
+                                    _model.setValueAt((cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
+                                            || cd.getSQLType() == Types.LONGVARBINARY) ? "80" : "10", row, SIZE_COLUMN);
+                                if (!isEditScale(row))
+                                    _model.setValueAt("-1", row, SCALE_COLUMN);
+                                else
+                                    _model.setValueAt("0", row, SCALE_COLUMN);
+                                if (!isEditSubtype(row))
+                                    _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                                else
+                                    _model.setValueAt("0", row, SUBTYPE_COLUMN);
+                            } else {
+                                if (!isEditSize(row))
+                                    _model.setValueAt("-1", row, SIZE_COLUMN);
+                                else
+                                    _model.setValueAt(String.valueOf(cd.getColumnSize()), row, SIZE_COLUMN);
+                                if (!isEditScale(row))
+                                    _model.setValueAt("-1", row, SCALE_COLUMN);
+                                else
+                                    _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                                if (!isEditSubtype(row))
+                                    _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                                else
+                                    _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
+                            }
+                        } else {
+                            cd.setColumnType(dataTypes[(int) value]);
+                            cd.setSQLType(intDataTypes[(int) value]);
+                            if (cd.getSQLType() != cd.getDomainType()) {
+                                _model.setValueAt("", row, DOMAIN_COLUMN);
+                                if (!isEditSize(row))
+                                    _model.setValueAt("-1", row, SIZE_COLUMN);
+                                else
+                                    _model.setValueAt((cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
+                                            || cd.getSQLType() == Types.LONGVARBINARY) ? "80" : "10", row, SIZE_COLUMN);
+                                if (!isEditScale(row))
+                                    _model.setValueAt("-1", row, SCALE_COLUMN);
+                                else
+                                    _model.setValueAt("0", row, SCALE_COLUMN);
+                                if (!isEditSubtype(row))
+                                    _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                                else
+                                    _model.setValueAt("0", row, SUBTYPE_COLUMN);
+                            } else {
+                                if (!isEditSize(row))
+                                    _model.setValueAt("-1", row, SIZE_COLUMN);
+                                else
+                                    _model.setValueAt(String.valueOf(cd.getColumnSize()), row, SIZE_COLUMN);
+                                if (!isEditScale(row))
+                                    _model.setValueAt("-1", row, SCALE_COLUMN);
+                                else
+                                    _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                                if (!isEditSubtype(row))
+                                    _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                                else
+                                    _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
+                            }
+                            if (!isEditEncoding(row))
+                                cd.setCharset(charsets.get(0));
 
                         }
-                        cd.setSQLType(intValue);
-                        if (cd.getSQLType() != cd.getDomainType()) {
-                            _model.setValueAt("", row, DOMAIN_COLUMN);
-                            if (!isEditSize(row))
-                                _model.setValueAt("-1", row, SIZE_COLUMN);
-                            else
-                                _model.setValueAt((cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
-                                        || cd.getSQLType() == Types.LONGVARBINARY) ? "80" : "10", row, SIZE_COLUMN);
-                            if (!isEditScale(row))
-                                _model.setValueAt("-1", row, SCALE_COLUMN);
-                            else
-                                _model.setValueAt("0", row, SCALE_COLUMN);
-                            if (!isEditSubtype(row))
-                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
-                            else
-                                _model.setValueAt("0", row, SUBTYPE_COLUMN);
-                        } else {
-                            if (!isEditSize(row))
-                                _model.setValueAt("-1", row, SIZE_COLUMN);
-                            else
-                                _model.setValueAt(String.valueOf(cd.getColumnSize()), row, SIZE_COLUMN);
-                            if (!isEditScale(row))
-                                _model.setValueAt("-1", row, SCALE_COLUMN);
-                            else
-                                _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
-                            if (!isEditSubtype(row))
-                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
-                            else
-                                _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
-                        }
                     } else {
-                        cd.setColumnType(dataTypes[(int) value]);
-                        cd.setSQLType(intDataTypes[(int) value]);
-                        if (cd.getSQLType() != cd.getDomainType()) {
-                            _model.setValueAt("", row, DOMAIN_COLUMN);
-                            if (!isEditSize(row))
-                                _model.setValueAt("-1", row, SIZE_COLUMN);
-                            else
-                                _model.setValueAt((cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
-                                        || cd.getSQLType() == Types.LONGVARBINARY) ? "80" : "10", row, SIZE_COLUMN);
-                            if (!isEditScale(row))
-                                _model.setValueAt("-1", row, SCALE_COLUMN);
-                            else
-                                _model.setValueAt("0", row, SCALE_COLUMN);
-                            if (!isEditSubtype(row))
-                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
-                            else
-                                _model.setValueAt("0", row, SUBTYPE_COLUMN);
-                        } else {
-                            if (!isEditSize(row))
-                                _model.setValueAt("-1", row, SIZE_COLUMN);
-                            else
-                                _model.setValueAt(String.valueOf(cd.getColumnSize()), row, SIZE_COLUMN);
-                            if (!isEditScale(row))
-                                _model.setValueAt("-1", row, SCALE_COLUMN);
-                            else
-                                _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
-                            if (!isEditSubtype(row))
-                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
-                            else
-                                _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
-                        }
-                        if (!isEditEncoding(row))
-                            cd.setCharset(charsets.get(0));
+                        cd.setSQLType(0);
+                        cd.setColumnType(null);
+                        /*_model.setValueAt("-1", row, SIZE_COLUMN);
+                        _model.setValueAt("-1", row, SCALE_COLUMN);
+                        _model.setValueAt("1", row, SUBTYPE_COLUMN);
+                        cd.setCharset(charsets.get(0));*/
 
 
                     }

@@ -371,6 +371,27 @@ public class ListSelectionPanel extends ActionPanel
         selectedList.setListData(selections);
     }
 
+    public void selectOneStringAction(String object) {
+        if (available.size() <= 0 || !(available.get(0) instanceof String))
+            return;
+        for (int i = 0; i < getAvailableValues().size(); i++) {
+            if (getAvailableValues().get(i).toString().contentEquals(object)) {
+                selectOneAction(i);
+                break;
+            }
+        }
+    }
+
+    public void selectOneObjectAction(Object object) {
+
+        for (int i = 0; i < getAvailableValues().size(); i++) {
+            if (getAvailableValues().get(i).equals(object)) {
+                selectOneAction(i);
+                break;
+            }
+        }
+    }
+
     public Vector getSelectedValues() {
         return selections;
     }

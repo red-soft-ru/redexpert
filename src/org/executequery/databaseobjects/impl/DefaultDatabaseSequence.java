@@ -3,7 +3,6 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -16,18 +15,12 @@ import java.sql.Statement;
 /**
  * Created by vasiliy on 27.01.17.
  */
-public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
-        implements DatabaseProcedure {
+public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     private long value = -1;
     private String description;
     private Integer increment;
 
-    /**
-     * Creates a new instance.
-     */
-    public DefaultDatabaseSequence() {
-    }
 
     /**
      * Creates a new instance.
@@ -36,14 +29,6 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
         super(metaTagParent, name);
     }
 
-    /**
-     * Creates a new instance with
-     * the specified values.
-     */
-    public DefaultDatabaseSequence(String schema, String name) {
-        setName(name);
-        setSchemaName(schema);
-    }
 
     /**
      * Returns the database object type.
@@ -65,6 +50,11 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
         if (isSystem())
             return META_TYPES[SYSTEM_SEQUENCE];
         return META_TYPES[SEQUENCE];
+    }
+
+    @Override
+    public boolean allowsChildren() {
+        return false;
     }
 
     public long getSequenceValue() {

@@ -436,7 +436,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
         }
 
-        if (type == BrowserConstants.HOST_NODE) {
+        if (type == NamedObject.HOST) {
 
             DatabaseConnection connection =
                     ((DatabaseHost) databaseObject).getDatabaseConnection();
@@ -476,11 +476,12 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 }
 
         } else {
-            if (databaseObject != null)
+            if (databaseObject != null) {
                 if (node.isSystem())
                     setForeground(Color.RED);
                 else
                     setForeground(selectedTextForeground);
+            } else setForeground(selectedTextForeground);
         }
         if (type == NamedObject.META_TAG && node.getDatabaseObject().getObjects().size() > 0)
             setFont(treeFont.deriveFont(Font.BOLD));

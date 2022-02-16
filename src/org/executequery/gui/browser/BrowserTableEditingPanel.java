@@ -310,7 +310,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     if (row >= 0) {
                         row = ((TableSorter) constraintsTable.getModel()).modelIndex(row);
                         ColumnConstraint constraint = constraintsTable.getColumnConstraintTableModel().getConstraints().get(row);
-                        BaseDialog dialog = new BaseDialog("Edit Constraint", true);
+                        BaseDialog dialog = new BaseDialog(EditConstraintPanel.EDIT_TITLE, true);
                         EditConstraintPanel panel = new EditConstraintPanel(table, dialog, constraint);
                         dialog.addDisplayComponent(panel);
                         dialog.display();
@@ -352,7 +352,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     if (row >= 0) {
                         row = ((TableSorter) descriptionTable.getModel()).modelIndex(row);
                         DatabaseColumn column = descriptionTable.getDatabaseTableModel().getDatabaseColumns().get(row);
-                        BaseDialog dialog = new BaseDialog("Edit Column", true);
+                        BaseDialog dialog = new BaseDialog(InsertColumnPanel.EDIT_TITLE, true);
                         InsertColumnPanel panel = new InsertColumnPanel(table, dialog, column);
                         dialog.addDisplayComponent(panel);
                         dialog.display();
@@ -1096,13 +1096,13 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         JPanel panelForDialog = null;
         BaseDialog dialog = null;
         if (tabIndex == 0) {
-            dialog = new BaseDialog("Add column", true);
+            dialog = new BaseDialog(InsertColumnPanel.CREATE_TITLE, true);
             panelForDialog = new InsertColumnPanel(table, dialog);
         } else if (tabIndex == 1) {
-            dialog = new BaseDialog("Add constraint", true);
+            dialog = new BaseDialog(EditConstraintPanel.CREATE_TITLE, true);
             panelForDialog = new EditConstraintPanel(table, dialog);
         } else if (tabIndex == 2) {
-            dialog = new BaseDialog("Add Index", true);
+            dialog = new BaseDialog(CreateIndexPanel.CREATE_TITLE, true);
             panelForDialog = new CreateIndexPanel(table.getHost().getDatabaseConnection(), dialog, table.getName());
 
         }

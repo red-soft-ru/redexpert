@@ -61,10 +61,11 @@ public interface NamedObject extends Named, java.io.Serializable {
     int SYSTEM_ROLE = SYSTEM_SEQUENCE + 1;
     int SYSTEM_INDEX = SYSTEM_ROLE + 1;
     int SYSTEM_PACKAGE = SYSTEM_INDEX + 1;
-    int SYNONYM = SYSTEM_PACKAGE + 1;
+    int TABLE_COLUMN = SYSTEM_PACKAGE + 1;
+    int CONSTRAINT = TABLE_COLUMN + 1;
+    int SYNONYM = CONSTRAINT + 1;
 
     int META_TAG = 93;
-    int TABLE_COLUMN = 94;
     int OTHER = 95;
     int ROOT = 96;
     int SCHEMA = 97;
@@ -113,6 +114,8 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM ROLE",
             "SYSTEM INDEX",
             "SYSTEM PACKAGE",
+            "TABLE COLUMN",
+            "CONSTRAINT",
             "SYNONYM",
     };
     String[] META_TYPES_FOR_BUNDLE = {
@@ -145,7 +148,9 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM_ROLE",
             "SYSTEM_INDEX",
             "SYSTEM_PACKAGE",
-            "SYNONYM",
+            "TABLE_COLUMN",
+            "CONSTRAINT",
+            "SYNONYM"
     };
 
     /**

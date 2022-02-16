@@ -90,7 +90,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             computedBox.setSelected(true);
             computedPanel.setSQLText(databaseIndex.getExpression());
             tabbedPane.remove(0);
-            tabbedPane.insertTab(bundlesString("computed"), null, computedPanel, null, 0);
+            tabbedPane.insertTab(bundleStaticString("computed"), null, computedPanel, null, 0);
             tabbedPane.setSelectedIndex(0);
         }
         uniqueBox.setSelected(databaseIndex.isUnique());
@@ -158,8 +158,8 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             }
         });
         uniqueBox = new JCheckBox(bundleString("unique"));
-        computedBox = new JCheckBox(bundlesString("computed"));
-        activeBox = new JCheckBox(bundlesString("active"));
+        computedBox = new JCheckBox(bundleStaticString("computed"));
+        activeBox = new JCheckBox(bundleStaticString("active"));
         activeBox.setSelected(true);
         this.description = new SimpleTextArea();
         computedPanel = new SimpleSqlTextPanel();
@@ -167,7 +167,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         computedBox.addActionListener(actionEvent -> {
             if (computedBox.isSelected()) {
                 tabbedPane.remove(0);
-                tabbedPane.insertTab(bundlesString("computed"), null, computedPanel, null, 0);
+                tabbedPane.insertTab(bundleStaticString("computed"), null, computedPanel, null, 0);
             } else {
                 tabbedPane.remove(0);
                 tabbedPane.insertTab(bundleString("fields"), null, fieldsPanel, null, 0);
@@ -200,7 +200,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
         gbh.defaults();
-        gbh.addLabelFieldPair(centralPanel, bundlesString("table"), tableName, null);
+        gbh.addLabelFieldPair(centralPanel, bundleStaticString("table"), tableName, null);
         gbh.addLabelFieldPair(centralPanel, bundleString("sorting"), sortingBox, null);
         if (tss != null)
             gbh.addLabelFieldPair(centralPanel, bundleString("tablespace"), tablespaceBox, null);
@@ -225,7 +225,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
         centralPanel.add(checksPanel, gbh.nextRowFirstCol().spanX().anchorNorthWest().get());
         tabbedPane.add(bundleString("fields"), fieldsPanel);
-        tabbedPane.add(bundlesString("description"), descriptionPanel);
+        tabbedPane.add(bundleStaticString("description"), descriptionPanel);
         descriptionPanel.setLayout(new BorderLayout());
         descriptionPanel.add(description);
         if (table_name != null) {

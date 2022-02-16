@@ -29,12 +29,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
  */
 public class BrowserTreeNode extends DefaultMutableTreeNode {
 
-    private boolean typeParent;
+    private final boolean typeParent;
     private boolean expanded;
 
     private BaseDatabaseObject _userObject;
 
-    private NamedObject userObject;
+    private final NamedObject userObject;
 
     public BrowserTreeNode(NamedObject userObject,
                            boolean allowsChildren) {
@@ -87,7 +87,7 @@ public class BrowserTreeNode extends DefaultMutableTreeNode {
     }
 
     public boolean isLeaf() {
-        if (userObject.getType() == BrowserConstants.HOST_NODE) {
+        if (userObject.getType() == NamedObject.HOST) {
             return super.isLeaf();
         } else {
             return !allowsChildren;

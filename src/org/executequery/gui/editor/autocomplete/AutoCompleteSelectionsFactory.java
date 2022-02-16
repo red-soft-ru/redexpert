@@ -60,7 +60,7 @@ public class AutoCompleteSelectionsFactory {
 
     private static final String DATABASE_SYSTEM_FUNCTION_DESCRIPTION = "System Function";
 
-    private AutoCompletePopupProvider provider;
+    private final AutoCompletePopupProvider provider;
 
     private List<AutoCompleteListItem> tables;
 
@@ -92,7 +92,7 @@ public class AutoCompleteSelectionsFactory {
 
                 DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
                 DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-                Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+                Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
                 DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
                 Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
@@ -173,7 +173,7 @@ public class AutoCompleteSelectionsFactory {
 
                 DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
                 DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-                Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+                Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
                 DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
                 Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
@@ -267,10 +267,11 @@ public class AutoCompleteSelectionsFactory {
 
         databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.TABLE], DATABASE_TABLE_DESCRIPTION, AutoCompleteListItemType.DATABASE_TABLE);
         databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.VIEW], DATABASE_TABLE_VIEW, AutoCompleteListItemType.DATABASE_VIEW);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY], DATABASE_TABLE_DESCRIPTION, AutoCompleteListItemType.DATABASE_TABLE);
 
         DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
         DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-        Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+        Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
         DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
@@ -438,7 +439,7 @@ public class AutoCompleteSelectionsFactory {
         return list;
     }
 
-    private ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
+    private final ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
 
     private void databaseColumnsForTables(DatabaseHost databaseHost, List<AutoCompleteListItem> tables) {
 

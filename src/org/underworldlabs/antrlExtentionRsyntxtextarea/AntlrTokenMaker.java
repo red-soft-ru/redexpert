@@ -4,11 +4,11 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.Lexer;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMakerBase;
-import org.underworldlabs.sqlLexer.CustomToken;
-
 
 import javax.swing.text.Segment;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 public abstract class AntlrTokenMaker extends TokenMakerBase {
 
@@ -72,7 +72,7 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
                     setLanguageIndex(lexer._mode);
                     if (at.getType() == CommonToken.EOF) {
                         if(currentToken!=null)
-                            multilineTokenEnd=getMultilineTokenEnd(currentToken);
+                            multilineTokenEnd = getMultilineTokenEnd(currentToken, initialTokenType);
                         if (multilineTokenEnd == null) {
                             addNullToken();
                         }
@@ -159,7 +159,7 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
             int currentArrayOffset,
             org.antlr.v4.runtime.Token at) {
         int end = currentArrayOffset + at.getText().length() - 1;
-        if (multilineTokenStart != null && at.getText().startsWith(multilineTokenStart)) {
+        if (multilineTokenStart != null && at.getText().startsWith(multilineTokenStart) && at.getCharPositionInLine() == 0) {
             // need to subtract our inserted token start
             end -= multilineTokenStart.length();
         }
@@ -175,11 +175,18 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
                 .map(i -> i.tokenStart)
                 .orElse(null);
     }
-    private String getMultilineTokenEnd(Token token) {
+
+    private String getMultilineTokenEnd(Token token, int initialTypeToken) {
         for (MultiLineTokenInfo mti : multiLineTokenInfos) {
             if (mti.token == token.getType()) {
-                if (token.getLexeme().equals(mti.tokenEnd) || !token.endsWith(mti.tokenEnd.toCharArray()))
+                if (!token.endsWith(mti.tokenEnd.toCharArray()))
                     return mti.tokenEnd;
+                if (mti.tokenStart.contentEquals(mti.tokenEnd)) {
+                    if (token.getOffset() == 0 && initialTypeToken == mti.token) {
+                        return null;
+                    } else if (token.getLexeme().equals(mti.tokenEnd))
+                        return mti.tokenEnd;
+                }
             }
         }
         return null;

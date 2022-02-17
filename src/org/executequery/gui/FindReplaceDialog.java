@@ -68,11 +68,12 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
 
     private JComboBox findField;
     private JComboBox replaceField;
+    private final TextEditor textEditor;
 
     private final ActionContainer parent;
 
-    public FindReplaceDialog(ActionContainer parent, int type) {
-
+    public FindReplaceDialog(ActionContainer parent, int type, TextEditor textEditor) {
+        this.textEditor = textEditor;
         this.parent = parent;
         init();
         setFindReplace(type == REPLACE);
@@ -86,8 +87,8 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
         Dimension optionsDim = new Dimension(600, 140);
         optionsPanel.setPreferredSize(optionsDim);
 
-        TextEditor textFunction = GUIUtilities.getTextEditorInFocus();
-        JTextComponent textComponent = textFunction.getEditorTextComponent();
+
+        JTextComponent textComponent = textEditor.getEditorTextComponent();
         String selectedText = textComponent.getSelectedText();
 
         if (selectedText != null && selectedText.length() > 0) {
@@ -108,6 +109,7 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
         wrapCheck = new JCheckBox("Wrap Search", true);
 
         replaceCheck = ActionUtilities.createCheckBox("Replace:", "setToReplace");
+        replaceCheck.setEnabled(textEditor.getEditorTextComponent().isEditable());
         regexCheck = ActionUtilities.createCheckBox("Regular expressions", "setToRegex");
 
         searchUpRadio = new JRadioButton("Search Up");
@@ -210,7 +212,7 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
     }
 
     private JTextField editorFromComboBox(JComboBox comboBox) {
-        return (JTextField) ((ComboBoxEditor) comboBox.getEditor()).getEditorComponent();
+        return (JTextField) comboBox.getEditor().getEditorComponent();
     }
 
     private KeyAdapter createKeyListener() {
@@ -262,9 +264,8 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
 
             addFind(find);
 
-            TextEditor textFunction = GUIUtilities.getTextEditorInFocus();
 
-            TextAreaSearch.setTextComponent(textFunction.getEditorTextComponent());
+            TextAreaSearch.setTextComponent(textEditor.getEditorTextComponent());
             TextAreaSearch.setFindText(find);
             TextAreaSearch.setSearchDirection(searchUpRadio.isSelected() ?
                     TextAreaSearch.SEARCH_UP :
@@ -368,10 +369,14 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
     }
 
     private void setFindReplace(boolean replace) {
-        replaceCheck.setSelected(replace);
-        replaceField.setEditable(replace);
-        replaceField.setEnabled(replace);
-        replaceField.setOpaque(replace);
+        if (!textEditor.getEditorTextComponent().isEditable())
+            replace = false;
+        {
+            replaceCheck.setSelected(replace);
+            replaceField.setEditable(replace);
+            replaceField.setEnabled(replace);
+            replaceField.setOpaque(replace);
+        }
     }
 
 }

@@ -1,6 +1,9 @@
 package org.executequery.gui.text;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.actions.searchcommands.FindAction;
+import org.executequery.actions.searchcommands.ReplaceAction;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -9,6 +12,7 @@ import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.gui.editor.QueryEditorSettings;
 import org.executequery.gui.editor.autocomplete.DefaultAutoCompletePopupProvider;
 import org.executequery.gui.text.syntax.SQLSyntaxDocument;
+import org.executequery.print.TextPrinter;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 import org.fife.ui.rsyntaxtextarea.*;
@@ -26,13 +30,16 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.print.Printable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.TreeSet;
 
-public class SQLTextArea extends RSyntaxTextArea {
+public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
 
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
+    private static final String FIND_ACTION_KEY = "findActionKey";
+    private static final String REPLACE_ACTION_KEY = "replaceActionKey";
 
     private final CustomTokenMakerFactory tokenMakerFactory = new CustomTokenMakerFactory();
     protected DatabaseConnection databaseConnection;
@@ -282,6 +289,26 @@ public class SQLTextArea extends RSyntaxTextArea {
         });
         this.autoCompletePopup = new DefaultAutoCompletePopupProvider(databaseConnection, this);
         registerAutoCompletePopup();
+        registerFindAction();
+        registerReplaceAction();
+    }
+
+    private void registerFindAction() {
+        FindAction findAction = new FindAction(this);
+
+        getActionMap().put(FIND_ACTION_KEY, findAction);
+        getInputMap().put((KeyStroke)
+                        findAction.getValue(Action.ACCELERATOR_KEY),
+                FIND_ACTION_KEY);
+    }
+
+    private void registerReplaceAction() {
+        ReplaceAction replaceAction = new ReplaceAction(this);
+
+        getActionMap().put(REPLACE_ACTION_KEY, replaceAction);
+        getInputMap().put((KeyStroke)
+                        replaceAction.getValue(Action.ACCELERATOR_KEY),
+                REPLACE_ACTION_KEY);
     }
 
     private void registerAutoCompletePopup() {
@@ -373,20 +400,73 @@ public class SQLTextArea extends RSyntaxTextArea {
 
     }
 
+    @Override
+    public String getEditorText() {
+        return getText();
+    }
+
+    @Override
+    public JTextComponent getEditorTextComponent() {
+        return this;
+    }
+
     public void disableUpdates(boolean disable) {
 
-        /*if (disable) {
+    }
 
-            String text = getText();
-            setDocument(new DefaultStyledDocument());
-            setText(text);
+    @Override
+    public boolean canSearch() {
+        return true;
+    }
 
-        } else {
+    @Override
+    public void changeSelectionCase(boolean upper) {
+        TextUtilities.changeSelectionCase(this, upper);
+    }
 
-            String text = getText();
-            setDocument(document);
-            setText(text);
-        }*/
+    @Override
+    public void changeSelectionToCamelCase() {
+        TextUtilities.changeSelectionToCamelCase(this);
+    }
+
+    @Override
+    public void changeSelectionToUnderscore() {
+        TextUtilities.changeSelectionToUnderscore(this);
+    }
+
+    @Override
+    public void deleteLine() {
+        TextUtilities.deleteLine(this);
+    }
+
+    @Override
+    public void deleteWord() {
+        TextUtilities.deleteWord(this);
+    }
+
+    @Override
+    public void deleteSelection() {
+        TextUtilities.deleteSelection(this);
+    }
+
+    @Override
+    public void insertFromFile() {
+        TextUtilities.insertFromFile(this);
+    }
+
+    @Override
+    public void insertLineAfter() {
+        TextUtilities.insertLineAfter(this);
+    }
+
+    @Override
+    public void insertLineBefore() {
+        TextUtilities.insertLineBefore(this);
+    }
+
+    @Override
+    public void selectNone() {
+        TextUtilities.selectNone(this);
     }
 
     public void setSQLKeywords(boolean reset) {
@@ -396,5 +476,35 @@ public class SQLTextArea extends RSyntaxTextArea {
     public SQLSyntaxDocument getSQLSyntaxDocument() {
 
         return document;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return Constants.EMPTY;
+    }
+
+    @Override
+    public int save(boolean saveAs) {
+        return TextUtilities.save(this);
+    }
+
+    @Override
+    public boolean contentCanBeSaved() {
+        return false;
+    }
+
+    @Override
+    public boolean canPrint() {
+        return true;
+    }
+
+    @Override
+    public Printable getPrintable() {
+        return new TextPrinter(getText());
+    }
+
+    @Override
+    public String getPrintJobName() {
+        return "Red Expert";
     }
 }

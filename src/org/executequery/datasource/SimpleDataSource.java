@@ -24,9 +24,12 @@ import biz.redsoft.IFBCryptoPluginInit;
 import biz.redsoft.IFBDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ApplicationContext;
+import org.executequery.EventMediator;
 import org.executequery.ExecuteQuery;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.event.ConnectionRepositoryEvent;
+import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.LoginPasswordDialog;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -96,6 +99,9 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                 databaseConnection.setUserName(lpd.getUsername());
                 databaseConnection.setPassword(lpd.getPassword());
                 databaseConnection.setPasswordStored(lpd.isStorePassword());
+                EventMediator.fireEvent(
+                        new DefaultConnectionRepositoryEvent(
+                                this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) null));
             }
         }
         try {

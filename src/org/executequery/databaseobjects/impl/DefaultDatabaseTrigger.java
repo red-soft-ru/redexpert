@@ -278,47 +278,82 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
         else return TABLE_TRIGGER;
     }
 
-    private String triggerTypeFromLong(long type) {
-        if (type == 1)
-            return "BEFORE INSERT"; // 	Триггер выполняется перед вставкой записи в таблицу или просмотр.
-        if (type == 2)
-            return "AFTER INSERT"; // 	Триггер выполняется после вставки записи в таблицу или просмотр.
-        if (type == 3)
-            return "BEFORE UPDATE"; // 	Триггер выполняется перед изменением записи в таблице или просмотре.
-        if (type == 4)
-            return "AFTER UPDATE"; // 	Триггер выполняется после изменения записи в таблице или просмотре.
-        if (type == 5)
-            return "BEFORE DELETE"; // 	Триггер выполняется перед удалением записи из таблицы или просмотра.
-        if (type == 6)
-            return "AFTER DELETE"; // 	Триггер выполняется после удаления записи из таблицы или просмотра.
-        if (type == 17)
-            return "BEFORE INSERT OR UPDATE"; // 	Триггер выполняется перед вставкой или изменением записи в таблице или просмотре.
-        if (type == 18)
-            return "AFTER INSERT OR UPDATE"; // 	Триггер выполняется после вставки или изменения записи в таблице или просмотре.
-        if (type == 25)
-            return "BEFORE INSERT OR DELETE"; // 	Триггер выполняется перед вставкой или удалением записи в таблице или просмотре.
-        if (type == 26)
-            return "AFTER INSERT OR DELETE"; // 	Триггер выполняется после вставки или удаления записи в таблице или просмотре.
-        if (type == 27)
-            return "BEFORE UPDATE OR DELETE"; // 	Триггер выполняется перед изменением или удалением записи в таблице или просмотре.
-        if (type == 28)
-            return "AFTER UPDATE OR DELETE"; // 	Триггер выполняется после изменения или удаления записи в таблице или просмотре.
-        if (type == 113)
-            return "BEFORE INSERT OR UPDATE OR DELETE"; // 	Триггер выполняется перед вставкой, изменением или удалением записи в таблице или просмотре.
-        if (type == 114)
-            return "AFTER INSERT OR UPDATE OR DELETE"; // 	Триггер выполняется после вставки, изменения или удаления записи в таблице или просмотре.
-        if (type == 8192)
-            return "ON CONNECT"; // 	Триггер выполняется после установления подключения к базе данных.
-        if (type == 8193)
-            return "ON DISCONNECT"; // 	Триггер выполняется перед отключением от базы данных.
-        if (type == 8194)
-            return "ON TRANSACTION START"; // 	Триггер выполняется после старта транзакции.
-        if (type == 8195)
-            return "ON TRANSACTION COMMIT"; // 	Триггер выполняется перед подтверждением COMMIT транзакции.
-        if (type == 8196)
-            return "ON TRANSACTION ROLLBACK"; // 	Триггер выполняется перед отменой ROLLBACK транзакции.
 
-        if (type > 8196) {
+    private String triggerTypeFromLong(long type) {
+        if (getIntTypeTrigger(type) == TABLE_TRIGGER) {
+
+            long parse_type = type + 1;
+            String buffer = Trigger_prefix_types[(int) parse_type & 1];
+            parse_type = parse_type >> 1;
+            boolean first = true;
+            for (int i = 0; i < 3; i++) {
+                int action_type = (int) parse_type & 3;
+                if (action_type != 0) {
+                    if (first)
+                        first = false;
+                    else
+                        buffer += " OR";
+
+                    buffer += " ";
+                    switch (action_type) {
+                        case 1:
+                            buffer += "INSERT";
+                            break;
+                        case 2:
+                            buffer += "UPDATE";
+                            break;
+                        case 3:
+                            buffer += "DELETE";
+                            break;
+                    }
+                }
+                parse_type = parse_type >> 2;
+            }
+            return buffer;
+           /* if (type == 1)
+                return "BEFORE INSERT"; // 	Триггер выполняется перед вставкой записи в таблицу или просмотр.
+            if (type == 2)
+                return "AFTER INSERT"; // 	Триггер выполняется после вставки записи в таблицу или просмотр.
+            if (type == 3)
+                return "BEFORE UPDATE"; // 	Триггер выполняется перед изменением записи в таблице или просмотре.
+            if (type == 4)
+                return "AFTER UPDATE"; // 	Триггер выполняется после изменения записи в таблице или просмотре.
+            if (type == 5)
+                return "BEFORE DELETE"; // 	Триггер выполняется перед удалением записи из таблицы или просмотра.
+            if (type == 6)
+                return "AFTER DELETE"; // 	Триггер выполняется после удаления записи из таблицы или просмотра.
+            if (type == 17)
+                return "BEFORE INSERT OR UPDATE"; // 	Триггер выполняется перед вставкой или изменением записи в таблице или просмотре.
+            if (type == 18)
+                return "AFTER INSERT OR UPDATE"; // 	Триггер выполняется после вставки или изменения записи в таблице или просмотре.
+            if (type == 25)
+                return "BEFORE INSERT OR DELETE"; // 	Триггер выполняется перед вставкой или удалением записи в таблице или просмотре.
+            if (type == 26)
+                return "AFTER INSERT OR DELETE"; // 	Триггер выполняется после вставки или удаления записи в таблице или просмотре.
+            if (type == 27)
+                return "BEFORE UPDATE OR DELETE"; // 	Триггер выполняется перед изменением или удалением записи в таблице или просмотре.
+            if (type == 28)
+                return "AFTER UPDATE OR DELETE"; // 	Триггер выполняется после изменения или удаления записи в таблице или просмотре.
+            if (type == 113)
+                return "BEFORE INSERT OR UPDATE OR DELETE"; // 	Триггер выполняется перед вставкой, изменением или удалением записи в таблице или просмотре.
+            if (type == 114)
+                return "AFTER INSERT OR UPDATE OR DELETE"; // 	Триггер выполняется после вставки, изменения или удаления записи в таблице или просмотре.
+        */
+        }
+
+        if (getIntTypeTrigger(type) == DATABASE_TRIGGER) {
+            if (type == 8192)
+                return "ON CONNECT"; // 	Триггер выполняется после установления подключения к базе данных.
+            if (type == 8193)
+                return "ON DISCONNECT"; // 	Триггер выполняется перед отключением от базы данных.
+            if (type == 8194)
+                return "ON TRANSACTION START"; // 	Триггер выполняется после старта транзакции.
+            if (type == 8195)
+                return "ON TRANSACTION COMMIT"; // 	Триггер выполняется перед подтверждением COMMIT транзакции.
+            if (type == 8196)
+                return "ON TRANSACTION ROLLBACK"; // 	Триггер выполняется перед отменой ROLLBACK транзакции.
+        }
+        if (getIntTypeTrigger(type) == DDL_TRIGGER) {
             boolean first = true;
             String buffer = Trigger_prefix_types[(int) type & 1];
 

@@ -256,7 +256,7 @@ public final class SQLUtils {
         }
         String output = formattedParameters(outputParameters, false);
         if (!MiscUtils.isNull(output.trim())) {
-            sb.append("RETURNS (");
+            sb.append("\nRETURNS (");
             sb.append(output);
             sb.append(")\n");
         }

@@ -71,7 +71,7 @@ public class QueryEditorTextPane extends SQLTextArea
     /**
      * The editor panel containing this text component
      */
-    private QueryEditorTextPanel editorPanel;
+    private final QueryEditorTextPanel editorPanel;
 
     /**
      * To display line numbers
@@ -402,8 +402,8 @@ public class QueryEditorTextPane extends SQLTextArea
 
     static class QueryEditorSelectWordAction extends TextAction {
 
-        private Action start;
-        private Action end;
+        private final Action start;
+        private final Action end;
 
         public QueryEditorSelectWordAction(String nm, boolean select) {
             super(DefaultEditorKit.selectWordAction);
@@ -444,29 +444,12 @@ public class QueryEditorTextPane extends SQLTextArea
         setFocusable(true);
 
         // set the caret
-        createCaret();
 
         // set to insert mode
         document.setInsertMode(SqlMessages.INSERT_MODE);
 
         editorShortcuts = new HashMap<String, EditorSQLShortcut>();
         loadEditorShortcuts();
-    }
-
-    private void createCaret() {
-
-        EditorCaret caret = new EditorCaret();
-
-        int blinkRate = UIManager.getInt("TextPane.caretBlinkRate");
-        if (blinkRate > 0) {
-
-            caret.setBlinkRate(blinkRate);
-
-        } else {
-
-            caret.setBlinkRate(DEFAULT_CARET_BLINK_RATE);
-        }
-        setCaret(caret);
     }
 
     private UserProperties userProperties() {
@@ -1112,8 +1095,6 @@ public class QueryEditorTextPane extends SQLTextArea
                     editorPanel.getStatusBar().setInsertionMode("INS");
                 }
 
-                ((EditorCaret) getCaret()).modeChanged();
-
             } else if (keyCode == KeyEvent.VK_SPACE) {
 
                 checkForShortcutText();
@@ -1566,55 +1547,7 @@ public class QueryEditorTextPane extends SQLTextArea
     }
 
 
-    class EditorCaret extends DefaultCaret {
 
-        void modeChanged() {
-            repaint();
-        }
-
-        public void paint(Graphics g) {
-            if (document.getInsertMode() == SqlMessages.INSERT_MODE) {
-                super.paint(g);
-                return;
-            }
-            JTextComponent comp = getComponent();
-
-            char c;
-            int dot = getDot();
-            Rectangle r = null;
-            try {
-                r = comp.modelToView(dot);
-                if (r == null) {
-                    return;
-                }
-                c = comp.getText(dot, 1).charAt(0);
-            } catch (BadLocationException e) {
-                return;
-            }
-
-            // erase provious caret
-            if ((x != r.x) || (y != r.y)) {
-                repaint();
-                x = r.x;
-                y = r.y;
-                height = r.height;
-            }
-
-            g.setColor(comp.getCaretColor());
-            g.setXORMode(comp.getBackground());
-
-            width = g.getFontMetrics().charWidth(c);
-            if (c == '\t' || c == '\n') {
-                width = g.getFontMetrics().charWidth('W');
-            }
-
-            if (isVisible()) {
-                g.fillRect(r.x, r.y, width, r.height);
-            }
-
-        }
-
-    }
 
 }
 

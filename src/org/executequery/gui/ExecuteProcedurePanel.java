@@ -494,15 +494,18 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
                     } else {
                         queryType = QueryTypes.EXECUTE;
                         DefaultDatabaseProcedure procedure = (DefaultDatabaseProcedure) databaseExecutable;
-                        sql = "execute procedure " + procedure.getNameForQuery() + "(";
-                        boolean first = true;
-                        for (int i = 0; i < procedure.getProcedureInputParameters().size(); i++) {
-                            if (first) {
-                                first = false;
-                            } else sql += ",";
-                            sql += ":" + procedure.getProcedureInputParameters().get(i).getName();
+                        sql = "execute procedure " + procedure.getNameForQuery();
+                        if (procedure.getProcedureInputParameters().size() > 0) {
+                            sql += "(";
+                            boolean first = true;
+                            for (int i = 0; i < procedure.getProcedureInputParameters().size(); i++) {
+                                if (first) {
+                                    first = false;
+                                } else sql += ",";
+                                sql += ":" + procedure.getProcedureInputParameters().get(i).getName();
+                            }
+                            sql = sql + ")";
                         }
-                        sql = sql + ")";
                     }
                     setActionMessage("Executing: " + sql);
                     PreparedStatement statement = prepareStatementWithParameters(sql, "");

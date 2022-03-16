@@ -743,11 +743,14 @@ public class QueryDispatcher {
 
                                 type = result.getType();
                                 setResultText(updateCount, query.getQueryType(), query.getMetaName());
-                                if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT) {
+                                if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT
+                                        || type == QueryTypes.CREATE_OR_ALTER || type == QueryTypes.RECREATE_OBJECT || type == QueryTypes.ALTER_OBJECT) {
                                     DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
-
                                     for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                                        if (metaTagNode.getMetaDataKey().equals(query.getMetaName()) || metaTagNode.isSystem()) {
+                                        if (metaTagNode.getMetaDataKey().equals(query.getMetaName())) {
+                                            ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+
+                                        } else if ((NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(query.getMetaName()) || NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY].contentEquals(query.getMetaName())) && metaTagNode.isSystem()) {
                                             ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
                                         }
                                     }
@@ -1053,7 +1056,8 @@ public class QueryDispatcher {
 
                                     type = result.getType();
                                     setResultText(updateCount, query.getQueryType(), query.getMetaName());
-                                    if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT) {
+                                    if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT
+                                            || type == QueryTypes.CREATE_OR_ALTER || type == QueryTypes.RECREATE_OBJECT || type == QueryTypes.ALTER_OBJECT) {
                                         createsMetaNames.add(query.getMetaName());
                                     }
                                     if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {

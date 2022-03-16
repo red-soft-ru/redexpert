@@ -184,6 +184,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         // loop through and add this object as the parent object
         addAsParentToObjects(children);
+        setMarkedForReload(false);
 
         return children;
     }

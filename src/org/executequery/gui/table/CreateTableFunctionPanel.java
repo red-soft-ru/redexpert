@@ -122,7 +122,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
      */
     protected JPanel mainPanel;
 
-    boolean temporary;
+    protected boolean temporary;
     private JComboBox typeTemporaryBox;
 
     /**

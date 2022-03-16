@@ -25,7 +25,7 @@ import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
@@ -67,7 +67,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
     /**
      * the parent container
      */
-    private ActionContainer parent;
+    private final ActionContainer parent;
 
     private ConnectionsTreePanel treePanel;
     private TreePath currentPath;
@@ -220,12 +220,19 @@ public class CreateTablePanel extends CreateTableFunctionPanel
             boolean commit = eqd.getCommit();
             if (commit) {
                 if (treePanel != null && currentPath != null) {
-                    DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-                    if (node.getDatabaseObject() instanceof DefaultDatabaseMetaTag)
-                        treePanel.reloadPath(currentPath);
-                    else
-                        treePanel.reloadPath(currentPath.getParentPath());
+                    String type;
+                    if (temporary)
+                        type = NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY];
+                    else type = NamedObject.META_TYPES[NamedObject.TABLE];
+                    DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(getSelectedConnection());
+
+                    for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
+                        if (metaTagNode.getMetaDataKey().equals(type) || metaTagNode.isSystem()) {
+                            ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+                        }
+                    }
                 }
+
                 parent.finished();
 
             }

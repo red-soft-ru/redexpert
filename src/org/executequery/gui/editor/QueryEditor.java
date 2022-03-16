@@ -1272,7 +1272,7 @@ public class QueryEditor extends DefaultTabView
         delegate.executeScript(getSelectedConnection(), script);
     }
 
-    public void printExecutedPlan() {
+    public void printExecutedPlan(boolean explained) {
 
         preExecute();
 
@@ -1280,7 +1280,7 @@ public class QueryEditor extends DefaultTabView
 
         editorPanel.resetExecutingLine();
 
-        delegate.printExecutedPlan(getSelectedConnection(), query);
+        delegate.printExecutedPlan(getSelectedConnection(), query, explained);
     }
 
     public void executeSQLAtCursor() {

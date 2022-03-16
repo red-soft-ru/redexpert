@@ -353,7 +353,7 @@ public class QueryDispatcher {
     }
 
     public void printExecutedPlan(DatabaseConnection dc,
-                                  final String query) {
+                                  final String query, boolean explained) {
 
         if (!ConnectionManager.hasConnections()) {
 
@@ -377,7 +377,7 @@ public class QueryDispatcher {
 
         try {
             Statement statement = querySender.getPreparedStatement(query);
-            printPlan(statement);
+            printPlan(statement, explained);
         } catch (SQLException e) {
             setOutputMessage(SqlMessages.ERROR_MESSAGE, e.getMessage());
         } finally {
@@ -477,6 +477,7 @@ public class QueryDispatcher {
 
         waiting = false;
         long totalDuration = 0l;
+        querySender.setCloseConnectionAfterQuery(false);
 
         try {
 
@@ -1392,7 +1393,7 @@ public class QueryDispatcher {
         }
     }
 
-    private void printPlan(Statement st) {
+    private void printPlan(Statement st, boolean explained) {
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
             DefaultDriverLoader driverLoader = new DefaultDriverLoader();
@@ -1430,8 +1431,11 @@ public class QueryDispatcher {
 
                 IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
                 try {
-
-                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(statement), true);
+                    String plan;
+                    if (explained)
+                        plan = db.getLastExplainExecutedPlan(statement);
+                    else plan = db.getLastExecutedPlan(statement);
+                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, plan, true);
 
                 } catch (SQLException e) {
                     e.printStackTrace();

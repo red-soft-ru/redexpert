@@ -398,6 +398,13 @@
             small-icon="/org/executequery/icons/plan.png"
             execute-class="org.executequery.actions.queryeditor.PrintPlanCommand"/>
 
+    <action id="print-explained-plan-command"
+            name="Print Explained Plan"
+            accel-key="control alt P"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/explained_plan.png"
+            execute-class="org.executequery.actions.queryeditor.PrintExplainedPlanCommand"/>
+
     <action id="shift-text-right-command"
             name="Shift Text Right"
             accel-key="control shift T"

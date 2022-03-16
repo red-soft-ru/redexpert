@@ -15,7 +15,7 @@ import java.sql.Statement;
  */
 public class FBDatabasePerformanceImpl implements IFBDatabasePerformance {
 
-    byte perfomanceInfoBytes[] =
+    byte[] perfomanceInfoBytes =
             {
                     ISCConstants.isc_info_reads,
                     ISCConstants.isc_info_writes,
@@ -58,6 +58,18 @@ public class FBDatabasePerformanceImpl implements IFBDatabasePerformance {
     public String getLastExecutedPlan(Statement st) throws SQLException {
         FBStatement fbStatement = (FBStatement) st;
         return fbStatement.getLastExecutionPlan();
+    }
+
+    @Override
+    public String getLastExplainExecutedPlan(ResultSet rs) throws SQLException {
+        FBResultSet fbResultSet = (FBResultSet) rs;
+        return fbResultSet.getExplainedExecutionPlan();
+    }
+
+    @Override
+    public String getLastExplainExecutedPlan(Statement st) throws SQLException {
+        FBStatement fbStatement = (FBStatement) st;
+        return fbStatement.getLastExplainedExecutionPlan();
     }
 
 }

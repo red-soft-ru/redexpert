@@ -304,7 +304,8 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
                 setUnique(rs.getInt(5) == 1);
                 setRemarks(rs.getString(7));
                 setConstraint_type(rs.getString(8));
-                setTablespace(rs.getString(9));
+                if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase") && getHost().getDatabaseMajorVersion() >= 4)
+                    setTablespace(rs.getString(9));
             }
         } catch (Exception e) {
             e.printStackTrace();

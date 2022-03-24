@@ -18,11 +18,11 @@ public class SqlParser {
     private static final int DECLARE = 9;
     private static final int VARIABLE = 10;
 
-    private List<Parameter> parameters;
-    private List<Parameter> displayParameters;
-    private String processedSql;
+    private final List<Parameter> parameters;
+    private final List<Parameter> displayParameters;
+    private final String processedSql;
     private boolean executeBlock;
-    private String variables;
+    private final String variables;
 
     public SqlParser(String sql) {
         this(sql, "");
@@ -46,7 +46,7 @@ public class SqlParser {
         Character openChar = null;
         for (int i = 0; i < len; i++) {
             char curChar = sb.charAt(i);
-            Character nextChar = null;
+            Character nextChar = '\0';
             if (i + 1 < len)
                 nextChar = sb.charAt(i + 1);
             try {

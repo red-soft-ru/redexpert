@@ -447,6 +447,12 @@ public class QueryEditor extends DefaultTabView
         statusBar.setInsertionMode("INS");
     }
 
+    public void changeOrientationSplit() {
+        if (splitPane.getOrientation() == JSplitPane.VERTICAL_SPLIT)
+            splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+        else splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+    }
+
     private JTextField createResultSetFilterTextField() {
 
         filterTextField = new DefaultTextField();

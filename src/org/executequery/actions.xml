@@ -555,6 +555,13 @@
             large-icon="/org/executequery/icons/PartialExecute24.png"
             execute-class="org.executequery.actions.queryeditor.PartialExecuteCommand"/>
 
+    <action id="change-split-orientation-command"
+            name="Change Split Orientation"
+            accel-key="control alt Q"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/split.png"
+            execute-class="org.executequery.actions.queryeditor.ChangeSplitOrientationCommand"/>
+
     <action id="create-index-command"
             name="Create Index"
             mnemonic="I"

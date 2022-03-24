@@ -97,6 +97,8 @@ class QueryEditorToolBar extends PanelToolBar {
 
     private static final String EXECUTE_SCRIPT_COMMAND = "execute-script-command";
 
+    private static final String CHANGE_SPLIT_ORIENTATION = "change-split-orientation-command";
+
     public static final String NAME = "Query Editor Tool Bar";
 
     /**
@@ -215,6 +217,8 @@ class QueryEditorToolBar extends PanelToolBar {
 //                     "Uncomment"));
 
         addButton(createButton(FORMAT_SQL_COMMAND, bundleString(FORMAT_SQL_COMMAND)));
+        addButton(createButton(CHANGE_SPLIT_ORIENTATION,
+                bundleString(CHANGE_SPLIT_ORIENTATION)));
 
     }
 

@@ -242,7 +242,11 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
             )
 
                 return true;
+            if (type == NamedObject.META_TAG) {
+                return databaseObject.getObjects().size() == 0;
+            }
         }
+
 
         return !(allowsChildren());
     }

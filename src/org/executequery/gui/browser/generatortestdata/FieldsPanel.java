@@ -16,7 +16,7 @@ public class FieldsPanel extends JPanel {
     public final static int TYPE_FIELD = 2;
     private JTable tableFields;
     private List<FieldGenerator> fieldGenerators;
-    private String[] colNames = Bundles.get(GeneratorTestDataPanel.class, new String[]{"Selected", "Name", "Type"});
+    private final String[] colNames = Bundles.get(GeneratorTestDataPanel.class, new String[]{"Selected", "Name", "Type"});
     private FieldGeneratorModel model;
     private JPanel rightPanel;
 
@@ -47,7 +47,7 @@ public class FieldsPanel extends JPanel {
         setLayout(new GridBagLayout());
 
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, rightPanel);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, new JScrollPane(rightPanel));
         add(splitPane, new GridBagConstraints(0, 0, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1, 1,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
         splitPane.setResizeWeight(0.6);

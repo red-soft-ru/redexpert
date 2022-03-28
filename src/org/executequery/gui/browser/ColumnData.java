@@ -26,6 +26,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.T;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
@@ -480,7 +481,9 @@ public class ColumnData implements Serializable {
     public boolean isDateDataType() {
         return sqlType == Types.DATE ||
                 sqlType == Types.TIME ||
-                sqlType == Types.TIMESTAMP;
+                sqlType == Types.TIMESTAMP ||
+                sqlType == Types.TIME_WITH_TIMEZONE ||
+                sqlType == Types.TIMESTAMP_WITH_TIMEZONE;
     }
 
     public boolean isCharacterType() {
@@ -751,7 +754,10 @@ public class ColumnData implements Serializable {
                 if (getColumnSize() != 80)
                     sb.append(" SEGMENT SIZE ").append(getColumnSize());
             } else if (isEditSize() && getColumnSize() > 0 && !isDateDataType()
-                    && !isNonPrecisionType()) {
+                    && !isNonPrecisionType()
+                    && (!getColumnType().equalsIgnoreCase(T.DECFLOAT) || getColumnType().equalsIgnoreCase(T.DECFLOAT)
+                    && (getColumnSize() == 16 || getColumnSize() == 34))
+            ) {
                 sb.append("(");
                 sb.append(getColumnSize());
 
@@ -786,7 +792,8 @@ public class ColumnData implements Serializable {
                 || getSQLType() == Types.DECIMAL || getSQLType() == Types.BLOB || getSQLType() == Types.LONGVARCHAR
                 || getSQLType() == Types.LONGVARBINARY
                 || getColumnType().equalsIgnoreCase("VARCHAR")
-                || getColumnType().equalsIgnoreCase("CHAR"));
+                || getColumnType().equalsIgnoreCase("CHAR"))
+                || getColumnType().equalsIgnoreCase(T.DECFLOAT);
     }
 
     public void setCheck(String Check) {

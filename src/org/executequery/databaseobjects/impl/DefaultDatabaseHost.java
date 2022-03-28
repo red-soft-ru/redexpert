@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
@@ -1115,7 +1116,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         if (fieldType == blob_type && fieldSubType > 1) {
             return Types.OTHER;
         }
-        final int jdbcType = fromMetaDataToJdbcType(fieldType, fieldSubType, fieldScale);
+        final int jdbcType = fromMetaDataToJdbcType(fieldType, fieldSubType);
         // Metadata from RDB$ tables does not contain character set in subtype, manual fixup
         if (characterSetId == CS_BINARY) {
             if (jdbcType == Types.CHAR) {
@@ -1127,117 +1128,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return jdbcType;
     }
 
-    public static int fromMetaDataToJdbcType(int metaDataType, int subtype, int scale) {
-        return fromFirebirdToJdbcType(fromMetaDataToFirebirdType(metaDataType), subtype, scale);
+    public static int fromMetaDataToJdbcType(int metaDataType, int subtype) {
+        return DatabaseTypeConverter.getSqlTypeFromRDBType(metaDataType, subtype);
     }
 
-    public static int fromFirebirdToJdbcType(int firebirdType, int subtype, int scale) {
-        firebirdType = firebirdType & ~1;
-
-        switch (firebirdType) {
-            case SQL_SHORT:
-                if (subtype == SUBTYPE_NUMERIC || (subtype == 0 && scale < 0))
-                    return Types.NUMERIC;
-                else if (subtype == SUBTYPE_DECIMAL)
-                    return Types.DECIMAL;
-                else
-                    return Types.SMALLINT;
-            case SQL_LONG:
-                if (subtype == SUBTYPE_NUMERIC || (subtype == 0 && scale < 0))
-                    return Types.NUMERIC;
-                else if (subtype == SUBTYPE_DECIMAL)
-                    return Types.DECIMAL;
-                else
-                    return Types.INTEGER;
-            case SQL_INT64:
-                if (subtype == SUBTYPE_NUMERIC || (subtype == 0 && scale < 0))
-                    return Types.NUMERIC;
-                else if (subtype == SUBTYPE_DECIMAL)
-                    return Types.DECIMAL;
-                else
-                    return Types.BIGINT;
-            case SQL_DOUBLE:
-            case SQL_D_FLOAT:
-                if (subtype == SUBTYPE_NUMERIC || (subtype == 0 && scale < 0))
-                    return Types.NUMERIC;
-                else if (subtype == SUBTYPE_DECIMAL)
-                    return Types.DECIMAL;
-                else
-                    return Types.DOUBLE;
-            case SQL_FLOAT:
-                return Types.FLOAT;
-            case SQL_TEXT:
-                if (subtype == CS_BINARY){
-                    return Types.BINARY;
-                } else {
-                    return Types.CHAR;
-                }
-            case SQL_VARYING:
-                if (subtype == CS_BINARY){
-                    return Types.VARBINARY;
-                } else {
-                    return Types.VARCHAR;
-                }
-            case SQL_TIMESTAMP:
-                return Types.TIMESTAMP;
-            case SQL_TYPE_TIME:
-                return Types.TIME;
-            case SQL_TYPE_DATE:
-                return Types.DATE;
-            case SQL_BLOB:
-                if (subtype < 0)
-                    return Types.BLOB;
-                else if (subtype == 1)
-                    return Types.LONGVARCHAR;
-                else // if (subtype == 0 || subtype > 1)
-                    return Types.LONGVARBINARY;
-            case SQL_BOOLEAN:
-                return Types.BOOLEAN;
-            case SQL_NULL:
-                return Types.NULL;
-            case SQL_ARRAY:
-                return Types.ARRAY;
-            case SQL_QUAD:
-            default:
-                return Types.OTHER;
-        }
-    }
-
-    public static int fromMetaDataToFirebirdType(int metaDataType) {
-        switch (metaDataType) {
-            case smallint_type:
-                return SQL_SHORT;
-            case integer_type:
-                return SQL_LONG;
-            case int64_type:
-                return SQL_INT64;
-            case quad_type:
-                return SQL_QUAD;
-            case float_type:
-                return SQL_FLOAT;
-            case double_type:
-                return SQL_DOUBLE;
-            case d_float_type:
-                return SQL_D_FLOAT;
-            case date_type:
-                return SQL_TYPE_DATE;
-            case time_type:
-                return SQL_TYPE_TIME;
-            case timestamp_type:
-                return SQL_TIMESTAMP;
-            case char_type:
-                return SQL_TEXT;
-            case varchar_type:
-                return SQL_VARYING;
-            case blob_type:
-                return SQL_BLOB;
-            case boolean_type:
-                return SQL_BOOLEAN;
-            default:
-                // TODO Throw illegal arg / unsupported instead?
-                return SQL_NULL;
-        }
-    }
 
     public boolean supportCatalogOrSchemaInFunctionOrProcedureCalls() throws DataSourceException {
 
@@ -1857,5 +1751,25 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             list.add(namedObject.getName().trim());
         }
         return list;
+    }
+
+    private List<String> timezones;
+
+    public List<String> getTimeZones() {
+        if (timezones == null)
+            try {
+                if (getDatabaseMajorVersion() >= 4) {
+                    timezones = new ArrayList<>();
+                    DefaultStatementExecutor sender = new DefaultStatementExecutor(databaseConnection);
+                    ResultSet resultSet = sender.getResultSet("SELECT * FROM RDB$TIME_ZONES").getResultSet();
+                    while (resultSet.next()) {
+                        timezones.add(resultSet.getString(2));
+                    }
+                    return timezones;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        return timezones;
     }
 }

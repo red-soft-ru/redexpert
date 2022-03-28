@@ -1,12 +1,10 @@
 package org.executequery.gui.editor.autocomplete;
 
 import org.executequery.GUIUtilities;
-import org.underworldlabs.util.MiscUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.sql.Types;
 
 public class Parameter {
     int type;
@@ -58,16 +56,6 @@ public class Parameter {
 
     public boolean isNull()
     {
-        switch (type)
-        {
-            case Types.BINARY:
-            case Types.BLOB:
-            case Types.LONGVARBINARY:
-            case Types.VARCHAR:
-            case Types.LONGVARCHAR:
-                return value == null;
-            default:
-                return MiscUtils.isNull((String) value);
-        }
+        return value == null;
     }
 }

@@ -1,6 +1,7 @@
 package org.executequery.gui.datatype;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.T;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.localization.Bundles;
@@ -196,7 +197,9 @@ public class SelectTypePanel extends JPanel {
                     || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB
                     || cd.getSQLType() == Types.LONGVARBINARY || cd.getSQLType() == Types.LONGVARCHAR
                     || cd.getColumnType().equalsIgnoreCase("VARCHAR")
-                    || cd.getColumnType().equalsIgnoreCase("CHAR"));
+                    || cd.getColumnType().equalsIgnoreCase("CHAR")
+                    || cd.getColumnType().equalsIgnoreCase(T.DECFLOAT)
+            );
             setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
             setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
             setSubtypeVisible(cd.getSQLType() == Types.BLOB);

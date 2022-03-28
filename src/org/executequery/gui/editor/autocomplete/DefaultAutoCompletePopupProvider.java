@@ -426,10 +426,6 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
             if (popupHeight != 0 && caretCoords.y + popupHeight > parent.getHeight()) {
                 caretCoords.y = caretCoords.y - popupHeight;
             } else caretCoords.y += heightFont;
-            /*if(popupHeight<=heightFont*4||popupPanel.getWidth()<=0) {
-                popupPanel.setPreferredSize(QueryEditorAutoCompletePopupPanel.PREFERRED_SIZE);
-                popupHeight=QueryEditorAutoCompletePopupPanel.PREFERRED_SIZE.height;
-            }*/
             if (caretCoords.x + popupPanel.getWidth() > parent.getWidth())
                 caretCoords.x = parent.getWidth() - popupPanel.getWidth();
             if (caretCoords.x < 0)

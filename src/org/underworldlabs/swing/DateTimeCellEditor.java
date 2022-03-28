@@ -14,6 +14,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.EventObject;
 
 public class DateTimeCellEditor extends AbstractCellEditor implements TableCellEditor, TableCellRenderer {
@@ -22,10 +23,10 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
     public int clickCountToEdit;
     private boolean matchTableBackgroundColor;
     private boolean matchTableSelectionBackgroundColor;
-    private Border borderFocusedCell;
-    private Border borderUnfocusedCell;
-    private EQDateTimePicker dateTimePicker;
-    private int minimumRowHeightInPixels;
+    private final Border borderFocusedCell;
+    private final Border borderUnfocusedCell;
+    private final EQDateTimePicker dateTimePicker;
+    private final int minimumRowHeightInPixels;
 
     public DateTimeCellEditor() {
         this(true, true, true);
@@ -47,7 +48,7 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
         this.dateTimePicker.setBackground(Color.white);
         this.dateTimePicker.datePicker.setBackground(Color.white);
         this.dateTimePicker.timePicker.setBackground(Color.white);
-        this.dateTimePicker.datePicker.getComponentDateTextField().setBorder((Border) null);
+        this.dateTimePicker.datePicker.getComponentDateTextField().setBorder(null);
         DatePickerSettings dateSettings = this.dateTimePicker.datePicker.getSettings();
         dateSettings.setGapBeforeButtonPixels(Integer.valueOf(0));
         dateSettings.setSizeTextFieldMinimumWidthDefaultOverride(false);
@@ -58,7 +59,14 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
     public Object getCellEditorValue() {
         if (this.dateTimePicker.getStringValue().equals(""))
             return null;
-        return Timestamp.valueOf(this.dateTimePicker.getStringValue());
+        if (dateTimePicker.timePicker.timezoneSpinner.isVisible()) {
+            return this.dateTimePicker.getOffsetDateTime();
+        }
+        try {
+            return Timestamp.valueOf(this.dateTimePicker.getStringValue());
+        } catch (IllegalArgumentException e) {
+            return this.dateTimePicker.getStringValue();
+        }
     }
 
     public EQDateTimePicker getDateTimePicker() {
@@ -134,10 +142,27 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
             } else {
                 if (value instanceof RecordDataItem) {
                     RecordDataItem item = ((RecordDataItem) value);
-                    Timestamp dtvalue = (Timestamp) item.getDisplayValue();
-                    if (!item.isDisplayValueNull())
+                    if (item.getDisplayValue() instanceof LocalDateTime) {
+                        LocalDateTime nativeValue = (LocalDateTime) item.getDisplayValue();
+                        this.dateTimePicker.setDateTimePermissive(nativeValue);
+                    } else if (item.getDisplayValue() instanceof OffsetDateTime) {
+                        OffsetDateTime nativeValue = (OffsetDateTime) item.getDisplayValue();
+                        this.dateTimePicker.setDateTimePermissive(nativeValue);
+                    } else if (item.getDisplayValue() instanceof Timestamp) {
+                        Timestamp dtvalue = (Timestamp) item.getDisplayValue();
                         dateTimePicker.setDateTimePermissive(dtvalue.toLocalDateTime());
-                    else dateTimePicker.setDateTimePermissive(null);
+                    } else if (item.getDisplayValue() instanceof String) {
+                        String date_time = (String) item.getDisplayValue();
+                        String date = date_time.substring(0, date_time.indexOf(' '));
+                        int index_timezone = date_time.indexOf('+');
+                        if (index_timezone < 0)
+                            index_timezone = date_time.indexOf('-');
+                        String time = date_time.substring(date_time.indexOf(' ') + 1, index_timezone);
+                        //time = time.substring(0,12);
+                        String timezone = date_time.substring(index_timezone);
+                        LocalDateTime localDateTime = Timestamp.valueOf(date + " " + time).toLocalDateTime();
+                        dateTimePicker.setDateTimePermissive(localDateTime);
+                    } else dateTimePicker.setDateTimePermissive((OffsetDateTime) null);
                 } else {
                     String text = value.toString();
                     String shorterText = InternalUtilities.safeSubstring(text, 0, 100);

@@ -27,10 +27,8 @@ import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.*;
 
 
 /**
@@ -46,11 +44,11 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 
     private boolean deleted = false;
 
-    private String name;
+    private final String name;
 
-    private int dataType;
+    private final int dataType;
 
-    private String dataTypeName;
+    private final String dataTypeName;
 
     protected boolean changed;
 
@@ -279,7 +277,8 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
                     Long second = (Long) compar_object.getDisplayValue();
                     return first.compareTo(second);
                 }
-                case Types.DOUBLE: {
+                case Types.DOUBLE:
+                case Types.FLOAT: {
                     Double first = (Double) getDisplayValue();
                     Double second = (Double) compar_object.getDisplayValue();
                     return first.compareTo(second);
@@ -289,34 +288,35 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
                     Integer second = (Integer) compar_object.getDisplayValue();
                     return first.compareTo(second);
                 }
-                case Types.DECIMAL: {
-                    BigDecimal first = (BigDecimal) getDisplayValue();
-                    BigDecimal second = (BigDecimal) compar_object.getDisplayValue();
-                    return first.compareTo(second);
-                }
-                case Types.DATE: {
-                    Date first = (Date) getDisplayValue();
-                    Date second = (Date) compar_object.getDisplayValue();
-                    return first.compareTo(second);
-                }
-                case Types.TIME: {
-                    Time first = (Time) getDisplayValue();
-                    Time second = (Time) compar_object.getDisplayValue();
-                    return first.compareTo(second);
-                }
-                case Types.TIMESTAMP: {
-                    Timestamp first = (Timestamp) getDisplayValue();
-                    Timestamp second = (Timestamp) compar_object.getDisplayValue();
-                    return first.compareTo(second);
-                }
+                case Types.DECIMAL:
                 case Types.NUMERIC: {
                     BigDecimal first = (BigDecimal) getDisplayValue();
                     BigDecimal second = (BigDecimal) compar_object.getDisplayValue();
                     return first.compareTo(second);
                 }
-                case Types.FLOAT: {
-                    Double first = (Double) getDisplayValue();
-                    Double second = (Double) compar_object.getDisplayValue();
+                case Types.DATE: {
+                    LocalDate first = (LocalDate) getDisplayValue();
+                    LocalDate second = (LocalDate) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.TIME: {
+                    LocalTime first = (LocalTime) getDisplayValue();
+                    LocalTime second = (LocalTime) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.TIME_WITH_TIMEZONE: {
+                    OffsetTime first = (OffsetTime) getDisplayValue();
+                    OffsetTime second = (OffsetTime) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.TIMESTAMP: {
+                    LocalDateTime first = (LocalDateTime) getDisplayValue();
+                    LocalDateTime second = (LocalDateTime) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.TIMESTAMP_WITH_TIMEZONE: {
+                    OffsetDateTime first = (OffsetDateTime) getDisplayValue();
+                    OffsetDateTime second = (OffsetDateTime) compar_object.getDisplayValue();
                     return first.compareTo(second);
                 }
                 case Types.SMALLINT: {

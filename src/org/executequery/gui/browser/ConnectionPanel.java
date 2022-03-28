@@ -1352,8 +1352,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
             }
 
         }
+        try {
+            setNewAPI();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        setNewAPI();
     }
 
     /**

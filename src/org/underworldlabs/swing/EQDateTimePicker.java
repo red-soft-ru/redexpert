@@ -1,18 +1,21 @@
 package org.underworldlabs.swing;
 
-import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
+import java.awt.*;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 
 public class EQDateTimePicker extends JPanel {
-    public DatePicker datePicker;
+    public EQDatePicker datePicker;
     public EQTimePicker timePicker;
 
     public EQDateTimePicker() {
-        datePicker = new DatePicker();
+        datePicker = new EQDatePicker();
         timePicker = new EQTimePicker(false);
         init();
     }
@@ -25,20 +28,13 @@ public class EQDateTimePicker extends JPanel {
 
             }
         });
-        GroupLayout layout = new GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createSequentialGroup()
-                        .addComponent(datePicker)
-                        .addGap(10)
-                        .addComponent(timePicker)
-
-        );
-        layout.setVerticalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(datePicker)
-                        .addComponent(timePicker)
-        );
+        setLayout(new GridBagLayout());
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaults(new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
+                new Insets(0, 0, 0, 0), 0, 0));
+        gbh.defaults();
+        add(datePicker, gbh.setMaxWeightX().get());
+        add(timePicker, gbh.nextCol().get());
     }
 
     public String getStringValue() {
@@ -49,26 +45,45 @@ public class EQDateTimePicker extends JPanel {
         return (date + " " + time).trim();
     }
 
+    public OffsetDateTime getOffsetDateTime() {
+        return OffsetDateTime.of(getDateTime(), timePicker.getOffsetTime().getOffset());
+    }
+
     public void setDateTimePermissive(LocalDateTime time) {
         if (time != null) {
             datePicker.setDate(time.toLocalDate());
             timePicker.setTime(time.toLocalTime());
         } else {
             datePicker.setDate(null);
-            timePicker.setTime(null);
+            timePicker.setTime((OffsetTime) null);
+        }
+    }
+
+    public void setDateTimePermissive(OffsetDateTime time) {
+        if (time != null) {
+            datePicker.setDate(time.toLocalDate());
+            timePicker.setTime(time.toOffsetTime());
+        } else {
+            datePicker.setDate(null);
+            timePicker.setTime((OffsetTime) null);
         }
     }
 
     public LocalDateTime getDateTime() {
-        return LocalDateTime.of(datePicker.getDate(), timePicker.getTime().toLocalTime());
+        return LocalDateTime.of(datePicker.getDate(), timePicker.getLocalTime());
     }
 
     public void clear() {
         datePicker.clear();
-        timePicker.setEnabled(false);
+        timePicker.clear();
+        timePicker.setEnable(false);
     }
 
     public void setVisibleNullBox(boolean flag) {
         timePicker.setVisibleNullBox(flag);
+    }
+
+    public void setVisibleTimeZone(boolean flag) {
+        timePicker.setVisibleTimeZone(flag);
     }
 }

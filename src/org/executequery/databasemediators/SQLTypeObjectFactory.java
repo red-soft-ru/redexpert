@@ -161,7 +161,7 @@ public class SQLTypeObjectFactory {
     }
 
     private static final String DATE_FORMAT = "yyyy-MM-dd";
-    private static final String TIME_FORMAT_FULL = "HH:mm:ss.S";
+    private static final String TIME_FORMAT_FULL = "HH:mm:ss.SSS";
     private static final String TIME_FORMAT_SIMPLE = "HH:mm:ss";
     private static final int TIME_FORMAT_SIMPLE_LENGTH = TIME_FORMAT_SIMPLE.length();
 

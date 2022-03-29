@@ -1246,7 +1246,6 @@ public class QueryEditorTextPane extends SQLTextArea
      */
     public void caretUpdate(CaretEvent ce) {
 
-       // super.caretUpdate(ce);
         currentPosition = getCaretPosition();
 
         Element map = getElementMap();
@@ -1254,7 +1253,6 @@ public class QueryEditorTextPane extends SQLTextArea
 
         if (currentRow != row) {
             currentRow = row;
-            //lineBorder.setRowCount(map.getElementCount());
         }
 
         Element lineElem = map.getElement(row);

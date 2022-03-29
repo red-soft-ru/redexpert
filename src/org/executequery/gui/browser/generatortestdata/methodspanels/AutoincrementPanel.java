@@ -211,7 +211,6 @@ public class AutoincrementPanel extends AbstractMethodPanel {
                 current_offset_date_time = current_offset_date_time.minusSeconds(iteration.getSecond());
                 current_offset_date_time = current_offset_date_time.minusNanos(iteration.getNano());
             }
-            Log.info(current_offset_date_time.toOffsetTime());
             return current_offset_date_time.toOffsetTime();
         }
         if (col.getFormattedDataType().contentEquals(T.DATE)) {
@@ -282,7 +281,6 @@ public class AutoincrementPanel extends AbstractMethodPanel {
                 current_offset_date_time = current_offset_date_time.minusSeconds(iteration.getSecond());
                 current_offset_date_time = current_offset_date_time.minusNanos(iteration.getNano());
             }
-            Log.info(current_offset_date_time);
             return current_offset_date_time;
 
         }

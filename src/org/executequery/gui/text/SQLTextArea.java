@@ -301,9 +301,26 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         registerCommentAction();
     }
 
-    private void registerCommentAction() {
-        CommentAction commentAction = new CommentAction();
-        getActionMap().put("RSTA.ToggleCommentAction", commentAction);
+    protected void registerCommentAction() {
+        InputMap inputMap = getInputMap();
+
+        Object ks = inputMap.get(KeyStroke.getKeyStroke("control SLASH"));
+        while (ks != null) {
+            inputMap.remove(KeyStroke.getKeyStroke("control SLASH"));
+            inputMap = inputMap.getParent();
+            if (inputMap == null)
+                break;
+            ks = inputMap.get(KeyStroke.getKeyStroke("control SLASH"));
+        }
+        inputMap = getInputMap();
+        ks = inputMap.get(KeyStroke.getKeyStroke("typed /"));
+        while (ks != null) {
+            inputMap.remove(KeyStroke.getKeyStroke("typed /"));
+            inputMap = inputMap.getParent();
+            if (inputMap == null)
+                break;
+            ks = inputMap.get(KeyStroke.getKeyStroke("typed /"));
+        }
     }
 
     private void registerFindAction() {

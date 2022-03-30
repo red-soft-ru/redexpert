@@ -1302,10 +1302,16 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * @return the meta type objects
      */
     List<DatabaseMetaTag> metaTags;
+
     public List<DatabaseMetaTag> getMetaObjects() throws DataSourceException {
         if (metaTags == null)
             metaTags = getMetaObjects(null, null);
         return metaTags;
+    }
+
+    public void reset() {
+        super.reset();
+        metaTags = null;
     }
 
     /**

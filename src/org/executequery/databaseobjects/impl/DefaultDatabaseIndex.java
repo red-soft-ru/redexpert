@@ -279,7 +279,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "select " +
+        String query = "select " +
                 "0, " +
                 "I.RDB$RELATION_NAME, " +
                 "0," +
@@ -291,6 +291,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
                 tablespace_query +
                 "\nFROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
                 "where I.RDB$INDEX_NAME='" + getName().trim() + "'";
+        return query;
 
     }
 

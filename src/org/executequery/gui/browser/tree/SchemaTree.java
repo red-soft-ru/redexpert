@@ -22,15 +22,21 @@ package org.executequery.gui.browser.tree;
 
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTreeCellRenderer;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.BrowserConstants;
+import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.depend.DependPanel;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
+import org.executequery.sql.SqlStatementResult;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.tree.DynamicTree;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -44,6 +50,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -53,7 +60,7 @@ public class SchemaTree extends DynamicTree
         implements TreeExpansionListener,
         TreeSelectionListener, MouseListener, KeyListener {
 
-    private TreePanel panel;
+    private final TreePanel panel;
 
     public SchemaTree(DefaultMutableTreeNode root, TreePanel panel) {
 
@@ -251,6 +258,8 @@ public class SchemaTree extends DynamicTree
             }
         }
 
+        long lastTime = 0;
+
         public boolean canImport(TransferHandler.TransferSupport support) {
 
             if (!support.isDrop()) {
@@ -267,14 +276,33 @@ public class SchemaTree extends DynamicTree
             // Do not allow a drop on the drag source selections.
             JTree.DropLocation dl = (JTree.DropLocation) support.getDropLocation();
             JTree tree = (JTree) support.getComponent();
-
-            int dropRow = tree.getRowForPath(dl.getPath());
             int[] selRows = tree.getSelectionRows();
+            if (getTreePanel().getTreeType() == TreePanel.TABLESPACE) {
+                /*DependPanel treePanel=(DependPanel) getTreePanel();
+                if(System.currentTimeMillis()-lastTime<1000) {
+                    return false;
+                }
+                TreePath path = ConnectionsTreePanel.getPanelFromBrowser().getTree().getSelectionPath();
+                DatabaseObjectNode firstNode=(DatabaseObjectNode) path.getLastPathComponent();
+                String typeObject = firstNode.getMetaDataKey();
+                String name = firstNode.getName().trim();
+                String query = "ALTER "+typeObject+" "+ MiscUtils.getFormattedObject(name)+" SET TABLESPACE "+
+                        MiscUtils.getFormattedObject(treePanel.getDatabaseObject().getName())+";";
+                ExecuteQueryDialog executeQueryDialog =new ExecuteQueryDialog("",query,treePanel.getDatabaseConnection(),true);
+                executeQueryDialog.display();
+                if(executeQueryDialog.getCommit()) {
+                    treePanel.reloadPath(getPathForRow(0));
+                }
+                lastTime=System.currentTimeMillis();*/
+                return true;
+            }
+            int dropRow = tree.getRowForPath(dl.getPath());
             for (int i = 0; i < selRows.length; i++) {
                 if (selRows[i] == dropRow) {
                     return false;
                 }
             }
+
 
             TreePath dest = dl.getPath();
             DefaultMutableTreeNode target = asTreeNode(dest.getLastPathComponent());
@@ -523,6 +551,30 @@ public class SchemaTree extends DynamicTree
                 return false;
             }
 
+            if (getTreePanel().getTreeType() == TreePanel.TABLESPACE) {
+                DependPanel treePanel = (DependPanel) getTreePanel();
+                TreePath path = ConnectionsTreePanel.getPanelFromBrowser().getTree().getSelectionPath();
+                DatabaseObjectNode firstNode = (DatabaseObjectNode) path.getLastPathComponent();
+                String typeObject = firstNode.getMetaDataKey();
+                String name = firstNode.getName().trim();
+                String query = "ALTER " + typeObject + " " + MiscUtils.getFormattedObject(name) + " SET TABLESPACE " +
+                        MiscUtils.getFormattedObject(treePanel.getDatabaseObject().getName()) + ";";
+                /*ExecuteQueryDialog executeQueryDialog =new ExecuteQueryDialog("",query,treePanel.getDatabaseConnection(),true);
+                executeQueryDialog.display();
+                if(executeQueryDialog.getCommit()) {
+                    treePanel.reloadPath(getPathForRow(0));
+                }*/
+                DefaultStatementExecutor querySender = new DefaultStatementExecutor(treePanel.getDatabaseConnection());
+                try {
+                    SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+                    if (!result.isException())
+                        treePanel.reloadPath(getPathForRow(0));
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            }
+
             // Extract transfer data.
             DefaultMutableTreeNode[] nodes = null;
             try {
@@ -568,7 +620,7 @@ public class SchemaTree extends DynamicTree
 
         public class NodesTransferable implements Transferable {
 
-            private DefaultMutableTreeNode[] nodes;
+            private final DefaultMutableTreeNode[] nodes;
 
             public NodesTransferable(DefaultMutableTreeNode[] nodes) {
                 this.nodes = nodes;

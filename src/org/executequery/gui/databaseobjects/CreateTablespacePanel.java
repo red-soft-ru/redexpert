@@ -101,7 +101,7 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
             StringBuilder sb = new StringBuilder();
             sb.append("ALTER");
             sb.append(" TABLESPACE ").append(MiscUtils.getFormattedObject(nameField.getText()));
-            sb.append(" FILE '").append(fileField.getText()).append("'");
+            sb.append(" SET FILE '").append(fileField.getText()).append("'");
             sb.append(";\n");
             return sb.toString();
         } else

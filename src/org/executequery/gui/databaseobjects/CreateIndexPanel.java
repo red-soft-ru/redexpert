@@ -98,7 +98,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         sortingBox.setSelectedIndex(databaseIndex.getIndexType());
         if (databaseIndex.getTablespace() != null)
             for (NamedObject ts : tss)
-                if (ts.getName().equals(databaseIndex.getName()))
+                if (ts.getName().equalsIgnoreCase(databaseIndex.getTablespace().trim()))
                     tablespaceBox.setSelectedItem(ts);
         changed = false;
 

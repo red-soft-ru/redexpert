@@ -3,6 +3,8 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -83,7 +85,7 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
 
 
     public String getIndexesQuery() {
-        return "SELECT RDB$INDEX_NAME FROM RDB$INDEXES WHERE RDB$TABLESPACE_NAME='" + getName() + "' ORDER BY 1";
+        return "SELECT RDB$INDEX_NAME, RDB$INDEX_INACTIVE FROM RDB$INDICES WHERE RDB$TABLESPACE_NAME='" + getName() + "' ORDER BY 1";
     }
 
     private void loadIndexes() {
@@ -143,6 +145,19 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
         if (attributes == null || isMarkedForReload())
             getObjectInfo();
         return attributes[atrrIndex];
+    }
+
+    public String getFileName() {
+        return getAttribute(FILE_NAME);
+    }
+
+    public String getSQLSecurity() {
+        return getAttribute(SECURITY);
+    }
+
+    public String getCreateSQLText() throws DataSourceException {
+
+        return SQLUtils.generateCreateTablespace(getName(), getFileName());
     }
 }
 

@@ -12,6 +12,8 @@ public abstract class TreePanel extends AbstractDockedTabActionPanel {
     public final static int DEPENDENT = 2;
     public final static int TABLESPACE = 3;
 
+    protected int treeType;
+
     public TreePanel() {
     }
 
@@ -29,4 +31,11 @@ public abstract class TreePanel extends AbstractDockedTabActionPanel {
 
     public abstract void rebuildConnectionsFromTree();
 
+    public int getTreeType() {
+        return treeType;
+    }
+
+    public void setTreeType(int treeType) {
+        this.treeType = treeType;
+    }
 }

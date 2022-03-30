@@ -571,7 +571,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         String query = "select " +
                 "I.RDB$INDEX_NAME,\n" +
                 "I.RDB$INDEX_INACTIVE\n" +
-                "FROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
+                "FROM RDB$INDICES AS I \n" +
                 "where I.RDB$SYSTEM_FLAG = 0 \n" +
                 "ORDER BY I.RDB$INDEX_NAME";
         if (typeTree == TreePanel.DEPENDED_ON)

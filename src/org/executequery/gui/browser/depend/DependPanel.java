@@ -3,9 +3,10 @@ package org.executequery.gui.browser.depend;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
-import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.TablespaceTreePopupMenu;
 import org.executequery.gui.browser.TreeFindAction;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
@@ -18,17 +19,15 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 public class DependPanel extends TreePanel {
     private SchemaTree tree;
     private DatabaseObject databaseObject;
     private DatabaseConnection databaseConnection;
-    private final int treeType;
+    private TablespaceTreePopupMenu tablespacePopupMenu;
 
     public DependPanel(int treeType) {
-        this.treeType = treeType;
+        setTreeType(treeType);
         setLayout(new GridBagLayout());
     }
 
@@ -106,6 +105,7 @@ public class DependPanel extends TreePanel {
         return databaseObject;
     }
 
+
     public void setDatabaseObject(DatabaseObject databaseObject) {
         this.databaseObject = databaseObject;
         setDatabaseConnection(databaseObject.getHost().getDatabaseConnection());
@@ -116,17 +116,89 @@ public class DependPanel extends TreePanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() < 2) {
-
+                    maybeShowPopup(e);
                     return;
                 }
                 twoClicks(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.getClickCount() < 2) {
+                    maybeShowPopup(e);
+                }
             }
         });
         add(tree, new GridBagConstraints(0, 0,
                 1, 1, 1, 1,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0),
                 0, 0));
+
     }
+
+    public TablespaceTreePopupMenu getTablespacePopupMenu() {
+        if (tablespacePopupMenu == null) {
+            tablespacePopupMenu = new TablespaceTreePopupMenu(this);
+        }
+        return tablespacePopupMenu;
+    }
+
+    protected TreePath getTreePathForLocation(int x, int y) {
+        return tree.getPathForLocation(x, y);
+    }
+
+    private void maybeShowPopup(MouseEvent e) {
+
+        if (e.isPopupTrigger()) {
+
+            Point point = new Point(e.getX(), e.getY());
+            TreePath treePathForLocation = getTreePathForLocation(point.x, point.y);
+            TablespaceTreePopupMenu popupMenu = null;
+            if (treePathForLocation != null && treeType == TABLESPACE) {
+
+                popupMenu = getTablespacePopupMenu();
+                popupMenu.setCurrentPath(treePathForLocation);
+
+                popupMenu.setCurrentSelection(getDatabaseConnection());
+
+                popupMenu.show(e.getComponent(), point.x, point.y);
+            }
+
+        }
+    }
+
+    public void reloadPath(TreePath path) {
+
+        try {
+
+            Object object = path.getLastPathComponent();
+
+            GUIUtilities.showWaitCursor();
+
+            boolean expanded = tree.isExpanded(path);
+            if (expanded) {
+
+                tree.collapsePath(path);
+            }
+
+            DatabaseObjectNode node = (DatabaseObjectNode) object;
+            node.reset();
+
+            pathExpanded(path);
+
+            if (expanded) {
+
+                tree.expandPath(path);
+            }
+
+            //pathChanged(oldSelectionPath, path);
+
+        } finally {
+
+            GUIUtilities.showNormalCursor();
+        }
+    }
+
 
     public DatabaseConnection getDatabaseConnection() {
         return databaseConnection;
@@ -137,7 +209,12 @@ public class DependPanel extends TreePanel {
     }
 
     private void twoClicks(MouseEvent e) {
-        DatabaseObjectNode node = (DatabaseObjectNode) tree.getSelectionPath().getLastPathComponent();
+        TreePath treePath = tree.getSelectionPath();
+        if (treePath == null)
+            return;
+        DatabaseObjectNode node = (DatabaseObjectNode) treePath.getLastPathComponent();
+        if (node.getType() == NamedObject.META_TAG)
+            return;
         String s = node.getName();
         if (s != null) {
             s = s.replace("$", "\\$");
@@ -172,4 +249,6 @@ public class DependPanel extends TreePanel {
             }
         }
     }
+
+
 }

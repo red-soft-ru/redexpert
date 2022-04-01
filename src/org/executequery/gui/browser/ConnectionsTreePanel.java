@@ -1723,20 +1723,17 @@ public class ConnectionsTreePanel extends TreePanel
    * @param name - the name of the connection
    */
   protected String buildConnectionName(String name) {
-    int count = 0;
-    for (int i = 0, n = connections.size(); i < n; i++) {
-      DatabaseConnection _dc = connections.get(i);
-      if (_dc.getName().startsWith(name)) {
-        count++;
-      }
-    }
-
-    if (count > 0) {
+    int count = 1;
+    String tempName = name;
+    while (existConName(tempName)) {
+      tempName = name + " " + count;
       count++;
-      name += " " + count;
     }
-    return name;
+    return tempName;
   }
+
+  private boolean existConName(String name) {
+    return connections.stream().anyMatch(o -> name.equals(o.getName()));  }
 
   public boolean isRootSelectOnDisconnect() {
     return rootSelectOnDisconnect;

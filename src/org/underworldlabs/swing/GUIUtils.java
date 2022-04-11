@@ -134,8 +134,13 @@ public class GUIUtils {
     }
 
     public static Dimension getDefaultDeviceScreenSize() {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        return screenSize;
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gs = ge.getScreenDevices();
+        if (gs != null && gs.length > 0) {
+            DisplayMode dm = gs[0].getDisplayMode();
+            return new Dimension(dm.getWidth(), dm.getHeight());
+        }
+        return Toolkit.getDefaultToolkit().getScreenSize();
     }
 
     /**

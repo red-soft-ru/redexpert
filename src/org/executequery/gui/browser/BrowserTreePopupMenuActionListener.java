@@ -512,7 +512,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     try {
                         GUIUtilities.showWaitCursor();
                         BaseDialog dialog =
-                                new BaseDialog(CreateIndexPanel.ALTER_TITLE, false);
+                                new BaseDialog(CreateIndexPanel.ALTER_TITLE, true);
                         createObjectPanel = new CreateIndexPanel(currentSelection, dialog, (DefaultDatabaseIndex) node.getDatabaseObject());
                         showDialogCreateObject(createObjectPanel, dialog);
                     } finally {

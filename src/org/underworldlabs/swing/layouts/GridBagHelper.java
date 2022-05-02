@@ -6,8 +6,13 @@ import java.awt.*;
 public class GridBagHelper {
     // координаты текущей ячейки
     // настраиваемый объект GridBagConstraints
-    private GridBagConstraints constraints;
+    private final GridBagConstraints constraints;
     private GridBagConstraints defaultConstraints;
+    public static final GridBagConstraints DEFAULT_CONSTRAINTS = new GridBagConstraints(
+            0, 0, 1, 1, 0, 0,
+            GridBagConstraints.NORTHWEST,
+            GridBagConstraints.HORIZONTAL,
+            new Insets(5, 5, 5, 5), 0, 0);
 
 
     public GridBagHelper() {

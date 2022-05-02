@@ -61,10 +61,7 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
     }
 
     protected void initEdited() {
-        nameField.setText(exception.getName().trim());
-        nameField.setEnabled(false);
-        textExceptionPanel.getTextAreaComponent().setText(exception.getExceptionText());
-        descriptionPanel.getTextAreaComponent().setText(exception.getRemarks());
+        reset();
     }
 
     void generateScript() {
@@ -78,5 +75,11 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
         return query;
     }
 
+    protected void reset() {
+        nameField.setText(exception.getName().trim());
+        nameField.setEnabled(false);
+        textExceptionPanel.getTextAreaComponent().setText(exception.getExceptionText());
+        descriptionPanel.getTextAreaComponent().setText(exception.getRemarks());
+    }
 
 }

@@ -28,9 +28,6 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.T;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
-import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
-import org.executequery.gui.browser.nodes.DatabaseHostNode;
-import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
@@ -652,36 +649,23 @@ public class ColumnData implements Serializable {
 
     private void getDomainInfo() {
         domain = domain.trim();
-        ConnectionsTreePanel treePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-        DatabaseHostNode hostNode = (DatabaseHostNode) treePanel.getHostNode(dc);
-        List<DatabaseObjectNode> metatags = hostNode.getAllChildren();
-        boolean find = false;
-        for (int i = 0; i < metatags.size(); i++) {
-            DefaultDatabaseMetaTag metatag = (DefaultDatabaseMetaTag) metatags.get(i).getDatabaseObject();
-            if (metatag.getMetaDataKey().equalsIgnoreCase(NamedObject.META_TYPES[NamedObject.DOMAIN])
-                    || metatag.getMetaDataKey().equalsIgnoreCase(NamedObject.META_TYPES[NamedObject.SYSTEM_DOMAIN])) {
-                List<DatabaseObjectNode> domains = metatags.get(i).getChildObjects();
-                for (DatabaseObjectNode domainNode : domains) {
-                    if (domainNode.getName().equals(domain)) {
-                        DefaultDatabaseDomain defaultDatabaseDomain = (DefaultDatabaseDomain) domainNode.getDatabaseObject();
-                        domainType = defaultDatabaseDomain.getDomainData().domainType;
-                        domainSize = defaultDatabaseDomain.getDomainData().domainSize;
-                        domainScale = defaultDatabaseDomain.getDomainData().domainScale;
-                        domainSubType = defaultDatabaseDomain.getDomainData().domainSubType;
-                        domainCharset = defaultDatabaseDomain.getDomainData().domainCharset;
-                        domainCheck = defaultDatabaseDomain.getDomainData().domainCheck;
-                        domainDescription = defaultDatabaseDomain.getDomainData().domainDescription;
-                        domainNotNull = defaultDatabaseDomain.getDomainData().domainNotNull;
-                        domainDefault = defaultDatabaseDomain.getDomainData().domainDefault;
-                        domainComputedBy = defaultDatabaseDomain.getDomainData().domainComputedBy;
-                        domainCollate = defaultDatabaseDomain.getDomainData().domainCollate;
-                        find = true;
-                        break;
-                    }
-                }
-                if (find)
-                    break;
-            }
+
+        DefaultDatabaseDomain defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.DOMAIN, domain);
+        if (defaultDatabaseDomain == null)
+            defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.SYSTEM_DOMAIN, domain);
+        boolean find = defaultDatabaseDomain != null;
+        if (find) {
+            domainType = defaultDatabaseDomain.getDomainData().domainType;
+            domainSize = defaultDatabaseDomain.getDomainData().domainSize;
+            domainScale = defaultDatabaseDomain.getDomainData().domainScale;
+            domainSubType = defaultDatabaseDomain.getDomainData().domainSubType;
+            domainCharset = defaultDatabaseDomain.getDomainData().domainCharset;
+            domainCheck = defaultDatabaseDomain.getDomainData().domainCheck;
+            domainDescription = defaultDatabaseDomain.getDomainData().domainDescription;
+            domainNotNull = defaultDatabaseDomain.getDomainData().domainNotNull;
+            domainDefault = defaultDatabaseDomain.getDomainData().domainDefault;
+            domainComputedBy = defaultDatabaseDomain.getDomainData().domainComputedBy;
+            domainCollate = defaultDatabaseDomain.getDomainData().domainCollate;
         }
         sqlType = domainType;
         columnSize = domainSize;

@@ -294,6 +294,13 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     protected void initEdited() {
+        reset();
+        //addCreateSqlTab(trigger);
+        addDependenciesTab(trigger);
+        addCreateSqlTab(trigger);
+    }
+
+    protected void reset() {
         typeTriggerCombo.setEnabled(false);
         nameField.setText(trigger.getName());
         nameField.setEnabled(false);
@@ -335,7 +342,6 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 }
             }
         }
-
     }
 
     @Override

@@ -78,6 +78,14 @@ public class ConnectionsTreePanel extends TreePanel
     return (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(PROPERTY_KEY);
   }
 
+  public static NamedObject getNamedObjectFromHost(DatabaseConnection dc, int type, String name) {
+    return getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).getDatabaseObjectFromTypeAndName(type, name);
+  }
+
+  public static NamedObject getNamedObjectFromHost(DatabaseConnection dc, String metatag, String name) {
+    return getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).getDatabaseObjectFromMetaTagAndName(metatag, name);
+  }
+
   public SchemaTree getTree() {
     return tree;
   }
@@ -1201,6 +1209,7 @@ public class ConnectionsTreePanel extends TreePanel
     return (DefaultDatabaseHost) getHostNode(dc).getDatabaseObject();
   }
 
+
   public DatabaseObjectNode getHostNode(DatabaseConnection dc) {
 
     for (Enumeration<?> i = tree.getConnectionsBranchNode().children(); i.hasMoreElements(); ) {
@@ -1376,6 +1385,7 @@ public class ConnectionsTreePanel extends TreePanel
 
       DatabaseObjectNode node = (DatabaseObjectNode) object;
       node.reset();
+
 
       nodeStructureChanged(node);
       pathExpanded(path);
@@ -1815,7 +1825,7 @@ public class ConnectionsTreePanel extends TreePanel
     tree.setSelectionPath(treePath);
   }
 
-  protected TreePath getTreeSelectionPath() {
+  public TreePath getTreeSelectionPath() {
     return tree.getSelectionPath();
   }
 
@@ -1878,6 +1888,7 @@ public class ConnectionsTreePanel extends TreePanel
 //                pathChanged(path);
       }
     }
+
 
     public void mouseReleased(MouseEvent e) {
 

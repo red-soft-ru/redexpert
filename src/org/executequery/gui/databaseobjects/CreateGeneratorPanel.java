@@ -34,12 +34,10 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     }
 
     protected void initEdited() {
-        nameField.setText(generator.getName().trim());
-        nameField.setEnabled(false);
-        startValueText.setLongValue(generator.getSequenceValue());
-        if (getDatabaseVersion() >= 3)
-            incrementText.setValue(generator.getIncrement());
-        description.getTextAreaComponent().setText(generator.getRemarks());
+        reset();
+        addPrivilegesTab(tabbedPane);
+        addDependenciesTab(generator);
+        addCreateSqlTab(generator);
     }
 
     @Override
@@ -126,7 +124,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
                 if (!editing)
                     query = "CREATE SEQUENCE " + getFormattedName() + ";";
                 else query = "";
-                query += "\nALTER SEQUENCE " + getFormattedName() + " RESTART WITH " + startValueText.getStringValue() + ";";
+                query += "\nALTER SEQUENCE " + getFormattedName() + " RESTART WITH " + (startValueText.getLongValue() + incrementText.getLongValue()) + ";";
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -142,5 +140,14 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
             displayExecuteQueryDialog(generateQuery(), ";");
         } else
             GUIUtilities.displayErrorMessage("Name can not be empty");
+    }
+
+    protected void reset() {
+        nameField.setText(generator.getName().trim());
+        nameField.setEnabled(false);
+        startValueText.setLongValue(generator.getSequenceValue());
+        if (getDatabaseVersion() >= 3)
+            incrementText.setValue(generator.getIncrement());
+        description.getTextAreaComponent().setText(generator.getRemarks());
     }
 }

@@ -104,6 +104,9 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     }
 
+    protected void reset() {
+    }
+
     @Override
     public void createObject() {
         createIndex();

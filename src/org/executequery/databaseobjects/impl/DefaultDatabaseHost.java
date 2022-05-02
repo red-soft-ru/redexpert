@@ -25,7 +25,6 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
@@ -1760,23 +1759,16 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return list;
     }
 
-    private List<String> timezones;
+    public NamedObject getDatabaseObjectFromMetaTagAndName(String metadatakey, String name) {
+        List<NamedObject> namedObjects = getDatabaseObjectsForMetaTag(metadatakey);
+        for (NamedObject namedObject : namedObjects) {
+            if (namedObject.getName().trim().contentEquals(name))
+                return namedObject;
+        }
+        return null;
+    }
 
-    public List<String> getTimeZones() {
-        if (timezones == null)
-            try {
-                if (getDatabaseMajorVersion() >= 4) {
-                    timezones = new ArrayList<>();
-                    DefaultStatementExecutor sender = new DefaultStatementExecutor(databaseConnection);
-                    ResultSet resultSet = sender.getResultSet("SELECT * FROM RDB$TIME_ZONES").getResultSet();
-                    while (resultSet.next()) {
-                        timezones.add(resultSet.getString(2));
-                    }
-                    return timezones;
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        return timezones;
+    public NamedObject getDatabaseObjectFromTypeAndName(int type, String name) {
+        return getDatabaseObjectFromMetaTagAndName(NamedObject.META_TYPES[type], name);
     }
 }

@@ -120,7 +120,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         sqlPane = new SQLTextArea();
 
-        sqlPanel.add(sqlPane, BorderLayout.CENTER);
+        sqlPanel.add(new JScrollPane(sqlPane), BorderLayout.CENTER);
 
         tabs.add("Sql", sqlPanel);
         tabs.add(Bundles.getCommon("dependencies"), dependenciesPanel);

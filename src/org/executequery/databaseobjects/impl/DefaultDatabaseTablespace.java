@@ -14,10 +14,10 @@ import java.util.List;
 
 public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
     public static final String[] COLUMNS =
-            {"ID", "SECURITY", "SYSTEM", "DESCRIPTION", "OWNER", "FILE_NAME", "OFFLINE", "READ_ONLY"};
+            {"ID", "SECURITY_CLASS", "SYSTEM", "DESCRIPTION", "OWNER", "FILE_NAME", "OFFLINE", "READ_ONLY"};
     public static final int ID = 0;
-    public static final int SECURITY = ID + 1;
-    public static final int SYSTEM = SECURITY + 1;
+    public static final int SECURITY_CLASS = ID + 1;
+    public static final int SYSTEM = SECURITY_CLASS + 1;
     public static final int DESCRIPTION = SYSTEM + 1;
     public static final int OWNER = DESCRIPTION + 1;
     public static final int FILE_NAME = OWNER + 1;
@@ -41,7 +41,7 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
 
     @Override
     protected String queryForInfo() {
-        String query = MessageFormat.format("select rdb$tablespace_id as {" + ID + "},rdb$security_class as {" + SECURITY + "}," +
+        String query = MessageFormat.format("select rdb$tablespace_id as {" + ID + "},rdb$security_class as {" + SECURITY_CLASS + "}," +
                 "rdb$system_flag as {" + SYSTEM + "},rdb$description as {" + DESCRIPTION + "},rdb$owner_name as {" + OWNER + "}," +
                 "rdb$file_name as {" + FILE_NAME + "}, rdb$offline as {" + OFFLINE + "},rdb$read_only as {" + READ_ONLY + "}" +
                 " from rdb$tablespaces where rdb$tablespace_name = ''" + getName() + "''", COLUMNS);
@@ -149,10 +149,6 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
 
     public String getFileName() {
         return getAttribute(FILE_NAME);
-    }
-
-    public String getSQLSecurity() {
-        return getAttribute(SECURITY);
     }
 
     public String getCreateSQLText() throws DataSourceException {

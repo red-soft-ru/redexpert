@@ -5,6 +5,8 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTablespace;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.browser.depend.DependPanel;
+import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -22,7 +24,6 @@ import java.io.File;
 public class CreateTablespacePanel extends AbstractCreateObjectPanel {
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.TABLESPACE);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.TABLESPACE);
-    private FileChooserDialog fileChooserDialog;
     private JTextField fileField;
     private JButton fileButton;
     private SimpleSqlTextPanel sqlTextPanel;
@@ -42,7 +43,6 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
     @Override
     protected void init() {
         sqlTextPanel = new SimpleSqlTextPanel();
-        fileChooserDialog = new FileChooserDialog();
         fileField = new JTextField();
         fileButton = new JButton("...");
         fileButton.addActionListener(new ActionListener() {
@@ -68,7 +68,7 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
         centralPanel.add(new JLabel(Bundles.getCommon("file")), gbh.nextRowFirstCol().setLabelDefault().get());
         centralPanel.add(fileField, gbh.nextCol().setMaxWeightX().fillHorizontally().get());
         centralPanel.add(fileButton, gbh.nextCol().setLabelDefault().get());
-        tabbedPane.add(sqlTextPanel);
+        tabbedPane.add("SQL", sqlTextPanel);
         fileField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -91,6 +91,16 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void initEdited() {
+        reset();
+        nameField.setEnabled(false);
+        DependPanel tablesIndexesPanel = new DependPanel(TreePanel.TABLESPACE);
+        tablesIndexesPanel.setDatabaseObject(tablespace);
+        tablesIndexesPanel.setDatabaseConnection(tablespace.getHost().getDatabaseConnection());
+        tabbedPane.insertTab(Bundles.getCommon("contents"), null, new JScrollPane(tablesIndexesPanel), null, 0);
+        addCreateSqlTab(tablespace);
+    }
+
+    protected void reset() {
         nameField.setText(tablespace.getName());
         fileField.setText(tablespace.getAttribute(DefaultDatabaseTablespace.FILE_NAME));
         generateSQL();

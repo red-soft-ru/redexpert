@@ -212,6 +212,9 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         loadPanel();
     }
 
+    protected void reset() {
+    }
+
     private void loadPanel() {
         if (typePanel != null) {
             tabbedPane.remove(typePanel);

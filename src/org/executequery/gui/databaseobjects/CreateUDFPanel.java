@@ -139,70 +139,8 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void initEdited() {
-        if (editedUDF == null)
-            return;
-
-        try {
-            editedUDF.loadParameters();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        nameField.setText(editedUDF.getName());
-        nameField.setEnabled(false);
-        freeItBox.setSelected(editedUDF.getFreeIt());
-        nameModuleField.setText(editedUDF.getModuleName());
-        entryPointField.setText(editedUDF.getEntryPoint());
-        descriptionPanel.getTextAreaComponent().setText(editedUDF.getDescription());
-
-        int returnArg = editedUDF.getReturnArg();
-
-        if (returnArg != 0) {
-            parameterBox.setSelected(true);
-            parameterNumberField.setText(String.valueOf(returnArg));
-            parameterBoxChanged();
-        } else {
-            DefaultDatabaseUDF.UDFParameter udfParameter = editedUDF.getUDFParameters().get(0);
-            if (udfParameter.getFieldType() == 40) {// check for cstring type
-                cstringBox.setSelected(true);
-                cstringLengthField.setText(String.valueOf(udfParameter.getFieldLenght()));
-                cstringBoxChanged();
-            } else {
-                returnsType.setColumnSize(udfParameter.getFieldLenght());
-                returnsType.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(udfParameter.getFieldType(),
-                        udfParameter.getFieldSubType()));
-                returnsType.setColumnSubtype(udfParameter.getFieldSubType());
-                returnsType.setColumnScale(udfParameter.getFieldScale());
-                returnsType.setColumnType(udfParameter.getFieldStringType());
-
-                selectTypePanel.setColumnData(returnsType);
-                selectTypePanel.refresh();
-
-                if (udfParameter.getMechanism() == BY_DESCRIPTOR)
-                    mechanismBox.setSelectedIndex(2);
-                else if (udfParameter.getMechanism() == BY_VALUE)
-                    mechanismBox.setSelectedIndex(1);
-                else mechanismBox.setSelectedIndex(0);
-            }
-        }
-
-        // remove first empty row
-        parametersPanel.removeRow(0);
-        for (DefaultDatabaseUDF.UDFParameter parameter :
-                editedUDF.getUDFParameters()){
-            if (parameter.getArgPosition() == 0)
-                continue;
-            ColumnData cd = new ColumnData(connection);
-            cd.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(parameter.getFieldType(),
-                    parameter.getFieldSubType()));
-            cd.setColumnSubtype(parameter.getFieldSubType());
-            cd.setColumnSize(parameter.getFieldLenght());
-            cd.setColumnType(DatabaseTypeConverter.getDataTypeName(parameter.getFieldType(),
-                    parameter.getFieldSubType(), parameter.getFieldScale()));
-            cd.setMechanism(parameter.getStringMechanism());
-            cd.setCstring(parameter.isCString());
-            cd.setColumnRequired(parameter.isNotNull() ? 0 : 1);
-            parametersPanel.addRow(cd);
-        }
+        reset();
+        addCreateSqlTab(editedUDF);
     }
 
     protected String generateQuery() {
@@ -323,6 +261,73 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         } else if (!parameterBox.isSelected()) {
             tabbedPane.insertTab(bundleString("ReturnsType"), null, selectTypePanel, null, 1);
             tabbedPane.setSelectedIndex(0);
+        }
+    }
+
+    protected void reset() {
+        if (editedUDF == null)
+            return;
+
+        try {
+            editedUDF.loadParameters();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        nameField.setText(editedUDF.getName());
+        nameField.setEnabled(false);
+        freeItBox.setSelected(editedUDF.getFreeIt());
+        nameModuleField.setText(editedUDF.getModuleName());
+        entryPointField.setText(editedUDF.getEntryPoint());
+        descriptionPanel.getTextAreaComponent().setText(editedUDF.getDescription());
+
+        int returnArg = editedUDF.getReturnArg();
+
+        if (returnArg != 0) {
+            parameterBox.setSelected(true);
+            parameterNumberField.setText(String.valueOf(returnArg));
+            parameterBoxChanged();
+        } else {
+            DefaultDatabaseUDF.UDFParameter udfParameter = editedUDF.getUDFParameters().get(0);
+            if (udfParameter.getFieldType() == 40) {// check for cstring type
+                cstringBox.setSelected(true);
+                cstringLengthField.setText(String.valueOf(udfParameter.getFieldLenght()));
+                cstringBoxChanged();
+            } else {
+                returnsType.setColumnSize(udfParameter.getFieldLenght());
+                returnsType.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(udfParameter.getFieldType(),
+                        udfParameter.getFieldSubType()));
+                returnsType.setColumnSubtype(udfParameter.getFieldSubType());
+                returnsType.setColumnScale(udfParameter.getFieldScale());
+                returnsType.setColumnType(udfParameter.getFieldStringType());
+
+                selectTypePanel.setColumnData(returnsType);
+                selectTypePanel.refresh();
+
+                if (udfParameter.getMechanism() == BY_DESCRIPTOR)
+                    mechanismBox.setSelectedIndex(2);
+                else if (udfParameter.getMechanism() == BY_VALUE)
+                    mechanismBox.setSelectedIndex(1);
+                else mechanismBox.setSelectedIndex(0);
+            }
+        }
+
+        // remove first empty row
+        parametersPanel.removeRow(0);
+        for (DefaultDatabaseUDF.UDFParameter parameter :
+                editedUDF.getUDFParameters()) {
+            if (parameter.getArgPosition() == 0)
+                continue;
+            ColumnData cd = new ColumnData(connection);
+            cd.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(parameter.getFieldType(),
+                    parameter.getFieldSubType()));
+            cd.setColumnSubtype(parameter.getFieldSubType());
+            cd.setColumnSize(parameter.getFieldLenght());
+            cd.setColumnType(DatabaseTypeConverter.getDataTypeName(parameter.getFieldType(),
+                    parameter.getFieldSubType(), parameter.getFieldScale()));
+            cd.setMechanism(parameter.getStringMechanism());
+            cd.setCstring(parameter.isCString());
+            cd.setColumnRequired(parameter.isNotNull() ? 0 : 1);
+            parametersPanel.addRow(cd);
         }
     }
 }

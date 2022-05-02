@@ -1,9 +1,11 @@
 package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.text.SQLTextArea;
 import org.underworldlabs.util.MiscUtils;
@@ -101,6 +103,12 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
     protected void initEdited() {
+        reset();
+        addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain));
+        addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain));
+    }
+
+    protected void reset() {
         columnData.setColumnName(domain);
         columnData.setDomain(domain);
         columnData.setDescription(columnData.getDomainDescription());

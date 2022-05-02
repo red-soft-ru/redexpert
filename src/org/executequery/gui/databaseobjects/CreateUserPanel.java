@@ -171,20 +171,25 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void initEdited() {
-        nameField.setText(user.getName());
+        reset();
+        addCreateSqlTab(beginUser);
+    }
+
+    protected void reset() {
+        nameField.setText(beginUser.getName());
         nameField.setEnabled(false);
-        firstNameField.setText(user.getFirstName());
-        middleNameField.setText(user.getMiddleName());
-        lastNameField.setText(user.getLastName());
+        firstNameField.setText(beginUser.getFirstName());
+        middleNameField.setText(beginUser.getMiddleName());
+        lastNameField.setText(beginUser.getLastName());
         //groupIDField.setText(Integer.toString(user.getGroupId()));
         //userIDField.setText(Integer.toString(user.getUserId()));
-        descriptionPanel.setSQLText(user.getComment());
-        activeBox.setSelected(user.getActive());
-        pluginField.setSelectedItem(user.getPlugin());
+        descriptionPanel.setSQLText(beginUser.getComment());
+        activeBox.setSelected(beginUser.getActive());
+        pluginField.setSelectedItem(beginUser.getPlugin());
         pluginField.setEnabled(false);
-        adminBox.setSelected(user.getAdministrator());
-        for (String tag : user.getTags().keySet()) {
-            ((DefaultTableModel) tagTable.getModel()).addRow(new Object[]{tag, user.getTag(tag)});
+        adminBox.setSelected(beginUser.getAdministrator());
+        for (String tag : beginUser.getTags().keySet()) {
+            ((DefaultTableModel) tagTable.getModel()).addRow(new Object[]{tag, beginUser.getTag(tag)});
         }
     }
 

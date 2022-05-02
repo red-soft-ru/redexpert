@@ -44,13 +44,14 @@ public class BrowserTablespacePanel extends AbstractFormObjectViewPanel {
         gbh.nextRowFirstCol();
         gbh.addLabelFieldPair(this, Bundles.getCommon("name"), new DisabledField(tablespace.getName()), null);
         gbh.addLabelFieldPair(this, Bundles.getCommon("file"), new DisabledField(tablespace.getFileName()), null);
-        gbh.addLabelFieldPair(this, "SQL_SECURITY", new DisabledField(tablespace.getSQLSecurity()), null);
         gbh.nextRowFirstCol();
         JCheckBox offlineBox = new JCheckBox("Offline");
         offlineBox.setSelected(Boolean.parseBoolean(tablespace.getAttribute(DefaultDatabaseTablespace.OFFLINE).trim()));
+        offlineBox.setEnabled(false);
         add(offlineBox, gbh.setLabelDefault().get());
         JCheckBox readOnlyBox = new JCheckBox("Read-only");
         readOnlyBox.setSelected(Boolean.parseBoolean(tablespace.getAttribute(DefaultDatabaseTablespace.READ_ONLY).trim()));
+        readOnlyBox.setEnabled(false);
         add(readOnlyBox, gbh.nextCol().setLabelDefault().get());
         JTabbedPane tabPane = new JTabbedPane();
         DependPanel tablesIndexesPanel = new DependPanel(TreePanel.TABLESPACE);

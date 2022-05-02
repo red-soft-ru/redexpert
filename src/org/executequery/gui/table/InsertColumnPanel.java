@@ -270,6 +270,9 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         }
     }
 
+    protected void reset() {
+    }
+
 
     protected String generateQuery() {
         sb.setLength(0);

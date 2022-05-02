@@ -6,9 +6,9 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
-import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.BaseDialog;
@@ -16,7 +16,10 @@ import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.BrowserTreePopupMenu;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.DependenciesPanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.util.MiscUtils;
@@ -30,10 +33,11 @@ import javax.swing.text.PlainDocument;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.print.Printable;
 import java.sql.SQLException;
 import java.util.Vector;
 
-public abstract class AbstractCreateObjectPanel extends JPanel {
+public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPanel {
     private JPanel topPanel;
     protected JPanel centralPanel;
     protected JTabbedPane tabbedPane;
@@ -50,6 +54,37 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     private boolean commit;
     protected boolean edited = false;
     protected String firstQuery;
+
+    public static AbstractCreateObjectPanel getEditPanelFromType(int type, DatabaseConnection dc, Object databaseObject, Object[] params) {
+        switch (type) {
+            case NamedObject.DOMAIN:
+                return new CreateDomainPanel(dc, null, ((DatabaseObject) databaseObject).getName());
+            case NamedObject.PROCEDURE:
+                return new CreateProcedurePanel(dc, null, ((DatabaseObject) databaseObject).getName());
+            case NamedObject.FUNCTION:
+                DefaultDatabaseFunction function = (DefaultDatabaseFunction) databaseObject;
+                return new CreateFunctionPanel(dc, null, function.getName(), function);
+            case NamedObject.TRIGGER:
+            case NamedObject.DDL_TRIGGER:
+            case NamedObject.DATABASE_TRIGGER:
+                DefaultDatabaseTrigger trigger = (DefaultDatabaseTrigger) databaseObject;
+                return new CreateTriggerPanel(dc, null, trigger, trigger.getIntTriggerType());
+            case NamedObject.SEQUENCE:
+                return new CreateGeneratorPanel(dc, null, (DefaultDatabaseSequence) databaseObject);
+            case NamedObject.PACKAGE:
+                return new CreatePackagePanel(dc, null, (DefaultDatabasePackage) databaseObject);
+            case NamedObject.EXCEPTION:
+                return new CreateExceptionPanel(dc, null, (DefaultDatabaseException) databaseObject);
+            case NamedObject.UDF:
+                return new CreateUDFPanel(dc, null, databaseObject);
+            case NamedObject.USER:
+                return new CreateUserPanel(dc, null, (DefaultDatabaseUser) databaseObject);
+            case NamedObject.TABLESPACE:
+                return new CreateTablespacePanel(dc, null, databaseObject);
+            default:
+                return null;
+        }
+    }
 
     public AbstractCreateObjectPanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject) {
         this(dc, dialog, databaseObject, null);
@@ -153,7 +188,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
                 0, 0));
         centralPanel = new JPanel();
 
-        BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(parent.isDialog());
+        BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(parent != null && parent.isDialog());
         bottomButtonPanel.setOkButtonAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -166,10 +201,11 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         bottomButtonPanel.setCancelButtonAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                closeDialog();
+                cancelClick();
             }
         });
         bottomButtonPanel.setCancelButtonText(Bundles.getCommon("cancel.button"));
+        bottomButtonPanel.setHelpButtonVisible(false);
 
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEtchedBorder());
@@ -188,13 +224,15 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
 
         this.add(panel, BorderLayout.CENTER);
         this.add(bottomButtonPanel, BorderLayout.SOUTH);
-        ((BaseDialog) parent).setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        ((BaseDialog) parent).addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                closeDialog();
-            }
-        });
+        if (parent != null) {
+            ((BaseDialog) parent).setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+            ((BaseDialog) parent).addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    closeDialog();
+                }
+            });
+        } else connectionsCombo.setEnabled(false);
 
     }
 
@@ -202,6 +240,16 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         String query = generateQuery();
         edited = !firstQuery.contentEquals(query);
     }
+
+    public void cancelClick() {
+        if (parent != null)
+            closeDialog();
+        else {
+            reset();
+        }
+    }
+
+    protected abstract void reset();
 
     public void closeDialog() {
         checkChanges();
@@ -261,9 +309,10 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
                         treePanel.reloadPath(currentPath);
                     } else treePanel.reloadPath(currentPath.getParentPath());
                 }
-                parent.finished();
+                if (parent != null)
+                    parent.finished();
             }
-        } else parent.finished();
+        } else if (parent != null) parent.finished();
     }
 
     public boolean isCommit() {
@@ -304,6 +353,35 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         return Bundles.get(BrowserTreePopupMenu.class, "edit", Bundles.get(BrowserTreePopupMenu.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
     }
 
+    protected void addDependenciesTab(DatabaseObject databaseObject) {
+        DependenciesPanel dependenciesPanel = new DependenciesPanel();
+        dependenciesPanel.setDatabaseObject(databaseObject);
+        tabbedPane.addTab(Bundles.getCommon("dependencies"), dependenciesPanel);
+    }
+
+    protected void addCreateSqlTab(DatabaseObject databaseObject) {
+        SimpleSqlTextPanel createSqlPanel = new SimpleSqlTextPanel();
+        createSqlPanel.getTextPane().setDatabaseConnection(connection);
+        createSqlPanel.getTextPane().setEditable(false);
+        createSqlPanel.setSQLText(databaseObject.getCreateSQLText());
+        tabbedPane.add(bundleStaticString("createSQL"), createSqlPanel);
+    }
+
+    @Override
+    public void cleanup() {
+
+    }
+
+    @Override
+    public Printable getPrintable() {
+        return null;
+    }
+
+    @Override
+    public String getLayoutName() {
+        return getEditTitle();
+    }
+
     class UpperFilter extends DocumentFilter {
         public void insertString(FilterBypass fb, int offset, String string,
                                  AttributeSet attr) throws BadLocationException {
@@ -315,4 +393,5 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
             super.replace(fb, offset, length, text.toUpperCase(), attrs);
         }
     }
+
 }

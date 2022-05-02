@@ -285,8 +285,14 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
     private boolean isImage() {
 
-        if (isBlob())
-            return SUPPORTED_IMAGES.contains(((BlobRecordDataItem) recordDataItem).getLobRecordItemName(binaryStringTextArea.getDocument().getData()));
+        if (isBlob()) {
+            try {
+                String type = ((BlobRecordDataItem) recordDataItem).getLobRecordItemName(binaryStringTextArea.getDocument().getData());
+                return SUPPORTED_IMAGES.contains(type);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         return SUPPORTED_IMAGES.contains(recordDataItem.getLobRecordItemName());
     }
 

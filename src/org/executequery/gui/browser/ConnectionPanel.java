@@ -270,6 +270,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         namesToUpperBox = ActionUtilities.createCheckBox(bundleString("namesToUpperCase"), "namesToUpperCase");
         namesToUpperBox.setSelected(true);
         useNewAPI = ActionUtilities.createCheckBox(bundleString("UseNewAPI"), "setNewAPI");
+        useNewAPI.setToolTipText(bundleString("UseNewAPI.tool-tip"));
 
         savePwdCheck.addActionListener(this);
         encryptPwdCheck.addActionListener(this);
@@ -400,64 +401,30 @@ public class ConnectionPanel extends AbstractConnectionPanel
         showPassword.setActionCommand("showPassword");
         showPassword.addActionListener(this);
 
-        JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
-        addComponents(passwordOptionsPanel,
-                new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
-                new ComponentToolTipPair(encryptPwdCheck, bundleString("EncryptPassword.tool-tip")),
-                new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip")));
+        savePwdCheck.setToolTipText(bundleString("StorePassword.tool-tip"));
+        showPassword.setToolTipText(bundleString("ShowPassword.tool-tip"));
+        encryptPwdCheck.setToolTipText(bundleString("EncryptPassword.tool-tip"));
+
+        mainPanel.add(savePwdCheck, gbh.nextRowFirstCol().setLabelDefault().get());
+        mainPanel.add(showPassword, gbh.nextCol().setLabelDefault().fillNone().get());
+        mainPanel.add(encryptPwdCheck, gbh.nextRowFirstCol().setLabelDefault().get());
+
+        basicComponents.add(savePwdCheck);
+        basicComponents.add(showPassword);
+        basicComponents.add(encryptPwdCheck);
+
         orderList.add(savePwdCheck);
         orderList.add(encryptPwdCheck);
         orderList.add(showPassword);
 
-        basicComponents.add(passwordOptionsPanel);
-        mainPanel.add(passwordOptionsPanel, gbh.nextRowFirstCol().fillHorizontally().setMaxWeightX().setWidth(2).get());
+        gbh.resetDefaultX();
 
-        JLabel contLabel = new JLabel(bundleString("contLabel"));
-        multifactorComponents.add(contLabel);
-        multifactorComponents.add(containerPasswordField);
-        gbh.addLabelFieldPair(mainPanel, contLabel, containerPasswordField, null, true, true);
-        orderList.add(containerPasswordField);
-
-        JLabel certLabel = new JLabel(bundleString("certLabel"));
-        mainPanel.add(certLabel, gbh.nextRowFirstCol().setLabelDefault().get());
-        multifactorComponents.add(certLabel);
-        mainPanel.add(certificateFileField, gbh.nextCol().setMaxWeightX().get());
-        multifactorComponents.add(certificateFileField);
-        orderList.add(certificateFileField);
-
-        FileChooserDialog fileChooser = new FileChooserDialog();
-        fileChooser.setAcceptAllFileFilterUsed(false);
-        fileChooser.addChoosableFileFilter(
-                new FileNameExtensionFilter("Certificate file X.509 (CER, DER)", "cer", "der"));
-
-        JButton openCertFile = new JButton(bundleString("ChooseFile"));
-        openCertFile.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChooser.showOpenDialog(openCertFile);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
-                    certificateFileField.setText(file.getAbsolutePath());
-                }
-            }
-        });
-
-        mainPanel.add(openCertFile, gbh.nextColWidth().setLabelDefault().get());
-        multifactorComponents.add(openCertFile);
-        orderList.add(openCertFile);
-
-        mainPanel.add(saveContPwdCheck, gbh.nextRowFirstCol().setLabelDefault().get());
-        multifactorComponents.add(saveContPwdCheck);
-        orderList.add(saveContPwdCheck);
-
-        mainPanel.add(verifyServerCertCheck, gbh.nextCol().setLabelDefault().get());
-        multifactorComponents.add(verifyServerCertCheck);
-        orderList.add(verifyServerCertCheck);
+        JPanel multifactorPanel = new JPanel(new GridBagLayout());
+        fillMultifactorPanel(multifactorPanel, orderList);
+        multifactorComponents.add(multifactorPanel);
+        mainPanel.add(multifactorPanel, gbh.nextRowFirstCol().fillBoth().spanX().get());
 
         JLabel urlLabel = new JLabel(bundleString("urlField"));
-
-        gbh.resetDefaultX();
 
         mainPanel.add(urlLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         jdbcUrlComponents.add(urlLabel);
@@ -563,6 +530,45 @@ public class ConnectionPanel extends AbstractConnectionPanel
         EventMediator.registerListener(this);
         standardComponents.addAll(basicComponents);
         checkVisibleComponents();
+    }
+
+    private void fillMultifactorPanel(JPanel multifactorPanel, List<Component> orderList) {
+        multifactorPanel.setBorder(BorderFactory.createEtchedBorder());
+        JLabel contLabel = new JLabel(bundleString("contLabel"));
+        gbh.addLabelFieldPair(multifactorPanel, contLabel, containerPasswordField, null, true, true);
+        orderList.add(containerPasswordField);
+
+        JLabel certLabel = new JLabel(bundleString("certLabel"));
+        multifactorPanel.add(certLabel, gbh.nextRowFirstCol().setLabelDefault().get());
+        multifactorPanel.add(certificateFileField, gbh.nextCol().setMaxWeightX().get());
+        orderList.add(certificateFileField);
+
+        FileChooserDialog fileChooser = new FileChooserDialog();
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.addChoosableFileFilter(
+            new FileNameExtensionFilter("Certificate file X.509 (CER, DER)", "cer", "der"));
+
+        JButton openCertFile = new JButton(bundleString("ChooseFile"));
+        openCertFile.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fileChooser.showOpenDialog(openCertFile);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    certificateFileField.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        multifactorPanel.add(openCertFile, gbh.nextColWidth().setLabelDefault().get());
+        orderList.add(openCertFile);
+
+        multifactorPanel.add(saveContPwdCheck, gbh.nextRowFirstCol().setLabelDefault().get());
+        orderList.add(saveContPwdCheck);
+
+        multifactorPanel.add(verifyServerCertCheck, gbh.nextCol().setLabelDefault().get());
+        orderList.add(verifyServerCertCheck);
     }
 
     private void checkVisibleComponents() {

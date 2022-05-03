@@ -1,18 +1,15 @@
 package org.executequery.gui.procedure;
 
-import org.executequery.GUIUtilities;
-import org.executequery.components.table.BrowsingCellEditor;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.Parameter;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
-import org.executequery.gui.table.DataTypeSelectionListener;
-import org.executequery.gui.table.DataTypesDialog;
 import org.executequery.gui.table.TableDefinitionPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
+import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.table.NumberCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.util.FileUtils;
@@ -74,9 +71,9 @@ public abstract class ProcedureDefinitionPanel extends JPanel
     /**
      * The cell editor for the datatype column
      */
-    protected DataTypeSelectionTableCell dataTypeCell;
+    protected ComboBoxCellEditor dataTypeCell;
 
-    protected DomainSelectionTableCell domainCell;
+    protected ComboBoxCellEditor domainCell;
 
     private CreateProcedureToolBar tools;
 
@@ -157,6 +154,11 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
     public void setDomains(String[] domains) {
         this.domains = domains;
+        domainCell.removeAllItems();
+        domainCell.addItem("");
+        for (int i = 0; i < this.domains.length; i++) {
+            domainCell.addItem(this.domains[i]);
+        }
     }
 
     /**
@@ -169,6 +171,11 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         this.intDataTypes = intDataTypes;
         sortTypes();
         removeDuplicates();
+        dataTypeCell.removeAllItems();
+        for (int i = 0; i < this.dataTypes.length; i++) {
+            dataTypeCell.addItem(this.dataTypes[i]);
+        }
+
     }
 
     void removeDuplicates() {
@@ -277,11 +284,9 @@ public abstract class ProcedureDefinitionPanel extends JPanel
             tcm.getColumn(SIZE_COLUMN).setCellEditor(szEditor);
             tcm.getColumn(SCALE_COLUMN).setCellEditor(scEditor);
             tcm.getColumn(SUBTYPE_COLUMN).setCellEditor(stEditor);
-            domainCell = new DomainSelectionTableCell();
-            tcm.getColumn(DOMAIN_COLUMN).setCellRenderer(domainCell);
+            domainCell = new ComboBoxCellEditor();
             tcm.getColumn(DOMAIN_COLUMN).setCellEditor(domainCell);
-            dataTypeCell = new DataTypeSelectionTableCell();
-            tcm.getColumn(TYPE_COLUMN).setCellRenderer(dataTypeCell);
+            dataTypeCell = new ComboBoxCellEditor();
             tcm.getColumn(TYPE_COLUMN).setCellEditor(dataTypeCell);
             tcm.getColumn(ENCODING_COLUMN).setCellEditor(charsetCellEditor);
             tcm.getColumn(TABLE_COLUMN).setCellEditor(tableCellEditor);
@@ -308,10 +313,10 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                         value = scaleEditor.getEditorValue();
                     } else if (object == subtypeEditor) {
                         value = subtypeEditor.getEditorValue();
-                    } else if (object == dataTypeCell.getComponent()) {
-                        value = dataTypeCell.getEditorValue();
-                    } else if (object == domainCell.getComponent()) {
-                        value = String.valueOf(domainCell.getEditorValue());
+                    } else if (object == dataTypeCell) {
+                        value = (String) dataTypeCell.getCellEditorValue();
+                    } else if (object == domainCell) {
+                        value = (String) domainCell.getCellEditorValue();
                     } else if (object == charsetCellEditor.getComponent()) {
                         value = String.valueOf(charsetCellEditor.getCellEditorValue());
                     } else if (object == tableCellEditor.getComponent()) {
@@ -1092,6 +1097,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
         }
 
+
         public String getColumnName(int col) {
             return header[col];
         }
@@ -1119,107 +1125,5 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         }
     } // class CreateTableModel
 
-    private class DataTypeSelectionTableCell extends BrowsingCellEditor
-            implements DataTypeSelectionListener {
 
-        private int lastEditingRow;
-        private int lastEditingColumn;
-
-        public DataTypeSelectionTableCell() {
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            // store the current edit row and column
-            lastEditingRow = table.getEditingRow();
-            lastEditingColumn = table.getEditingColumn();
-
-            fireEditingStopped();
-            if (dataTypes == null || dataTypes.length == 0) {
-                GUIUtilities.displayWarningMessage("Data type values are not available");
-                return;
-            }
-
-            SwingUtilities.invokeLater(() -> new DataTypesDialog(GUIUtilities.getParentFrame(),
-                    DataTypeSelectionTableCell.this,
-                    dataTypes));
-        }
-
-        /**
-         * Called when the selction is cancelled.
-         */
-        public void dataTypeSelectionCancelled() {
-            fireEditingCanceled();
-        }
-
-        /**
-         * Called when a data type has been selected.
-         *
-         * @param item number for item of dataTypes
-         */
-        public void dataTypeSelected(int item) {
-            //setDelegateValue(dataType);
-            if (lastEditingRow != -1 && lastEditingColumn != -1) {
-                _model.setValueAt(item, lastEditingRow, lastEditingColumn);
-                tableChanged(lastEditingColumn, lastEditingRow, dataTypes[item]);
-            }
-            fireEditingStopped();
-
-            // reset row and column values
-            lastEditingRow = -1;
-            lastEditingColumn = -1;
-        }
-
-    } // class DataTypeSelectionTableCell
-
-    private class DomainSelectionTableCell extends BrowsingCellEditor
-            implements DataTypeSelectionListener {
-
-        private int lastEditingRow;
-        private int lastEditingColumn;
-
-        public DomainSelectionTableCell() {
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            // store the current edit row and column
-            lastEditingRow = table.getEditingRow();
-            lastEditingColumn = table.getEditingColumn();
-
-            fireEditingStopped();
-            if (domains == null || domains.length == 0) {
-                GUIUtilities.displayWarningMessage("Domains are not available");
-                return;
-            }
-
-            SwingUtilities.invokeLater(() -> new DataTypesDialog(GUIUtilities.getParentFrame(),
-                    DomainSelectionTableCell.this,
-                    domains));
-        }
-
-        /**
-         * Called when the selction is cancelled.
-         */
-        public void dataTypeSelectionCancelled() {
-            fireEditingCanceled();
-        }
-
-        /**
-         * Called when a data type has been selected.
-         *
-         * @param item number for item of dataTypes
-         */
-        public void dataTypeSelected(int item) {
-            //setDelegateValue(dataType);
-            if (lastEditingRow != -1 && lastEditingColumn != -1) {
-                _model.setValueAt(item, lastEditingRow, lastEditingColumn);
-                tableChanged(lastEditingColumn, lastEditingRow, domains[item]);
-            }
-            fireEditingStopped();
-
-            // reset row and column values
-            lastEditingRow = -1;
-            lastEditingColumn = -1;
-        }
-
-    }
 }

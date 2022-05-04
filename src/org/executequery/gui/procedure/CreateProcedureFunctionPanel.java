@@ -131,11 +131,11 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
     protected void initEditing() {
         centralPanel.setLayout(new GridBagLayout());
-        JButton executeButton = new JButton("execute");
+        JButton executeButton = new JButton(Bundles.getCommon("execute"));
         executeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                BaseDialog dialog = new BaseDialog("Execute", true, new ExecuteProcedurePanel(getTypeObject().contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION]) ? 1 : 0, procedure));
+                BaseDialog dialog = new BaseDialog(Bundles.getCommon("execute"), true, new ExecuteProcedurePanel(getTypeObject().contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION]) ? 1 : 0, procedure));
                 dialog.display();
             }
         });
@@ -145,6 +145,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         centralPanel.add(new JPanel(), gbh.nextCol().spanX().spanY().get());
         addPrivilegesTab(tabbedPane);
         addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
+        addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         reset();
     }
 

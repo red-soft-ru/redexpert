@@ -69,12 +69,12 @@ public class ErdViewerPanel extends DefaultTabView
     /**
      * Whether this instance has a tool bar palatte
      */
-    private boolean showTools;
+    private final boolean showTools;
 
     /**
      * Whether this is a static diagram
      */
-    private boolean editable;
+    private final boolean editable;
 
     /**
      * The base panel
@@ -122,7 +122,7 @@ public class ErdViewerPanel extends DefaultTabView
     /**
      * A <code>Vector</code> containing all tables
      */
-    private Vector tables;
+    private Vector<ErdTable> tables;
 
     /**
      * The font name displayed
@@ -456,7 +456,7 @@ public class ErdViewerPanel extends DefaultTabView
                         if (referencedTable.equalsIgnoreCase(
                                 tables.elementAt(j).toString())) {
 
-                            table = (ErdTable) tables.elementAt(j);
+                            table = tables.elementAt(j);
 
                             // check to see that the combination
                             // does not already exist
@@ -563,7 +563,7 @@ public class ErdViewerPanel extends DefaultTabView
     protected void resetAllTableJoins() {
 
         for (int i = 0, k = tables.size(); i < k; i++) {
-            ((ErdTable) tables.elementAt(i)).resetAllJoins();
+            tables.elementAt(i).resetAllJoins();
         }
 
     }
@@ -634,7 +634,7 @@ public class ErdViewerPanel extends DefaultTabView
         if (tables.size() == 0) {
             return UIUtils.getColour("executequery.Erd.tableBackground", Color.WHITE);
         } else {
-            return ((ErdTable) tables.elementAt(0)).getTableBackground();
+            return tables.elementAt(0).getTableBackground();
         }
     }
 
@@ -711,12 +711,15 @@ public class ErdViewerPanel extends DefaultTabView
     /**
      * <p>Adds a new table to the canvas.
      */
-    protected void addNewTable(ErdTable newTable) {
+    protected boolean addNewTable(ErdTable newTable) {
 
         if (tables == null) {
             tables = new Vector();
         }
-
+        for (ErdTable table : tables) {
+            if (table.getTableName().contentEquals(newTable.getTableName()))
+                return false;
+        }
         tables.add(newTable);
 
         // place the new table in the center of the canvas
@@ -726,6 +729,7 @@ public class ErdViewerPanel extends DefaultTabView
 
         layeredPane.add(newTable, JLayeredPane.DEFAULT_LAYER, tables.size());
         newTable.toFront();
+        return true;
     }
 
     protected ErdDependanciesPanel getDependenciesPanel() {
@@ -744,7 +748,7 @@ public class ErdViewerPanel extends DefaultTabView
         ErdTable erdTable = null;
 
         for (int i = 0; i < size; i++) {
-            erdTable = (ErdTable) tables.elementAt(i);
+            erdTable = tables.elementAt(i);
             if (erdTable.isSelected()) {
                 selected.add(erdTable);
             }
@@ -854,7 +858,7 @@ public class ErdViewerPanel extends DefaultTabView
         Vector _columns = null;
 
         for (int i = 0; i < v_size; i++) {
-            erdTable = (ErdTable) tables.elementAt(i);
+            erdTable = tables.elementAt(i);
 
             if (erdTable.getTableName().equalsIgnoreCase(tableName)) {
                 _columns = erdTable.getTableColumnsVector();
@@ -883,7 +887,7 @@ public class ErdViewerPanel extends DefaultTabView
         ErdTable[] tablesArray = new ErdTable[v_size];
 
         for (int i = 0; i < v_size; i++) {
-            tablesArray[i] = (ErdTable) tables.elementAt(i);
+            tablesArray[i] = tables.elementAt(i);
         }
 
         return tablesArray;
@@ -1193,7 +1197,7 @@ public class ErdViewerPanel extends DefaultTabView
 
         for (int i = 0, k = tables.size(); i < k; i++) {
 
-            ErdTable table = (ErdTable) tables.elementAt(i);
+            ErdTable table = tables.elementAt(i);
             table.setScale(scale);
         }
 

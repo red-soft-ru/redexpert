@@ -42,7 +42,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
     /**
      * The ERD parent panel
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
 
     /**
      * The <code>ErdTable</code> representing this dialog
@@ -151,7 +151,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
                 GUIUtilities.displayErrorMessage("Table name can not be empty");
             } else {
                 createTable();
-                dispose();
+                //dispose();
             }
         }
     }
@@ -173,7 +173,10 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
             table.setCreateTableScript(sqlText.getSQLText());
             table.setNewTable(true);
             table.setEditable(true);
-            parent.addNewTable(table);
+            if (!parent.addNewTable(table)) {
+                GUIUtilities.displayErrorMessage("This table name already exists");
+                return;
+            }
         } else {
             erdTable.setTableColumns(cda);
             erdTable.setTableName(tableName);

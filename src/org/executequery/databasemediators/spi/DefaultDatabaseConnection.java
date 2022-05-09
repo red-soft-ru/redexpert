@@ -227,6 +227,13 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         transactionIsolation = -1;
     }
 
+    public DefaultDatabaseConnection(String name, String sourceName) {
+
+        this.name = name;
+        this.sourceName = sourceName;
+        transactionIsolation = -1;
+    }
+
     public boolean isPasswordStored() {
         return passwordStored;
     }

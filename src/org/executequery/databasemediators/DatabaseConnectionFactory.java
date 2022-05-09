@@ -26,6 +26,8 @@ public interface DatabaseConnectionFactory {
 
     DatabaseConnection create(String name);
 
+    DatabaseConnection create(String name, String sourceName);
+
 }
 
 

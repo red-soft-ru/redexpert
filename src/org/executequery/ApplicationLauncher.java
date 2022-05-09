@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ExecuteQueryFrame;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
 import org.executequery.log.Log;
@@ -151,7 +152,10 @@ public class ApplicationLauncher {
 
             advanceSplash(splash);
 
-            boolean openConnection =
+            String fileForOpenPath = ApplicationContext.getInstance().getFileForOpenPath();
+            boolean needOpenConnectionByFile = StringUtils.isNotBlank(fileForOpenPath);
+
+            boolean needAutoLogin =
                     booleanUserProperty("startup.connection.connect");
 
             advanceSplash(splash);
@@ -191,10 +195,28 @@ public class ApplicationLauncher {
 
                 frame.setTitle("Red Expert - " + System.getProperty("executequery.minor.version"));
 
-                // auto-login if selected
-                if (openConnection) {
+                if (needOpenConnectionByFile) {
+                    fileForOpenPath = fileForOpenPath.replace("\\", "/");
+                    ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) GUIUtilities.
+                        getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+                    DatabaseConnection dc = databaseConnectionRepository().findBySourceName(fileForOpenPath);
+                    if (dc != null) {
+                        if (connectionsTreePanel != null) { //show connection panel
+                            connectionsTreePanel.getController().valueChanged_(connectionsTreePanel.getHostNode(dc), dc);
+                        }
+                        if (StringUtils.isNotBlank(dc.getPassword()) && StringUtils.isNotBlank(dc.getUserName()))
+                            openStartupConnection(dc);
+                    } else {
+                        if (connectionsTreePanel != null)
+                            connectionsTreePanel.newConnection(fileForOpenPath);
+                    }
+                }
 
-                    openStartupConnection();
+                // auto-login if selected
+                if (needAutoLogin) {
+
+                    openStartupConnection(
+                        databaseConnectionRepository().findByName(stringUserProperty("startup.connection.name")));
                 }
                 QueryEditorHistory.restoreTabs(null);
 
@@ -449,18 +471,16 @@ public class ApplicationLauncher {
         return ApplicationProperties.getInstance();
     }
 
-    private void openStartupConnection() {
+    private void openStartupConnection(DatabaseConnection dc) {
 
-        final String name = stringUserProperty("startup.connection.name");
-
-        if (!MiscUtils.isNull(name)) {
+        if (dc != null) {
 
             ThreadUtils.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
 
-                    openConnection(databaseConnectionRepository().findByName(name));
+                    openConnection(dc);
                 }
 
             });

@@ -39,7 +39,7 @@ public class ErdNewRelationshipDialog extends ErdPrintableDialog {
     /**
      * The controller for the ERD viewer
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
     /**
      * The constraint name text field
      */
@@ -111,6 +111,8 @@ public class ErdNewRelationshipDialog extends ErdPrintableDialog {
     private void jbInit() throws Exception {
         JButton createButton = new DefaultPanelButton(Bundles.get("common.create.button"));
         JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+        createButton.setActionCommand("Create");
+        cancelButton.setActionCommand("Cancel");
 
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {

@@ -26,7 +26,7 @@ public class InputParametersDialog extends BaseDialog {
     private boolean canceled = false;
 
     public InputParametersDialog(List<Parameter> parameters) {
-        super("Input Parameters", true, true);
+        super(Bundles.getCommon("input-parameters"), true, true);
         this.parameters = parameters;
         init();
     }

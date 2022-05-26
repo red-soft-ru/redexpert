@@ -2,6 +2,8 @@ package org.executequery.gui.browser.generatortestdata.methodspanels;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.T;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.DateDifferenceSetter;
 import org.underworldlabs.swing.EQDateTimePicker;
 import org.underworldlabs.swing.EQTimePicker;
@@ -12,11 +14,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.math.BigInteger;
 import java.sql.Date;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 
 public class AutoincrementPanel extends AbstractMethodPanel {
     private JPanel settingsPanel;
@@ -30,7 +32,8 @@ public class AutoincrementPanel extends AbstractMethodPanel {
     private DatePicker startValueDate;
     private JComboBox plusMinusBox;
     private long current_value;
-    private LocalDateTime current_date_time;
+    private LocalDateTime current_local_date_time;
+    private OffsetDateTime current_offset_date_time;
     private BigInteger cur_bigint;
     private double current_double;
 
@@ -50,22 +53,27 @@ public class AutoincrementPanel extends AbstractMethodPanel {
         GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
         gbh.setDefaults(gbc);
-        if (col.getFormattedDataType().contentEquals("BIGINT")
-                || col.getFormattedDataType().contentEquals("INTEGER")
-                || col.getFormattedDataType().contentEquals("SMALLINT")
-                || col.getFormattedDataType().contentEquals("DOUBLE PRECISION")
-                || col.getFormattedDataType().contentEquals("FLOAT")
-                || col.getFormattedDataType().startsWith("DECIMAL")
-                || col.getFormattedDataType().startsWith("NUMERIC")) {
+        Log.info("\"" + col.getFormattedDataType() + "\"");
+        if (col.getFormattedDataType().contentEquals(T.BIGINT)
+                || col.getFormattedDataType().contentEquals(T.INTEGER)
+                || col.getFormattedDataType().contentEquals(T.SMALLINT)
+                || col.getFormattedDataType().contentEquals(T.DOUBLE_PRECISION)
+                || col.getFormattedDataType().contentEquals(T.FLOAT)
+                || col.getFormattedDataType().startsWith(T.DECIMAL)
+                || col.getFormattedDataType().startsWith(T.NUMERIC)
+                || col.getFormattedDataType().startsWith(T.INT128)) {
 
-            if (col.getFormattedDataType().contentEquals("BIGINT")
-                    || col.getFormattedDataType().contentEquals("DOUBLE PRECISION")
-                    || col.getFormattedDataType().contentEquals("FLOAT")
-                    || col.getFormattedDataType().startsWith("DECIMAL")
-                    || col.getFormattedDataType().startsWith("NUMERIC")) {
+            if (col.getFormattedDataType().contentEquals(T.BIGINT)
+                    || col.getFormattedDataType().contentEquals(T.DOUBLE_PRECISION)
+                    || col.getFormattedDataType().contentEquals(T.FLOAT)
+                    || col.getFormattedDataType().startsWith(T.DECIMAL)
+                    || col.getFormattedDataType().startsWith(T.NUMERIC)
+                    || col.getFormattedDataType().startsWith(T.DECFLOAT)
+                    || col.getFormattedDataType().startsWith(T.INT128)
+            ) {
                 iterationField = new JTextField();
                 startValueField = new JTextField();
-                if (col.getFormattedDataType().contentEquals("BIGINT")) {
+                if (col.getFormattedDataType().contentEquals(T.BIGINT)) {
                     iterationField.setText("1");
                     startValueField.setText("-9223372036854775808");
                 } else {
@@ -75,7 +83,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             } else {
                 iterationField = new NumberTextField();
                 startValueField = new NumberTextField();
-                if (col.getFormattedDataType().contentEquals("INTEGER")) {
+                if (col.getFormattedDataType().contentEquals(T.INTEGER)) {
                     iterationField.setText("" + 1);
                     startValueField.setText("" + Integer.MIN_VALUE);
                 } else {
@@ -93,13 +101,15 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             settingsPanel.add(iterationField, gbh.defaults().nextCol().setMaxWeightX().get());
 
         }
-        if (col.getFormattedDataType().contentEquals("TIME")) {
+        if (col.getFormattedDataType().contentEquals(T.TIME) || col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
             startValueTime = new EQTimePicker();
             startValueTime.setVisibleNullBox(false);
             startValueTime.setTime(LocalTime.MIN);
+            startValueTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE));
             iterationTime = new EQTimePicker();
             iterationTime.setVisibleNullBox(false);
             iterationTime.setTime(LocalTime.of(1, 1, 1));
+            iterationTime.setVisibleTimeZone(false);
 
             gbh.setXY(0, 0);
 
@@ -110,7 +120,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(iterationTime, gbh.defaults().nextCol().setMaxWeightX().get());
         }
-        if (col.getFormattedDataType().contentEquals("DATE")) {
+        if (col.getFormattedDataType().contentEquals(T.DATE)) {
             startValueDate = new DatePicker();
             startValueDate.setDate(LocalDate.now());
             iterationDate = new DateDifferenceSetter();
@@ -123,14 +133,16 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             settingsPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
         }
-        if (col.getFormattedDataType().contentEquals("TIMESTAMP")) {
+        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP) || col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
             startValueDateTime = new EQDateTimePicker();
             startValueDateTime.setVisibleNullBox(false);
             startValueDateTime.setDateTimePermissive(LocalDateTime.now());
+            startValueDateTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE));
             iterationDate = new DateDifferenceSetter();
             iterationTime = new EQTimePicker();
             iterationTime.setVisibleNullBox(false);
             iterationTime.setTime(LocalTime.of(0, 0, 0));
+            iterationTime.setVisibleTimeZone(false);
 
             gbh.setXY(0, 0);
             JLabel label = new JLabel(bundles("StartValue"));
@@ -149,7 +161,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
     }
 
     public Object getTestDataObject() {
-        if (col.getFormattedDataType().contentEquals("BIGINT")) {
+        if (col.getFormattedDataType().contentEquals(T.BIGINT) || col.getFormattedDataType().contentEquals(T.INT128)) {
             if (first) {
                 cur_bigint = new BigInteger(startValueField.getText());
                 first = false;
@@ -161,89 +173,138 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             else cur_bigint = cur_bigint.subtract(iterationBig);
             return cur_bigint;
         }
-        if (col.getFormattedDataType().contentEquals("TIME")) {
+        if (col.getFormattedDataType().contentEquals(T.TIME)) {
             if (first) {
-                current_date_time = startValueTime.getTime();
+                current_local_date_time = startValueTime.getLocalTime().atDate(LocalDate.of(1970, 1, 1));
                 first = false;
-                return new Time(Timestamp.valueOf(current_date_time).getTime());
+                return current_local_date_time.toLocalTime();
             }
-            LocalTime iteration = iterationTime.getTime().toLocalTime();
+            LocalTime iteration = iterationTime.getLocalTime();
             if (plusMinusBox.getSelectedIndex() == 0) {
-                current_date_time = current_date_time.plusHours(iteration.getHour());
-                current_date_time = current_date_time.plusMinutes(iteration.getMinute());
-                current_date_time = current_date_time.plusSeconds(iteration.getSecond());
-                current_date_time = current_date_time.plusNanos(iteration.getNano());
+                current_local_date_time = current_local_date_time.plusHours(iteration.getHour());
+                current_local_date_time = current_local_date_time.plusMinutes(iteration.getMinute());
+                current_local_date_time = current_local_date_time.plusSeconds(iteration.getSecond());
+                current_local_date_time = current_local_date_time.plusNanos(iteration.getNano());
             } else {
-                current_date_time = current_date_time.minusHours(iteration.getHour());
-                current_date_time = current_date_time.minusMinutes(iteration.getMinute());
-                current_date_time = current_date_time.minusSeconds(iteration.getSecond());
-                current_date_time = current_date_time.minusNanos(iteration.getNano());
+                current_local_date_time = current_local_date_time.minusHours(iteration.getHour());
+                current_local_date_time = current_local_date_time.minusMinutes(iteration.getMinute());
+                current_local_date_time = current_local_date_time.minusSeconds(iteration.getSecond());
+                current_local_date_time = current_local_date_time.minusNanos(iteration.getNano());
             }
-            return new Time(Timestamp.valueOf(current_date_time).getTime());
+            return current_local_date_time.toLocalTime();
         }
-        if (col.getFormattedDataType().contentEquals("DATE")) {
+        if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
             if (first) {
-                current_date_time = LocalDateTime.of(startValueDate.getDate(), LocalTime.of(0, 0, 0));
+                current_offset_date_time = startValueTime.getOffsetTime().atDate(LocalDate.of(1970, 1, 1));
                 first = false;
-                return new Date(Timestamp.valueOf(current_date_time).getTime());
+                return current_offset_date_time.toOffsetTime();
             }
+            LocalTime iteration = iterationTime.getLocalTime();
             if (plusMinusBox.getSelectedIndex() == 0) {
-                current_date_time = current_date_time.plusYears(iterationDate.getYears());
-                current_date_time = current_date_time.plusDays(iterationDate.getDays());
-                current_date_time = current_date_time.plusMonths(iterationDate.getMouths());
+                current_offset_date_time = current_offset_date_time.plusHours(iteration.getHour());
+                current_offset_date_time = current_offset_date_time.plusMinutes(iteration.getMinute());
+                current_offset_date_time = current_offset_date_time.plusSeconds(iteration.getSecond());
+                current_offset_date_time = current_offset_date_time.plusNanos(iteration.getNano());
             } else {
-                current_date_time = current_date_time.minusYears(iterationDate.getYears());
-                current_date_time = current_date_time.minusDays(iterationDate.getDays());
-                current_date_time = current_date_time.minusMonths(iterationDate.getMouths());
+                current_offset_date_time = current_offset_date_time.minusHours(iteration.getHour());
+                current_offset_date_time = current_offset_date_time.minusMinutes(iteration.getMinute());
+                current_offset_date_time = current_offset_date_time.minusSeconds(iteration.getSecond());
+                current_offset_date_time = current_offset_date_time.minusNanos(iteration.getNano());
             }
-            return new Date(Timestamp.valueOf(current_date_time).getTime());
+            return current_offset_date_time.toOffsetTime();
         }
-        if (col.getFormattedDataType().contentEquals("TIMESTAMP")) {
+        if (col.getFormattedDataType().contentEquals(T.DATE)) {
             if (first) {
-                current_date_time = startValueDateTime.getDateTime();
+                current_local_date_time = LocalDateTime.of(startValueDate.getDate(), LocalTime.of(0, 0, 0));
                 first = false;
-                return Timestamp.valueOf(current_date_time);
+                return current_local_date_time.toLocalDate();
             }
-            LocalTime iteration = iterationTime.getTime().toLocalTime();
             if (plusMinusBox.getSelectedIndex() == 0) {
-                current_date_time = current_date_time.plusYears(iterationDate.getYears());
-                current_date_time = current_date_time.plusDays(iterationDate.getDays());
-                current_date_time = current_date_time.plusMonths(iterationDate.getMouths());
-                current_date_time = current_date_time.plusHours(iteration.getHour());
-                current_date_time = current_date_time.plusMinutes(iteration.getMinute());
-                current_date_time = current_date_time.plusSeconds(iteration.getSecond());
-                current_date_time = current_date_time.plusNanos(iteration.getNano());
+                current_local_date_time = current_local_date_time.plusYears(iterationDate.getYears());
+                current_local_date_time = current_local_date_time.plusDays(iterationDate.getDays());
+                current_local_date_time = current_local_date_time.plusMonths(iterationDate.getMouths());
             } else {
-                current_date_time = current_date_time.minusYears(iterationDate.getYears());
-                current_date_time = current_date_time.minusDays(iterationDate.getDays());
-                current_date_time = current_date_time.minusMonths(iterationDate.getMouths());
-                current_date_time = current_date_time.minusHours(iteration.getHour());
-                current_date_time = current_date_time.minusMinutes(iteration.getMinute());
-                current_date_time = current_date_time.minusSeconds(iteration.getSecond());
-                current_date_time = current_date_time.minusNanos(iteration.getNano());
+                current_local_date_time = current_local_date_time.minusYears(iterationDate.getYears());
+                current_local_date_time = current_local_date_time.minusDays(iterationDate.getDays());
+                current_local_date_time = current_local_date_time.minusMonths(iterationDate.getMouths());
             }
-            return Timestamp.valueOf(current_date_time);
+            return new Date(Timestamp.valueOf(current_local_date_time).getTime());
+        }
+        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
+            if (first) {
+                current_local_date_time = startValueDateTime.getDateTime();
+                first = false;
+                return current_local_date_time;
+            }
+            LocalTime iteration = iterationTime.getLocalTime();
+            if (plusMinusBox.getSelectedIndex() == 0) {
+                current_local_date_time = current_local_date_time.plusYears(iterationDate.getYears());
+                current_local_date_time = current_local_date_time.plusDays(iterationDate.getDays());
+                current_local_date_time = current_local_date_time.plusMonths(iterationDate.getMouths());
+                current_local_date_time = current_local_date_time.plusHours(iteration.getHour());
+                current_local_date_time = current_local_date_time.plusMinutes(iteration.getMinute());
+                current_local_date_time = current_local_date_time.plusSeconds(iteration.getSecond());
+                current_local_date_time = current_local_date_time.plusNanos(iteration.getNano());
+            } else {
+                current_local_date_time = current_local_date_time.minusYears(iterationDate.getYears());
+                current_local_date_time = current_local_date_time.minusDays(iterationDate.getDays());
+                current_local_date_time = current_local_date_time.minusMonths(iterationDate.getMouths());
+                current_local_date_time = current_local_date_time.minusHours(iteration.getHour());
+                current_local_date_time = current_local_date_time.minusMinutes(iteration.getMinute());
+                current_local_date_time = current_local_date_time.minusSeconds(iteration.getSecond());
+                current_local_date_time = current_local_date_time.minusNanos(iteration.getNano());
+            }
+            return current_local_date_time;
 
         }
-        if (col.getFormattedDataType().contentEquals("INTEGER") || col.getFormattedDataType().contentEquals("SMALLINT")) {
+        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
+            if (first) {
+                current_offset_date_time = startValueDateTime.getOffsetDateTime();
+                first = false;
+                return current_offset_date_time;
+            }
+            LocalTime iteration = iterationTime.getLocalTime();
+            if (plusMinusBox.getSelectedIndex() == 0) {
+                current_offset_date_time = current_offset_date_time.plusYears(iterationDate.getYears());
+                current_offset_date_time = current_offset_date_time.plusDays(iterationDate.getDays());
+                current_offset_date_time = current_offset_date_time.plusMonths(iterationDate.getMouths());
+                current_offset_date_time = current_offset_date_time.plusHours(iteration.getHour());
+                current_offset_date_time = current_offset_date_time.plusMinutes(iteration.getMinute());
+                current_offset_date_time = current_offset_date_time.plusSeconds(iteration.getSecond());
+                current_offset_date_time = current_offset_date_time.plusNanos(iteration.getNano());
+            } else {
+                current_offset_date_time = current_offset_date_time.minusYears(iterationDate.getYears());
+                current_offset_date_time = current_offset_date_time.minusDays(iterationDate.getDays());
+                current_offset_date_time = current_offset_date_time.minusMonths(iterationDate.getMouths());
+                current_offset_date_time = current_offset_date_time.minusHours(iteration.getHour());
+                current_offset_date_time = current_offset_date_time.minusMinutes(iteration.getMinute());
+                current_offset_date_time = current_offset_date_time.minusSeconds(iteration.getSecond());
+                current_offset_date_time = current_offset_date_time.minusNanos(iteration.getNano());
+            }
+            return current_offset_date_time;
+
+        }
+        if (col.getFormattedDataType().contentEquals(T.INTEGER) || col.getFormattedDataType().contentEquals(T.SMALLINT)) {
             if (first) {
                 current_value = Long.parseLong(startValueField.getText());
                 first = false;
-                if (col.getFormattedDataType().contentEquals("SMALLINT"))
+                if (col.getFormattedDataType().contentEquals(T.SMALLINT))
                     return (short) current_value;
                 return (int) current_value;
             }
             if (plusMinusBox.getSelectedIndex() == 0)
                 current_value += Long.parseLong(iterationField.getText());
             else current_value -= Long.parseLong(iterationField.getText());
-            if (col.getFormattedDataType().contentEquals("SMALLINT"))
+            if (col.getFormattedDataType().contentEquals(T.SMALLINT))
                 return (short) current_value;
             return (int) current_value;
         }
-        if (col.getFormattedDataType().contentEquals("DOUBLE PRECISION")
-                || col.getFormattedDataType().contentEquals("FLOAT")
-                || col.getFormattedDataType().startsWith("DECIMAL")
-                || col.getFormattedDataType().startsWith("NUMERIC")) {
+        if (col.getFormattedDataType().contentEquals(T.DOUBLE_PRECISION)
+                || col.getFormattedDataType().contentEquals(T.FLOAT)
+                || col.getFormattedDataType().startsWith(T.DECIMAL)
+                || col.getFormattedDataType().startsWith(T.NUMERIC)
+                || col.getFormattedDataType().startsWith(T.DECFLOAT)
+        ) {
             if (first) {
                 current_double = Double.parseDouble(startValueField.getText());
                 first = false;

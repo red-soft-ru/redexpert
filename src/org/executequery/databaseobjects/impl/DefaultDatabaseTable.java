@@ -553,6 +553,44 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
   }
 
+  private List<DefaultDatabaseTrigger> triggers;
+
+  @Override
+  public List<DefaultDatabaseTrigger> getTriggers() throws DataSourceException {
+    if (!isMarkedForReload() && triggers != null) {
+      return triggers;
+    }
+    triggers = new ArrayList<>();
+    ResultSet rs = null;
+    DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+    String query = "select T.RDB$TRIGGER_NAME,\n" +
+            "T.RDB$RELATION_NAME\n" +
+            "from RDB$TRIGGERS T\n" +
+            "left join RDB$CHECK_CONSTRAINTS C ON C.RDB$TRIGGER_NAME = T.RDB$TRIGGER_NAME\n" +
+            "where ((T.RDB$SYSTEM_FLAG = 0) or (T.RDB$SYSTEM_FLAG is null))\n" +
+            "and (C.RDB$TRIGGER_NAME is NULL)\n" +
+            "and (T.RDB$RELATION_NAME = ?)\n" +
+            "order by  T.RDB$TRIGGER_SEQUENCE, T.RDB$TRIGGER_NAME";
+    try {
+      PreparedStatement st = querySender.getPreparedStatement(query);
+      st.setString(1, getName());
+      rs = querySender.getResultSet(-1, st).getResultSet();
+      while (rs.next()) {
+        String trigName = rs.getString(1);
+        if (trigName != null) {
+          trigName = trigName.trim();
+          triggers.add((DefaultDatabaseTrigger) ((DefaultDatabaseHost) getHost()).getDatabaseObjectFromTypeAndName(NamedObject.TRIGGER, trigName));
+        }
+      }
+
+    } catch (SQLException e) {
+      e.printStackTrace();
+    } finally {
+      querySender.releaseResources();
+    }
+    return triggers;
+  }
+
   /**
    * Returns this table's column meta data result set.
    *
@@ -1430,7 +1468,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       DatabaseColumn column = cols.get(i);
       String col = MiscUtils.getFormattedObject(cols.get(i).getName());
       RecordDataItem rdi = changes.get(i);
-      if (column.isGenerated() || column.isIdentity() && rdi.isNewValueNull())
+      if (column.isGenerated() || column.isIdentity() && rdi.isNewValueNull() || column.getDefaultValue() != null && rdi.isNewValueNull())
         rdi.setGenerated(true);
       else {
         if (applied) {

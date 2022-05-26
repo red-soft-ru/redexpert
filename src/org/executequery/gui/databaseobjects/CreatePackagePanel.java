@@ -33,10 +33,10 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
 
     @Override
     protected void initEdited() {
-        nameField.setText(databasePackage.getName().trim());
-        headerPanel.setSQLText(replaceName(databasePackage.getHeaderSource()));
-        bodyPanel.setSQLText(replaceName(databasePackage.getBodySource()));
-        descriptionPanel.getTextAreaComponent().setText(databasePackage.getDescription());
+        reset();
+        addPrivilegesTab(tabbedPane);
+        addDependenciesTab(databasePackage);
+        addCreateSqlTab(databasePackage);
     }
 
     protected String generateQuery() {
@@ -47,6 +47,13 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
         sb.append(body).append("^\n");
         sb.append("COMMENT ON PACKAGE " + getFormattedName() + " IS '" + descriptionPanel.getTextAreaComponent().getText() + "'");
         return sb.toString();
+    }
+
+    protected void reset() {
+        nameField.setText(databasePackage.getName().trim());
+        headerPanel.setSQLText(replaceName(databasePackage.getHeaderSource()));
+        bodyPanel.setSQLText(replaceName(databasePackage.getBodySource()));
+        descriptionPanel.getTextAreaComponent().setText(databasePackage.getDescription());
     }
 
     @Override

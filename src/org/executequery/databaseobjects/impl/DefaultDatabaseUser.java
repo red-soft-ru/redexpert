@@ -3,6 +3,8 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -211,6 +213,11 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     public void loadData() {
         getObjectInfo();
         loadTags();
+    }
+
+    public String getCreateSQLText() throws DataSourceException {
+
+        return SQLUtils.generateCreateUser(this);
     }
 
 }

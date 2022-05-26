@@ -1,6 +1,7 @@
 package org.executequery.gui.browser.generatortestdata.methodspanels;
 
 import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.T;
 import org.executequery.gui.browser.GeneratorTestDataPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
@@ -20,12 +21,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -174,7 +178,8 @@ public class GetFromListPanel extends AbstractMethodPanel {
     }
 
     Object objectFromString(String str) {
-        if (col.getFormattedDataType().contentEquals("BIGINT")) {
+        if (col.getFormattedDataType().contentEquals("BIGINT")
+                || col.getFormattedDataType().contentEquals(T.INT128)) {
             return new BigInteger(str);
         }
         if (col.getFormattedDataType().contentEquals("INTEGER")) {
@@ -186,17 +191,26 @@ public class GetFromListPanel extends AbstractMethodPanel {
         if (col.getFormattedDataType().contentEquals("TIME")) {
             return Time.valueOf(str);
         }
+        if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
+            return OffsetTime.parse(str);
+        }
         if (col.getFormattedDataType().contentEquals("DATE")) {
             return Date.valueOf(str);
         }
         if (col.getFormattedDataType().contentEquals("TIMESTAMP")) {
             return Timestamp.valueOf(str);
         }
+        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
+            return OffsetDateTime.parse(str);
+        }
         if (col.getFormattedDataType().contentEquals("DOUBLE PRECISION")
                 || col.getFormattedDataType().contentEquals("FLOAT")
                 || col.getFormattedDataType().startsWith("DECIMAL")
                 || col.getFormattedDataType().startsWith("NUMERIC")) {
             return Double.valueOf(str);
+        }
+        if (col.getFormattedDataType().startsWith(T.DECFLOAT)) {
+            return new BigDecimal(str);
         }
         if (col.getFormattedDataType().contains("CHAR")) {
             return str;
@@ -215,7 +229,7 @@ public class GetFromListPanel extends AbstractMethodPanel {
     }
 
     class JTextFieldLimit extends PlainDocument {
-        private int limit;
+        private final int limit;
 
         JTextFieldLimit(int limit) {
             super();

@@ -41,7 +41,7 @@ import java.util.concurrent.Semaphore;
  */
 public class PooledConnection implements Connection {
 
-    private String id = UUID.randomUUID().toString();
+    private final String id = UUID.randomUUID().toString();
 
     /**
      * mutex that regulates the execution of only one statement
@@ -72,16 +72,16 @@ public class PooledConnection implements Connection {
      * the real JDBC connection that this object wraps
      */
     private Connection realConnection;
-    private DatabaseConnection databaseConnection;
+    private final DatabaseConnection databaseConnection;
 
     private List<PooledConnectionListener> listeners;
 
-    private Timer timer;
+    private final Timer timer;
     private Timer timerDelay;
-    private TimerTask task;
-    private int timeoutShutdown;
+    private final TimerTask task;
+    private final int timeoutShutdown;
     private PooledStatement lastStatement;
-    private boolean timerCheckConnection;
+    private final boolean timerCheckConnection;
 
 
     /**
@@ -570,10 +570,11 @@ public class PooledConnection implements Connection {
         }*/
     }
 
-    public void closeDatabaseConnection() {
-        GUIUtilities.displayErrorMessage("lost connection to server");
+    public synchronized void closeDatabaseConnection() {
+        databaseConnection.setConnected(false);
         ConnectionMediator.getInstance().disconnect(databaseConnection);
         timer.cancel();
+        GUIUtilities.displayErrorMessage("lost connection to server");
     }
 
     public int getHoldability() throws SQLException {

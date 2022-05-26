@@ -119,8 +119,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     @Override
     protected void loadParameters() {
         {
-            inputParametersPanel.deleteEmptyRow(); // remove first empty row
-            outputParametersPanel.deleteEmptyRow(); // remove first empty row
+            inputParametersPanel.clearRows();// remove first empty row
+            outputParametersPanel.clearRows(); // remove first empty row
             DatabaseHost host = null;
             try {
                 host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);

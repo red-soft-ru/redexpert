@@ -46,6 +46,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.*;
 import java.text.ParseException;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -551,16 +552,20 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
                         case Types.CHAR:
                         case Types.VARCHAR:
-                            value.setValue(resultSet.getString(i));
+                        case Types.TIME_WITH_TIMEZONE:
+                            value.setValue(resultSet.getObject(i, OffsetTime.class));
+                            break;
+                        case Types.TIMESTAMP_WITH_TIMEZONE:
+                            value.setValue(resultSet.getObject(i, OffsetDateTime.class));
                             break;
                         case Types.DATE:
-                            value.setValue(resultSet.getDate(i));
+                            value.setValue(resultSet.getObject(i, LocalDate.class));
                             break;
                         case Types.TIME:
-                            value.setValue(resultSet.getTime(i));
+                            value.setValue(resultSet.getObject(i, LocalTime.class));
                             break;
                         case Types.TIMESTAMP:
-                            value.setValue(resultSet.getTimestamp(i));
+                            value.setValue(resultSet.getObject(i, LocalDateTime.class));
                             break;
                         case Types.LONGVARCHAR:
                         case Types.CLOB:

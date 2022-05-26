@@ -4,10 +4,12 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTablespace;
 import org.executequery.databaseobjects.impl.TableColumnConstraint;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
+import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
@@ -36,6 +38,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.CONSTRAINT);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.CONSTRAINT);
     boolean generate_name;
+    private JComboBox tablespaceBox;
     private JScrollPane primaryPanel;
     private JPanel foreignPanel;
     private SimpleSqlTextPanel checkPanel;
@@ -56,6 +59,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
     private JComboBox deleteRuleBox;
     private ListSelectionPanel referenceColumn;
     private ListSelectionPanel fieldConstraint;
+    private List<NamedObject> tss;
 
     public EditConstraintPanel(DatabaseTable table, ActionContainer dialog) {
         super(table.getHost().getDatabaseConnection(), dialog, null, new Object[]{table});
@@ -88,6 +92,15 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         });
         updateRuleBox = new JComboBox(RULES);
         deleteRuleBox = new JComboBox(RULES);
+        tablespaceBox = new JComboBox();
+        tablespaceBox.addItem(null);
+        tss = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection)
+                .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.TABLESPACE]);
+        if (tss != null) {
+            for (int i = 0; i < tss.size(); i++)
+                tablespaceBox.addItem(tss.get(i));
+        }
+
         /*
         <Primary Panel>
         */
@@ -189,29 +202,27 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         */
 
         centralPanel.setLayout(new GridBagLayout());
-        centralPanel.add(tableLabel, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(tableNameField, new GridBagConstraints(1, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(typeLabel, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(typeBox, new GridBagConstraints(1, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        gbh.defaults().setXY(0, 0);
+        gbh.addLabelFieldPair(centralPanel, tableLabel, tableNameField, null);
+        gbh.nextRowFirstCol();
+        gbh.addLabelFieldPair(centralPanel, typeLabel, typeBox, null);
+        gbh.nextRowFirstCol();
+        if (tss != null)
+            gbh.addLabelFieldPair(centralPanel, Bundles.get(CreateIndexPanel.class, "tablespace"), tablespaceBox, null);
         loadPanel();
+    }
+
+    protected void reset() {
     }
 
     private void loadPanel() {
         if (typePanel != null) {
             tabbedPane.remove(typePanel);
         }
+        boolean tsEnable = !ColumnConstraint.CHECK.contentEquals((String) typeBox.getSelectedItem()) && tss != null;
+        if (tsEnable != tablespaceBox.isEnabled())
+            tablespaceBox.setSelectedIndex(0);
+        tablespaceBox.setEnabled(tsEnable);
         switch ((String) typeBox.getSelectedItem()) {
             case ColumnConstraint.PRIMARY:
             case ColumnConstraint.UNIQUE:
@@ -243,8 +254,11 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         typeBox.setEnabled(false);
         if (typeBox.getSelectedItem() == TableColumnConstraint.PRIMARY) {
             try {
+                String tablespace_query = "";
+                if (tss != null)
+                    tablespace_query = ", idx.rdb$tablespace_name";
                 String query = "select i.rdb$field_name,\n" +
-                        "rc.rdb$index_name, idx.RDB$INDEX_TYPE\n" +
+                        "rc.rdb$index_name, idx.RDB$INDEX_TYPE" + tablespace_query + "\n" +
                         "from rdb$relation_constraints rc, rdb$index_segments i, rdb$indices idx\n" +
                         "where rc.RDB$CONSTRAINT_NAME = '" + nameField.getText() + "' AND\n" +
                         "(i.rdb$index_name = rc.rdb$index_name) AND\n" +
@@ -256,6 +270,13 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                     onFieldPrimaryPanel.selectOneStringAction(rs.getString("RDB$FIELD_NAME").trim());
                     primaryIndexField.setText(rs.getString("RDB$INDEX_NAME").trim());
                     primarySortingBox.setSelectedIndex(rs.getInt("RDB$INDEX_TYPE"));
+                    if (tss != null) {
+                        String tablespace = rs.getString("RDB$TABLESPACE_NAME");
+                        if (tablespace != null)
+                            for (NamedObject ts : tss)
+                                if (ts.getName().equalsIgnoreCase(tablespace.trim()))
+                                    tablespaceBox.setSelectedItem(ts);
+                    }
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -266,6 +287,9 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         if (typeBox.getSelectedItem() == TableColumnConstraint.FOREIGN) {
             referenceTable.setSelectedItem(constraint.getReferencedTable());
             try {
+                String tablespace_query = "";
+                if (tss != null)
+                    tablespace_query = ", I.RDB$TABLESPACE_NAME";
                 String query = "select A.RDB$RELATION_NAME,\n" +
                         "A.RDB$CONSTRAINT_NAME,\n" +
                         "A.RDB$CONSTRAINT_TYPE,\n" +
@@ -276,7 +300,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                         "A.RDB$INDEX_NAME,\n" +
                         "D.RDB$FIELD_NAME as FK_Field,\n" +
                         "E.RDB$FIELD_NAME as OnField,\n" +
-                        "I.RDB$INDEX_TYPE\n" +
+                        "I.RDB$INDEX_TYPE" + tablespace_query + "\n" +
                         "from RDB$REF_CONSTRAINTS B, RDB$RELATION_CONSTRAINTS A, RDB$RELATION_CONSTRAINTS C,\n" +
                         "RDB$INDEX_SEGMENTS D, RDB$INDEX_SEGMENTS E, RDB$INDICES I\n" +
                         "where (A.RDB$CONSTRAINT_TYPE = 'FOREIGN KEY') and (A.RDB$CONSTRAINT_NAME = '" + constraint.getName() + "') and\n" +
@@ -296,6 +320,13 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                     foreignSortingBox.setSelectedIndex(rs.getInt("RDB$INDEX_TYPE"));
                     updateRuleBox.setSelectedItem(constraint.getUpdateRule());
                     deleteRuleBox.setSelectedItem(constraint.getDeleteRule());
+                    if (tss != null) {
+                        String tablespace = rs.getString("RDB$TABLESPACE_NAME");
+                        if (tablespace != null)
+                            for (NamedObject ts : tss)
+                                if (ts.getName().equalsIgnoreCase(tablespace.trim()))
+                                    tablespaceBox.setSelectedItem(ts);
+                    }
 
                 }
             } catch (SQLException e) {
@@ -313,8 +344,11 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         }
         if (typeBox.getSelectedItem() == TableColumnConstraint.UNIQUE) {
             try {
+                String tablespace_query = "";
+                if (tss != null)
+                    tablespace_query = ", idx.rdb$tablespace_name";
                 String query = "select i.rdb$field_name,\n" +
-                        "rc.rdb$index_name, idx.RDB$INDEX_TYPE\n" +
+                        "rc.rdb$index_name, idx.RDB$INDEX_TYPE" + tablespace_query + "\n" +
                         "from rdb$relation_constraints rc, rdb$index_segments i, rdb$indices idx\n" +
                         "where rc.RDB$CONSTRAINT_NAME = '" + nameField.getText() + "' AND\n" +
                         "(i.rdb$index_name = rc.rdb$index_name) AND\n" +
@@ -331,6 +365,13 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                     }
                     primaryIndexField.setText(rs.getString("RDB$INDEX_NAME").trim());
                     primarySortingBox.setSelectedIndex(rs.getInt("RDB$INDEX_TYPE"));
+                    if (tss != null) {
+                        String tablespace = rs.getString("RDB$TABLESPACE_NAME");
+                        if (tablespace != null)
+                            for (NamedObject ts : tss)
+                                if (ts.getName().equalsIgnoreCase(tablespace.trim()))
+                                    tablespaceBox.setSelectedItem(ts);
+                    }
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -343,6 +384,8 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
     protected String generateQuery() {
         org.executequery.gui.browser.ColumnConstraint cc = new org.executequery.gui.browser.ColumnConstraint();
         cc.setName(nameField.getText());
+        if (tablespaceBox.getSelectedItem() != null)
+            cc.setTablespace(((DefaultDatabaseTablespace) tablespaceBox.getSelectedItem()).getName());
         switch ((String) Objects.requireNonNull(typeBox.getSelectedItem())) {
             case ColumnConstraint.PRIMARY:
             case ColumnConstraint.UNIQUE:
@@ -350,6 +393,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                     cc.setType(NamedObject.PRIMARY_KEY);
                 else cc.setType(NamedObject.UNIQUE_KEY);
                 cc.setColumn(getColumnsFromVector(onFieldPrimaryPanel.getSelectedValues()));
+                cc.setCountCols(onFieldPrimaryPanel.getSelectedValues().size());
                 if (!primaryIndexField.getText().isEmpty()) {
                     String sorting = "";
                     if (primarySortingBox.getSelectedIndex() == 0) {
@@ -364,6 +408,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
             case ColumnConstraint.FOREIGN:
                 cc.setType(NamedObject.FOREIGN_KEY);
                 cc.setColumn(getColumnsFromVector(fieldConstraint.getSelectedValues()));
+                cc.setCountCols(fieldConstraint.getSelectedValues().size());
                 cc.setRefTable((String) referenceTable.getSelectedItem());
                 cc.setRefColumn(getColumnsFromVector(referenceColumn.getSelectedValues()));
                 if (!foreignIndexField.getText().isEmpty()) {

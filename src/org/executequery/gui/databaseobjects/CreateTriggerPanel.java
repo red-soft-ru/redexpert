@@ -6,15 +6,14 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,9 +89,17 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         this(dc, parent, null, triggerType);
     }
 
+    String table;
+
+    public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, int triggerType, String table) {
+        this(dc, parent, null, triggerType);
+        this.table = table;
+        tablesCombo.setSelectedItem(table);
+    }
+
     public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, DefaultDatabaseTrigger trigger,
                               int triggerType) {
-        super(dc, parent, trigger, new Object[] {triggerType});
+        super(dc, parent, trigger, new Object[]{triggerType});
     }
 
     protected void init() {
@@ -294,6 +301,13 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     protected void initEdited() {
+        reset();
+        //addCreateSqlTab(trigger);
+        addDependenciesTab(trigger);
+        addCreateSqlTab(trigger);
+    }
+
+    protected void reset() {
         typeTriggerCombo.setEnabled(false);
         nameField.setText(trigger.getName());
         nameField.setEnabled(false);
@@ -335,7 +349,6 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 }
             }
         }
-
     }
 
     @Override
@@ -381,19 +394,11 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     Object[] getTables() {
-        try {
-            Vector<String> tables = new Vector<>();
-            String query = "Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS order by 1";
-            ResultSet rs = sender.getResultSet(query).getResultSet();
-            while (rs.next()) {
-                tables.add(rs.getString(1));
-            }
-            sender.releaseResources();
-            return tables.toArray();
-        } catch (SQLException e) {
-            Log.error("Error load tables for creating trigger");
-            return null;
-        }
+        List<String> tables = new Vector<>();
+        DefaultDatabaseHost host = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection);
+        tables.addAll(host.getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]));
+        tables.addAll(host.getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]));
+        return tables.toArray();
     }
 
     protected String generateQuery() {

@@ -12,9 +12,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.sql.Types;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +26,7 @@ public class InputParametersDialog extends BaseDialog {
     private boolean canceled = false;
 
     public InputParametersDialog(List<Parameter> parameters) {
-        super("Input Parameters", true, true);
+        super(Bundles.getCommon("input-parameters"), true, true);
         this.parameters = parameters;
         init();
     }
@@ -99,13 +97,19 @@ public class InputParametersDialog extends BaseDialog {
         if (parameter.getValue() != null)
             switch (parameter.getType()) {
                 case Types.DATE:
-                    ((DatePicker) component).setDate(LocalDate.parse((String) parameter.getValue()));
+                    ((DatePicker) component).setDate((LocalDate) parameter.getValue());
                     break;
                 case Types.TIMESTAMP:
-                    ((EQDateTimePicker) component).setDateTimePermissive(LocalDateTime.parse((String) parameter.getValue()));
+                    ((EQDateTimePicker) component).setDateTimePermissive((LocalDateTime) parameter.getValue());
+                    break;
+                case Types.TIMESTAMP_WITH_TIMEZONE:
+                    ((EQDateTimePicker) component).setDateTimePermissive((OffsetDateTime) parameter.getValue());
                     break;
                 case Types.TIME:
-                    ((EQTimePicker) component).setTime(LocalTime.parse((String) parameter.getValue()));
+                    ((EQTimePicker) component).setTime((LocalTime) parameter.getValue());
+                    break;
+                case Types.TIME_WITH_TIMEZONE:
+                    ((EQTimePicker) component).setTime((OffsetTime) parameter.getValue());
                     break;
                 case Types.BOOLEAN:
                     ((RDBCheckBox) component).setStingValue((String) parameter.getValue());
@@ -140,8 +144,18 @@ public class InputParametersDialog extends BaseDialog {
             case Types.TIMESTAMP:
                 component = new EQDateTimePicker();
                 break;
+            case Types.TIMESTAMP_WITH_TIMEZONE:
+                EQDateTimePicker dtp = new EQDateTimePicker();
+                dtp.setVisibleTimeZone(true);
+                component = dtp;
+                break;
             case Types.TIME:
                 component = new EQTimePicker();
+                break;
+            case Types.TIME_WITH_TIMEZONE:
+                EQTimePicker tp = new EQTimePicker();
+                tp.setVisibleTimeZone(true);
+                component = tp;
                 break;
             case Types.BOOLEAN:
                 component = new RDBCheckBox();
@@ -175,13 +189,18 @@ public class InputParametersDialog extends BaseDialog {
             JComponent component = componentList.get(i);
             switch (parameter.getType()) {
                 case Types.DATE:
-                    parameter.setValue(((DatePicker) component).getDateStringOrEmptyString());
+                    parameter.setValue(((DatePicker) component).getDate());
                     break;
                 case Types.TIMESTAMP:
-                    parameter.setValue(((EQDateTimePicker) component).getStringValue());
+                    parameter.setValue(((EQDateTimePicker) component).getDateTime());
+                    break;
+                case Types.TIMESTAMP_WITH_TIMEZONE:
+                    parameter.setValue(((EQDateTimePicker) component).getOffsetDateTime());
                     break;
                 case Types.TIME:
-                    parameter.setValue(((EQTimePicker) component).getStringValue());
+                    parameter.setValue(((EQTimePicker) component).getLocalTime());
+                case Types.TIME_WITH_TIMEZONE:
+                    parameter.setValue(((EQTimePicker) component).getOffsetTime());
                     break;
                 case Types.BOOLEAN:
                     parameter.setValue(((RDBCheckBox) component).getStringValue());

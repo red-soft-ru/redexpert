@@ -184,6 +184,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         // loop through and add this object as the parent object
         addAsParentToObjects(children);
+        setMarkedForReload(false);
 
         return children;
     }
@@ -455,6 +456,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         rs.getString(1).trim());
                 if (typeTree == TreePanel.DEFAULT)
                     trigger.setTriggerActive(rs.getInt(2) != 1);
+                else trigger.getObjectInfo();
                 return trigger;
 
     }
@@ -570,7 +572,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         String query = "select " +
                 "I.RDB$INDEX_NAME,\n" +
                 "I.RDB$INDEX_INACTIVE\n" +
-                "FROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
+                "FROM RDB$INDICES AS I \n" +
                 "where I.RDB$SYSTEM_FLAG = 0 \n" +
                 "ORDER BY I.RDB$INDEX_NAME";
         if (typeTree == TreePanel.DEPENDED_ON)
@@ -1207,6 +1209,26 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "and (D1.RDB$DEPENDENT_TYPE <> 3)\n" +
                 "and (D1.RDB$DEPENDED_ON_NAME = '" + dependedObject.getName() + "')\n" +
                 comparing;
+        if (list.contains(9)) {
+            tableQuery = "union all\n" +
+                    "SELECT distinct F.RDB$RELATION_NAME\n" +
+                    "FROM RDB$RELATION_FIELDS F, RDB$RELATIONS R\n" +
+                    "WHERE (R.RDB$VIEW_BLR IS NULL) AND (F.RDB$RELATION_NAME = R.RDB$RELATION_NAME) AND\n" +
+                    "(F.RDB$FIELD_SOURCE = '" + dependedObject.getName() + "')";
+            if (typeObject == 1)
+                query += "\nUNION ALL\n" +
+                        "SELECT distinct F1.RDB$RELATION_NAME\n" +
+                        "FROM RDB$RELATION_FIELDS F1, RDB$RELATIONS R1\n" +
+                        " WHERE (NOT (R1.RDB$VIEW_BLR IS NULL)) " +
+                        "AND (F1.RDB$RELATION_NAME = R1.RDB$RELATION_NAME) " +
+                        "AND(F1.RDB$FIELD_SOURCE = '" + dependedObject.getName() + "')\n" +
+                        "UNION ALL SELECT RF.RDB$RELATION_NAME\n" +
+                        "FROM RDB$DEPENDENCIES D1 LEFT JOIN RDB$RELATION_FIELDS RF ON (RF.RDB$FIELD_SOURCE = D1.RDB$DEPENDENT_NAME) " +
+                        "\nWHERE (D1.RDB$DEPENDED_ON_NAME =  '" + dependedObject.getName() + "')  " +
+                        "AND (D1.RDB$DEPENDENT_TYPE = 3) AND(RF.RDB$VIEW_CONTEXT IS NOT NULL)";
+            if (typeObject == 5)
+                query += "UNION ALL SELECT P.RDB$PROCEDURE_NAME FROM RDB$PROCEDURE_PARAMETERS P WHERE (P.RDB$FIELD_SOURCE = '" + dependedObject.getName() + "')";
+        }
         if (typeObject == 0) {
             query = query + tableQuery;
         }

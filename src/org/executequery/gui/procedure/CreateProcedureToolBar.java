@@ -22,6 +22,7 @@ package org.executequery.gui.procedure;
 
 import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.actions.ActionUtilities;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,8 +43,10 @@ import java.awt.event.ActionListener;
 public class CreateProcedureToolBar extends JPanel
                                 implements ActionListener {
 
-    /** The parent panel where this tool bar will be attached */
-    private DefinitionPanel parent;
+    /**
+     * The parent panel where this tool bar will be attached
+     */
+    private final DefinitionPanel parent;
 
     /** The insert row (column) after button */
     private JButton insertAfterButton;
@@ -60,8 +63,10 @@ public class CreateProcedureToolBar extends JPanel
     /** The move row (column) down button */
     private JButton moveDownButton;
 
-    /** Whether the move buttons are available */
-    private boolean canMove;
+    /**
+     * Whether the move buttons are available
+     */
+    private final boolean canMove;
 
     public CreateProcedureToolBar(DefinitionPanel parent) {
         this(parent, true);
@@ -88,43 +93,39 @@ public class CreateProcedureToolBar extends JPanel
         insertBeforeButton = ActionUtilities.createToolbarButton(
                 this,
                 GUIUtilities.getAbsoluteIconPath("ColumnInsertBefore16.png"),
-                "Insert a value before the current selection", 
+                "Insert a value before the current selection",
                 null);
 
         deleteRowButton = ActionUtilities.createToolbarButton(
                 this,
                 GUIUtilities.getAbsoluteIconPath("ColumnDelete16.png"),
-                "Delete the selected value", 
+                "Delete the selected value",
                 null);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.NORTH;
-        gbc.gridy++;
-        gbc.gridx++;
-        gbc.insets.bottom = 1;
-        add(insertAfterButton, gbc);
-        gbc.gridy++;
-        add(insertBeforeButton, gbc);
-        gbc.gridy++;
-        add(deleteRowButton, gbc);
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaults(GridBagHelper.DEFAULT_CONSTRAINTS);
+        gbh.defaults();
+        gbh.anchorNorth();
+        gbh.setInsets(0, 2, 0, 0);
+        add(insertAfterButton, gbh.get());
+        add(insertBeforeButton, gbh.nextRow().get());
+        add(deleteRowButton, gbh.nextRow().get());
 
         if (canMove) {
             moveUpButton = ActionUtilities.createToolbarButton(
                     this,
                     "Up16.png",
-                    "Move the selection up", 
+                    "Move the selection up",
                     null);
 
             moveDownButton = ActionUtilities.createToolbarButton(
                     this,
                     "Down16.png",
-                    "Move the selection down", 
+                    "Move the selection down",
                     null);
-
-            gbc.gridy++;
-            add(moveUpButton, gbc);
-            gbc.gridy++;
-            add(moveDownButton, gbc);
+            add(moveUpButton, gbh.nextRow().get());
+            add(moveDownButton, gbh.nextRow().get());
+            add(new JPanel(), gbh.nextRow().spanY().get());
         }
         
     }

@@ -10,10 +10,15 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.ExecuteProcedurePanel;
 import org.executequery.gui.FocusComponentPanel;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.text.SimpleSqlTextPanel;
@@ -27,11 +32,14 @@ import org.underworldlabs.procedureParser.ProcedureParserBaseListener;
 import org.underworldlabs.procedureParser.ProcedureParserLexer;
 import org.underworldlabs.procedureParser.ProcedureParserParser;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.sql.*;
@@ -122,11 +130,23 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     }
 
     protected void initEditing() {
-        nameField.setText(this.procedure);
-        nameField.setEnabled(false);
-        loadParameters();
-        loadVariables();
-        loadDescription();
+        centralPanel.setLayout(new GridBagLayout());
+        JButton executeButton = new JButton(Bundles.getCommon("execute"));
+        executeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BaseDialog dialog = new BaseDialog(Bundles.getCommon("execute"), true, new ExecuteProcedurePanel(getTypeObject().contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION]) ? 1 : 0, procedure));
+                dialog.display();
+            }
+        });
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaults(GridBagHelper.DEFAULT_CONSTRAINTS);
+        centralPanel.add(executeButton, gbh.defaults().setLabelDefault().get());
+        centralPanel.add(new JPanel(), gbh.nextCol().spanX().spanY().get());
+        addPrivilegesTab(tabbedPane);
+        addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
+        addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
+        reset();
     }
 
     private boolean containsType(String type, String[] array) {
@@ -152,7 +172,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
     private void loadVariables() {
         // remove first empty row
-
+        variablesPanel.clearRows();
         String fullProcedureBody = getFullSourceBody();
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty()) {
             fullProcedureBody = fullProcedureBody.trim();
@@ -330,10 +350,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         bottomPanel.add(sqlBodyText, gbcBottom);
 
         JSplitPane3 splitPane = new JSplitPane3();//new SplitPaneFactory().create(JSplitPane.VERTICAL_SPLIT, topPanel, bottomPanel);
-        splitPane.setTopComponent(topPanel);
+        splitPane.setTopComponent(new JScrollPane(topPanel));
         splitPane.setBottomComponent(bottomPanel);
         splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setDividerLocation(0.6);
+        splitPane.setDividerLocation(0.3);
         splitPane.setDividerSize(5);
 
         containerPanel.add(splitPane,
@@ -785,5 +805,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
     public String bundleString(String key, Object... args) {
         return Bundles.get(CreateProcedureFunctionPanel.class, key, args);
+    }
+
+    protected void reset() {
+        nameField.setText(this.procedure);
+        nameField.setEnabled(false);
+        loadParameters();
+        loadVariables();
+        loadDescription();
     }
 }

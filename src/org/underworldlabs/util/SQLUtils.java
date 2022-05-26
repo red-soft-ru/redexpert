@@ -181,39 +181,41 @@ public final class SQLUtils {
             sqlBuffer.append(MiscUtils.getFormattedObject(nameConstraint)).append(SPACE);
 
             if (cc.getType() != -1) {
-                if(cc.getType()==CHECK_KEY)
-                {
+                if (cc.getType() == CHECK_KEY) {
                     sqlBuffer.append(cc.getCheck());
-                }
-                else if (cc.getType() == UNIQUE_KEY) {
-                    sqlBuffer.append(ColumnConstraint.UNIQUE).append(SPACE).append(B_OPEN);
-                    String formatted = "";
-                    if (cc.getCountCols() > 1)
-                        formatted = cc.getColumn();
-                    else formatted = MiscUtils.getFormattedObject(cc.getColumn());
-                    sqlBuffer.append(formatted).append(B_CLOSE);
                 } else {
-                    sqlBuffer.append(cc.getTypeName()).append(KEY).append(B_OPEN);
-                    String formatted = "";
-                    if (cc.getCountCols() > 1)
-                        formatted = cc.getColumn();
-                    else formatted = MiscUtils.getFormattedObject(cc.getColumn());
-                    sqlBuffer.append(formatted);
-                    sqlBuffer.append(B_CLOSE);
-
-                    if (cc.getType() == FOREIGN_KEY) {
-                        sqlBuffer.append(REFERENCES);
-                        sqlBuffer.append(MiscUtils.getFormattedObject(cc.getRefTable())).append(SPACE).append(B_OPEN);
+                    if (cc.getType() == UNIQUE_KEY) {
+                        sqlBuffer.append(ColumnConstraint.UNIQUE).append(SPACE).append(B_OPEN);
+                        String formatted = "";
                         if (cc.getCountCols() > 1)
-                            formatted = cc.getRefColumn();
-                        else formatted = MiscUtils.getFormattedObject(cc.getRefColumn());
+                            formatted = cc.getColumn();
+                        else formatted = MiscUtils.getFormattedObject(cc.getColumn());
                         sqlBuffer.append(formatted).append(B_CLOSE);
-                        if (cc.getUpdateRule() != null && !Objects.equals(cc.getUpdateRule(), RULES[RESTRICT]))
-                            sqlBuffer.append(" ON UPDATE ").append(cc.getUpdateRule());
-                        if (cc.getDeleteRule() != null && !Objects.equals(cc.getDeleteRule(), RULES[RESTRICT]))
-                            sqlBuffer.append(" ON DELETE ").append(cc.getDeleteRule());
-                    }
+                    } else {
+                        sqlBuffer.append(cc.getTypeName()).append(KEY).append(B_OPEN);
+                        String formatted = "";
+                        if (cc.getCountCols() > 1)
+                            formatted = cc.getColumn();
+                        else formatted = MiscUtils.getFormattedObject(cc.getColumn());
+                        sqlBuffer.append(formatted);
+                        sqlBuffer.append(B_CLOSE);
 
+                        if (cc.getType() == FOREIGN_KEY) {
+                            sqlBuffer.append(REFERENCES);
+                            sqlBuffer.append(MiscUtils.getFormattedObject(cc.getRefTable())).append(SPACE).append(B_OPEN);
+                            if (cc.getCountCols() > 1)
+                                formatted = cc.getRefColumn();
+                            else formatted = MiscUtils.getFormattedObject(cc.getRefColumn());
+                            sqlBuffer.append(formatted).append(B_CLOSE);
+                            if (cc.getUpdateRule() != null && !Objects.equals(cc.getUpdateRule(), RULES[RESTRICT]))
+                                sqlBuffer.append(" ON UPDATE ").append(cc.getUpdateRule());
+                            if (cc.getDeleteRule() != null && !Objects.equals(cc.getDeleteRule(), RULES[RESTRICT]))
+                                sqlBuffer.append(" ON DELETE ").append(cc.getDeleteRule());
+                        }
+
+                    }
+                    if (!MiscUtils.isNull(cc.getTablespace()))
+                        sqlBuffer.append(" TABLESPACE ").append(MiscUtils.getFormattedObject(cc.getTablespace()));
                 }
 
             }
@@ -256,7 +258,7 @@ public final class SQLUtils {
         }
         String output = formattedParameters(outputParameters, false);
         if (!MiscUtils.isNull(output.trim())) {
-            sb.append("RETURNS (");
+            sb.append("\nRETURNS (");
             sb.append(output);
             sb.append(")\n");
         }
@@ -546,7 +548,7 @@ public final class SQLUtils {
         if (!MiscUtils.isNull(columnData.getCheck())) {
             sb.append(" CHECK (").append(columnData.getCheck()).append(")");
         }
-        if (columnData.getCollate() != null)
+        if (columnData.getCollate() != null && !columnData.getCollate().trim().contentEquals("NONE"))
             sb.append(" COLLATE ").append(columnData.getCollate());
         sb.append(";");
         if (!MiscUtils.isNull(columnData.getDescription())) {

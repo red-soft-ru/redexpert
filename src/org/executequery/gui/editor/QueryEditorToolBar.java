@@ -93,7 +93,11 @@ class QueryEditorToolBar extends PanelToolBar {
 
     private static final String PRINT_PLAN_COMMAND = "print-plan-command";
 
+    private static final String PRINT_EXPLAINED_PLAN_COMMAND = "print-explained-plan-command";
+
     private static final String EXECUTE_SCRIPT_COMMAND = "execute-script-command";
+
+    private static final String CHANGE_SPLIT_ORIENTATION = "change-split-orientation-command";
 
     public static final String NAME = "Query Editor Tool Bar";
 
@@ -142,6 +146,9 @@ class QueryEditorToolBar extends PanelToolBar {
 
         addButton(createButton(PRINT_PLAN_COMMAND,
                 bundleString(PRINT_PLAN_COMMAND)));
+
+        addButton(createButton(PRINT_EXPLAINED_PLAN_COMMAND,
+                bundleString(PRINT_EXPLAINED_PLAN_COMMAND)));
 
         addButton(createButton(EDITOR_STOP_COMMAND,
                 bundleString(EDITOR_STOP_COMMAND)));
@@ -210,6 +217,8 @@ class QueryEditorToolBar extends PanelToolBar {
 //                     "Uncomment"));
 
         addButton(createButton(FORMAT_SQL_COMMAND, bundleString(FORMAT_SQL_COMMAND)));
+        addButton(createButton(CHANGE_SPLIT_ORIENTATION,
+                bundleString(CHANGE_SPLIT_ORIENTATION)));
 
     }
 

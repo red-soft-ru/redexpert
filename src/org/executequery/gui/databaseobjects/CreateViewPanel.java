@@ -189,4 +189,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             sqlTextPanel.setSQLText(new SQLFormatter(sqlText).format());
         }
     }
+
+    protected void reset() {
+    }
 }

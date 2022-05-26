@@ -93,6 +93,7 @@ public class ColumnConstraint implements Serializable {
     private String updateRule;
     private String deleteRule;
     private String sorting;
+    private String tablespace;
 
     /*public static final int PRIMARY_KEY = 0;
     public static final int FOREIGN_KEY = 1;
@@ -301,6 +302,14 @@ public class ColumnConstraint implements Serializable {
 
     public void setGeneratedName(boolean generatedName) {
         this.generatedName = generatedName;
+    }
+
+    public String getTablespace() {
+        return tablespace;
+    }
+
+    public void setTablespace(String tablespace) {
+        this.tablespace = tablespace;
     }
 }
 

@@ -124,7 +124,6 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
     private StatementExecutor statementExecutor;
 
 
-
     /**
      * the instance count
      */
@@ -132,8 +131,16 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
 
     public ExecuteProcedurePanel() {
 
-        super(new BorderLayout());
+        this(0, null);
+    }
 
+    private final int type;
+    private final String nameStoredObject;
+
+    public ExecuteProcedurePanel(int type, String nameStoredObject) {
+        super(new BorderLayout());
+        this.type = type;
+        this.nameStoredObject = nameStoredObject;
         try {
 
             init();
@@ -163,7 +170,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
                 connectionSelectionMade();
             }
         });
-
+        connectionsCombo.setEnabled(nameStoredObject == null);
         objectTypeCombo = WidgetFactory.createComboBox(createAvailableObjectTypes());
         objectTypeCombo.setToolTipText(bundleString("ObjectType.tool-tip"));
         objectTypeCombo.addItemListener(this);
@@ -173,6 +180,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         procedureCombo.setActionCommand("procedureSelectionChanged");
         procedureCombo.setToolTipText(bundleString("ObjectName.tool-tip"));
         procedureCombo.addActionListener(this);
+
 
         JPanel base = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -245,6 +253,18 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         EventMediator.registerListener(this);
 
         connectionSelectionMade();
+        if (nameStoredObject != null) {
+            objectTypeCombo.setSelectedIndex(type);
+            for (int i = 0; i < proceduresModel.getSize(); i++) {
+                if (((NamedObject) proceduresModel.getElementAt(i)).getName().contentEquals(nameStoredObject)) {
+                    procedureCombo.setSelectedIndex(i);
+                    procedureCombo.setEnabled(false);
+                    enableCombos(false);
+                    break;
+
+                }
+            }
+        }
     }
 
     private Vector<ExecutableObjectType> createAvailableObjectTypes() {
@@ -284,24 +304,9 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
             return;
         }
 
-        final Object source = e.getSource();
+        Object source = e.getSource();
+        reloadProcedureList(source);
 
-        GUIUtils.startWorker(new Runnable() {
-            public void run() {
-
-                try {
-
-                    setInProcess(true);
-                    reloadProcedureList(source);
-
-                } finally {
-
-                    setInProcess(false);
-                }
-
-            }
-
-        });
 
     }
 
@@ -336,12 +341,8 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
 
         } else {
 
-            GUIUtils.invokeAndWait(new Runnable() {
-                public void run() {
                     proceduresModel.removeAllElements();
                     procedureCombo.setEnabled(false);
-                }
-            });
 
         }
 
@@ -377,9 +378,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
 
     private void populateProcedureValues(final List<NamedObject> procs) {
 
-        GUIUtils.invokeAndWait(new Runnable() {
 
-            public void run() {
 
                 if (procs != null && !procs.isEmpty()) {
 
@@ -394,10 +393,6 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
                 }
 
             }
-
-        });
-
-    }
 
     /**
      * Invoked on selection of a procedure from the combo.
@@ -494,15 +489,18 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
                     } else {
                         queryType = QueryTypes.EXECUTE;
                         DefaultDatabaseProcedure procedure = (DefaultDatabaseProcedure) databaseExecutable;
-                        sql = "execute procedure " + procedure.getNameForQuery() + "(";
-                        boolean first = true;
-                        for (int i = 0; i < procedure.getProcedureInputParameters().size(); i++) {
-                            if (first) {
-                                first = false;
-                            } else sql += ",";
-                            sql += ":" + procedure.getProcedureInputParameters().get(i).getName();
+                        sql = "execute procedure " + procedure.getNameForQuery();
+                        if (procedure.getProcedureInputParameters().size() > 0) {
+                            sql += "(";
+                            boolean first = true;
+                            for (int i = 0; i < procedure.getProcedureInputParameters().size(); i++) {
+                                if (first) {
+                                    first = false;
+                                } else sql += ",";
+                                sql += ":" + procedure.getProcedureInputParameters().get(i).getName();
+                            }
+                            sql = sql + ")";
                         }
-                        sql = sql + ")";
                     }
                     setActionMessage("Executing: " + sql);
                     PreparedStatement statement = prepareStatementWithParameters(sql, "");

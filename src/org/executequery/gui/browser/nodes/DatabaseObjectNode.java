@@ -114,14 +114,15 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
     }
 
     public boolean isDraggable() {
-        return false;
+        return getType() == NamedObject.TABLE || getType() == NamedObject.INDEX;
     }
 
     /**
      * Returns whether the object represented by this
      * node may be dropped/deleted.
      */
-    public boolean isDroppable() {
+    public boolean
+    isDroppable() {
         NamedObject namedObject = getDatabaseObject();
         return isDatabaseTable(namedObject);
     }
@@ -242,7 +243,11 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
             )
 
                 return true;
+            if (type == NamedObject.META_TAG) {
+                return databaseObject.getObjects().size() == 0;
+            }
         }
+
 
         return !(allowsChildren());
     }

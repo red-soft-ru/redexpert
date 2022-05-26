@@ -28,8 +28,11 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
+import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
+import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.forms.FormObjectView;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -259,6 +262,8 @@ public class BrowserController {
        try {
 
            FormObjectView panel = buildPanelView(node);
+           if (panel == null)
+               return;
            panel.setDatabaseObjectNode(node);
            String type = "";
            if (node.getType() < NamedObject.META_TYPES.length)
@@ -269,10 +274,8 @@ public class BrowserController {
                panel.setObjectName(null);
            else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
            panel.setDatabaseConnection(connection);
-           if (panel != null) {
                viewPanel.setView(panel);
                checkBrowserPanel();
-           }
 
        } finally {
 
@@ -297,7 +300,9 @@ public class BrowserController {
 
                 return null;
             }
-
+            DatabaseConnection connection = null;
+            if (databaseObject instanceof AbstractDatabaseObject)
+                connection = ((AbstractDatabaseObject) databaseObject).getHost().getDatabaseConnection();
 //            System.out.println("selected object type: " + databaseObject.getClass().getName());
             viewPanel = new BrowserViewPanel(this);
             int type = node.getType();
@@ -356,8 +361,27 @@ public class BrowserController {
 
                     metaKeyPanel.setValues(databaseObject);
                     return metaKeyPanel;
-
-                case NamedObject.FUNCTION: // Internal function of Red Database 3+
+                case NamedObject.DOMAIN:
+                case NamedObject.PROCEDURE:
+                case NamedObject.FUNCTION:
+                case NamedObject.TRIGGER:
+                case NamedObject.DDL_TRIGGER:
+                case NamedObject.DATABASE_TRIGGER:
+                case NamedObject.SEQUENCE:
+                case NamedObject.PACKAGE:
+                case NamedObject.USER:
+                case NamedObject.TABLESPACE:
+                case NamedObject.EXCEPTION:
+                case NamedObject.UDF:
+                    AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel.getEditPanelFromType(type, connection, node.getDatabaseObject(), null);
+                    if (!viewPanel.containsPanel(objectPanel.getLayoutName())) {
+                        viewPanel.addToLayout(objectPanel);
+                    } else {
+                        objectPanel = (AbstractCreateObjectPanel) viewPanel.
+                                getFormObjectView(objectPanel.getLayoutName());
+                    }
+                    return objectPanel;
+                /*case NamedObject.FUNCTION: // Internal function of Red Database 3+
                     BrowserFunctionPanel functionPanel = null;
                     if (!viewPanel.containsPanel(BrowserFunctionPanel.NAME)) {
                         functionPanel = new BrowserFunctionPanel(this);
@@ -368,8 +392,8 @@ public class BrowserController {
                     }
 
                     functionPanel.setValues((DefaultDatabaseFunction) databaseObject);
-                    return functionPanel;
-                case NamedObject.PROCEDURE:
+                    return functionPanel;*/
+                //case NamedObject.PROCEDURE:
                 case NamedObject.SYSTEM_FUNCTION:
                     BrowserProcedurePanel procsPanel = null;
                     if (!viewPanel.containsPanel(BrowserProcedurePanel.NAME)) {
@@ -383,9 +407,7 @@ public class BrowserController {
                     procsPanel.setValues((DatabaseExecutable) databaseObject);
                     return procsPanel;
 
-                case NamedObject.TRIGGER:
                 case NamedObject.SYSTEM_TRIGGER:
-                case NamedObject.DATABASE_TRIGGER:
                     BrowserTriggerPanel triggerPanel = null;
                     if (!viewPanel.containsPanel(BrowserTriggerPanel.NAME)) {
                         triggerPanel = new BrowserTriggerPanel(this);
@@ -398,7 +420,7 @@ public class BrowserController {
                     triggerPanel.setValues((DefaultDatabaseTrigger) databaseObject);
                     return triggerPanel;
 
-                case NamedObject.PACKAGE:
+                case NamedObject.SYSTEM_PACKAGE:
                     BrowserPackagePanel packagePanel = null;
                     if (!viewPanel.containsPanel(BrowserPackagePanel.NAME)) {
                         packagePanel = new BrowserPackagePanel(this);
@@ -411,7 +433,6 @@ public class BrowserController {
                     packagePanel.setValues((DefaultDatabasePackage) databaseObject);
                     return packagePanel;
 
-                case NamedObject.SEQUENCE:
                 case NamedObject.SYSTEM_SEQUENCE:
                     BrowserSequencePanel sequencePanel = null;
                     if (!viewPanel.containsPanel(BrowserSequencePanel.NAME)) {
@@ -424,20 +445,20 @@ public class BrowserController {
 
                     sequencePanel.setValues((DefaultDatabaseSequence) databaseObject);
                     return sequencePanel;
-
-                case NamedObject.DOMAIN:
+                //
+                // case NamedObject.DOMAIN:
                 case NamedObject.SYSTEM_DOMAIN:
-                    BrowserDomainPanel domainPanel = null;
+                    BrowserDomainPanel domainSPanel = null;
                     if (!viewPanel.containsPanel(BrowserDomainPanel.NAME)) {
-                        domainPanel = new BrowserDomainPanel(this);
-                        viewPanel.addToLayout(domainPanel);
+                        domainSPanel = new BrowserDomainPanel(this);
+                        viewPanel.addToLayout(domainSPanel);
                     } else {
-                        domainPanel = (BrowserDomainPanel) viewPanel.
+                        domainSPanel = (BrowserDomainPanel) viewPanel.
                                 getFormObjectView(BrowserDomainPanel.NAME);
                     }
 
-                    domainPanel.setValues((DefaultDatabaseDomain) databaseObject);
-                    return domainPanel;
+                    domainSPanel.setValues((DefaultDatabaseDomain) databaseObject);
+                    return domainSPanel;
                 case NamedObject.ROLE:
                 case NamedObject.SYSTEM_ROLE:
                     BrowserRolePanel rolePanel = null;
@@ -450,57 +471,18 @@ public class BrowserController {
                     }
                     rolePanel.setValues((DefaultDatabaseRole) databaseObject, this);
                     return rolePanel;
-                case NamedObject.USER:
-                    BrowserUserPanel userPanel = null;
-                    if (!viewPanel.containsPanel(BrowserUserPanel.NAME)) {
-                        userPanel = new BrowserUserPanel(this);
-                        viewPanel.addToLayout(userPanel);
-                    } else {
-                        userPanel = (BrowserUserPanel) viewPanel.
-                                getFormObjectView(BrowserUserPanel.NAME);
-                    }
-
-                    userPanel.setValues((DefaultDatabaseUser) databaseObject);
-                    return userPanel;
-                case NamedObject.TABLESPACE:
-                    BrowserTablespacePanel tablespacePanel = null;
-                    if (!viewPanel.containsPanel(BrowserTablespacePanel.NAME)) {
-                        tablespacePanel = new BrowserTablespacePanel(this);
-                        viewPanel.addToLayout(tablespacePanel);
-                    } else {
-                        tablespacePanel = (BrowserTablespacePanel) viewPanel.
-                                getFormObjectView(BrowserTablespacePanel.NAME);
-                    }
-
-                    tablespacePanel.setValues((DefaultDatabaseTablespace) databaseObject);
-                    return tablespacePanel;
-                case NamedObject.EXCEPTION:
-                    BrowserExceptionPanel exceptionPanel = null;
-                    if (!viewPanel.containsPanel(BrowserExceptionPanel.NAME)) {
-                        exceptionPanel = new BrowserExceptionPanel(this);
-                        viewPanel.addToLayout(exceptionPanel);
-                    } else {
-                        exceptionPanel = (BrowserExceptionPanel) viewPanel.
-                                getFormObjectView(BrowserExceptionPanel.NAME);
-                    }
-
-                    exceptionPanel.setValues((DefaultDatabaseException) databaseObject);
-                    return exceptionPanel;
-
-                case NamedObject.UDF:
-                    BrowserUDFPanel browserUDFPanel = null;
-                    if (!viewPanel.containsPanel(BrowserUDFPanel.NAME)) {
-                        browserUDFPanel = new BrowserUDFPanel(this);
-                        viewPanel.addToLayout(browserUDFPanel);
-                    } else {
-                        browserUDFPanel = (BrowserUDFPanel) viewPanel.
-                                getFormObjectView(BrowserUDFPanel.NAME);
-                    }
-
-                    browserUDFPanel.setValues((DefaultDatabaseUDF) databaseObject);
-                    return browserUDFPanel;
 
                 case NamedObject.INDEX:
+                    try {
+                        GUIUtilities.showWaitCursor();
+                        BaseDialog dialog =
+                                new BaseDialog(CreateIndexPanel.ALTER_TITLE, true);
+                        CreateIndexPanel createObjectPanel = new CreateIndexPanel(connection, dialog, (DefaultDatabaseIndex) databaseObject);
+                        showDialogCreateObject(createObjectPanel, dialog);
+                    } finally {
+                        GUIUtilities.showNormalCursor();
+                    }
+                    return null;
                 case NamedObject.SYSTEM_INDEX:
                     BrowserIndexPanel browserIndexPanel = null;
                     if (!viewPanel.containsPanel(BrowserIndexPanel.NAME)) {
@@ -565,6 +547,13 @@ public class BrowserController {
             return null;
         }
 
+    }
+
+    protected void showDialogCreateObject(AbstractCreateObjectPanel panel, BaseDialog dialog) {
+        panel.setTreePanel(treePanel);
+        panel.setCurrentPath(treePanel.getTreeSelectionPath());
+        dialog.addDisplayComponentWithEmptyBorder(panel);
+        dialog.display();
     }
 
     private HostPanel hostPanel() {

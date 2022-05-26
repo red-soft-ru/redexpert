@@ -20,7 +20,7 @@ grammar ProcedureParser;
  ;
 
  create_or_alter_procedure_stmt
- :K_CREATE_OR_ALTER K_PROCEDURE procedure_name
+ :K_CREATE spases_or_comment K_OR spases_or_comment K_ALTER K_PROCEDURE procedure_name
       (K_AUTHID (K_OWNER|K_CALLER))?
       declare_block
  |recreate_procedure_stmt
@@ -96,7 +96,7 @@ body:
   K_SCROLL | K_NO spases_or_comment K_SCROLL;
 
   notnull:
-  K_NOTNULL
+  K_NOT spases_or_comment K_NULL
   ;
 
  output_parameter
@@ -118,7 +118,7 @@ body:
  ;
 
  desciption_parameter
- :parameter_name datatype (K_NOTNULL)? (K_COLLATE order_collate)?
+ :parameter_name datatype (notnull)? (K_COLLATE order_collate)?
  ;
  parameter_name
  : any_name
@@ -132,8 +132,8 @@ body:
  ;
 
  type_of
- :K_TYPE_OF spases_or_comment domain_name
-  | K_TYPE_OF spases_or_comment K_COLUMN spases_or_comment table_name'.'column_name
+ :K_TYPE spases_or_comment K_OF spases_or_comment domain_name
+  | K_TYPE spases_or_comment K_OF spases_or_comment K_COLUMN spases_or_comment table_name'.'column_name
 ;
  datatypeSQL
  : (SMALLINT | INTEGER | BIGINT) array_size?
@@ -142,7 +142,7 @@ body:
     | (DECIMAL | NUMERIC) ('(' type_size (',' scale)?')')? array_size?
     | (CHAR | CHARACTER | VARYING_CHARACTER | VARCHAR) ('('type_size')')?
     (CHARACTER_SET charset_name)? array_size?
-    | (NCHAR | NATIONAL_CHARACTER | NATIONAL_CHAR) (VARYING)? ('(' DIGIT+ ')')? array_size?
+    | (NCHAR | NATIONAL_CHARACTER | NATIONAL_CHAR) (VARYING)? ('(' int_number ')')? array_size?
     | BLOB (SUB_TYPE subtype)?
     (SEGMENT_SIZE type_size)? (CHARACTER_SET charset_name)?
     | BLOB ('('type_size? (',' subtype)?')')?
@@ -164,368 +164,14 @@ segment_size :
  int_number
 ;
 
-  int_number:
-  DIGIT+;
+int_number:
+INT_LITERAL;
 
- array_size : '[' (DIGIT+ ':')? DIGIT+ (',' (DIGIT+ ':')? DIGIT+)* ']'
+ array_size : '[' (INT_LITERAL ':')? INT_LITERAL (',' (INT_LITERAL ':')? INT_LITERAL)* ']'
  ;
-
-delete_stmt
- : with_clause? K_DELETE K_FROM qualified_table_name
-   ( K_WHERE expr )?
- ;
-
-delete_stmt_limited
- : with_clause? K_DELETE K_FROM qualified_table_name
-   ( K_WHERE expr )?
-   ( ( K_ORDER K_BY ordering_term ( ',' ordering_term )* )?
-     K_LIMIT expr ( ( K_OFFSET | ',' ) expr )?
-   )?
- ;
-
-detach_stmt
- : K_DETACH K_DATABASE? database_name
- ;
-
-drop_index_stmt
- : K_DROP K_INDEX ( K_IF K_EXISTS )? ( database_name '.' )? index_name
- ;
-
-drop_table_stmt
- : K_DROP K_TABLE ( K_IF K_EXISTS )? ( database_name '.' )? table_name
- ;
-
-drop_trigger_stmt
- : K_DROP K_TRIGGER ( K_IF K_EXISTS )? ( database_name '.' )? trigger_name
- ;
-
-drop_view_stmt
- : K_DROP K_VIEW ( K_IF K_EXISTS )? ( database_name '.' )? view_name
- ;
-
-factored_select_stmt
- : ( K_WITH K_RECURSIVE? common_table_expression ( ',' common_table_expression )* )?
-   select_core ( compound_operator select_core )*
-   ( K_ORDER K_BY ordering_term ( ',' ordering_term )* )?
-   ( K_LIMIT expr ( ( K_OFFSET | ',' ) expr )? )?
- ;
-
-insert_stmt
- : with_clause? ( K_INSERT
-                | K_REPLACE
-                | K_INSERT K_OR K_REPLACE
-                | K_INSERT K_OR K_ROLLBACK
-                | K_INSERT K_OR K_ABORT
-                | K_INSERT K_OR K_FAIL
-                | K_INSERT K_OR K_IGNORE ) K_INTO
-   ( database_name '.' )? table_name ( '(' column_name ( ',' column_name )* ')' )?
-   ( K_VALUES '(' expr ( ',' expr )* ')' ( ',' '(' expr ( ',' expr )* ')' )*
-   | select_stmt
-   | K_DEFAULT K_VALUES
-   )
- ;
-
-pragma_stmt
- : K_PRAGMA ( database_name '.' )? pragma_name ( '=' pragma_value
-                                               | '(' pragma_value ')' )?
- ;
-
-reindex_stmt
- : K_REINDEX ( collation_name
-             | ( database_name '.' )? ( table_name | index_name )
-             )?
- ;
-
-release_stmt
- : K_RELEASE K_SAVEPOINT? savepoint_name
- ;
-
-rollback_stmt
- : K_ROLLBACK ( K_TRANSACTION transaction_name? )? ( K_TO K_SAVEPOINT? savepoint_name )?
- ;
-
-savepoint_stmt
- : K_SAVEPOINT savepoint_name
- ;
-
-simple_select_stmt
- : ( K_WITH K_RECURSIVE? common_table_expression ( ',' common_table_expression )* )?
-   select_core ( K_ORDER K_BY ordering_term ( ',' ordering_term )* )?
-   ( K_LIMIT expr ( ( K_OFFSET | ',' ) expr )? )?
- ;
-
-select_stmt
- : ( K_WITH K_RECURSIVE? common_table_expression ( ',' common_table_expression )* )?
-   select_or_values ( compound_operator select_or_values )*
-   ( K_ORDER K_BY ordering_term ( ',' ordering_term )* )?
-   ( K_LIMIT expr ( ( K_OFFSET | ',' ) expr )? )?
- ;
-
-select_or_values
- : K_SELECT ( K_DISTINCT | K_ALL )? result_column ( ',' result_column )*
-   ( K_FROM ( table_or_subquery ( ',' table_or_subquery )* | join_clause ) )?
-   ( K_WHERE expr )?
-   ( K_GROUP K_BY expr ( ',' expr )* ( K_HAVING expr )? )?
- | K_VALUES '(' expr ( ',' expr )* ')' ( ',' '(' expr ( ',' expr )* ')' )*
- ;
-
-update_stmt
- : with_clause? K_UPDATE ( K_OR K_ROLLBACK
-                         | K_OR K_ABORT
-                         | K_OR K_REPLACE
-                         | K_OR K_FAIL
-                         | K_OR K_IGNORE )? qualified_table_name
-   K_SET column_name '=' expr ( ',' column_name '=' expr )* ( K_WHERE expr )?
- ;
-
-update_stmt_limited
- : with_clause? K_UPDATE ( K_OR K_ROLLBACK
-                         | K_OR K_ABORT
-                         | K_OR K_REPLACE
-                         | K_OR K_FAIL
-                         | K_OR K_IGNORE )? qualified_table_name
-   K_SET column_name '=' expr ( ',' column_name '=' expr )* ( K_WHERE expr )?
-   ( ( K_ORDER K_BY ordering_term ( ',' ordering_term )* )?
-     K_LIMIT expr ( ( K_OFFSET | ',' ) expr )?
-   )?
- ;
-
-vacuum_stmt
- : K_VACUUM
- ;
-
-column_def
- : column_name ( column_constraint | type_name )*
- ;
-
-type_name
- : name ( '(' signed_number (any_name)? ')'
-         | '(' signed_number (any_name)? ',' signed_number (any_name)? ')' )?
- ;
-
-column_constraint
- : ( K_CONSTRAINT name )?
-   ( column_constraint_primary_key
-   | column_constraint_foreign_key
-   | column_constraint_not_null
-   | column_constraint_null
-   | K_UNIQUE conflict_clause
-   | K_CHECK '(' expr ')'
-   | column_default
-   | K_COLLATE collation_name
-   )
- ;
-
-column_constraint_primary_key
- : K_PRIMARY K_KEY ( K_ASC | K_DESC )? conflict_clause K_AUTOINCREMENT?
- ;
-
-column_constraint_foreign_key
- : foreign_key_clause
- ;
-
-column_constraint_not_null
- : K_NOT K_NULL conflict_clause
- ;
-
-column_constraint_null
- : K_NULL conflict_clause
- ;
-
-column_default
- : K_DEFAULT (column_default_value | '(' expr ')' | K_NEXTVAL '(' expr ')' | any_name )  ( '::' any_name+ )?
- ;
-
-column_default_value
- : ( signed_number | literal_value )
- ;
-
-conflict_clause
- : ( K_ON K_CONFLICT ( K_ROLLBACK
-                     | K_ABORT
-                     | K_FAIL
-                     | K_IGNORE
-                     | K_REPLACE
-                     )
-   )?
- ;
-
-/*
-    SQLite understands the following binary operators, in order from highest to
-    lowest precedence:
-    ||
-    *    /    %
-    +    -
-    <<   >>   &    |
-    <    <=   >    >=
-    =    ==   !=   <>   IS   IS NOT   IN   LIKE   GLOB   MATCH   REGEXP
-    AND
-    OR
-*/
-expr
- : literal_value
- | BIND_PARAMETER
- | ( ( database_name '.' )? table_name '.' )? column_name
- | unary_operator expr
- | expr '||' expr
- | expr ( '*' | '/' | '%' ) expr
- | expr ( '+' | '-' ) expr
- | expr ( '<<' | '>>' | '&' | '|' ) expr
- | expr ( '<' | '<=' | '>' | '>=' ) expr
- | expr ( '=' | '==' | '!=' | '<>' | K_IS | K_IS K_NOT | K_IN | K_LIKE | K_GLOB | K_MATCH | K_REGEXP ) expr
- | expr K_AND expr
- | expr K_OR expr
- | function_name '(' ( K_DISTINCT? expr ( ',' expr )* | '*' )? ')'
- | '(' expr ')'
- | K_CAST '(' expr K_AS type_name ')'
- | expr K_COLLATE collation_name
- | expr K_NOT? ( K_LIKE | K_GLOB | K_REGEXP | K_MATCH ) expr ( K_ESCAPE expr )?
- | expr ( K_ISNULL | K_NOTNULL | K_NOT K_NULL )
- | expr K_IS K_NOT? expr
- | expr K_NOT? K_BETWEEN expr K_AND expr
- | expr K_NOT? K_IN ( '(' ( select_stmt
-                          | expr ( ',' expr )*
-                          )?
-                      ')'
-                    | ( database_name '.' )? table_name )
- | ( ( K_NOT )? K_EXISTS )? '(' select_stmt ')'
- | K_CASE expr? ( K_WHEN expr K_THEN expr )+ ( K_ELSE expr )? K_END
- | raise_function
- ;
-
-foreign_key_clause
- : K_REFERENCES ( database_name '.' )? foreign_table ( '(' fk_target_column_name ( ',' fk_target_column_name )* ')' )?
-   ( ( K_ON ( K_DELETE | K_UPDATE ) ( K_SET K_NULL
-                                    | K_SET K_DEFAULT
-                                    | K_CASCADE
-                                    | K_RESTRICT
-                                    | K_NO K_ACTION )
-     | K_MATCH name
-     )
-   )*
-   ( K_NOT? K_DEFERRABLE ( K_INITIALLY K_DEFERRED | K_INITIALLY K_IMMEDIATE )? K_ENABLE? )?
- ;
-
-fk_target_column_name
- : name
- ;
-
-raise_function
- : K_RAISE '(' ( K_IGNORE
-               | ( K_ROLLBACK | K_ABORT | K_FAIL ) ',' error_message )
-           ')'
- ;
-
-indexed_column
- : column_name ( K_COLLATE collation_name )? ( K_ASC | K_DESC )?
- ;
-
-table_constraint
- : ( K_CONSTRAINT name )?
-   ( table_constraint_primary_key
-   | table_constraint_key
-   | table_constraint_unique
-   | K_CHECK '(' expr ')'
-   | table_constraint_foreign_key
-   )
- ;
-
-table_constraint_primary_key
- : K_PRIMARY K_KEY '(' indexed_column ( ',' indexed_column )* ')' conflict_clause
- ;
-
-table_constraint_foreign_key
- : K_FOREIGN K_KEY '(' fk_origin_column_name ( ',' fk_origin_column_name )* ')' foreign_key_clause
- ;
-
-table_constraint_unique
- : K_UNIQUE K_KEY? name? '(' indexed_column ( ',' indexed_column )* ')' conflict_clause
- ;
-
-table_constraint_key
- : K_KEY name? '(' indexed_column ( ',' indexed_column )* ')' conflict_clause
- ;
-
-fk_origin_column_name
- : column_name
- ;
-
-with_clause
- : K_WITH K_RECURSIVE? cte_table_name K_AS '(' select_stmt ')' ( ',' cte_table_name K_AS '(' select_stmt ')' )*
- ;
-
-qualified_table_name
- : ( database_name '.' )? table_name ( K_INDEXED K_BY index_name
-                                     | K_NOT K_INDEXED )?
- ;
-
-ordering_term
- : expr ( K_COLLATE collation_name )? ( K_ASC | K_DESC )?
- ;
-
  order_collate
   : K_ASC | K_DESC
   ;
-
-pragma_value
- : signed_number
- | name
- | STRING_LITERAL
- ;
-
-common_table_expression
- : table_name ( '(' column_name ( ',' column_name )* ')' )? K_AS '(' select_stmt ')'
- ;
-
-result_column
- : '*'
- | table_name '.' '*'
- | expr ( K_AS? column_alias )?
- ;
-
-table_or_subquery
- : ( database_name '.' )? table_name ( K_AS? table_alias )?
-   ( K_INDEXED K_BY index_name
-   | K_NOT K_INDEXED )?
- | '(' ( table_or_subquery ( ',' table_or_subquery )*
-       | join_clause )
-   ')' ( K_AS? table_alias )?
- | '(' select_stmt ')' ( K_AS? table_alias )?
- ;
-
-join_clause
- : table_or_subquery ( join_operator table_or_subquery join_constraint )*
- ;
-
-join_operator
- : ','
- | K_NATURAL? ( K_LEFT K_OUTER? | K_INNER | K_CROSS )? K_JOIN
- ;
-
-join_constraint
- : ( K_ON expr
-   | K_USING '(' column_name ( ',' column_name )* ')' )?
- ;
-
-select_core
- : K_SELECT ( K_DISTINCT | K_ALL )? result_column ( ',' result_column )*
-   ( K_FROM ( table_or_subquery ( ',' table_or_subquery )* | join_clause ) )?
-   ( K_WHERE expr )?
-   ( K_GROUP K_BY expr ( ',' expr )* ( K_HAVING expr )? )?
- | K_VALUES '(' expr ( ',' expr )* ')' ( ',' '(' expr ( ',' expr )* ')' )*
- ;
-
-compound_operator
- : K_UNION
- | K_UNION K_ALL
- | K_INTERSECT
- | K_EXCEPT
- ;
-
-cte_table_name
- : table_name ( '(' column_name ( ',' column_name )* ')' )?
- ;
-
 signed_number
  : ( ( '+' | '-' )? NUMERIC_LITERAL | '*' )
  ;
@@ -551,10 +197,6 @@ error_message
  : STRING_LITERAL
  ;
 
-module_argument // TODO check what exactly is permitted here
- : expr
- | column_def
- ;
 
 column_alias
  : IDENTIFIER
@@ -562,541 +204,544 @@ column_alias
  ;
 
 keyword
-   : K_ABS
-   | K_ABSENT
-   | K_ABSOLUTE
-   | K_ACCENT
-   | K_ACOS
-   | K_ACOSH
-   | K_ACTION
-   | K_ADA
-   | K_ADD
-   | K_ALL
-   | K_ALLOCATE
-   | K_ALTER
-   | K_ALWAYS
-   | K_AND
-   | K_ANY
-   | K_ARE
-   | K_ARRAY
-   | K_AS
-   | K_ASC
-   | K_ASCII_CHAR
-   | K_ASCII_VAL
-   | K_ASIN
-   | K_ASINH
-   | K_ASSERTION
-   | K_AT
-   | K_ATAN
-   | K_ATAN2
-   | K_ATANH
-   | K_AUTHORIZATION
-   | K_AUTONOMOUS
-   | K_AVG
-   | K_BACKUP
-   | K_BASE64_DECODE
-   | K_BASE64_ENCODE
-   | K_BEGIN
-   | K_BETWEEN
-   | K_BIGINT
-   | K_BINARY
-   | K_BIND
-   | K_BIN_AND
-   | K_BIN_NOT
-   | K_BIN_OR
-   | K_BIN_SHL
-   | K_BIN_SHR
-   | K_BIN_XOR
-   | K_BIT
-   | K_BIT_LENGTH
-   | K_BLOB
-   | K_BLOCK
-   | K_BODY
-   | K_BOOLEAN
-   | K_BOTH
-   | K_BREAK
-   | K_BY
-   | K_C
-   | K_CALLER
-   | K_CASCADE
-   | K_CASCADED
-   | K_CASE
-   | K_CAST
-   | K_CATALOG
-   | K_CATALOG_NAME
-   | K_CEIL
-   | K_CEILING
-   | K_CHAR
-   | K_CHARACTER
-   | K_CHARACTER_LENGTH
-   | K_CHARACTER_SET_CATALOG
-   | K_CHARACTER_SET_NAME
-   | K_CHARACTER_SET_SCHEMA
-   | K_CHAR_LENGTH
-   | K_CHAR_TO_UUID
-   | K_CHECK
-   | K_CLASS_ORIGIN
-   | K_CLEAR
-   | K_CLOSE
-   | K_COALESCE
-   | K_COBOL
-   | K_COLLATE
-   | K_COLLATION
-   | K_COLLATION_CATALOG
-   | K_COLLATION_NAME
-   | K_COLLATION_SCHEMA
-   | K_COLUMN
-   | K_COLUMNS
-   | K_COLUMN_NAME
-   | K_COMMAND
-   | K_COMMAND_FUNCTION
-   | K_COMMENT
-   | K_COMMIT
-   | K_COMMITTED
-   | K_COMMON
-   | K_COMPARE_DECFLOAT
-   | K_CONDITION_NUMBER
-   | K_CONNECT
-   | K_CONNECTION
-   | K_CONNECTIONS
-   | K_CONNECTION_NAME
-   | K_CONSISTENCY
-   | K_CONSTRAINT
-   | K_CONSTRAINTS
-   | K_CONSTRAINT_CATALOG
-   | K_CONSTRAINT_NAME
-   | K_CONSTRAINT_SCHEMA
-   | K_CONTENTS
-   | K_CONTINUE
-   | K_CONVERT
-   | K_CORR
-   | K_CORRESPONDING
-   | K_COS
-   | K_COSH
-   | K_COT
-   | K_COUNT
-   | K_COUNTER
-   | K_COVAR_POP
-   | K_COVAR_SAMP
-   | K_CREATE
-   | K_CROSS
-   | K_CRYPT_HASH
-   | K_CTR_BIG_ENDIAN
-   | K_CTR_LENGTH
-   | K_CTR_LITTLE_ENDIAN
-   | K_CUME_DIST
-   | K_CURRENT
-   | K_CURRENT_CONNECTION
-   | K_CURRENT_DATE
-   | K_CURRENT_ROLE
-   | K_CURRENT_TIME
-   | K_CURRENT_TIMESTAMP
-   | K_CURRENT_TRANSACTION
-   | K_CURRENT_USER
-   | K_CURSOR
-   | K_CURSOR_NAME
-   | K_DATA
-   | K_DATE
-   | K_DATEADD
-   | K_DATEDIFF
-   | K_DATETIME_INTERVAL_CODE
-   | K_DATETIME_INTERVAL_PRECISION
-   | K_DAY
-   | K_DDL
-   | K_DEALLOCATE
-   | K_DEBUG
-   | K_DEC
-   | K_DECFLOAT
-   | K_DECIMAL
-   | K_DECLARE
-   | K_DECODE
-   | K_DECRYPT
-   | K_DEFAULT
-   | K_DEFERRABLE
-   | K_DEFERRED
-   | K_DELETE
-   | K_DELETING
-   | K_DENSE_RANK
-   | K_DESC
-   | K_DESCRIBE
-   | K_DESCRIPTOR
-   | K_DETERMINISTIC
-   | K_DIAGNOSTICS
-   | K_DIFFERENCE
-   | K_DISABLE
-   | K_DISCONNECT
-   | K_DISTINCT
-   | K_DOMAIN
-   | K_DOUBLE
-   | K_DROP
-   | K_DYNAMIC_FUNCTION
-   | K_ELSE
-   | K_EMPTY
-   | K_ENABLE
-   | K_ENCRYPT
-   | K_END
-   | K_END_EXEC
-   | K_ENGINE
-   | K_ERROR
-   | K_ESCAPE
-   | K_EXCEPT
-   | K_EXCEPTION
-   | K_EXCESS
-   | K_EXCLUDE
-   | K_EXEC
-   | K_EXECUTE
-   | K_EXISTS
-   | K_EXP
-   | K_EXTENDED
-   | K_EXTERNAL
-   | K_EXTRACT
-   | K_FALSE
-   | K_FETCH
-   | K_FIRST
-   | K_FIRSTNAME
-   | K_FIRST_DAY
-   | K_FIRST_VALUE
-   | K_FLOAT
-   | K_FLOOR
-   | K_FOLLOWING
-   | K_FOR
-   | K_FOREIGN
-   | K_FORTRAN
-   | K_FOUND
-   | K_FROM
-   | K_FULL
-   | K_GENERATED
-   | K_GEN_UUID
-   | K_GET
-   | K_GLOBAL
-   | K_GO
-   | K_GOSTPASSWORD
-   | K_GOTO
-   | K_GRANT
-   | K_GRANTED
-   | K_GROUP
-   | K_GSS
-   | K_HASH
-   | K_HAVING
-   | K_HEX_DECODE
-   | K_HEX_ENCODE
-   | K_HOUR
-   | K_IDENTITY
-   | K_IDLE
-   | K_IIF
-   | K_IMMEDIATE
-   | K_IN
-   | K_INCLUDE
-   | K_INCLUDING
-   | K_INCREMENT
-   | K_INDEX
-   | K_INDICATOR
-   | K_INITIALLY
-   | K_INNER
-   | K_INPUT
-   | K_INSENSITIVE
-   | K_INSERT
-   | K_INSERTING
-   | K_INT
-   | K_INT128
-   | K_INTEGER
-   | K_INTERSECT
-   | K_INTERVAL
-   | K_INTO
-   | K_IS
-   | K_ISOLATION
-   | K_IS_JSON
-   | K_IV
-   | K_JOB
-   | K_JOIN
-   | K_JSON
-   | K_JSON_ARRAY
-   | K_JSON_ARRAYAGG
-   | K_JSON_EXISTS
-   | K_JSON_MODIFY
-   | K_JSON_OBJECT
-   | K_JSON_OBJECTAGG
-   | K_JSON_QUERY
-   | K_JSON_TABLE
-   | K_JSON_VALUE
-   | K_KEEP
-   | K_KEY
-   | K_KEYS
-   | K_LAG
-   | K_LANGUAGE
-   | K_LAST
-   | K_LASTNAME
-   | K_LAST_DAY
-   | K_LAST_VALUE
-   | K_LATERAL
-   | K_LEAD
-   | K_LEADING
-   | K_LEAVE
-   | K_LEFT
-   | K_LEGACY
-   | K_LENGTH
-   | K_LEVEL
-   | K_LIFETIME
-   | K_LIKE
-   | K_LINGER
-   | K_LIST
-   | K_LN
-   | K_LOCAL
-   | K_LOCK
-   | K_LOG
-   | K_LOG10
-   | K_LOWER
-   | K_LPAD
-   | K_LPARAM
-   | K_MAPPING
-   | K_MATCH
-   | K_MATCHED
-   | K_MATCHING
-   | K_MAX
-   | K_MAXVALUE
-   | K_MESSAGE
-   | K_MESSAGE_LENGTH
-   | K_MESSAGE_OCTET_LENGTH
-   | K_MESSAGE_TEXT
-   | K_MIDDLENAME
-   | K_MILLISECOND
-   | K_MIN
-   | K_MINUTE
-   | K_MINVALUE
-   | K_MOD
-   | K_MODE
-   | K_MODULE
-   | K_MONTH
-   | K_MORE
-   | K_MUMPS
-   | K_NAME
-   | K_NAMES
-   | K_NATIONAL
-   | K_NATIVE
-   | K_NATURAL
-   | K_NCHAR
-   | K_NEXT
-   | K_NO
-   | K_NORMALIZE_DECFLOAT
-   | K_NOT
-   | K_NTH_VALUE
-   | K_NTILE
-   | K_NULL
-   | K_NULLABLE
-   | K_NULLIF
-   | K_NULLS
-   | K_NUMBER
-   | K_NUMERIC
-   | K_OBJECT
-   | K_OCTET_LENGTH
-   | K_OF
-   | K_OFFLINE
-   | K_OFFSET
-   | K_OLDEST
-   | K_OMIT
-   | K_ON
-   | K_ONCE
-   | K_ONLINE
-   | K_ONLY
-   | K_OPEN
-   | K_OPTION
-   | K_OR
-   | K_ORDER
-   | K_OS_NAME
-   | K_OTHERS
-   | K_OUTER
-   | K_OUTPUT
-   | K_OVER
-   | K_OVERLAPS
-   | K_OVERLAY
-   | K_OVERRIDING
-   | K_PACKAGE
-   | K_PAD
-   | K_PARTIAL
-   | K_PARTITION
-   | K_PASCAL
-   | K_PERCENT_RANK
-   | K_PI
-   | K_PKCS_1_5
-   | K_PLACING
-   | K_PLI
-   | K_PLUGIN
-   | K_POOL
-   | K_POSITION
-   | K_POWER
-   | K_PRECEDING
-   | K_PRECISION
-   | K_PREPARE
-   | K_PRESERVE
-   | K_PRIMARY
-   | K_PRIOR
-   | K_PRIVILEGE
-   | K_PRIVILEGES
-   | K_PROCEDURE
-   | K_PUBLIC
-   | K_PUBLICATION
-   | K_QUANTIZE
-   | K_QUOTES
-   | K_RAND
-   | K_RANGE
-   | K_RANK
-   | K_RDB_ERROR
-   | K_RDB_GET_TRANSACTION_CN
-   | K_RDB_SYSTEM_PRIVILEGE
-   | K_RDB_RECORD_VERSION
-   | K_RDB_ROLE_IN_USE
-   | K_READ
-   | K_REAL
-   | K_RECREATE
-   | K_RECURSIVE
-   | K_REFERENCES
-   | K_REGR_AVGX
-   | K_REGR_AVGY
-   | K_REGR_COUNT
-   | K_REGR_INTERCEPT
-   | K_REGR_R2
-   | K_REGR_SLOPE
-   | K_REGR_SXX
-   | K_REGR_SXY
-   | K_REGR_SYY
-   | K_RELATIVE
-   | K_RELEASE
-   | K_REPEATABLE
-   | K_REPLACE
-   | K_RESETTING
-   | K_RESTART
-   | K_RESTRICT
-   | K_RETURN
-   | K_RETURNED_LENGTH
-   | K_RETURNED_OCTET_LENGTH
-   | K_RETURNED_SQLSTATE
-   | K_RETURNING
-   | K_REVERSE
-   | K_REVOKE
-   | K_RIGHT
-   | K_ROLE
-   | K_ROLLBACK
-   | K_ROUND
-   | K_ROW
-   | K_ROWS
-   | K_ROW_COUNT
-   | K_ROW_NUMBER
-   | K_RPAD
-   | K_RSA_DECRYPT
-   | K_RSA_ENCRYPT
-   | K_RSA_PRIVATE
-   | K_RSA_PUBLIC
-   | K_RSA_SIGN_HASH
-   | K_RSA_VERIFY_HASH
-   | K_RUN
-   | K_SALT_LENGTH
-   | K_SAVEPOINT
-   | K_SCALAR_ARRAY
-   | K_SCALE
-   | K_SCHEMA
-   | K_SCHEMA_NAME
-   | K_SCROLL
-   | K_SECOND
-   | K_SECTION
-   | K_SELECT
-   | K_SENSITIVE
-   | K_SEQUENCE
-   | K_SERIALIZABLE
-   | K_SERVERWIDE
-   | K_SERVER_NAME
-   | K_SESSION
-   | K_SESSION_USER
-   | K_SET
-   | K_SIGN
-   | K_SIGNATURE
-   | K_SIMILAR
-   | K_SIN
-   | K_SINH
-   | K_SIZE
-   | K_SKIP
-   | K_SMALLINT
-   | K_SOME
-   | K_SOURCE
-   | K_SPACE
-   | K_SQL
-   | K_SQLCODE
-   | K_SQLERROR
-   | K_SQLSTATE
-   | K_SQRT
-   | K_SRP
-   | K_START
-   | K_STATEMENT
-   | K_STDDEV_POP
-   | K_STDDEV_SAMP
-   | K_SUBCLASS_ORIGIN
-   | K_SUBSTRING
-   | K_SUM
-   | K_SYSTEM
-   | K_SYSTEM_USER
-   | K_TABLE
-   | K_TABLESPACE
-   | K_TABLE_NAME
-   | K_TAGS
-   | K_TAN
-   | K_TANH
-   | K_TEMPORARY
-   | K_THEN
-   | K_TIES
-   | K_TIME
-   | K_TIMESTAMP
-   | K_TIMEZONE_HOUR
-   | K_TIMEZONE_MINUTE
-   | K_TO
-   | K_TOTALORDER
-   | K_TRAILING
-   | K_TRANSACTION
-   | K_TRANSLATE
-   | K_TRANSLATION
-   | K_TRAPS
-   | K_TRIGGER
-   | K_TRIM
-   | K_TRUE
-   | K_TRUNC
-   | K_TRUSTED
-   | K_TWO_PHASE
-   | K_TYPE
-   | K_UNBOUNDED
-   | K_UNCOMMITTED
-   | K_UNCONDITIONAL
-   | K_UNION
-   | K_UNIQUE
-   | K_UNKNOWN
-   | K_UNNAMED
-   | K_UPDATE
-   | K_UPDATING
-   | K_UPPER
-   | K_USAGE
-   | K_USER
-   | K_USING
-   | K_UUID_TO_CHAR
-   | K_VALUE
-   | K_VALUES
-   | K_VARBINARY
-   | K_VARCHAR
-   | K_VARYING
-   | K_VAR_POP
-   | K_VAR_SAMP
-   | K_VERIFYSERVER
-   | K_VIEW
-   | K_WEEK
-   | K_WHEN
-   | K_WHENEVER
-   | K_WHERE
-   | K_WINDOW
-   | K_WIN_SSPI
-   | K_WITH
-   | K_WITHOUT
-   | K_WORK
-   | K_WRAPPER
-   | K_WRITE
-   | K_YEAR
-   | K_ZONE
-  ;
+  : K_ABS
+  | K_ABSENT
+  | K_ABSOLUTE
+  | K_ACCENT
+  | K_ACOS
+  | K_ACOSH
+  | K_ACTION
+  | K_ADA
+  | K_ADD
+  | K_ALL
+  | K_ALLOCATE
+  | K_ALTER
+  | K_ALWAYS
+  | K_AND
+  | K_ANY
+  | K_ARE
+  | K_ARRAY
+  | K_AS
+  | K_ASC
+  | K_ASCII_CHAR
+  | K_ASCII_VAL
+  | K_ASIN
+  | K_ASINH
+  | K_ASSERTION
+  | K_AT
+  | K_ATAN
+  | K_ATAN2
+  | K_ATANH
+  | K_AUTHID
+  | K_AUTHORIZATION
+  | K_AUTONOMOUS
+  | K_AVG
+  | K_BACKUP
+  | K_BASE64_DECODE
+  | K_BASE64_ENCODE
+  | K_BEGIN
+  | K_BETWEEN
+  | K_BIGINT
+  | K_BINARY
+  | K_BIND
+  | K_BIN_AND
+  | K_BIN_NOT
+  | K_BIN_OR
+  | K_BIN_SHL
+  | K_BIN_SHR
+  | K_BIN_XOR
+  | K_BIT
+  | K_BIT_LENGTH
+  | K_BLOB
+  | K_BLOCK
+  | K_BODY
+  | K_BOOLEAN
+  | K_BOTH
+  | K_BREAK
+  | K_BY
+  | K_C
+  | K_CALLER
+  | K_CASCADE
+  | K_CASCADED
+  | K_CASE
+  | K_CAST
+  | K_CATALOG
+  | K_CATALOG_NAME
+  | K_CEIL
+  | K_CEILING
+  | K_CHAR
+  | K_CHARACTER
+  | K_CHARACTER_LENGTH
+  | K_CHARACTER_SET_CATALOG
+  | K_CHARACTER_SET_NAME
+  | K_CHARACTER_SET_SCHEMA
+  | K_CHAR_LENGTH
+  | K_CHAR_TO_UUID
+  | K_CHECK
+  | K_CLASS_ORIGIN
+  | K_CLEAR
+  | K_CLOSE
+  | K_COALESCE
+  | K_COBOL
+  | K_COLLATE
+  | K_COLLATION
+  | K_COLLATION_CATALOG
+  | K_COLLATION_NAME
+  | K_COLLATION_SCHEMA
+  | K_COLUMN
+  | K_COLUMNS
+  | K_COLUMN_NAME
+  | K_COMMAND
+  | K_COMMAND_FUNCTION
+  | K_COMMENT
+  | K_COMMIT
+  | K_COMMITTED
+  | K_COMMON
+  | K_COMPARE_DECFLOAT
+  | K_CONDITION_NUMBER
+  | K_CONNECT
+  | K_CONNECTION
+  | K_CONNECTIONS
+  | K_CONNECTION_NAME
+  | K_CONSISTENCY
+  | K_CONSTRAINT
+  | K_CONSTRAINTS
+  | K_CONSTRAINT_CATALOG
+  | K_CONSTRAINT_NAME
+  | K_CONSTRAINT_SCHEMA
+  | K_CONTENTS
+  | K_CONTINUE
+  | K_CONVERT
+  | K_CORR
+  | K_CORRESPONDING
+  | K_COS
+  | K_COSH
+  | K_COT
+  | K_COUNT
+  | K_COUNTER
+  | K_COVAR_POP
+  | K_COVAR_SAMP
+  | K_CREATE
+  | K_CROSS
+  | K_CRYPT_HASH
+  | K_CTR_BIG_ENDIAN
+  | K_CTR_LENGTH
+  | K_CTR_LITTLE_ENDIAN
+  | K_CUME_DIST
+  | K_CURRENT
+  | K_CURRENT_CONNECTION
+  | K_CURRENT_DATE
+  | K_CURRENT_ROLE
+  | K_CURRENT_TIME
+  | K_CURRENT_TIMESTAMP
+  | K_CURRENT_TRANSACTION
+  | K_CURRENT_USER
+  | K_CURSOR
+  | K_CURSOR_NAME
+  | K_DATA
+  | K_DATE
+  | K_DATEADD
+  | K_DATEDIFF
+  | K_DATETIME_INTERVAL_CODE
+  | K_DATETIME_INTERVAL_PRECISION
+  | K_DAY
+  | K_DDL
+  | K_DEALLOCATE
+  | K_DEBUG
+  | K_DEC
+  | K_DECFLOAT
+  | K_DECIMAL
+  | K_DECLARE
+  | K_DECODE
+  | K_DECRYPT
+  | K_DEFAULT
+  | K_DEFERRABLE
+  | K_DEFERRED
+  | K_DELETE
+  | K_DELETING
+  | K_DENSE_RANK
+  | K_DESC
+  | K_DESCRIBE
+  | K_DESCRIPTOR
+  | K_DETERMINISTIC
+  | K_DIAGNOSTICS
+  | K_DIFFERENCE
+  | K_DISABLE
+  | K_DISCONNECT
+  | K_DISTINCT
+  | K_DOMAIN
+  | K_DOUBLE
+  | K_DROP
+  | K_DYNAMIC_FUNCTION
+  | K_ELSE
+  | K_EMPTY
+  | K_ENABLE
+  | K_ENCRYPT
+  | K_END
+  | K_END_EXEC
+  | K_ENGINE
+  | K_ERROR
+  | K_ESCAPE
+  | K_EXCEPT
+  | K_EXCEPTION
+  | K_EXCESS
+  | K_EXCLUDE
+  | K_EXEC
+  | K_EXECUTE
+  | K_EXISTS
+  | K_EXP
+  | K_EXTENDED
+  | K_EXTERNAL
+  | K_EXTRACT
+  | K_FALSE
+  | K_FETCH
+  | K_FIRST
+  | K_FIRSTNAME
+  | K_FIRST_DAY
+  | K_FIRST_VALUE
+  | K_FLOAT
+  | K_FLOOR
+  | K_FOLLOWING
+  | K_FOR
+  | K_FOREIGN
+  | K_FORTRAN
+  | K_FOUND
+  | K_FROM
+  | K_FULL
+  | K_GENERATED
+  | K_GEN_UUID
+  | K_GET
+  | K_GLOBAL
+  | K_GO
+  | K_GOSTPASSWORD
+  | K_GOTO
+  | K_GRANT
+  | K_GRANTED
+  | K_GROUP
+  | K_GSS
+  | K_HASH
+  | K_HAVING
+  | K_HEX_DECODE
+  | K_HEX_ENCODE
+  | K_HOUR
+  | K_IDENTITY
+  | K_IDLE
+  | K_IIF
+  | K_IMMEDIATE
+  | K_IN
+  | K_INCLUDE
+  | K_INCLUDING
+  | K_INCREMENT
+  | K_INDEX
+  | K_INDICATOR
+  | K_INITIALLY
+  | K_INNER
+  | K_INPUT
+  | K_INSENSITIVE
+  | K_INSERT
+  | K_INSERTING
+  | K_INT
+  | K_INT128
+  | K_INTEGER
+  | K_INTERSECT
+  | K_INTERVAL
+  | K_INTO
+  | K_IS
+  | K_ISOLATION
+  | K_IS_JSON
+  | K_IV
+  | K_JOB
+  | K_JOIN
+  | K_JSON
+  | K_JSON_ARRAY
+  | K_JSON_ARRAYAGG
+  | K_JSON_EXISTS
+  | K_JSON_MODIFY
+  | K_JSON_OBJECT
+  | K_JSON_OBJECTAGG
+  | K_JSON_QUERY
+  | K_JSON_TABLE
+  | K_JSON_VALUE
+  | K_KEEP
+  | K_KEY
+  | K_KEYS
+  | K_LAG
+  | K_LANGUAGE
+  | K_LAST
+  | K_LASTNAME
+  | K_LAST_DAY
+  | K_LAST_VALUE
+  | K_LATERAL
+  | K_LEAD
+  | K_LEADING
+  | K_LEAVE
+  | K_LEFT
+  | K_LEGACY
+  | K_LENGTH
+  | K_LEVEL
+  | K_LIFETIME
+  | K_LIKE
+  | K_LINGER
+  | K_LIST
+  | K_LN
+  | K_LOCAL
+  | K_LOCK
+  | K_LOG
+  | K_LOG10
+  | K_LOWER
+  | K_LPAD
+  | K_LPARAM
+  | K_MAPPING
+  | K_MATCH
+  | K_MATCHED
+  | K_MATCHING
+  | K_MAX
+  | K_MAXVALUE
+  | K_MESSAGE
+  | K_MESSAGE_LENGTH
+  | K_MESSAGE_OCTET_LENGTH
+  | K_MESSAGE_TEXT
+  | K_MIDDLENAME
+  | K_MILLISECOND
+  | K_MIN
+  | K_MINUTE
+  | K_MINVALUE
+  | K_MOD
+  | K_MODE
+  | K_MODULE
+  | K_MONTH
+  | K_MORE
+  | K_MUMPS
+  | K_NAME
+  | K_NAMES
+  | K_NATIONAL
+  | K_NATIVE
+  | K_NATURAL
+  | K_NCHAR
+  | K_NEXT
+  | K_NO
+  | K_NORMALIZE_DECFLOAT
+  | K_NOT
+  | K_NTH_VALUE
+  | K_NTILE
+  | K_NULL
+  | K_NULLABLE
+  | K_NULLIF
+  | K_NULLS
+  | K_NUMBER
+  | K_NUMERIC
+  | K_OBJECT
+  | K_OCTET_LENGTH
+  | K_OF
+  | K_OFFLINE
+  | K_OFFSET
+  | K_OLDEST
+  | K_OMIT
+  | K_ON
+  | K_ONCE
+  | K_ONLINE
+  | K_ONLY
+  | K_OPEN
+  | K_OPTION
+  | K_OR
+  | K_ORDER
+  | K_OS_NAME
+  | K_OTHERS
+  | K_OUTER
+  | K_OUTPUT
+  | K_OVER
+  | K_OVERLAPS
+  | K_OVERLAY
+  | K_OVERRIDING
+  | K_PACKAGE
+  | K_PAD
+  | K_PARTIAL
+  | K_PARTITION
+  | K_PASCAL
+  | K_PERCENT_RANK
+  | K_PI
+  | K_PKCS_1_5
+  | K_PLACING
+  | K_PLI
+  | K_PLUGIN
+  | K_POOL
+  | K_POSITION
+  | K_POWER
+  | K_PRECEDING
+  | K_PRECISION
+  | K_PREPARE
+  | K_PRESERVE
+  | K_PRIMARY
+  | K_PRIOR
+  | K_PRIVILEGE
+  | K_PRIVILEGES
+  | K_PROCEDURE
+  | K_PUBLIC
+  | K_PUBLICATION
+  | K_QUANTIZE
+  | K_QUOTES
+  | K_RAND
+  | K_RANGE
+  | K_RANK
+  | K_RDB_ERROR
+  | K_RDB_GET_TRANSACTION_CN
+  | K_RDB_SYSTEM_PRIVILEGE
+  | K_RDB_RECORD_VERSION
+  | K_RDB_ROLE_IN_USE
+  | K_READ
+  | K_REAL
+  | K_RECREATE
+  | K_RECURSIVE
+  | K_REFERENCES
+  | K_REGR_AVGX
+  | K_REGR_AVGY
+  | K_REGR_COUNT
+  | K_REGR_INTERCEPT
+  | K_REGR_R2
+  | K_REGR_SLOPE
+  | K_REGR_SXX
+  | K_REGR_SXY
+  | K_REGR_SYY
+  | K_RELATIVE
+  | K_RELEASE
+  | K_REPEATABLE
+  | K_REPLACE
+  | K_RESETTING
+  | K_RESTART
+  | K_RESTRICT
+  | K_RETURN
+  | K_RETURNED_LENGTH
+  | K_RETURNED_OCTET_LENGTH
+  | K_RETURNED_SQLSTATE
+  | K_RETURNING
+  | K_RETURNS
+  | K_REVERSE
+  | K_REVOKE
+  | K_RIGHT
+  | K_ROLE
+  | K_ROLLBACK
+  | K_ROUND
+  | K_ROW
+  | K_ROWS
+  | K_ROW_COUNT
+  | K_ROW_NUMBER
+  | K_RPAD
+  | K_RSA_DECRYPT
+  | K_RSA_ENCRYPT
+  | K_RSA_PRIVATE
+  | K_RSA_PUBLIC
+  | K_RSA_SIGN_HASH
+  | K_RSA_VERIFY_HASH
+  | K_RUN
+  | K_SALT_LENGTH
+  | K_SAVEPOINT
+  | K_SCALAR_ARRAY
+  | K_SCALE
+  | K_SCHEMA
+  | K_SCHEMA_NAME
+  | K_SCROLL
+  | K_SECOND
+  | K_SECTION
+  | K_SELECT
+  | K_SENSITIVE
+  | K_SEQUENCE
+  | K_SERIALIZABLE
+  | K_SERVERWIDE
+  | K_SERVER_NAME
+  | K_SESSION
+  | K_SESSION_USER
+  | K_SET
+  | K_SIGN
+  | K_SIGNATURE
+  | K_SIMILAR
+  | K_SIN
+  | K_SINH
+  | K_SIZE
+  | K_SKIP
+  | K_SMALLINT
+  | K_SOME
+  | K_SOURCE
+  | K_SPACE
+  | K_SQL
+  | K_SQLCODE
+  | K_SQLERROR
+  | K_SQLSTATE
+  | K_SQRT
+  | K_SRP
+  | K_START
+  | K_STATEMENT
+  | K_STDDEV_POP
+  | K_STDDEV_SAMP
+  | K_SUBCLASS_ORIGIN
+  | K_SUBSTRING
+  | K_SUM
+  | K_SUSPEND
+  | K_SYSTEM
+  | K_SYSTEM_USER
+  | K_TABLE
+  | K_TABLESPACE
+  | K_TABLE_NAME
+  | K_TAGS
+  | K_TAN
+  | K_TANH
+  | K_TEMPORARY
+  | K_THEN
+  | K_TIES
+  | K_TIME
+  | K_TIMESTAMP
+  | K_TIMEZONE_HOUR
+  | K_TIMEZONE_MINUTE
+  | K_TO
+  | K_TOTALORDER
+  | K_TRAILING
+  | K_TRANSACTION
+  | K_TRANSLATE
+  | K_TRANSLATION
+  | K_TRAPS
+  | K_TRIGGER
+  | K_TRIM
+  | K_TRUE
+  | K_TRUNC
+  | K_TRUSTED
+  | K_TWO_PHASE
+  | K_TYPE
+  | K_UNBOUNDED
+  | K_UNCOMMITTED
+  | K_UNCONDITIONAL
+  | K_UNION
+  | K_UNIQUE
+  | K_UNKNOWN
+  | K_UNNAMED
+  | K_UPDATE
+  | K_UPDATING
+  | K_UPPER
+  | K_USAGE
+  | K_USER
+  | K_USING
+  | K_UUID_TO_CHAR
+  | K_VALUE
+  | K_VALUES
+  | K_VARBINARY
+  | K_VARCHAR
+  | K_VARYING
+  | K_VAR_POP
+  | K_VAR_SAMP
+  | K_VERIFYSERVER
+  | K_VIEW
+  | K_WEEK
+  | K_WHEN
+  | K_WHENEVER
+  | K_WHERE
+  | K_WINDOW
+  | K_WIN_SSPI
+  | K_WITH
+  | K_WITHOUT
+  | K_WORK
+  | K_WRAPPER
+  | K_WRITE
+  | K_YEAR
+  | K_ZONE
+ ;
 
  //datatypes
  BIGINT : B I G I N T;
@@ -1276,6 +921,7 @@ K_AT : A T ;
 K_ATAN : A T A N ;
 K_ATAN2 : A T A N '2' ;
 K_ATANH : A T A N H ;
+K_AUTHID: A U T H I D;
 K_AUTHORIZATION : A U T H O R I Z A T I O N ;
 K_AUTONOMOUS : A U T O N O M O U S ;
 K_AVG : A V G ;
@@ -1596,6 +1242,7 @@ K_OVER : O V E R ;
 K_OVERLAPS : O V E R L A P S ;
 K_OVERLAY : O V E R L A Y ;
 K_OVERRIDING : O V E R R I D I N G ;
+K_OWNER: O W N E R;
 K_PACKAGE : P A C K A G E ;
 K_PAD : P A D ;
 K_PARTIAL : P A R T I A L ;
@@ -1657,6 +1304,7 @@ K_RETURNED_LENGTH : R E T U R N E D '_' L E N G T H ;
 K_RETURNED_OCTET_LENGTH : R E T U R N E D '_' O C T E T '_' L E N G T H ;
 K_RETURNED_SQLSTATE : R E T U R N E D '_' S Q L S T A T E ;
 K_RETURNING : R E T U R N I N G ;
+K_RETURNS: R E T U R N S;
 K_REVERSE : R E V E R S E ;
 K_REVOKE : R E V O K E ;
 K_RIGHT : R I G H T ;
@@ -1717,6 +1365,7 @@ K_STDDEV_SAMP : S T D D E V '_' S A M P ;
 K_SUBCLASS_ORIGIN : S U B C L A S S '_' O R I G I N ;
 K_SUBSTRING : S U B S T R I N G ;
 K_SUM : S U M ;
+K_SUSPEND: S U S P E N D;
 K_SYSTEM : S Y S T E M ;
 K_SYSTEM_USER : S Y S T E M '_' U S E R ;
 K_TABLE : T A B L E ;
@@ -1764,6 +1413,7 @@ K_VALUE : V A L U E ;
 K_VALUES : V A L U E S ;
 K_VARBINARY : V A R B I N A R Y ;
 K_VARCHAR : V A R C H A R ;
+K_VARIABLE: V A R I A B L E;
 K_VARYING : V A R Y I N G ;
 K_VAR_POP : V A R '_' P O P ;
 K_VAR_SAMP : V A R '_' S A M P ;
@@ -1789,6 +1439,9 @@ IDENTIFIER
  | '[' ~']'* ']'
  | [a-zA-Z_] [a-zA-Z_$0-9]* // TODO check: needs more chars in set
  ;
+INT_LITERAL
+:DIGIT+
+;
 
 NUMERIC_LITERAL
  : DIGIT+ ( '.' DIGIT* )? ( E [-+]? DIGIT+ )?
@@ -1809,10 +1462,10 @@ BLOB_LITERAL
  ;
 
 spases_or_comment
-:SPACES COMMENT SPACES
-|SPACES COMMENT
-|COMMENT SPACES
-|SPACES
+:SPACES+ COMMENT SPACES+
+|SPACES+ COMMENT
+|COMMENT SPACES+
+|SPACES+
 ;
 
 comment:

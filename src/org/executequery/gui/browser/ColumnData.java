@@ -26,10 +26,8 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.T;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
-import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
-import org.executequery.gui.browser.nodes.DatabaseHostNode;
-import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
@@ -480,7 +478,9 @@ public class ColumnData implements Serializable {
     public boolean isDateDataType() {
         return sqlType == Types.DATE ||
                 sqlType == Types.TIME ||
-                sqlType == Types.TIMESTAMP;
+                sqlType == Types.TIMESTAMP ||
+                sqlType == Types.TIME_WITH_TIMEZONE ||
+                sqlType == Types.TIMESTAMP_WITH_TIMEZONE;
     }
 
     public boolean isCharacterType() {
@@ -649,36 +649,23 @@ public class ColumnData implements Serializable {
 
     private void getDomainInfo() {
         domain = domain.trim();
-        ConnectionsTreePanel treePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-        DatabaseHostNode hostNode = (DatabaseHostNode) treePanel.getHostNode(dc);
-        List<DatabaseObjectNode> metatags = hostNode.getAllChildren();
-        boolean find = false;
-        for (int i = 0; i < metatags.size(); i++) {
-            DefaultDatabaseMetaTag metatag = (DefaultDatabaseMetaTag) metatags.get(i).getDatabaseObject();
-            if (metatag.getMetaDataKey().equalsIgnoreCase(NamedObject.META_TYPES[NamedObject.DOMAIN])
-                    || metatag.getMetaDataKey().equalsIgnoreCase(NamedObject.META_TYPES[NamedObject.SYSTEM_DOMAIN])) {
-                List<DatabaseObjectNode> domains = metatags.get(i).getChildObjects();
-                for (DatabaseObjectNode domainNode : domains) {
-                    if (domainNode.getName().equals(domain)) {
-                        DefaultDatabaseDomain defaultDatabaseDomain = (DefaultDatabaseDomain) domainNode.getDatabaseObject();
-                        domainType = defaultDatabaseDomain.getDomainData().domainType;
-                        domainSize = defaultDatabaseDomain.getDomainData().domainSize;
-                        domainScale = defaultDatabaseDomain.getDomainData().domainScale;
-                        domainSubType = defaultDatabaseDomain.getDomainData().domainSubType;
-                        domainCharset = defaultDatabaseDomain.getDomainData().domainCharset;
-                        domainCheck = defaultDatabaseDomain.getDomainData().domainCheck;
-                        domainDescription = defaultDatabaseDomain.getDomainData().domainDescription;
-                        domainNotNull = defaultDatabaseDomain.getDomainData().domainNotNull;
-                        domainDefault = defaultDatabaseDomain.getDomainData().domainDefault;
-                        domainComputedBy = defaultDatabaseDomain.getDomainData().domainComputedBy;
-                        domainCollate = defaultDatabaseDomain.getDomainData().domainCollate;
-                        find = true;
-                        break;
-                    }
-                }
-                if (find)
-                    break;
-            }
+
+        DefaultDatabaseDomain defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.DOMAIN, domain);
+        if (defaultDatabaseDomain == null)
+            defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.SYSTEM_DOMAIN, domain);
+        boolean find = defaultDatabaseDomain != null;
+        if (find) {
+            domainType = defaultDatabaseDomain.getDomainData().domainType;
+            domainSize = defaultDatabaseDomain.getDomainData().domainSize;
+            domainScale = defaultDatabaseDomain.getDomainData().domainScale;
+            domainSubType = defaultDatabaseDomain.getDomainData().domainSubType;
+            domainCharset = defaultDatabaseDomain.getDomainData().domainCharset;
+            domainCheck = defaultDatabaseDomain.getDomainData().domainCheck;
+            domainDescription = defaultDatabaseDomain.getDomainData().domainDescription;
+            domainNotNull = defaultDatabaseDomain.getDomainData().domainNotNull;
+            domainDefault = defaultDatabaseDomain.getDomainData().domainDefault;
+            domainComputedBy = defaultDatabaseDomain.getDomainData().domainComputedBy;
+            domainCollate = defaultDatabaseDomain.getDomainData().domainCollate;
         }
         sqlType = domainType;
         columnSize = domainSize;
@@ -751,7 +738,10 @@ public class ColumnData implements Serializable {
                 if (getColumnSize() != 80)
                     sb.append(" SEGMENT SIZE ").append(getColumnSize());
             } else if (isEditSize() && getColumnSize() > 0 && !isDateDataType()
-                    && !isNonPrecisionType()) {
+                    && !isNonPrecisionType()
+                    && (!getColumnType().equalsIgnoreCase(T.DECFLOAT) || getColumnType().equalsIgnoreCase(T.DECFLOAT)
+                    && (getColumnSize() == 16 || getColumnSize() == 34))
+            ) {
                 sb.append("(");
                 sb.append(getColumnSize());
 
@@ -786,7 +776,8 @@ public class ColumnData implements Serializable {
                 || getSQLType() == Types.DECIMAL || getSQLType() == Types.BLOB || getSQLType() == Types.LONGVARCHAR
                 || getSQLType() == Types.LONGVARBINARY
                 || getColumnType().equalsIgnoreCase("VARCHAR")
-                || getColumnType().equalsIgnoreCase("CHAR"));
+                || getColumnType().equalsIgnoreCase("CHAR"))
+                || getColumnType().equalsIgnoreCase(T.DECFLOAT);
     }
 
     public void setCheck(String Check) {

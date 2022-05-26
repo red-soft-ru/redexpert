@@ -27,6 +27,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.databaseobjects.impl.TransactionAgnosticResultSet;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
@@ -36,10 +37,7 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.ExecuteQueryDialog;
-import org.executequery.gui.databaseobjects.CreateIndexPanel;
-import org.executequery.gui.databaseobjects.EditableColumnConstraintTable;
-import org.executequery.gui.databaseobjects.EditableDatabaseTable;
-import org.executequery.gui.databaseobjects.TableColumnIndexTableModel;
+import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
@@ -56,6 +54,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -88,7 +87,16 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     // TEXT FUNCTION CONTAINER
 
-    private static final int TABLE_DATA_TAB_INDEX = 5;
+    private static final int TABLE_COLUMNS_INDEX = 0;
+    private static final int TABLE_CONSTRAINTS_INDEX = TABLE_COLUMNS_INDEX + 1;
+    private static final int TABLE_INDEXES_INDEX = TABLE_CONSTRAINTS_INDEX + 1;
+    private static final int TABLE_TRIGGERS_INDEX = TABLE_INDEXES_INDEX + 1;
+    private static final int TABLE_PRIVILEGES_INDEX = TABLE_TRIGGERS_INDEX + 1;
+    private static final int TABLE_REFERENCES_INDEX = TABLE_PRIVILEGES_INDEX + 1;
+    private static final int TABLE_DATA_TAB_INDEX = TABLE_REFERENCES_INDEX + 1;
+    private static final int TABLE_SQL_INDEX = TABLE_DATA_TAB_INDEX + 1;
+    private static final int TABLE_METADATA_INDEX = TABLE_SQL_INDEX + 1;
+    private static final int TABLE_DEPENDENCIES_INDEX = TABLE_METADATA_INDEX + 1;
 
     public static final String NAME = "BrowserTableEditingPanel";
 
@@ -128,6 +136,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      * Contains the column indexes for a selected table
      */
     private JTable columnIndexTable;
+    private JTable triggersTable;
 
     /**
      * A reference to the currently selected table.
@@ -136,6 +145,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private JTable focusTable;
 
     private TableColumnIndexTableModel citm;
+    private TableTriggersTableModel tttm;
 
     /**
      * Holds temporary SQL text during modifications
@@ -190,6 +200,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private JPanel buttonsEditingColumnPanel;
     private JPanel buttonsEditingConstraintPanel;
     private JPanel buttonsEditingIndexesPanel;
+    private JPanel buttonsEditingTriggersPanel;
 
     Semaphore lock;
 
@@ -213,8 +224,11 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         externalFileField = new DisabledField();
         adapterField = new DisabledField();
         columnIndexTable = new DefaultTable();
+        triggersTable = new DefaultTable();
         citm = new TableColumnIndexTableModel();
+        tttm = new TableTriggersTableModel();
         columnIndexTable.setModel(new TableSorter(citm, columnIndexTable.getTableHeader()));
+        triggersTable.setModel(new TableSorter(tttm, triggersTable.getTableHeader()));
 
         columnIndexTable.setColumnSelectionAllowed(false);
         columnIndexTable.getTableHeader().setReorderingAllowed(false);
@@ -246,6 +260,38 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         DefaultDatabaseIndex index = ((TableColumnIndexTableModel) ((TableSorter) columnIndexTable.getModel()).getTableModel()).getIndexes().get(row);
                         BaseDialog dialog = new BaseDialog("Edit Index", true);
                         CreateIndexPanel panel = new CreateIndexPanel(table.getHost().getDatabaseConnection(), dialog, index, table.getName());
+                        dialog.addDisplayComponent(panel);
+                        dialog.display();
+                        try {
+                            table.reset();
+                            setValues(table);
+
+                        } catch (DataSourceException ex) {
+                            GUIUtilities.displayExceptionErrorDialog(ex.getMessage(), ex);
+                        }
+                    }
+                }
+            }
+        });
+
+        // table triggers panel
+        JPanel triggersPanel = new JPanel(new GridBagLayout());
+        triggersPanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-triggers")));
+        createButtonsEditingTriggersPanel();
+        GridBagHelper gbhTrigger = new GridBagHelper();
+        gbhTrigger.setDefaults(GridBagHelper.DEFAULT_CONSTRAINTS).defaults();
+        triggersPanel.add(buttonsEditingTriggersPanel, gbhTrigger.get());
+        triggersPanel.add(new JScrollPane(triggersTable), gbhTrigger.anchorSouthEast().fillBoth().spanX().spanY().nextRow().get());
+        triggersTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() > 1) {
+                    int row = triggersTable.getSelectedRow();
+                    if (row >= 0) {
+                        row = ((TableSorter) triggersTable.getModel()).modelIndex(row);
+                        DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
+                        BaseDialog dialog = new BaseDialog("Edit Trigger", true);
+                        CreateTriggerPanel panel = new CreateTriggerPanel(table.getHost().getDatabaseConnection(), dialog, trigger, DefaultDatabaseTrigger.TABLE_TRIGGER);
                         dialog.addDisplayComponent(panel);
                         dialog.display();
                         try {
@@ -377,6 +423,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("description"), descTablePanel);
         tabPane.add(Bundles.getCommon("constraints"), constraintsPanel);
         tabPane.add(Bundles.getCommon("indexes"), indexesPanel);
+        tabPane.add(Bundles.getCommon("triggers"), triggersPanel);
         addPrivilegesTab(tabPane);
         tabPane.add(Bundles.getCommon("references"), referencesPanel);
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
@@ -572,25 +619,28 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         switch (tabIndex) {
 
-            case 0:
+            case TABLE_COLUMNS_INDEX:
                 return new TablePrinter(descriptionTable,
                         bundleString("description-table") + table.getName());
 
-            case 1:
+            case TABLE_CONSTRAINTS_INDEX:
                 return new TablePrinter(constraintsTable,
                         bundleString("constraints-table") + table.getName(), false);
 
-            case 2:
+            case TABLE_INDEXES_INDEX:
                 return new TablePrinter(columnIndexTable,
                         bundleString("indexes-table") + table.getName());
-            case 4:
+            case TABLE_TRIGGERS_INDEX:
+                return new TablePrinter(triggersTable,
+                        bundleString("triggers-table") + table.getName());
+            case TABLE_REFERENCES_INDEX:
                 return referencesPanel.getPrintable();
 
-            case 5:
+            case TABLE_DATA_TAB_INDEX:
                 return new TablePrinter(tableDataPanel.getTable(),
                         bundleString("data-table") + table.getName());
 
-            case 7:
+            case TABLE_METADATA_INDEX:
                 return new TablePrinter(metaDataPanel.getTable(),
                         bundleString("metadata-table") + table.getName());
 
@@ -658,17 +708,20 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private void tabIndexSelected(int index) {
 
         switch (index) {
-            case 2:
+            case TABLE_INDEXES_INDEX:
                 loadIndexes();
                 break;
-            case 4:
+            case TABLE_TRIGGERS_INDEX:
+                loadTriggers();
+                break;
+            case TABLE_REFERENCES_INDEX:
                 loadReferences();
                 break;
-            case 5:
+            case TABLE_DATA_TAB_INDEX:
                 if (!tableDataPanel.isLoaded())
                     tableDataPanel.loadDataForTable(table);
                 break;
-            case 6:
+            case TABLE_SQL_INDEX:
                 try {
                     // check for any table defn changes
                     // and update the alter text pane
@@ -688,7 +741,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
 
                 break;
-            case 7:
+            case TABLE_METADATA_INDEX:
                 loadTableMetaData();
                 break;
         }
@@ -841,6 +894,29 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     }
 
+    private void loadTriggers() {
+        try {
+            // reset the data
+            tttm.setTriggersData(table.getTriggers());
+
+            // reset the view properties
+            columnIndexTable.setCellSelectionEnabled(true);
+            /*TableColumnModel tcm = columnIndexTable.getColumnModel();
+            tcm.getColumn(0).setPreferredWidth(25);
+            tcm.getColumn(0).setMaxWidth(25);
+            tcm.getColumn(0).setMinWidth(25);
+            tcm.getColumn(0).setCellRenderer(new KeyCellRenderer());
+            tcm.getColumn(1).setPreferredWidth(130);
+            tcm.getColumn(2).setPreferredWidth(130);
+            tcm.getColumn(3).setPreferredWidth(130);
+            tcm.getColumn(4).setPreferredWidth(90);*/
+
+        } catch (DataSourceException e) {
+            controller.handleException(e);
+            tttm.setTriggersData(null);
+        }
+
+    }
 
 
     private DatabaseTable table;
@@ -1063,19 +1139,31 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         int tabIndex = tabPane.getSelectedIndex();
 
-        if (tabIndex == 0) {
+        if (tabIndex == TABLE_COLUMNS_INDEX) {
 
             descriptionTable.deleteSelectedColumn();
 
-        } else if (tabIndex == 1) {
+        } else if (tabIndex == TABLE_CONSTRAINTS_INDEX) {
 
             constraintsTable.deleteSelectedConstraint();
-        } else if (tabIndex == 2) {
+        } else if (tabIndex == TABLE_INDEXES_INDEX) {
             int row = columnIndexTable.getSelectedRow();
             if (row >= 0) {
                 row = ((TableSorter) columnIndexTable.getModel()).modelIndex(row);
                 DefaultDatabaseIndex index = ((TableColumnIndexTableModel) ((TableSorter) columnIndexTable.getModel()).getTableModel()).getIndexes().get(row);
-                String query = "DROP INDEX " + index.getName();
+                String query = "DROP INDEX " + MiscUtils.getFormattedObject(index.getName());
+                ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, table.getHost().getDatabaseConnection(), true);
+                eqd.display();
+                if (eqd.getCommit())
+                    table.reset();
+                setValues(table);
+            }
+        } else if (tabIndex == TABLE_TRIGGERS_INDEX) {
+            int row = triggersTable.getSelectedRow();
+            if (row >= 0) {
+                row = ((TableSorter) triggersTable.getModel()).modelIndex(row);
+                DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
+                String query = "DROP TRIGGER " + MiscUtils.getFormattedObject(trigger.getName());
                 ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, table.getHost().getDatabaseConnection(), true);
                 eqd.display();
                 if (eqd.getCommit())
@@ -1095,18 +1183,19 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         int tabIndex = tabPane.getSelectedIndex();
         JPanel panelForDialog = null;
         BaseDialog dialog = null;
-        if (tabIndex == 0) {
+        if (tabIndex == TABLE_COLUMNS_INDEX) {
             dialog = new BaseDialog(InsertColumnPanel.CREATE_TITLE, true);
             panelForDialog = new InsertColumnPanel(table, dialog);
-        } else if (tabIndex == 1) {
+        } else if (tabIndex == TABLE_CONSTRAINTS_INDEX) {
             dialog = new BaseDialog(EditConstraintPanel.CREATE_TITLE, true);
             panelForDialog = new EditConstraintPanel(table, dialog);
-        } else if (tabIndex == 2) {
+        } else if (tabIndex == TABLE_INDEXES_INDEX) {
             dialog = new BaseDialog(CreateIndexPanel.CREATE_TITLE, true);
             panelForDialog = new CreateIndexPanel(table.getHost().getDatabaseConnection(), dialog, table.getName());
-
+        } else if (tabIndex == TABLE_TRIGGERS_INDEX) {
+            dialog = new BaseDialog(CreateIndexPanel.CREATE_TITLE, true);
+            panelForDialog = new CreateTriggerPanel(table.getHost().getDatabaseConnection(), dialog, DefaultDatabaseTrigger.TABLE_TRIGGER, table.getName());
         }
-
         dialog.addDisplayComponent(panelForDialog);
         dialog.display();
         table.reset();
@@ -1351,6 +1440,34 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingIndexesPanel.add(bar, gbc3);
+    }
+
+    private void createButtonsEditingTriggersPanel() {
+        buttonsEditingTriggersPanel = new JPanel(new GridBagLayout());
+        PanelToolBar bar = new PanelToolBar();
+        RolloverButton addRolloverButton = new RolloverButton();
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
+        addRolloverButton.setToolTipText("Create Trigger");
+        addRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                insertAfter();
+            }
+        });
+        bar.add(addRolloverButton);
+        RolloverButton deleteRolloverButton = new RolloverButton();
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
+        deleteRolloverButton.setToolTipText("Delete Trigger");
+        deleteRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                deleteRow();
+            }
+        });
+        bar.add(deleteRolloverButton);
+        GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
+                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
+        buttonsEditingTriggersPanel.add(bar, gbc3);
     }
 
 

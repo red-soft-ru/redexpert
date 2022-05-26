@@ -339,7 +339,10 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         int _type = getTypeInt();
         return _type == Types.DATE ||
                 _type == Types.TIME ||
-                _type == Types.TIMESTAMP;
+                _type == Types.TIME_WITH_TIMEZONE ||
+                _type == Types.TIMESTAMP ||
+                _type == Types.TIMESTAMP_WITH_TIMEZONE
+                ;
     }
 
     /**
@@ -394,7 +397,8 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
                         _type == Types.LONGVARBINARY ||
                         _type == Types.BLOB)) {
 
-            if (getColumnSize() > 0 && !isDateDataType() && !isNonPrecisionType()) {
+            if (getColumnSize() > 0 && !typeName.contains("" + getColumnSize())
+                    && !isDateDataType() && !isNonPrecisionType()) {
 
                 buffer.append("(");
                 buffer.append(getColumnSize());

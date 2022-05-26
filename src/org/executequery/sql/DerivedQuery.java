@@ -148,6 +148,7 @@ public final class DerivedQuery {
 
     int type = -1;
     private String metaName;
+    private String objectName;
 
     private void deriveTables() {
 
@@ -174,18 +175,37 @@ public final class DerivedQuery {
         return metaName;
     }
 
+    private int indexSpace(String str) {
+        int res = str.indexOf(" ");
+        int ind = str.indexOf("\t");
+        if (res == -1 || (ind != -1 && ind < res))
+            res = ind;
+        if (res == -1)
+            res = str.length();
+        return res;
+    }
+
     private void setTypeObject(String query, String firstOperator) {
         query = query.substring(firstOperator.length()).trim();
-        int ind = query.indexOf(" ");
-        if (ind == -1)
-            ind = query.length();
+        int ind = indexSpace(query);
         metaName = query.substring(0, ind);
+        query = query.substring(metaName.length()).trim();
+        metaName = metaName.trim();
         for (int i = 0; i < NamedObject.META_TYPES.length; i++)
             if (metaName.equals(NamedObject.META_TYPES[i])) {
                 typeObject = i;
                 break;
             }
+        ind = indexSpace(query);
+        objectName = query.substring(0, ind);
+        objectName = objectName.trim();
+        if (objectName.startsWith("\"")) {
+            objectName = objectName.substring(0, objectName.length() - 2);
+        }
+    }
 
+    public String getObjectName() {
+        return objectName;
     }
 
     public int getQueryType() {

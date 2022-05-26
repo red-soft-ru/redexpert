@@ -300,9 +300,25 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                                             executor.getConnection().commit();
                                         }
                                         progressBar.setValue(i);
-                                        for (int g = 0; g < selectedFields.size(); g++) {
-                                            Object param = selectedFields.get(g).getMethodGeneratorPanel().getTestDataObject();
-                                            statement.setObject(g + 1, param);
+                                        try {
+                                            for (int g = 0; g < selectedFields.size(); g++) {
+                                                Object param = selectedFields.get(g).getMethodGeneratorPanel().getTestDataObject();
+                                                statement.setObject(g + 1, param);
+                                            }
+                                        } catch (SQLException e) {
+                                            String message = sql;
+                                            if (outlog) {
+                                                String errorMessage = e.getMessage();
+                                                if (!lastError) {
+                                                    if (!errorMessage.contentEquals(lastMessage)) {
+                                                        message += errorMessage;
+                                                        lastMessage = message;
+                                                        logPanel.appendError(message);
+                                                    }
+                                                    logPanel.appendError("failed from " + i);
+                                                    lastError = true;
+                                                }
+                                            }
                                         }
                                         SqlStatementResult result = executor.execute(QueryTypes.INSERT, statement);
                                         String message = sql;// + params;

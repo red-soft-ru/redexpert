@@ -7,7 +7,7 @@ public class PrintPlanCommand extends AbstractQueryEditorCommand {
 
         if (isQueryEditorTheCentralPanel()) {
 
-            queryEditor().printExecutedPlan();
+            queryEditor().printExecutedPlan(false);
         }
 
     }

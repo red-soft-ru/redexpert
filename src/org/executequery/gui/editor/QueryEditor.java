@@ -447,6 +447,12 @@ public class QueryEditor extends DefaultTabView
         statusBar.setInsertionMode("INS");
     }
 
+    public void changeOrientationSplit() {
+        if (splitPane.getOrientation() == JSplitPane.VERTICAL_SPLIT)
+            splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+        else splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+    }
+
     private JTextField createResultSetFilterTextField() {
 
         filterTextField = new DefaultTextField();
@@ -1272,7 +1278,7 @@ public class QueryEditor extends DefaultTabView
         delegate.executeScript(getSelectedConnection(), script);
     }
 
-    public void printExecutedPlan() {
+    public void printExecutedPlan(boolean explained) {
 
         preExecute();
 
@@ -1280,7 +1286,7 @@ public class QueryEditor extends DefaultTabView
 
         editorPanel.resetExecutingLine();
 
-        delegate.printExecutedPlan(getSelectedConnection(), query);
+        delegate.printExecutedPlan(getSelectedConnection(), query, explained);
     }
 
     public void executeSQLAtCursor() {

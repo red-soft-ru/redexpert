@@ -38,6 +38,9 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.LocalTime;
+import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -753,6 +756,62 @@ public final class MiscUtils {
         }
         return "";
     }
+
+    public static OffsetTime convertToOffsetTime(String time_string) {
+        OffsetTime offsetTime;
+        int hours = firstIntegerValue(time_string);
+        time_string = withoutFirstIntegerValueAndNextSymbol(time_string);
+        int minutes = firstIntegerValue(time_string);
+        time_string = withoutFirstIntegerValueAndNextSymbol(time_string);
+        int seconds = firstIntegerValue(time_string);
+        time_string = withoutFirstIntegerValueAndNextSymbol(time_string);
+        int nanos = firstIntegerValue(time_string);
+        time_string = withoutFirstIntegerValue(time_string);
+        time_string = convertToZoneOffsetFormat(time_string);
+        ZoneOffset zoneOffset = ZoneOffset.of(time_string);
+        offsetTime = OffsetTime.of(LocalTime.of(hours, minutes, seconds, nanos), zoneOffset);
+        /*if(!time_string.isEmpty())
+            localTime=LocalTime.*/
+        return offsetTime;
+    }
+
+    public static String convertToZoneOffsetFormat(String source_str) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(source_str.charAt(0));
+        source_str = source_str.substring(1);
+        String hh = firstIntegerValueToString(source_str);
+        if (hh.length() == 1)
+            hh = "0" + hh;
+        sb.append(hh).append(":");
+        source_str = withoutFirstIntegerValueAndNextSymbol(source_str);
+        if (source_str.length() == 1)
+            source_str = "0" + source_str;
+        sb.append(source_str);
+        return sb.toString();
+
+
+    }
+
+    public static String firstIntegerValueToString(String source_str) {
+        source_str = source_str.replaceFirst("[^(\\d)]", "q");
+        String firstIntStr = source_str.substring(0, source_str.indexOf('q'));
+        return firstIntStr;
+    }
+
+    public static int firstIntegerValue(String source_str) {
+        return Integer.parseInt(firstIntegerValueToString(source_str));
+    }
+
+    public static String withoutFirstIntegerValueAndNextSymbol(String source_str) {
+        source_str = source_str.replaceFirst("[^(\\d)]", "q");
+        return source_str.substring(source_str.indexOf('q') + 1);
+    }
+
+    public static String withoutFirstIntegerValue(String source_str) {
+        source_str = source_str.replaceFirst("[(\\d)]*", "");
+        return source_str;
+    }
+
 
 }
 

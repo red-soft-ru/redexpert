@@ -33,37 +33,6 @@ public class RecordDataItemFactory {
     public RecordDataItem create(String name, int dataType, String dataTypeName) {
 
         switch (dataType) {
-/*
-    		case Types.LONGNVARCHAR:
-    		case Types.NCHAR:
-    		case Types.NVARCHAR:
-    		case Types.ROWID:
-    		case Types.BIT:
-    		case Types.TINYINT:
-    		case Types.BIGINT:
-    		case Types.NULL:
-    		case Types.CHAR:
-    		case Types.NUMERIC:
-    		case Types.DECIMAL:
-    		case Types.INTEGER:
-    		case Types.SMALLINT:
-    		case Types.FLOAT:
-    		case Types.REAL:
-    		case Types.DOUBLE:
-    		case Types.VARCHAR:
-    		case Types.BOOLEAN:
-    		case Types.DATALINK:
-    		case Types.OTHER:
-    		case Types.JAVA_OBJECT:
-    		case Types.DISTINCT:
-    		case Types.STRUCT:
-    		case Types.ARRAY:
-    		case Types.REF:
-    		case Types.SQLXML:
-    		case Types.NCLOB:
-    		    return new SimpleRecordDataItem(name, dataType, dataTypeName);
-*/
-
             case Types.LONGVARCHAR:
             case Types.CLOB:
                 return new ClobRecordDataItem(name, dataType, dataTypeName);
@@ -75,8 +44,9 @@ public class RecordDataItemFactory {
                 return new BlobRecordDataItem(name, dataType, dataTypeName);
 
             case Types.DATE:
-            case Types.TIME:
+            //case Types.TIME:
             case Types.TIMESTAMP:
+                //case Types.TIME_WITH_TIMEZONE:
                 return new DateRecordDataItem(name, dataType, dataTypeName);
 
             case Types.ARRAY:

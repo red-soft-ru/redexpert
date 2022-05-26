@@ -31,7 +31,7 @@ public class DateRecordDataItem extends SimpleRecordDataItem {
     public void setValue(Object value) {
 
         Object dateValue = value;
-        if (value != null) {
+        if (value instanceof String) {
 
             dateValue = valueAsType(value);
         }

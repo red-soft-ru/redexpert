@@ -17,4 +17,8 @@ public interface IFBDatabasePerformance {
     String getLastExecutedPlan(ResultSet rs) throws SQLException;
 
     String getLastExecutedPlan(Statement st) throws SQLException;
+
+    String getLastExplainExecutedPlan(ResultSet rs) throws SQLException;
+
+    String getLastExplainExecutedPlan(Statement st) throws SQLException;
 }

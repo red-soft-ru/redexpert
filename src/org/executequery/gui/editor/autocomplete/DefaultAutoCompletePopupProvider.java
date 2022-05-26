@@ -421,15 +421,15 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         if (!noProposals && caretCoords != null && caret.getDot() > 0) {
             QueryEditorAutoCompletePopupPanel popupPanel = popupMenu();
             Container parent = textComponent.getParent();
-            caretCoords.y += heightFont;
+
+            int popupHeight = popupPanel.getHeight();
+            if (popupHeight != 0 && caretCoords.y + popupHeight > parent.getHeight()) {
+                caretCoords.y = caretCoords.y - popupHeight;
+            } else caretCoords.y += heightFont;
             if (caretCoords.x + popupPanel.getWidth() > parent.getWidth())
                 caretCoords.x = parent.getWidth() - popupPanel.getWidth();
             if (caretCoords.x < 0)
                 caretCoords.x = 0;
-            if (popupPanel.getHeight() != 0 && caretCoords.y + popupPanel.getHeight() > parent.getHeight()) {
-                int height = parent.getHeight() - caretCoords.y;
-                popupPanel.setPreferredSize(new Dimension(popupPanel.getWidth(), height));
-            }
             boolean restart = popupPanel.getWidth() == 0;
             popupPanel.focusAndSelectList();
             popupPanel.show(textComponent, caretCoords.x, caretCoords.y);

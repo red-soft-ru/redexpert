@@ -111,6 +111,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         {
             // remove first empty row
             try {
+                inputParametersPanel.clearRows();
                 List<FunctionArgument> parameters = function.getFunctionArguments();
                 if (parameters.size() > 1)
                     inputParametersPanel.deleteEmptyRow();
@@ -172,6 +173,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         }
 
     }
+
 
     @Override
     protected String getEmptySqlBody() {

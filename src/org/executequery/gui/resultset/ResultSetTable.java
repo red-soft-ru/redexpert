@@ -39,8 +39,10 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
@@ -65,7 +67,7 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     private ResultSetTableCellRenderer cellRenderer;
 
-    private TableColumn dummyColumn = new TableColumn();
+    private final TableColumn dummyColumn = new TableColumn();
 
     public DefaultTableModel myTableModel = new DefaultTableModel();
 
@@ -454,9 +456,9 @@ public class ResultSetTable extends JTable implements StandardTable {
         return cellRenderer;
     }
 
-    private ArrayList<DefaultTableModel> dtm = new ArrayList<DefaultTableModel>();
-    private ArrayList<Integer> foreignIndex = new ArrayList<Integer>();
-    private ArrayList<Vector<Object>> foreignKeys = new ArrayList<Vector<Object>>();
+    private final ArrayList<DefaultTableModel> dtm = new ArrayList<DefaultTableModel>();
+    private final ArrayList<Integer> foreignIndex = new ArrayList<Integer>();
+    private final ArrayList<Vector<Object>> foreignKeys = new ArrayList<Vector<Object>>();
 
 
     public TableCellEditor getCellEditor(int row, int column) {
@@ -620,8 +622,16 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.DATE:
                 return dateEditor;
             case Types.TIMESTAMP:
+                dateTimeCellEditor.getDateTimePicker().setVisibleTimeZone(false);
                 return dateTimeCellEditor;
+            case Types.TIMESTAMP_WITH_TIMEZONE:
+                dateTimeCellEditor.getDateTimePicker().setVisibleTimeZone(true);
+                return dateTimeCellEditor;
+            case Types.TIME_WITH_TIMEZONE:
+                timeCellEditor.getPicker().setVisibleTimeZone(true);
+                return timeCellEditor;
             case Types.TIME:
+                timeCellEditor.getPicker().setVisibleTimeZone(false);
                 return timeCellEditor;
             case Types.BOOLEAN:
                 JComboBox comboBox1 = new JComboBox(new String[]{"true", "false", "null"});

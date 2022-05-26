@@ -353,7 +353,7 @@ public class QueryDispatcher {
     }
 
     public void printExecutedPlan(DatabaseConnection dc,
-                                  final String query) {
+                                  final String query, boolean explained) {
 
         if (!ConnectionManager.hasConnections()) {
 
@@ -377,7 +377,7 @@ public class QueryDispatcher {
 
         try {
             Statement statement = querySender.getPreparedStatement(query);
-            printPlan(statement);
+            printPlan(statement, explained);
         } catch (SQLException e) {
             setOutputMessage(SqlMessages.ERROR_MESSAGE, e.getMessage());
         } finally {
@@ -477,6 +477,7 @@ public class QueryDispatcher {
 
         waiting = false;
         long totalDuration = 0l;
+        querySender.setCloseConnectionAfterQuery(false);
 
         try {
 
@@ -742,11 +743,14 @@ public class QueryDispatcher {
 
                                 type = result.getType();
                                 setResultText(updateCount, query.getQueryType(), query.getMetaName());
-                                if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT) {
+                                if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT
+                                        || type == QueryTypes.CREATE_OR_ALTER || type == QueryTypes.RECREATE_OBJECT || type == QueryTypes.ALTER_OBJECT) {
                                     DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
-
                                     for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                                        if (metaTagNode.getMetaDataKey().equals(query.getMetaName()) || metaTagNode.isSystem()) {
+                                        if (metaTagNode.getMetaDataKey().equals(query.getMetaName())) {
+                                            ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+
+                                        } else if ((NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(query.getMetaName()) || NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY].contentEquals(query.getMetaName())) && metaTagNode.isSystem()) {
                                             ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
                                         }
                                     }
@@ -1052,7 +1056,8 @@ public class QueryDispatcher {
 
                                     type = result.getType();
                                     setResultText(updateCount, query.getQueryType(), query.getMetaName());
-                                    if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT) {
+                                    if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT
+                                            || type == QueryTypes.CREATE_OR_ALTER || type == QueryTypes.RECREATE_OBJECT || type == QueryTypes.ALTER_OBJECT) {
                                         createsMetaNames.add(query.getMetaName());
                                     }
                                     if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {
@@ -1392,7 +1397,7 @@ public class QueryDispatcher {
         }
     }
 
-    private void printPlan(Statement st) {
+    private void printPlan(Statement st, boolean explained) {
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
             DefaultDriverLoader driverLoader = new DefaultDriverLoader();
@@ -1430,8 +1435,11 @@ public class QueryDispatcher {
 
                 IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
                 try {
-
-                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(statement), true);
+                    String plan;
+                    if (explained)
+                        plan = db.getLastExplainExecutedPlan(statement);
+                    else plan = db.getLastExecutedPlan(statement);
+                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, plan, true);
 
                 } catch (SQLException e) {
                     e.printStackTrace();

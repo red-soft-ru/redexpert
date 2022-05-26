@@ -1,10 +1,10 @@
 package org.executequery.gui.browser;
 
 import org.executequery.databaseobjects.impl.DefaultDatabaseTablespace;
-import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.depend.DependPanel;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -38,23 +38,33 @@ public class BrowserTablespacePanel extends AbstractFormObjectViewPanel {
                 GridBagConstraints.NORTHWEST,
                 GridBagConstraints.HORIZONTAL,
                 new Insets(2, 2, 2, 2), 0, 0));
+        gbh.defaults();
         gbh.insertEmptyRow(this, 5);
-        add(editButton, gbh.get());
+        add(editButton, gbh.setLabelDefault().get());
         gbh.nextRowFirstCol();
         gbh.addLabelFieldPair(this, Bundles.getCommon("name"), new DisabledField(tablespace.getName()), null);
-        gbh.insertEmptyRow(this, 20);
-        DefaultTableModel model = new DefaultTableModel();
-        model.setColumnIdentifiers(DefaultDatabaseTablespace.COLUMNS);
-        DefaultTable table = new DefaultTable(model);
-        model.addRow(tablespace.getAttributes());
-        //JScrollPane scroll = new JScrollPane(table);
-        add(table.getTableHeader(), gbh.nextRowFirstCol().fillHorizontally().setMaxWeightX().spanX().setMinWeightY().get());
-        add(table, gbh.nextRowFirstCol().fillHorizontally().setMaxWeightX().spanX().setMinWeightY().get());
-        gbh.insertEmptyRow(this, 20);
+        gbh.addLabelFieldPair(this, Bundles.getCommon("file"), new DisabledField(tablespace.getFileName()), null);
+        gbh.nextRowFirstCol();
+        JCheckBox offlineBox = new JCheckBox("Offline");
+        offlineBox.setSelected(Boolean.parseBoolean(tablespace.getAttribute(DefaultDatabaseTablespace.OFFLINE).trim()));
+        offlineBox.setEnabled(false);
+        add(offlineBox, gbh.setLabelDefault().get());
+        JCheckBox readOnlyBox = new JCheckBox("Read-only");
+        readOnlyBox.setSelected(Boolean.parseBoolean(tablespace.getAttribute(DefaultDatabaseTablespace.READ_ONLY).trim()));
+        readOnlyBox.setEnabled(false);
+        add(readOnlyBox, gbh.nextCol().setLabelDefault().get());
+        JTabbedPane tabPane = new JTabbedPane();
         DependPanel tablesIndexesPanel = new DependPanel(TreePanel.TABLESPACE);
         tablesIndexesPanel.setDatabaseObject(tablespace);
         tablesIndexesPanel.setDatabaseConnection(tablespace.getHost().getDatabaseConnection());
-        add(new JScrollPane(tablesIndexesPanel), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        tabPane.add(Bundles.getCommon("contents"), new JScrollPane(tablesIndexesPanel));
+        SimpleSqlTextPanel descPanel = new SimpleSqlTextPanel();
+        descPanel.setSQLText(tablespace.getRemarks());
+        tabPane.add(Bundles.getCommon("description"), descPanel);
+        SimpleSqlTextPanel sqlPanel = new SimpleSqlTextPanel();
+        sqlPanel.setSQLText(tablespace.getCreateSQLText());
+        tabPane.add(Bundles.getCommon("SQL"), sqlPanel);
+        add(tabPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
     }
 

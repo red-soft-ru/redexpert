@@ -451,7 +451,7 @@ public class SchemaTree extends DynamicTree
                 }
 
                 DefaultMutableTreeNode[] nodes = copies.toArray(new DefaultMutableTreeNode[copies.size()]);
-                nodesToRemove = toRemove.toArray(new DefaultMutableTreeNode[toRemove.size()]);
+                //nodesToRemove = toRemove.toArray(new DefaultMutableTreeNode[toRemove.size()]);
 
                 return new NodesTransferable(nodes);
             }
@@ -487,10 +487,11 @@ public class SchemaTree extends DynamicTree
                 DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 
                 // Remove nodes saved in nodesToRemove in createTransferable.
-                for (int i = 0; i < nodesToRemove.length; i++) {
+                if (nodesToRemove != null)
+                    for (int i = 0; i < nodesToRemove.length; i++) {
 
-                    model.removeNodeFromParent(nodesToRemove[i]);
-                }
+                        model.removeNodeFromParent(nodesToRemove[i]);
+                    }
 
                 panel.rebuildConnectionsFromTree();
                 panel.repaint();

@@ -1218,7 +1218,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
       StringBuilder sb = new StringBuilder();
       sb.append("INSERT INTO ");
-      sb.append(getNameForQuery());
+      sb.append(MiscUtils.getFormattedObject(getName().trim()));
       sb.append(" (");
 
       String indent = getSpacesForLength(sb.length());
@@ -1270,7 +1270,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     try {
       StringBuilder sb = new StringBuilder();
       sb.append("UPDATE ");
-      sb.append(getNameForQuery());
+      sb.append(MiscUtils.getFormattedObject(getName().trim()));
 
       String setString = "SET ";
       sb.append("\n");
@@ -1334,7 +1334,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       }
 
       sb.append("\nFROM ");
-      sb.append(getNameForQuery());
+      sb.append(MiscUtils.getFormattedObject(getName().trim()));
       sb.append(";\n");
 
       return getFormatter().format(sb.toString());

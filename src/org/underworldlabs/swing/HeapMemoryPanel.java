@@ -67,8 +67,8 @@ public class HeapMemoryPanel extends JPanel
     private void jbInit() {
         JPanel base = new JPanel(new GridBagLayout());
 
-        JLabel line1 = new JLabel("Measures the size of the");
-        JLabel line2 = new JLabel("Java Virtual Machine\'s object heap.");
+        JLabel line1 = new JLabel("Измерение используемой памяти");
+        JLabel line2 = new JLabel("виртуальной машиной Java в реальном времени.");
 
         progressBarModel = new ProgressModel();
         progressBar = new JProgressBar(progressBarModel);
@@ -79,7 +79,7 @@ public class HeapMemoryPanel extends JPanel
         progressBarPanel.add(progressBar, BorderLayout.CENTER);
         progressBarPanel.setBorder(UIUtils.getDefaultLineBorder());
 
-        JButton gcButton = new JButton("Run Garbage Collector");
+        JButton gcButton = new JButton("Запуск сборщика мусора");
         gcButton.addActionListener(this);
 
         base.setBorder(BorderFactory.createEtchedBorder());
@@ -130,7 +130,7 @@ public class HeapMemoryPanel extends JPanel
         free = (int) Runtime.getRuntime().freeMemory();
         int totalUserAfter = total - free;
 
-        System.err.println("Garbage collection released " +
+        System.err.println("Сборка мусора завершена, очищено " +
                 ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
     }
 
@@ -159,8 +159,8 @@ public class HeapMemoryPanel extends JPanel
     private void startMeasure(final ProgressModel progModel,
                               final JProgressBar memProgress) {
         memProgress.setStringPainted(true);
-        final String used_s = " Kb used,  ";
-        final String total_s = " Kb total";
+        final String used_s = " Kb использовано,  ";
+        final String total_s = " Kb всего";
         final int thou = 1000;
 
         final Runnable showProgress = new Runnable() {
@@ -224,10 +224,3 @@ public class HeapMemoryPanel extends JPanel
     } // ProgressModel
 
 }
-
-
-
-
-
-
-

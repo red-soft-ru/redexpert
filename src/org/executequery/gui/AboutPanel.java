@@ -48,7 +48,7 @@ public class AboutPanel extends BaseDialog
         implements ActiveComponent,
         ActionListener {
 
-    public static final String TITLE = "About";
+    public static final String TITLE = "О программе";
     public static final String FRAME_ICON = "Information16.png";
 
     private JTabbedPane tabPane;
@@ -65,11 +65,11 @@ public class AboutPanel extends BaseDialog
     private void init() {
 
         tabPane = new JTabbedPane();
-        tabPane.add("Copyright", copyright());
-        tabPane.add("System", systemDetails());
-        tabPane.add("Resources", systemResources());
-        tabPane.add("License", license());
-        //tabPane.add("Credits", credits());
+        tabPane.add("Авторские права", copyright());
+        tabPane.add("Система", systemDetails());
+        tabPane.add("Ресурсы", systemResources());
+        tabPane.add("Лицензия", license());
+        //tabPane.add("Разработчики", credits());
 
 
         imagePanel = new AboutImagePanel();
@@ -88,11 +88,11 @@ public class AboutPanel extends BaseDialog
     private Component copyright() {
         JPanel base = new JPanel(new GridBagLayout());
 
-        String versionText = "Version " +
+        String versionText = "Версия продукта " +
                 System.getProperty("executequery.minor.version") +
                 ". Red Soft 2015-" + Calendar.getInstance().get(Calendar.YEAR) + ". http://www.red-soft.ru";
 
-        String forkText = "Fork of Execute Query: http://executequery.org";
+        String forkText = "Ветка исполнительного запроса: http://executequery.org";
         base.setBorder(BorderFactory.createEtchedBorder());
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -202,13 +202,13 @@ public class AboutPanel extends BaseDialog
 
             if (Log.isDebugEnabled()) {
 
-                Log.debug("Error loading license panel text", e);
+                Log.debug("Ошибка при загрузке текста панели лицензии", e);
             }
 
         }
 
         JButton button = new JButton(ActionBuilder.get("license-command"));
-        button.setText("View License");
+        button.setText("Просмотреть лицензию");
         button.setIcon(null);
 
         base.setBorder(BorderFactory.createEtchedBorder());
@@ -517,10 +517,3 @@ public class AboutPanel extends BaseDialog
     } // class AboutImagePanel
 
 }
-
-
-
-
-
-
-

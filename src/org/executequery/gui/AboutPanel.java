@@ -48,7 +48,7 @@ public class AboutPanel extends BaseDialog
         implements ActiveComponent,
         ActionListener {
 
-    public static final String TITLE = "О программе";
+    public static final String TITLE = bundledString("Title");
     public static final String FRAME_ICON = "Information16.png";
 
     private JTabbedPane tabPane;
@@ -65,11 +65,11 @@ public class AboutPanel extends BaseDialog
     private void init() {
 
         tabPane = new JTabbedPane();
-        tabPane.add("Авторские права", copyright());
-        tabPane.add("Система", systemDetails());
-        tabPane.add("Ресурсы", systemResources());
-        tabPane.add("Лицензия", license());
-        //tabPane.add("Разработчики", credits());
+        tabPane.add(bundledString("Copyright"), copyright());
+        tabPane.add(bundledString("System"), systemDetails());
+        tabPane.add(bundledString("Resources"), systemResources());
+        tabPane.add(bundledString("License"), license());
+        //tabPane.add("Credits", credits());
 
 
         imagePanel = new AboutImagePanel();
@@ -88,11 +88,11 @@ public class AboutPanel extends BaseDialog
     private Component copyright() {
         JPanel base = new JPanel(new GridBagLayout());
 
-        String versionText = "Версия продукта " +
+        String versionText = bundledString("Version") + " " +
                 System.getProperty("executequery.minor.version") +
                 ". Red Soft 2015-" + Calendar.getInstance().get(Calendar.YEAR) + ". http://www.red-soft.ru";
 
-        String forkText = "Ветка исполнительного запроса: http://executequery.org";
+        String forkText = bundledString("Fork_of_execute_query") + ": http://executequery.org";
         base.setBorder(BorderFactory.createEtchedBorder());
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -202,13 +202,13 @@ public class AboutPanel extends BaseDialog
 
             if (Log.isDebugEnabled()) {
 
-                Log.debug("Ошибка при загрузке текста панели лицензии", e);
+                Log.debug(bundledString("Error_loading_license_panel_text"), e);
             }
 
         }
 
         JButton button = new JButton(ActionBuilder.get("license-command"));
-        button.setText("Просмотреть лицензию");
+        button.setText(bundledString("ViewLicense"));
         button.setIcon(null);
 
         base.setBorder(BorderFactory.createEtchedBorder());
@@ -516,4 +516,15 @@ public class AboutPanel extends BaseDialog
 
     } // class AboutImagePanel
 
+    public static String bundledString(String key) {
+        return Bundles.get(AboutPanel.class, key);
+    }
+
 }
+
+
+
+
+
+
+

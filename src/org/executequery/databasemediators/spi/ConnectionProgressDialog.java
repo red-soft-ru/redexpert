@@ -110,7 +110,7 @@ public class ConnectionProgressDialog extends JDialog
 
     public void updateLabel(String name) {
 
-        connectionNameLabel.setText("Establishing connection to " + name);
+        connectionNameLabel.setText(Bundles.get("ConnectionProgressDialog.connectionLabel") + name);
         Runnable update = new Runnable() {
             public void run() {
                 Dimension dim = connectionNameLabel.getSize();
@@ -122,7 +122,7 @@ public class ConnectionProgressDialog extends JDialog
 
     public void actionPerformed(ActionEvent e) {
 
-        Log.info("Connection cancelled");
+        Log.info(Bundles.get("GrantManagerPanel.connection-canceled"));
 
         connectonBuilder.cancel();
         dispose();

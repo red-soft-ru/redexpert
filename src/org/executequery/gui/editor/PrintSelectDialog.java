@@ -44,7 +44,8 @@ public class PrintSelectDialog extends JPanel {
 
     public static final String PRINT_TITLE = "Print";
 
-    public static final String PRINT_PREVIEW_TITLE = "Print Preview";
+    //public static final String PRINT_PREVIEW_TITLE = "Print Preview";
+    public static final String PRINT_PREVIEW_TITLE = Bundles.get("action.print-preview-command");
 
     /**
      * Indicates a call to print

@@ -109,7 +109,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                 try {
                     checkFromReleaseHub(unstable);
                 } catch (IOException e) {
-                    Log.warning(String.format("Cannot check for updates: %s", e.getMessage()));
+                    Log.warning(String.format(Bundles.get("action.console-CannotCheckForUpdates") + ": %s", e.getMessage()));
                 } catch (Exception e) {
                     checkFromReddatabase(unstable);
                 }
@@ -124,7 +124,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     private void checkFromReddatabase(boolean unstable) {
         try {
             updateLoader = new UpdateLoader("");
-            Log.info("Checking for new version update from https://reddatabase.ru ...");
+            Log.info(Bundles.get("action.console-CheckingForNewVersion") + "https://reddatabase.ru ...");
             String url;
             if (unstable)
                 url = UserProperties.getInstance().getStringProperty("reddatabase.check.rc.url");
@@ -139,11 +139,11 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             } else {
 
-                Log.info("Red Expert is up to date.");
+                Log.info(Bundles.get("CheckForUpdateNotifier.RedEpertUpToDate"));
             }
 
         } catch (ApplicationException e) {
-            Log.warning("Error checking for update: " + e.getMessage());
+            Log.warning(Bundles.get("action.console-ErrorCheckingForUpdate") + ": " + e.getMessage());
         } catch (UnknownHostException e) {
             if (progressDialog != null) {
                 GUIUtilities.displayExceptionErrorDialog(bundledString("noInternetMessage"), e);
@@ -176,12 +176,12 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         } else {
 
-            Log.info("Red Expert is up to date.");
+            Log.info(Bundles.get("action.console-RedExpertUpToDate"));
         }
     }
 
     private void checkFromRepo(String repo) {
-        Log.info("Checking for new version update from " + repo + " ...");
+        Log.info(Bundles.get("CheckForUpdateNotifier.Checking ") + repo + " ...");
 
         // updating from repository to latest version
         updateLoader = new UpdateLoader(repo);
@@ -190,7 +190,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             setDownloadNotifierInStatusBar();
         } else {
             if (updateLoader.getVersion() != null)
-                Log.info("Red Expert is up to date.");
+                Log.info(Bundles.get("action.console-RedExpertUpToDate"));
         }
     }
 
@@ -198,7 +198,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         JLabel label = getUpdateNotificationLabel();
 
         JButton button = new DefaultButton();
-        button.setText("Download update");
+        button.setText(Bundles.get("action.console-DownloadUpdate"));
         button.setSize(200, 20);
 
         label.addMouseListener(new DownloadNotificationLabelMouseAdapter());
@@ -206,7 +206,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         label.setToolTipText(newVersionAvailableText());
 
         statusBar().setThirdLabelText(bundledString("updateAvailable"));
-        Log.info("The application needs to be updated");
+        Log.info(Bundles.get("action.console-ApplicationNeedsUpdate"));
     }
 
     void displayDialogDownload(MouseListener listener) {
@@ -227,7 +227,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                         return Constants.WORKER_CANCEL;
                     }
 
-                    String version = "version=" + updateLoader.getVersion();
+                    String version = Bundles.get("common.Version") + "=" + updateLoader.getVersion();
                     argsList.add(version);
                     ApplicationContext instance = ApplicationContext.getInstance();
                     String repo = "";
@@ -390,7 +390,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             } else {
 
-                Log.info("Red Expert is up to date.");
+                Log.info(Bundles.get("action.console-RedExpertUpToDate"));
 
                 if (monitorProgress) {
 

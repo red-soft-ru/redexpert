@@ -23,6 +23,7 @@ package org.executequery.components;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -71,7 +72,7 @@ public class FileChooserDialog extends JFileChooser {
         }
 
         if (file.exists()) {
-            int _result = GUIUtilities.displayConfirmCancelDialog("Overwrite existing file?");
+            int _result = GUIUtilities.displayConfirmCancelDialog(Bundles.get("action.new-command.overwrite-file"));
 
             if (_result == JOptionPane.CANCEL_OPTION) {
                 return CANCEL_OPTION;

@@ -26,6 +26,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ExecuteQueryFrame;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -357,16 +358,16 @@ public class ApplicationLauncher {
 
     private void printVersionInfo() {
 
-        Log.info("Using Java version " +
-                System.getProperty("java.version"));
-        Log.info("Red Expert version: " +
+        Log.info(Bundles.get("action.console-UsingJavaVersion") +
+                System.getProperty(Bundles.get("action.console-JavaVersion")));
+        Log.info(Bundles.get("action.console-RedExpertVersion") + ": " +
                 System.getProperty("executequery.minor.version") +
                 "-" + System.getProperty("executequery.build"));
-        Log.info("Operating System: " +
+        Log.info(Bundles.get("action.console-OSVersion") + ": " +
                 System.getProperty("os.name") +
                 " [ " + System.getProperty("os.version") + " ]");
 
-        Log.info("System is ready.");
+        Log.info(Bundles.get("action.console-SystemReady"));
     }
 
     private void advanceSplash(SplashPanel splash) {

@@ -48,7 +48,8 @@ public class AboutPanel extends BaseDialog
         implements ActiveComponent,
         ActionListener {
 
-    public static final String TITLE = "About";
+    //public static final String TITLE = "About";
+    public static final String TITLE = Bundles.get("action.about-command");
     public static final String FRAME_ICON = "Information16.png";
 
     private JTabbedPane tabPane;
@@ -65,10 +66,14 @@ public class AboutPanel extends BaseDialog
     private void init() {
 
         tabPane = new JTabbedPane();
-        tabPane.add("Copyright", copyright());
-        tabPane.add("System", systemDetails());
-        tabPane.add("Resources", systemResources());
-        tabPane.add("License", license());
+        //tabPane.add("Copyright", copyright());
+        //tabPane.add("System", systemDetails());
+        //tabPane.add("Resources", systemResources());
+        //tabPane.add("License", license());
+        tabPane.add(Bundles.get("common.Copyright"), copyright());
+        tabPane.add(Bundles.get("common.System"), systemDetails());
+        tabPane.add(Bundles.get("common.Resources"), systemResources());
+        tabPane.add(Bundles.get("common.License"), license());
         //tabPane.add("Credits", credits());
 
 

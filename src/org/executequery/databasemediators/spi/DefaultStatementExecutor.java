@@ -248,7 +248,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
             } else {
 
-                statementResult.setMessage(Bundles.get("DefaultStatementExecutor.table.invalid-name"));
+                statementResult.setMessage(bundleString("table.invalid-name"));
             }
 
         } catch (SQLException e) {
@@ -1932,6 +1932,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
     public void setCloseConnectionAfterQuery(boolean closeConnectionAfterQuery) {
         this.closeConnectionAfterQuery = closeConnectionAfterQuery;
+    }
+
+    public String bundleString(String key) {
+        return Bundles.get(getClass(), key);
     }
 }
 

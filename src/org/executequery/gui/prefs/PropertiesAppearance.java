@@ -139,7 +139,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
 
         if (!lafChangeWarningShown && e.getStateChange() == ItemEvent.DESELECTED) {
 
-            GUIUtilities.displayInformationMessage(Bundles.get("PropertiesAppearance.ChangingTheme.Information"));
+            GUIUtilities.displayInformationMessage(bundleString("ChangingTheme.Information"));
             lafChangeWarningShown = true;
         }
         
@@ -199,6 +199,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
     public void save() {
         preferencesPanel.savePreferences();
     }
+
 
 }
 

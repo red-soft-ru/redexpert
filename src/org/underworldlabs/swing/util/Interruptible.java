@@ -20,6 +20,8 @@
 
 package org.underworldlabs.swing.util;
 
+import org.executequery.localization.Bundles;
+
 /**
  * Defines an interruptible (usually threaded) process.
  *
@@ -36,6 +38,7 @@ public interface Interruptible {
      * Indicates thatthis process should be interrupted.
      */
     public void interrupt();
+
 
 }
 

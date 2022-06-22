@@ -59,6 +59,10 @@ public class HeapMemoryStatusSnippet extends JPanel
 
     }
 
+    String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
+
     private void jbInit() throws Exception {
         ProgressModel progModel = new ProgressModel();
         memProgress = new JProgressBar(progModel);
@@ -87,7 +91,7 @@ public class HeapMemoryStatusSnippet extends JPanel
         free = (int) Runtime.getRuntime().freeMemory();
         int totalUserAfter = total - free;
 
-        Log.info(Bundles.get("HeapMemoryPanel.GarbageCollection") +
+        Log.info(bundleString("GarbageCollection") +
                 ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
     }
 

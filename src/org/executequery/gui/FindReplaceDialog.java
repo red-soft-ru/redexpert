@@ -104,24 +104,24 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
         findFieldTextEditor().addKeyListener(keyListener);
         replaceFieldTextEditor().addKeyListener(keyListener);
 
-        wholeWordsCheck = new JCheckBox(Bundles.get("FindReplaceDialog.WholeWordsCheck"));
-        matchCaseCheck = new JCheckBox(Bundles.get("FindReplaceDialog.MatchCaseCheck"));
-        wrapCheck = new JCheckBox(Bundles.get("FindReplaceDialog.WrapCheck"), true);
+        wholeWordsCheck = new JCheckBox(bundleString("WholeWordsCheck"));
+        matchCaseCheck = new JCheckBox(bundleString("MatchCaseCheck"));
+        wrapCheck = new JCheckBox(bundleString("WrapCheck"), true);
 
-        replaceCheck = ActionUtilities.createCheckBox(Bundles.get("FindReplaceDialog.Replace") + ":", "setToReplace");
+        replaceCheck = ActionUtilities.createCheckBox(bundleString("Replace") + ":", "setToReplace");
         replaceCheck.setEnabled(textEditor.getEditorTextComponent().isEditable());
-        regexCheck = ActionUtilities.createCheckBox(Bundles.get("FindReplaceDialog.RegularExpressions"), "setToRegex");
+        regexCheck = ActionUtilities.createCheckBox(bundleString("RegularExpressions"), "setToRegex");
 
-        searchUpRadio = new JRadioButton(Bundles.get("FindReplaceDialog.SearchUp"));
-        searchDownRadio = new JRadioButton(Bundles.get("FindReplaceDialog.SearchDown"), true);
+        searchUpRadio = new JRadioButton(bundleString("SearchUp"));
+        searchDownRadio = new JRadioButton(bundleString("SearchDown"), true);
 
         ButtonGroup btnGroup = new ButtonGroup();
         btnGroup.add(searchUpRadio);
         btnGroup.add(searchDownRadio);
 
-        findNextButton = new DefaultButton(Bundles.get("FindReplaceDialog.find-next-command"));
-        replaceButton = new DefaultButton(Bundles.get("FindReplaceDialog.Replace"));
-        replaceAllButton = new DefaultButton(Bundles.get("FindReplaceDialog.ReplaceAll"));
+        findNextButton = new DefaultButton(bundleString("find-next-command"));
+        replaceButton = new DefaultButton(bundleString("Replace"));
+        replaceAllButton = new DefaultButton(bundleString("ReplaceAll"));
         closeButton = ActionUtilities.createButton(Bundles.get("common.close.button"), "close");
 
         setExpandButtonsToFill(true);
@@ -167,7 +167,7 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
         gbc.insets.left = 10;
         gbc.insets.top = 13;
         gbc.insets.right = 5;
-        panel.add(new JLabel(Bundles.get("FindReplaceDialog.FindText")), gbc);
+        panel.add(new JLabel(bundleString("FindText")), gbc);
         gbc.insets.top = 10;
         gbc.insets.top = 5;
         gbc.insets.left = 5;
@@ -328,7 +328,7 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
         if (replaceCheck.isSelected() && find.compareTo(replacement) == 0) {
 
             GUIUtilities.displayErrorMessage(
-                    Bundles.get("message.FindReplaceDialog"));
+                    bundleString("message"));
 
             return false;
         }

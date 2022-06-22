@@ -358,16 +358,16 @@ public class ApplicationLauncher {
 
     private void printVersionInfo() {
 
-        Log.info(Bundles.get("ApplicationLauncher.console-UsingJavaVersion") +
-                System.getProperty(Bundles.get("ApplicationLauncher.console-JavaVersion")));
-        Log.info(Bundles.get("ApplicationLauncher.console-RedExpertVersion") + ": " +
+        Log.info(bundleString("console-UsingJavaVersion") +
+                System.getProperty(bundleString("console-JavaVersion")));
+        Log.info(bundleString("console-RedExpertVersion") + ": " +
                 System.getProperty("executequery.minor.version") +
                 "-" + System.getProperty("executequery.build"));
-        Log.info(Bundles.get("ApplicationLauncher.console-OSVersion") + ": " +
+        Log.info(bundleString("console-OSVersion") + ": " +
                 System.getProperty("os.name") +
                 " [ " + System.getProperty("os.version") + " ]");
 
-        Log.info(Bundles.get("ApplicationLauncher.console-SystemReady"));
+        Log.info(bundleString("console-SystemReady"));
     }
 
     private void advanceSplash(SplashPanel splash) {
@@ -570,7 +570,9 @@ public class ApplicationLauncher {
 
     }
 
-
+    String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
 
 }
 

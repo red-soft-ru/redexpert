@@ -65,11 +65,15 @@ public class HeapMemoryPanel extends JPanel
 
     }
 
+    String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
+
     private void jbInit() {
         JPanel base = new JPanel(new GridBagLayout());
 
-        JLabel line1 = new JLabel(Bundles.get("HeapMemoryPanel.MeasuresTheSize"));
-        JLabel line2 = new JLabel(Bundles.get("HeapMemoryPanel.JavaVirtualMachines"));
+        JLabel line1 = new JLabel(bundleString("MeasuresTheSize"));
+        JLabel line2 = new JLabel(bundleString("JavaVirtualMachines"));
 
         progressBarModel = new ProgressModel();
         progressBar = new JProgressBar(progressBarModel);
@@ -80,7 +84,7 @@ public class HeapMemoryPanel extends JPanel
         progressBarPanel.add(progressBar, BorderLayout.CENTER);
         progressBarPanel.setBorder(UIUtils.getDefaultLineBorder());
 
-        JButton gcButton = new JButton(Bundles.get("HeapMemoryPanel.RunGarbageCollector"));
+        JButton gcButton = new JButton(bundleString("RunGarbageCollector"));
         gcButton.addActionListener(this);
 
         base.setBorder(BorderFactory.createEtchedBorder());
@@ -131,7 +135,7 @@ public class HeapMemoryPanel extends JPanel
         free = (int) Runtime.getRuntime().freeMemory();
         int totalUserAfter = total - free;
 
-        System.err.println(Bundles.get("HeapMemoryPanel.GarbageCollection") +
+        System.err.println(bundleString("GarbageCollection") +
                 ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
     }
 
@@ -160,8 +164,8 @@ public class HeapMemoryPanel extends JPanel
     private void startMeasure(final ProgressModel progModel,
                               final JProgressBar memProgress) {
         memProgress.setStringPainted(true);
-        final String used_s = " Kb "+ Bundles.get("HeapMemoryPanel.used")+",  ";
-        final String total_s = " Kb "+ Bundles.get("HeapMemoryPanel.total");
+        final String used_s = " Kb "+ bundleString("used")+",  ";
+        final String total_s = " Kb "+ bundleString("total");
         final int thou = 1000;
 
         final Runnable showProgress = new Runnable() {

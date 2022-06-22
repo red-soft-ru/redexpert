@@ -641,7 +641,7 @@ public class TableSelectionCombosGroup implements ItemListener {
 
     private void handleDataSourceException(DataSourceException e) {
 
-        Log.error(Bundles.get("TableSelectionCombosGroup.error.selection-object"), e);
+        Log.error(bundleString("error.selection-object"), e);
 
         throw new ApplicationException(e);
     }
@@ -690,6 +690,9 @@ public class TableSelectionCombosGroup implements ItemListener {
 
         }
 
+    }
+    public String bundleString(String key) {
+        return Bundles.get(getClass(), key);
     }
 
 }

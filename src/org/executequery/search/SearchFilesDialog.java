@@ -115,11 +115,11 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
     }
 
     private void jbInit() throws Exception {
-        wholeWordsCheck = new JCheckBox(Bundles.get("FindReplaceDialog.WholeWordsCheck"), true);
-        matchCaseCheck = new JCheckBox(Bundles.get("FindReplaceDialog.MatchCaseCheck"));
-        searchSubdirsCheck = new JCheckBox(Bundles.get("message.SearchSubdirectories"), true);
-        replaceCheck = new JCheckBox(Bundles.get("FindReplaceDialog.Replace") + ":");
-        regexCheck = new JCheckBox(Bundles.get("FindReplaceDialog.RegularExpressions"));
+        wholeWordsCheck = new JCheckBox(bundleString("WholeWordsCheck"), true);
+        matchCaseCheck = new JCheckBox(bundleString("MatchCaseCheck"));
+        searchSubdirsCheck = new JCheckBox(bundleString("message.seachSubdirsCheck"), true);
+        replaceCheck = new JCheckBox(bundleString("Replace") + ":");
+        regexCheck = new JCheckBox(bundleString("RegularExpressions"));
 
         findTextArea = new JTextArea();
         findTextArea.setLineWrap(true);
@@ -199,9 +199,9 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
         gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.NONE;
         gbc.insets.left = 5;
-        panel.add(new JLabel(Bundles.get("SearchFilesDialog.FileTypes") + ":"), gbc);
+        panel.add(new JLabel(bundleString("FileTypes") + ":"), gbc);
         gbc.gridy = 3;
-        panel.add(new JLabel(Bundles.get("SearchFilesDialog.SearchPath") + ":"), gbc);
+        panel.add(new JLabel(bundleString("SearchPath") + ":"), gbc);
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets.left = 0;
@@ -337,6 +337,10 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
          */
     }
 
+    public String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
+
     private void buttons_actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
 
@@ -357,7 +361,7 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
                 fileChooser = new FileChooserDialog();
             }
 
-            fileChooser.setDialogTitle(Bundles.get("SearchFilesDialog.SearchPath"));
+            fileChooser.setDialogTitle(bundleString("SearchPath"));
             fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
             int result = fileChooser.showDialog(this, Bundles.get("common.select.button"));
@@ -376,7 +380,7 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
         } else if (command.equals(Bundles.get("AbstractDriverPanel.addFindButton"))) {
             String searchText = findTextArea.getText();
             if (searchText == null || searchText.length() == 0) {
-                GUIUtilities.displayErrorMessage(Bundles.get("message.EnterSearchText"));
+                GUIUtilities.displayErrorMessage(bundleString("message.EnterSearchText"));
                 return;
             }
 
@@ -386,7 +390,7 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
             if (replacingText) {
                 replaceText = replaceTextArea.getText();
                 if (replaceText == null || replaceText.length() == 0) {
-                    GUIUtilities.displayErrorMessage(Bundles.get("message.EnterReplaceText"));
+                    GUIUtilities.displayErrorMessage(bundleString("message.EnterReplaceText"));
                     return;
                 }
 
@@ -408,7 +412,7 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
 
             String searchPath = (String) pathCombo.getSelectedItem();
             if (searchPath == null || searchPath.length() == 0) {
-                GUIUtilities.displayErrorMessage(Bundles.get("message.SearchFilesDialog.NotSelectedPath"));
+                GUIUtilities.displayErrorMessage(bundleString("message.NotSelectedPath"));
                 return;
             }
 
@@ -418,7 +422,7 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
 
             File file = new File(searchPath);
             if (!file.exists()) {
-                GUIUtilities.displayErrorMessage(Bundles.get("message.SearchFilesDialog.ThePathNotExist"));
+                GUIUtilities.displayErrorMessage(bundleString("message.ThePathNotExist"));
                 return;
             }
 

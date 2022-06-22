@@ -70,10 +70,10 @@ public class AboutPanel extends BaseDialog
         //tabPane.add("System", systemDetails());
         //tabPane.add("Resources", systemResources());
         //tabPane.add("License", license());
-        tabPane.add(Bundles.get("common.Copyright"), copyright());
-        tabPane.add(Bundles.get("common.System"), systemDetails());
-        tabPane.add(Bundles.get("common.Resources"), systemResources());
-        tabPane.add(Bundles.get("common.License"), license());
+        tabPane.add(Bundles.get("AboutPanel.Copyright"), copyright());
+        tabPane.add(Bundles.get("AboutPanel.System"), systemDetails());
+        tabPane.add(Bundles.get("AboutPanel.Resources"), systemResources());
+        tabPane.add(Bundles.get("AboutPanel.License"), license());
         //tabPane.add("Credits", credits());
 
 

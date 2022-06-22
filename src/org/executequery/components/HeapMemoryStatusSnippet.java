@@ -87,7 +87,7 @@ public class HeapMemoryStatusSnippet extends JPanel
         free = (int) Runtime.getRuntime().freeMemory();
         int totalUserAfter = total - free;
 
-        Log.info(Bundles.get("preferences.HeapMemoryPanel.GarbageCollection") +
+        Log.info(Bundles.get("HeapMemoryPanel.GarbageCollection") +
                 ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
     }
 
@@ -137,7 +137,7 @@ public class HeapMemoryStatusSnippet extends JPanel
             int free = (int) Runtime.getRuntime().freeMemory();
             int used = total - free;
             String text = (used / 1000) + "Kb/" + (total / 1000) + "Kb";
-            memProgress.setToolTipText(Bundles.get("action.console-JavaHeapSize") + text);
+            memProgress.setToolTipText(Bundles.get("HeapMemoryStatusSnippet.console-JavaHeapSize") + text);
         }
 
     } // class ProgressMouseAdapter

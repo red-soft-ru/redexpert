@@ -115,11 +115,11 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
     }
 
     private void jbInit() throws Exception {
-        wholeWordsCheck = new JCheckBox(Bundles.get("action.WholeWordsCheck"), true);
-        matchCaseCheck = new JCheckBox(Bundles.get("action.MatchCaseCheck"));
+        wholeWordsCheck = new JCheckBox(Bundles.get("FindReplaceDialog.WholeWordsCheck"), true);
+        matchCaseCheck = new JCheckBox(Bundles.get("FindReplaceDialog.MatchCaseCheck"));
         searchSubdirsCheck = new JCheckBox(Bundles.get("message.SearchSubdirectories"), true);
-        replaceCheck = new JCheckBox(Bundles.get("action.Replace") + ":");
-        regexCheck = new JCheckBox(Bundles.get("action.RegularExpressions"));
+        replaceCheck = new JCheckBox(Bundles.get("FindReplaceDialog.Replace") + ":");
+        regexCheck = new JCheckBox(Bundles.get("FindReplaceDialog.RegularExpressions"));
 
         findTextArea = new JTextArea();
         findTextArea.setLineWrap(true);
@@ -199,9 +199,9 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
         gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.NONE;
         gbc.insets.left = 5;
-        panel.add(new JLabel(Bundles.get("action.FileTypes") + ":"), gbc);
+        panel.add(new JLabel(Bundles.get("SearchFilesDialog.FileTypes") + ":"), gbc);
         gbc.gridy = 3;
-        panel.add(new JLabel(Bundles.get("action.SearchPath") + ":"), gbc);
+        panel.add(new JLabel(Bundles.get("SearchFilesDialog.SearchPath") + ":"), gbc);
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets.left = 0;
@@ -357,7 +357,7 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
                 fileChooser = new FileChooserDialog();
             }
 
-            fileChooser.setDialogTitle(Bundles.get("action.SearchPath"));
+            fileChooser.setDialogTitle(Bundles.get("SearchFilesDialog.SearchPath"));
             fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
             int result = fileChooser.showDialog(this, Bundles.get("common.select.button"));

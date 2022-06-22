@@ -68,8 +68,8 @@ public class HeapMemoryPanel extends JPanel
     private void jbInit() {
         JPanel base = new JPanel(new GridBagLayout());
 
-        JLabel line1 = new JLabel(Bundles.get("preferences.HeapMemoryPanel.MeasuresTheSize"));
-        JLabel line2 = new JLabel(Bundles.get("preferences.HeapMemoryPanel.JavaVirtualMachines"));
+        JLabel line1 = new JLabel(Bundles.get("HeapMemoryPanel.MeasuresTheSize"));
+        JLabel line2 = new JLabel(Bundles.get("HeapMemoryPanel.JavaVirtualMachines"));
 
         progressBarModel = new ProgressModel();
         progressBar = new JProgressBar(progressBarModel);
@@ -80,7 +80,7 @@ public class HeapMemoryPanel extends JPanel
         progressBarPanel.add(progressBar, BorderLayout.CENTER);
         progressBarPanel.setBorder(UIUtils.getDefaultLineBorder());
 
-        JButton gcButton = new JButton(Bundles.get("preferences.HeapMemoryPanel.RunGarbageCollector"));
+        JButton gcButton = new JButton(Bundles.get("HeapMemoryPanel.RunGarbageCollector"));
         gcButton.addActionListener(this);
 
         base.setBorder(BorderFactory.createEtchedBorder());
@@ -131,7 +131,7 @@ public class HeapMemoryPanel extends JPanel
         free = (int) Runtime.getRuntime().freeMemory();
         int totalUserAfter = total - free;
 
-        System.err.println(Bundles.get("preferences.HeapMemoryPanel.GarbageCollection") +
+        System.err.println(Bundles.get("HeapMemoryPanel.GarbageCollection") +
                 ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
     }
 
@@ -160,8 +160,8 @@ public class HeapMemoryPanel extends JPanel
     private void startMeasure(final ProgressModel progModel,
                               final JProgressBar memProgress) {
         memProgress.setStringPainted(true);
-        final String used_s = " Kb "+ Bundles.get("preferences.HeapMemoryPanel.used")+",  ";
-        final String total_s = " Kb "+ Bundles.get("preferences.HeapMemoryPanel.total");
+        final String used_s = " Kb "+ Bundles.get("HeapMemoryPanel.used")+",  ";
+        final String total_s = " Kb "+ Bundles.get("HeapMemoryPanel.total");
         final int thou = 1000;
 
         final Runnable showProgress = new Runnable() {

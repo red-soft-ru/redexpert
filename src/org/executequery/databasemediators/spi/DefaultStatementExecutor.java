@@ -248,7 +248,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
             } else {
 
-                statementResult.setMessage(Bundles.get("common.table.invalid-name"));
+                statementResult.setMessage(Bundles.get("DefaultStatementExecutor.table.invalid-name"));
             }
 
         } catch (SQLException e) {

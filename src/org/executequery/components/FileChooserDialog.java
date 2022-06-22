@@ -72,7 +72,7 @@ public class FileChooserDialog extends JFileChooser {
         }
 
         if (file.exists()) {
-            int _result = GUIUtilities.displayConfirmCancelDialog(Bundles.get("action.new-command.overwrite-file"));
+            int _result = GUIUtilities.displayConfirmCancelDialog(Bundles.get("FileChooserDialog.new-command.overwrite-file"));
 
             if (_result == JOptionPane.CANCEL_OPTION) {
                 return CANCEL_OPTION;

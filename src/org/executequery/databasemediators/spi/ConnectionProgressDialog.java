@@ -122,7 +122,7 @@ public class ConnectionProgressDialog extends JDialog
 
     public void actionPerformed(ActionEvent e) {
 
-        Log.info(Bundles.get("GrantManagerPanel.connection-canceled"));
+        Log.info(Bundles.get("ConnectionProgressDialog.connection-canceled"));
 
         connectonBuilder.cancel();
         dispose();

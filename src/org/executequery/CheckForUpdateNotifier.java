@@ -109,7 +109,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                 try {
                     checkFromReleaseHub(unstable);
                 } catch (IOException e) {
-                    Log.warning(String.format(Bundles.get("action.console-CannotCheckForUpdates") + ": %s", e.getMessage()));
+                    Log.warning(String.format(Bundles.get("CheckForUpdateNotifier.console-CannotCheckForUpdates") + ": %s", e.getMessage()));
                 } catch (Exception e) {
                     checkFromReddatabase(unstable);
                 }
@@ -124,7 +124,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     private void checkFromReddatabase(boolean unstable) {
         try {
             updateLoader = new UpdateLoader("");
-            Log.info(Bundles.get("action.console-CheckingForNewVersion") + "https://reddatabase.ru ...");
+            Log.info(Bundles.get("CheckForUpdateNotifier.console-CheckingForNewVersion") + "https://reddatabase.ru ...");
             String url;
             if (unstable)
                 url = UserProperties.getInstance().getStringProperty("reddatabase.check.rc.url");
@@ -143,7 +143,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             }
 
         } catch (ApplicationException e) {
-            Log.warning(Bundles.get("action.console-ErrorCheckingForUpdate") + ": " + e.getMessage());
+            Log.warning(Bundles.get("CheckForUpdateNotifier.console-ErrorCheckingForUpdate") + ": " + e.getMessage());
         } catch (UnknownHostException e) {
             if (progressDialog != null) {
                 GUIUtilities.displayExceptionErrorDialog(bundledString("noInternetMessage"), e);
@@ -176,7 +176,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         } else {
 
-            Log.info(Bundles.get("action.console-RedExpertUpToDate"));
+            Log.info(Bundles.get("CheckForUpdateNotifier.console-RedExpertUpToDate"));
         }
     }
 
@@ -190,7 +190,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             setDownloadNotifierInStatusBar();
         } else {
             if (updateLoader.getVersion() != null)
-                Log.info(Bundles.get("action.console-RedExpertUpToDate"));
+                Log.info(Bundles.get("CheckForUpdateNotifier.console-RedExpertUpToDate"));
         }
     }
 
@@ -198,7 +198,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         JLabel label = getUpdateNotificationLabel();
 
         JButton button = new DefaultButton();
-        button.setText(Bundles.get("action.console-DownloadUpdate"));
+        button.setText(Bundles.get("CheckForUpdateNotifier.console-DownloadUpdate"));
         button.setSize(200, 20);
 
         label.addMouseListener(new DownloadNotificationLabelMouseAdapter());
@@ -206,7 +206,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         label.setToolTipText(newVersionAvailableText());
 
         statusBar().setThirdLabelText(bundledString("updateAvailable"));
-        Log.info(Bundles.get("action.console-ApplicationNeedsUpdate"));
+        Log.info(Bundles.get("CheckForUpdateNotifier.console-ApplicationNeedsUpdate"));
     }
 
     void displayDialogDownload(MouseListener listener) {
@@ -227,7 +227,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                         return Constants.WORKER_CANCEL;
                     }
 
-                    String version = Bundles.get("common.Version") + "=" + updateLoader.getVersion();
+                    String version = Bundles.get("CheckForUpdateNotifier.Version") + "=" + updateLoader.getVersion();
                     argsList.add(version);
                     ApplicationContext instance = ApplicationContext.getInstance();
                     String repo = "";
@@ -390,7 +390,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             } else {
 
-                Log.info(Bundles.get("action.console-RedExpertUpToDate"));
+                Log.info(Bundles.get("CheckForUpdateNotifier.console-RedExpertUpToDate"));
 
                 if (monitorProgress) {
 

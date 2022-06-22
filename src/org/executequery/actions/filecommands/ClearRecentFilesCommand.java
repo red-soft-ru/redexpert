@@ -39,7 +39,7 @@ public class ClearRecentFilesCommand implements BaseCommand {
 
         } catch (RepositoryException re) {
 
-            Log.error(Bundles.get("ClearRecentFilesCommand") + ": " +
+            Log.error(Bundles.get("ClearRecentFilesCommand.message") + ": " +
                     re.getMessage());
 
         }

@@ -89,19 +89,19 @@ public class OpenFileDialog extends FileChooserDialog
 
     private void jbInit() throws Exception {
 
-        textFiles = new FileSelector(new String[]{"txt"}, Bundles.get("menu.file-text"));
-        sqlFiles = new FileSelector(new String[]{"sql"}, Bundles.get("menu.file-sql"));
-        eqFiles = new FileSelector(new String[]{"eqd"}, Bundles.get("menu.file-RedExpertERD"));
+        textFiles = new FileSelector(new String[]{"txt"}, Bundles.get("OpenFileDialog.file-text"));
+        sqlFiles = new FileSelector(new String[]{"sql"}, Bundles.get("OpenFileDialog.file-sql"));
+        eqFiles = new FileSelector(new String[]{"eqd"}, Bundles.get("OpenFileDialog.file-RedExpertERD"));
 
         setFileSelectionMode(JFileChooser.FILES_ONLY);
         addChoosableFileFilter(textFiles);
         addChoosableFileFilter(eqFiles);
         addChoosableFileFilter(sqlFiles);
 
-        openEditorCheck = new JCheckBox(Bundles.get("action.new-command.open-query-editor"));
-        newEditorCheck = new JCheckBox(Bundles.get("action.new-command.new-query-editor"), true);
-        scratchPadCheck = new JCheckBox(Bundles.get("action.new-command.new-scratch-pad"));
-        erdPanelCheck = new JCheckBox(Bundles.get("action.new-command.new-erd"));
+        openEditorCheck = new JCheckBox(Bundles.get("OpenFileDialog.new-command.open-query-editor"));
+        newEditorCheck = new JCheckBox(Bundles.get("OpenFileDialog.new-command.new-query-editor"), true);
+        scratchPadCheck = new JCheckBox(Bundles.get("OpenFileDialog.new-command.new-scratch-pad"));
+        erdPanelCheck = new JCheckBox(Bundles.get("OpenFileDialog.new-command.new-erd"));
 
         openEditorCheck.setEnabled(false);
 
@@ -126,7 +126,7 @@ public class OpenFileDialog extends FileChooserDialog
         gbc.insets.right = 5;
         optionsPanel.add(scratchPadCheck, gbc);
 
-        optionsPanel.setBorder(BorderFactory.createTitledBorder(Bundles.get("action.new-command.open-with") + ":"));
+        optionsPanel.setBorder(BorderFactory.createTitledBorder(Bundles.get("OpenFileDialog.new-command.open-with") + ":"));
 
         customPanel = new JPanel(new BorderLayout());
         customPanel.setBorder(BorderFactory.createEmptyBorder(0, 7, 7, 7));

@@ -2,6 +2,7 @@ package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
+import org.executequery.databaseobjects.FunctionArgument;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.Parameter;
 import org.executequery.databaseobjects.ProcedureParameter;
@@ -249,67 +250,109 @@ public final class SQLUtils {
     public static String generateCreateProcedure(String name,Vector<ColumnData> inputParameters,Vector<ColumnData> outputParameters, String fullProcedureBody,String comment)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE OR ALTER PROCEDURE ");
-        sb.append(MiscUtils.getFormattedObject(name));
-        if (inputParameters != null && inputParameters.size() > 0 && (inputParameters.size() == 1 && !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
-            sb.append(" (");
-            sb.append(formattedParameters(inputParameters, false));
-            sb.append(")\n");
-        }
+        sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE]));
         String output = formattedParameters(outputParameters, false);
         if (!MiscUtils.isNull(output.trim())) {
             sb.append("\nRETURNS (");
             sb.append(output);
             sb.append(")\n");
         }
-        sb.append("\nAS\n");
-        sb.append(fullProcedureBody);
-        sb.append("^\n");
+        sb.append(generateSQLBody(fullProcedureBody));
 
         sb.append("\n");
 
         // add procedure description
+        sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^"));
+
+        sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
+
+        sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
+
+        return sb.toString();
+    }
+
+    public static String generateCommentForColumns(String relationName, Vector<ColumnData> cols, String metatag, String delimiter) {
+        StringBuilder sb = new StringBuilder();
+        for (ColumnData cd :
+                cols) {
+            String name = MiscUtils.getFormattedObject(relationName) + "." + cd.getFormattedColumnName();
+            sb.append(generateComment(name, metatag, cd.getDescription(), delimiter));
+        }
+        return sb.toString();
+    }
+
+    public static String generateComment(String name, String metatag, String comment, String delimiter) {
+        StringBuilder sb = new StringBuilder();
         String text = comment;
         if (text != null && !text.isEmpty()) {
             sb.append("\n");
-            sb.append("COMMENT ON PROCEDURE ");
+            sb.append("COMMENT ON " + metatag + " ");
             sb.append(MiscUtils.getFormattedObject(name));
             sb.append(" IS '");
             sb.append(text);
             sb.append("'");
-            sb.append("^\n");
+            sb.append(delimiter);
+            sb.append("\n");
         }
+        return sb.toString();
+    }
 
-        for (ColumnData cd :
-                inputParameters) {
-            String cdText = cd.getDescription();
-            if (cdText != null && !cdText.isEmpty()) {
-                sb.append("\n");
-                sb.append("COMMENT ON PARAMETER ");
-                sb.append(MiscUtils.getFormattedObject(name)).append(".");
-                sb.append(cd.getFormattedColumnName());
-                sb.append(" IS '");
-                sb.append(cdText);
-                sb.append("'\n");
-                sb.append("^\n");
-            }
+    public static String generateCreateProcedureOrFunctionHeader(String name, Vector<ColumnData> inputParameters, String metatag) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE OR ALTER " + metatag + " ");
+        sb.append(MiscUtils.getFormattedObject(name));
+        if (inputParameters != null && inputParameters.size() > 0 && (inputParameters.size() == 1 && !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
+            sb.append(" (");
+            sb.append(formattedParameters(inputParameters, false));
+            sb.append(")\n");
         }
+        return sb.toString();
 
-        for (ColumnData cd :
-                outputParameters) {
-            String cdText = cd.getDescription();
-            if (cdText != null && !cdText.isEmpty()) {
-                sb.append("\n");
-                sb.append("COMMENT ON PARAMETER ");
-                sb.append(MiscUtils.getFormattedObject(name)).append(".");
-                sb.append(cd.getFormattedColumnName());
-                sb.append(" IS '");
-                sb.append(cdText);
-                sb.append("'\n");
-                sb.append("^\n");
-            }
+    }
+
+    public static String generateSQLBody(String sqlBody) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("\nAS\n");
+        sb.append(sqlBody);
+        sb.append("^\n");
+        return sb.toString();
+    }
+
+    public static String generateCreateFunction(String name, Vector<ColumnData> argumentList, Vector<ColumnData> variables, ColumnData returnType, String functionBody, String entryPoint, String engine, String comment) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(formattedParameters(variables, true));
+        sb.append(functionBody);
+        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, comment);
+    }
+
+    public static String generateCreateFunction(String name, List<FunctionArgument> argumentList, String fullFunctionBody, String entryPoint, String engine, String comment, DatabaseConnection dc) {
+        Vector<ColumnData> inputs = new Vector<>();
+        ColumnData returnType = null;
+        for (FunctionArgument parameter : argumentList) {
+            if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
+                ColumnData cd = columnDataFromProcedureParameter(parameter, dc);
+                inputs.add(cd);
+            } else returnType = columnDataFromProcedureParameter(parameter, dc);
         }
+        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, comment);
+    }
 
+    public static String generateCreateFunction(String name, Vector<ColumnData> inputArguments, ColumnData returnType, String fullFunctionBody, String entryPoint, String engine, String comment) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION]));
+        sb.append("RETURNS ");
+        if (returnType != null)
+            sb.append(returnType.getFormattedDataType());
+        if (entryPoint != null) {
+            sb.append("EXTERNAL NAME '");
+            sb.append(entryPoint).append("'");
+            sb.append(" ENGINE ").append(engine);
+        } else sb.append(generateSQLBody(fullFunctionBody));
+        sb.append("\n");
+        sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^"));
+
+        sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
         return sb.toString();
     }
 

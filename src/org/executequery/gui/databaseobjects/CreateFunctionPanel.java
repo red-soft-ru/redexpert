@@ -12,6 +12,7 @@ import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.sql.DatabaseMetaData;
@@ -183,7 +184,10 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     }
 
     protected String generateQuery() {
-        StringBuilder sb = new StringBuilder();
+        return SQLUtils.generateCreateFunction(getName(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
+                variablesPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
+                null, null, descriptionArea.getTextAreaComponent().getText());
+        /*StringBuilder sb = new StringBuilder();
         sb.append("CREATE OR ALTER FUNCTION ");
         sb.append(getFormattedName());
         sb.append(" (");
@@ -225,7 +229,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                 sb.append("^\n");
             }
         }
-        return sb.toString();
+        return sb.toString();*/
     }
 
     @Override

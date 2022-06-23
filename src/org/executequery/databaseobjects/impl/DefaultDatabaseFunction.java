@@ -25,9 +25,8 @@ import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.FunctionArgument;
-import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -245,8 +244,9 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     public String getCreateSQLText() {
+        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getFunctionSourceCode(), getEntryPoint(), getEngine(), getRemarks(), getHost().getDatabaseConnection());
 
-        StringBuilder sb = new StringBuilder();
+        /*StringBuilder sb = new StringBuilder();
         StringBuilder sbInput = new StringBuilder();
         StringBuilder sbOutput = new StringBuilder();
 
@@ -395,7 +395,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         sb.append("SET TERM ; ^");
 
 
-        return sb.toString();
+        return sb.toString();*/
     }
 
     protected void getObjectInfo() {

@@ -536,7 +536,7 @@ public class SQLFormatter {
 
     private String formatCommentOn() {
 
-        StringBuilder result = new StringBuilder(60).append("\n    ");
+        StringBuilder result = new StringBuilder();
 
         boolean quoted = false;
 

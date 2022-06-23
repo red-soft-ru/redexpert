@@ -26,7 +26,7 @@ public final class SQLUtils {
     public static String generateCreateTable(String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList, boolean existTable, boolean temporary, String typeTemporary, String externalFile, String adapter, String tablespace) {
         StringBuilder sqlText = new StringBuilder();
         StringBuilder sqlBuffer = new StringBuilder();
-        List<String> descriptions = new ArrayList<>();
+        //List<String> descriptions = new ArrayList<>();
         if (temporary)
             sqlBuffer.append(CreateTableSQLSyntax.CREATE_GLOBAL_TEMPORARY_TABLE);
         else
@@ -41,7 +41,7 @@ public final class SQLUtils {
         String autoincrementSQLText="";
         for (int i = 0,k=columnDataList.size(); i < k; i++) {
             ColumnData cd = columnDataList.get(i);
-            autoincrementSQLText+=cd.getAutoincrement().getSqlAutoincrement();
+            autoincrementSQLText += cd.getAutoincrement().getSqlAutoincrement();
             if (cd.isPrimaryKey()) {
                 if (primary_flag)
                     primaryText.append(", ");
@@ -49,10 +49,10 @@ public final class SQLUtils {
                 primaryText.append(cd.getFormattedColumnName());
                 primary_flag = true;
             }
-            if (!MiscUtils.isNull(cd.getDescription())) {
-                descriptions.add(cd.getFormattedColumnName() + " is '" + cd.getDescription() + "'");
-            }
-           sqlText.append(generateDefinitionColumn(cd));
+            /*if (!MiscUtils.isNull(cd.getDescription())) {
+                //descriptions.add(cd.getFormattedColumnName() + " is '" + cd.getDescription() + "'");
+            }*/
+            sqlText.append(generateDefinitionColumn(cd));
             if (i != k - 1) {
                 sqlText.append(COMMA);
             }
@@ -61,16 +61,7 @@ public final class SQLUtils {
         if (primary_flag)
             primary.append(primaryText);
         primary.append(")");
-        StringBuffer description = new StringBuffer(50);
-        description.setLength(0);
-        if (!descriptions.isEmpty())
-            for (String d : descriptions) {
-                description.append("\nCOMMENT ON COLUMN ");
-                description.append(MiscUtils.getFormattedObject(name));
-                description.append("." + d);
-                description.append("^");
-
-            }
+        String description = generateCommentForColumns(name, columnDataList, "COLUMN", "^");
 
         sqlBuffer.append(MiscUtils.getFormattedObject(name));
         if (externalFile != null)
@@ -271,7 +262,7 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateCommentForColumns(String relationName, Vector<ColumnData> cols, String metatag, String delimiter) {
+    public static String generateCommentForColumns(String relationName, List<ColumnData> cols, String metatag, String delimiter) {
         StringBuilder sb = new StringBuilder();
         for (ColumnData cd :
                 cols) {

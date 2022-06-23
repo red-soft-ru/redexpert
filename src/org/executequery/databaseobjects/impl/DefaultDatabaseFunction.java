@@ -250,9 +250,9 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         StringBuilder sbInput = new StringBuilder();
         StringBuilder sbOutput = new StringBuilder();
 
-        sb.append("set term ^ ;");
+        sb.append("SET TERM ^ ;");
         sb.append("\n\n");
-        sb.append("create or alter function \n");
+        sb.append("CREATE OR ALTER FUNCTION \n");
         sb.append(getName());
         sb.append("\n");
 
@@ -266,17 +266,17 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 sbInput.append(argument.getName());
                 sbInput.append(" ");
                 if (argument.isTypeOf()) {
-                    sbInput.append(" type of ");
+                    sbInput.append(" TYPE OF ");
                     if (argument.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
                         sbInput.append(argument.getDomain());
                     else {
-                        sbInput.append("column ");
+                        sbInput.append("COLUMN ");
                         sbInput.append(argument.getRelationName());
                         sbInput.append(".");
                         sbInput.append(argument.getFieldName()).append(" ");
                     }
                     if (argument.getNullable() == 1)
-                        sbInput.append(" not null ");
+                        sbInput.append(" NOT NULL ");
                     if (!MiscUtils.isNull(argument.getDefaultValue()))
                         sbInput.append(argument.getDefaultValue());
                     sbInput.append(",\n");
@@ -286,7 +286,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                     } else {
                         if (argument.getSqlType().contains("SUB_TYPE")) {
                             sbInput.append(argument.getSqlType().replace("<0", String.valueOf(argument.getSubType())));
-                            sbInput.append(" segment size ");
+                            sbInput.append(" SEGMENT SIZE ");
                             sbInput.append(argument.getSize());
                         } else {
                             sbInput.append(argument.getSqlType());
@@ -301,11 +301,11 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         }
                     }
                     if (argument.getEncoding() != null) {
-                        sbInput.append(" character set ");
+                        sbInput.append(" CHARACTER SET ");
                         sbInput.append(argument.getEncoding()).append(" ");
                     }
                     if (argument.getNullable() == 1)
-                        sbInput.append(" not null ");
+                        sbInput.append(" NOT NULL ");
                     if (!MiscUtils.isNull(argument.getDefaultValue()))
                         sbInput.append(" ").append(argument.getDefaultValue());
                     sbInput.append(",\n");
@@ -313,17 +313,17 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
             } else if (argument.getType() == DatabaseMetaData.procedureColumnReturn) {
                 sbOutput.append(" ");
                 if (argument.isTypeOf()) {
-                    sbOutput.append("type of ");
+                    sbOutput.append("TYPE OF ");
                     if (argument.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
                         sbOutput.append(argument.getDomain());
                     else {
-                        sbOutput.append("column ");
+                        sbOutput.append("COLUMN ");
                         sbOutput.append(argument.getRelationName());
                         sbOutput.append(".");
                         sbOutput.append(argument.getFieldName());
                     }
                     if (argument.getNullable() == 1)
-                        sbOutput.append(" not null,\n");
+                        sbOutput.append(" NOT NULL,\n");
                     else
                         sbOutput.append(",\n");
                 } else {
@@ -332,7 +332,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                     } else {
                         if (argument.getSqlType().contains("SUB_TYPE")) {
                             sbOutput.append(argument.getSqlType().replace("<0", String.valueOf(argument.getSubType())));
-                            sbOutput.append(" segment size ");
+                            sbOutput.append(" SEGMENT SIZE ");
                             sbOutput.append(argument.getSize());
                         } else {
                             sbOutput.append(argument.getSqlType());
@@ -346,11 +346,11 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         }
                     }
                     if (argument.getEncoding() != null) {
-                        sbOutput.append(" character set ");
+                        sbOutput.append(" CHARACTER SET ");
                         sbOutput.append(argument.getEncoding());
                     }
                     if (argument.getNullable() == 1)
-                        sbOutput.append(" not null,\n");
+                        sbOutput.append(" NOT NULL,\n");
                     else
                         sbOutput.append(",\n");
                 }
@@ -374,7 +374,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         }
 
         if (output != null) {
-            sb.append("returns ");
+            sb.append("RETURNS ");
             sb.append(output);
             sb.append("\n");
         }
@@ -384,7 +384,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
             sb.append(getEntryPoint()).append("'");
             sb.append(" ENGINE ").append(getEngine());
         } else {
-            sb.append("as");
+            sb.append("AS");
             sb.append("\n");
 
             sb.append(getFunctionSourceCode());
@@ -392,7 +392,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
         }
         sb.append("\n\n");
-        sb.append("set term ; ^");
+        sb.append("SET TERM ; ^");
 
 
         return sb.toString();

@@ -444,26 +444,27 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                 String value = "";
                 boolean str = false;
                 int sqlType = cd.getSQLType();
-                switch (sqlType) {
+                if (!cd.getDefaultValue().trim().equalsIgnoreCase("NULL"))
+                    switch (sqlType) {
 
-                    case Types.LONGVARCHAR:
-                    case Types.LONGNVARCHAR:
-                    case Types.CHAR:
-                    case Types.NCHAR:
-                    case Types.VARCHAR:
-                    case Types.VARBINARY:
-                    case Types.BINARY:
-                    case Types.NVARCHAR:
-                    case Types.CLOB:
-                    case Types.DATE:
-                    case Types.TIME:
-                    case Types.TIMESTAMP:
-                        value = "'";
-                        str = true;
-                        break;
-                    default:
-                        break;
-                }
+                        case Types.LONGVARCHAR:
+                        case Types.LONGNVARCHAR:
+                        case Types.CHAR:
+                        case Types.NCHAR:
+                        case Types.VARCHAR:
+                        case Types.VARBINARY:
+                        case Types.BINARY:
+                        case Types.NVARCHAR:
+                        case Types.CLOB:
+                        case Types.DATE:
+                        case Types.TIME:
+                        case Types.TIMESTAMP:
+                            value = "'";
+                            str = true;
+                            break;
+                        default:
+                            break;
+                    }
                 value += cd.getDefaultValue();
                 if (str) {
                     value += "'";

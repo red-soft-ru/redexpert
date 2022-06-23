@@ -184,15 +184,15 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
 
     protected String generateQuery() {
         StringBuilder sb = new StringBuilder();
-        sb.append("create or alter function ");
+        sb.append("CREATE OR ALTER FUNCTION ");
         sb.append(getFormattedName());
         sb.append(" (");
         sb.append(formattedParameters(inputParametersPanel.getProcedureParameterModel().getTableVector(), false));
         sb.append(")\n");
-        sb.append("returns ");
+        sb.append("RETURNS ");
         sb.append(returnType.getFormattedDataType());
         sb.append("\n");
-        sb.append("as");
+        sb.append("AS");
         sb.append(formattedParameters(variablesPanel.getProcedureParameterModel().getTableVector(), true));
         sb.append(sqlBodyText.getSQLText());
         sb.append("^\n");

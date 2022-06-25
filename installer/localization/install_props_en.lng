@@ -1,1 +1,3 @@
 Installer.Parameter.question_remove_props=Do you want the uninstall to also remove the user properties?
+Installer.Parameter.association.title=File Association
+Installer.Parameter.association.body=Associate .fdb files with RedExpert?

@@ -165,6 +165,26 @@
         <deleteFile path="${installdir}/RedExpertInstallation.log"/>
     </preUninstallationActionList>
     <postInstallationActionList>
+        <associateWindowsFileExtension>
+            <extensions>.fdb</extensions>
+            <friendlyName>${project.shortName}</friendlyName>
+            <icon>${installdir}\red_expert.ico</icon>
+            <mimeType>application/firebird-x-fdb</mimeType>
+            <progID>${project.shortName}</progID>
+            <commandList>
+                <command>
+                    <makeDefault>0</makeDefault>
+                    <runProgram>${installdir}\bin\RedExpert64.exe</runProgram>
+                    <runProgramArguments>"%1"</runProgramArguments>
+                    <verb>Open</verb>
+                </command>
+            </commandList>
+            <ruleList>
+                <isTrue>
+                    <value>${file_association}</value>
+                </isTrue>
+            </ruleList>
+        </associateWindowsFileExtension>
         <createShortcuts>
             <destination>${user_home_directory}/.local/share/applications</destination>
             <shortcutList>
@@ -191,6 +211,13 @@
             </ruleList>
         </iniFileSet>
     </postInstallationActionList>
+    <postUninstallationActionList>
+        <removeWindowsFileAssociation>
+            <extensions>.fdb</extensions>
+            <mimeType>application/firebird-x-fdb</mimeType>
+            <progID>${project.shortName}</progID>
+        </removeWindowsFileAssociation>
+    </postUninstallationActionList>
     <allowedLanguages>en ru</allowedLanguages>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>
@@ -215,6 +242,15 @@
             <mustExist>0</mustExist>
             <width>40</width>
         </directoryParameter>
+        <booleanParameter>
+            <name>file_association</name>
+            <title>${msg(Installer.Parameter.association.title)}</title>
+            <description>${msg(Installer.Parameter.association.body)}</description>
+            <explanation></explanation>
+            <value></value>
+            <default>1</default>
+            <cliOptionShow>0</cliOptionShow>
+        </booleanParameter>
         <stringParameter>
             <name>execute_file</name>
             <allowEmptyValue>0</allowEmptyValue>

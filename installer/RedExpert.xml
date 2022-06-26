@@ -200,51 +200,48 @@
             </shortcutList>
         </createShortcuts>
         <actionGroup>
-            <actionList>
-                <writeFile>
-                    <path>${installdir}/firebird-x-fdb.xml</path>
-
-                    <!-- The CDATA notation allow escaping a block of XML characters -->
-
-                    <text>&lt;?xml version="1.0"?&gt;
-                        &lt;mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'&gt;
-                        &lt;mime-type type="application/firebird-x-fdb"&gt;
-                        &lt;comment&gt;Database file&lt;/comment&gt;
-                        &lt;glob pattern="*.fdb"/&gt;
-                        &lt;icon name="${installdir}/red_expert.ico"/&gt;
-                        &lt;/mime-type&gt;
-                        &lt;/mime-info&gt;
-                    </text>
-                </writeFile>
-                <runProgram>
-                    <program>xdg-mime</program>
-                    <programArguments>install ${installdir}/firebird-x-fdb.xml</programArguments>
-                </runProgram>
-                <writeFile>
-                    <encoding>utf-8</encoding>
-                    <path>~/.local/share/applications/${project.shortName}.desktop</path>
-                    <text>
-                        [Desktop Entry]
-                        Version=1.0
-                        Encoding=UTF-8
-                        Name=${project.shortName}
-                        GenericName=${project.shortName}
-                        Comment=${project.shortName}
-                        Exec=${installdir}/bin/${execute_file}
-                        Terminal=true
-                        Type=Application
-                        Categories=Application;Utility;TextEditor;
-                        MimeType=application/firebird-x-fdb
-                    </text>
-                </writeFile>
+     <actionList>
+        <writeFile>
+           <path>${installdir}/firebird-x-fdb.xml</path>
+           <!-- The CDATA notation allow escaping a
+            block of XML characters -->
+           <text><![CDATA[<?xml version="1.0"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="application/firebird-x-fdb">
+    <comment>Database file</comment>
+    <glob pattern="*.fdb"/>
+    <icon name="${installdir}/red_expert.ico"/>
+  </mime-type>
+</mime-info>]]></text>
+        </writeFile>
+        <runProgram>
+            <program>xdg-mime</program>
+            <programArguments>install ${installdir}/firebird-x-fdb.xml</programArguments>
+        </runProgram>
+<writeFile>
+    <path>~/.local/share/applications/${project.shortName}.desktop</path>
+    <encoding>utf-8</encoding>
+    <text>
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=${project.shortName}
+GenericName=${project.shortName}
+Comment=${project.shortName}
+Exec=${installdir}/bin/${execute_file}
+Terminal=true
+Type=Application
+Categories=Application;Utility;TextEditor;
+MimeType=application/firebird-x-fdb
+    </text>
+  </writeFile>
                 <runProgram>
                     <program>xdg-mime</program>
                     <programArguments>default ${project.shortName}.desktop application/firebird-x-fdb</programArguments>
                 </runProgram>
                 <runProgram>
                     <program>xdg-icon-resource</program>
-                    <programArguments>install --context mimetypes --size 64 ${installdir}/red_expert.png
-                        application-firebird-x-fdb
+                    <programArguments>install --context mimetypes --size 64 ${installdir}/red_expert.png application-firebird-x-fdb
                     </programArguments>
                 </runProgram>
             </actionList>
@@ -278,7 +275,6 @@
             <programArguments>uninstall ${installdir}/firebird-x-fdb.xml</programArguments>
         </runProgram>
         <deleteFile path="~/.local/share/applications/${project.shortName}.desktop"/>
-        <deleteFile path="${installdir}/firebird-x-fdb.xml"/>
     </postUninstallationActionList>
     <allowedLanguages>en ru</allowedLanguages>
     <enableRollback>1</enableRollback>

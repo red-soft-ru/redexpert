@@ -20,6 +20,8 @@
 
 package org.executequery;
 
+import org.apache.commons.io.FilenameUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +44,9 @@ public final class ApplicationContext {
 
     private static final String EXT_EXE_PID = "-exe_pid";
 
-    private static final String[] PROPERTY_OVERRIDES = {SETTINGS_DIR, USER_HOME_DIR, REPO, EXT_EXE_PATH, EXT_EXE_PID};
+    private static final String FILE_FOR_OPEN = "FILE_FOR_OPEN";
+
+    private static final String[] PROPERTY_OVERRIDES = {SETTINGS_DIR, USER_HOME_DIR, REPO, EXT_EXE_PATH, EXT_EXE_PID, FILE_FOR_OPEN};
 
     private static ApplicationContext applicationContext;
 
@@ -92,6 +96,14 @@ public final class ApplicationContext {
         if (repo == null)
             return "";
         return repo;
+    }
+
+    public String getFileForOpenPath() {
+        String fileForOpenPath = settings.get(FILE_FOR_OPEN);
+        String extension = FilenameUtils.getExtension(fileForOpenPath);
+        if (fileForOpenPath == null || !"FDB".equalsIgnoreCase(extension))
+            return "";
+        return fileForOpenPath;
     }
 
     private String fileSeparator() {

@@ -165,6 +165,26 @@
         <deleteFile path="${installdir}/RedExpertInstallation.log"/>
     </preUninstallationActionList>
     <postInstallationActionList>
+        <associateWindowsFileExtension>
+            <extensions>.fdb</extensions>
+            <friendlyName>${project.shortName}</friendlyName>
+            <icon>${installdir}\red_expert.ico</icon>
+            <mimeType>application/firebird-x-fdb</mimeType>
+            <progID>${project.shortName}</progID>
+            <commandList>
+                <command>
+                    <makeDefault>0</makeDefault>
+                    <runProgram>${installdir}\bin\${execute_file}</runProgram>
+                    <runProgramArguments>"%1"</runProgramArguments>
+                    <verb>Open</verb>
+                </command>
+            </commandList>
+            <ruleList>
+                <isTrue>
+                    <value>${file_association}</value>
+                </isTrue>
+            </ruleList>
+        </associateWindowsFileExtension>
         <createShortcuts>
             <destination>${user_home_directory}/.local/share/applications</destination>
             <shortcutList>
@@ -179,6 +199,59 @@
                 </shortcut>
             </shortcutList>
         </createShortcuts>
+        <actionGroup>
+     <actionList>
+        <writeFile>
+           <path>${installdir}/firebird-x-fdb.xml</path>
+           <!-- The CDATA notation allow escaping a
+            block of XML characters -->
+           <text><![CDATA[<?xml version="1.0"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="application/firebird-x-fdb">
+    <comment>Database file</comment>
+    <glob pattern="*.fdb"/>
+    <icon name="${installdir}/red_expert.ico"/>
+  </mime-type>
+</mime-info>]]></text>
+        </writeFile>
+        <runProgram>
+            <program>xdg-mime</program>
+            <programArguments>install ${installdir}/firebird-x-fdb.xml</programArguments>
+        </runProgram>
+<writeFile>
+    <path>~/.local/share/applications/${project.shortName}.desktop</path>
+    <encoding>utf-8</encoding>
+    <text>
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=${project.shortName}
+GenericName=${project.shortName}
+Comment=${project.shortName}
+Exec=${installdir}/bin/${execute_file}
+Terminal=true
+Type=Application
+Categories=Application;Utility;TextEditor;
+MimeType=application/firebird-x-fdb
+    </text>
+  </writeFile>
+                <runProgram>
+                    <program>xdg-mime</program>
+                    <programArguments>default ${project.shortName}.desktop application/firebird-x-fdb</programArguments>
+                </runProgram>
+                <runProgram>
+                    <program>xdg-icon-resource</program>
+                    <programArguments>install --context mimetypes --size 64 ${installdir}/red_expert.png application-firebird-x-fdb
+                    </programArguments>
+                </runProgram>
+            </actionList>
+            <ruleList>
+                <isTrue>
+                    <value>${file_association}</value>
+                </isTrue>
+                <platformTest type="linux"/>
+            </ruleList>
+        </actionGroup>
         <iniFileSet>
             <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
             <section>Desktop Entry</section>
@@ -186,11 +259,23 @@
             <value>Development;IDE;</value>
             <ruleList>
                 <fileExists>
-                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>>
+                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
                 </fileExists>
             </ruleList>
         </iniFileSet>
     </postInstallationActionList>
+    <postUninstallationActionList>
+        <removeWindowsFileAssociation>
+            <extensions>.fdb</extensions>
+            <mimeType>application/firebird-x-fdb</mimeType>
+            <progID>${project.shortName}</progID>
+        </removeWindowsFileAssociation>
+        <runProgram>
+            <program>xdg-mime</program>
+            <programArguments>uninstall ${installdir}/firebird-x-fdb.xml</programArguments>
+        </runProgram>
+        <deleteFile path="~/.local/share/applications/${project.shortName}.desktop"/>
+    </postUninstallationActionList>
     <allowedLanguages>en ru</allowedLanguages>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>
@@ -200,21 +285,37 @@
     <disableSplashScreen>1</disableSplashScreen>
     <vendor>Red Soft Corporation</vendor>
     <windows64bitMode>1</windows64bitMode>
-    <installationLogFile>${installdir}/RedExpertInstallation.log</installationLogFile>
     <parameterList>
-        <directoryParameter>
-            <name>installdir</name>
-            <description>Installer.Parameter.installdir.description</description>
-            <explanation>Installer.Parameter.installdir.explanation</explanation>
-            <value></value>
-            <default>${platform_install_prefix}${platform_path_separator}${project.shortName}</default>
-            <allowEmptyValue>0</allowEmptyValue>
-            <ask>yes</ask>
-            <cliOptionName>prefix</cliOptionName>
-            <mustBeWritable>yes</mustBeWritable>
-            <mustExist>0</mustExist>
-            <width>40</width>
-        </directoryParameter>
+        <parameterGroup>
+            <name>InstallDirAndAssociationFile</name>
+            <explanation/>
+            <value/>
+            <default/>
+            <parameterList>
+                <directoryParameter>
+                    <name>installdir</name>
+                    <description>Installer.Parameter.installdir.description</description>
+                    <explanation>Installer.Parameter.installdir.explanation</explanation>
+                    <value/>
+                    <default>${platform_install_prefix}${platform_path_separator}${project.shortName}</default>
+                    <allowEmptyValue>0</allowEmptyValue>
+                    <ask>yes</ask>
+                    <cliOptionName>prefix</cliOptionName>
+                    <mustBeWritable>yes</mustBeWritable>
+                    <mustExist>0</mustExist>
+                    <width>40</width>
+                </directoryParameter>
+                <booleanParameter>
+                    <name>file_association</name>
+                    <description>${msg(Installer.Parameter.associate_file)}</description>
+                    <explanation/>
+                    <value/>
+                    <default>1</default>
+                    <cliOptionShow>0</cliOptionShow>
+                    <displayStyle>checkbox-left</displayStyle>
+                </booleanParameter>
+            </parameterList>
+        </parameterGroup>
         <stringParameter>
             <name>execute_file</name>
             <allowEmptyValue>0</allowEmptyValue>

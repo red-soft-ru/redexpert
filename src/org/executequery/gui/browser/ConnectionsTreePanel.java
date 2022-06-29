@@ -844,6 +844,12 @@ public class ConnectionsTreePanel extends TreePanel
     newConnection(databaseConnectionFactory().create(name));
   }
 
+  public void newConnection(String sourceName) {
+
+    String name = buildConnectionName(Bundles.getCommon("newConnection.button"));
+    newConnection(databaseConnectionFactory().create(name, sourceName));
+  }
+
   /**
    * Creates a new connection based on the specified connection.
    *

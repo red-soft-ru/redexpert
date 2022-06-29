@@ -2402,11 +2402,14 @@ int main(int argc, char* argv[])
 
     // add to java class path Red Expert jar
     std::string stdString = paths;
+    std::string fileForOpenPath;
     char* class_path = (char*)stdString.c_str();
 
     NativeArguments launcher_args;
 
     err_rep.ARGV0 = *argv++;
+    if (*argv != 0)
+       fileForOpenPath = *argv++;
     while (*argv != 0) {
         launcher_args.push_back(*argv++);
     }
@@ -2432,6 +2435,8 @@ int main(int argc, char* argv[])
             }
         }
     }
+    if (!fileForOpenPath.empty())
+        launcher_args.push_back("FILE_FOR_OPEN=" + fileForOpenPath);
     in.close();
     return runJvm(launcher_args);
 }

@@ -740,7 +740,7 @@ public final class MiscUtils {
         return keywords.contains(str.toUpperCase());
     }
 
-    public final static String LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB = "([A-Za-z]+[$_0-9A-Za-z]*)";
+    public final static String LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB = "([A-Za-z]+[$_0-9A-Za-z\\.]*)";
 
     public static boolean isLatinOrDigitOrSpecSymbolRDB(String obj)
     {

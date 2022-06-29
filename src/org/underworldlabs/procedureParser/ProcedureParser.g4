@@ -74,7 +74,7 @@ body:
   spases_or_comment datatype
   (spases_or_comment notnull)?
   (spases_or_comment K_COLLATE spases_or_comment order_collate)?
-  (spases_or_comment ( '=' |K_DEFAULT ) spases_or_comment default_value)?)
+  (spases_or_comment ( '=' |K_DEFAULT (spases_or_comment '=')? ) spases_or_comment default_value)?)
   ';' SPACES* comment? SPACES*
   ;
 
@@ -114,11 +114,11 @@ body:
  ;
 
  input_parameter
- :desciption_parameter (( '=' |K_DEFAULT )  default_value)?
+ :desciption_parameter (spases_or_comment ( '=' |K_DEFAULT (spases_or_comment'=')? ) spases_or_comment default_value)?
  ;
 
  desciption_parameter
- :parameter_name datatype (notnull)? (K_COLLATE order_collate)?
+ :parameter_name spases_or_comment datatype (spases_or_comment notnull)? (spases_or_comment K_COLLATE spases_or_comment order_collate)?
  ;
  parameter_name
  : any_name
@@ -141,10 +141,10 @@ body:
     | (DATE | TIME | TIMESTAMP) array_size?
     | (DECIMAL | NUMERIC) ('(' type_size (',' scale)?')')? array_size?
     | (CHAR | CHARACTER | VARYING_CHARACTER | VARCHAR) ('('type_size')')?
-    (CHARACTER_SET charset_name)? array_size?
+    (spases_or_comment CHARACTER_SET spases_or_comment charset_name)? array_size?
     | (NCHAR | NATIONAL_CHARACTER | NATIONAL_CHAR) (VARYING)? ('(' int_number ')')? array_size?
-    | BLOB (SUB_TYPE subtype)?
-    (SEGMENT_SIZE type_size)? (CHARACTER_SET charset_name)?
+    | BLOB (spases_or_comment SUB_TYPE spases_or_comment subtype)?
+    (spases_or_comment SEGMENT_SIZE spases_or_comment type_size)? (spases_or_comment CHARACTER_SET spases_or_comment charset_name)?
     | BLOB ('('type_size? (',' subtype)?')')?
  ;
 

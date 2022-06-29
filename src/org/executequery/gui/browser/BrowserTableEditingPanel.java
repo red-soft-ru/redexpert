@@ -957,20 +957,38 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             }
 
             referencesLoaded = false;
-
             tableNameField.setText(table.getName());
             descriptionTable.setDatabaseTable(table);
-            constraintsTable.setDatabaseTable(table);
-            loadIndexes();
-            dependenciesPanel.setDatabaseObject(table);
-
-            alterSqlText.setSQLText(EMPTY);
-            createSqlText.setSQLText("Loading data");
             SwingWorker sw = new SwingWorker() {
                 @Override
                 public Object construct() {
+                    constraintsTable.setDatabaseTable(table);
+                    return null;
+                }
+            };
+            sw.start();
+            sw = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    loadIndexes();
+                    return null;
+                }
+            };
+            sw.start();
+            sw = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    dependenciesPanel.setDatabaseObject(table);
+                    return null;
+                }
+            };
+            sw.start();
+            sw = new SwingWorker() {
+                @Override
+                public Object construct() {
                     try {
-
+                        alterSqlText.setSQLText(EMPTY);
+                        createSqlText.setSQLText("Loading data");
                         createSqlText.setSQLText(createTableStatementFormatted());
 
                     } catch (Exception e) { // some liquibase generated issues... ??

@@ -12,6 +12,7 @@ import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.sql.DatabaseMetaData;
@@ -183,16 +184,19 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     }
 
     protected String generateQuery() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("create or alter function ");
+        return SQLUtils.generateCreateFunction(getName(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
+                variablesPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
+                null, null, descriptionArea.getTextAreaComponent().getText());
+        /*StringBuilder sb = new StringBuilder();
+        sb.append("CREATE OR ALTER FUNCTION ");
         sb.append(getFormattedName());
         sb.append(" (");
         sb.append(formattedParameters(inputParametersPanel.getProcedureParameterModel().getTableVector(), false));
         sb.append(")\n");
-        sb.append("returns ");
+        sb.append("RETURNS ");
         sb.append(returnType.getFormattedDataType());
         sb.append("\n");
-        sb.append("as");
+        sb.append("AS");
         sb.append(formattedParameters(variablesPanel.getProcedureParameterModel().getTableVector(), true));
         sb.append(sqlBodyText.getSQLText());
         sb.append("^\n");
@@ -225,7 +229,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                 sb.append("^\n");
             }
         }
-        return sb.toString();
+        return sb.toString();*/
     }
 
     @Override

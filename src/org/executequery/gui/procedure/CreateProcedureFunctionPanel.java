@@ -9,7 +9,6 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
-import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
@@ -26,14 +25,12 @@ import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.procedureParser.ProcedureParserBaseListener;
 import org.underworldlabs.procedureParser.ProcedureParserLexer;
 import org.underworldlabs.procedureParser.ProcedureParserParser;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -42,8 +39,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Vector;
 
@@ -424,126 +423,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
     protected abstract String getEmptySqlBody();
 
-    private String formattedParameter(ColumnData cd) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
-                append(" ");
-        if (MiscUtils.isNull(cd.getComputedBy())) {
-            if (MiscUtils.isNull(cd.getDomain())) {
-                if (cd.getColumnType() != null || cd.isTypeOf()) {
-                    sb.append(cd.getFormattedDataType());
-                }
-            } else {
-                if (cd.isTypeOf())
-                    sb.append(cd.getFormattedDataType());
-                else
-                    sb.append(cd.getFormattedDomain());
-            }
-            sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
-            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue())) {
-                String value = "";
-                boolean str = false;
-                int sqlType = cd.getSQLType();
-                switch (sqlType) {
 
-                    case Types.LONGVARCHAR:
-                    case Types.LONGNVARCHAR:
-                    case Types.CHAR:
-                    case Types.NCHAR:
-                    case Types.VARCHAR:
-                    case Types.VARBINARY:
-                    case Types.BINARY:
-                    case Types.NVARCHAR:
-                    case Types.CLOB:
-                    case Types.DATE:
-                    case Types.TIME:
-                    case Types.TIMESTAMP:
-                        value = "'";
-                        str = true;
-                        break;
-                    default:
-                        break;
-                }
-                value += cd.getDefaultValue();
-                if (str) {
-                    value += "'";
-                }
-                sb.append(" DEFAULT ").append(value);
-            }
-            if (!MiscUtils.isNull(cd.getCheck())) {
-                sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
-            }
-        } else {
-            sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
-        }
-        return sb.toString();
-    }
 
-    protected String formattedParameters(Vector<ColumnData> tableVector, boolean variable) {
-        StringBuilder sqlText = new StringBuilder();
-        sqlText.append("\n");
-        for (int i = 0, k = tableVector.size(); i < k; i++) {
-            ColumnData cd = tableVector.elementAt(i);
-            if (!MiscUtils.isNull(cd.getColumnName())) {
-                if (variable)
-                    sqlText.append("DECLARE ");
-                sqlText.append(formattedParameter(cd));
-                if (variable) {
-                    sqlText.append(";");
-                    if (cd.getDescription() != null && !cd.getDescription().isEmpty()) {
-                        sqlText.append(" /*");
-                        sqlText.append(cd.getDescription());
-                        sqlText.append("*/");
-                    }
-                } else if (i != k - 1) {
-                    sqlText.append(",");
-                }
-                sqlText.append("\n");
-            }
-        }
-        return sqlText.toString();
-    }
 
     protected abstract void generateScript();
 
     String[] getDomains() {
-        java.util.List<String> domains = new ArrayList<>();
-        try {
-            String query = "select " +
-                    "RDB$FIELD_NAME FROM RDB$FIELDS " +
-                    "where RDB$FIELD_NAME not like 'RDB$%'\n" +
-                    "and RDB$FIELD_NAME not like 'MON$%'\n" +
-                    "order by RDB$FIELD_NAME";
-            ResultSet rs = sender.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
-                domains.add(rs.getString(1).trim());
-            }
-            sender.releaseResources();
-            return domains.toArray(new String[domains.size()]);
-        } catch (Exception e) {
-            Log.error("Error loading domains:" + e.getMessage());
-            return null;
-        }
+        java.util.List<String> domains = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.DOMAIN]);
+        return domains.toArray(new String[domains.size()]);
     }
 
-    String[] getGenerators() {
-        List<String> domains = new ArrayList<>();
-        try {
-            String query = "select " +
-                    "RDB$GENERATOR_NAME FROM RDB$GENERATORS " +
-                    "where RDB$SYSTEM_FLAG = 0 " +
-                    "order by 1";
-            ResultSet rs = sender.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
-                domains.add(rs.getString(1).trim());
-            }
-            sender.releaseResources();
-            return domains.toArray(new String[domains.size()]);
-        } catch (Exception e) {
-            Log.error("Error loading generators:" + e.getMessage());
-            return null;
-        }
-    }
+
     /**
      * Returns the procedure name field.
      */

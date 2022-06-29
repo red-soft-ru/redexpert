@@ -140,6 +140,12 @@
         </dependency>
 
         <dependency>
+            <groupId>net.sourceforge.csvjdbc</groupId>
+            <artifactId>csvjdbc</artifactId>
+            <version>1.0.40</version>
+        </dependency>
+
+        <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna-platform</artifactId>
             <version>5.5.0</version>

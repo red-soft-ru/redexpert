@@ -22,6 +22,9 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
@@ -46,6 +49,7 @@ import org.underworldlabs.util.MiscUtils;
 import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 import java.util.Objects;
 
 /**
@@ -53,6 +57,7 @@ import java.util.Objects;
  */
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
+    StatementExecutor querySender;
     private final ConnectionsTreePanel treePanel;
 
     private StatementToEditorWriter statementWriter;
@@ -60,6 +65,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     private DatabaseConnection currentSelection;
 
     private TreePath currentPath;
+
+    private TreePath[] treePaths;
+
+    private boolean selectedSeveralPaths=false;
 
     BrowserTreePopupMenuActionListener(ConnectionsTreePanel treePanel) {
         this.treePanel = treePanel;
@@ -889,10 +898,28 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     protected void setCurrentPath(TreePath currentPath) {
         this.currentPath = currentPath;
+        this.selectedSeveralPaths=false;
+    }
+
+    protected void setTreePaths(TreePath[] treePaths){
+        this.treePaths=treePaths;
+        this.selectedSeveralPaths=true;
+    }
+
+    protected void setSelectedSeveralPaths(boolean selectedSeveralPaths){
+        this.selectedSeveralPaths=selectedSeveralPaths;
     }
 
     protected TreePath getCurrentPath() {
         return currentPath;
+    }
+
+    protected  TreePath[] getTreePaths(){
+        return treePaths;
+    }
+
+    protected  boolean getSelectedSeveralPaths(){
+        return selectedSeveralPaths;
     }
 
     protected void showDialogCreateObject(AbstractCreateObjectPanel panel, BaseDialog dialog) {
@@ -907,6 +934,45 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         panel.setCurrentPath(currentPath);
         dialog.addDisplayComponentWithEmptyBorder(panel);
         dialog.display();
+    }
+
+    public void active(ActionEvent e) throws SQLException {
+        String query;
+        if (selectedSeveralPaths) {
+            for (int i = 0; i < treePaths.length; i++) {
+                String[] Splitters = treePaths[i].getLastPathComponent().toString().split(":");
+                query = "ALTER "+Splitters[1] + " " + Splitters[0] + " ACTIVE";
+                querySender = new DefaultStatementExecutor(currentSelection, false);
+                querySender.execute(QueryTypes.ALTER_OBJECT,query);
+                treePanel.reloadPath(treePaths[i]);
+            }
+        } else {
+            String[] Splitters = currentPath.getLastPathComponent().toString().split(":");
+            query = "ALTER "+Splitters[1] + " " + Splitters[0] + " ACTIVE";
+            querySender = new DefaultStatementExecutor(currentSelection, false);
+            querySender.execute(QueryTypes.ALTER_OBJECT,query);
+            treePanel.reloadPath(currentPath);
+
+        }
+    }
+
+    public void inactive(ActionEvent e) throws SQLException {
+        String query;
+        if (selectedSeveralPaths) {
+            for (int i = 0; i < treePaths.length; i++) {
+                String[] Splitters = treePaths[i].getLastPathComponent().toString().split(":");
+                query = "ALTER "+Splitters[1] + " " + Splitters[0] + " INACTIVE";
+                querySender = new DefaultStatementExecutor(currentSelection, false);
+                querySender.execute(QueryTypes.ALTER_OBJECT,query);
+                treePanel.reloadPath(treePaths[i]);
+            }
+        } else {
+            String[] Splitters = currentPath.getLastPathComponent().toString().split(":");
+            query = "ALTER "+Splitters[1] + " " + Splitters[0] + " INACTIVE";
+            querySender = new DefaultStatementExecutor(currentSelection, false);
+            querySender.execute(QueryTypes.ALTER_OBJECT,query);
+            treePanel.reloadPath(currentPath);
+        }
     }
 
 }

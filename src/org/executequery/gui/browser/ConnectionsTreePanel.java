@@ -1829,6 +1829,32 @@ public class ConnectionsTreePanel extends TreePanel
     return tree.getSelectionPath();
   }
 
+  public TreePath[] getTreeSelectionPaths() {
+    return tree.getSelectionPaths();
+  }
+
+  private boolean selectedPathsOnlyThisTyped(int namedObject){
+    boolean flag = true;
+    TreePath[] treePaths =tree.getSelectionPaths();
+    DatabaseObjectNode Object;
+    for(int i = 0; i < tree.getSelectionPaths().length; i++) {
+      Object = (DatabaseObjectNode) treePaths[i].getLastPathComponent();
+      if (Object.getType() != namedObject)
+        flag = false;
+    }
+    return flag;
+  }
+
+  private boolean CheckPathForLocationInSelectedTree(TreePath treePathForLocation){
+    boolean flag=false;
+    TreePath[] treePaths =tree.getSelectionPaths();
+    for(int i=0; i<tree.getSelectionPaths().length;i++) {
+      if (treePaths[i] == treePathForLocation)
+        flag = true;
+    }
+    return flag;
+  }
+
   protected TreePath getTreePathForLocation(int x, int y) {
     return tree.getPathForLocation(x, y);
   }
@@ -1901,16 +1927,19 @@ public class ConnectionsTreePanel extends TreePanel
 
         Point point = new Point(e.getX(), e.getY());
         TreePath treePathForLocation = getTreePathForLocation(point.x, point.y);
-        try {
+        if (getTreeSelectionPaths().length <= 1 || !CheckPathForLocationInSelectedTree(treePathForLocation) ||
+                (selectedPathsOnlyThisTyped(NamedObject.TRIGGER)==false && selectedPathsOnlyThisTyped(NamedObject.INDEX)==false))
+        {
+          try {
 
-          removeTreeSelectionListener();
-          setTreeSelectionPath(treePathForLocation);
+            removeTreeSelectionListener();
+            setTreeSelectionPath(treePathForLocation);
 
-        } finally {
+          } finally {
 
-          addTreeSelectionListener();
+            addTreeSelectionListener();
+          }
         }
-
         if (treePathForLocation != null) {
 
           JPopupMenu popupMenu = null;
@@ -1920,14 +1949,21 @@ public class ConnectionsTreePanel extends TreePanel
             popupMenu = getBrowserTreeFolderPopupMenu();
 
           } else if (isRootNode(object)) {
-
             popupMenu = getBrowserRootTreePopupMenu();
 
           } else {
 
             popupMenu = getBrowserTreePopupMenu();
             BrowserTreePopupMenu browserPopup = (BrowserTreePopupMenu) popupMenu;
-            browserPopup.setCurrentPath(treePathForLocation);
+            if (getTreeSelectionPaths().length <= 1 || !CheckPathForLocationInSelectedTree(treePathForLocation) ||
+                    (selectedPathsOnlyThisTyped(NamedObject.TRIGGER)==false && selectedPathsOnlyThisTyped(NamedObject.INDEX)==false)) {
+              browserPopup.setCurrentPath(treePathForLocation);//1
+              browserPopup.setSelectedSeveralPaths(false);
+            }
+            else {
+              browserPopup.setTreePaths(tree.getSelectionPaths());
+              browserPopup.setSelectedSeveralPaths(true);
+            }
 
             DatabaseConnection connection = getConnectionAt(point);
             if (connection == null) {

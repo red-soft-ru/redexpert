@@ -85,7 +85,7 @@ public class SchemaTree extends DynamicTree
 
         setDropMode(DropMode.ON_OR_INSERT);
         setTransferHandler(new TreeTransferHandler());
-        getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         int h = Integer.parseInt(SystemProperties.getProperty("user", "treeconnection.row.height"));
         if (h == 16)
             setRowHeight(17);

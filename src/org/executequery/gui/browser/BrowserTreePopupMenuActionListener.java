@@ -20,33 +20,56 @@
 
 package org.executequery.gui.browser;
 
+import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.GUIUtilities;
+import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databasemediators.spi.StatementExecutor;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
+import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
+import org.executequery.gui.editor.ResultSetTablePopupMenu;
+import org.executequery.gui.editor.autocomplete.AutoCompleteListItem;
+import org.executequery.gui.editor.autocomplete.AutoCompleteListItemType;
+import org.executequery.gui.erd.ErdTable;
 import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
 import org.executequery.gui.importexport.ImportExportXMLPanel;
+import org.executequery.gui.resultset.LobRecordDataItem;
+import org.executequery.gui.resultset.RecordDataItem;
+import org.executequery.gui.resultset.ResultSetColumnHeader;
+import org.executequery.gui.resultset.SimpleRecordDataItem;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
+import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.EQDateTimePicker;
+import org.underworldlabs.swing.EQTimePicker;
+import org.underworldlabs.swing.RDBCheckBox;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.table.TableColumnModel;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
+import java.sql.*;
+import java.util.List;
 import java.util.Objects;
+import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
@@ -54,12 +77,12 @@ import java.util.Objects;
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     private final ConnectionsTreePanel treePanel;
-
     private StatementToEditorWriter statementWriter;
 
     private DatabaseConnection currentSelection;
 
     private TreePath currentPath;
+
 
     BrowserTreePopupMenuActionListener(ConnectionsTreePanel treePanel) {
         this.treePanel = treePanel;

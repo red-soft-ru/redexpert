@@ -21,6 +21,7 @@
 package org.executequery.actions.othercommands;
 
 import org.executequery.GUIUtilities;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.editor.QueryEditorResultsExporter;
 
@@ -42,7 +43,6 @@ public class ExportResultsTableCommand extends AbstractBaseCommand {
 
             QueryEditor editor = (QueryEditor) panel;
             if (editor.isResultSetSelected()) {
-
                 new QueryEditorResultsExporter(editor.getResultSetTableModel());
 
             } else {

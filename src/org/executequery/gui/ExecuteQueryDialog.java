@@ -21,10 +21,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.util.Vector;
 
 
@@ -195,7 +192,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         rollbackButton.setText(bundleString("rollback"));
         rollbackButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rollbackButtonActionPerformed(evt);
+                rollback();
             }
         });
 
@@ -267,6 +264,28 @@ public class ExecuteQueryDialog extends BaseDialog {
                         )
         );
         addDisplayComponent(mainPanel);
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                closeDialog();
+            }
+        });
+        ActionListener escListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                closeDialog();
+
+            }
+        };
+        mainPanel.registerKeyboardAction(escListener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    }
+
+    private void closeDialog() {
+        rollback();
     }
 
     private void setMessages(RowAction row) {
@@ -328,7 +347,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         return commitResult;
     }
 
-    private void rollbackButtonActionPerformed(ActionEvent evt) {
+    private void rollback() {
         try {
             querySender.execute(QueryTypes.ROLLBACK, "rollback");
             super.finished();

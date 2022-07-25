@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.jdbc.DataSourceException;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -266,8 +267,23 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCreateSQLText() {
+    public String getCreateFullSQLText() {
         return "";
+    }
+
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getFillSQL() throws DataSourceException {
+        return null;
     }
 
     @Override

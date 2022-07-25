@@ -188,7 +188,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
             funcNameField.setText(defaultDatabaseFunction.getName());
             model.setValues(defaultDatabaseFunction.getFunctionArgumentsArray());
             sourceTextPane.setText(defaultDatabaseFunction.getFunctionSourceCode());
-            createSqlPane.setText(defaultDatabaseFunction.getCreateSQLText());
+            createSqlPane.setText(defaultDatabaseFunction.getCreateFullSQLText());
 
         } catch (DataSourceException e) {
             controller.handleException(e);

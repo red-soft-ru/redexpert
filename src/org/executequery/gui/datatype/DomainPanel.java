@@ -1,19 +1,18 @@
 package org.executequery.gui.datatype;
 
-import org.executequery.databasemediators.QueryTypes;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.databaseobjects.CreateDomainPanel;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 public class DomainPanel extends JPanel {
     private JComboBox domainBox;
@@ -33,7 +32,11 @@ public class DomainPanel extends JPanel {
     private void init() {
         domainBox = new JComboBox();
         addDomainComboBoxActionListener(actionEvent -> {
-            columnData.setDomain((String) domainBox.getSelectedItem());
+            DefaultDatabaseDomain defaultDatabaseDomain = (DefaultDatabaseDomain) domainBox.getSelectedItem();
+            if (defaultDatabaseDomain == null)
+                columnData.setDomain(null);
+            else
+                columnData.setDomain(defaultDatabaseDomain.getName());
             if (!editing) {
                 editDomainButton.setEnabled(!columnData.getDomain().equals(""));
             }
@@ -48,13 +51,27 @@ public class DomainPanel extends JPanel {
         });
         editDomainButton.addActionListener(actionEvent -> {
             BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, true);
-            CreateDomainPanel panel = new CreateDomainPanel(columnData.getDatabaseConnection(), dialog, (String) domainBox.getSelectedItem());
+            CreateDomainPanel panel = new CreateDomainPanel(columnData.getDatabaseConnection(), dialog, (DefaultDatabaseDomain) domainBox.getSelectedItem());
             dialog.addDisplayComponent(panel);
             dialog.display();
         });
-        if (editing)
-            domainBox.setModel(new DefaultComboBoxModel(getEditingDomains()));
-        else domainBox.setModel(new DefaultComboBoxModel(getDomains()));
+        Vector<NamedObject> domains = new Vector(getDomains());
+        domainBox.setModel(new DefaultComboBoxModel(domains));
+        if (editing) {
+            boolean finded = false;
+            for (NamedObject namedObject : domains) {
+                if (namedObject.getName().trim().contentEquals(currentDomain)) {
+                    domainBox.setSelectedItem(namedObject);
+                    finded = true;
+                }
+            }
+            if (!finded) {
+                NamedObject namedObject = ConnectionsTreePanel.getNamedObjectFromHost(columnData.getDatabaseConnection(), NamedObject.SYSTEM_DOMAIN, currentDomain);
+                domainBox.addItem(namedObject);
+                domainBox.setSelectedItem(namedObject);
+            }
+        }
+        //else domainBox.setModel(new DefaultComboBoxModel(new Vector(getDomains())));
         this.setLayout(new GridBagLayout());
         this.add(new Label(bundleString("Domain")), new GridBagConstraints(0, 0, 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
@@ -81,7 +98,7 @@ public class DomainPanel extends JPanel {
         return domainBox.getSelectedItem();
     }
 
-    private String[] getEditingDomains() {
+    /*private String[] getEditingDomains() {
         DefaultStatementExecutor executor = new DefaultStatementExecutor(columnData.getDatabaseConnection(), true);
         List<String> domains = new ArrayList<>();
         domains.add(currentDomain);
@@ -101,28 +118,10 @@ public class DomainPanel extends JPanel {
             Log.error("Error loading domains:" + e.getMessage());
             return null;
         }
-    }
+    }*/
 
-    String[] getDomains() {
-        DefaultStatementExecutor executor = new DefaultStatementExecutor(columnData.getDatabaseConnection(), true);
-        List<String> domains = new ArrayList<>();
-        domains.add("");
-        try {
-            String query = "select " +
-                    "RDB$FIELD_NAME FROM RDB$FIELDS " +
-                    "where RDB$FIELD_NAME not like 'RDB$%'\n" +
-                    "and RDB$FIELD_NAME not like 'MON$%'\n" +
-                    "order by RDB$FIELD_NAME";
-            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
-                domains.add(rs.getString(1).trim());
-            }
-            executor.releaseResources();
-            return domains.toArray(new String[domains.size()]);
-        } catch (Exception e) {
-            Log.error("Error loading domains:" + e.getMessage());
-            return null;
-        }
+    List<NamedObject> getDomains() {
+        return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(columnData.getDatabaseConnection()).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.DOMAIN]);
     }
 
     private String bundleString(String key) {

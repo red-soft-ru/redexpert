@@ -51,7 +51,7 @@ import java.util.*;
  */
 public final class ConnectionManager {
 
-    private static Map<DatabaseConnection, ConnectionPool> connectionPools = Collections.synchronizedMap(new HashMap<DatabaseConnection, ConnectionPool>());
+    private static final Map<DatabaseConnection, ConnectionPool> connectionPools = Collections.synchronizedMap(new HashMap<DatabaseConnection, ConnectionPool>());
     /**
      * Creates a stored data source for the specified database
      * connection properties object.
@@ -89,7 +89,7 @@ public final class ConnectionManager {
         try {
             while (host.countFinishedMetaTags() < hostNode.getChildCount()) {
 
-                Thread.sleep(100);
+                Thread.sleep(50);
             }
 
         } catch (InterruptedException e) {

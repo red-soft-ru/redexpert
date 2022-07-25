@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
 import java.sql.ResultSet;
@@ -386,7 +387,7 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCreateSQLText() {
+    public String getCreateFullSQLText() {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE OR ALTER TRIGGER ");
         sb.append(MiscUtils.getFormattedObject(getName()));
@@ -405,6 +406,21 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
             sb.append(getTriggerSourceCode());
         }
         return sb.toString();
+    }
+
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getFillSQL() throws DataSourceException {
+        return null;
     }
 
     protected String queryForInfo() {

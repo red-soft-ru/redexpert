@@ -816,7 +816,8 @@ public class ColumnData implements Serializable {
     public void setNotNull(boolean notNull) {
         if (notNull)
             columnRequired = VALUE_REQUIRED;
-        else columnRequired = VALUE_NOT_REQUIRED;
+        else
+            columnRequired = VALUE_NOT_REQUIRED;
     }
 
     public void setCharset(String charset) {
@@ -866,26 +867,14 @@ public class ColumnData implements Serializable {
         if (!hasCopy()) {
             return false;
         }
-        if (MiscUtils.isNull(copy.getDefaultValue())) {
-            return !MiscUtils.isNull(getDefaultValue());
-        } else {
-            if (MiscUtils.isNull(getDefaultValue()))
-                return true;
-        }
-        return !copy.getDefaultValue().equalsIgnoreCase(getDefaultValue());
+        return !MiscUtils.compareStrings(getDefaultValue(), copy.getDefaultValue());
     }
 
     public boolean isCheckChanged() {
         if (!hasCopy()) {
             return false;
         }
-        if (MiscUtils.isNull(copy.getCheck())) {
-            return !MiscUtils.isNull(getCheck());
-        } else {
-            if (MiscUtils.isNull(getCheck()))
-                return true;
-        }
-        return !copy.getCheck().equalsIgnoreCase(getCheck());
+        return !MiscUtils.compareStrings(getCheck(), copy.getCheck());
     }
 
     public boolean isTypeChanged() {

@@ -190,7 +190,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
         try {
             udfNameField.setText(udf.getName());
             descriptionPane.setText(udf.getRemarks());
-            sqlPane.setText(udf.getCreateSQLText());
+            sqlPane.setText(udf.getCreateFullSQLText());
         } catch (DataSourceException e) {
             controller.handleException(e);
         }
@@ -211,7 +211,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
         if (udf != null) {
             udfNameField.setText(udf.getName());
             descriptionPane.setText(udf.getRemarks());
-            sqlPane.setText(udf.getCreateSQLText());
+            sqlPane.setText(udf.getCreateFullSQLText());
 
         } else {
             udfNameField.setText(metaObject.getName());

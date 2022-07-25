@@ -141,7 +141,7 @@ public interface DatabaseTable extends DatabaseTableObject {
      */
     int STYLE_CONSTRAINTS_ALTER = 2;
 
-    String getCreateSQLText() throws DataSourceException;
+    String getCreateFullSQLText() throws DataSourceException;
 
     /**
      * Returns the CREATE TABLE statement for this database table.

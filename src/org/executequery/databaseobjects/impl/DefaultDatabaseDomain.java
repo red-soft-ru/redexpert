@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -85,8 +86,79 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCreateSQLText() {
+    public String getCreateFullSQLText() {
         return SQLUtils.generateCreateDomain(getDomainData(), getName(), true);
+    }
+
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return getCreateFullSQLText();
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        DefaultDatabaseDomain domain = (DefaultDatabaseDomain) databaseObject;
+        return getAlterSQL(domain.getDomainData());
+    }
+
+    public String getAlterSQL(ColumnData domainData) throws DataSourceException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER DOMAIN ").append(getDomainData().getFormattedColumnName()).append("\n");
+        String begin = sb.toString();
+        if (!getDomainData().getColumnName().contentEquals(domainData.getColumnName())) {
+            sb.append("TO ").append(domainData.getFormattedColumnName()).append("\n");
+        }
+        if (!MiscUtils.compareStrings(getDomainData().getDefaultValue(), domainData.getDefaultValue())) {
+            if (MiscUtils.isNull(domainData.getDefaultValue()))
+                sb.append("DROP DEFAULT\n");
+            else {
+                sb.append("SET DEFAULT ");
+                if (domainData.getDefaultValue().toUpperCase().trim().equals("NULL")) {
+                    sb.append("NULL");
+                } else {
+                    sb.append(MiscUtils.formattedSQLValue(domainData.getDefaultValue(), domainData.getSQLType()));
+                }
+                sb.append("\n");
+
+            }
+        }
+        if (getDomainData().isDomainNotNull() != domainData.isRequired()) {
+            if (domainData.isRequired()) {
+                sb.append("SET ");
+            } else {
+                sb.append("DROP ");
+            }
+            sb.append("NOT NULL\n");
+
+        }
+        if (!MiscUtils.compareStrings(getDomainData().getCheck(), domainData.getCheck())) {
+            sb.append("DROP CONSTRAINT\n");
+            if (!MiscUtils.isNull(domainData.getCheck())) {
+                sb.append("ADD CHECK (").append(domainData.getCheck()).append(")\n");
+            }
+        }
+        if (!MiscUtils.compareStrings(getDomainData().getFormattedDomainDataType(), domainData.getFormattedDataType())) {
+            sb.append("TYPE ").append(domainData.getFormattedDataType());
+        }
+        sb.append(";");
+        if (MiscUtils.compareStrings(getDomainData().getDescription(), domainData.getDescription())) {
+            sb.append("\nCOMMENT ON DOMAIN ").append(domainData.getFormattedColumnName()).append(" IS ");
+            if (!MiscUtils.isNull(domainData.getDescription())) {
+
+                sb.append("'").append(domainData.getDescription()).append("'");
+            } else {
+                sb.append("NULL");
+            }
+            sb.append(";");
+        }
+        if (sb.toString().contentEquals(begin))
+            return "";
+        return sb.toString();
+    }
+
+    @Override
+    public String getFillSQL() throws DataSourceException {
+        return "";
     }
 
     @Override
@@ -122,6 +194,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         columns = new ArrayList<>();
         domainData = new ColumnData(getHost().getDatabaseConnection());
+        domainData.setColumnName(getName());
         while (rs.next()) {
             domainData.setDomainType(rs.getInt(TYPE));
             domainData.setDomainSize(rs.getInt(FIELD_LENGTH));
@@ -137,6 +210,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
             String domainCheck = rs.getString(VALIDATION_SOURCE);
             domainData.setDomainDescription(rs.getString(DESCRIPTION));
             domainData.setDomainNotNull(rs.getInt(NULL_FLAG) == 1);
+            domainData.setNotNull(domainData.isDomainNotNull());
             domainData.setDomainDefault(rs.getString(DEFAULT_SOURCE));
             domainData.setDomainComputedBy(rs.getString(COMPUTED_SOURCE));
             String domainCollate = rs.getString(COLLATION_NAME);

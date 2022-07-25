@@ -1016,7 +1016,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     private String createTableStatementFormatted() {
 
-        return table.getCreateSQLText();
+        return table.getCreateFullSQLText();
     }
 
     private boolean loadingRowCount;

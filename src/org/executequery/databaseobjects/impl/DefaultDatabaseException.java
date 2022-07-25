@@ -1,6 +1,7 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -76,7 +77,7 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
         this.exceptionText = exceptionText;
     }
 
-    public String getCreateSQLText() {
+    public String getCreateFullSQLText() {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE EXCEPTION \n");
         sb.append(getName());
@@ -86,6 +87,21 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
         sb.append("';");
 
         return sb.toString();
+    }
+
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getFillSQL() throws DataSourceException {
+        return null;
     }
 
     @Override

@@ -76,7 +76,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
         descriptionTextArea = new SimpleTextArea();
         String sql;
         if (editing) {
-            sql = replaceName(view.getCreateSQLText());
+            sql = replaceName(view.getCreateFullSQLText());
         } else {
             sql = "create view <view_name>\n ( _fields_ )\n" +
                     "as\n" +

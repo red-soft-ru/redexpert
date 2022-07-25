@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -125,7 +126,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     @Override
-    public String getCreateSQLText() {
+    public String getCreateFullSQLText() {
         StringBuilder sb = new StringBuilder();
         sb.append("set term ^ ;");
         sb.append("\n");
@@ -154,6 +155,21 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getFillSQL() throws DataSourceException {
+        return null;
     }
 
     protected String queryForInfo() {

@@ -4,6 +4,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.event.TableModelListener;
@@ -43,9 +44,9 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
     public static class UDFTableModel implements TableModel {
 
-        private Set<TableModelListener> listeners = new HashSet<TableModelListener>();
+        private final Set<TableModelListener> listeners = new HashSet<TableModelListener>();
 
-        private List<DefaultDatabaseUDF> udfs;
+        private final List<DefaultDatabaseUDF> udfs;
 
         public UDFTableModel(List<DefaultDatabaseUDF> udf) {
             this.udfs = udf;
@@ -127,16 +128,16 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
     }
 
     public class UDFParameter {
-        private int argPosition;
-        private int mechanism;
-        private int fieldType;
-        private int fieldScale;
-        private int fieldLenght;
-        private int fieldSubType;
-        private int fieldPrecision;
+        private final int argPosition;
+        private final int mechanism;
+        private final int fieldType;
+        private final int fieldScale;
+        private final int fieldLenght;
+        private final int fieldSubType;
+        private final int fieldPrecision;
         private String encoding;
         private String fieldStringType;
-        private String stringMechanism;
+        private final String stringMechanism;
         private boolean notNull;
         private boolean isCString;
 
@@ -286,7 +287,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() >= 3)
                     nullFlag = rs.getInt("null_flag");
                 if (rs.getInt(7) != BY_REFERENCE_WITH_NULL) // already setup
-                    udfParameter.setNotNull(nullFlag == 0 ? false : true);
+                    udfParameter.setNotNull(nullFlag != 0);
                 udfParameter.setEncoding(rs.getString("character_set_name"));
                 parameters.add(udfParameter);
             }
@@ -402,7 +403,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         this.description = description;
     }
 
-    public String getCreateSQLText() {
+    public String getCreateFullSQLText() {
         StringBuilder sb = new StringBuilder();
         sb.append("DECLARE EXTERNAL FUNCTION ");
         sb.append(getName());
@@ -449,5 +450,30 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
             sb.append(getModuleName());
         sb.append("';");
         return sb.toString();
+    }
+
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getFillSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    protected String queryForInfo() {
+        return null;
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+
     }
 }

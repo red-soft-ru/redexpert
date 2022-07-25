@@ -3,10 +3,16 @@ package org.executequery.gui.browser.comparer;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
+import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 
 import java.sql.ResultSet;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Comparer {
 
@@ -66,6 +72,18 @@ public class Comparer {
     public ArrayList<String> droppedObjects = new ArrayList<String>();
 
 
+    private List<NamedObject> createListObjects(int type) {
+        List<NamedObject> create = new ArrayList<NamedObject>();
+        List<NamedObject> first = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(firstConnection.getDatabaseConnection()).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+        for (NamedObject databaseObject : first) {
+            if (ConnectionsTreePanel.getNamedObjectFromHost(secondConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
+                create.add(databaseObject);
+            }
+        }
+
+        return create;
+    }
+
     private ArrayList<String> createList(String query) {
         ArrayList<String> second = new ArrayList<String>();
         ArrayList<String> create = new ArrayList<String>();
@@ -109,11 +127,10 @@ public class Comparer {
             while (rs.next()) {
                 first.add(rs.getString(1).trim());
             }
-
-            rs.close();
-            firstConnection.releaseResources();
         } catch (java.sql.SQLException e) {
             Log.error("Comparer 78: " + e);
+        } finally {
+            firstConnection.releaseResources();
         }
         try {
             ResultSet rs = secondConnection.execute(query, true).getResultSet();
@@ -123,11 +140,11 @@ public class Comparer {
                     drop.add(obj);
                 }
             }
-            rs.close();
-            secondConnection.releaseResources();
 
         } catch (java.sql.SQLException e) {
             System.out.println("Comparer 93: " + e);
+        } finally {
+            secondConnection.releaseResources();
         }
 
         return drop;
@@ -142,11 +159,10 @@ public class Comparer {
             while (rs.next()) {
                 second.add(rs.getString(1).trim());
             }
-
-            rs.close();
-            secondConnection.releaseResources();
         } catch (java.sql.SQLException e) {
             Log.error("Comparer 114: " + e);
+        } finally {
+            secondConnection.releaseResources();
         }
         try {
             ResultSet rs = firstConnection.execute(query, true).getResultSet();
@@ -156,14 +172,30 @@ public class Comparer {
                     alter.add(obj);
                 }
             }
-            rs.close();
-            firstConnection.releaseResources();
+
 
         } catch (java.sql.SQLException e) {
             System.out.println("Comparer 129: " + e);
+        } finally {
+            firstConnection.releaseResources();
         }
 
         return alter;
+    }
+
+    public void createObjects(boolean permission, int type) {
+        if (permission) {
+
+            List<NamedObject> cObjects = createListObjects(type);
+            String header = "/* Creating {0} */\n\n";
+            header = MessageFormat.format(header, Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+            script.add(header);
+            for (NamedObject obj : cObjects) {
+
+                script.add(((AbstractDatabaseObject) obj).getCreateSQL() + "\n");
+                lists = lists + "   " + obj.getName() + "\n";
+            }
+        }
     }
 
     public void createDomains(boolean permission) {

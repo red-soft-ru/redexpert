@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * @author takisd
  */
-public class DefaultDatabaseExecutable extends AbstractDatabaseObject
+public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         implements DatabaseExecutable {
 
     /**
@@ -81,15 +81,6 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
     }
 
-    @Override
-    protected String queryForInfo() {
-        return null;
-    }
-
-    @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-
-    }
 
     /**
      * Indicates whether this executable object has any parameters.

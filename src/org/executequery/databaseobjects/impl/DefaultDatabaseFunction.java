@@ -243,7 +243,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         return functionSourceCode;
     }
 
-    public String getCreateSQLText() {
+    public String getCreateFullSQLText() {
         return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getFunctionSourceCode(), getEntryPoint(), getEngine(), getRemarks(), getHost().getDatabaseConnection());
 
         /*StringBuilder sb = new StringBuilder();
@@ -396,6 +396,31 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
 
         return sb.toString();*/
+    }
+
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getFillSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    protected String queryForInfo() {
+        return null;
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+
     }
 
     protected void getObjectInfo() {

@@ -58,8 +58,8 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
     protected void init() {
         String domain = null;
-        if (editing)
-            domain = columnEdited.getDomain();
+        if (editing && columnEdited.getDomain() != null)
+            domain = columnEdited.getDomain().trim();
         domainPanel = new DomainPanel(columnData, domain);
         defaultValuePanel = new SimpleTextArea();
         checkPanel = new SimpleSqlTextPanel();

@@ -449,7 +449,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
                 descBottomPanel.add(tableDescriptionPanel, BorderLayout.CENTER);
             }
 
-            sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText());
+            sqlTextPanel.setSQLText(currentObjectView.getCreateFullSQLText());
             sqlTextPanel.getTextPane().setEditable(false);
 
         } catch (DataSourceException e) {

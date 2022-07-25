@@ -567,10 +567,13 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         return false;
     }
 
-    public String getCreateSQLText() throws DataSourceException {
+    public abstract String getCreateFullSQLText() throws DataSourceException;
 
-        return "";
-    }
+    public abstract String getCreateSQL() throws DataSourceException;
+
+    public abstract String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException;
+
+    public abstract String getFillSQL() throws DataSourceException;
 
     public int getDatabaseMajorVersion() {
         try {

@@ -256,7 +256,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
                 DefaultDatabaseProcedure p = (DefaultDatabaseProcedure) executeable;
                 p.setHost(((DefaultDatabaseProcedure) executeable).getMetaTagParent().getHost());
                 createSqlPane.setDatabaseConnection(executeable.getHost().getDatabaseConnection());
-                createSqlPane.setText(p.getCreateSQLText());
+                createSqlPane.setText(p.getCreateFullSQLText());
             }
 
         } catch (DataSourceException e) {

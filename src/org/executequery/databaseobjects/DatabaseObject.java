@@ -134,7 +134,7 @@ public interface DatabaseObject extends NamedObject {
 
     ResultSet getMetaData() throws DataSourceException;
 
-    String getCreateSQLText() throws DataSourceException;
+    String getCreateFullSQLText() throws DataSourceException;
 
     String getSource();
 

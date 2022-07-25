@@ -53,6 +53,26 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
         super(host);
     }
 
+    @Override
+    public String getCreateFullSQLText() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getFillSQL() throws DataSourceException {
+        return null;
+    }
+
     /**
      * Creates a new instance of DefaultDatabaseObject
      */

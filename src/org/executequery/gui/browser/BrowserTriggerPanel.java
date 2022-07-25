@@ -231,7 +231,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             }
             triggerPositionField.setText(String.valueOf(trigger.getTriggerSequence()));
             descriptionPane.setText(trigger.getTriggerDescription());
-            sqlPane.setText(trigger.getCreateSQLText());
+            sqlPane.setText(trigger.getCreateFullSQLText());
             triggerInfoLabel.setText(triggerInfoLabel.getText() + "       " + triggerBeforeAfterField.getText() + "       " + triggerPositionLabel.getText() + triggerPositionField.getText());
         } catch (DataSourceException e) {
             controller.handleException(e);

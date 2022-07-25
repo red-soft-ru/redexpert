@@ -459,7 +459,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         GUIUtilities.showWaitCursor();
 
                         BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateDomainPanel(currentSelection, dialog, node.getName().trim());
+                        createObjectPanel = new CreateDomainPanel(currentSelection, dialog, (DefaultDatabaseDomain) node.getDatabaseObject());
                         showDialogCreateObject(createObjectPanel, dialog);
                     } finally {
                         GUIUtilities.showNormalCursor();
@@ -854,7 +854,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     public void createTableStatement(ActionEvent e) {
         try {
-            statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedTable().getCreateSQLText());
+            statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedTable().getCreateFullSQLText());
         } catch (DataSourceException dse) {
             handleException(dse);
         }

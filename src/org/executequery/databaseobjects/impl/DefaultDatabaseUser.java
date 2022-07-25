@@ -215,9 +215,24 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         loadTags();
     }
 
-    public String getCreateSQLText() throws DataSourceException {
+    public String getCreateFullSQLText() throws DataSourceException {
 
         return SQLUtils.generateCreateUser(this);
+    }
+
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getFillSQL() throws DataSourceException {
+        return null;
     }
 
 }

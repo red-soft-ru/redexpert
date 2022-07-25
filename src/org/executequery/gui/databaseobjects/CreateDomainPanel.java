@@ -1,14 +1,12 @@
 package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
-import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.text.SQLTextArea;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
@@ -20,7 +18,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.DOMAIN);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.DOMAIN);
     private ColumnData columnData;
-    private String domain;
+    private DefaultDatabaseDomain domain;
     private JScrollPane scrollDefaultValue;
     private JScrollPane scrollCheck;
     private JScrollPane scrollDescription;
@@ -36,7 +34,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     private SelectTypePanel selectTypePanel;
     private JCheckBox notNullBox;
 
-    public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent, String domain) {
+    public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent, DefaultDatabaseDomain domain) {
         super(connection, parent, domain);
     }
 
@@ -104,13 +102,13 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
 
     protected void initEdited() {
         reset();
-        addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain));
-        addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain));
+        addDependenciesTab(domain);
+        addCreateSqlTab(domain);
     }
 
     protected void reset() {
-        columnData.setColumnName(domain);
-        columnData.setDomain(domain);
+        columnData.setColumnName(domain.getName());
+        columnData.setDomain(domain.getName());
         columnData.setDescription(columnData.getDomainDescription());
         columnData.setCheck(columnData.getDomainCheck());
         columnData.setNotNull(columnData.isDomainNotNull());
@@ -150,7 +148,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-        this.domain = (String) databaseObject;
+        this.domain = (DefaultDatabaseDomain) databaseObject;
         columnData = new ColumnData(connection);
     }
 
@@ -195,56 +193,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         columnData.setColumnName(nameField.getText());
         sb.setLength(0);
         if (editing) {
-            if (columnData.isChanged()) {
-                sb.append("ALTER DOMAIN ").append(MiscUtils.getFormattedObject(domain)).append("\n");
-                if (columnData.isNameChanged()) {
-                    sb.append("TO ").append(columnData.getFormattedColumnName()).append("\n");
-                }
-                if (columnData.isDefaultChanged()) {
-                    if (MiscUtils.isNull(columnData.getDefaultValue()))
-                        sb.append("DROP DEFAULT\n");
-                    else {
-                        sb.append("SET DEFAULT ");
-                        if (columnData.getDefaultValue().toUpperCase().trim().equals("NULL")) {
-                            sb.append("NULL");
-                        } else {
-                            sb.append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
-                        }
-                        sb.append("\n");
-
-                    }
-                }
-                if (columnData.isRequiredChanged()) {
-                    if (columnData.isRequired()) {
-                        sb.append("SET ");
-                    } else {
-                        sb.append("DROP ");
-                    }
-                    sb.append("NOT NULL\n");
-
-                }
-                if (columnData.isCheckChanged()) {
-                    sb.append("DROP CONSTRAINT\n");
-                    if (!MiscUtils.isNull(columnData.getCheck())) {
-                        sb.append("ADD CHECK (").append(columnData.getCheck()).append(")\n");
-                    }
-                }
-                if (columnData.isTypeChanged()) {
-                    sb.append("TYPE ").append(columnData.getFormattedDataType());
-                }
-                sb.append(";");
-                if (columnData.isDescriptionChanged()) {
-                    sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS ");
-                    if (!MiscUtils.isNull(columnData.getDescription())) {
-
-                        sb.append("'").append(columnData.getDescription()).append("'");
-                    } else {
-                        sb.append("NULL");
-                    }
-                    sb.append(";");
-                }
-            }
-            return sb.toString();
+            return domain.getAlterSQL(columnData);
         } else {
             return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false);
         }

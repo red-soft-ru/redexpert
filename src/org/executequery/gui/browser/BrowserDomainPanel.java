@@ -118,7 +118,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
                     int row = tableDescriptionTable.getSelectedRow();
                     if (row >= 0) {
                         BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, true);
-                        CreateDomainPanel panel = new CreateDomainPanel(currentObjectView.getHost().getDatabaseConnection(), dialog, currentObjectView.getName().trim());
+                        CreateDomainPanel panel = new CreateDomainPanel(currentObjectView.getHost().getDatabaseConnection(), dialog, (DefaultDatabaseDomain) currentObjectView);
                         dialog.addDisplayComponent(panel);
                         dialog.display();
                     }
@@ -220,7 +220,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
             domainNameField.setText(domain.getName());
             tableDescriptionTable.setColumnData(domain.getDomainCols());
             descriptionPane.setText(domain.getRemarks());
-            sqlPane.setText(domain.getCreateSQLText());
+            sqlPane.setText(domain.getCreateFullSQLText());
         } catch (DataSourceException e) {
             controller.handleException(e);
         }
@@ -242,7 +242,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
             domainNameField.setText(domain.getName());
             tableDescriptionTable.setColumnData(domain.getDomainCols());
             descriptionPane.setText(domain.getRemarks());
-            sqlPane.setText(domain.getCreateSQLText());
+            sqlPane.setText(domain.getCreateFullSQLText());
 
         } else {
             domainNameField.setText(metaObject.getName());

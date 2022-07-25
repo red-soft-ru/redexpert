@@ -46,7 +46,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         super(host, "VIEW");
     }
 
-    public String getCreateSQLText() throws DataSourceException {
+    public String getCreateFullSQLText() throws DataSourceException {
 
         String sql = getSource();
 

@@ -33,16 +33,16 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         super(host, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
     }
 
-    public String getCreateSQLText() throws DataSourceException {
+    public String getCreateFullSQLText() throws DataSourceException {
 
 
         DefaultStatementExecutor querySender = new DefaultStatementExecutor();
         querySender.setDatabaseConnection(getHost().getDatabaseConnection());
         int type = -1;
         try {
-            SqlStatementResult result=querySender.getResultSet("Select RDB$RELATION_TYPE FROM RDB$RELATIONS R \n" +
+            SqlStatementResult result = querySender.getResultSet("Select RDB$RELATION_TYPE FROM RDB$RELATIONS R \n" +
                     "WHERE R.RDB$RELATION_NAME = '" + getName() + "'");
-            if(result.isException())
+            if (result.isException())
                 throw result.getSqlException();
             ResultSet resultSet=result.getResultSet();
 

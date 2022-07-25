@@ -171,7 +171,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
             bodyTextPane.setText(databasePackage.getBodySource());
 
             descriptionPane.setText(databasePackage.getDescription());
-            sqlPane.setText(databasePackage.getCreateSQLText());
+            sqlPane.setText(databasePackage.getCreateFullSQLText());
         } catch (DataSourceException e) {
             controller.handleException(e);
         }

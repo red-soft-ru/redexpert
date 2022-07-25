@@ -58,7 +58,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     public static AbstractCreateObjectPanel getEditPanelFromType(int type, DatabaseConnection dc, Object databaseObject, Object[] params) {
         switch (type) {
             case NamedObject.DOMAIN:
-                return new CreateDomainPanel(dc, null, ((DatabaseObject) databaseObject).getName());
+                return new CreateDomainPanel(dc, null, ((DefaultDatabaseDomain) databaseObject));
             case NamedObject.PROCEDURE:
                 return new CreateProcedurePanel(dc, null, ((DatabaseObject) databaseObject).getName());
             case NamedObject.FUNCTION:
@@ -363,7 +363,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         SimpleSqlTextPanel createSqlPanel = new SimpleSqlTextPanel();
         createSqlPanel.getTextPane().setDatabaseConnection(connection);
         createSqlPanel.getTextPane().setEditable(false);
-        createSqlPanel.setSQLText(databaseObject.getCreateSQLText());
+        createSqlPanel.setSQLText(databaseObject.getCreateFullSQLText());
         tabbedPane.add(bundleStaticString("createSQL"), createSqlPanel);
     }
 

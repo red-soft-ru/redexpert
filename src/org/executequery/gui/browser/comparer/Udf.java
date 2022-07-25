@@ -44,7 +44,9 @@ public class Udf {
                 info.add(replaceCode.noNull(rs.getString(1)).trim());
                 info.add(replaceCode.noNull(rs.getString(2)).trim());
 
-                position = rs.getString(3).trim();
+                position = rs.getString(3);
+                if (position != null)
+                    position = position.trim();
             }
 
             rs.close();

@@ -928,24 +928,42 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       for(int i=0;i<_columns.size();i++) {
         if(_columns.get(i) instanceof DatabaseTableColumn)
         {
-          DatabaseTableColumn dtc=(DatabaseTableColumn)_columns.get(i);
-          if(dtc.isMarkedDeleted()) {
-            if(!first)
+          DatabaseTableColumn dtc = (DatabaseTableColumn) _columns.get(i);
+          if (dtc.isMarkedDeleted()) {
+            if (!first)
               sb.append(",");
-            first=false;
+            first = false;
             sb.append("\nDROP ").append(dtc.getNameEscaped());
           }
         }
       }
     }
-    if(first)
+    if (first)
       return "";
     return sb.toString();
   }
 
-  public String getCreateSQLText() throws DataSourceException {
+  public String getCreateFullSQLText() throws DataSourceException {
 
     return getFormatter().format(getCreateSQLText(STYLE_CONSTRAINTS_ALTER));
+  }
+
+  public String getCreateSQL() throws DataSourceException {
+    List<ColumnData> listCD = new ArrayList<>();
+    for (int i = 0; i < getColumnCount(); i++) {
+      if (!getColumns().get(i).isGenerated())
+        listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
+    }
+    String query = SQLUtils.generateCreateTableWithoutDependencies(getName(), listCD, false, null, getExternalFile(), getAdapter());
+    return query.replaceAll("\\^", ";");
+  }
+
+  public String getAlterSQL(AbstractDatabaseObject databaseObject) {
+    return databaseObject.getCreateSQL().replaceFirst("CREATE", "CREATE OR ALTER");
+  }
+
+  public String getFillSQL() {
+    return getCreateFullSQLText().replaceFirst("CREATE", "CREATE OR ALTER");
   }
 
   public String getDropSQLText(boolean cascadeConstraints) {
@@ -1076,6 +1094,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     return formatSqlText(generateCreateTableSQLText().replaceAll("\\^",";"));
 
   }
+
 
   private String generateCreateTableSQLText() {
     List<ColumnData> listCD=new ArrayList<>();

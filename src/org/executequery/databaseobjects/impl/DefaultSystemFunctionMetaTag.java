@@ -43,7 +43,7 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
     /**
      * the system function type identifier
      */
-    private int type;
+    private final int type;
     /**
      * Creates a new instance of DefaultSystemFunctionMetaTag
      */
@@ -121,6 +121,26 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
+    }
+
+    @Override
+    public String getCreateFullSQLText() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getFillSQL() throws DataSourceException {
+        return null;
     }
 
     @Override

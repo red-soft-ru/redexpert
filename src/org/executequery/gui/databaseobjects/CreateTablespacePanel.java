@@ -98,6 +98,7 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
         tablesIndexesPanel.setDatabaseConnection(tablespace.getHost().getDatabaseConnection());
         tabbedPane.insertTab(Bundles.getCommon("contents"), null, new JScrollPane(tablesIndexesPanel), null, 0);
         addCreateSqlTab(tablespace);
+        tabbedPane.setSelectedIndex(0);
     }
 
     protected void reset() {

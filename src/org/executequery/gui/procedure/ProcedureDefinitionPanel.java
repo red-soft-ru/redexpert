@@ -349,13 +349,20 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         JPanel definitionPanel = new JPanel(new GridBagLayout());
 
         definitionPanel.add(tools, new GridBagConstraints(
-                0, 0, 1, 1, 0, 0,
+                0, 0, 1, 2, 0, 0,
                 GridBagConstraints.CENTER,
                 GridBagConstraints.VERTICAL,
                 new Insets(2, 2, 2, 2), 0, 0));
 
-        definitionPanel.add(new JScrollPane(table), new GridBagConstraints(
-                1, 0, 0, 1, 1.0, 1.0,
+        definitionPanel.add(table.getTableHeader(), new GridBagConstraints(
+                1, 0, 0, 1, 1.0, 0.0,
+                GridBagConstraints.NORTHEAST,
+                GridBagConstraints.BOTH,
+                new Insets(2, 2, 0, 2), 0, 0)
+        );
+
+        definitionPanel.add(table, new GridBagConstraints(
+                1, 1, 0, 1, 1.0, 1.0,
                 GridBagConstraints.NORTHEAST,
                 GridBagConstraints.BOTH,
                 new Insets(2, 2, 2, 2), 0, 0));

@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.*;
 import org.executequery.gui.resultset.RecordDataItem;
+import org.underworldlabs.util.MiscUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
         for (String column : columns) {
-            sb.append(column).append(" = ?,");
+            sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
         }
 
         sb.deleteCharAt(sb.length() - 1);
@@ -44,7 +45,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         List<DatabaseColumn> cols = getColumns();
         for (int i = 0; i < cols.size(); i++) {
             DatabaseColumn column = cols.get(i);
-            String col = cols.get(i).getName();
+            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
             RecordDataItem rdi = changes.get(i);
             if (column.isGenerated())
                 rdi.setGenerated(true);
@@ -76,7 +77,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         List<DatabaseColumn> cols = getColumns();
         for (int i = 0; i < cols.size(); i++) {
             DatabaseColumn column = cols.get(i);
-            String col = cols.get(i).getName();
+            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
             RecordDataItem rdi = changes.get(i);
             if (column.isGenerated())
                 rdi.setGenerated(true);
@@ -109,7 +110,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         List<DatabaseColumn> cols = getColumns();
         for (int i = 0; i < cols.size(); i++) {
             DatabaseColumn column = cols.get(i);
-            String col = cols.get(i).getName();
+            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
             RecordDataItem rdi = changes.get(i);
             if (column.isGenerated() || rdi.isNewValueNull() && column.isIdentity())
                 rdi.setGenerated(true);

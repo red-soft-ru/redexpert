@@ -37,28 +37,28 @@ public class QueryTokenizer {
 
     private /*static final*/ String QUERY_DELIMITER = ";";
 
-    private List<Token> stringTokens;
+    private final List<Token> stringTokens;
 
-    private List<Token> singleLineCommentTokens;
+    private final List<Token> singleLineCommentTokens;
 
-    private List<Token> multiLineCommentTokens;
+    private final List<Token> multiLineCommentTokens;
 
     String beginPattern = "begin";
     String endPattern = "end";
 
-    private Matcher stringMatcher;
+    private final Matcher stringMatcher;
 
-    private Matcher singleLineCommentMatcher;
+    private final Matcher singleLineCommentMatcher;
 
-    private Matcher multiLineCommentMatcher;
+    private final Matcher multiLineCommentMatcher;
     List<String> begin_end_blocks;
 
-    private static final String QUOTE_REGEX = "'((\\?>[^']*\\+)(\\?>'{2}[^']*\\+)*\\+)'|'.*'";//"'((?>[^']*+)(?>'{2}[^']*+)*+)'|'.*";
+    private static final String QUOTE_REGEX = "'((\\?>[^']*\\+)(\\?>'{2}[^']*\\+)*\\+)'|'[^']*'";//"'((?>[^']*+)(?>'{2}[^']*+)*+)'|'.*";
 
     private static final String MULTILINE_COMMENT_REGEX = "/\\*.*?\\*/";
     //                                                    "/\\*(?:.|[\\n\\r])*?\\*/|/\\*.*";
 //                                                        "/\\*((?>[^\\*/]*+)*+)\\*/|/\\*.*";
-    private List<Token> declareBlockTokens;
+    private final List<Token> declareBlockTokens;
 
     public String removeComments(String query) {
 
@@ -134,7 +134,7 @@ public class QueryTokenizer {
                 Matcher m = p.matcher(substring);
 
                 if (m.find()) {
-                    QUERY_DELIMITER = substring.substring(m.end(), substring.length()).trim();
+                    QUERY_DELIMITER = substring.substring(m.end()).trim();
                     lastIndex = index + (substring.length() - m.end());
                     continue;
                 }
@@ -153,7 +153,7 @@ public class QueryTokenizer {
         return queries;
     }
 
-    private List<Token> beginEndBlockTokens;
+    private final List<Token> beginEndBlockTokens;
 
 
     private boolean notInAnyToken(int index) {
@@ -163,7 +163,7 @@ public class QueryTokenizer {
                 && !(withinQuotedString(index, index));
     }
 
-    private Matcher declareBlockMatcher;
+    private final Matcher declareBlockMatcher;
 
     private void extractSingleLineCommentTokens(String query) {
 
@@ -220,7 +220,7 @@ public class QueryTokenizer {
                 Matcher m = p.matcher(substring);
 
                 if (m.find()) {
-                    delimiter = substring.substring(m.end(), substring.length()).trim();
+                    delimiter = substring.substring(m.end()).trim();
                     lastIndex = index + (substring.length() - m.end());
                     return new QueryTokenized(null, query.substring(lastIndex),lowQuery.substring(lastIndex),startIndexQuery+lastIndex, delimiter);
                 }

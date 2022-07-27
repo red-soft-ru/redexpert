@@ -100,8 +100,8 @@ public class SQLFormatter {
     int inFunction = 0;
     int parensSinceSelect = 0;
 
-    private LinkedList<Integer> parenCounts = new LinkedList<Integer>();
-    private LinkedList<Boolean> afterByOrFromOrSelects = new LinkedList<Boolean>();
+    private final LinkedList<Integer> parenCounts = new LinkedList<Integer>();
+    private final LinkedList<Boolean> afterByOrFromOrSelects = new LinkedList<Boolean>();
 
     int indent = 1;
 
@@ -111,7 +111,7 @@ public class SQLFormatter {
     String token;
     String lcToken;
 
-    private String sql;
+    private final String sql;
 
     private boolean createTable;
     private boolean alterTable;
@@ -121,7 +121,7 @@ public class SQLFormatter {
 
         this.sql = removeBreaks(sql);
 
-        String lowerCase = sql.toLowerCase();
+        String lowerCase = sql.toLowerCase().trim();
 
         if (lowerCase.startsWith("create table")) {
 
@@ -460,8 +460,8 @@ public class SQLFormatter {
         parensSinceSelect--;
         if (parensSinceSelect < 0) {
             indent--;
-            parensSinceSelect = ((Integer) parenCounts.removeLast()).intValue();
-            afterByOrSetOrFromOrSelect = ((Boolean) afterByOrFromOrSelects.removeLast()).booleanValue();
+            parensSinceSelect = parenCounts.removeLast().intValue();
+            afterByOrSetOrFromOrSelect = afterByOrFromOrSelects.removeLast().booleanValue();
         }
         if (inFunction > 0) {
             inFunction--;
@@ -536,7 +536,7 @@ public class SQLFormatter {
 
     private String formatCommentOn() {
 
-        StringBuilder result = new StringBuilder(60).append("\n    ");
+        StringBuilder result = new StringBuilder();
 
         boolean quoted = false;
 
@@ -643,6 +643,14 @@ public class SQLFormatter {
                     if (depth == 1) {
 
                         result.append(indentTwo);
+                    }
+
+                }
+                if (")".equals(token)) {
+
+                    if (depth == 0) {
+
+                        result.append(indentOne);
                     }
 
                 }

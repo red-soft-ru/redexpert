@@ -27,9 +27,7 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.io.*;
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Date;
 import java.util.List;
 
 
@@ -783,15 +781,17 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             // ----------- open source connection -----------
 
-            connection = DriverManager.getConnection("jdbc:relique:csv:/" + directoryOfFile, properties);
+            connection = DriverManager.getConnection("jdbc:relique:csv:/" +
+                    directoryOfFile.replace("\\","/"), properties);
+
             statement = connection.createStatement();
 
             return statement;
 
         } catch (Exception e) {
 
-            GUIUtilities.displayWarningMessage(
-                    bundledString("ImportDataErrorMessage") + "\n" + e.getMessage());
+            GUIUtilities.displayExceptionErrorDialog(
+                    bundledString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
             return null;
 
         }

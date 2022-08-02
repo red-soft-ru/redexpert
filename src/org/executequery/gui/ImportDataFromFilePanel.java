@@ -27,11 +27,15 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.io.*;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 import java.util.List;
+
 
 /**
  * @author Alexey Kozlov
+ * @todo batch commits, timestamp conversion fix, delimiter auto-detection, time tests
  */
 
 public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
@@ -483,6 +487,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         }
 
+        executor.releaseResources();
+
     }
 
     // ---------------------------------------------
@@ -512,7 +518,28 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
                 for (int j = 0; j < valuesCount; j++) {
 
-                    Object param = sourceFileData.getString(j + 1);
+                    Object param;
+                    String targetColumnType = columnMappingTableModel.getValueAt(j, 1).toString();
+
+                    if (Objects.equals(targetColumnType, "DATE")) {
+
+                        param = sourceFileData.getDate(j + 1);
+
+                    } else if (Objects.equals(targetColumnType, "TIME")) {
+
+                        param = sourceFileData.getTime(j + 1);
+
+                    } else if (Objects.equals(targetColumnType, "TIMESTAMP")) {
+
+                        param = sourceFileData.getTimestamp(j + 1);
+
+                    } else {
+
+                        param = sourceFileData.getString(j + 1);
+                    }
+
+//                    Object param = sourceFileData.getString(j + 1);
+
                     insertStatement.setObject(j + 1, param);
 
                 }
@@ -525,10 +552,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             executor.getConnection().commit();
 
-            long endTime = System.currentTimeMillis();
-
             outputPanel.append("SQL-INSERT request finished");
-            outputPanel.append("Duration: " + MiscUtils.formatDuration(endTime - startTime));
+            outputPanel.append("Duration: " + MiscUtils.formatDuration(System.currentTimeMillis() - startTime));
 
         } catch (Exception e) {
 
@@ -537,6 +562,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             outputPanel.appendError("Importing data stopped due to an error");
 
             return;
+
+        } finally {
+
+            executor.releaseResources();
         }
 
     }
@@ -556,6 +585,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             tableCombo.addItem(tableName);
         }
+
+        dbHost.close();
 
     }
 
@@ -695,11 +726,13 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         try {
 
             Properties properties = new Properties();
+            int headersArraySize = headersOfSourceArray.size();
+
+            // ----------- columns headers propriety -----------
 
             if (!isFirstColumnNames.isSelected()) {
 
                 StringBuilder headerPropriety = new StringBuilder();
-                int headersArraySize = headersOfSourceArray.size();
 
                 for (int i = 0; i < headersArraySize - 1; i++) {
 
@@ -712,9 +745,43 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             }
 
+            // ----------- separator propriety -----------
+
             properties.setProperty("separator", Objects.requireNonNull(delimiterCombo.getSelectedItem()).toString());
-//            properties.setProperty("useDateTimeFormatter", "true");
-//            properties.setProperty("timestampFormat", "dd.MM.yyyy HH:mm");
+
+            // ----------- columns types propriety -----------
+
+            StringBuilder typePropriety = new StringBuilder();
+
+            List<DatabaseColumn> dbHostTableColumns = dbHost.getColumns(
+                    null, null, Objects.requireNonNull(tableCombo.getSelectedItem()).toString());
+
+            for (int i = 0; i < headersArraySize; i++) {
+
+                String targetColumnType = dbHostTableColumns.get(i).getTypeName();
+
+                if (Objects.equals(targetColumnType, "TIME") ||
+                        Objects.equals(targetColumnType, "DATE") ||
+                        Objects.equals(targetColumnType, "TIMESTAMP")) {
+
+                    typePropriety.append(targetColumnType);
+
+                } else {
+
+                    typePropriety.append("STRING");
+                }
+
+                if (i < headersArraySize - 1) {
+
+                    typePropriety.append(",");
+
+                }
+
+            }
+
+            properties.setProperty("columnTypes", typePropriety.toString());
+
+            // ----------- open source connection -----------
 
             connection = DriverManager.getConnection("jdbc:relique:csv:/" + directoryOfFile, properties);
             statement = connection.createStatement();
@@ -850,7 +917,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     }
 
 }
-
 
 
 

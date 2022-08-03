@@ -308,8 +308,10 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             long value = new Random().nextLong();
             if (value < 0)
                 value *= -1;
-            long max = maxDateTime.getDateTime().toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli();
-            long min = minDateTime.getDateTime().toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli();
+            ZoneId z_id = ZoneId.systemDefault();
+            ZoneOffset offset = z_id.getRules().getOffset(Instant.now());
+            long max = maxDateTime.getDateTime().toInstant(offset).toEpochMilli();
+            long min = minDateTime.getDateTime().toInstant(offset).toEpochMilli();
             if (min > max)
                 throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;

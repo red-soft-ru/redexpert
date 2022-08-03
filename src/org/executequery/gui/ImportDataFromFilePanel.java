@@ -27,13 +27,15 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.io.*;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
 
 /**
  * @author Alexey Kozlov
- * @todo batch commits, timestamp conversion fix, delimiter auto-detection, time tests
+ * todo batch commits, delimiter auto-detection, time tests
  */
 
 public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
@@ -51,6 +53,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private JComboBox sourceCombo;  //source type
     private JTextField fileNameField;   //path to importing file
     private JComboBox delimiterCombo;   //delimiter type
+    private JComboBox timeFormatCombo;   //time format
     private JCheckBox isFirstColumnNames;  //check whether the first row stores column names
     private JTextArea dataPreviewTextArea;  //preview of source data
     private LoggingOutputPanel outputPanel;
@@ -74,6 +77,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private String sourceFileName;
     private ArrayList<String> headersOfSourceArray;
     private String nothingHeaderOfMappingTable;
+    private DateTimeFormatter timestampFormat;
 
     public ImportDataFromFilePanel() {
         super(new BorderLayout());
@@ -84,6 +88,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         String[] delimiters = {bundledString("SelectDelimiter"), "|", ",", ";", "#"};
         String[] sourceTypes = {bundledString("SelectFileType"), "csv", "xlsx", "json"};
+        String[] timeFormats = {bundledString("SelectTimeFormat"),"dd.MM.yyyy HH:mm","yyyy-MM-dd HH:mm:ss"};
         nothingHeaderOfMappingTable = "NOTHING";
 
         delimiterCombo = WidgetFactory.createComboBox(delimiters);
@@ -91,6 +96,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         sourceCombo = WidgetFactory.createComboBox(sourceTypes);
         sourceCombo.addActionListener(e -> sourceComboChanged());
+
+        timeFormatCombo = WidgetFactory.createComboBox(timeFormats);
+        timeFormatCombo.setEditable(true);
 
         fileNameField = WidgetFactory.createTextField();
 
@@ -251,11 +259,25 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // ----------- sixth row -----------
 
+        mainPanel.add(new JLabel(bundledString("DateFormatLabel")), gridBagHelper.get());
+
+        gridBagHelper.nextCol();
+        gridBagHelper.spanX();
+        gridBagHelper.fillHorizontally();
+
+        mainPanel.add(timeFormatCombo, gridBagHelper.get());
+
+        gridBagHelper.nextRowFirstCol();
+        gridBagHelper.setMinWeightX();
+        gridBagHelper.setWidth(1);
+
+        // ----------- seventh row -----------
+
         mainPanel.add(isFirstColumnNames, gridBagHelper.get());
 
         gridBagHelper.nextRowFirstCol();
 
-        // ----------- seventh row -----------
+        // ----------- eights row -----------
 
         gridBagHelper.spanX();
         gridBagHelper.spanY();
@@ -347,6 +369,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
                 GUIUtilities.displayWarningMessage("Import from json is currently unavailable");
                 break;
+
+            } default: {
+
+                GUIUtilities.displayWarningMessage(bundledString("NoFileTypeSelectedMessage"));
             }
 
         }
@@ -405,7 +431,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         StringBuilder sourceColumnList = new StringBuilder();
 
         Vector<Vector> dataFromTableVector = columnMappingTableModel.getDataVector();
+
         int valuesCount = 0;
+        boolean[] valuesIndexes = new boolean[dataFromTableVector.size()];
 
         for (int i = 0; i < dataFromTableVector.size(); i++) {
 
@@ -420,6 +448,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 }
 
                 valuesCount++;
+                valuesIndexes[i] = true;
 
             }
 
@@ -439,11 +468,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         insertPattern.append(targetColumnList);
         insertPattern.append(") VALUES (");
 
-        int tempValuesCount = valuesCount;
-        while (tempValuesCount > 1) {
+        while (valuesCount > 1) {
 
             insertPattern.append("?,");
-            tempValuesCount--;
+            valuesCount--;
         }
         insertPattern.append("?);");
 
@@ -468,7 +496,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             case ("csv"): {
 
-                insertCSV(sourceColumnList, valuesCount, insertStatement, executor);
+                insertCSV(sourceColumnList, valuesIndexes, insertStatement, executor);
                 break;
 
             } case ("xlsx"): {
@@ -481,6 +509,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 GUIUtilities.displayWarningMessage("Import from json is currently unavailable");
                 break;
 
+            }  default: {
+
+                GUIUtilities.displayWarningMessage(bundledString("NoFileTypeSelectedMessage"));
             }
 
         }
@@ -493,7 +524,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     // Executing SQL-INSERT request methods
     // ---------------------------------------------
 
-    private void insertCSV(StringBuilder sourceColumnList, int valuesCount,
+    private void insertCSV(StringBuilder sourceColumnList, boolean[] valuesIndexes,
                            PreparedStatement insertStatement, DefaultStatementExecutor executor) {
 
         try {
@@ -510,35 +541,52 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             String SQLSourceRequest = "SELECT " + sourceColumnList + " FROM " + sourceFileName;
             ResultSet sourceFileData = sourceFileStatement.executeQuery(SQLSourceRequest);
 
+            String[] sourceFields = sourceColumnList.toString().split(",");
+
             long startTime = System.currentTimeMillis();
 
             while (sourceFileData.next()) {
 
-                for (int j = 0; j < valuesCount; j++) {
+                int fieldIndex = 0;
 
-                    Object param;
-                    String targetColumnType = columnMappingTableModel.getValueAt(j, 1).toString();
+                for (int j = 0; j < valuesIndexes.length; j++) {
 
-                    if (Objects.equals(targetColumnType, "DATE")) {
+                    if (valuesIndexes[j]) {
 
-                        param = sourceFileData.getDate(j + 1);
+                        Object param;
+                        String targetColumnType = insertStatement.getParameterMetaData()
+                                .getParameterTypeName(fieldIndex + 1);
 
-                    } else if (Objects.equals(targetColumnType, "TIME")) {
+                        if (Objects.equals(targetColumnType, "DATE") ||
+                                Objects.equals(targetColumnType, "TIME") ||
+                                Objects.equals(targetColumnType, "TIMESTAMP")) {
 
-                        param = sourceFileData.getTime(j + 1);
+                            if (timeFormatCombo.getSelectedIndex() != 0) {
 
-                    } else if (Objects.equals(targetColumnType, "TIMESTAMP")) {
+                                timestampFormat = DateTimeFormatter.
+                                        ofPattern(Objects.requireNonNull(timeFormatCombo.getSelectedItem()).toString());
 
-                        param = sourceFileData.getTimestamp(j + 1);
+                            } else {
 
-                    } else {
+                                GUIUtilities.displayWarningMessage(bundledString("NoTimeFormatSelectedMessage"));
+                                outputPanel.appendError("Importing data stopped: no date/time format selected");
 
-                        param = sourceFileData.getString(j + 1);
+                                return;
+                            }
+
+                            String stringTime = sourceFileData.getString(sourceFields[fieldIndex]);
+
+                            param = LocalDateTime.parse(stringTime, timestampFormat);
+
+                        } else {
+
+                            param = sourceFileData.getString(sourceFields[fieldIndex]);
+                        }
+
+                        insertStatement.setObject(fieldIndex + 1, param);
+                        fieldIndex++;
+
                     }
-
-//                    Object param = sourceFileData.getString(j + 1);
-
-                    insertStatement.setObject(j + 1, param);
 
                 }
 
@@ -746,38 +794,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             // ----------- separator propriety -----------
 
             properties.setProperty("separator", Objects.requireNonNull(delimiterCombo.getSelectedItem()).toString());
-
-            // ----------- columns types propriety -----------
-
-            StringBuilder typePropriety = new StringBuilder();
-
-            List<DatabaseColumn> dbHostTableColumns = dbHost.getColumns(
-                    null, null, Objects.requireNonNull(tableCombo.getSelectedItem()).toString());
-
-            for (int i = 0; i < headersArraySize; i++) {
-
-                String targetColumnType = dbHostTableColumns.get(i).getTypeName();
-
-                if (Objects.equals(targetColumnType, "TIME") ||
-                        Objects.equals(targetColumnType, "DATE") ||
-                        Objects.equals(targetColumnType, "TIMESTAMP")) {
-
-                    typePropriety.append(targetColumnType);
-
-                } else {
-
-                    typePropriety.append("STRING");
-                }
-
-                if (i < headersArraySize - 1) {
-
-                    typePropriety.append(",");
-
-                }
-
-            }
-
-            properties.setProperty("columnTypes", typePropriety.toString());
 
             // ----------- open source connection -----------
 

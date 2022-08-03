@@ -3,13 +3,13 @@ package org.executequery.gui.browser.managment.tracemanager;
 
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.ListSelectionPanel;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 class ResultSetDataModel extends AbstractTableModel {
@@ -18,19 +18,19 @@ class ResultSetDataModel extends AbstractTableModel {
     private List<String> visibleColumnNames = new ArrayList<>();
     private List<LogMessage> rows = new ArrayList<>();
     private List<LogMessage> visibleRows = new ArrayList<>();
-    private JComboBox filterTypeBox;
-    private JComboBox filterColumnBox;
-    private JComboBox rawSqlBox;
-    private JTextField filterTextField;
-    private Map<String, JCheckBox> mapCheckBox;
+    private final JComboBox filterTypeBox;
+    private final JComboBox filterColumnBox;
+    private final JComboBox rawSqlBox;
+    private final JTextField filterTextField;
+    private ListSelectionPanel listSelectionPanel;
 
 
-    public ResultSetDataModel(Map<String, JCheckBox> mapCheckBox, JComboBox filterTypeBox, JComboBox filterColumnBox, JComboBox rawSqlBox, JTextField filterTextField) {
+    public ResultSetDataModel(ListSelectionPanel listSelectionPanel, JComboBox filterTypeBox, JComboBox filterColumnBox, JComboBox rawSqlBox, JTextField filterTextField) {
         this.filterTypeBox = filterTypeBox;
         this.filterColumnBox = filterColumnBox;
         this.filterTextField = filterTextField;
         this.rawSqlBox = rawSqlBox;
-        setMapCheckBox(mapCheckBox);
+        setListSelectionPanel(listSelectionPanel);
         buildHeaders();
         rebuildModel();
     }
@@ -38,10 +38,7 @@ class ResultSetDataModel extends AbstractTableModel {
     public void rebuildModel() {
 
         visibleColumnNames = new ArrayList<>();
-        for (int i = 0; i < columnNames.size(); i++) {
-            if (mapCheckBox.get(columnNames.get(i)).isSelected())
-                visibleColumnNames.add(columnNames.get(i));
-        }
+        visibleColumnNames.addAll(listSelectionPanel.getSelectedValues());
         visibleRows = new ArrayList<>();
         for (int i = 0; i < rows.size(); i++) {
             checkFilterMessage(rows.get(i));
@@ -122,12 +119,12 @@ class ResultSetDataModel extends AbstractTableModel {
         return columnNames;
     }
 
-    public Map<String, JCheckBox> getMapCheckBox() {
-        return mapCheckBox;
+    public ListSelectionPanel getListSelectionPanel() {
+        return listSelectionPanel;
     }
 
-    public void setMapCheckBox(Map<String, JCheckBox> mapCheckBox) {
-        this.mapCheckBox = mapCheckBox;
+    public void setListSelectionPanel(ListSelectionPanel listSelectionPanel) {
+        this.listSelectionPanel = listSelectionPanel;
     }
 
     private void buildHeaders() {

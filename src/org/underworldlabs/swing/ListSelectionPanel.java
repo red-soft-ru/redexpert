@@ -28,6 +28,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -72,6 +73,8 @@ public class ListSelectionPanel extends ActionPanel
 
     private static final int DEFAULT_ROW_HEIGHT = 20;
 
+    private List<ListSelectionPanelListener> listeners;
+
     public ListSelectionPanel() {
         this(null);
     }
@@ -88,6 +91,7 @@ public class ListSelectionPanel extends ActionPanel
     public ListSelectionPanel(String availLabel, String selectLabel, Vector v) {
         super(new GridBagLayout());
         try {
+            listeners = new ArrayList<>();
             init();
             selections = new Vector();
             createAvailableList(v);
@@ -265,6 +269,7 @@ public class ListSelectionPanel extends ActionPanel
             selections.clear();
             selectedList.setListData(selections);
         }
+        fireChange(ListSelectionPanelEvent.CLEAR);
     }
 
     public void createAvailableList(List values) {
@@ -280,6 +285,7 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setListData(available);
         selections.clear();
         selectedList.setListData(selections);
+        fireChange(ListSelectionPanelEvent.ADD);
     }
 
     public void createAvailableList(Vector v) {
@@ -291,6 +297,7 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setListData(available);
         selections.clear();
         selectedList.setListData(selections);
+        fireChange(ListSelectionPanelEvent.ADD);
     }
 
     public void addAvailableItem(Object obj) {
@@ -300,6 +307,7 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setListData(available);
         selections.clear();
         selectedList.setListData(selections);
+        fireChange(ListSelectionPanelEvent.ADD);
     }
 
     public void removeAllAction() {
@@ -313,6 +321,7 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setListData(available);
         selections.clear();
         selectedList.setListData(selections);
+        fireChange(ListSelectionPanelEvent.DESELECT);
     }
 
     public void removeOneAction() {
@@ -330,6 +339,7 @@ public class ListSelectionPanel extends ActionPanel
         selectedList.setListData(selections);
         availableList.setListData(available);
         selectedList.setSelectedIndex(index);
+        fireChange(ListSelectionPanelEvent.DESELECT);
     }
 
     public void selectAllAction() {
@@ -342,6 +352,7 @@ public class ListSelectionPanel extends ActionPanel
         selectedList.setListData(selections);
         available.clear();
         availableList.setListData(available);
+        fireChange(ListSelectionPanelEvent.SELECT);
     }
 
     public void selectOneAction() {
@@ -359,6 +370,7 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setListData(available);
         selectedList.setListData(selections);
         availableList.setSelectedIndex(index);
+        fireChange(ListSelectionPanelEvent.SELECT);
     }
 
     public void selectOneAction(int indexAvailable) {
@@ -369,6 +381,7 @@ public class ListSelectionPanel extends ActionPanel
 
         availableList.setListData(available);
         selectedList.setListData(selections);
+        fireChange(ListSelectionPanelEvent.SELECT);
     }
 
     public void selectOneStringAction(String object) {
@@ -416,6 +429,7 @@ public class ListSelectionPanel extends ActionPanel
         selections.add(index + 1, move);
         selectedList.setListData(selections);
         selectedList.setSelectedIndex(index + 1);
+        fireChange(ListSelectionPanelEvent.MOVE);
     }
 
     public void moveSelectionUp() {
@@ -430,6 +444,21 @@ public class ListSelectionPanel extends ActionPanel
         selections.add(index - 1, move);
         selectedList.setListData(selections);
         selectedList.setSelectedIndex(index - 1);
+        fireChange(ListSelectionPanelEvent.MOVE);
+    }
+
+    public void addListSelectionPanelListener(ListSelectionPanelListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListSelectionPanelListener(ListSelectionPanelListener listener) {
+        listeners.remove(listener);
+    }
+
+    private void fireChange(int type) {
+        ListSelectionPanelEvent event = new ListSelectionPanelEvent(this, type);
+        for (ListSelectionPanelListener listener : listeners)
+            listener.changed(event);
     }
 
 
@@ -454,6 +483,5 @@ public class ListSelectionPanel extends ActionPanel
         }
 
     }
-
 }
 

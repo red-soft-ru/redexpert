@@ -3,8 +3,10 @@ package org.executequery.gui.browser.managment.tracemanager;
 import org.executequery.gui.browser.TraceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.underworldlabs.swing.CheckBoxPanel;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.ListSelectionPanel;
+import org.underworldlabs.swing.ListSelectionPanelEvent;
+import org.underworldlabs.swing.ListSelectionPanelListener;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -16,8 +18,6 @@ import javax.swing.event.UndoableEditListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.sql.Timestamp;
 import java.util.EnumSet;
 
@@ -31,10 +31,10 @@ public class TablePanel extends JPanel {
     private JComboBox<String> comboBoxRawSql;
     private JComboBox<String> comboBoxFilterColumn;
     private JTextField txtFldSqlFilter;
-    private CheckBoxPanel columnsCheckPanel;
+    private final ListSelectionPanel columnsCheckPanel;
 
 
-    public TablePanel(CheckBoxPanel columnsCheckPanel) {
+    public TablePanel(ListSelectionPanel columnsCheckPanel) {
         super(new BorderLayout());
         this.columnsCheckPanel = columnsCheckPanel;
         init();
@@ -49,8 +49,15 @@ public class TablePanel extends JPanel {
         comboBoxRawSql.setModel(dynamicComboBoxModel);
         dynamicComboBoxModel = new DynamicComboBoxModel();
         comboBoxFilterColumn.setModel(dynamicComboBoxModel);
-        dataModel = new ResultSetDataModel(columnsCheckPanel.getCheckBoxMap(), comboBoxFilterType, comboBoxFilterColumn, comboBoxRawSql, txtFldSqlFilter);
-        for (JCheckBox checkBox : columnsCheckPanel.getCheckBoxMap().values()) {
+        dataModel = new ResultSetDataModel(columnsCheckPanel, comboBoxFilterType, comboBoxFilterColumn, comboBoxRawSql, txtFldSqlFilter);
+        columnsCheckPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
+            @Override
+            public void changed(ListSelectionPanelEvent event) {
+                dataModel.rebuildModel();
+                dataModel.fireTableStructureChanged();
+            }
+        });
+        /*for (JCheckBox checkBox : columnsCheckPanel.getCheckBoxMap().values()) {
             checkBox.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
@@ -58,7 +65,7 @@ public class TablePanel extends JPanel {
                     dataModel.fireTableStructureChanged();
                 }
             });
-        }
+        }*/
         GridBagLayout gridBagLayout = new GridBagLayout();
         setLayout(gridBagLayout);
 

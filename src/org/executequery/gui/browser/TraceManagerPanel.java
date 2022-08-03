@@ -16,8 +16,8 @@ import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
-import org.underworldlabs.swing.CheckBoxPanel;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
@@ -30,7 +30,9 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -87,7 +89,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
         sessionField.setText("Session");
         sessionManagerPanel = new SessionManagerPanel(traceManager, sessionField);
         loadCharsets();
-        CheckBoxPanel columnsCheckPanel = new CheckBoxPanel(LogConstants.COLUMNS, 6, true);
+        ListSelectionPanel columnsCheckPanel = new ListSelectionPanel(new Vector<>(Arrays.asList(LogConstants.COLUMNS)));
+        columnsCheckPanel.selectAllAction();
         loggerPanel = new TablePanel(columnsCheckPanel);
         lock = new ReentrantLock();
         timer = new Timer(1500, new ActionListener() {
@@ -180,7 +183,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
             }
         });
         fileLogButton.addActionListener(new ActionListener() {
-            FileChooserDialog fileChooser = new FileChooserDialog();
+            final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -207,7 +210,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
 
         fileDatabaseButton.addActionListener(new ActionListener() {
-            FileChooserDialog fileChooser = new FileChooserDialog();
+            final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -220,7 +223,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         });
 
         fileConfButton.addActionListener(new ActionListener() {
-            FileChooserDialog fileChooser = new FileChooserDialog();
+            final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -233,7 +236,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         });
 
         openFileLog.addActionListener(new ActionListener() {
-            FileChooserDialog fileChooser = new FileChooserDialog();
+            final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {

@@ -62,7 +62,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 /**
- * @author Takis Diakoumis
+ * @author Denis Visente
  */
 public class ConnectionsTreePanel extends TreePanel
         implements ConnectionListener,
@@ -1846,13 +1846,27 @@ public class ConnectionsTreePanel extends TreePanel
   }
 
   private boolean CheckPathForLocationInSelectedTree(TreePath treePathForLocation){
+
     boolean flag=false;
-    TreePath[] treePaths =tree.getSelectionPaths();
-    for(int i=0; i<tree.getSelectionPaths().length;i++) {
-      if (treePaths[i] == treePathForLocation)
-        flag = true;
+    try {
+      TreePath[] treePaths = tree.getSelectionPaths();
+
+      for (int i = 0; i < tree.getSelectionPaths().length; i++) {
+        if (treePaths[i] == treePathForLocation)
+          flag = true;
+      }
+    }
+    catch (Exception e){
+      return false;
     }
     return flag;
+  }
+  private boolean selectedSeveralIdenticalTypes(TreePath treePathForLocation){
+    if(tree.getSelectionPaths()==null)
+      return false;
+    else
+      return getTreeSelectionPaths().length <= 1 || !CheckPathForLocationInSelectedTree(treePathForLocation) ||
+            (selectedPathsOnlyThisTyped(NamedObject.TRIGGER)==false && selectedPathsOnlyThisTyped(NamedObject.INDEX)==false);
   }
 
   protected TreePath getTreePathForLocation(int x, int y) {
@@ -1927,8 +1941,8 @@ public class ConnectionsTreePanel extends TreePanel
 
         Point point = new Point(e.getX(), e.getY());
         TreePath treePathForLocation = getTreePathForLocation(point.x, point.y);
-        if (getTreeSelectionPaths().length <= 1 || !CheckPathForLocationInSelectedTree(treePathForLocation) ||
-                (selectedPathsOnlyThisTyped(NamedObject.TRIGGER)==false && selectedPathsOnlyThisTyped(NamedObject.INDEX)==false))
+
+        if (selectedSeveralIdenticalTypes(treePathForLocation))
         {
           try {
 
@@ -1955,9 +1969,8 @@ public class ConnectionsTreePanel extends TreePanel
 
             popupMenu = getBrowserTreePopupMenu();
             BrowserTreePopupMenu browserPopup = (BrowserTreePopupMenu) popupMenu;
-            if (getTreeSelectionPaths().length <= 1 || !CheckPathForLocationInSelectedTree(treePathForLocation) ||
-                    (selectedPathsOnlyThisTyped(NamedObject.TRIGGER)==false && selectedPathsOnlyThisTyped(NamedObject.INDEX)==false)) {
-              browserPopup.setCurrentPath(treePathForLocation);//1
+            if (selectedSeveralIdenticalTypes(treePathForLocation)) {
+              browserPopup.setCurrentPath(treePathForLocation);
               browserPopup.setSelectedSeveralPaths(false);
             }
             else {

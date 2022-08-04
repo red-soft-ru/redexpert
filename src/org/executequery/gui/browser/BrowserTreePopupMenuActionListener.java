@@ -41,6 +41,7 @@ import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
 import org.executequery.gui.importexport.ImportExportXMLPanel;
 import org.executequery.localization.Bundles;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
@@ -53,11 +54,13 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 /**
- * @author Takis Diakoumis
+ * @author DenArt
  */
+
+
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
-    StatementExecutor querySender;
+    private StatementExecutor querySender;
     private final ConnectionsTreePanel treePanel;
 
     private StatementToEditorWriter statementWriter;
@@ -937,42 +940,94 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     }
 
     public void active(ActionEvent e) throws SQLException {
-        String query;
-        if (selectedSeveralPaths) {
-            for (int i = 0; i < treePaths.length; i++) {
-                String[] Splitters = treePaths[i].getLastPathComponent().toString().split(":");
-                query = "ALTER "+Splitters[1] + " " + Splitters[0] + " ACTIVE";
-                querySender = new DefaultStatementExecutor(currentSelection, false);
-                querySender.execute(QueryTypes.ALTER_OBJECT,query);
-                treePanel.reloadPath(treePaths[i]);
-            }
-        } else {
-            String[] Splitters = currentPath.getLastPathComponent().toString().split(":");
-            query = "ALTER "+Splitters[1] + " " + Splitters[0] + " ACTIVE";
-            querySender = new DefaultStatementExecutor(currentSelection, false);
-            querySender.execute(QueryTypes.ALTER_OBJECT,query);
-            treePanel.reloadPath(currentPath);
+        try {
+            String query;
+            if (selectedSeveralPaths) {
+                boolean firstErrorExists=false;
+                StringBuilder error = new StringBuilder();
 
+                for (int i = 0; i < treePaths.length; i++) {
+                    String[] Splitters = treePaths[i].getLastPathComponent().toString().split(":");
+                    query = "ALTER " + Splitters[1] + " " + Splitters[0] + " ACTIVE";
+                    querySender = new DefaultStatementExecutor(currentSelection, false);
+                    SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+                    treePanel.reloadPath(treePaths[i]);
+                    if (result.isException()&&firstErrorExists==false) {
+                        error.append(result.getErrorMessage());
+                        firstErrorExists=true;
+                    }
+                }
+                querySender.execute(QueryTypes.COMMIT,"");
+                if (error.length() > 0)
+                    GUIUtilities.displayErrorMessage(error.toString());
+
+            } else {
+                String[] Splitters = currentPath.getLastPathComponent().toString().split(":");
+                query = "ALTER " + Splitters[1] + " " + Splitters[0] + " ACTIVE";
+                querySender = new DefaultStatementExecutor(currentSelection, false);
+                SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+                querySender.execute(QueryTypes.COMMIT,"");
+                if (result.isException()) {
+                    GUIUtilities.displayErrorMessage(result.getErrorMessage());
+                }
+
+                treePanel.reloadPath(currentPath);
+            }
+
+        }
+        catch (SQLException error){
+            GUIUtilities.displayErrorMessage(error.getMessage());
+        }
+        finally {
+            querySender.releaseResources();
         }
     }
 
-    public void inactive(ActionEvent e) throws SQLException {
-        String query;
-        if (selectedSeveralPaths) {
-            for (int i = 0; i < treePaths.length; i++) {
-                String[] Splitters = treePaths[i].getLastPathComponent().toString().split(":");
-                query = "ALTER "+Splitters[1] + " " + Splitters[0] + " INACTIVE";
+
+    public void inactive(ActionEvent e){
+        try {
+            String query;
+            boolean firstErrorExists=false;
+            if (selectedSeveralPaths) {
+                StringBuilder error = new StringBuilder();
+
+                for (int i = 0; i < treePaths.length; i++) {
+                    String[] Splitters = treePaths[i].getLastPathComponent().toString().split(":");
+                    query = "ALTER " + Splitters[1] + " " + Splitters[0] + " INACTIVE";
+
+                    querySender = new DefaultStatementExecutor(currentSelection, false);
+                    SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+                    treePanel.reloadPath(treePaths[i]);
+                    if (result.isException()&&firstErrorExists==false) {
+                        error.append(result.getErrorMessage());
+                        firstErrorExists=true;
+                    }
+                }
+                querySender.execute(QueryTypes.COMMIT,"");
+                if (error.length() > 0)
+                    GUIUtilities.displayErrorMessage(error.toString());
+
+            } else {
+                String[] Splitters = currentPath.getLastPathComponent().toString().split(":");
+                query = "ALTER " + Splitters[1] + " " + Splitters[0] + " INACTIVE";
                 querySender = new DefaultStatementExecutor(currentSelection, false);
-                querySender.execute(QueryTypes.ALTER_OBJECT,query);
-                treePanel.reloadPath(treePaths[i]);
+                SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+
+                if (result.isException()) {
+                    GUIUtilities.displayErrorMessage(result.getErrorMessage());
+                }
+                querySender.execute(QueryTypes.COMMIT,"");
+                treePanel.reloadPath(currentPath);
             }
-        } else {
-            String[] Splitters = currentPath.getLastPathComponent().toString().split(":");
-            query = "ALTER "+Splitters[1] + " " + Splitters[0] + " INACTIVE";
-            querySender = new DefaultStatementExecutor(currentSelection, false);
-            querySender.execute(QueryTypes.ALTER_OBJECT,query);
-            treePanel.reloadPath(currentPath);
+
+        }
+        catch (SQLException error){
+            GUIUtilities.displayErrorMessage(error.getMessage());
+        }
+        finally {
+            querySender.releaseResources();
         }
     }
+
 
 }

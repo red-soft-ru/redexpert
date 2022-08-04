@@ -37,7 +37,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 
 /**
- * @author Takis Diakoumis
+ * @author DenArt
  */
 public class BrowserTreePopupMenu extends JPopupMenu {
 

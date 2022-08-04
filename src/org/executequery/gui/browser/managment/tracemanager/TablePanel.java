@@ -3,10 +3,14 @@ package org.executequery.gui.browser.managment.tracemanager;
 import org.executequery.gui.browser.TraceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.repository.RepositoryException;
+import org.executequery.util.UserSettingsProperties;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.ListSelectionPanelEvent;
 import org.underworldlabs.swing.ListSelectionPanelListener;
+import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -18,6 +22,8 @@ import javax.swing.event.UndoableEditListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.EnumSet;
 
@@ -40,6 +46,60 @@ public class TablePanel extends JPanel {
         init();
     }
 
+    private static String filePath() {
+
+        UserSettingsProperties settings = new UserSettingsProperties();
+        return settings.getUserSettingsDirectory() + "audit-columns.txt";
+    }
+
+    private static void ensureFileExists() {
+
+        File file = new File(filePath());
+        if (!file.exists()) {
+
+            try {
+
+                FileUtils.writeFile(filePath(), "");
+
+            } catch (IOException e) {
+
+                throw new RepositoryException(e);
+            }
+
+        }
+
+    }
+
+    private void loadCols() {
+        ensureFileExists();
+        try {
+            String strCols = FileUtils.loadFile(filePath());
+            if (!MiscUtils.isNull(strCols)) {
+                String[] cols = strCols.split("\n");
+                columnsCheckPanel.removeAllAction();
+                for (int i = 0; i < cols.length; i++) {
+                    columnsCheckPanel.selectOneStringAction(cols[i]);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void saveCols() {
+        ensureFileExists();
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (Object col : columnsCheckPanel.getSelectedValues()) {
+                sb.append(col).append("\n");
+            }
+            FileUtils.writeFile(filePath(), sb.toString());
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void init() {
         comboBoxFilterType = new JComboBox<>();
         comboBoxFilterColumn = new JComboBox<>();
@@ -49,12 +109,14 @@ public class TablePanel extends JPanel {
         comboBoxRawSql.setModel(dynamicComboBoxModel);
         dynamicComboBoxModel = new DynamicComboBoxModel();
         comboBoxFilterColumn.setModel(dynamicComboBoxModel);
+        loadCols();
         dataModel = new ResultSetDataModel(columnsCheckPanel, comboBoxFilterType, comboBoxFilterColumn, comboBoxRawSql, txtFldSqlFilter);
         columnsCheckPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
             @Override
             public void changed(ListSelectionPanelEvent event) {
                 dataModel.rebuildModel();
                 dataModel.fireTableStructureChanged();
+                saveCols();
             }
         });
         /*for (JCheckBox checkBox : columnsCheckPanel.getCheckBoxMap().values()) {
@@ -208,7 +270,7 @@ public class TablePanel extends JPanel {
         splitPane.setOneTouchExpandable(true);
         splitPane.setBorder(null);
         splitPane.setContinuousLayout(true);
-        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setResizeWeight(0.8);
         GridBagConstraints gbc_splitPane = new GridBagConstraints();
         gbc_splitPane.fill = GridBagConstraints.BOTH;

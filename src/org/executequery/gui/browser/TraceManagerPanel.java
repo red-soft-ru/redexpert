@@ -19,6 +19,7 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -381,183 +382,68 @@ public class TraceManagerPanel extends JPanel implements TabView {
         confPanel = new BuildConfigurationPanel();
 
         setLayout(new GridBagLayout());
+        // JSplitPane mainSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new GridBagLayout());
-        topPanel.add(tabPane, new GridBagConstraints(0, 1,
-                3, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        add(topPanel, new GridBagConstraints(0, 0,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0),
-                0, 0));
-
-        add(hideShowTabPaneButton, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        add(startStopSessionButton, new GridBagConstraints(0, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        add(clearTableButton, new GridBagConstraints(1, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
         JLabel label = new JLabel(bundleString("OpenFileLog"));
-        topPanel.add(label, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
+        topPanel.add(label, gbh.setLabelDefault().get());
+        gbh.nextCol();
+        gbh.addLabelFieldPair(topPanel, openFileLog, openFileLogField, null, false, false);
 
-        topPanel.add(openFileLog, new GridBagConstraints(1, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        topPanel.add(tabPane, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
 
-        topPanel.add(openFileLogField, new GridBagConstraints(2, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        gbh.fullDefaults();
 
-        add(loggerPanel, new GridBagConstraints(0, 3,
-                2, 1, 1, 1,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 5, 5, 5),
-                0, 0));
+        add(topPanel, gbh.fillBoth().spanX().setMaxWeightY().get());
+
+
+        add(startStopSessionButton, gbh.nextRowFirstCol().setLabelDefault().get());
+
+        add(clearTableButton, gbh.nextCol().setLabelDefault().get());
+
 
         tabPane.add(bundleString("Connection"), connectionPanel);
         tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));
         tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
+        tabPane.add(bundleString("Logger"), loggerPanel);
         //tabPane.add("Session Manager", sessionManagerPanel);
         connectionPanel.setLayout(new GridBagLayout());
-
-        label = new JLabel(bundleString("Connections"));
-        connectionPanel.add(label, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectionPanel.add(databaseBox, new GridBagConstraints(1, 0,
-                6, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
+        gbh.fullDefaults();
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Connections"), databaseBox, null, true, true);
+        gbh.nextRowFirstCol();
         label = new JLabel(bundleString("Database"));
-        connectionPanel.add(label, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(fileDatabaseButton, new GridBagConstraints(1, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(fileDatabaseField, new GridBagConstraints(2, 1,
-                5, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("SessionName"));
-        connectionPanel.add(label, new GridBagConstraints(0, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(sessionField, new GridBagConstraints(1, 2,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("Username"));
-        connectionPanel.add(label, new GridBagConstraints(0, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectionPanel.add(userField, new GridBagConstraints(1, 3,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("Password"));
-        connectionPanel.add(label, new GridBagConstraints(3, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectionPanel.add(passwordField, new GridBagConstraints(4, 3,
-                3, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("Host"));
-        connectionPanel.add(label, new GridBagConstraints(3, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(hostField, new GridBagConstraints(4, 2,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("Port"));
-        connectionPanel.add(label, new GridBagConstraints(5, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(portField, new GridBagConstraints(6, 2,
-                1, 1, 0.3, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("Charset"));
-        connectionPanel.add(label, new GridBagConstraints(0, 4,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectionPanel.add(charsetCombo, new GridBagConstraints(1, 4,
-                6, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(useBuildConfBox, new GridBagConstraints(0, 5,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        /*label = new JLabel("Config file");
-        connectionPanel.add(label, new GridBagConstraints(1, 5,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));*/
-
-        connectionPanel.add(fileConfButton, new GridBagConstraints(1, 5,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(fileConfField, new GridBagConstraints(2, 5,
-                5, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
+        connectionPanel.add(label, gbh.setLabelDefault().get());
+        gbh.addLabelFieldPair(connectionPanel, fileDatabaseButton, fileDatabaseField, null, false, true);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("SessionName"), sessionField, null, true, false, 2);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Host"), hostField, null, false, false);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Port"), portField, null, false, true);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Username"), userField, null, true, false, 2);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Password"), passwordField, null, false, true);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Charset"), charsetCombo, null, true, true);
+        gbh.nextRowFirstCol();
+        connectionPanel.add(useBuildConfBox, gbh.setLabelDefault().get());
+        gbh.addLabelFieldPair(connectionPanel, fileConfButton, fileConfField, null, false, true);
+        gbh.nextRowFirstCol();
+        connectionPanel.add(logToFileBox, gbh.setLabelDefault().get());
+        gbh.addLabelFieldPair(connectionPanel, fileLogButton, fileLogField, null, false, true);
+        connectionPanel.add(new JPanel(), gbh.anchorSouth().nextRowFirstCol().fillBoth().spanX().spanY().get());
+/*
         connectionPanel.add(logToFileBox, new GridBagConstraints(0, 6,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
         connectionPanel.add(fileLogButton, new GridBagConstraints(1, 6,
-                1, 1, 0, 0,
+                1, 1, 0, 1,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
         connectionPanel.add(fileLogField, new GridBagConstraints(2, 6,
-                5, 1, 1, 0,
+                5, 1, 1, 1,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+                0, 0));*/
+        ///connectionPanel.add()
         setEnableElements();
 
     }

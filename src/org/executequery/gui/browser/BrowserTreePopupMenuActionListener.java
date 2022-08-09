@@ -901,12 +901,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     protected void setCurrentPath(TreePath currentPath) {
         this.currentPath = currentPath;
-        this.selectedSeveralPaths = false;
     }
 
     protected void setTreePaths(TreePath[] treePaths) {
         this.treePaths = treePaths;
-        this.selectedSeveralPaths = true;
     }
 
     protected void setSelectedSeveralPaths(boolean selectedSeveralPaths) {

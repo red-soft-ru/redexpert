@@ -1835,9 +1835,11 @@ public class ConnectionsTreePanel extends TreePanel
 
   private boolean selectedPathsOnlyThisTyped(int namedObject){
     boolean flag = true;
-    TreePath[] treePaths =tree.getSelectionPaths();
+    TreePath[] treePaths = tree.getSelectionPaths();
+    if (treePaths == null)
+      return false;
     DatabaseObjectNode Object;
-    for(int i = 0; i < tree.getSelectionPaths().length; i++) {
+    for (int i = 0; i < treePaths.length; i++) {
       Object = (DatabaseObjectNode) treePaths[i].getLastPathComponent();
       if (Object.getType() != namedObject)
         flag = false;
@@ -1845,28 +1847,31 @@ public class ConnectionsTreePanel extends TreePanel
     return flag;
   }
 
-  private boolean CheckPathForLocationInSelectedTree(TreePath treePathForLocation){
-
-    boolean flag=false;
+  private boolean checkPathForLocationInSelectedTree(TreePath treePathForLocation) {
+    if (treePathForLocation == null)
+      return false;
+    boolean flag = false;
     try {
       TreePath[] treePaths = tree.getSelectionPaths();
+      if (treePaths == null)
+        return false;
 
-      for (int i = 0; i < tree.getSelectionPaths().length; i++) {
+      for (int i = 0; i < treePaths.length; i++) {
         if (treePaths[i] == treePathForLocation)
           flag = true;
       }
-    }
-    catch (Exception e){
+    } catch (Exception e) {
       return false;
     }
     return flag;
   }
-  private boolean selectedSeveralIdenticalTypes(TreePath treePathForLocation){
-    if(tree.getSelectionPaths()==null)
-      return false;
-    else
-      return getTreeSelectionPaths().length <= 1 || !CheckPathForLocationInSelectedTree(treePathForLocation) ||
-              (!selectedPathsOnlyThisTyped(NamedObject.TRIGGER) && !selectedPathsOnlyThisTyped(NamedObject.INDEX));
+
+  private boolean checkShowActiveMenu(TreePath treePathForLocation) {
+    return selectedTriggersOrIndexesOnly() && checkPathForLocationInSelectedTree(treePathForLocation);
+  }
+
+  private boolean selectedTriggersOrIndexesOnly() {
+    return selectedPathsOnlyThisTyped(NamedObject.TRIGGER) || selectedPathsOnlyThisTyped(NamedObject.INDEX);
   }
 
   protected TreePath getTreePathForLocation(int x, int y) {
@@ -1942,8 +1947,7 @@ public class ConnectionsTreePanel extends TreePanel
         Point point = new Point(e.getX(), e.getY());
         TreePath treePathForLocation = getTreePathForLocation(point.x, point.y);
 
-        if (selectedSeveralIdenticalTypes(treePathForLocation))
-        {
+        if (!checkShowActiveMenu(treePathForLocation)) {
           try {
 
             removeTreeSelectionListener();
@@ -1969,13 +1973,12 @@ public class ConnectionsTreePanel extends TreePanel
 
             popupMenu = getBrowserTreePopupMenu();
             BrowserTreePopupMenu browserPopup = (BrowserTreePopupMenu) popupMenu;
-            if (selectedSeveralIdenticalTypes(treePathForLocation)) {
-              browserPopup.setCurrentPath(treePathForLocation);
-              browserPopup.setSelectedSeveralPaths(false);
-            }
-            else {
+            if ((checkShowActiveMenu(treePathForLocation)) && tree.getSelectionPaths().length > 1) {
               browserPopup.setTreePaths(tree.getSelectionPaths());
               browserPopup.setSelectedSeveralPaths(true);
+            } else {
+              browserPopup.setCurrentPath(treePathForLocation);
+              browserPopup.setSelectedSeveralPaths(false);
             }
             DatabaseConnection connection = getConnectionAt(point);
             if (connection == null) {

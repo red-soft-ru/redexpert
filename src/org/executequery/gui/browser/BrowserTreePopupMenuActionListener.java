@@ -22,6 +22,9 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
@@ -38,6 +41,7 @@ import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
 import org.executequery.gui.importexport.ImportExportXMLPanel;
 import org.executequery.localization.Bundles;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
@@ -46,13 +50,17 @@ import org.underworldlabs.util.MiscUtils;
 import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 import java.util.Objects;
 
 /**
  * @author Takis Diakoumis
  */
+
+
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
+    private StatementExecutor querySender;
     private final ConnectionsTreePanel treePanel;
 
     private StatementToEditorWriter statementWriter;
@@ -60,6 +68,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     private DatabaseConnection currentSelection;
 
     private TreePath currentPath;
+
+    private TreePath[] treePaths;
+
+    private boolean selectedSeveralPaths = false;
 
     BrowserTreePopupMenuActionListener(ConnectionsTreePanel treePanel) {
         this.treePanel = treePanel;
@@ -669,7 +681,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     private BrowserController controller;
 
 
-    public void dataBaseInformation (ActionEvent e) {
+    public void dataBaseInformation(ActionEvent e) {
         controller = treePanel.getController();
         DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
         DatabaseConnection connection = currentSelection;
@@ -891,8 +903,24 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         this.currentPath = currentPath;
     }
 
+    protected void setTreePaths(TreePath[] treePaths) {
+        this.treePaths = treePaths;
+    }
+
+    protected void setSelectedSeveralPaths(boolean selectedSeveralPaths) {
+        this.selectedSeveralPaths = selectedSeveralPaths;
+    }
+
     protected TreePath getCurrentPath() {
         return currentPath;
+    }
+
+    protected TreePath[] getTreePaths() {
+        return treePaths;
+    }
+
+    protected boolean getSelectedSeveralPaths() {
+        return selectedSeveralPaths;
     }
 
     protected void showDialogCreateObject(AbstractCreateObjectPanel panel, BaseDialog dialog) {
@@ -908,5 +936,90 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         dialog.addDisplayComponentWithEmptyBorder(panel);
         dialog.display();
     }
+
+    public void active(ActionEvent e) throws SQLException {
+        try {
+            String query;
+            if (selectedSeveralPaths) {
+                boolean firstErrorExists = false;
+                StringBuilder error = new StringBuilder();
+
+                for (int i = 0; i < treePaths.length; i++) {
+                    String[] Splitters = treePaths[i].getLastPathComponent().toString().split(":");
+                    query = "ALTER " + Splitters[1] + " " + Splitters[0] + " ACTIVE";
+                    querySender = new DefaultStatementExecutor(currentSelection, false);
+                    SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+                    treePanel.reloadPath(treePaths[i]);
+                    if (result.isException() && firstErrorExists == false) {
+                        error.append(result.getErrorMessage());
+                        firstErrorExists = true;
+                    }
+                }
+                querySender.execute(QueryTypes.COMMIT, "");
+                if (error.length() > 0)
+                    GUIUtilities.displayErrorMessage(error.toString());
+
+            } else {
+                String[] Splitters = currentPath.getLastPathComponent().toString().split(":");
+                query = "ALTER " + Splitters[1] + " " + Splitters[0] + " ACTIVE";
+                querySender = new DefaultStatementExecutor(currentSelection, false);
+                SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+                querySender.execute(QueryTypes.COMMIT, "");
+                if (result.isException()) {
+                    GUIUtilities.displayErrorMessage(result.getErrorMessage());
+                }
+                treePanel.reloadPath(currentPath);
+            }
+        } catch (SQLException error) {
+            GUIUtilities.displayErrorMessage(error.getMessage());
+        } finally {
+            querySender.releaseResources();
+        }
+    }
+
+
+    public void inactive(ActionEvent e) {
+        try {
+            String query;
+            boolean firstErrorExists = false;
+            if (selectedSeveralPaths) {
+                StringBuilder error = new StringBuilder();
+
+                for (int i = 0; i < treePaths.length; i++) {
+                    String[] Splitters = treePaths[i].getLastPathComponent().toString().split(":");
+                    query = "ALTER " + Splitters[1] + " " + Splitters[0] + " INACTIVE";
+
+                    querySender = new DefaultStatementExecutor(currentSelection, false);
+                    SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+                    treePanel.reloadPath(treePaths[i]);
+                    if (result.isException() && firstErrorExists == false) {
+                        error.append(result.getErrorMessage());
+                        firstErrorExists = true;
+                    }
+                }
+                querySender.execute(QueryTypes.COMMIT, "");
+                if (error.length() > 0)
+                    GUIUtilities.displayErrorMessage(error.toString());
+
+            } else {
+                String[] Splitters = currentPath.getLastPathComponent().toString().split(":");
+                query = "ALTER " + Splitters[1] + " " + Splitters[0] + " INACTIVE";
+                querySender = new DefaultStatementExecutor(currentSelection, false);
+                SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+
+                if (result.isException()) {
+                    GUIUtilities.displayErrorMessage(result.getErrorMessage());
+                }
+                querySender.execute(QueryTypes.COMMIT, "");
+                treePanel.reloadPath(currentPath);
+            }
+
+        } catch (SQLException error) {
+            GUIUtilities.displayErrorMessage(error.getMessage());
+        } finally {
+            querySender.releaseResources();
+        }
+    }
+
 
 }

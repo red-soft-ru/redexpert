@@ -62,7 +62,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 /**
- * @author Denis Visente
+ * @author Takis Diakoumis
  */
 public class ConnectionsTreePanel extends TreePanel
         implements ConnectionListener,
@@ -1866,7 +1866,7 @@ public class ConnectionsTreePanel extends TreePanel
       return false;
     else
       return getTreeSelectionPaths().length <= 1 || !CheckPathForLocationInSelectedTree(treePathForLocation) ||
-            (selectedPathsOnlyThisTyped(NamedObject.TRIGGER)==false && selectedPathsOnlyThisTyped(NamedObject.INDEX)==false);
+              (!selectedPathsOnlyThisTyped(NamedObject.TRIGGER) && !selectedPathsOnlyThisTyped(NamedObject.INDEX));
   }
 
   protected TreePath getTreePathForLocation(int x, int y) {
@@ -1977,7 +1977,6 @@ public class ConnectionsTreePanel extends TreePanel
               browserPopup.setTreePaths(tree.getSelectionPaths());
               browserPopup.setSelectedSeveralPaths(true);
             }
-
             DatabaseConnection connection = getConnectionAt(point);
             if (connection == null) {
               return;

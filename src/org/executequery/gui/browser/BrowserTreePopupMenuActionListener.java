@@ -54,7 +54,7 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 /**
- * @author DenArt
+ * @author Takis Diakoumis
  */
 
 
@@ -71,7 +71,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     private TreePath[] treePaths;
 
-    private boolean selectedSeveralPaths=false;
+    private boolean selectedSeveralPaths = false;
 
     BrowserTreePopupMenuActionListener(ConnectionsTreePanel treePanel) {
         this.treePanel = treePanel;
@@ -681,7 +681,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     private BrowserController controller;
 
 
-    public void dataBaseInformation (ActionEvent e) {
+    public void dataBaseInformation(ActionEvent e) {
         controller = treePanel.getController();
         DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
         DatabaseConnection connection = currentSelection;
@@ -901,27 +901,27 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     protected void setCurrentPath(TreePath currentPath) {
         this.currentPath = currentPath;
-        this.selectedSeveralPaths=false;
+        this.selectedSeveralPaths = false;
     }
 
-    protected void setTreePaths(TreePath[] treePaths){
-        this.treePaths=treePaths;
-        this.selectedSeveralPaths=true;
+    protected void setTreePaths(TreePath[] treePaths) {
+        this.treePaths = treePaths;
+        this.selectedSeveralPaths = true;
     }
 
-    protected void setSelectedSeveralPaths(boolean selectedSeveralPaths){
-        this.selectedSeveralPaths=selectedSeveralPaths;
+    protected void setSelectedSeveralPaths(boolean selectedSeveralPaths) {
+        this.selectedSeveralPaths = selectedSeveralPaths;
     }
 
     protected TreePath getCurrentPath() {
         return currentPath;
     }
 
-    protected  TreePath[] getTreePaths(){
+    protected TreePath[] getTreePaths() {
         return treePaths;
     }
 
-    protected  boolean getSelectedSeveralPaths(){
+    protected boolean getSelectedSeveralPaths() {
         return selectedSeveralPaths;
     }
 
@@ -943,7 +943,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         try {
             String query;
             if (selectedSeveralPaths) {
-                boolean firstErrorExists=false;
+                boolean firstErrorExists = false;
                 StringBuilder error = new StringBuilder();
 
                 for (int i = 0; i < treePaths.length; i++) {
@@ -952,12 +952,12 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     querySender = new DefaultStatementExecutor(currentSelection, false);
                     SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
                     treePanel.reloadPath(treePaths[i]);
-                    if (result.isException()&&firstErrorExists==false) {
+                    if (result.isException() && firstErrorExists == false) {
                         error.append(result.getErrorMessage());
-                        firstErrorExists=true;
+                        firstErrorExists = true;
                     }
                 }
-                querySender.execute(QueryTypes.COMMIT,"");
+                querySender.execute(QueryTypes.COMMIT, "");
                 if (error.length() > 0)
                     GUIUtilities.displayErrorMessage(error.toString());
 
@@ -966,28 +966,24 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 query = "ALTER " + Splitters[1] + " " + Splitters[0] + " ACTIVE";
                 querySender = new DefaultStatementExecutor(currentSelection, false);
                 SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
-                querySender.execute(QueryTypes.COMMIT,"");
+                querySender.execute(QueryTypes.COMMIT, "");
                 if (result.isException()) {
                     GUIUtilities.displayErrorMessage(result.getErrorMessage());
                 }
-
                 treePanel.reloadPath(currentPath);
             }
-
-        }
-        catch (SQLException error){
+        } catch (SQLException error) {
             GUIUtilities.displayErrorMessage(error.getMessage());
-        }
-        finally {
+        } finally {
             querySender.releaseResources();
         }
     }
 
 
-    public void inactive(ActionEvent e){
+    public void inactive(ActionEvent e) {
         try {
             String query;
-            boolean firstErrorExists=false;
+            boolean firstErrorExists = false;
             if (selectedSeveralPaths) {
                 StringBuilder error = new StringBuilder();
 
@@ -998,12 +994,12 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     querySender = new DefaultStatementExecutor(currentSelection, false);
                     SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
                     treePanel.reloadPath(treePaths[i]);
-                    if (result.isException()&&firstErrorExists==false) {
+                    if (result.isException() && firstErrorExists == false) {
                         error.append(result.getErrorMessage());
-                        firstErrorExists=true;
+                        firstErrorExists = true;
                     }
                 }
-                querySender.execute(QueryTypes.COMMIT,"");
+                querySender.execute(QueryTypes.COMMIT, "");
                 if (error.length() > 0)
                     GUIUtilities.displayErrorMessage(error.toString());
 
@@ -1016,15 +1012,13 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 if (result.isException()) {
                     GUIUtilities.displayErrorMessage(result.getErrorMessage());
                 }
-                querySender.execute(QueryTypes.COMMIT,"");
+                querySender.execute(QueryTypes.COMMIT, "");
                 treePanel.reloadPath(currentPath);
             }
 
-        }
-        catch (SQLException error){
+        } catch (SQLException error) {
             GUIUtilities.displayErrorMessage(error.getMessage());
-        }
-        finally {
+        } finally {
             querySender.releaseResources();
         }
     }

@@ -37,7 +37,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 
 /**
- * @author DenArt
+ * @author Takis Diakoumis
  */
 public class BrowserTreePopupMenu extends JPopupMenu {
 
@@ -269,9 +269,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             sql.setVisible(false);
             exportData.setVisible(false);
             importData.setVisible(false);
-
         }
-
     }
 
     private DatabaseCatalog asDatabaseCatalog(DefaultMutableTreeNode currentPathComponent) {

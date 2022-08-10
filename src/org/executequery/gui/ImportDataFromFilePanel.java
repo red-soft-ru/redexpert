@@ -7,6 +7,7 @@ import org.executequery.components.FileChooserDialog;
 import org.executequery.GUIUtilities;
 import org.executequery.components.MinimumWidthActionButton;
 import org.executequery.components.TableSelectionCombosGroup;
+import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
@@ -16,8 +17,10 @@ import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.table.NumberCellEditor;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -29,13 +32,12 @@ import java.io.*;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.List;
 
-
 /**
  * @author Alexey Kozlov
- * todo batch commits, delimiter auto-detection, time tests
  */
 
 public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
@@ -55,12 +57,16 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private JComboBox delimiterCombo;   //delimiter type
     private JComboBox timeFormatCombo;   //time format
     private JCheckBox isFirstColumnNames;  //check whether the first row stores column names
+    private JCheckBox isEraseDatabase;  //check whether it's necessary to clear DB before import
     private JTextArea dataPreviewTextArea;  //preview of source data
-    private LoggingOutputPanel outputPanel;
+    private LoggingOutputPanel outputPanel; //logging module executing
+    private JSpinner firstImportSelector; //numeric selector of first importing line
+    private JSpinner lastImportSelector; //numeric selector of last importing line
+    private JSpinner batchStepSelector; //numeric selector of batch commit step
 
     // ----- table for columns mapping -----
 
-    private  DefaultTableModel columnMappingTableModel;
+    private DefaultTableModel columnMappingTableModel;
     private JTable columnMappingTable;
 
     // ----- buttons -----
@@ -77,19 +83,25 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private String sourceFileName;
     private ArrayList<String> headersOfSourceArray;
     private String nothingHeaderOfMappingTable;
-    private DateTimeFormatter timestampFormat;
 
     public ImportDataFromFilePanel() {
         super(new BorderLayout());
         init();
+
+        Log.info("ImportDataFromFilePanel: class was created");
     }
 
     private void init() {
 
         String[] delimiters = {bundledString("SelectDelimiter"), "|", ",", ";", "#"};
         String[] sourceTypes = {bundledString("SelectFileType"), "csv", "xlsx", "json"};
-        String[] timeFormats = {bundledString("SelectTimeFormat"),"dd.MM.yyyy HH:mm","yyyy-MM-dd HH:mm:ss"};
+        String[] timeFormats = {bundledString("SelectTimeFormat"),
+                "dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss",
+                "MM/dd/yyyy", "yyyyMMdd", "HH:mm:ss"};
+
         nothingHeaderOfMappingTable = "NOTHING";
+
+        // ---------- comboBoxes ----------
 
         delimiterCombo = WidgetFactory.createComboBox(delimiters);
         delimiterCombo.setEditable(true);
@@ -100,10 +112,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         timeFormatCombo = WidgetFactory.createComboBox(timeFormats);
         timeFormatCombo.setEditable(true);
 
-        fileNameField = WidgetFactory.createTextField();
-
-        isFirstColumnNames = new JCheckBox(bundledString("IsFirstColumnNamesText"));
-
         connectionsCombo = WidgetFactory.createComboBox();
         connectionsCombo.addActionListener(e -> connectionComboChanged());
 
@@ -112,12 +120,28 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         tableCombo = WidgetFactory.createComboBox();
         tableCombo.addActionListener(e -> tableComboChanged());
 
-        connectionComboChanged();
-        sourceComboChanged();
+        // ---------- file path field ----------
+
+        fileNameField = WidgetFactory.createTextField();
+
+        // ---------- checkBoxes ----------
+
+        isFirstColumnNames = new JCheckBox(bundledString("IsFirstColumnNamesText"));
+        isEraseDatabase = new JCheckBox(bundledString("IsEraseDatabaseText"));
+
+        // ---------- numeric selectors ----------
+
+        firstImportSelector = new JSpinner(new SpinnerNumberModel(0, 0, 999999999, 1));
+        lastImportSelector = new JSpinner(new SpinnerNumberModel(999999999, 0, 999999999, 1));
+        batchStepSelector = new JSpinner(new SpinnerNumberModel(100, 100, 1000000, 100));
+
+        // ---------- text area ----------
 
         dataPreviewTextArea = new JTextArea();
         dataPreviewTextArea.setEditable(false);
         dataPreviewTextArea.setBorder(BorderFactory.createEtchedBorder());
+
+        // ---------- output panel & mapping table ----------
 
         outputPanel = new LoggingOutputPanel();
 
@@ -138,11 +162,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         fillMappingTableButton = new MinimumWidthActionButton(
                 85, this,
-                bundledString("FillMappingTableButtonText"),"fillMappingTable");
+                bundledString("FillMappingTableButtonText"), "fillMappingTable");
 
         startImportButton = new MinimumWidthActionButton(
                 85, this,
                 bundledString("StartImportButtonText"), "startImport");
+
+        connectionComboChanged();
+        sourceComboChanged();
 
         componentsArranging();
 
@@ -177,7 +204,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         JPanel mainPanel = new JPanel(new GridBagLayout()); //main panel of this view
 
         GridBagHelper gridBagHelper = new GridBagHelper();    //GridBagConstraints helper
-        gridBagHelper.setInsets(5,5,5,5);   //margins
+        gridBagHelper.setInsets(5, 5, 5, 5);   //margins
         gridBagHelper.setHeight(1);   //number of cells in the column for the component display
         gridBagHelper.anchorNorthWest();    //set upper-left displays corner
 
@@ -186,18 +213,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         mainPanel.add(new JLabel(bundledString("TargetConnectionLabel")), gridBagHelper.get());
 
         gridBagHelper.nextCol();
-        gridBagHelper.spanX();
         gridBagHelper.fillHorizontally();
 
         mainPanel.add(connectionsCombo, gridBagHelper.get());
-
-        gridBagHelper.nextRowFirstCol();
-        gridBagHelper.setMinWeightX();
-        gridBagHelper.setWidth(1);
-
-        // ----------- second row -----------
-
-        mainPanel.add(new JLabel(bundledString("TargetTableLabel")), gridBagHelper.get());
 
         gridBagHelper.nextCol();
         gridBagHelper.spanX();
@@ -209,32 +227,23 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         gridBagHelper.setMinWeightX();
         gridBagHelper.setWidth(1);
 
-        // ----------- third row -----------
-
-        mainPanel.add(new JLabel(bundledString("SourceTypeLabel")), gridBagHelper.get());
-
-        gridBagHelper.nextCol();
-        gridBagHelper.spanX();
-        gridBagHelper.fillHorizontally();
-
-        mainPanel.add(sourceCombo, gridBagHelper.get());
-
-        gridBagHelper.nextRowFirstCol();
-        gridBagHelper.setMinWeightX();
-        gridBagHelper.setWidth(1);
-
-        // ----------- fourth row -----------
+        // ----------- second row -----------
 
         mainPanel.add(new JLabel(bundledString("InputDataFileLabel")), gridBagHelper.get());
 
         gridBagHelper.nextCol();
-        gridBagHelper.setWeightX(1.0);
+        gridBagHelper.setWeightX(2.0);
         gridBagHelper.fillHorizontally();
 
         mainPanel.add(fileNameField, gridBagHelper.get());
 
         gridBagHelper.nextCol();
-        gridBagHelper.setMinWeightX();
+        gridBagHelper.setWeightX(1.0);
+        gridBagHelper.fillHorizontally();
+
+        mainPanel.add(sourceCombo, gridBagHelper.get());
+
+        gridBagHelper.nextCol();
         gridBagHelper.fillHorizontally();
 
         mainPanel.add(browseButton, gridBagHelper.get());
@@ -243,23 +252,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         gridBagHelper.setMinWeightX();
         gridBagHelper.setWidth(1);
 
-        // ----------- fifth row -----------
+        // ----------- third row -----------
 
-        mainPanel.add(new JLabel(bundledString("DataDelimiterLabel")), gridBagHelper.get());
+        mainPanel.add(new JLabel(bundledString("DelimiterAndTimeFormatLabel")), gridBagHelper.get());
 
         gridBagHelper.nextCol();
-        gridBagHelper.spanX();
         gridBagHelper.fillHorizontally();
 
         mainPanel.add(delimiterCombo, gridBagHelper.get());
-
-        gridBagHelper.nextRowFirstCol();
-        gridBagHelper.setMinWeightX();
-        gridBagHelper.setWidth(1);
-
-        // ----------- sixth row -----------
-
-        mainPanel.add(new JLabel(bundledString("DateFormatLabel")), gridBagHelper.get());
 
         gridBagHelper.nextCol();
         gridBagHelper.spanX();
@@ -271,11 +271,54 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         gridBagHelper.setMinWeightX();
         gridBagHelper.setWidth(1);
 
-        // ----------- seventh row -----------
+        // ----------- fourth row -----------
+
+        mainPanel.add(new JLabel(bundledString("NumericSelectorsLabel")), gridBagHelper.get());
+
+        gridBagHelper.nextCol();
+        gridBagHelper.fillHorizontally();
+
+        mainPanel.add(firstImportSelector, gridBagHelper.get());
+
+        gridBagHelper.nextCol();
+        gridBagHelper.spanX();
+        gridBagHelper.fillHorizontally();
+
+        mainPanel.add(lastImportSelector, gridBagHelper.get());
+
+        gridBagHelper.nextRowFirstCol();
+        gridBagHelper.setMinWeightX();
+        gridBagHelper.setWidth(1);
+
+        // ----------- fifth row -----------
+
+        mainPanel.add(new JLabel(bundledString("CommitSelectorLabel")), gridBagHelper.get());
+
+        gridBagHelper.nextCol();
+
+        mainPanel.add(batchStepSelector, gridBagHelper.get());
+
+        gridBagHelper.nextRowFirstCol();
+        gridBagHelper.setMinWeightX();
+        gridBagHelper.setWidth(1);
+
+        // ----------- sixth row -----------
 
         mainPanel.add(isFirstColumnNames, gridBagHelper.get());
 
+        gridBagHelper.nextCol();
+        gridBagHelper.spanX();
+        gridBagHelper.fillHorizontally();
+
+        mainPanel.add(isEraseDatabase, gridBagHelper.get());
+
         gridBagHelper.nextRowFirstCol();
+        gridBagHelper.setMinWeightX();
+        gridBagHelper.setWidth(1);
+
+        // ----------- sixth row -----------
+
+        // ----------- seventh row -----------
 
         // ----------- eights row -----------
 
@@ -360,17 +403,20 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 readCSVFileForPreview(pathToFile);
                 break;
 
-            } case ("xlsx"): {
+            }
+            case ("xlsx"): {
 
                 GUIUtilities.displayWarningMessage("Import from xlsx is currently unavailable");
                 break;
 
-            } case ("json"): {
+            }
+            case ("json"): {
 
                 GUIUtilities.displayWarningMessage("Import from json is currently unavailable");
                 break;
 
-            } default: {
+            }
+            default: {
 
                 GUIUtilities.displayWarningMessage(bundledString("NoFileTypeSelectedMessage"));
             }
@@ -381,7 +427,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     public void fillMappingTable() {
 
-        if (!fillMappingTableAllowed(true)){
+        if (!fillMappingTableAllowed(true)) {
 
             return;
         }
@@ -407,6 +453,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                     dbHostTableColumn.getTypeName()});
         }
 
+        Log.info("ImportDataFromFilePanel: mapping table was filled in");
     }
 
     public void startImport() {
@@ -415,6 +462,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             return;
         }
+
+        Log.info("ImportDataFromFilePanel: import process started...");
 
         // ---------------------------------------------
         // Preparing SQL-INSERT pattern
@@ -442,10 +491,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 targetColumnList.append(dataFromTableVector.get(i).get(0));
                 sourceColumnList.append(dataFromTableVector.get(i).get(2));
 
-                if (i != dataFromTableVector.size() - 1) {
-                    targetColumnList.append(",");
-                    sourceColumnList.append(",");
-                }
+                targetColumnList.append(",");
+                sourceColumnList.append(",");
 
                 valuesCount++;
                 valuesIndexes[i] = true;
@@ -454,10 +501,15 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         }
 
+        targetColumnList.deleteCharAt(targetColumnList.length() - 1);
+        sourceColumnList.deleteCharAt(sourceColumnList.length() - 1);
+
         if (valuesCount == 0) {
 
             GUIUtilities.displayWarningMessage(
                     bundledString("NoDataForImportMessage"));
+            Log.info("ImportDataFromFilePanel: import process stopped (no data for import selected)");
+
             return;
         }
 
@@ -479,14 +531,18 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             insertStatement = executor.getPreparedStatement(insertPattern.toString());
 
-        } catch(Exception e) {
+        } catch (Exception e) {
 
             GUIUtilities.displayExceptionErrorDialog(
                     bundledString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
+
+            Log.error("ImportDataFromFilePanel: import process stopped due to an error", e);
+
             return;
         }
 
         outputPanel.append("SQL-INSERT pattern created: " + insertPattern);
+        Log.info("ImportDataFromFilePanel: SQL-INSERT pattern created");
 
         // ---------------------------------------------
         // Executing SQL-INSERT request depending on source file type
@@ -499,19 +555,23 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 insertCSV(sourceColumnList, valuesIndexes, insertStatement, executor);
                 break;
 
-            } case ("xlsx"): {
+            }
+            case ("xlsx"): {
 
                 GUIUtilities.displayWarningMessage("Import from xlsx is currently unavailable");
                 break;
 
-            } case ("json"): {
+            }
+            case ("json"): {
 
                 GUIUtilities.displayWarningMessage("Import from json is currently unavailable");
                 break;
 
-            }  default: {
+            }
+            default: {
 
                 GUIUtilities.displayWarningMessage(bundledString("NoFileTypeSelectedMessage"));
+                Log.info("ImportDataFromFilePanel: import process stopped (no source file type selected)");
             }
 
         }
@@ -545,67 +605,106 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             long startTime = System.currentTimeMillis();
 
+            int executorIndex = 0;
+            int linesCount = 0;
+
             while (sourceFileData.next()) {
 
-                int fieldIndex = 0;
+                if (linesCount <= (int) lastImportSelector.getValue()) {
 
-                for (int j = 0; j < valuesIndexes.length; j++) {
+                    break;
+                }
 
-                    if (valuesIndexes[j]) {
+                if (linesCount >= (int) firstImportSelector.getValue()) {
 
-                        Object param;
-                        String targetColumnType = insertStatement.getParameterMetaData()
-                                .getParameterTypeName(fieldIndex + 1);
+                    int fieldIndex = 0;
 
-                        if (Objects.equals(targetColumnType, "DATE") ||
-                                Objects.equals(targetColumnType, "TIME") ||
-                                Objects.equals(targetColumnType, "TIMESTAMP")) {
+                    for (boolean valueIndex : valuesIndexes) {
 
-                            if (timeFormatCombo.getSelectedIndex() != 0) {
+                        if (valueIndex) {
 
-                                timestampFormat = DateTimeFormatter.
-                                        ofPattern(Objects.requireNonNull(timeFormatCombo.getSelectedItem()).toString());
+                            Object param;
+                            String targetColumnType = insertStatement.getParameterMetaData()
+                                    .getParameterTypeName(fieldIndex + 1);
+
+                            if (Objects.equals(targetColumnType, "DATE") ||
+                                    Objects.equals(targetColumnType, "TIME") ||
+                                    Objects.equals(targetColumnType, "TIMESTAMP")) {
+
+                                DateTimeFormatter timestampFormat;
+                                if (timeFormatCombo.getSelectedIndex() != 0) {
+
+                                    timestampFormat = DateTimeFormatter.
+                                            ofPattern(Objects.requireNonNull(timeFormatCombo.getSelectedItem()).toString());
+
+                                } else {
+
+                                    GUIUtilities.displayWarningMessage(bundledString("NoTimeFormatSelectedMessage"));
+                                    outputPanel.appendError("Importing data stopped: no date/time format selected");
+                                    Log.info("ImportDataFromFilePanel: import process stopped (no date/time format selected)");
+
+                                    return;
+                                }
+
+                                String stringTime = sourceFileData.getString(sourceFields[fieldIndex]);
+
+                                param = LocalDateTime.parse(stringTime, timestampFormat);
 
                             } else {
 
-                                GUIUtilities.displayWarningMessage(bundledString("NoTimeFormatSelectedMessage"));
-                                outputPanel.appendError("Importing data stopped: no date/time format selected");
-
-                                return;
+                                param = sourceFileData.getString(sourceFields[fieldIndex]);
                             }
 
-                            String stringTime = sourceFileData.getString(sourceFields[fieldIndex]);
+                            insertStatement.setObject(fieldIndex + 1, param);
+                            fieldIndex++;
 
-                            param = LocalDateTime.parse(stringTime, timestampFormat);
-
-                        } else {
-
-                            param = sourceFileData.getString(sourceFields[fieldIndex]);
                         }
-
-                        insertStatement.setObject(fieldIndex + 1, param);
-                        fieldIndex++;
 
                     }
 
+                    insertStatement.addBatch();
+
+                    int batchStep = (int) batchStepSelector.getValue();
+                    if (executorIndex % batchStep == 0 && executorIndex != 0) {
+
+                        insertStatement.executeBatch();
+                        executor.getConnection().commit();
+
+                        Log.info("ImportDataFromFilePanel: " + batchStep + " records was added");
+                    }
+
+                    executorIndex++;
+
                 }
 
-                insertStatement.addBatch();
+                linesCount++;
 
             }
 
             insertStatement.executeBatch();
-
             executor.getConnection().commit();
 
-            outputPanel.append("SQL-INSERT request finished");
+            outputPanel.append("SQL-INSERT request finished, " + executorIndex + " records was added");
             outputPanel.append("Duration: " + MiscUtils.formatDuration(System.currentTimeMillis() - startTime));
+            Log.info("ImportDataFromFilePanel: import process has been completed, " + executorIndex + " records was added");
+
+        } catch (DateTimeParseException e) {
+
+            GUIUtilities.displayExceptionErrorDialog(
+                    bundledString("DateTimeFormatErrorMessage") + "\n" + e.getMessage(), e);
+
+            outputPanel.appendError("Importing data stopped: date/time format incorrect");
+            Log.error("ImportDataFromFilePanel: import process was stopped (date/time format incorrect)");
+
+            return;
 
         } catch (Exception e) {
 
             GUIUtilities.displayExceptionErrorDialog(
                     bundledString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
+
             outputPanel.appendError("Importing data stopped due to an error");
+            Log.error("ImportDataFromFilePanel: import process was stopped due to an error", e);
 
             return;
 
@@ -672,6 +771,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         columnMappingTableModel.addColumn(bundledString("ColumnMappingTableTargetT"));
         columnMappingTableModel.addColumn(bundledString("ColumnMappingTableSource"));
 
+        Log.info("ImportDataFromFilePanel: mapping table was (re)created");
+
     }
 
     private JComboBox createComboBoxMappingTable() {
@@ -684,7 +785,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         String[] firstRowFromSource = firstSourceRow.split(
                 Objects.requireNonNull(delimiterCombo.getSelectedItem()).toString());
 
-        if (isFirstColumnNames.isSelected()){
+        if (isFirstColumnNames.isSelected()) {
 
             for (String tempHeaderName : firstRowFromSource) {
 
@@ -694,7 +795,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         } else {
 
-            for (int i = 0; i < firstRowFromSource.length ; i++) {
+            for (int i = 0; i < firstRowFromSource.length; i++) {
 
                 String tempHeaderName = "COLUMN_" + (i + 1);
 
@@ -798,7 +899,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             // ----------- open source connection -----------
 
             connection = DriverManager.getConnection("jdbc:relique:csv:/" +
-                    directoryOfFile.replace("\\","/"), properties);
+                    directoryOfFile.replace("\\", "/"), properties);
 
             statement = connection.createStatement();
 
@@ -808,6 +909,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             GUIUtilities.displayExceptionErrorDialog(
                     bundledString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
+
+            Log.error("ImportDataFromFilePanel: import process was stopped due to an error", e);
+
             return null;
 
         }
@@ -857,9 +961,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             return false;
         }
 
+        if (isEraseDatabase.isSelected()) {
+
+            eraseDatabaseTable();
+        }
+
         Vector<Vector> tableData = columnMappingTableModel.getDataVector();
 
-        for (int i = 0; i < tableData.size(); i++){
+        for (int i = 0; i < tableData.size(); i++) {
 
             if (tableData.get(i).get(2) == null) {
 
@@ -870,6 +979,52 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         }
 
         return true;
+    }
+
+    // ---------------------------------------------
+    // Method for clearing DB table before import
+    // ---------------------------------------------
+
+    private void eraseDatabaseTable() {
+
+        DefaultStatementExecutor executor = new DefaultStatementExecutor();
+
+        try {
+
+            executor.setCommitMode(false);
+            executor.setKeepAlive(true);
+            executor.setDatabaseConnection(combosGroup.getSelectedHost().getDatabaseConnection());
+
+            StringBuilder deletePattern = new StringBuilder();
+            deletePattern.append("DELETE FROM ");
+            deletePattern.append(tableCombo.getSelectedItem());
+            deletePattern.append(";");
+
+            outputPanel.appendAction("Erasing the database table...");
+            Log.info("ImportDataFromFilePanel: erasing target table process started...");
+
+            executor.execute(QueryTypes.DELETE, deletePattern.toString());
+            executor.getConnection().commit();
+
+            outputPanel.append("The database table was successfully erased");
+            Log.info("ImportDataFromFilePanel: erasing target table process has been completed");
+
+
+        } catch (Exception e) {
+
+            GUIUtilities.displayExceptionErrorDialog(
+                    bundledString("EraseDatabaseErrorMessage") + "\n" + e.getMessage(), e);
+
+            outputPanel.appendError("Erasing the database table was stopped due to an error");
+            Log.error("ImportDataFromFilePanel: erasing target table was stopped due to an error", e);
+
+            return;
+
+        } finally {
+
+            executor.releaseResources();
+        }
+
     }
 
     // ---------------------------------------------

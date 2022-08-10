@@ -24,6 +24,7 @@ import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.spi.DefaultDatabaseConnection;
 import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.gui.DefaultPanelButton;
@@ -72,8 +73,6 @@ import java.util.List;
 import java.util.Vector;
 
 import static org.executequery.GUIUtilities.getDockedTabComponent;
-import static org.executequery.gui.browser.BrowserTableEditingPanel.TABLE_NAME_FOR_EXPORT;
-
 
 
 /**
@@ -103,8 +102,14 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     // The table model to be exported
     private TableModel model;
 
+    // The sender to QueryEditor
     private static StatementToEditorWriter statementWriter;
 
+    // Used to view the contents of a file
+    private JButton browse;
+
+    // The text to specify the path to the file
+    private JLabel filePath;
 
     public QueryEditorResultsExporter(TableModel model) {
 
@@ -125,15 +130,15 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         String[] delims = {"Pipe", "Comma", "Semi-colon", "Hash", "Custom"};
         delimCombo = ActionUtilities.createComboBox(action, delims, "delimeterChanged");
 
-        String[] types = {"Delimited File", "Excel Spreadsheet", "XML", "ScriptTextFormat", "ScriptSQL"};
+        String[] types = {"Delimited File", "Excel Spreadsheet", "XML", bundleString("SQLQueryToFile"), bundleString("SQLQueryInQueryEditor")};
         typeCombo = ActionUtilities.createComboBox(action, types, "exportTypeChanged");
 
         customDelimField = new CharLimitedTextField(1);
         fileNameField = WidgetFactory.createTextField();
 
-        JButton browseButton = new DefaultInlineFieldButton(action);
-        browseButton.setText(Bundles.get("ExecuteSqlScriptPanel.Browse"));
-        browseButton.setActionCommand("browse");
+        browse = new DefaultInlineFieldButton(action);
+        browse.setText(Bundles.get("ExecuteSqlScriptPanel.Browse"));
+        browse.setActionCommand("browse");
 
         JButton okButton = new DefaultPanelButton(action, Bundles.get("common.ok.button"), "export");
         JButton cancelButton = new DefaultPanelButton(action, Bundles.get("common.cancel.button"), "cancel");
@@ -147,6 +152,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         gbc.anchor = GridBagConstraints.EAST;
         gbc.weightx = 1.0;
         btnPanel.add(okButton, gbc);
+
         gbc.weightx = 0;
         gbc.gridx = 1;
         gbc.insets.left = 5;
@@ -210,7 +216,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         gbc.gridwidth = 1;
         gbc.insets.top = labelInsetsTop;
         gbc.fill = GridBagConstraints.NONE;
-        base.add(new JLabel(bundleString("FilePath")), gbc);
+        filePath = new JLabel(bundleString("FilePath"));
+        base.add(filePath, gbc);
+
         gbc.insets.top = fieldInsetsTop;
         gbc.weightx = 1.0;
         gbc.gridx = 1;
@@ -220,7 +228,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         gbc.gridx = 2;
         gbc.insets.left = 0;
         gbc.fill = GridBagConstraints.NONE;
-        base.add(browseButton, gbc);
+        base.add(browse, gbc);
 
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
@@ -248,13 +256,13 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         customDelimField.setEnabled(false);
     }
 
+
     public void dispose() {
         model = null;
         super.dispose();
     }
 
     private int getExportFormatType() {
-
         int index = typeCombo.getSelectedIndex();
         switch (index) {
             case 0:
@@ -271,12 +279,20 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 return ImportExportDataProcess.DELIMITED;
         }
 
+
     }
 
     public void exportTypeChanged(ActionEvent e) {
         int index = typeCombo.getSelectedIndex();
         delimCombo.setEnabled(index == 0);
-        columnHeadersCheck.setEnabled(index != 2);
+        columnHeadersCheck.setEnabled(index < 2);
+        applyQuotesCheck.setEnabled(index < 3);
+
+        fileNameField.setVisible(index < 4);
+        browse.setVisible(index < 4);
+        filePath.setVisible(index < 4);
+
+
     }
 
     public void delimeterChanged(ActionEvent e) {
@@ -333,10 +349,17 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     }
 
     public void export(ActionEvent e) {
+
+
+        int index = typeCombo.getSelectedIndex(); // Выбор формат файла.
+
         String value = fileNameField.getText();
-        if (MiscUtils.isNull(value)) {
-            GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
-            return;
+
+        if (index != 4) { // Если пользователь выберет экспорт скрипта, то путь указывать не нужно т.к. результаты не сохраняются и не записываются на устройство.
+            if (MiscUtils.isNull(value)) {
+                GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
+                return;
+            }
         }
 
         // check if it exists
@@ -384,17 +407,18 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         if (exportFormatType == ImportExportDataProcess.DELIMITED) {
 
             return exportDelimited();
+
         } else if (exportFormatType == ImportExportDataProcess.EXCEL) {
 
             return exportExcel();
 
         } else if (exportFormatType == ImportExportDataProcess.SCRIPT) {
 
-            return exportScript();
+            return SQLQueryToFile();
 
         } else if (exportFormatType == ImportExportDataProcess.SCRIPTSQL) {
 
-            return exportScriptSQL();
+            return QueryEditor();
 
         } else {
 
@@ -565,7 +589,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                         rowLines.append(delim);
                     }
                 }
-                writer.println(rowLines.toString());
+                writer.println(rowLines);
                 rowLines.setLength(0);
             }
 
@@ -591,7 +615,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
                 }
 
-                writer.println(rowLines.toString());
+                writer.println(rowLines);
                 rowLines.setLength(0);
                 progressDialog.increment(i + 1);
             }
@@ -622,6 +646,12 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 type == Types.LONGVARCHAR);
     }
 
+    private boolean isDataTime(RecordDataItem valueAt) {
+        int type = valueAt.getDataType();
+        return (type == Types.TIME ||
+                type == Types.TIMESTAMP);
+    }
+
     private String valueAsString(Object value) {
 
         if (value instanceof RecordDataItem) {
@@ -645,8 +675,8 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
 
     class ResultsProgressDialog extends JDialog {
-        // the progess bar
-        private JProgressBar progressBar;
+        // the progress bar
+        private final JProgressBar progressBar;
 
         public ResultsProgressDialog(int recordCount) {
             super(GUIUtilities.getParentFrame(), bundleString("ExportingQueryResults"), false);
@@ -703,124 +733,127 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     }
 
 
-    public Object exportScriptSQL(){
+    public Object QueryEditor() {
         selectStatement();
         return Bundles.get("PrintPreviewCommand.done");
     }
 
-    public Object exportScript() {
-        String separator = ", "; // Разделитель.
-        ResultsProgressDialog progressDialog = null; // Прогресс.
+    private String tableNameForExport() {
+        JFrame jFrame = new JFrame();
+        String getMessage = JOptionPane.showInputDialog(jFrame, bundleString("EnterTableName"));
+
+        JOptionPane.showMessageDialog(jFrame, bundleString("TableName") + getMessage);
+        if (jFrame != null)
+            jFrame.dispose();
+        return getMessage;
+    }
+
+    private static String deleteTFromTime(String text) {
+        int position = text.indexOf("T");
+        String cleanText = text.substring(0, position) + text.substring(position + 1);
+        return cleanText;
+    }
+
+
+    private String dataTable() {
+        String text = "";
+        String separator = ", ";
+        String TABLE_NAME_FOR_EXPORT = tableNameForExport();
+        ResultsProgressDialog progressDialog = null;
+        try {
+            StringBuilder rowLines = new StringBuilder(5000);
+            int rowCount = model.getRowCount();
+            int columnCount = model.getColumnCount();
+            progressDialog = progressDialog(rowCount);
+            boolean applyQuotes = applyQuotesCheck.isSelected();
+            for (int i = 0; i < rowCount; i++) {
+                text += "INSERT INTO " + TABLE_NAME_FOR_EXPORT + "(";
+                for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) {
+                    text += model.getColumnName(countColumnName) + separator;
+                }
+                text += model.getColumnName(model.getColumnCount() - 1) + ") VALUES (";
+                for (int j = 0; j < columnCount; j++) {
+
+                    Object value = model.getValueAt(i, j);
+                    if (applyQuotes && isCDATA((RecordDataItem) value)) {
+
+                        if (valueAsString(value) == "") {
+                            rowLines.append("NULL");
+                        } else {
+                            rowLines.append("'" + valueAsString(value) + "'");
+                        }
+
+                    } else if (isDataTime((RecordDataItem) value)) {
+
+                        String s = value.toString();
+                        s = s.replace('T', ' ');
+                        rowLines.append("'" + valueAsString(s) + "'");
+                        s = null;
+                    } else {
+
+                        rowLines.append(valueAsString(value));
+                    }
+
+                    if (j != columnCount - 1) {
+
+                        rowLines.append(separator);
+                    }
+                }
+                text += rowLines + ");\n";
+                rowLines.setLength(0);
+                progressDialog.increment(i + 1);
+            }
+
+        } catch (Exception ex) {
+            System.out.println(ex);
+        } finally {
+            if (progressDialog != null && progressDialog.isVisible()) {
+                progressDialog.dispose();
+                progressDialog = null;
+            }
+            if (TABLE_NAME_FOR_EXPORT != null) {
+                TABLE_NAME_FOR_EXPORT = null;
+            }
+        }
+        return text;
+    }
+
+    public Object SQLQueryToFile() {
         PrintWriter writer = null;
         File exportFile = null;
         try {
             exportFile = new File(fileNameField.getText());
-            StringBuilder rowLines = new StringBuilder(5000);
             writer = new PrintWriter(new FileWriter(exportFile, false), true);
-            int rowCount = model.getRowCount();
-            int columnCount = model.getColumnCount();
-            progressDialog = progressDialog(rowCount);
-            boolean applyQuotes = applyQuotesCheck.isSelected();
-            for (int i = 0; i < rowCount; i++) {
-                writer.print("INSERT INTO " + TABLE_NAME_FOR_EXPORT + "("); //TABLE_NAME_FOR_EXPORT - Глобальная переменная, которая хранит название таблицы.
-                for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) { // Цикл для вывода название колонок, кроме последнего.
-                    writer.print(model.getColumnName(countColumnName) + separator);
-                }
-                writer.print(model.getColumnName(model.getColumnCount() - 1) + ") VALUES (");
-                for (int j = 0; j < columnCount; j++) { // Цикл для вывода данных хранящихся в таблице.
-
-                    Object value = model.getValueAt(i, j);
-
-                    if (applyQuotes && isCDATA((RecordDataItem) value)) {
-
-                        rowLines.append("\'" + valueAsString(value) + "\'");
-
-                    } else {
-
-                        rowLines.append(valueAsString(value));
-                    }
-
-                    if (j != columnCount - 1) {
-
-                        rowLines.append(separator);
-                    }
-                }
-
-                writer.print(rowLines.toString() + ");\n"); // Выводим хвост с данными.
-
-                rowLines.setLength(0); // Обнуляем данные в строчку.
-                progressDialog.increment(i + 1); // Продвигаем прогресс.
-            }
-            return Bundles.get("PrintPreviewCommand.done");
-
-        } catch (IOException e) {
-            return e.toString();
+            writer.print(dataTable());
+        } catch (Exception ex) {
+            System.out.println(ex);
         } finally {
-            if (progressDialog != null && progressDialog.isVisible()) {
-                progressDialog.dispose();
-                progressDialog = null;
-            }
             if (writer != null) {
                 writer.close();
             }
+            return Bundles.get("PrintPreviewCommand.done");
         }
     }
 
-    public String ExportScriptSQL() {
-        String separator = ", "; // Разделитель.
-        StringBuilder sb = new StringBuilder(); // Вывод в "Редактор запроса".
-        ResultsProgressDialog progressDialog = null; // Прогресс.
+    public String SQLQueryInQueryEditor() {
+        StringBuilder sb = new StringBuilder(); // Output to the "Query Editor".
         try {
-            StringBuilder rowLines = new StringBuilder(5000);
-            int rowCount = model.getRowCount();
-            int columnCount = model.getColumnCount();
-            progressDialog = progressDialog(rowCount);
-            boolean applyQuotes = applyQuotesCheck.isSelected();
-            for (int i = 0; i < rowCount; i++) {
-                sb.append("INSERT INTO " + TABLE_NAME_FOR_EXPORT + "("); //TABLE_NAME_FOR_EXPORT - Глобальная переменная, которая хранит название таблицы.
-                for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) { // Цикл для вывода название колонок, кроме последнего.
-                    sb.append(model.getColumnName(countColumnName) + separator);
-                }
-                sb.append(model.getColumnName(model.getColumnCount() - 1) + ") VALUES (");
-                for (int j = 0; j < columnCount; j++) { // Цикл для вывода данных хранящихся в таблице.
-
-                    Object value = model.getValueAt(i, j);
-
-
-                    if (applyQuotes && isCDATA((RecordDataItem) value)) {
-
-                        rowLines.append("\'" + valueAsString(value) + "\'");
-
-                    } else {
-
-                        rowLines.append(valueAsString(value));
-                    }
-
-                    if (j != columnCount - 1) {
-
-                        rowLines.append(separator);
-                    }
-                }
-
-                sb.append(rowLines.toString() + ");\n"); // Выводим хвост с данными.
-
-                rowLines.setLength(0); // Обнуляем данные в строчку.
-                progressDialog.increment(i + 1); // Продвигаем прогресс.
-            }
+            sb.append(dataTable());
             return getFormatter().format(sb.toString());
-        } catch (Exception e) {
-            return e.toString();
+        } catch (Exception ex) {
+            System.out.println(ex);
+            return ex.toString();
         } finally {
-            if (progressDialog != null && progressDialog.isVisible()) {
-                progressDialog.dispose();
-                progressDialog = null;
+            if (sb != null) {
+                sb = null;
             }
+
         }
     }
-
 
 
     TokenizingFormatter formatter;
+
     protected TokenizingFormatter getFormatter() {
         if (formatter == null)
             formatter = new TokenizingFormatter();
@@ -835,14 +868,15 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         return statementWriter;
     }
 
-    private void statementToEditor(DatabaseConnection databaseConnection, String statement) {
-        getStatementWriter().writeToOpenEditor(databaseConnection, statement);
-    }
 
     public void selectStatement() {
         ConnectionsTreePanel panel = (ConnectionsTreePanel) getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
         DatabaseConnection dc = panel.getSelectedDatabaseConnection();
-        statementToEditor(dc, ExportScriptSQL());
+        statementToEditor(dc, SQLQueryInQueryEditor());
+    }
+
+    private void statementToEditor(DatabaseConnection databaseConnection, String statement) {
+        getStatementWriter().writeToOpenEditor(databaseConnection, statement);
     }
 
 

@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
@@ -64,11 +65,15 @@ public class HeapMemoryPanel extends JPanel
 
     }
 
+    String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
+
     private void jbInit() {
         JPanel base = new JPanel(new GridBagLayout());
 
-        JLabel line1 = new JLabel("Measures the size of the");
-        JLabel line2 = new JLabel("Java Virtual Machine\'s object heap.");
+        JLabel line1 = new JLabel(bundleString("MeasuresTheSize"));
+        JLabel line2 = new JLabel(bundleString("JavaVirtualMachines"));
 
         progressBarModel = new ProgressModel();
         progressBar = new JProgressBar(progressBarModel);
@@ -79,7 +84,7 @@ public class HeapMemoryPanel extends JPanel
         progressBarPanel.add(progressBar, BorderLayout.CENTER);
         progressBarPanel.setBorder(UIUtils.getDefaultLineBorder());
 
-        JButton gcButton = new JButton("Run Garbage Collector");
+        JButton gcButton = new JButton(bundleString("RunGarbageCollector"));
         gcButton.addActionListener(this);
 
         base.setBorder(BorderFactory.createEtchedBorder());
@@ -130,7 +135,7 @@ public class HeapMemoryPanel extends JPanel
         free = (int) Runtime.getRuntime().freeMemory();
         int totalUserAfter = total - free;
 
-        System.err.println("Garbage collection released " +
+        System.err.println(bundleString("GarbageCollection") +
                 ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
     }
 
@@ -159,8 +164,8 @@ public class HeapMemoryPanel extends JPanel
     private void startMeasure(final ProgressModel progModel,
                               final JProgressBar memProgress) {
         memProgress.setStringPainted(true);
-        final String used_s = " Kb used,  ";
-        final String total_s = " Kb total";
+        final String used_s = " Kb "+ bundleString("used")+",  ";
+        final String total_s = " Kb "+ bundleString("total");
         final int thou = 1000;
 
         final Runnable showProgress = new Runnable() {

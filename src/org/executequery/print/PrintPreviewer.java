@@ -23,6 +23,7 @@ package org.executequery.print;
 import org.executequery.ActiveComponent;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.RolloverButton;
@@ -50,7 +51,8 @@ public class PrintPreviewer extends AbstractBaseDialog
     /**
      * The title of this panel
      */
-    public static final String TITLE = "Print Preview";
+    //public static final String TITLE = "Print Preview";
+    public static final String TITLE =Bundles.get("action.print-preview-command");
 
     /**
      * The icon for this panel
@@ -130,9 +132,12 @@ public class PrintPreviewer extends AbstractBaseDialog
  */
         JScrollPane scroller = new JScrollPane(previewContainer);
 
-        RolloverButton printButton = new RolloverButton("Print", null, 28, 55);
-        RolloverButton setupButton = new RolloverButton("Page Setup", null, 28, 85);
-        RolloverButton closeButton = new RolloverButton("Close", null, 28, 55);
+        //RolloverButton printButton = new RolloverButton("Print", null, 28, 55);
+        //RolloverButton setupButton = new RolloverButton("Page Setup", null, 28, 85);
+        //RolloverButton closeButton = new RolloverButton("Close", null, 28, 55);
+        RolloverButton printButton = new RolloverButton(Bundles.get("action.print-command"), null, 28, 55);
+        RolloverButton setupButton = new RolloverButton(Bundles.get("action.page-setup-command"), null, 28, 85);
+        RolloverButton closeButton = new RolloverButton(Bundles.get("common.close.button"), null, 28, 55);
 
         printButton.setMnemonic('P');
         setupButton.setMnemonic('S');
@@ -212,13 +217,24 @@ public class PrintPreviewer extends AbstractBaseDialog
         final String command = e.getActionCommand();
 
         SwingUtilities.invokeLater(new Runnable() {
-
+            /*
             public void run() {
                 if (command.equals("Close")) {
                     dispose();
                 } else if (command.equals("Page Setup")) {
                     showPageSetup();
                 } else if (command.equals("Print")) {
+                    doPrint();
+                } else if (command.equals("scales")) {
+                    changeScale();
+                }
+            }*/
+            public void run() {
+                if (command.equals(Bundles.get("common.close.button"))) {
+                    dispose();
+                } else if (command.equals(Bundles.get("action.page-setup-command"))) {
+                    showPageSetup();
+                } else if (command.equals(Bundles.get("action.print-command"))) {
                     doPrint();
                 } else if (command.equals("scales")) {
                     changeScale();

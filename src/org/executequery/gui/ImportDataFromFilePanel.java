@@ -2,9 +2,9 @@ package org.executequery.gui;
 
 import org.apache.commons.io.FilenameUtils;
 import org.executequery.EventMediator;
+import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabViewActionPanel;
 import org.executequery.components.FileChooserDialog;
-import org.executequery.GUIUtilities;
 import org.executequery.components.MinimumWidthActionButton;
 import org.executequery.components.TableSelectionCombosGroup;
 import org.executequery.databasemediators.QueryTypes;
@@ -20,7 +20,6 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.swing.table.NumberCellEditor;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -28,13 +27,15 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author Alexey Kozlov
@@ -50,18 +51,20 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     // ----- main components of this panel -----
 
     private JComboBox connectionsCombo; //target database
-    private TableSelectionCombosGroup combosGroup; //connections, that contains comboBox
+    private TableSelectionCombosGroup combosGroup;  //connections, that contains comboBox
     private JComboBox tableCombo;   //target table
     private JComboBox sourceCombo;  //source type
     private JTextField fileNameField;   //path to importing file
     private JComboBox delimiterCombo;   //delimiter type
     private JComboBox timeFormatCombo;   //time format
+    private JComboBox dateFormatCombo;  //date format
+    private JComboBox timestampDelimiterCombo;  //timestamp delimiter
     private JCheckBox isFirstColumnNames;  //check whether the first row stores column names
     private JCheckBox isEraseDatabase;  //check whether it's necessary to clear DB before import
     private JTextArea dataPreviewTextArea;  //preview of source data
     private LoggingOutputPanel outputPanel; //logging module executing
-    private JSpinner firstImportSelector; //numeric selector of first importing line
-    private JSpinner lastImportSelector; //numeric selector of last importing line
+    private JSpinner firstImportSelector;   //numeric selector of first importing line
+    private JSpinner lastImportSelector;    //numeric selector of last importing line
     private JSpinner batchStepSelector; //numeric selector of batch commit step
 
     // ----- table for columns mapping -----
@@ -93,11 +96,20 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private void init() {
 
-        String[] delimiters = {bundledString("SelectDelimiter"), "|", ",", ";", "#"};
-        String[] sourceTypes = {bundledString("SelectFileType"), "csv", "xlsx", "json"};
+        String[] delimiters = {bundledString("SelectDelimiter"),
+                "|", ",", ";", "#"};
+
+        String[] sourceTypes = {bundledString("SelectFileType"),
+                "csv", "xlsx", "json"};
+
         String[] timeFormats = {bundledString("SelectTimeFormat"),
-                "dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss",
-                "MM/dd/yyyy", "yyyyMMdd", "HH:mm:ss"};
+                "HH:mm", "HH:mm:ss", "HH:mm:ss[.nnn]"};
+
+        String[] dateFormats = {bundledString("SelectDateFormat"),
+                "dd.MM.yyyy", "yyyy-MM-dd", "MM/dd/yyyy", "yyyyMMdd"};
+
+        String[] timestampDelimiters = {bundledString("SelectTimestampDelimiterFormat"),
+                "\"spase\"", "_", "T"};
 
         nothingHeaderOfMappingTable = "NOTHING";
 
@@ -111,6 +123,12 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         timeFormatCombo = WidgetFactory.createComboBox(timeFormats);
         timeFormatCombo.setEditable(true);
+
+        dateFormatCombo = WidgetFactory.createComboBox(dateFormats);
+        dateFormatCombo.setEditable(true);
+
+        timestampDelimiterCombo = WidgetFactory.createComboBox(timestampDelimiters);
+        timestampDelimiterCombo.setEditable(true);
 
         connectionsCombo = WidgetFactory.createComboBox();
         connectionsCombo.addActionListener(e -> connectionComboChanged());
@@ -135,7 +153,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         lastImportSelector = new JSpinner(new SpinnerNumberModel(999999999, 0, 999999999, 1));
         batchStepSelector = new JSpinner(new SpinnerNumberModel(100, 100, 1000000, 100));
 
-        // ---------- text area ----------
+        // ---------- data preview table ----------
 
         dataPreviewTextArea = new JTextArea();
         dataPreviewTextArea.setEditable(false);
@@ -177,6 +195,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private void componentsArranging() {
 
+        // ---------------------------------------------
+        // Preparing ScrollPanes and FlatSplitPanes
+        // ---------------------------------------------
+
         JScrollPane dataPreviewTextAreaWithScrolls = new JScrollPane(dataPreviewTextArea,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -187,157 +209,95 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         FlatSplitPane splitPane = new FlatSplitPane(
                 JSplitPane.VERTICAL_SPLIT, dataPreviewTextAreaWithScrolls, columnMappingTableWithScrolls);
-        splitPane.setResizeWeight(1.0);
-        splitPane.setDividerLocation(150);
-        splitPane.setDividerSize(5);
+        splitPane.setResizeWeight(0.5);
 
         FlatSplitPane mainSplitPane = new FlatSplitPane(
                 JSplitPane.VERTICAL_SPLIT, splitPane, outputPanel);
-        mainSplitPane.setResizeWeight(0.5);
-        mainSplitPane.setDividerLocation(0.5);
-        mainSplitPane.setDividerSize(5);
+        mainSplitPane.setResizeWeight(0.7);
 
         // ---------------------------------------------
         // Components arranging
         // ---------------------------------------------
 
-        JPanel mainPanel = new JPanel(new GridBagLayout()); //main panel of this view
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 5));
 
-        GridBagHelper gridBagHelper = new GridBagHelper();    //GridBagConstraints helper
-        gridBagHelper.setInsets(5, 5, 5, 5);   //margins
-        gridBagHelper.setHeight(1);   //number of cells in the column for the component display
-        gridBagHelper.anchorNorthWest();    //set upper-left displays corner
+        GridBagHelper gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(5, 5, 5, 5);
+        gridBagHelper.anchorNorthWest();
 
         // ----------- first row -----------
 
-        mainPanel.add(new JLabel(bundledString("TargetConnectionLabel")), gridBagHelper.get());
+        gridBagHelper.addLabelFieldPair(mainPanel,
+                bundledString("TargetConnectionLabel"), connectionsCombo,
+                null, true, false, 3);
 
-        gridBagHelper.nextCol();
-        gridBagHelper.fillHorizontally();
-
-        mainPanel.add(connectionsCombo, gridBagHelper.get());
-
-        gridBagHelper.nextCol();
-        gridBagHelper.spanX();
-        gridBagHelper.fillHorizontally();
-
-        mainPanel.add(tableCombo, gridBagHelper.get());
-
-        gridBagHelper.nextRowFirstCol();
-        gridBagHelper.setMinWeightX();
-        gridBagHelper.setWidth(1);
+        gridBagHelper.addLabelFieldPair(mainPanel,
+                bundledString("TargetTableLabel"), tableCombo,
+                null, false, true, 3);
 
         // ----------- second row -----------
 
-        mainPanel.add(new JLabel(bundledString("InputDataFileLabel")), gridBagHelper.get());
+        gridBagHelper.addLabelFieldPair(mainPanel,
+                bundledString("InputDataFileLabel"), sourceCombo,
+                null, true, false, 1);
 
-        gridBagHelper.nextCol();
-        gridBagHelper.setWeightX(2.0);
-        gridBagHelper.fillHorizontally();
-
-        mainPanel.add(fileNameField, gridBagHelper.get());
-
-        gridBagHelper.nextCol();
-        gridBagHelper.setWeightX(1.0);
-        gridBagHelper.fillHorizontally();
-
-        mainPanel.add(sourceCombo, gridBagHelper.get());
-
-        gridBagHelper.nextCol();
-        gridBagHelper.fillHorizontally();
-
-        mainPanel.add(browseButton, gridBagHelper.get());
-
-        gridBagHelper.nextRowFirstCol();
-        gridBagHelper.setMinWeightX();
-        gridBagHelper.setWidth(1);
+        mainPanel.add(fileNameField, gridBagHelper.nextCol().fillHorizontally().setWidth(5).get());
+        mainPanel.add(browseButton, gridBagHelper.nextCol().setLabelDefault().get());
 
         // ----------- third row -----------
 
-        mainPanel.add(new JLabel(bundledString("DelimiterAndTimeFormatLabel")), gridBagHelper.get());
+        gridBagHelper.addLabelFieldPair(mainPanel,
+                bundledString("DateFormatLabel"), dateFormatCombo,
+                null, true, false, 1);
 
-        gridBagHelper.nextCol();
-        gridBagHelper.fillHorizontally();
+        gridBagHelper.addLabelFieldPair(mainPanel,
+                bundledString("TimeFormatLabel"), timeFormatCombo,
+                null, false, false, 1);
 
-        mainPanel.add(delimiterCombo, gridBagHelper.get());
-
-        gridBagHelper.nextCol();
-        gridBagHelper.spanX();
-        gridBagHelper.fillHorizontally();
-
-        mainPanel.add(timeFormatCombo, gridBagHelper.get());
-
-        gridBagHelper.nextRowFirstCol();
-        gridBagHelper.setMinWeightX();
-        gridBagHelper.setWidth(1);
+        gridBagHelper.addLabelFieldPair(mainPanel,
+                bundledString("TimestampDelimiterLabel"), timestampDelimiterCombo,
+                null, false, true, 1);
 
         // ----------- fourth row -----------
 
-        mainPanel.add(new JLabel(bundledString("NumericSelectorsLabel")), gridBagHelper.get());
+        gridBagHelper.addLabelFieldPair(mainPanel,
+                bundledString("DelimiterLabel"), delimiterCombo,
+                null, true, false, 1);
 
-        gridBagHelper.nextCol();
-        gridBagHelper.fillHorizontally();
+        gridBagHelper.addLabelFieldPair(mainPanel,
+                bundledString("CommitSelectorLabel"), batchStepSelector,
+                null, false, false, 1);
 
-        mainPanel.add(firstImportSelector, gridBagHelper.get());
-
-        gridBagHelper.nextCol();
-        gridBagHelper.spanX();
-        gridBagHelper.fillHorizontally();
-
-        mainPanel.add(lastImportSelector, gridBagHelper.get());
-
-        gridBagHelper.nextRowFirstCol();
-        gridBagHelper.setMinWeightX();
-        gridBagHelper.setWidth(1);
+        mainPanel.add(isEraseDatabase, gridBagHelper.nextCol().setWidth(2).get());
 
         // ----------- fifth row -----------
 
-        mainPanel.add(new JLabel(bundledString("CommitSelectorLabel")), gridBagHelper.get());
+        gridBagHelper.addLabelFieldPair(mainPanel,
+                bundledString("FirstNumericSelectorsLabel"), firstImportSelector,
+                null, true, false, 1);
 
-        gridBagHelper.nextCol();
+        gridBagHelper.addLabelFieldPair(mainPanel,
+                bundledString("LastNumericSelectorsLabel"), lastImportSelector,
+                null, false, false, 1);
 
-        mainPanel.add(batchStepSelector, gridBagHelper.get());
-
-        gridBagHelper.nextRowFirstCol();
-        gridBagHelper.setMinWeightX();
-        gridBagHelper.setWidth(1);
-
-        // ----------- sixth row -----------
-
-        mainPanel.add(isFirstColumnNames, gridBagHelper.get());
-
-        gridBagHelper.nextCol();
-        gridBagHelper.spanX();
-        gridBagHelper.fillHorizontally();
-
-        mainPanel.add(isEraseDatabase, gridBagHelper.get());
-
-        gridBagHelper.nextRowFirstCol();
-        gridBagHelper.setMinWeightX();
-        gridBagHelper.setWidth(1);
+        mainPanel.add(isFirstColumnNames, gridBagHelper.nextCol().setWidth(2).get());
 
         // ----------- sixth row -----------
 
-        // ----------- seventh row -----------
+        mainPanel.add(mainSplitPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
-        // ----------- eights row -----------
+        // ----------- buttonPanel -----------
 
-        gridBagHelper.spanX();
-        gridBagHelper.spanY();
-        gridBagHelper.fillBoth();
-
-        mainPanel.add(mainSplitPane, gridBagHelper.get());
+        buttonPanel.add(readFileButton);
+        buttonPanel.add(fillMappingTableButton);
+        buttonPanel.add(startImportButton);
 
         // ---------------------------------------------
         // Panels Settings
         // ---------------------------------------------
 
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 5));
-        buttonPanel.add(readFileButton);
-        buttonPanel.add(fillMappingTableButton);
-        buttonPanel.add(startImportButton);
 
         add(mainPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
@@ -610,7 +570,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             while (sourceFileData.next()) {
 
-                if (linesCount <= (int) lastImportSelector.getValue()) {
+                if (linesCount >= (int) lastImportSelector.getValue()) {
 
                     break;
                 }
@@ -632,10 +592,30 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                                     Objects.equals(targetColumnType, "TIMESTAMP")) {
 
                                 DateTimeFormatter timestampFormat;
-                                if (timeFormatCombo.getSelectedIndex() != 0) {
+
+                                if (Objects.equals(targetColumnType, "DATE") &&
+                                        dateFormatCombo.getSelectedIndex() != 0) {
+
+                                    timestampFormat = DateTimeFormatter.
+                                            ofPattern(Objects.requireNonNull(dateFormatCombo.getSelectedItem()).toString());
+
+                                } else if (Objects.equals(targetColumnType, "TIME") &&
+                                        timeFormatCombo.getSelectedIndex() != 0) {
 
                                     timestampFormat = DateTimeFormatter.
                                             ofPattern(Objects.requireNonNull(timeFormatCombo.getSelectedItem()).toString());
+
+                                } else if (Objects.equals(targetColumnType, "TIMESTAMP") &&
+                                        dateFormatCombo.getSelectedIndex() != 0 &&
+                                        timeFormatCombo.getSelectedIndex() != 0) {
+
+                                    String timestampPattern = Objects.requireNonNull(dateFormatCombo.getSelectedItem()) +
+                                            Objects.requireNonNull(timestampDelimiterCombo.getSelectedItem())
+                                                    .toString().replace("\"spase\"", " ") +
+                                            Objects.requireNonNull(timeFormatCombo.getSelectedItem());
+
+                                    timestampFormat = DateTimeFormatter.
+                                            ofPattern(Objects.requireNonNull(timestampPattern));
 
                                 } else {
 
@@ -646,9 +626,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                                     return;
                                 }
 
-                                String stringTime = sourceFileData.getString(sourceFields[fieldIndex]);
+                                String stringTimestamp = sourceFileData.getString(sourceFields[fieldIndex]);
 
-                                param = LocalDateTime.parse(stringTime, timestampFormat);
+                                param = LocalDateTime.parse(stringTimestamp, timestampFormat);
 
                             } else {
 
@@ -696,8 +676,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             outputPanel.appendError("Importing data stopped: date/time format incorrect");
             Log.error("ImportDataFromFilePanel: import process was stopped (date/time format incorrect)");
 
-            return;
-
         } catch (Exception e) {
 
             GUIUtilities.displayExceptionErrorDialog(
@@ -705,8 +683,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             outputPanel.appendError("Importing data stopped due to an error");
             Log.error("ImportDataFromFilePanel: import process was stopped due to an error", e);
-
-            return;
 
         } finally {
 
@@ -746,14 +722,50 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private void sourceComboChanged() {
 
-        if (sourceCombo.getSelectedIndex() != 1) {
+        if (sourceCombo.getSelectedIndex() == 0) {
 
-            delimiterCombo.setSelectedIndex(0);
+            fileNameField.setEnabled(false);
+
             delimiterCombo.setEnabled(false);
+            timeFormatCombo.setEnabled(false);
+            dateFormatCombo.setEnabled(false);
+            timestampDelimiterCombo.setEnabled(false);
 
-        } else {
+            firstImportSelector.setEnabled(false);
+            lastImportSelector.setEnabled(false);
+            batchStepSelector.setEnabled(false);
+
+            isEraseDatabase.setEnabled(false);
+            isFirstColumnNames.setEnabled(false);
+
+            browseButton.setEnabled(false);
+            readFileButton.setEnabled(false);
+            fillMappingTableButton.setEnabled(false);
+            startImportButton.setEnabled(false);
+
+        }
+
+        if (sourceCombo.getSelectedItem() == "csv") {
+
+            fileNameField.setEnabled(true);
 
             delimiterCombo.setEnabled(true);
+            timeFormatCombo.setEnabled(true);
+            dateFormatCombo.setEnabled(true);
+            timestampDelimiterCombo.setEnabled(true);
+
+            firstImportSelector.setEnabled(true);
+            lastImportSelector.setEnabled(true);
+            batchStepSelector.setEnabled(true);
+
+            isEraseDatabase.setEnabled(true);
+            isFirstColumnNames.setEnabled(true);
+
+            browseButton.setEnabled(true);
+            readFileButton.setEnabled(true);
+            fillMappingTableButton.setEnabled(true);
+            startImportButton.setEnabled(true);
+
         }
 
     }
@@ -785,7 +797,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         String[] firstRowFromSource = firstSourceRow.split(
                 Objects.requireNonNull(delimiterCombo.getSelectedItem()).toString());
 
-        if (isFirstColumnNames.isSelected()) {
+        if (isFirstColumnNames.isSelected()){
 
             for (String tempHeaderName : firstRowFromSource) {
 
@@ -795,7 +807,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         } else {
 
-            for (int i = 0; i < firstRowFromSource.length; i++) {
+            for (int i = 0; i < firstRowFromSource.length ; i++) {
 
                 String tempHeaderName = "COLUMN_" + (i + 1);
 
@@ -805,6 +817,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         }
 
         return tableColumnComboBox;
+
     }
 
     // ---------------------------------------------
@@ -846,13 +859,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             GUIUtilities.displayWarningMessage(
                     bundledString("FileDoesNotExistMessage") + "\n" + fileNameField.getText());
-            return;
 
         } catch (Exception e) {
 
             GUIUtilities.displayWarningMessage(
                     bundledString("FileReadingErrorMessage") + "\n" + e.getMessage());
-            return;
         }
 
     }
@@ -995,15 +1006,12 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             executor.setKeepAlive(true);
             executor.setDatabaseConnection(combosGroup.getSelectedHost().getDatabaseConnection());
 
-            StringBuilder deletePattern = new StringBuilder();
-            deletePattern.append("DELETE FROM ");
-            deletePattern.append(tableCombo.getSelectedItem());
-            deletePattern.append(";");
+            String deletePattern = "DELETE FROM " + tableCombo.getSelectedItem() + ";";
 
             outputPanel.appendAction("Erasing the database table...");
             Log.info("ImportDataFromFilePanel: erasing target table process started...");
 
-            executor.execute(QueryTypes.DELETE, deletePattern.toString());
+            executor.execute(QueryTypes.DELETE, deletePattern);
             executor.getConnection().commit();
 
             outputPanel.append("The database table was successfully erased");
@@ -1017,8 +1025,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             outputPanel.appendError("Erasing the database table was stopped due to an error");
             Log.error("ImportDataFromFilePanel: erasing target table was stopped due to an error", e);
-
-            return;
 
         } finally {
 

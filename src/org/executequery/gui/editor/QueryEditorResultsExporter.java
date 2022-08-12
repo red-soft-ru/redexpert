@@ -105,6 +105,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     // The sender to QueryEditor
     private static StatementToEditorWriter statementWriter;
 
+    // SQL format to QueryEditor
+    TokenizingFormatter formatter;
+
     // Used to view the contents of a file
     private JButton browse;
 
@@ -130,7 +133,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         String[] delims = {"Pipe", "Comma", "Semi-colon", "Hash", "Custom"};
         delimCombo = ActionUtilities.createComboBox(action, delims, "delimeterChanged");
 
-        String[] types = {"Delimited File", "Excel Spreadsheet", "XML", bundleString("SQLQueryToFile"), bundleString("SQLQueryInQueryEditor")};
+        String[] types = {"Delimited File", "Excel Spreadsheet", "XML", "Query Editor In File", "To Query Editor"};
         typeCombo = ActionUtilities.createComboBox(action, types, "exportTypeChanged");
 
         customDelimField = new CharLimitedTextField(1);
@@ -726,52 +729,124 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
     } // class ResultsProgressDialog
 
-
     private String bundleString(String key) {
 
         return Bundles.get(getClass(), key);
     }
 
-
     public Object QueryEditor() {
-        selectStatement();
+        ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        DatabaseConnection databaseConnection = connectionsTreePanel.getSelectedDatabaseConnection();
+        getStatementWriter().writeToOpenEditor(databaseConnection, SQLQueryInQueryEditor());
         return Bundles.get("PrintPreviewCommand.done");
     }
 
-    private String tableNameForExport() {
+    private String nameOfTable() {
         JFrame jFrame = new JFrame();
         String getMessage = JOptionPane.showInputDialog(jFrame, bundleString("EnterTableName"));
-
         JOptionPane.showMessageDialog(jFrame, bundleString("TableName") + getMessage);
         if (jFrame != null)
             jFrame.dispose();
         return getMessage;
     }
 
-    private static String deleteTFromTime(String text) {
-        int position = text.indexOf("T");
-        String cleanText = text.substring(0, position) + text.substring(position + 1);
-        return cleanText;
-    }
 
-
-    private String dataTable() {
-        String text = "";
-        String separator = ", ";
-        String TABLE_NAME_FOR_EXPORT = tableNameForExport();
+    public Object SQLQueryToFile() {
+        char Separator = ',';
         ResultsProgressDialog progressDialog = null;
+        PrintWriter writer = null;
+        File exportFile = null;
+        String tableNameForExport = nameOfTable();
         try {
+            exportFile = new File(fileNameField.getText());
+
             StringBuilder rowLines = new StringBuilder(5000);
+            writer = new PrintWriter(new FileWriter(exportFile, false), true);
+
             int rowCount = model.getRowCount();
             int columnCount = model.getColumnCount();
+
             progressDialog = progressDialog(rowCount);
+
+
             boolean applyQuotes = applyQuotesCheck.isSelected();
             for (int i = 0; i < rowCount; i++) {
-                text += "INSERT INTO " + TABLE_NAME_FOR_EXPORT + "(";
+                rowLines.append("INSERT INTO " + tableNameForExport + '(');
                 for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) {
-                    text += model.getColumnName(countColumnName) + separator;
+                    rowLines.append('\"' + model.getColumnName(countColumnName) + '\"' + Separator);
                 }
-                text += model.getColumnName(model.getColumnCount() - 1) + ") VALUES (";
+                rowLines.append('\"' + model.getColumnName(model.getColumnCount() - 1) + "\" ) VALUES (");
+                for (int j = 0; j < columnCount; j++) {
+                    Object value = model.getValueAt(i, j);
+                    if (applyQuotes && isCDATA((RecordDataItem) value)) {
+                        if (valueAsString(value) == "") {
+                            rowLines.append("NULL");
+                        } else {
+                            rowLines.append('\'' + valueAsString(value) + '\'');
+                        }
+                    } else if (isDataTime((RecordDataItem) value)) {
+                        String clearText = value.toString();
+                        clearText = clearText.replace('T', ' ');
+                        rowLines.append('\'' + valueAsString(clearText) + '\'');
+                        clearText = null;
+                    } else {
+                        rowLines.append(valueAsString(value));
+                    }
+
+                    if (j != columnCount - 1) {
+                        rowLines.append(Separator);
+                    }
+
+                }
+
+                writer.println(rowLines + ");");
+                rowLines.setLength(0);
+                progressDialog.increment(i + 1);
+            }
+
+            return Bundles.get("PrintPreviewCommand.done");
+
+        } catch (IOException e) {
+
+            return handleError(e);
+
+        } finally {
+            if (progressDialog != null && progressDialog.isVisible()) {
+                progressDialog.dispose();
+                progressDialog = null;
+            }
+            if (writer != null) {
+                writer.close();
+            }
+            if (exportFile != null) {
+                exportFile = null;
+            }
+            if (tableNameForExport != null) {
+                tableNameForExport = null;
+            }
+        }
+    }
+
+    public String SQLQueryInQueryEditor() {
+        char Separator = ',';
+        ResultsProgressDialog progressDialog = null;
+        StringBuilder stringBuilder = new StringBuilder();
+        String tableNameForExport = nameOfTable();
+        try {
+            StringBuilder rowLines = new StringBuilder(5000);
+
+            int rowCount = model.getRowCount();
+            int columnCount = model.getColumnCount();
+
+            progressDialog = progressDialog(rowCount);
+
+            boolean applyQuotes = applyQuotesCheck.isSelected();
+            for (int i = 0; i < rowCount; i++) {
+                rowLines.append("INSERT INTO " + tableNameForExport + '(');
+                for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) {
+                    rowLines.append('\"' + model.getColumnName(countColumnName) + '\"' + Separator);
+                }
+                rowLines.append('\"' + model.getColumnName(model.getColumnCount() - 1) + "\" ) VALUES (");
                 for (int j = 0; j < columnCount; j++) {
 
                     Object value = model.getValueAt(i, j);
@@ -780,15 +855,15 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                         if (valueAsString(value) == "") {
                             rowLines.append("NULL");
                         } else {
-                            rowLines.append("'" + valueAsString(value) + "'");
+                            rowLines.append('\'' + valueAsString(value) + '\'');
                         }
 
                     } else if (isDataTime((RecordDataItem) value)) {
 
-                        String s = value.toString();
-                        s = s.replace('T', ' ');
-                        rowLines.append("'" + valueAsString(s) + "'");
-                        s = null;
+                        String clearText = value.toString();
+                        clearText = clearText.replace('T', ' ');
+                        rowLines.append('\'' + valueAsString(clearText) + '\'');
+                        clearText = null;
                     } else {
 
                         rowLines.append(valueAsString(value));
@@ -796,63 +871,35 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
                     if (j != columnCount - 1) {
 
-                        rowLines.append(separator);
+                        rowLines.append(Separator);
                     }
+
                 }
-                text += rowLines + ");\n";
+
+                stringBuilder.append(rowLines + ");");
                 rowLines.setLength(0);
                 progressDialog.increment(i + 1);
             }
 
-        } catch (Exception ex) {
-            System.out.println(ex);
+            return getFormatter().format(stringBuilder.toString());
+
+        } catch (Exception e) {
+
+            return handleError(e).toString();
+
         } finally {
             if (progressDialog != null && progressDialog.isVisible()) {
                 progressDialog.dispose();
                 progressDialog = null;
             }
-            if (TABLE_NAME_FOR_EXPORT != null) {
-                TABLE_NAME_FOR_EXPORT = null;
+            if (stringBuilder != null) {
+                stringBuilder = null;
+            }
+            if (tableNameForExport != null) {
+                tableNameForExport = null;
             }
         }
-        return text;
     }
-
-    public Object SQLQueryToFile() {
-        PrintWriter writer = null;
-        File exportFile = null;
-        try {
-            exportFile = new File(fileNameField.getText());
-            writer = new PrintWriter(new FileWriter(exportFile, false), true);
-            writer.print(dataTable());
-        } catch (Exception ex) {
-            System.out.println(ex);
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
-            return Bundles.get("PrintPreviewCommand.done");
-        }
-    }
-
-    public String SQLQueryInQueryEditor() {
-        StringBuilder sb = new StringBuilder(); // Output to the "Query Editor".
-        try {
-            sb.append(dataTable());
-            return getFormatter().format(sb.toString());
-        } catch (Exception ex) {
-            System.out.println(ex);
-            return ex.toString();
-        } finally {
-            if (sb != null) {
-                sb = null;
-            }
-
-        }
-    }
-
-
-    TokenizingFormatter formatter;
 
     protected TokenizingFormatter getFormatter() {
         if (formatter == null)
@@ -860,24 +907,10 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         return formatter;
     }
 
-
     private StatementToEditorWriter getStatementWriter() {
         if (statementWriter == null) {
             statementWriter = new StatementToEditorWriter();
         }
         return statementWriter;
     }
-
-
-    public void selectStatement() {
-        ConnectionsTreePanel panel = (ConnectionsTreePanel) getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-        DatabaseConnection dc = panel.getSelectedDatabaseConnection();
-        statementToEditor(dc, SQLQueryInQueryEditor());
-    }
-
-    private void statementToEditor(DatabaseConnection databaseConnection, String statement) {
-        getStatementWriter().writeToOpenEditor(databaseConnection, statement);
-    }
-
-
 }

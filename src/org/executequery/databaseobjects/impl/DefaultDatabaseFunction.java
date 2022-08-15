@@ -96,24 +96,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         return arguments;
     }
 
-    private String entryPoint;
-    private String engine;
 
-    public String getEntryPoint() {
-        return entryPoint;
-    }
-
-    public void setEntryPoint(String entryPoint) {
-        this.entryPoint = entryPoint;
-    }
-
-    public String getEngine() {
-        return engine;
-    }
-
-    public void setEngine(String engine) {
-        this.engine = engine;
-    }
 
     void loadFunctionArguments() {
         ResultSet rs = null;

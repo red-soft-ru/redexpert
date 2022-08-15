@@ -53,8 +53,7 @@ public interface ImportExportDataProcess {
     int DELIMITED = 13;
     int EXCEL = 14;
 
-    int SCRIPT = 15;
-    int SCRIPTSQL = 16;
+    int SQL = 15;
 
     /**
      * The import from XML process

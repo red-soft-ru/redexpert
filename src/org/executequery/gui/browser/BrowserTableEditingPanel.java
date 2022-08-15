@@ -202,7 +202,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private JPanel buttonsEditingIndexesPanel;
     private JPanel buttonsEditingTriggersPanel;
 
-    public static String TABLE_NAME_FOR_EXPORT = null;
+    // Name of selected table
+    public static String tableNameForExport = null;
 
     Semaphore lock;
 
@@ -961,7 +962,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             referencesLoaded = false;
             tableNameField.setText(table.getName());
 
-            TABLE_NAME_FOR_EXPORT = table.getName();
+            tableNameForExport = table.getName();
 
             descriptionTable.setDatabaseTable(table);
             SwingWorker sw = new SwingWorker() {

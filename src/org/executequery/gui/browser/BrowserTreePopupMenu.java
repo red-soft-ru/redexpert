@@ -54,6 +54,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private final JMenuItem recycleConnection;
     private final JMenuItem copyName;
     private final JMenuItem moveToFolder;
+    private final JMenuItem selectAll;
 
 
     private final JMenuItem dataBaseInformation;
@@ -107,6 +108,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         copyName = createMenuItem(bundleString("copyName"), "copyName", listener);
         add(copyName);
 
+        selectAll =createMenuItem(bundleString("selectAllTriggers"),"selectAll",listener);
+        add(selectAll);
         //addSeparator();
 
         createActiveInactiveMenu(listener);
@@ -218,7 +221,17 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     sql.setVisible(importExport);
 
                     boolean triggerIndex = (node.getType() == NamedObject.TRIGGER||node.getType()==NamedObject.INDEX);
-                    Switch.setVisible(triggerIndex);
+                    if(triggerIndex){
+                        if(node.getType()==NamedObject.TRIGGER){
+                            Switch.setVisible(triggerIndex);
+                            selectAll.setVisible(triggerIndex);
+                            selectAll.setText(bundleString("selectAllTriggers"));
+                        }
+                        else selectAll.setText(bundleString("selectAllIndexes"));
+                    }
+
+
+
                 }
             }
         }

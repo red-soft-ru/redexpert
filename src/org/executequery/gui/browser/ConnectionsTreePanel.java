@@ -1857,7 +1857,7 @@ public class ConnectionsTreePanel extends TreePanel
         return false;
 
       for (int i = 0; i < treePaths.length; i++) {
-        if (treePaths[i] == treePathForLocation)
+        if (treePaths[i].getLastPathComponent() == treePathForLocation.getLastPathComponent())
           flag = true;
       }
     } catch (Exception e) {

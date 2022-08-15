@@ -48,6 +48,8 @@ import org.underworldlabs.swing.actions.ReflectiveAction;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
 import java.sql.SQLException;
@@ -1021,5 +1023,20 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         }
     }
 
+    public void selectAll(ActionEvent e) {
 
+        TreePath currentPath = treePanel.getTree().getSelectionPaths()[0];
+        DefaultMutableTreeNode currentPathComponent = (DefaultMutableTreeNode) currentPath.getLastPathComponent();
+        DatabaseObjectNode node = (DatabaseObjectNode) currentPathComponent;
+
+        TreeNode parent = node.getParent();
+        DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[parent.getChildCount()];
+        for (int i = 0; i < parent.getChildCount(); i++) {
+
+            if (parent.getChildAt(i) instanceof DefaultMutableTreeNode) {
+                nodes[i] = (DefaultMutableTreeNode) parent.getChildAt(i);
+            }
+        }
+        treePanel.getTree().selectNodes(nodes);
+    }
 }

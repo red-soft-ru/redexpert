@@ -61,7 +61,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
     private JCheckBoxMenuItem showDefaultCatalogsAndSchemas;
 
-    private JMenu Switch;
+    private JMenu active;
     private JMenu sql;
     private JMenu exportData;
     private JMenu importData;
@@ -76,7 +76,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         add(connect);
         disconnect = createMenuItem(bundleString("disconnect"), "disconnect", listener);
         add(disconnect);
-        dataBaseInformation = createMenuItem ("dataBaseInformation","dataBaseInformation", listener);
+        dataBaseInformation = createMenuItem("dataBaseInformation", "dataBaseInformation", listener);
         add(dataBaseInformation);
         reload = createMenuItem(bundleString("reload"), "reload", listener);
         add(reload);
@@ -108,7 +108,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         copyName = createMenuItem(bundleString("copyName"), "copyName", listener);
         add(copyName);
 
-        selectAll =createMenuItem(bundleString("selectAllTriggers"),"selectAll",listener);
+        selectAll = createMenuItem(bundleString("selectAllTriggers"), "selectAll", listener);
         add(selectAll);
         //addSeparator();
 
@@ -168,7 +168,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                 if (node.isHostNode()) {
 
                     //reload.setEnabled(false);
-                    Switch.setVisible(false);
+                    active.setVisible(false);
                     sql.setVisible(false);
                     exportData.setVisible(false);
                     importData.setVisible(false);
@@ -220,16 +220,14 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     boolean importExport = (node.getType() == NamedObject.TABLE);
                     sql.setVisible(importExport);
 
-                    boolean triggerIndex = (node.getType() == NamedObject.TRIGGER||node.getType()==NamedObject.INDEX);
-                    if(triggerIndex){
-                        if(node.getType()==NamedObject.TRIGGER){
-                            Switch.setVisible(triggerIndex);
-                            selectAll.setVisible(triggerIndex);
+                    boolean triggerIndex = (node.getType() == NamedObject.TRIGGER || node.getType() == NamedObject.INDEX);
+                    active.setVisible(triggerIndex);
+                    selectAll.setVisible(triggerIndex);
+                    if (triggerIndex) {
+                        if (node.getType() == NamedObject.TRIGGER) {
                             selectAll.setText(bundleString("selectAllTriggers"));
-                        }
-                        else selectAll.setText(bundleString("selectAllIndexes"));
+                        } else selectAll.setText(bundleString("selectAllIndexes"));
                     }
-
 
 
                 }
@@ -259,12 +257,12 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             }
 
             if (label != null) {
-                reload.setText(bundleString("reload", label));
+                reload.setText(bundleString("reload", label));              //Кнопка перезагрузки(Если нажать по узлу триггеров то покажет меню "перезагрузить триггеры")
             } else {
                 reload.setText(bundleString("reload", StringUtils.EMPTY));
             }
         }
-        if(listener.getSelectedSeveralPaths()) {
+        if (listener.getSelectedSeveralPaths()) {
 
             addNewConnection.setVisible(false);
             connect.setVisible(false);
@@ -326,11 +324,11 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         add(sql);
     }
 
-    private  void createActiveInactiveMenu(ActionListener listener){
-        Switch = MenuItemFactory.createMenu(bundleString("switch"));
-        Switch.add(createMenuItem(bundleString("active"),"active",listener));
-        Switch.add(createMenuItem(bundleString("inactive"),"inactive",listener));
-        add(Switch);
+    private void createActiveInactiveMenu(ActionListener listener) {
+        active = MenuItemFactory.createMenu(bundleString("switch"));
+        active.add(createMenuItem(bundleString("active"), "active", listener));
+        active.add(createMenuItem(bundleString("inactive"), "inactive", listener));
+        add(active);
     }
 
     protected DatabaseConnection getCurrentSelection() {
@@ -345,11 +343,11 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         listener.setCurrentPath(currentPath);
     }
 
-    protected void setTreePaths(TreePath[] treePaths){
+    protected void setTreePaths(TreePath[] treePaths) {
         listener.setTreePaths(treePaths);
     }
 
-    protected void setSelectedSeveralPaths(boolean selectedSeveralPaths){
+    protected void setSelectedSeveralPaths(boolean selectedSeveralPaths) {
         listener.setSelectedSeveralPaths(selectedSeveralPaths);
     }
 

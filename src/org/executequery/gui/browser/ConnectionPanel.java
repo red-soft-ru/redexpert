@@ -344,7 +344,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         standardComponents.add(sourceField);
         standardComponents.add(openFile);
         mainPanel.add(dataSourceLabel, gbh.nextRowFirstCol().setLabelDefault().get());
-        mainPanel.add(sourceField, gbh.nextCol().setMaxWeightX().get());
+        mainPanel.add(sourceField, gbh.nextCol().setMaxWeightX().fillHorizontally().get());
         mainPanel.add(openFile, gbh.nextCol().setLabelDefault().get());
         orderList.add(sourceField);
         orderList.add(openFile);

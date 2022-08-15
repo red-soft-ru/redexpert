@@ -40,15 +40,11 @@ public class LoginPasswordDialog extends BaseDialog {
         pane.setText(message);
 
         GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaults(new GridBagConstraints(0, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        gbh.setDefaultsStatic();
         gbh.defaults();
         mainPanel.add(pane, gbh.spanX().get());
-        JLabel label = new JLabel(bundledString("username"));
-        mainPanel.add(label, gbh.nextRowFirstCol().setLabelDefault().get());
         username = new JTextField();
+        gbh.addLabelFieldPair(mainPanel, bundledString("username"), username, null);
         if (user != null) {
             username.setText(user);
         }
@@ -59,10 +55,8 @@ public class LoginPasswordDialog extends BaseDialog {
                     password.requestFocusInWindow();
             }
         });
-        mainPanel.add(username, gbh.nextCol().spanX().get());
-        label = new JLabel(bundledString("password"));
-        mainPanel.add(label, gbh.nextRowFirstCol().setLabelDefault().get());
         password = new JPasswordField();
+        gbh.addLabelFieldPair(mainPanel, bundledString("password"), password, null);
         password.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -70,7 +64,6 @@ public class LoginPasswordDialog extends BaseDialog {
                     finished();
             }
         });
-        mainPanel.add(password, gbh.nextCol().spanX().get());
         storePassword= new JCheckBox(Bundles.get(ConnectionPanel.class,"StorePassword"));
         mainPanel.add(storePassword, gbh.nextRow().get());
         LinkButton linkButton = new LinkButton(bundledString("register"));

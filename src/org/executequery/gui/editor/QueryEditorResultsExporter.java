@@ -154,7 +154,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         String[] delims = {"Pipe", "Comma", "Semi-colon", "Hash", "Custom"};
         delimCombo = ActionUtilities.createComboBox(action, delims, "delimeterChanged");
 
-        String[] SQLQuery = {"Query Editor In File", "To Query Editor"};
+        String[] SQLQuery = {bundleString("SQLInFile"), bundleString("SQLQueryEditor")};
         SQLQueryCombo = ActionUtilities.createComboBox(action, SQLQuery, "SQLQueryChanged");
 
         String[] types = {"Delimited File", "Excel Spreadsheet", "XML", "SQL"};
@@ -829,7 +829,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
             boolean applyQuotes = applyQuotesCheck.isSelected();
             for (int i = 0; i < rowCount; i++) {
-                rowLines.append("INSERT INTO " + tableNameForExport + '(');
+                rowLines.append("INSERT INTO " + MiscUtils.getFormattedObject(tableNameForExport) + '(');
                 for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) {
                     rowLines.append('\"' + model.getColumnName(countColumnName) + '\"' + Separator);
                 }
@@ -904,10 +904,12 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
             boolean applyQuotes = applyQuotesCheck.isSelected();
             for (int i = 0; i < rowCount; i++) {
-                rowLines.append("INSERT INTO " + tableNameForExport + '(');
+                rowLines.append("INSERT INTO " + MiscUtils.getFormattedObject(tableNameForExport) + '(');
                 for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) {
+
                     rowLines.append('\"' + model.getColumnName(countColumnName) + '\"' + Separator);
                 }
+
                 rowLines.append('\"' + model.getColumnName(model.getColumnCount() - 1) + "\" ) VALUES (");
                 for (int j = 0; j < columnCount; j++) {
 

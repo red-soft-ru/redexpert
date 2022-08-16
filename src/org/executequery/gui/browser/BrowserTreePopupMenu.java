@@ -55,6 +55,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private final JMenuItem copyName;
     private final JMenuItem moveToFolder;
     private final JMenuItem selectAll;
+    private final JMenuItem selectAllChildren;
 
 
     private final JMenuItem dataBaseInformation;
@@ -110,6 +111,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
         selectAll = createMenuItem(bundleString("selectAllTriggers"), "selectAll", listener);
         add(selectAll);
+
+        selectAllChildren = createMenuItem(bundleString("selectAllChildren"), "selectAllChildren", listener);
+        add(selectAllChildren);
         //addSeparator();
 
         createActiveInactiveMenu(listener);
@@ -186,6 +190,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     label = node.getName();
                     if (node.getType() == NamedObject.META_TAG)
                         label = label.toLowerCase();
+                    selectAllChildren.setVisible(false);
                     disconnect.setVisible(false);
                     dataBaseInformation.setVisible(false);
                     reload.setVisible(true);
@@ -214,6 +219,18 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                         else
                             str = NamedObject.META_TYPES_FOR_BUNDLE[node.getType()];
                         createObject.setText(bundleString("create", bundleString(str)));
+                    }
+
+                    if (node.getType() == NamedObject.META_TAG) {
+                        if (node.getAllowsChildren()) {
+                            if (node.getChildObjects().size() > 0) {
+                                int nodeType = node.getChildObjects().get(0).getType();
+                                boolean selectAllChildrenEnabled = nodeType == NamedObject.TRIGGER ||
+                                        nodeType == NamedObject.INDEX;
+                                selectAllChildren.setVisible(selectAllChildrenEnabled);
+                                selectAllChildren.setText(bundleString("selectAll", label));
+                            }
+                        }
                     }
 
 

@@ -907,6 +907,9 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     protected void setTreePaths(TreePath[] treePaths) {
         this.treePaths = treePaths;
+        if (treePaths.length > 0) {
+            this.currentPath = treePaths[0];
+        }
     }
 
     protected void setSelectedSeveralPaths(boolean selectedSeveralPaths) {
@@ -1021,6 +1024,21 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         } finally {
             querySender.releaseResources();
         }
+    }
+
+    public void selectAllChildren(ActionEvent e) {
+
+        TreePath currentPath = treePanel.getTree().getSelectionPaths()[0];
+        DefaultMutableTreeNode currentPathComponent = (DefaultMutableTreeNode) currentPath.getLastPathComponent();
+        DatabaseObjectNode node = (DatabaseObjectNode) currentPathComponent;
+        DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[node.getChildCount()];
+        for (int i = 0; i < node.getChildCount(); i++) {
+
+            if (node.getChildAt(i) instanceof DefaultMutableTreeNode) {
+                nodes[i] = (DefaultMutableTreeNode) node.getChildAt(i);
+            }
+        }
+        treePanel.getTree().selectNodes(nodes);
     }
 
     public void selectAll(ActionEvent e) {

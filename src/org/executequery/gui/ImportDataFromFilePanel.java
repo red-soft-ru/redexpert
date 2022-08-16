@@ -207,13 +207,13 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        FlatSplitPane splitPane = new FlatSplitPane(
-                JSplitPane.VERTICAL_SPLIT, dataPreviewTextAreaWithScrolls, columnMappingTableWithScrolls);
-        splitPane.setResizeWeight(0.5);
+        JScrollPane outputPanelWithScrolls = new JScrollPane(outputPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        FlatSplitPane mainSplitPane = new FlatSplitPane(
-                JSplitPane.VERTICAL_SPLIT, splitPane, outputPanel);
-        mainSplitPane.setResizeWeight(0.7);
+        FlatSplitPane splitPane = new FlatSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT, dataPreviewTextAreaWithScrolls, columnMappingTableWithScrolls);
+        splitPane.setResizeWeight(0.5);
 
         // ---------------------------------------------
         // Components arranging
@@ -221,6 +221,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 5));
+
+        JScrollPane mainPanelWithScrolls = new JScrollPane(mainPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         GridBagHelper gridBagHelper = new GridBagHelper();
         gridBagHelper.setInsets(5, 5, 5, 5);
@@ -285,7 +289,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // ----------- sixth row -----------
 
-        mainPanel.add(mainSplitPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        mainPanel.add(splitPane, gridBagHelper.nextRowFirstCol().spanX().get());
+
+        // ----------- seventh row -----------
+
+        mainPanel.add(outputPanelWithScrolls, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
         // ----------- buttonPanel -----------
 
@@ -297,9 +305,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         // Panels Settings
         // ---------------------------------------------
 
-        mainPanel.setBorder(BorderFactory.createEtchedBorder());
+//        mainPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        add(mainPanel, BorderLayout.CENTER);
+        add(mainPanelWithScrolls, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
     }
@@ -448,8 +456,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             if (dataFromTableVector.get(i).get(2) != nothingHeaderOfMappingTable) {
 
-                targetColumnList.append(dataFromTableVector.get(i).get(0));
-                sourceColumnList.append(dataFromTableVector.get(i).get(2));
+                targetColumnList.append(MiscUtils.getFormattedObject(dataFromTableVector.get(i).get(0).toString()));
+                sourceColumnList.append(MiscUtils.getFormattedObject(dataFromTableVector.get(i).get(2).toString()));
 
                 targetColumnList.append(",");
                 sourceColumnList.append(",");
@@ -475,7 +483,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         StringBuilder insertPattern = new StringBuilder();
         insertPattern.append("INSERT INTO ");
-        insertPattern.append(tableCombo.getSelectedItem());
+        insertPattern.append(MiscUtils.getFormattedObject(
+                Objects.requireNonNull(tableCombo.getSelectedItem()).toString()));
         insertPattern.append(" (");
         insertPattern.append(targetColumnList);
         insertPattern.append(") VALUES (");
@@ -558,7 +567,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 return;
             }
 
-            String SQLSourceRequest = "SELECT " + sourceColumnList + " FROM " + sourceFileName;
+            String SQLSourceRequest = "SELECT " + sourceColumnList + " FROM " + MiscUtils.getFormattedObject(sourceFileName);
             ResultSet sourceFileData = sourceFileStatement.executeQuery(SQLSourceRequest);
 
             String[] sourceFields = sourceColumnList.toString().split(",");
@@ -724,48 +733,12 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         if (sourceCombo.getSelectedIndex() == 0) {
 
-            fileNameField.setEnabled(false);
-
-            delimiterCombo.setEnabled(false);
-            timeFormatCombo.setEnabled(false);
-            dateFormatCombo.setEnabled(false);
-            timestampDelimiterCombo.setEnabled(false);
-
-            firstImportSelector.setEnabled(false);
-            lastImportSelector.setEnabled(false);
-            batchStepSelector.setEnabled(false);
-
-            isEraseDatabase.setEnabled(false);
-            isFirstColumnNames.setEnabled(false);
-
-            browseButton.setEnabled(false);
-            readFileButton.setEnabled(false);
-            fillMappingTableButton.setEnabled(false);
-            startImportButton.setEnabled(false);
-
+            disableAllComponents();
         }
 
         if (sourceCombo.getSelectedItem() == "csv") {
 
-            fileNameField.setEnabled(true);
-
-            delimiterCombo.setEnabled(true);
-            timeFormatCombo.setEnabled(true);
-            dateFormatCombo.setEnabled(true);
-            timestampDelimiterCombo.setEnabled(true);
-
-            firstImportSelector.setEnabled(true);
-            lastImportSelector.setEnabled(true);
-            batchStepSelector.setEnabled(true);
-
-            isEraseDatabase.setEnabled(true);
-            isFirstColumnNames.setEnabled(true);
-
-            browseButton.setEnabled(true);
-            readFileButton.setEnabled(true);
-            fillMappingTableButton.setEnabled(true);
-            startImportButton.setEnabled(true);
-
+            enableCSVComponents();
         }
 
     }
@@ -1030,6 +1003,56 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             executor.releaseResources();
         }
+
+    }
+
+    // ---------------------------------------------
+    // Components condition
+    // ---------------------------------------------
+
+    private void disableAllComponents() {
+
+        fileNameField.setEnabled(false);
+
+        delimiterCombo.setEnabled(false);
+        timeFormatCombo.setEnabled(false);
+        dateFormatCombo.setEnabled(false);
+        timestampDelimiterCombo.setEnabled(false);
+
+        firstImportSelector.setEnabled(false);
+        lastImportSelector.setEnabled(false);
+        batchStepSelector.setEnabled(false);
+
+        isEraseDatabase.setEnabled(false);
+        isFirstColumnNames.setEnabled(false);
+
+        browseButton.setEnabled(false);
+        readFileButton.setEnabled(false);
+        fillMappingTableButton.setEnabled(false);
+        startImportButton.setEnabled(false);
+
+    }
+
+    private void enableCSVComponents() {
+
+        fileNameField.setEnabled(true);
+
+        delimiterCombo.setEnabled(true);
+        timeFormatCombo.setEnabled(true);
+        dateFormatCombo.setEnabled(true);
+        timestampDelimiterCombo.setEnabled(true);
+
+        firstImportSelector.setEnabled(true);
+        lastImportSelector.setEnabled(true);
+        batchStepSelector.setEnabled(true);
+
+        isEraseDatabase.setEnabled(true);
+        isFirstColumnNames.setEnabled(true);
+
+        browseButton.setEnabled(true);
+        readFileButton.setEnabled(true);
+        fillMappingTableButton.setEnabled(true);
+        startImportButton.setEnabled(true);
 
     }
 

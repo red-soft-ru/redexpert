@@ -20,62 +20,43 @@
 
 package org.executequery.gui.editor;
 
-import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.spi.DefaultDatabaseConnection;
-import org.executequery.databaseobjects.*;
-import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.gui.DefaultPanelButton;
-import org.executequery.gui.ExecuteQueryDialog;
-import org.executequery.gui.StandardTable;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.browser.*;
-import org.executequery.gui.browser.comparer.Table;
-import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.gui.browser.tree.TreePanel;
-import org.executequery.gui.erd.ErdTable;
+import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.DefaultInlineFieldButton;
+import org.executequery.gui.browser.StatementToEditorWriter;
 import org.executequery.gui.importexport.DefaultExcelWorkbookBuilder;
 import org.executequery.gui.importexport.ExcelWorkbookBuilder;
 import org.executequery.gui.importexport.ImportExportDataProcess;
-import org.executequery.gui.resultset.*;
-import org.executequery.gui.scriptgenerators.ScriptGenerator;
+import org.executequery.gui.resultset.RecordDataItem;
+import org.executequery.gui.resultset.ResultSetTableModel;
+import org.executequery.gui.resultset.ResultSetTableModelToXMLWriter;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.EditorSQLShortcut;
-import org.executequery.repository.RepositoryCache;
 import org.executequery.sql.TokenizingFormatter;
-import org.executequery.util.UserProperties;
-import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.AbstractBaseDialog;
+import org.underworldlabs.swing.CharLimitedTextField;
 import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.actions.ReflectiveAction;
-import org.underworldlabs.swing.table.SortableTableModel;
-import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 import static org.executequery.GUIUtilities.getDockedTabComponent;
-import static org.executequery.gui.browser.BrowserTableEditingPanel.tableNameForExport;
+import static org.executequery.gui.browser.BrowserTableEditingPanel.TABLE_NAME_FOR_EXPORT;
 
 
 /**
@@ -96,7 +77,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private JComboBox delimCombo;
 
     // custom delimiter field
-    private JTextField customDelimField;
+    private JTextField customDelimiterField;
 
     // the file text field
     private JTextField fileNameField;
@@ -120,19 +101,19 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private JTextField customNameTable;
 
     // The text to specify the custom separator
-    private JLabel Custom;
+    private JLabel custom;
 
     // The text to specify the separator
-    private JLabel Delimiter;
+    private JLabel delimiter;
 
     // The text to specify the name of table
-    private JLabel TableName;
+    private JLabel tableName;
 
     // The text to specify the SQL export
-    private JLabel SQLExport;
+    private JLabel exportSQL;
 
     // the SQL Query export combo
-    private JComboBox SQLQueryCombo;
+    private JComboBox queryComboSQL;
 
 
     public QueryEditorResultsExporter(TableModel model) {
@@ -154,13 +135,13 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         String[] delims = {"Pipe", "Comma", "Semi-colon", "Hash", "Custom"};
         delimCombo = ActionUtilities.createComboBox(action, delims, "delimeterChanged");
 
-        String[] SQLQuery = {bundleString("SQLInFile"), bundleString("SQLQueryEditor")};
-        SQLQueryCombo = ActionUtilities.createComboBox(action, SQLQuery, "SQLQueryChanged");
+        String[] querySQL = {bundleString("SQLInFile"), bundleString("SQLQueryEditor")};
+        queryComboSQL = ActionUtilities.createComboBox(action, querySQL, "queryChangedSQL");
 
         String[] types = {"Delimited File", "Excel Spreadsheet", "XML", "SQL"};
         typeCombo = ActionUtilities.createComboBox(action, types, "exportTypeChanged");
 
-        customDelimField = new CharLimitedTextField(1);
+        customDelimiterField = new CharLimitedTextField(1);
         customNameTable = new CharLimitedTextField(20);
         fileNameField = WidgetFactory.createTextField();
 
@@ -222,32 +203,32 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         gbc.gridwidth = 1;
         gbc.insets.bottom = 0;
         gbc.insets.top = labelInsetsTop;
-        Delimiter = new JLabel(bundleString("Delimiter"));
-        SQLExport = new JLabel(bundleString("SQLExport"));
-        base.add(Delimiter, gbc);
-        base.add(SQLExport, gbc);
+        delimiter = new JLabel(bundleString("Delimiter"));
+        exportSQL = new JLabel(bundleString("SQLExport"));
+        base.add(delimiter, gbc);
+        base.add(exportSQL, gbc);
         gbc.gridx = 1;
         gbc.insets.top = fieldInsetsTop;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         base.add(delimCombo, gbc);
-        base.add(SQLQueryCombo, gbc);
+        base.add(queryComboSQL, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.insets.top = labelInsetsTop;
         gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.NONE;
-        Custom = new JLabel(bundleString("Custom"));
-        base.add(Custom, gbc);
-        TableName = new JLabel(bundleString("TableName"));
-        base.add(TableName, gbc);
+        custom = new JLabel(bundleString("Custom"));
+        base.add(custom, gbc);
+        tableName = new JLabel(bundleString("TableName"));
+        base.add(tableName, gbc);
 
         gbc.gridx = 1;
         gbc.insets.top = fieldInsetsTop;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        base.add(customDelimField, gbc);
+        base.add(customDelimiterField, gbc);
         base.add(customNameTable, gbc);
 
         gbc.gridx = 0;
@@ -292,11 +273,11 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         setResizable(false);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        customDelimField.setEnabled(false);
+        customDelimiterField.setEnabled(false);
         customNameTable.setVisible(false);
-        TableName.setVisible(false);
-        SQLExport.setVisible(false);
-        SQLQueryCombo.setVisible(false);
+        tableName.setVisible(false);
+        exportSQL.setVisible(false);
+        queryComboSQL.setVisible(false);
     }
 
 
@@ -325,49 +306,47 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
     public void exportTypeChanged(ActionEvent e) {
         int index = typeCombo.getSelectedIndex();
-        int index2 = SQLQueryCombo.getSelectedIndex();
+        int indexSQL = queryComboSQL.getSelectedIndex();
         delimCombo.setEnabled(index == 0);
         columnHeadersCheck.setEnabled(index < 2);
         applyQuotesCheck.setEnabled(index < 3);
-        Custom.setVisible(index != 3);
-        customDelimField.setVisible(index < 3);
-        TableName.setVisible(index >= 3);
+        custom.setVisible(index != 3);
+        customDelimiterField.setVisible(index < 3);
+        tableName.setVisible(index >= 3);
         customNameTable.setVisible(index >= 3);
-        customNameTable.setText(tableNameForExport);
-        SQLExport.setVisible(index >= 3);
-        Delimiter.setVisible(index < 3);
-        if(index == 3 && index2 == 1){
+        customNameTable.setText(TABLE_NAME_FOR_EXPORT);
+        exportSQL.setVisible(index >= 3);
+        delimiter.setVisible(index < 3);
+        if (index == 3 && indexSQL == 1) {
             fileNameField.setVisible(false);
             browse.setVisible(false);
             filePath.setVisible(false);
-        }
-        else{
+        } else {
             fileNameField.setVisible(true);
             browse.setVisible(true);
             filePath.setVisible(true);
         }
         delimCombo.setVisible(index < 3);
-        SQLQueryCombo.setVisible(index >= 3);
+        queryComboSQL.setVisible(index >= 3);
     }
 
     public void delimeterChanged(ActionEvent e) {
         int index = delimCombo.getSelectedIndex();
         boolean enableCustom = (index == 4);
-        customDelimField.setEnabled(enableCustom);
+        customDelimiterField.setEnabled(enableCustom);
         if (enableCustom) {
-            customDelimField.requestFocus();
+            customDelimiterField.requestFocus();
         }
     }
 
-    public void SQLQueryChanged(ActionEvent e){
-        int index2 = SQLQueryCombo.getSelectedIndex();
+    public void queryChangedSQL(ActionEvent e) {
         int index = typeCombo.getSelectedIndex();
-        if(index == 3 && index2 == 1){
+        int indexSQL = queryComboSQL.getSelectedIndex();
+        if (index == 3 && indexSQL == 1) {
             fileNameField.setVisible(false);
             browse.setVisible(false);
             filePath.setVisible(false);
-        }
-        else{
+        } else {
             fileNameField.setVisible(true);
             browse.setVisible(true);
             filePath.setVisible(true);
@@ -421,7 +400,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     public void export(ActionEvent e) {
         String value = fileNameField.getText();
 
-        int index = SQLQueryCombo.getSelectedIndex();
+        int index = queryComboSQL.getSelectedIndex();
         if (index != 1) {
             if (MiscUtils.isNull(value)) {
                 GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
@@ -445,10 +424,10 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         if (getExportFormatType() == ImportExportDataProcess.DELIMITED
                 && delimCombo.getSelectedIndex() == 4) {
 
-            value = customDelimField.getText();
+            value = customDelimiterField.getText();
             if (MiscUtils.isNull(value)) {
 
-                GUIUtilities.displayErrorMessage(bundleString("YouMustEnterACustomDelimeter"));
+                GUIUtilities.displayErrorMessage(bundleString("YouMustEnterACustomDelimiter"));
                 return;
             }
 
@@ -479,13 +458,13 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
             return exportExcel();
 
-        } else if (exportFormatType == ImportExportDataProcess.SQL && SQLQueryCombo.getSelectedIndex() == 0) {
+        } else if (exportFormatType == ImportExportDataProcess.SQL && queryComboSQL.getSelectedIndex() == 0) {
 
-            return SQLQueryToFile();
+            return querySQLToFile();
 
-        } else if (exportFormatType == ImportExportDataProcess.SQL && SQLQueryCombo.getSelectedIndex() == 1) {
+        } else if (exportFormatType == ImportExportDataProcess.SQL && queryComboSQL.getSelectedIndex() == 1) {
 
-            return QueryEditor();
+            return queryEditor();
 
         } else {
 
@@ -630,7 +609,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 delim = '#';
                 break;
             case 4:
-                delim = customDelimField.getText().charAt(0);
+                delim = customDelimiterField.getText().charAt(0);
                 break;
         }
 
@@ -798,20 +777,20 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         return Bundles.get(getClass(), key);
     }
 
-    public Object QueryEditor() {
+    public Object queryEditor() {
         ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
         DatabaseConnection databaseConnection = connectionsTreePanel.getSelectedDatabaseConnection();
-        getStatementWriter().writeToOpenEditor(databaseConnection, SQLQueryInQueryEditor());
+        getStatementWriter().writeToOpenEditor(databaseConnection, querySQLInQueryEditor());
         return Bundles.get("PrintPreviewCommand.done");
     }
 
 
-    public Object SQLQueryToFile() {
-        char Separator = ',';
+    public Object querySQLToFile() {
+        char separator = ',';
         ResultsProgressDialog progressDialog = null;
         PrintWriter writer = null;
         File exportFile = null;
-        String tableNameForExport = customNameTable.getText();
+        String nameOfTableForExport = customNameTable.getText();
         try {
             exportFile = new File(fileNameField.getText());
 
@@ -823,21 +802,21 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
             progressDialog = progressDialog(rowCount);
 
-            if(tableNameForExport.isEmpty()== true){
-                tableNameForExport = tableNameForExport;
+            if (nameOfTableForExport.isEmpty()) {
+                nameOfTableForExport = TABLE_NAME_FOR_EXPORT;
             }
 
             boolean applyQuotes = applyQuotesCheck.isSelected();
             for (int i = 0; i < rowCount; i++) {
-                rowLines.append("INSERT INTO " + MiscUtils.getFormattedObject(tableNameForExport) + '(');
+                rowLines.append("INSERT INTO " + MiscUtils.getFormattedObject(nameOfTableForExport) + '(');
                 for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) {
-                    rowLines.append('\"' + model.getColumnName(countColumnName) + '\"' + Separator);
+                    rowLines.append(MiscUtils.getFormattedObject(model.getColumnName(countColumnName)) + separator);
                 }
-                rowLines.append('\"' + model.getColumnName(model.getColumnCount() - 1) + "\" ) VALUES (");
+                rowLines.append(MiscUtils.getFormattedObject(model.getColumnName(model.getColumnCount() - 1)) + ") VALUES (");
                 for (int j = 0; j < columnCount; j++) {
                     Object value = model.getValueAt(i, j);
                     if (applyQuotes && isCDATA((RecordDataItem) value)) {
-                        if (valueAsString(value) == "") {
+                        if (valueAsString(value).isEmpty()) {
                             rowLines.append("NULL");
                         } else {
                             rowLines.append('\'' + valueAsString(value) + '\'');
@@ -852,7 +831,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                     }
 
                     if (j != columnCount - 1) {
-                        rowLines.append(Separator);
+                        rowLines.append(separator);
                     }
 
                 }
@@ -879,17 +858,17 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             if (exportFile != null) {
                 exportFile = null;
             }
-            if (tableNameForExport != null) {
-                tableNameForExport = null;
+            if (nameOfTableForExport != null) {
+                nameOfTableForExport = null;
             }
         }
     }
 
-    public String SQLQueryInQueryEditor() {
-        char Separator = ',';
+    public String querySQLInQueryEditor() {
+        char separator = ',';
         ResultsProgressDialog progressDialog = null;
         StringBuilder stringBuilder = new StringBuilder();
-        String tableNameForExport = customNameTable.getText();
+        String nameOfTableForExport = customNameTable.getText();
         try {
             StringBuilder rowLines = new StringBuilder(5000);
             stringBuilder.setLength(0);
@@ -898,25 +877,25 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             String query = "";
             progressDialog = progressDialog(rowCount);
 
-            if(tableNameForExport.isEmpty()== true){
-                tableNameForExport = tableNameForExport;
+            if (nameOfTableForExport.isEmpty()) {
+                nameOfTableForExport = TABLE_NAME_FOR_EXPORT;
             }
 
             boolean applyQuotes = applyQuotesCheck.isSelected();
             for (int i = 0; i < rowCount; i++) {
-                rowLines.append("INSERT INTO " + MiscUtils.getFormattedObject(tableNameForExport) + '(');
+                rowLines.append("INSERT INTO " + MiscUtils.getFormattedObject(nameOfTableForExport) + '(');
                 for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) {
 
-                    rowLines.append('\"' + model.getColumnName(countColumnName) + '\"' + Separator);
+                    rowLines.append(MiscUtils.getFormattedObject(model.getColumnName(countColumnName)) + separator);
                 }
 
-                rowLines.append('\"' + model.getColumnName(model.getColumnCount() - 1) + "\" ) VALUES (");
+                rowLines.append(MiscUtils.getFormattedObject(model.getColumnName(model.getColumnCount() - 1)) + ") VALUES (");
                 for (int j = 0; j < columnCount; j++) {
 
                     Object value = model.getValueAt(i, j);
                     if (applyQuotes && isCDATA((RecordDataItem) value)) {
 
-                        if (valueAsString(value) == "") {
+                        if (valueAsString(value).isEmpty()) {
                             rowLines.append("NULL");
                         } else {
                             rowLines.append('\'' + valueAsString(value) + '\'');
@@ -935,7 +914,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
                     if (j != columnCount - 1) {
 
-                        rowLines.append(Separator);
+                        rowLines.append(separator);
                     }
 
                 }
@@ -961,8 +940,8 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             if (stringBuilder != null) {
                 stringBuilder = null;
             }
-            if (tableNameForExport != null) {
-                tableNameForExport = null;
+            if (nameOfTableForExport != null) {
+                nameOfTableForExport = null;
             }
         }
     }

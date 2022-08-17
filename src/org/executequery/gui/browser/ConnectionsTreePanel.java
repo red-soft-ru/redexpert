@@ -1871,7 +1871,10 @@ public class ConnectionsTreePanel extends TreePanel
   }
 
   private boolean selectedTriggersOrIndexesOnly() {
-    return selectedPathsOnlyThisTyped(NamedObject.TRIGGER) || selectedPathsOnlyThisTyped(NamedObject.INDEX);
+    return selectedPathsOnlyThisTyped(NamedObject.TRIGGER) ||
+            selectedPathsOnlyThisTyped(NamedObject.DDL_TRIGGER) ||
+            selectedPathsOnlyThisTyped(NamedObject.DATABASE_TRIGGER) ||
+            selectedPathsOnlyThisTyped(NamedObject.INDEX);
   }
 
   protected TreePath getTreePathForLocation(int x, int y) {

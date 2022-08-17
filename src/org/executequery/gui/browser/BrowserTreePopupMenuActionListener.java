@@ -950,8 +950,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 StringBuilder error = new StringBuilder();
 
                 for (int i = 0; i < treePaths.length; i++) {
-                    String[] Splitters = treePaths[i].getLastPathComponent().toString().split(":");
-                    query = "ALTER " + Splitters[1] + " " + Splitters[0] + " ACTIVE";
+                    String[] splitters = treePaths[i].getLastPathComponent().toString().split(":");
+                    if (splitters[1].contains("TRIGGER"))
+                        splitters[1] = "TRIGGER";
+                    query = "ALTER " + splitters[1] + " " + splitters[0] + " ACTIVE";
                     querySender = new DefaultStatementExecutor(currentSelection, false);
                     SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
                     treePanel.reloadPath(treePaths[i]);
@@ -965,8 +967,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     GUIUtilities.displayErrorMessage(error.toString());
 
             } else {
-                String[] Splitters = currentPath.getLastPathComponent().toString().split(":");
-                query = "ALTER " + Splitters[1] + " " + Splitters[0] + " ACTIVE";
+                String[] splitters = currentPath.getLastPathComponent().toString().split(":");
+                if (splitters[1].contains("TRIGGER"))
+                    splitters[1] = "TRIGGER";
+                query = "ALTER " + splitters[1] + " " + splitters[0] + " ACTIVE";
                 querySender = new DefaultStatementExecutor(currentSelection, false);
                 SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
                 querySender.execute(QueryTypes.COMMIT, "");
@@ -991,8 +995,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 StringBuilder error = new StringBuilder();
 
                 for (int i = 0; i < treePaths.length; i++) {
-                    String[] Splitters = treePaths[i].getLastPathComponent().toString().split(":");
-                    query = "ALTER " + Splitters[1] + " " + Splitters[0] + " INACTIVE";
+                    String[] splitters = treePaths[i].getLastPathComponent().toString().split(":");
+                    if (splitters[1].contains("TRIGGER"))
+                        splitters[1] = "TRIGGER";
+                    query = "ALTER " + splitters[1] + " " + splitters[0] + " INACTIVE";
 
                     querySender = new DefaultStatementExecutor(currentSelection, false);
                     SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
@@ -1007,8 +1013,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     GUIUtilities.displayErrorMessage(error.toString());
 
             } else {
-                String[] Splitters = currentPath.getLastPathComponent().toString().split(":");
-                query = "ALTER " + Splitters[1] + " " + Splitters[0] + " INACTIVE";
+                String[] splitters = currentPath.getLastPathComponent().toString().split(":");
+                if (splitters[1].contains("TRIGGER"))
+                    splitters[1] = "TRIGGER";
+                query = "ALTER " + splitters[1] + " " + splitters[0] + " INACTIVE";
                 querySender = new DefaultStatementExecutor(currentSelection, false);
                 SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
 

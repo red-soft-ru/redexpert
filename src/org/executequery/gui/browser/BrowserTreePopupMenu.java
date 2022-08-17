@@ -225,8 +225,11 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                         if (node.getAllowsChildren()) {
                             if (node.getChildObjects().size() > 0) {
                                 int nodeType = node.getChildObjects().get(0).getType();
-                                boolean selectAllChildrenEnabled = nodeType == NamedObject.TRIGGER ||
-                                        nodeType == NamedObject.INDEX;
+                                boolean selectAllChildrenEnabled =
+                                        nodeType == NamedObject.TRIGGER ||
+                                                nodeType == NamedObject.DDL_TRIGGER ||
+                                                nodeType == NamedObject.DATABASE_TRIGGER ||
+                                                nodeType == NamedObject.INDEX;
                                 selectAllChildren.setVisible(selectAllChildrenEnabled);
                                 selectAllChildren.setText(bundleString("selectAll", label));
                             }
@@ -237,7 +240,10 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     boolean importExport = (node.getType() == NamedObject.TABLE);
                     sql.setVisible(importExport);
 
-                    boolean triggerIndex = (node.getType() == NamedObject.TRIGGER || node.getType() == NamedObject.INDEX);
+                    boolean triggerIndex = (node.getType() == NamedObject.TRIGGER ||
+                            node.getType() == NamedObject.DATABASE_TRIGGER ||
+                            node.getType() == NamedObject.DDL_TRIGGER ||
+                            node.getType() == NamedObject.INDEX);
                     active.setVisible(triggerIndex);
                     selectAll.setVisible(triggerIndex);
                     if (triggerIndex) {

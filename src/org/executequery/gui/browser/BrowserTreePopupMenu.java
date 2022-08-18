@@ -172,6 +172,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                 if (node.isHostNode()) {
 
                     //reload.setEnabled(false);
+                    selectAllChildren.setVisible(false);
+                    selectAll.setVisible(false);
                     active.setVisible(false);
                     sql.setVisible(false);
                     exportData.setVisible(false);
@@ -191,6 +193,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     if (node.getType() == NamedObject.META_TAG)
                         label = label.toLowerCase();
                     selectAllChildren.setVisible(false);
+                    selectAll.setVisible(false);
                     disconnect.setVisible(false);
                     dataBaseInformation.setVisible(false);
                     reload.setVisible(true);
@@ -247,9 +250,12 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     active.setVisible(triggerIndex);
                     selectAll.setVisible(triggerIndex);
                     if (triggerIndex) {
+                        DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
+                        String parentName = parent.getName();
+                        parentName = parentName.toLowerCase();
                         if (node.getType() == NamedObject.TRIGGER) {
-                            selectAll.setText(bundleString("selectAllTriggers"));
-                        } else selectAll.setText(bundleString("selectAllIndexes"));
+                            selectAll.setText(bundleString("selectAll", parentName));
+                        } else selectAll.setText(bundleString("selectAll", parentName));
                     }
 
 

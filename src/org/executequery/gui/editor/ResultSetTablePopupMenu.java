@@ -254,7 +254,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
 
         TableModel selected = table.selectedCellsAsTableModel();
         if (selected != null) {
-            new QueryEditorResultsExporter(selected);
+            new QueryEditorResultsExporter(selected, tableObject.getName());
         }
     }
 
@@ -308,8 +308,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     }
 
     public void exportTable(ActionEvent e) {
-        new QueryEditorResultsExporter(resultSetTableModel());
-
+        new QueryEditorResultsExporter(resultSetTableModel(), tableObject.getName());
     }
 
     public void printSelection(ActionEvent e) {

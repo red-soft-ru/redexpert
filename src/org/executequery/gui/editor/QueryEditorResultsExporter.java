@@ -56,7 +56,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.executequery.GUIUtilities.getDockedTabComponent;
-import static org.executequery.gui.browser.BrowserTableEditingPanel.TABLE_NAME_FOR_EXPORT;
 
 
 /**
@@ -89,7 +88,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private static StatementToEditorWriter statementWriter;
 
     // SQL format to QueryEditor
-    TokenizingFormatter formatter;
+    private TokenizingFormatter formatter;
 
     // Used to view the contents of a file
     private JButton browse;
@@ -115,18 +114,21 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     // the SQL Query export combo
     private JComboBox queryComboSQL;
 
+    // Name of selected table
+    private String tableNameForExport;
 
-    public QueryEditorResultsExporter(TableModel model) {
+
+    public QueryEditorResultsExporter(TableModel model, String tableNameForExport) {
 
         super(GUIUtilities.getParentFrame(), Bundles.get("QueryEditorResultsExporter.ExportQueryResults"), true);
         this.model = model;
+        this.tableNameForExport = tableNameForExport;
         init();
 
         pack();
         this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
         setVisible(true);
     }
-
 
     private void init() {
 
@@ -314,7 +316,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         customDelimiterField.setVisible(index < 3);
         tableName.setVisible(index >= 3);
         customNameTable.setVisible(index >= 3);
-        customNameTable.setText(TABLE_NAME_FOR_EXPORT);
+        customNameTable.setText(tableNameForExport);
         exportSQL.setVisible(index >= 3);
         delimiter.setVisible(index < 3);
         if (index == 3 && indexSQL == 1) {
@@ -784,7 +786,6 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         return Bundles.get("PrintPreviewCommand.done");
     }
 
-
     public Object querySQLToFile() {
         char separator = ',';
         ResultsProgressDialog progressDialog = null;
@@ -803,7 +804,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             progressDialog = progressDialog(rowCount);
 
             if (nameOfTableForExport.isEmpty()) {
-                nameOfTableForExport = TABLE_NAME_FOR_EXPORT;
+                nameOfTableForExport = tableNameForExport;
             }
 
             boolean applyQuotes = applyQuotesCheck.isSelected();
@@ -878,7 +879,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             progressDialog = progressDialog(rowCount);
 
             if (nameOfTableForExport.isEmpty()) {
-                nameOfTableForExport = TABLE_NAME_FOR_EXPORT;
+                nameOfTableForExport = tableNameForExport;
             }
 
             boolean applyQuotes = applyQuotesCheck.isSelected();

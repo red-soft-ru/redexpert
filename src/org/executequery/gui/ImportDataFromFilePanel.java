@@ -18,8 +18,10 @@ import org.executequery.event.ConnectionListener;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.DefaultProgressDialog;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -91,6 +93,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private ArrayList<String> headersOfSourceArray;
     private String nothingHeaderOfMappingTable;
     private int previewRowsCount;
+    private DefaultProgressDialog progressDialog;
 
     public ImportDataFromFilePanel() {
         super(new BorderLayout());
@@ -105,10 +108,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 "|", ",", ";", "#"};
 
         String[] sourceTypes = {bundledString("SelectFileType"),
-                "csv", "xlsx", "json"};
+                "csv", "json", "xml", "xlsx"};
 
         String[] timeFormats = {bundledString("SelectTimeFormat"),
-                "HH:mm", "HH:mm:ss", "HH:mm:ss[.nnn]"};
+                "HH:mm", "HH:mm:ss", "HH:mm:ss[.n[n[n]]]"};
 
         String[] dateFormats = {bundledString("SelectDateFormat"),
                 "dd.MM.yyyy", "yyyy-MM-dd", "MM/dd/yyyy", "yyyyMMdd"};
@@ -117,7 +120,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 "\"spase\"", "_", "T"};
 
         nothingHeaderOfMappingTable = "NOTHING";
-        previewRowsCount = 20;
+        previewRowsCount = 50;
 
         // ---------- comboBoxes ----------
 
@@ -126,7 +129,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         delimiterCombo.setEditable(true);
 
         sourceCombo = WidgetFactory.createComboBox(sourceTypes);
-        sourceCombo.addActionListener(e -> sourceComboChanged());
+        sourceCombo.setSelectedIndex(1);    //remove when adding support new for file formats
+        sourceCombo.setEnabled(false);      //remove when adding support new for file formats
 
         timeFormatCombo = WidgetFactory.createComboBox(timeFormats);
         timeFormatCombo.setEditable(true);
@@ -144,10 +148,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         tableCombo = WidgetFactory.createComboBox();
         tableCombo.addActionListener(e -> tableComboChanged());
-
-        // ---------- file path field ----------
-
-        fileNameField = WidgetFactory.createTextField();
 
         // ---------- checkBoxes ----------
 
@@ -180,8 +180,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         columnMappingTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-        // ---------- output panel ----------
+        // ---------- other ----------
 
+        fileNameField = WidgetFactory.createTextField();
         outputPanel = new LoggingOutputPanel();
 
         // ---------- buttons ----------
@@ -203,7 +204,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 bundledString("StartImportButtonText"), "startImport");
 
         connectionComboChanged();
-        sourceComboChanged();
 
         componentsArranging();
 
@@ -231,16 +231,16 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 JSplitPane.HORIZONTAL_SPLIT, dataPreviewTextAreaWithScrolls, columnMappingTableWithScrolls);
         splitPane.setResizeWeight(0.5);
 
+        FlatSplitPane bigSplitPane = new FlatSplitPane(
+                JSplitPane.VERTICAL_SPLIT, splitPane, outputPanelWithScrolls);
+        splitPane.setResizeWeight(0.5);
+
         // ---------------------------------------------
         // Components arranging
         // ---------------------------------------------
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 5));
-
-        JScrollPane mainPanelWithScrolls = new JScrollPane(mainPanel,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         GridBagHelper gridBagHelper = new GridBagHelper();
         gridBagHelper.setInsets(5, 5, 5, 5);
@@ -250,7 +250,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         gridBagHelper.addLabelFieldPair(mainPanel,
                 bundledString("TargetConnectionLabel"), connectionsCombo,
-                null, true, false, 3);
+                null, true, false, 4);
 
         gridBagHelper.addLabelFieldPair(mainPanel,
                 bundledString("TargetTableLabel"), tableCombo,
@@ -259,11 +259,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         // ----------- second row -----------
 
         gridBagHelper.addLabelFieldPair(mainPanel,
-                bundledString("InputDataFileLabel"), sourceCombo,
-                null, true, false, 1);
+                bundledString("InputDataFileLabel"), fileNameField,
+                null, true, false, 3);
 
-        mainPanel.add(fileNameField, gridBagHelper.nextCol().fillHorizontally().setWidth(5).get());
         mainPanel.add(browseButton, gridBagHelper.nextCol().setLabelDefault().get());
+
+        gridBagHelper.addLabelFieldPair(mainPanel,
+                bundledString("ImportFileTypeLabel"), sourceCombo,
+                null, false, true, 1);
 
         // ----------- third row -----------
 
@@ -273,7 +276,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         gridBagHelper.addLabelFieldPair(mainPanel,
                 bundledString("TimeFormatLabel"), timeFormatCombo,
-                null, false, false, 1);
+                null, false, false, 2);
 
         gridBagHelper.addLabelFieldPair(mainPanel,
                 bundledString("TimestampDelimiterLabel"), timestampDelimiterCombo,
@@ -287,7 +290,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         gridBagHelper.addLabelFieldPair(mainPanel,
                 bundledString("CommitSelectorLabel"), batchStepSelector,
-                null, false, false, 1);
+                null, false, false, 2);
 
         mainPanel.add(isEraseDatabase, gridBagHelper.nextCol().setWidth(2).get());
 
@@ -299,22 +302,20 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         gridBagHelper.addLabelFieldPair(mainPanel,
                 bundledString("LastNumericSelectorsLabel"), lastImportSelector,
-                null, false, false, 1);
+                null, false, false, 2);
 
         mainPanel.add(isFirstColumnNames, gridBagHelper.nextCol().setWidth(2).get());
 
         // ----------- sixth row -----------
 
         mainPanel.add(new JLabel(bundledString("PreviewAndColumnMappingTablesLabel")),
-                gridBagHelper.nextRowFirstCol().setLabelDefault().get());
+                gridBagHelper.nextRowFirstCol().setWidth(2).get());
+
+        mainPanel.add(new JPanel(), gridBagHelper.nextCol().setWidth(1).nextCol().setMaxWeightX().fillHorizontally().get());
 
         // ----------- seventh row -----------
 
-        mainPanel.add(splitPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().get());
-
-        // ----------- eights row -----------
-
-        mainPanel.add(outputPanelWithScrolls, gridBagHelper.nextRowFirstCol().spanX().spanY().get());
+        mainPanel.add(bigSplitPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
         // ----------- buttonPanel -----------
 
@@ -324,9 +325,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // ----------- panels settings -----------
 
-        add(mainPanelWithScrolls, BorderLayout.CENTER);
+        add(mainPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+
     }
 
     // ---------------------------------------------
@@ -389,15 +391,21 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 break;
 
             }
-            case ("xlsx"): {
-
-                GUIUtilities.displayWarningMessage("Import from xlsx is currently unavailable");
-                break;
-
-            }
             case ("json"): {
 
                 GUIUtilities.displayWarningMessage("Import from json is currently unavailable");
+                break;
+
+            }
+            case ("xml"): {
+
+                GUIUtilities.displayWarningMessage("Import from xml is currently unavailable");
+                break;
+
+            }
+            case ("xlsx"): {
+
+                GUIUtilities.displayWarningMessage("Import from xlsx is currently unavailable");
                 break;
 
             }
@@ -547,19 +555,49 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             case ("csv"): {
 
-                insertCSV(sourceColumnList, valuesIndexes, insertStatement, executor);
-                break;
+                progressDialog = new DefaultProgressDialog(bundledString("ExecutingProgressDialog"));
 
-            }
-            case ("xlsx"): {
+                SwingWorker worker = new SwingWorker() {
+                    @Override
+                    public Object construct() {
 
-                GUIUtilities.displayWarningMessage("Import from xlsx is currently unavailable");
+                        insertCSV(sourceColumnList, valuesIndexes, insertStatement, executor);
+
+                        return null;
+                    }
+
+                    public void finished() {
+
+                        if (progressDialog != null) {
+
+                            progressDialog.dispose();
+                        }
+
+                    }
+
+                };
+
+                worker.start();
+                progressDialog.run();
+
                 break;
 
             }
             case ("json"): {
 
                 GUIUtilities.displayWarningMessage("Import from json is currently unavailable");
+                break;
+
+            }
+            case ("xml"): {
+
+                GUIUtilities.displayWarningMessage("Import from xml is currently unavailable");
+                break;
+
+            }
+            case ("xlsx"): {
+
+                GUIUtilities.displayWarningMessage("Import from xlsx is currently unavailable");
                 break;
 
             }
@@ -570,8 +608,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             }
 
         }
-
-        executor.releaseResources();
 
     }
 
@@ -604,6 +640,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             int linesCount = 0;
 
             while (sourceFileData.next()) {
+
+                if (progressDialog.isCancel()) {
+
+                    break;
+                }
 
                 if (linesCount >= (int) lastImportSelector.getValue()) {
 
@@ -751,20 +792,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         if (fillMappingTableAllowed(false)) {
 
             fillMappingTable();
-        }
-
-    }
-
-    private void sourceComboChanged() {
-
-        if (sourceCombo.getSelectedIndex() == 0) {
-
-            disableAllComponents();
-        }
-
-        if (sourceCombo.getSelectedItem() == "csv") {
-
-            enableCSVComponents();
         }
 
     }
@@ -1071,71 +1098,18 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     }
 
     // ---------------------------------------------
-    // Components condition
-    // ---------------------------------------------
-
-    private void disableAllComponents() {
-
-        fileNameField.setEnabled(false);
-
-        delimiterCombo.setEnabled(false);
-        timeFormatCombo.setEnabled(false);
-        dateFormatCombo.setEnabled(false);
-        timestampDelimiterCombo.setEnabled(false);
-
-        firstImportSelector.setEnabled(false);
-        lastImportSelector.setEnabled(false);
-        batchStepSelector.setEnabled(false);
-
-        isEraseDatabase.setEnabled(false);
-        isFirstColumnNames.setEnabled(false);
-
-        browseButton.setEnabled(false);
-        readFileButton.setEnabled(false);
-        fillMappingTableButton.setEnabled(false);
-        startImportButton.setEnabled(false);
-
-    }
-
-    private void enableCSVComponents() {
-
-        fileNameField.setEnabled(true);
-
-        delimiterCombo.setEnabled(true);
-        timeFormatCombo.setEnabled(true);
-        dateFormatCombo.setEnabled(true);
-        timestampDelimiterCombo.setEnabled(true);
-
-        firstImportSelector.setEnabled(true);
-        lastImportSelector.setEnabled(true);
-        batchStepSelector.setEnabled(true);
-
-        isEraseDatabase.setEnabled(true);
-        isFirstColumnNames.setEnabled(true);
-
-        browseButton.setEnabled(true);
-        readFileButton.setEnabled(true);
-        fillMappingTableButton.setEnabled(true);
-        startImportButton.setEnabled(true);
-
-    }
-
-    // ---------------------------------------------
     // ConnectionListener implementation
     // ---------------------------------------------
 
     public boolean canHandleEvent(ApplicationEvent event) {
-
         return (event instanceof DefaultKeywordEvent) || (event instanceof ConnectionEvent);
     }
 
     public void connected(ConnectionEvent connectionEvent) {
-
         combosGroup.connectionOpened(connectionEvent.getDatabaseConnection());
     }
 
     public void disconnected(ConnectionEvent connectionEvent) {
-
         combosGroup.connectionClosed(connectionEvent.getDatabaseConnection());
     }
 
@@ -1162,12 +1136,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private static int count = 1;
 
     public String getDisplayName() {
-
         return TITLE + (count++);
     }
 
     public String toString() {
-
         return getDisplayName();
     }
 
@@ -1176,7 +1148,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     // ---------------------------------------------
 
     public static String bundledString(String key) {
-
         return Bundles.get(ImportDataFromFilePanel.class, key);
     }
 

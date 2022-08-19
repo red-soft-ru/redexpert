@@ -46,6 +46,7 @@ import java.util.List;
 public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         implements DatabaseExecutable {
 
+
     /**
      * proc parameters
      */
@@ -62,6 +63,10 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
     private List<ProcedureParameter> procedureInputParameters;
     private List<ProcedureParameter> procedureOutputParameters;
+
+    protected String entryPoint;
+    protected String engine;
+
 
     public DefaultDatabaseExecutable() {
         super((DatabaseMetaTag) null);
@@ -250,6 +255,12 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
                     procedureOutputParameters.add(pp);
                 parameters.add(pp);
+                if (procedureSourceCode == null || procedureSourceCode.isEmpty())
+                    procedureSourceCode = rs.getString(2);
+                if ((entryPoint == null || entryPoint.isEmpty()) && rs.getString("ENTRY_POINT") != null)
+                    entryPoint = rs.getString("ENTRY_POINT").trim();
+                if ((engine == null || engine.isEmpty()) && rs.getString("ENGINE") != null)
+                    engine = rs.getString("ENGINE").trim();
             }
 
         } catch (SQLException e) {
@@ -337,7 +348,9 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                     "pp.rdb$relation_name as RN,\n" +
                     "pp.rdb$field_name as FN,\n" +
                     "co2.rdb$collation_name, \n" +
-                    "cr.rdb$default_collate_name \n" +
+                    "cr.rdb$default_collate_name, \n" +
+                    "prc.rdb$entry_point as ENTRY_POINT, \n" +
+                    "prc.rdb$engine as ENGINE \n" +
                     "from rdb$procedures prc\n" +
                     "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                     "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
@@ -504,6 +517,23 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
     public List<ProcedureParameter> getProcedureOutputParameters() {
         return procedureOutputParameters;
     }
+
+    public String getEntryPoint() {
+        return entryPoint;
+    }
+
+    public void setEntryPoint(String entryPoint) {
+        this.entryPoint = entryPoint;
+    }
+
+    public String getEngine() {
+        return engine;
+    }
+
+    public void setEngine(String engine) {
+        this.engine = engine;
+    }
+
 }
 
 

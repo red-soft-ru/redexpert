@@ -304,6 +304,17 @@ public class DynamicTree extends JTree {
         setSelectionPath(path);
     }
 
+    public void selectNodes(DefaultMutableTreeNode[] nodes) {
+        TreePath[] paths = new TreePath[nodes.length];
+
+        for (int i = 0; i < nodes.length; i++) {
+            TreePath path = new TreePath(nodes[i].getPath());
+            paths[i] = path;
+            scrollPathToVisible(path);
+        }
+        setSelectionPaths(paths);
+    }
+
     public int getIndexWithinParent(TreeNode node) {
 
         MutableTreeNode parent = (MutableTreeNode) node.getParent();

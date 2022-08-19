@@ -123,4 +123,3 @@ abstract class AbstractPropertiesBasePanel extends JPanel
 
 }
 
-

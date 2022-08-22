@@ -519,6 +519,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
     }
 
     public String getEntryPoint() {
+        checkOnReload(entryPoint);
         return entryPoint;
     }
 
@@ -527,6 +528,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
     }
 
     public String getEngine() {
+        checkOnReload(engine);
         return engine;
     }
 

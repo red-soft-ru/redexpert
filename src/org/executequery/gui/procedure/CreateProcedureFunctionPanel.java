@@ -150,7 +150,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         if (!MiscUtils.isNull(executable.getEntryPoint())) {
             useExternalBox.setSelected(true);
             engineField.setText(executable.getEngine());
-            engineField.setText(executable.getEntryPoint());
+            externalField.setText(executable.getEntryPoint());
 
         }
         useExternalBox.setVisible(false);

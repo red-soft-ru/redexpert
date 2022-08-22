@@ -248,7 +248,7 @@ public final class SQLUtils {
             sb.append(")\n");
         }
         if (!MiscUtils.isNull(entryPoint)) {
-            sb.append("EXTERNAL NAME '");
+            sb.append("\nEXTERNAL NAME '");
             sb.append(entryPoint).append("'");
             sb.append(" ENGINE ").append(engine);
         } else sb.append(generateSQLBody(fullProcedureBody));
@@ -338,7 +338,7 @@ public final class SQLUtils {
         if (returnType != null)
             sb.append(returnType.getFormattedDataType());
         if (!MiscUtils.isNull(entryPoint)) {
-            sb.append("EXTERNAL NAME '");
+            sb.append("\nEXTERNAL NAME '");
             sb.append(entryPoint).append("'");
             sb.append(" ENGINE ").append(engine);
         } else sb.append(generateSQLBody(fullFunctionBody));

@@ -215,31 +215,30 @@ public final class SQLUtils {
         }
         return sqlBuffer.toString();
     }
-    public static String generateCreateProcedure(String name,Vector<ColumnData> inputParameters,Vector<ColumnData> outputParameters,Vector<ColumnData> variables, String procedureBody,String comment)
-    {
+
+    public static String generateCreateProcedure(String name, String entryPoint, String engine, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters, Vector<ColumnData> variables, String procedureBody, String comment) {
         StringBuilder sb = new StringBuilder();
         sb.append(formattedParameters(variables, true));
         sb.append(procedureBody);
-        return generateCreateProcedure(name,inputParameters,outputParameters,sb.toString(),comment);
+        return generateCreateProcedure(name, entryPoint, engine, inputParameters, outputParameters, sb.toString(), comment);
     }
 
-    public static String generateCreateProcedure(String name,List<ProcedureParameter> parameters,String fullProcedureBody,String comment,DatabaseConnection dc) {
+    public static String generateCreateProcedure(String name, String entryPoint, String engine, List<ProcedureParameter> parameters, String fullProcedureBody, String comment, DatabaseConnection dc) {
         Vector<ColumnData> inputs = new Vector<>();
         Vector<ColumnData> outputs = new Vector<>();
         for (ProcedureParameter parameter : parameters) {
             if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
-                ColumnData cd = columnDataFromProcedureParameter(parameter,dc);
+                ColumnData cd = columnDataFromProcedureParameter(parameter, dc);
                 inputs.add(cd);
             } else {
-                ColumnData cd = columnDataFromProcedureParameter(parameter,dc);
+                ColumnData cd = columnDataFromProcedureParameter(parameter, dc);
                 outputs.add(cd);
             }
         }
-        return generateCreateProcedure(name,inputs,outputs,fullProcedureBody,comment);
+        return generateCreateProcedure(name, entryPoint, engine, inputs, outputs, fullProcedureBody, comment);
     }
 
-    public static String generateCreateProcedure(String name,Vector<ColumnData> inputParameters,Vector<ColumnData> outputParameters, String fullProcedureBody,String comment)
-    {
+    public static String generateCreateProcedure(String name, String entryPoint, String engine, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters, String fullProcedureBody, String comment) {
         StringBuilder sb = new StringBuilder();
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE]));
         String output = formattedParameters(outputParameters, false);
@@ -248,8 +247,11 @@ public final class SQLUtils {
             sb.append(output);
             sb.append(")\n");
         }
-        sb.append(generateSQLBody(fullProcedureBody));
-
+        if (!MiscUtils.isNull(entryPoint)) {
+            sb.append("EXTERNAL NAME '");
+            sb.append(entryPoint).append("'");
+            sb.append(" ENGINE ").append(engine);
+        } else sb.append(generateSQLBody(fullProcedureBody));
         sb.append("\n");
 
         // add procedure description
@@ -335,7 +337,7 @@ public final class SQLUtils {
         sb.append("RETURNS ");
         if (returnType != null)
             sb.append(returnType.getFormattedDataType());
-        if (entryPoint != null) {
+        if (!MiscUtils.isNull(entryPoint)) {
             sb.append("EXTERNAL NAME '");
             sb.append(entryPoint).append("'");
             sb.append(" ENGINE ").append(engine);

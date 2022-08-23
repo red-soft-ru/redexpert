@@ -6,6 +6,7 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +32,8 @@ public class InputParametersDialog extends BaseDialog {
         init();
     }
 
+    GridBagHelper gbh;
+
     private void init() {
         mainPanel = new JPanel();
         scrollPanel = new JScrollPane();
@@ -39,6 +42,8 @@ public class InputParametersDialog extends BaseDialog {
         panel.setLayout(new GridBagLayout());
         componentList = new ArrayList<>();
         mainPanel.setLayout(new GridBagLayout());
+        gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
         mainPanel.add(scrollPanel, new GridBagConstraints(0, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
@@ -128,14 +133,8 @@ public class InputParametersDialog extends BaseDialog {
 
     private void addParameter(Parameter parameter) {
         int count = componentList.size();
-        panel.add(new JLabel(parameter.getName()), new GridBagConstraints(0, count,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        panel.add(new JLabel(parameter.getTypeName()), new GridBagConstraints(1, count,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        panel.add(new JLabel(parameter.getName()), gbh.nextRowFirstCol().setLabelDefault().get());
+        panel.add(new JLabel(parameter.getTypeName()), gbh.nextCol().get());
         JComponent component;
         switch (parameter.getType()) {
             case Types.DATE:
@@ -177,10 +176,7 @@ public class InputParametersDialog extends BaseDialog {
         }
         setValueToComponent(parameter, component);
         componentList.add(component);
-        panel.add(component, new GridBagConstraints(2, count,
-                1, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        panel.add(component, gbh.nextCol().fillHorizontally().spanX().get());
     }
 
     private void ok() {

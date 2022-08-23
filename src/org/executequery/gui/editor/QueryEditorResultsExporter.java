@@ -872,10 +872,8 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         String nameOfTableForExport = customNameTable.getText();
         try {
             StringBuilder rowLines = new StringBuilder(5000);
-            stringBuilder.setLength(0);
             int rowCount = model.getRowCount();
             int columnCount = model.getColumnCount();
-            String query = "";
             progressDialog = progressDialog(rowCount);
 
             if (nameOfTableForExport.isEmpty()) {
@@ -921,13 +919,10 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 }
                 stringBuilder.append(rowLines + ");");
                 rowLines.setLength(0);
-
-                query += stringBuilder;
-                stringBuilder.setLength(0);
                 progressDialog.increment(i + 1);
             }
 
-            return getFormatter().format(query);
+            return getFormatter().format(stringBuilder.toString());
 
         } catch (Exception e) {
 

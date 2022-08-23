@@ -802,6 +802,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
                     int index = wordAtCursor.indexOf(".");
                     insertionIndex += index + 1;
                     wordAtCursorLength -= index + 1;
+                    selectedValue = MiscUtils.getFormattedObject(selectedValue);
                 }
 
                 document.remove(insertionIndex, wordAtCursorLength);

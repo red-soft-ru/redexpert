@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -267,7 +268,36 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        return "";
+
+        String query = "CREATE ";
+        if (isUnique)
+            query += "UNIQUE ";
+        if (getIndexType() == 1)
+            query += "DESCENDING ";
+        query += "INDEX " + MiscUtils.getFormattedObject(getName()) +
+                " ON " + MiscUtils.getFormattedObject(getTableName().trim()) + " ";
+        if (getExpression() != null) {
+            query += "COMPUTED BY (" + getExpression() + ")";
+        } else {
+            query += "(";
+            StringBuilder fieldss = new StringBuilder();
+            boolean first = true;
+            for (int i = 0; i < getIndexColumns().size(); i++) {
+                if (!first)
+                    fieldss.append(",");
+                first = false;
+                fieldss.append(MiscUtils.getFormattedObject(getIndexColumns().get(i).getFieldName()));
+            }
+            query += fieldss + ")";
+        }
+        if (getTablespace() != null)
+            query += "\nTABLESPACE " + MiscUtils.getFormattedObject(getTablespace());
+        query += ";";
+        if (!isActive())
+            query += "ALTER INDEX " + MiscUtils.getFormattedObject(getName()) + " INACTIVE;";
+        if (!MiscUtils.isNull(getRemarks()))
+            query += "COMMENT ON INDEX " + MiscUtils.getFormattedObject(getName()) + " IS '" + getRemarks() + "'";
+        return query;
     }
 
     @Override

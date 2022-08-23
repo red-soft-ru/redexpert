@@ -12,6 +12,7 @@ import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.impl.DefaultDatabaseExecutable;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteProcedurePanel;
@@ -31,6 +32,7 @@ import org.underworldlabs.procedureParser.ProcedureParserLexer;
 import org.underworldlabs.procedureParser.ProcedureParserParser;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -116,6 +118,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
      */
     protected JPanel mainPanel;
 
+    protected JCheckBox useExternalBox;
+    protected JPanel emptyExternalPanel;
+
+    protected JTextField externalField;
+
+    protected JTextField engineField;
+
     /**
      * <p> Constructs a new instance.
      */
@@ -129,7 +138,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     }
 
     protected void initEditing() {
-        centralPanel.setLayout(new GridBagLayout());
         JButton executeButton = new JButton(Bundles.getCommon("execute"));
         executeButton.addActionListener(new ActionListener() {
             @Override
@@ -138,10 +146,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                 dialog.display();
             }
         });
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaults(GridBagHelper.DEFAULT_CONSTRAINTS);
-        centralPanel.add(executeButton, gbh.defaults().setLabelDefault().get());
-        centralPanel.add(new JPanel(), gbh.nextCol().spanX().spanY().get());
+        DefaultDatabaseExecutable executable = (DefaultDatabaseExecutable) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure);
+        if (!MiscUtils.isNull(executable.getEntryPoint())) {
+            useExternalBox.setSelected(true);
+            engineField.setText(executable.getEngine());
+            externalField.setText(executable.getEntryPoint());
+
+        }
+        useExternalBox.setVisible(false);
+        emptyExternalPanel.setVisible(false);
+        centralPanel.add(executeButton, centralGbh.nextRowFirstCol().setLabelDefault().get());
+        centralPanel.add(new JPanel(), centralGbh.nextCol().fillBoth().spanX().spanY().get());
         addPrivilegesTab(tabbedPane);
         addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
@@ -299,6 +314,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
     protected abstract void loadParameters();
 
+    GridBagHelper centralGbh;
+
     protected void init() {
 
         //initialise the schema label
@@ -334,6 +351,27 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
         ddlPanel = new JPanel(new GridBagLayout());
 
+        externalField = new JTextField();
+        engineField = new JTextField();
+
+        useExternalBox = new JCheckBox(bundleString("useExternal"));
+        emptyExternalPanel = new JPanel();
+        useExternalBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                checkExternal();
+            }
+        });
+
+
+        centralPanel.setLayout(new GridBagLayout());
+        centralGbh = new GridBagHelper();
+        centralGbh.setDefaultsStatic();
+        centralGbh.defaults();
+        centralPanel.add(useExternalBox, centralGbh.setLabelDefault().setWidth(2).get());
+        centralPanel.add(emptyExternalPanel, centralGbh.nextCol().setWidth(1).fillHorizontally().setMaxWeightX().spanX().get());
+        centralGbh.addLabelFieldPair(centralPanel, bundleString("EntryPoint"), externalField, null);
+        centralGbh.addLabelFieldPair(centralPanel, bundleString("Engine"), engineField, null);
         JPanel topPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
                 1, 1, 1, 1,
@@ -418,12 +456,24 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         variablesPanel.setDatabaseConnection(connection);
         //metaData
 
+        checkExternal();
+    }
 
+    protected void checkExternal() {
+        boolean selected = useExternalBox.isSelected();
+        sqlBodyText.getParent().setVisible(!selected);
+        if (!selected) {
+            ((JSplitPane3) sqlBodyText.getParent().getParent()).setDividerLocation(0.3);
+        }
+        int ind = centralPanel.getComponentZOrder(externalField) - 1;
+        externalField.setVisible(selected);
+        centralPanel.getComponent(ind).setVisible(selected);
+        ind = centralPanel.getComponentZOrder(engineField) - 1;
+        engineField.setVisible(selected);
+        centralPanel.getComponent(ind).setVisible(selected);
     }
 
     protected abstract String getEmptySqlBody();
-
-
 
 
     protected abstract void generateScript();

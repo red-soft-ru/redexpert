@@ -279,7 +279,7 @@ public class CreateDatabasePanel extends ActionPanel
 
         JLabel dataSourceLabel = new DefaultFieldLabel(bundledString("sourceField"));
         mainPanel.add(dataSourceLabel, gbh.nextRowFirstCol().setLabelDefault().get());
-        mainPanel.add(sourceField, gbh.nextCol().setMaxWeightX().get());
+        mainPanel.add(sourceField, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
         mainPanel.add(saveFile, gbh.nextCol().setLabelDefault().get());
 
 

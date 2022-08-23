@@ -1,6 +1,7 @@
 package org.executequery.gui;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabViewActionPanel;
@@ -21,6 +22,7 @@ import org.executequery.log.Log;
 import org.underworldlabs.swing.DefaultProgressDialog;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
@@ -32,12 +34,16 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.*;
+
+import static org.apache.commons.lang.StringUtils.chop;
 
 /**
  * @author Alexey Kozlov
@@ -686,9 +692,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                                         timeFormatCombo.getSelectedIndex() != 0) {
 
                                     String timestampPattern = Objects.requireNonNull(dateFormatCombo.getSelectedItem()) +
-                                            Objects.requireNonNull(timestampDelimiterCombo.getSelectedItem())
-                                                    .toString().replace("\"spase\"", " ") +
-                                            Objects.requireNonNull(timeFormatCombo.getSelectedItem());
+                                            " " + Objects.requireNonNull(timeFormatCombo.getSelectedItem());
 
                                     timestampFormat = DateTimeFormatter.
                                             ofPattern(Objects.requireNonNull(timestampPattern));
@@ -702,7 +706,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                                     return;
                                 }
 
-                                String stringTimestamp = sourceFileData.getString(sourceFields[fieldIndex]);
+                                String stringTimestamp = sourceFileData.getString(sourceFields[fieldIndex])
+                                        .replace(Objects.requireNonNull(
+                                                timestampDelimiterCombo.getSelectedItem()).toString(), " ");
 
                                 param = LocalDateTime.parse(stringTimestamp, timestampFormat);
 
@@ -940,7 +946,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         Statement statement;
 
         sourceFileName = FilenameUtils.getBaseName(pathToFile);
-        String directoryOfFile = FilenameUtils.getPath(pathToFile);
+        String directoryOfFile = Paths.get(pathToFile).getParent().toString();
 
         try {
 
@@ -970,9 +976,17 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             // ----------- open source connection -----------
 
-            connection = DriverManager.getConnection("jdbc:relique:csv:/" +
-                    directoryOfFile.replace("\\", "/"), properties);
+            String connectionUrl;
+            if (UIUtils.isWindows()) {
 
+                connectionUrl = "jdbc:relique:csv:" + directoryOfFile.replace("\\", "/");
+
+            } else {
+
+                connectionUrl = "jdbc:relique:csv:" + directoryOfFile;
+            }
+
+            connection = DriverManager.getConnection(connectionUrl, properties);
             statement = connection.createStatement();
 
             Log.info("ImportDataFromFilePanel: CSV file was read successfully");

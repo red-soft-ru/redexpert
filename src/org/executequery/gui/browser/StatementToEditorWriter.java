@@ -27,7 +27,7 @@ import org.executequery.gui.editor.QueryEditor;
 /**
  * @author Takis Diakoumis
  */
-class StatementToEditorWriter {
+public class StatementToEditorWriter {
 
     public void writeToOpenEditor(DatabaseConnection databaseConnection, String statement) {
 

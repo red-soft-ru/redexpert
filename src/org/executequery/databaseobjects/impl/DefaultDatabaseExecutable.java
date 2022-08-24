@@ -46,6 +46,7 @@ import java.util.List;
 public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         implements DatabaseExecutable {
 
+
     /**
      * proc parameters
      */
@@ -62,6 +63,10 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
     private List<ProcedureParameter> procedureInputParameters;
     private List<ProcedureParameter> procedureOutputParameters;
+
+    protected String entryPoint;
+    protected String engine;
+
 
     public DefaultDatabaseExecutable() {
         super((DatabaseMetaTag) null);
@@ -250,6 +255,12 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
                     procedureOutputParameters.add(pp);
                 parameters.add(pp);
+                if (procedureSourceCode == null || procedureSourceCode.isEmpty())
+                    procedureSourceCode = rs.getString(2);
+                if ((entryPoint == null || entryPoint.isEmpty()) && rs.getString("ENTRY_POINT") != null)
+                    entryPoint = rs.getString("ENTRY_POINT").trim();
+                if ((engine == null || engine.isEmpty()) && rs.getString("ENGINE") != null)
+                    engine = rs.getString("ENGINE").trim();
             }
 
         } catch (SQLException e) {
@@ -288,28 +299,28 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 "pp.rdb$parameter_number,\n" +
                 "fs.rdb$character_length, \n" +
                 "pp.rdb$description,\n" +
-                "pp.rdb$default_source as default_source,\n" +
-                "fs.rdb$field_precision, \n" +
-                "pp.rdb$parameter_mechanism as AM,\n" +
-                "pp.rdb$field_source as FS,\n" +
-                "fs.rdb$default_source, \n" +
-                "pp.rdb$null_flag as null_flag,\n" +
-                "pp.rdb$relation_name as RN,\n" +
-                "pp.rdb$field_name as FN,\n" +
-                "co2.rdb$collation_name, \n" +
-                "cr.rdb$default_collate_name, \n" +
-                "prc.rdb$engine_name, \n" +
-                "prc.rdb$entrypoint \n" +
-                "from rdb$procedures prc\n" +
-                "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
-                "and (pp.rdb$package_name is null)\n" +
-                "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
-                "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
-                "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
-                "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                "where prc.rdb$procedure_name = '" + name + "'\n" +
-                "and (prc.rdb$package_name is null) \n" +
-                "order by pp.rdb$parameter_number";
+                    "pp.rdb$default_source as default_source,\n" +
+                    "fs.rdb$field_precision, \n" +
+                    "pp.rdb$parameter_mechanism as AM,\n" +
+                    "pp.rdb$field_source as FS,\n" +
+                    "fs.rdb$default_source, \n" +
+                    "pp.rdb$null_flag as null_flag,\n" +
+                    "pp.rdb$relation_name as RN,\n" +
+                    "pp.rdb$field_name as FN,\n" +
+                    "co2.rdb$collation_name, \n" +
+                    "cr.rdb$default_collate_name, \n" +
+                    "prc.rdb$engine_name as ENGINE, \n" +
+                    "prc.rdb$entrypoint ENTRY_POINT \n" +
+                    "from rdb$procedures prc\n" +
+                    "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                    "and (pp.rdb$package_name is null)\n" +
+                    "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
+                    "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
+                    "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
+                    "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
+                    "where prc.rdb$procedure_name = '" + name + "'\n" +
+                    "and (prc.rdb$package_name is null) \n" +
+                    "order by pp.rdb$parameter_number";
         else if (getDatabaseMinorVersion() >= 5)
             sql = "select prc.rdb$procedure_name,\n" +
                     "prc.rdb$procedure_source,\n" +
@@ -337,7 +348,9 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                     "pp.rdb$relation_name as RN,\n" +
                     "pp.rdb$field_name as FN,\n" +
                     "co2.rdb$collation_name, \n" +
-                    "cr.rdb$default_collate_name \n" +
+                    "cr.rdb$default_collate_name, \n" +
+                    "prc.rdb$entry_point as ENTRY_POINT, \n" +
+                    "prc.rdb$engine as ENGINE \n" +
                     "from rdb$procedures prc\n" +
                     "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                     "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
@@ -504,6 +517,25 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
     public List<ProcedureParameter> getProcedureOutputParameters() {
         return procedureOutputParameters;
     }
+
+    public String getEntryPoint() {
+        checkOnReload(entryPoint);
+        return entryPoint;
+    }
+
+    public void setEntryPoint(String entryPoint) {
+        this.entryPoint = entryPoint;
+    }
+
+    public String getEngine() {
+        checkOnReload(engine);
+        return engine;
+    }
+
+    public void setEngine(String engine) {
+        this.engine = engine;
+    }
+
 }
 
 

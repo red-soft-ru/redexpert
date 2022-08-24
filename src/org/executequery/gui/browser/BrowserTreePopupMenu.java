@@ -54,12 +54,15 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private final JMenuItem recycleConnection;
     private final JMenuItem copyName;
     private final JMenuItem moveToFolder;
+    private final JMenuItem selectAll;
+    private final JMenuItem selectAllChildren;
 
 
     private final JMenuItem dataBaseInformation;
 
     private JCheckBoxMenuItem showDefaultCatalogsAndSchemas;
 
+    private JMenu active;
     private JMenu sql;
     private JMenu exportData;
     private JMenu importData;
@@ -74,7 +77,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         add(connect);
         disconnect = createMenuItem(bundleString("disconnect"), "disconnect", listener);
         add(disconnect);
-        dataBaseInformation = createMenuItem ("dataBaseInformation","dataBaseInformation", listener);
+        dataBaseInformation = createMenuItem("dataBaseInformation", "dataBaseInformation", listener);
         add(dataBaseInformation);
         reload = createMenuItem(bundleString("reload"), "reload", listener);
         add(reload);
@@ -106,8 +109,14 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         copyName = createMenuItem(bundleString("copyName"), "copyName", listener);
         add(copyName);
 
+        selectAll = createMenuItem(bundleString("selectAllTriggers"), "selectAll", listener);
+        add(selectAll);
+
+        selectAllChildren = createMenuItem(bundleString("selectAllChildren"), "selectAllChildren", listener);
+        add(selectAllChildren);
         //addSeparator();
 
+        createActiveInactiveMenu(listener);
         createSqlMenu(listener);
         createExportMenu(listener);
         createImportMenu(listener);
@@ -163,6 +172,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                 if (node.isHostNode()) {
 
                     //reload.setEnabled(false);
+                    selectAllChildren.setVisible(false);
+                    selectAll.setVisible(false);
+                    active.setVisible(false);
                     sql.setVisible(false);
                     exportData.setVisible(false);
                     importData.setVisible(false);
@@ -180,6 +192,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     label = node.getName();
                     if (node.getType() == NamedObject.META_TAG)
                         label = label.toLowerCase();
+                    selectAllChildren.setVisible(false);
+                    selectAll.setVisible(false);
                     disconnect.setVisible(false);
                     dataBaseInformation.setVisible(false);
                     reload.setVisible(true);
@@ -210,9 +224,41 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                         createObject.setText(bundleString("create", bundleString(str)));
                     }
 
+                    if (node.getType() == NamedObject.META_TAG) {
+                        if (node.getAllowsChildren()) {
+                            if (node.getChildObjects().size() > 0) {
+                                int nodeType = node.getChildObjects().get(0).getType();
+                                boolean selectAllChildrenEnabled =
+                                        nodeType == NamedObject.TRIGGER ||
+                                                nodeType == NamedObject.DDL_TRIGGER ||
+                                                nodeType == NamedObject.DATABASE_TRIGGER ||
+                                                nodeType == NamedObject.INDEX;
+                                selectAllChildren.setVisible(selectAllChildrenEnabled);
+                                selectAllChildren.setText(bundleString("selectAll", label));
+                            }
+                        }
+                    }
+
 
                     boolean importExport = (node.getType() == NamedObject.TABLE);
                     sql.setVisible(importExport);
+
+                    boolean triggerIndex = (node.getType() == NamedObject.TRIGGER ||
+                            node.getType() == NamedObject.DATABASE_TRIGGER ||
+                            node.getType() == NamedObject.DDL_TRIGGER ||
+                            node.getType() == NamedObject.INDEX);
+                    active.setVisible(triggerIndex);
+                    selectAll.setVisible(triggerIndex);
+                    if (triggerIndex) {
+                        DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
+                        String parentName = parent.getName();
+                        parentName = parentName.toLowerCase();
+                        if (node.getType() == NamedObject.TRIGGER) {
+                            selectAll.setText(bundleString("selectAll", parentName));
+                        } else selectAll.setText(bundleString("selectAll", parentName));
+                    }
+
+
                 }
             }
         }
@@ -240,13 +286,30 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             }
 
             if (label != null) {
-                reload.setText(bundleString("reload", label));
+                reload.setText(bundleString("reload", label));              //Кнопка перезагрузки(Если нажать по узлу триггеров то покажет меню "перезагрузить триггеры")
             } else {
                 reload.setText(bundleString("reload", StringUtils.EMPTY));
             }
-
         }
+        if (listener.getSelectedSeveralPaths()) {
 
+            addNewConnection.setVisible(false);
+            connect.setVisible(false);
+            disconnect.setVisible(false);
+            reload.setVisible(true);
+            reload.setText(bundleString("reload", StringUtils.EMPTY));
+            createObject.setVisible(false);
+            editObject.setVisible(false);
+            deleteObject.setVisible(false);
+            duplicate.setVisible(false);
+            recycleConnection.setVisible(false);
+            copyName.setVisible(false);
+            moveToFolder.setVisible(false);
+            dataBaseInformation.setVisible(false);
+            sql.setVisible(false);
+            exportData.setVisible(false);
+            importData.setVisible(false);
+        }
     }
 
     private DatabaseCatalog asDatabaseCatalog(DefaultMutableTreeNode currentPathComponent) {
@@ -290,6 +353,13 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         add(sql);
     }
 
+    private void createActiveInactiveMenu(ActionListener listener) {
+        active = MenuItemFactory.createMenu(bundleString("switch"));
+        active.add(createMenuItem(bundleString("active"), "active", listener));
+        active.add(createMenuItem(bundleString("inactive"), "inactive", listener));
+        add(active);
+    }
+
     protected DatabaseConnection getCurrentSelection() {
         return listener.getCurrentSelection();
     }
@@ -300,6 +370,14 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
     protected void setCurrentPath(TreePath currentPath) {
         listener.setCurrentPath(currentPath);
+    }
+
+    protected void setTreePaths(TreePath[] treePaths) {
+        listener.setTreePaths(treePaths);
+    }
+
+    protected void setSelectedSeveralPaths(boolean selectedSeveralPaths) {
+        listener.setSelectedSeveralPaths(selectedSeveralPaths);
     }
 
     protected boolean hasCurrentSelection() {

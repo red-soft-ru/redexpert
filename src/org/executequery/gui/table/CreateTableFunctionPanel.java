@@ -54,7 +54,6 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -91,8 +90,10 @@ public abstract class CreateTableFunctionPanel extends JPanel
      * The components for creating EXTERNAL table
      */
     protected JCheckBox isExternalTable;    //checking for creating EXTERNAL table
+    protected JPanel externalTablePropsPanel;   //panel with components for creating EXTERNAL table
     protected JTextField externalTableFilePathField;    //path to table data file
     protected JButton browseExternalTableFileButton;    //button for open selectFileDialog
+    protected JCheckBox isAdapterNeeded;    //checking for using ADAPTER table
 
     /**
      * The table column definition panel
@@ -207,12 +208,15 @@ public abstract class CreateTableFunctionPanel extends JPanel
         // ----- components for creating EXTERNAL table -----
 
         isExternalTable = new JCheckBox(bundledString("IsExternalTableText"));
-        isExternalTable.addActionListener(e -> isExternalTableChanged());
+        isExternalTable.addActionListener(e -> externalTablePropsChanged());
 
         externalTableFilePathField = WidgetFactory.createTextField();
 
         browseExternalTableFileButton = WidgetFactory.createInlineFieldButton(bundledString("BrowseButtonText"));
         browseExternalTableFileButton.addActionListener(e -> browseExternalTableFile());
+
+        isAdapterNeeded = new JCheckBox(bundledString("IsExternalTableText"));
+        isAdapterNeeded.addActionListener(e -> externalTablePropsChanged());
 
         // ------ components arranging -----
 
@@ -237,14 +241,34 @@ public abstract class CreateTableFunctionPanel extends JPanel
                     bundledString("TypeTemporaryTable"), typeTemporaryBox,
                     null, true, true);
 
-        gridBagHelper.addLabelFieldPair(mainPanel,
+        if (ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(
+                (DatabaseConnection) connectionsCombo.getSelectedItem())
+                .getDatabaseMetaData().getDatabaseMajorVersion() >= 3) {
+
+            mainPanel.add(isExternalTable,
+                    gridBagHelper.nextRowFirstCol().spanX().get());
+        }
+
+        // ----- external panel -----
+
+        externalTablePropsPanel = new JPanel(new GridBagLayout());
+
+        gridBagHelper.addLabelFieldPair(externalTablePropsPanel,
                 bundledString("ExternalTableDataFileLabel"), externalTableFilePathField,
-                null, true, false, 1);
-        mainPanel.add(browseExternalTableFileButton,
+                null, true, false);
+
+        externalTablePropsPanel.add(browseExternalTableFileButton,
                 gridBagHelper.nextCol().setLabelDefault().get());
 
-        mainPanel.add(isExternalTable,
+        externalTablePropsPanel.add(isAdapterNeeded,
                 gridBagHelper.nextRowFirstCol().spanX().get());
+
+        // -----
+
+        mainPanel.add(externalTablePropsPanel,
+                gridBagHelper.nextRowFirstCol().fillHorizontally().spanX().get());
+
+        // ----- definition panel -----
 
         JPanel definitionPanel = new JPanel(new GridBagLayout());
 
@@ -254,6 +278,8 @@ public abstract class CreateTableFunctionPanel extends JPanel
         definitionPanel.add(tableTabs,
                 gridBagHelper.nextCol().setInsets(0,0,5,0)
                         .setWeightY(1.0).setWeightX(0.4).fillBoth().spanX().get());
+
+        // -----
 
         mainPanel.add(definitionPanel,
                 gridBagHelper.nextRowFirstCol().setInsets(0,10,5,0).get());
@@ -291,24 +317,20 @@ public abstract class CreateTableFunctionPanel extends JPanel
             //metaData
         }
 
-        isExternalTableChanged();
+        externalTablePropsChanged();
 
     }
 
-    private void isExternalTableChanged() {
+    private void externalTablePropsChanged() {
 
         if(isExternalTable.isSelected()) {
 
-            externalTableFilePathField.setEnabled(true);
-            browseExternalTableFileButton.setEnabled(true);
-
+            externalTablePropsPanel.setVisible(true);
             setSQLText();
 
         } else {
 
-            externalTableFilePathField.setEnabled(false);
-            browseExternalTableFileButton.setEnabled(false);
-
+            externalTablePropsPanel.setVisible(false);
             setSQLText();
         }
 
@@ -342,7 +364,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         }
 
         externalTableFilePathField.setText(file.getAbsolutePath());
-        isExternalTableChanged();
+        externalTablePropsChanged();
 
     }
 
@@ -558,14 +580,17 @@ public abstract class CreateTableFunctionPanel extends JPanel
             tablespace = ((NamedObject) tablespacesCombo.getSelectedItem()).getName();
 
         String externalFile = null;
+        String adapter = null;
         if (isExternalTable.isSelected()) {
-
             externalFile = externalTableFilePathField.getText();
+
+            if (isAdapterNeeded.isSelected())
+                adapter = "CSV";
         }
 
         setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
-                isExternalTable.isSelected(), temporary, "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
-                externalFile, null, tablespace));
+                false, temporary, "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
+                externalFile, adapter, tablespace));
 
     }
 

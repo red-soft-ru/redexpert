@@ -270,7 +270,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     public String getCreateSQLText() {
 
         String query = "CREATE ";
-        if (isUnique)
+        if (isUnique())
             query += "UNIQUE ";
         if (getIndexType() == 1)
             query += "DESCENDING ";

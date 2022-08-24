@@ -214,8 +214,8 @@ public class CreateTablePanel extends CreateTableFunctionPanel
         try {
             if (!checkFullType())
                 return;
-            String querys = getSQLText();
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundleString("title"), querys, getSelectedConnection(), true, "^");
+            String requests = getSQLText();
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundleString("title"), requests, getSelectedConnection(), true, "^");
             eqd.display();
             boolean commit = eqd.getCommit();
             if (commit) {

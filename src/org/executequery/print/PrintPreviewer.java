@@ -51,8 +51,7 @@ public class PrintPreviewer extends AbstractBaseDialog
     /**
      * The title of this panel
      */
-    //public static final String TITLE = "Print Preview";
-    public static final String TITLE =Bundles.get("action.print-preview-command");
+    public static final String TITLE = Bundles.get("Print_Preview");
 
     /**
      * The icon for this panel
@@ -130,14 +129,19 @@ public class PrintPreviewer extends AbstractBaseDialog
       }
     });
  */
+
+
+
+        RolloverButton printButton = new RolloverButton(bundledString("Print"), null, 28, 55);
+        RolloverButton setupButton = new RolloverButton(bundledString("Page_Setup"), null, 28, 85);
+        RolloverButton closeButton = new RolloverButton(bundledString("Close"), null, 28, 55);
+
         JScrollPane scroller = new JScrollPane(previewContainer);
 
-        //RolloverButton printButton = new RolloverButton("Print", null, 28, 55);
-        //RolloverButton setupButton = new RolloverButton("Page Setup", null, 28, 85);
-        //RolloverButton closeButton = new RolloverButton("Close", null, 28, 55);
-        RolloverButton printButton = new RolloverButton(Bundles.get("action.print-command"), null, 28, 55);
-        RolloverButton setupButton = new RolloverButton(Bundles.get("action.page-setup-command"), null, 28, 85);
-        RolloverButton closeButton = new RolloverButton(Bundles.get("common.close.button"), null, 28, 55);
+        printButton.setActionCommand("Print");
+        setupButton.setActionCommand("Page Setup");
+        closeButton.setActionCommand("Close");
+
 
         printButton.setMnemonic('P');
         setupButton.setMnemonic('S');
@@ -217,24 +221,13 @@ public class PrintPreviewer extends AbstractBaseDialog
         final String command = e.getActionCommand();
 
         SwingUtilities.invokeLater(new Runnable() {
-            /*
+
             public void run() {
                 if (command.equals("Close")) {
                     dispose();
                 } else if (command.equals("Page Setup")) {
                     showPageSetup();
                 } else if (command.equals("Print")) {
-                    doPrint();
-                } else if (command.equals("scales")) {
-                    changeScale();
-                }
-            }*/
-            public void run() {
-                if (command.equals(Bundles.get("common.close.button"))) {
-                    dispose();
-                } else if (command.equals(Bundles.get("action.page-setup-command"))) {
-                    showPageSetup();
-                } else if (command.equals(Bundles.get("action.print-command"))) {
                     doPrint();
                 } else if (command.equals("scales")) {
                     changeScale();
@@ -485,8 +478,11 @@ public class PrintPreviewer extends AbstractBaseDialog
             paintBorder(g);
         }
 
-    } // class PagePreview
 
+    } // class PagePreview
+    public static String bundledString(String key) {
+        return Bundles.get(PrintPreviewer.class, key);
+    }
 }
 
 

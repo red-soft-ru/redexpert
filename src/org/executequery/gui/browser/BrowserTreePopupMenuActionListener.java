@@ -20,69 +20,60 @@
 
 package org.executequery.gui.browser;
 
-import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.GUIUtilities;
-import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
-import org.executequery.gui.editor.ResultSetTablePopupMenu;
-import org.executequery.gui.editor.autocomplete.AutoCompleteListItem;
-import org.executequery.gui.editor.autocomplete.AutoCompleteListItemType;
-import org.executequery.gui.erd.ErdTable;
 import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
 import org.executequery.gui.importexport.ImportExportXMLPanel;
-import org.executequery.gui.resultset.LobRecordDataItem;
-import org.executequery.gui.resultset.RecordDataItem;
-import org.executequery.gui.resultset.ResultSetColumnHeader;
-import org.executequery.gui.resultset.SimpleRecordDataItem;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
-import org.executequery.sql.TokenizingFormatter;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.EQDateTimePicker;
-import org.underworldlabs.swing.EQTimePicker;
-import org.underworldlabs.swing.RDBCheckBox;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
-import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import javax.swing.table.TableColumnModel;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.IOException;
-import java.sql.*;
-import java.util.List;
+import java.sql.SQLException;
 import java.util.Objects;
-import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
  */
+
+
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
+    private StatementExecutor querySender;
     private final ConnectionsTreePanel treePanel;
+
     private StatementToEditorWriter statementWriter;
 
     private DatabaseConnection currentSelection;
 
     private TreePath currentPath;
 
+    private TreePath[] treePaths;
+
+    private boolean selectedSeveralPaths = false;
 
     BrowserTreePopupMenuActionListener(ConnectionsTreePanel treePanel) {
         this.treePanel = treePanel;
@@ -692,7 +683,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     private BrowserController controller;
 
 
-    public void dataBaseInformation (ActionEvent e) {
+    public void dataBaseInformation(ActionEvent e) {
         controller = treePanel.getController();
         DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
         DatabaseConnection connection = currentSelection;
@@ -914,8 +905,27 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         this.currentPath = currentPath;
     }
 
+    protected void setTreePaths(TreePath[] treePaths) {
+        this.treePaths = treePaths;
+        if (treePaths.length > 0) {
+            this.currentPath = treePaths[0];
+        }
+    }
+
+    protected void setSelectedSeveralPaths(boolean selectedSeveralPaths) {
+        this.selectedSeveralPaths = selectedSeveralPaths;
+    }
+
     protected TreePath getCurrentPath() {
         return currentPath;
+    }
+
+    protected TreePath[] getTreePaths() {
+        return treePaths;
+    }
+
+    protected boolean getSelectedSeveralPaths() {
+        return selectedSeveralPaths;
     }
 
     protected void showDialogCreateObject(AbstractCreateObjectPanel panel, BaseDialog dialog) {
@@ -932,4 +942,127 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         dialog.display();
     }
 
+    public void active(ActionEvent e) throws SQLException {
+        try {
+            String query;
+            if (selectedSeveralPaths) {
+                boolean firstErrorExists = false;
+                StringBuilder error = new StringBuilder();
+
+                for (int i = 0; i < treePaths.length; i++) {
+                    String[] splitters = treePaths[i].getLastPathComponent().toString().split(":");
+                    if (splitters[1].contains("TRIGGER"))
+                        splitters[1] = "TRIGGER";
+                    query = "ALTER " + splitters[1] + " " + splitters[0] + " ACTIVE";
+                    querySender = new DefaultStatementExecutor(currentSelection, false);
+                    SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+                    treePanel.reloadPath(treePaths[i]);
+                    if (result.isException() && firstErrorExists == false) {
+                        error.append(result.getErrorMessage());
+                        firstErrorExists = true;
+                    }
+                }
+                querySender.execute(QueryTypes.COMMIT, "");
+                if (error.length() > 0)
+                    GUIUtilities.displayErrorMessage(error.toString());
+
+            } else {
+                String[] splitters = currentPath.getLastPathComponent().toString().split(":");
+                if (splitters[1].contains("TRIGGER"))
+                    splitters[1] = "TRIGGER";
+                query = "ALTER " + splitters[1] + " " + splitters[0] + " ACTIVE";
+                querySender = new DefaultStatementExecutor(currentSelection, false);
+                SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+                querySender.execute(QueryTypes.COMMIT, "");
+                if (result.isException()) {
+                    GUIUtilities.displayErrorMessage(result.getErrorMessage());
+                }
+                treePanel.reloadPath(currentPath);
+            }
+        } catch (SQLException error) {
+            GUIUtilities.displayErrorMessage(error.getMessage());
+        } finally {
+            querySender.releaseResources();
+        }
+    }
+
+
+    public void inactive(ActionEvent e) {
+        try {
+            String query;
+            boolean firstErrorExists = false;
+            if (selectedSeveralPaths) {
+                StringBuilder error = new StringBuilder();
+
+                for (int i = 0; i < treePaths.length; i++) {
+                    String[] splitters = treePaths[i].getLastPathComponent().toString().split(":");
+                    if (splitters[1].contains("TRIGGER"))
+                        splitters[1] = "TRIGGER";
+                    query = "ALTER " + splitters[1] + " " + splitters[0] + " INACTIVE";
+
+                    querySender = new DefaultStatementExecutor(currentSelection, false);
+                    SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+                    treePanel.reloadPath(treePaths[i]);
+                    if (result.isException() && firstErrorExists == false) {
+                        error.append(result.getErrorMessage());
+                        firstErrorExists = true;
+                    }
+                }
+                querySender.execute(QueryTypes.COMMIT, "");
+                if (error.length() > 0)
+                    GUIUtilities.displayErrorMessage(error.toString());
+
+            } else {
+                String[] splitters = currentPath.getLastPathComponent().toString().split(":");
+                if (splitters[1].contains("TRIGGER"))
+                    splitters[1] = "TRIGGER";
+                query = "ALTER " + splitters[1] + " " + splitters[0] + " INACTIVE";
+                querySender = new DefaultStatementExecutor(currentSelection, false);
+                SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+
+                if (result.isException()) {
+                    GUIUtilities.displayErrorMessage(result.getErrorMessage());
+                }
+                querySender.execute(QueryTypes.COMMIT, "");
+                treePanel.reloadPath(currentPath);
+            }
+
+        } catch (SQLException error) {
+            GUIUtilities.displayErrorMessage(error.getMessage());
+        } finally {
+            querySender.releaseResources();
+        }
+    }
+
+    public void selectAllChildren(ActionEvent e) {
+
+        TreePath currentPath = treePanel.getTree().getSelectionPaths()[0];
+        DefaultMutableTreeNode currentPathComponent = (DefaultMutableTreeNode) currentPath.getLastPathComponent();
+        DatabaseObjectNode node = (DatabaseObjectNode) currentPathComponent;
+        DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[node.getChildCount()];
+        for (int i = 0; i < node.getChildCount(); i++) {
+
+            if (node.getChildAt(i) instanceof DefaultMutableTreeNode) {
+                nodes[i] = (DefaultMutableTreeNode) node.getChildAt(i);
+            }
+        }
+        treePanel.getTree().selectNodes(nodes);
+    }
+
+    public void selectAll(ActionEvent e) {
+
+        TreePath currentPath = treePanel.getTree().getSelectionPaths()[0];
+        DefaultMutableTreeNode currentPathComponent = (DefaultMutableTreeNode) currentPath.getLastPathComponent();
+        DatabaseObjectNode node = (DatabaseObjectNode) currentPathComponent;
+
+        TreeNode parent = node.getParent();
+        DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[parent.getChildCount()];
+        for (int i = 0; i < parent.getChildCount(); i++) {
+
+            if (parent.getChildAt(i) instanceof DefaultMutableTreeNode) {
+                nodes[i] = (DefaultMutableTreeNode) parent.getChildAt(i);
+            }
+        }
+        treePanel.getTree().selectNodes(nodes);
+    }
 }

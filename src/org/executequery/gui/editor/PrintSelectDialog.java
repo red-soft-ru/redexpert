@@ -42,10 +42,9 @@ import java.awt.event.ActionListener;
  */
 public class PrintSelectDialog extends JPanel {
 
-    public static final String PRINT_TITLE = "Print";
+    public static final String PRINT_TITLE = bundledString("Print");
 
-    //public static final String PRINT_PREVIEW_TITLE = "Print Preview";
-    public static final String PRINT_PREVIEW_TITLE = Bundles.get("action.print-preview-command");
+    public static final String PRINT_PREVIEW_TITLE = bundledString("Print_Preview");
 
     /**
      * Indicates a call to print
@@ -102,11 +101,11 @@ public class PrintSelectDialog extends JPanel {
     private void init() {
 
         JButton okButton = new DefaultPanelButton(commandType == PRINT_PREVIEW ?
-                "Preview" : "Print");
-        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+                bundledString("Preview") : bundledString("Print"));
+        JButton cancelButton = new DefaultPanelButton(bundledString("Cancel"));
 
-        queryRadio = new JRadioButton("SQL Query Text Area", true);
-        resultsRadio = new JRadioButton("SQL Table Results Panel");
+        queryRadio = new JRadioButton(bundledString("SQL_Query_Text_Area"));
+        resultsRadio = new JRadioButton(bundledString("SQL_Table_Results_Panel"));
 
         queryRadio.setMnemonic('A');
         resultsRadio.setMnemonic('R');
@@ -132,7 +131,7 @@ public class PrintSelectDialog extends JPanel {
         gbc.gridwidth = 2;
         gbc.insets = ins;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(new JLabel("Select the print area:"), gbc);
+        add(new JLabel(bundledString("Select_the_print_area")), gbc);
         gbc.gridy = 1;
         gbc.insets.left = 52;
         gbc.insets.top = 5;
@@ -160,7 +159,7 @@ public class PrintSelectDialog extends JPanel {
 
         if (!queryEditor.isResultSetSelected()) {
 
-            GUIUtilities.displayErrorMessage("No SQL table results.");
+            GUIUtilities.displayErrorMessage(bundledString("No_SQL_table_results"));
             queryEditor = null;
 
             return "Failed";
@@ -216,7 +215,7 @@ public class PrintSelectDialog extends JPanel {
 
             if (!printQuery && !queryEditor.isResultSetSelected()) {
 
-                GUIUtilities.displayErrorMessage("No SQL table results.");
+                GUIUtilities.displayErrorMessage(bundledString("No_SQL_table_results"));
                 parent.finished();
 
                 return;
@@ -240,7 +239,9 @@ public class PrintSelectDialog extends JPanel {
         }
 
     }
-
+    public static String bundledString(String key) {
+        return Bundles.get(PrintSelectDialog.class, key);
+    }
 }
 
 

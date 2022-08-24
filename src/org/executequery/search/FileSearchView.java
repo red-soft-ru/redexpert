@@ -20,8 +20,6 @@
 
 package org.executequery.search;
 
-import org.executequery.localization.Bundles;
-
 import java.util.Vector;
 
 /* ----------------------------------------------------------

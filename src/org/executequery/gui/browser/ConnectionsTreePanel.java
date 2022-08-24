@@ -976,7 +976,7 @@ public class ConnectionsTreePanel extends TreePanel
    * @return the user object of the selected node where the
    * user object is a DBaseDatabaseObject
    */
-  public NamedObject getSelectedNamedObject() {
+  protected NamedObject getSelectedNamedObject() {
 
     if (tree.isSelectionEmpty()) {
 

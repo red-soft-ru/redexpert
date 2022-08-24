@@ -22,7 +22,6 @@ package org.executequery.gui;
 
 import org.executequery.ActiveComponent;
 import org.executequery.GUIUtilities;
-import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.GlassPanePanel;
@@ -245,10 +244,6 @@ public class BaseDialog extends AbstractBaseDialog
         }
 
         toFront();
-    }
-
-    String bundleString(String key) {
-        return Bundles.get(getClass(), key);
     }
 
 }

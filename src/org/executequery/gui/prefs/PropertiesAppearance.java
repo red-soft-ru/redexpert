@@ -21,7 +21,6 @@
 package org.executequery.gui.prefs;
 
 import org.executequery.GUIUtilities;
-import org.executequery.localization.Bundles;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
@@ -139,7 +138,9 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
 
         if (!lafChangeWarningShown && e.getStateChange() == ItemEvent.DESELECTED) {
 
-            GUIUtilities.displayInformationMessage(bundleString("ChangingTheme.Information"));
+            GUIUtilities.displayInformationMessage("Changing the look and feel may also change "
+                    + "the colours applied to syntax\nhighlighting and the results set "
+                    + "table views to better suit the selected look");
             lafChangeWarningShown = true;
         }
         
@@ -199,7 +200,6 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
     public void save() {
         preferencesPanel.savePreferences();
     }
-
 
 }
 

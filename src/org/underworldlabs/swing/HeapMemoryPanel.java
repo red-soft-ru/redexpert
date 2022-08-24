@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.gui.AboutPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -65,15 +66,11 @@ public class HeapMemoryPanel extends JPanel
 
     }
 
-    String bundleString(String key) {
-        return Bundles.get(getClass(), key);
-    }
-
     private void jbInit() {
         JPanel base = new JPanel(new GridBagLayout());
 
-        JLabel line1 = new JLabel(bundleString("MeasuresTheSize"));
-        JLabel line2 = new JLabel(bundleString("JavaVirtualMachines"));
+        JLabel line1 = new JLabel(bundledString("Measures-the-size-of"));
+        JLabel line2 = new JLabel(bundledString("object-heap"));
 
         progressBarModel = new ProgressModel();
         progressBar = new JProgressBar(progressBarModel);
@@ -84,7 +81,7 @@ public class HeapMemoryPanel extends JPanel
         progressBarPanel.add(progressBar, BorderLayout.CENTER);
         progressBarPanel.setBorder(UIUtils.getDefaultLineBorder());
 
-        JButton gcButton = new JButton(bundleString("RunGarbageCollector"));
+        JButton gcButton = new JButton(bundledString("RunGarbageCollector"));
         gcButton.addActionListener(this);
 
         base.setBorder(BorderFactory.createEtchedBorder());
@@ -135,7 +132,7 @@ public class HeapMemoryPanel extends JPanel
         free = (int) Runtime.getRuntime().freeMemory();
         int totalUserAfter = total - free;
 
-        System.err.println(bundleString("GarbageCollection") +
+        System.err.println(bundledString("Garbage-collection-released") +
                 ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
     }
 
@@ -164,8 +161,8 @@ public class HeapMemoryPanel extends JPanel
     private void startMeasure(final ProgressModel progModel,
                               final JProgressBar memProgress) {
         memProgress.setStringPainted(true);
-        final String used_s = " Kb "+ bundleString("used")+",  ";
-        final String total_s = " Kb "+ bundleString("total");
+        final String used_s = bundledString("Kb-used");
+        final String total_s = bundledString("Kb-total");
         final int thou = 1000;
 
         final Runnable showProgress = new Runnable() {
@@ -227,6 +224,10 @@ public class HeapMemoryPanel extends JPanel
         }
 
     } // ProgressModel
+
+    public static String bundledString(String key) {
+        return Bundles.get(HeapMemoryPanel.class, key);
+    }
 
 }
 

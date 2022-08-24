@@ -188,7 +188,7 @@ public interface DatabaseTable extends DatabaseTableObject {
 
     String getAlterSQLTextForForeignKeys();
 
-    public int getColumnCount() throws DataSourceException;
+    int getColumnCount() throws DataSourceException;
 
     boolean hasPrimaryKey();
 

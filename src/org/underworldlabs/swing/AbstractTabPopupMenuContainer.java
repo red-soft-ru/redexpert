@@ -20,7 +20,6 @@
 
 package org.underworldlabs.swing;
 
-import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.CloseTabbedPaneUI;
 import org.underworldlabs.swing.plaf.TabMenuItem;
 
@@ -142,9 +141,9 @@ public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPop
         public TabPopupMenu(JTabbedPane tabPane) {
             this.tabPane = tabPane;
 
-            close = new JMenuItem(Bundles.get("ScrollingTabPane.menuItem.close"));
-            closeAll = new JMenuItem(Bundles.get("ScrollingTabPane.menuItem.closeAll"));
-            closeOther = new JMenuItem(Bundles.get("ScrollingTabPane.menuItem.closeOther"));
+            close = new JMenuItem("Close");
+            closeAll = new JMenuItem("Close All");
+            closeOther = new JMenuItem("Close Others");
 
             close.addActionListener(this);
             closeAll.addActionListener(this);

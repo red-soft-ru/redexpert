@@ -20,7 +20,6 @@
 
 package org.executequery.components;
 
-import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.FileSelector;
 
 import javax.swing.*;
@@ -89,19 +88,19 @@ public class OpenFileDialog extends FileChooserDialog
 
     private void jbInit() throws Exception {
 
-        textFiles = new FileSelector(new String[]{"txt"}, bundleString("file-text"));
-        sqlFiles = new FileSelector(new String[]{"sql"}, bundleString("file-sql"));
-        eqFiles = new FileSelector(new String[]{"eqd"}, bundleString("file-RedExpertERD"));
+        textFiles = new FileSelector(new String[]{"txt"}, "Text files");
+        sqlFiles = new FileSelector(new String[]{"sql"}, "SQL files");
+        eqFiles = new FileSelector(new String[]{"eqd"}, "Red Expert ERD");
 
         setFileSelectionMode(JFileChooser.FILES_ONLY);
         addChoosableFileFilter(textFiles);
         addChoosableFileFilter(eqFiles);
         addChoosableFileFilter(sqlFiles);
 
-        openEditorCheck = new JCheckBox(bundleString("new-command.open-query-editor"));
-        newEditorCheck = new JCheckBox(bundleString("new-command.new-query-editor"), true);
-        scratchPadCheck = new JCheckBox(bundleString("new-command.new-scratch-pad"));
-        erdPanelCheck = new JCheckBox(bundleString("new-command.new-erd"));
+        openEditorCheck = new JCheckBox("Open Query Editor Window");
+        newEditorCheck = new JCheckBox("New Query Editor Window", true);
+        scratchPadCheck = new JCheckBox("New Scratch Pad Window");
+        erdPanelCheck = new JCheckBox("New ERD Window");
 
         openEditorCheck.setEnabled(false);
 
@@ -126,7 +125,7 @@ public class OpenFileDialog extends FileChooserDialog
         gbc.insets.right = 5;
         optionsPanel.add(scratchPadCheck, gbc);
 
-        optionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("new-command.open-with") + ":"));
+        optionsPanel.setBorder(BorderFactory.createTitledBorder("Open With:"));
 
         customPanel = new JPanel(new BorderLayout());
         customPanel.setBorder(BorderFactory.createEmptyBorder(0, 7, 7, 7));

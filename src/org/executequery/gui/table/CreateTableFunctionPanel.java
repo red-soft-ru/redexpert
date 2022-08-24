@@ -215,7 +215,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         browseExternalTableFileButton = WidgetFactory.createInlineFieldButton(bundledString("BrowseButtonText"));
         browseExternalTableFileButton.addActionListener(e -> browseExternalTableFile());
 
-        isAdapterNeeded = new JCheckBox(bundledString("IsExternalTableText"));
+        isAdapterNeeded = new JCheckBox(bundledString("IsAdapterNeededText"));
         isAdapterNeeded.addActionListener(e -> externalTablePropsChanged());
 
         // ------ components arranging -----
@@ -246,7 +246,10 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 .getDatabaseMetaData().getDatabaseMajorVersion() >= 3) {
 
             mainPanel.add(isExternalTable,
-                    gridBagHelper.nextRowFirstCol().spanX().get());
+                    gridBagHelper.nextRowFirstCol().setWidth(2).fillNone().get());
+
+            mainPanel.add(isAdapterNeeded,
+                    gridBagHelper.nextCol().setLabelDefault().get());
         }
 
         // ----- external panel -----
@@ -259,9 +262,6 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
         externalTablePropsPanel.add(browseExternalTableFileButton,
                 gridBagHelper.nextCol().setLabelDefault().get());
-
-        externalTablePropsPanel.add(isAdapterNeeded,
-                gridBagHelper.nextRowFirstCol().spanX().get());
 
         // -----
 
@@ -326,11 +326,13 @@ public abstract class CreateTableFunctionPanel extends JPanel
         if(isExternalTable.isSelected()) {
 
             externalTablePropsPanel.setVisible(true);
+            isAdapterNeeded.setVisible(true);
             setSQLText();
 
         } else {
 
             externalTablePropsPanel.setVisible(false);
+            isAdapterNeeded.setVisible(false);
             setSQLText();
         }
 

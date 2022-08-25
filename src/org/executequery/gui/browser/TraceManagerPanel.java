@@ -429,21 +429,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
         connectionPanel.add(logToFileBox, gbh.setLabelDefault().get());
         gbh.addLabelFieldPair(connectionPanel, fileLogButton, fileLogField, null, false, true);
         connectionPanel.add(new JPanel(), gbh.anchorSouth().nextRowFirstCol().fillBoth().spanX().spanY().get());
-/*
-        connectionPanel.add(logToFileBox, new GridBagConstraints(0, 6,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(fileLogButton, new GridBagConstraints(1, 6,
-                1, 1, 0, 1,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectionPanel.add(fileLogField, new GridBagConstraints(2, 6,
-                5, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));*/
-        ///connectionPanel.add()
         setEnableElements();
 
     }

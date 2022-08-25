@@ -257,10 +257,6 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 parameters.add(pp);
                 if (procedureSourceCode == null || procedureSourceCode.isEmpty())
                     procedureSourceCode = rs.getString(2);
-                if ((entryPoint == null || entryPoint.isEmpty()) && rs.getString("ENTRY_POINT") != null)
-                    entryPoint = rs.getString("ENTRY_POINT").trim();
-                if ((engine == null || engine.isEmpty()) && rs.getString("ENGINE") != null)
-                    engine = rs.getString("ENGINE").trim();
             }
 
         } catch (SQLException e) {
@@ -298,7 +294,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 "co.rdb$collation_name, \n" +
                 "pp.rdb$parameter_number,\n" +
                 "fs.rdb$character_length, \n" +
-                "pp.rdb$description,\n" +
+                    "pp.rdb$description,\n" +
                     "pp.rdb$default_source as default_source,\n" +
                     "fs.rdb$field_precision, \n" +
                     "pp.rdb$parameter_mechanism as AM,\n" +
@@ -308,9 +304,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                     "pp.rdb$relation_name as RN,\n" +
                     "pp.rdb$field_name as FN,\n" +
                     "co2.rdb$collation_name, \n" +
-                    "cr.rdb$default_collate_name, \n" +
-                    "prc.rdb$engine_name as ENGINE, \n" +
-                    "prc.rdb$entrypoint ENTRY_POINT \n" +
+                    "cr.rdb$default_collate_name \n" +
                     "from rdb$procedures prc\n" +
                     "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                     "and (pp.rdb$package_name is null)\n" +
@@ -348,9 +342,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                     "pp.rdb$relation_name as RN,\n" +
                     "pp.rdb$field_name as FN,\n" +
                     "co2.rdb$collation_name, \n" +
-                    "cr.rdb$default_collate_name, \n" +
-                    "prc.rdb$entry_point as ENTRY_POINT, \n" +
-                    "prc.rdb$engine as ENGINE \n" +
+                    "cr.rdb$default_collate_name \n" +
                     "from rdb$procedures prc\n" +
                     "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                     "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
@@ -495,7 +487,32 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
             }
 
         } finally {
-
+            if (procedureSourceCode == null) {
+                try {
+                    String query = "select " +
+                            "prc.rdb$engine_name as ENGINE, \n" +
+                            "prc.rdb$entrypoint ENTRY_POINT \n" +
+                            "from rdb$procedures prc\n" +
+                            "where prc.rdb$procedure_name = '" + getName() + "'\n";
+                    SqlStatementResult result = sender.getResultSet(query);
+                    if (result.isException()) {
+                        result.getSqlException().printStackTrace();
+                        return;
+                    } else {
+                        ResultSet rs = result.getResultSet();
+                        if (rs.next()) {
+                            if (rs.getString("ENTRY_POINT") != null)
+                                entryPoint = rs.getString("ENTRY_POINT").trim();
+                            if (rs.getString("ENGINE") != null)
+                                engine = rs.getString("ENGINE").trim();
+                        }
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    sender.releaseResources();
+                }
+            }
         }
     }
 

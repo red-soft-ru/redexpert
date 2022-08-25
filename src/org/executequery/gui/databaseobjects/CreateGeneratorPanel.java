@@ -117,7 +117,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     protected String generateQuery() {
         String query = "";
         try {
-            if (getVersion() == 3) {
+            if (getVersion() >= 3) {
                 query = "CREATE OR ALTER SEQUENCE " + getFormattedName() + " START WITH " + startValueText.getStringValue()
                         + " INCREMENT BY " + incrementText.getStringValue() + ";";
             } else {

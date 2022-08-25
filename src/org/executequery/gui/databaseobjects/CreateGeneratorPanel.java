@@ -10,6 +10,7 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -115,22 +116,13 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     }
 
     protected String generateQuery() {
+
         String query = "";
         try {
-            if (getVersion() >= 3) {
-                query = "CREATE OR ALTER SEQUENCE " + getFormattedName() + " START WITH " + startValueText.getStringValue()
-                        + " INCREMENT BY " + incrementText.getStringValue() + ";";
-            } else {
-                if (!editing)
-                    query = "CREATE SEQUENCE " + getFormattedName() + ";";
-                else query = "";
-                query += "\nALTER SEQUENCE " + getFormattedName() + " RESTART WITH " + (startValueText.getLongValue() + incrementText.getLongValue()) + ";";
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        if (!MiscUtils.isNull(description.getTextAreaComponent().getText().trim()))
-            query += "\nCOMMENT ON SEQUENCE " + getFormattedName() + " IS '" + description.getTextAreaComponent().getText() + "'";
+            query = SQLUtils.generateCreateSequence(getFormattedName(), startValueText.getStringValue(),
+                    incrementText.getStringValue(), description.getTextAreaComponent().getText(), getVersion(), editing);
+
+        } catch (SQLException e) { e.printStackTrace(); }
 
         return query;
     }

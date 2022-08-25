@@ -176,9 +176,8 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
             sequenceNameField.setText(sequence.getName());
             valueField.setText(String.valueOf(sequence.getSequenceValue()));
             descriptionPane.setText(sequence.getRemarks());
-            sqlPane.setText(sequence.getCreateSQLText() +
-                    "\n\n" +
-                    sequence.getAlterSQLText());
+            sqlPane.setText(sequence.getCreateSQLText());
+
         } catch (DataSourceException e) {
             controller.handleException(e);
         }
@@ -199,9 +198,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
             sequenceNameField.setText(sequence.getName());
             valueField.setText(String.valueOf(sequence.getSequenceValue()));
             descriptionPane.setText(sequence.getDescription());
-            sqlPane.setText(sequence.getCreateSQLText() +
-                    "\n\n" +
-                    sequence.getAlterSQLText());
+            sqlPane.setText(sequence.getCreateSQLText());
 
         } else {
             sequenceNameField.setText(metaObject.getName());

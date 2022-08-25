@@ -2,10 +2,7 @@ package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
-import org.executequery.databaseobjects.FunctionArgument;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.Parameter;
-import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
@@ -641,6 +638,36 @@ public final class SQLUtils {
         sb.append(" TABLESPACE ").append(MiscUtils.getFormattedObject(name));
         sb.append(" FILE '").append(file).append("'");
         sb.append(";\n");
+        return sb.toString();
+    }
+
+    public static String generateCreateSequence(
+            String name, Object startValue, Object increment, String description, int databaseVersion, boolean existed) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if (databaseVersion >= 3) {
+
+            sb.append("CREATE OR ALTER SEQUENCE ").append(name);
+            sb.append(" START WITH ").append(startValue);
+            sb.append(" INCREMENT BY ").append(increment);
+            sb.append(";\n");
+
+        } else {
+
+            if (!existed)
+                sb.append("CREATE SEQUENCE ").append(name).append(";\n");
+            sb.append("ALTER SEQUENCE ").append(name);
+            sb.append(" RESTART WITH ").append((long)startValue + (long)increment).append(";\n");
+
+        }
+
+        if (description != null && !description.trim().equals("")) {
+
+            sb.append("COMMENT ON SEQUENCE ").append(name);
+            sb.append(" IS '").append(description).append("';\n");
+        }
+
         return sb.toString();
     }
 

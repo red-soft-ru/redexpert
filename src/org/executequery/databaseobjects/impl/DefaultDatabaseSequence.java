@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -18,7 +19,6 @@ import java.sql.Statement;
 public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     private long value = -1;
-    private String description;
     private Integer increment;
 
 
@@ -42,9 +42,9 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         if (isSystem())
@@ -149,25 +149,15 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Create sequence ");
-        sb.append(getName());
-        sb.append(";");
 
-        return sb.toString();
-    }
+        String query = "";
+        try {
+            query = SQLUtils.generateCreateSequence(getName(), getSequenceValue(), getIncrement(),
+                    getRemarks(), getVersion(), false);
 
+        } catch (SQLException e) { e.printStackTrace(); }
 
-    public String getAlterSQLText() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("Alter sequence ");
-        sb.append(getName());
-        sb.append(" restart with ");
-        sb.append(getSequenceValue());
-        sb.append(";");
-
-        return sb.toString();
+        return query;
     }
 
     @Override
@@ -195,4 +185,9 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         return "select rdb$description from rdb$generators where \n" +
                 "     rdb$generator_name='" + getName().trim() + "'";
     }
+
+    int getVersion() throws SQLException {
+        return getHost().getDatabaseMetaData().getDatabaseMajorVersion();
+    }
+
 }

@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.UserPreferencesManager;
 import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.resultset.*;
 import org.executequery.localization.Bundles;
 import org.executequery.print.PrintingSupport;
@@ -42,6 +43,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.print.Printable;
+import java.sql.Connection;
 
 public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener {
 
@@ -251,10 +253,8 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     public void exportSelection(ActionEvent e) {
 
         TableModel selected = table.selectedCellsAsTableModel();
-
         if (selected != null) {
-
-            new QueryEditorResultsExporter(selected);
+            new QueryEditorResultsExporter(selected, tableObject.getName());
         }
     }
 
@@ -308,8 +308,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     }
 
     public void exportTable(ActionEvent e) {
-
-        new QueryEditorResultsExporter(resultSetTableModel());
+        new QueryEditorResultsExporter(resultSetTableModel(), tableObject.getName());
     }
 
     public void printSelection(ActionEvent e) {

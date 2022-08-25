@@ -4,6 +4,8 @@ import org.executequery.gui.browser.TraceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.repository.RepositoryException;
+import org.executequery.util.AuditProperties;
+import org.executequery.util.SystemResources;
 import org.executequery.util.UserSettingsProperties;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.ListSelectionPanel;
@@ -15,10 +17,7 @@ import org.underworldlabs.util.MiscUtils;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
+import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,20 +45,26 @@ public class TablePanel extends JPanel {
         init();
     }
 
-    private static String filePath() {
+    private static String filePathVisibleCols() {
 
         UserSettingsProperties settings = new UserSettingsProperties();
         return settings.getUserSettingsDirectory() + "audit-columns.txt";
     }
 
-    private static void ensureFileExists() {
+    private static String filePathWidthCols() {
 
-        File file = new File(filePath());
+        UserSettingsProperties settings = new UserSettingsProperties();
+        return settings.getUserSettingsDirectory() + "width-columns.properties";
+    }
+
+    private static void ensureFileExists(String path) {
+
+        File file = new File(path);
         if (!file.exists()) {
 
             try {
 
-                FileUtils.writeFile(filePath(), "");
+                FileUtils.writeFile(path, "#Red Expert - User Defined System Properties");
 
             } catch (IOException e) {
 
@@ -71,9 +76,9 @@ public class TablePanel extends JPanel {
     }
 
     private void loadCols() {
-        ensureFileExists();
+        ensureFileExists(filePathVisibleCols());
         try {
-            String strCols = FileUtils.loadFile(filePath());
+            String strCols = FileUtils.loadFile(filePathVisibleCols());
             if (!MiscUtils.isNull(strCols)) {
                 String[] cols = strCols.split("\n");
                 columnsCheckPanel.removeAllAction();
@@ -86,14 +91,28 @@ public class TablePanel extends JPanel {
         }
     }
 
+    AuditProperties widthProps;
+
+    private void loadWidthCols() {
+        widthProps = AuditProperties.getInstance();
+        for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
+            if (widthProps.getProperty(getWidthKey(table.getColumnName(i))) != null)
+                table.getColumnModel().getColumn(i).setPreferredWidth(Integer.parseInt(widthProps.getProperty(getWidthKey(table.getColumnName(i)))));
+        }
+    }
+
+    String getWidthKey(String key) {
+        return key + ".width";
+    }
+
     private void saveCols() {
-        ensureFileExists();
+        ensureFileExists(filePathVisibleCols());
         try {
             StringBuilder sb = new StringBuilder();
             for (Object col : columnsCheckPanel.getSelectedValues()) {
                 sb.append(col).append("\n");
             }
-            FileUtils.writeFile(filePath(), sb.toString());
+            FileUtils.writeFile(filePathVisibleCols(), sb.toString());
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -111,6 +130,38 @@ public class TablePanel extends JPanel {
         comboBoxFilterColumn.setModel(dynamicComboBoxModel);
         loadCols();
         dataModel = new ResultSetDataModel(columnsCheckPanel, comboBoxFilterType, comboBoxFilterColumn, comboBoxRawSql, txtFldSqlFilter);
+        table = new JTable(dataModel);
+        loadWidthCols();
+        table.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+            @Override
+            public void columnAdded(TableColumnModelEvent e) {
+
+            }
+
+            @Override
+            public void columnRemoved(TableColumnModelEvent e) {
+
+            }
+
+            @Override
+            public void columnMoved(TableColumnModelEvent e) {
+
+            }
+
+            @Override
+            public void columnMarginChanged(ChangeEvent e) {
+                for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
+                    widthProps.setProperty(getWidthKey(table.getColumnName(i)), String.valueOf(table.getColumnModel().getColumn(i).getPreferredWidth()));
+                }
+                SystemResources.setAuditPreferences(widthProps.getProperties());
+            }
+
+            @Override
+            public void columnSelectionChanged(ListSelectionEvent e) {
+
+            }
+        });
+
         columnsCheckPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
             @Override
             public void changed(ListSelectionPanelEvent event) {
@@ -285,7 +336,6 @@ public class TablePanel extends JPanel {
 
         JScrollPane logListPanel = new JScrollPane();
         logListPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        table = new JTable(dataModel);
         table.setRowSorter(new CustomTableRowSorter(dataModel));
         table.setDefaultRenderer(Object.class, new CustomTableCellRenderer());
         table.setDefaultRenderer(Integer.class, new CustomTableCellRenderer());

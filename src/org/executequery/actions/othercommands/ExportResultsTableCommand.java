@@ -42,8 +42,7 @@ public class ExportResultsTableCommand extends AbstractBaseCommand {
 
             QueryEditor editor = (QueryEditor) panel;
             if (editor.isResultSetSelected()) {
-
-                new QueryEditorResultsExporter(editor.getResultSetTableModel());
+                new QueryEditorResultsExporter(editor.getResultSetTableModel(), null);
 
             } else {
 

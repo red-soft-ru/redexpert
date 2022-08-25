@@ -4,7 +4,7 @@ package org.executequery.gui.browser.managment.tracemanager;
  * Created by vasiliy on 21.12.16.
  */
 public class LogConstants {
-    public static final String ID_COLUMN = "#";
+    public static final String ID_COLUMN = "NUM";
     public static final String TSTAMP_COLUMN = "TSTAMP";
     public static final String ID_PROCESS_COLUMN = "ID_PROCESS";
     public static final String ID_THREAD_COLUMN = "ID_THREAD";

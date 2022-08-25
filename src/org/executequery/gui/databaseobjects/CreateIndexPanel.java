@@ -101,7 +101,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 if (ts.getName().equalsIgnoreCase(databaseIndex.getTablespace().trim()))
                     tablespaceBox.setSelectedItem(ts);
         changed = false;
-
+        addCreateSqlTab(databaseIndex);
     }
 
     protected void reset() {

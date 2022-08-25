@@ -47,6 +47,8 @@ import org.underworldlabs.util.SQLUtils;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
@@ -211,6 +213,24 @@ public abstract class CreateTableFunctionPanel extends JPanel
         isExternalTable.addActionListener(e -> externalTablePropsChanged());
 
         externalTableFilePathField = WidgetFactory.createTextField();
+        externalTableFilePathField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                externalTablePropsChanged();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                externalTablePropsChanged();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                externalTablePropsChanged();
+            }
+
+        });
 
         browseExternalTableFileButton = WidgetFactory.createInlineFieldButton(bundledString("BrowseButtonText"));
         browseExternalTableFileButton.addActionListener(e -> browseExternalTableFile());
@@ -221,7 +241,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         // ------ components arranging -----
 
         GridBagHelper gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5,5,5,5);
+        gridBagHelper.setInsets(5, 5, 5, 5);
         gridBagHelper.anchorNorthWest();
 
         gridBagHelper.addLabelFieldPair(mainPanel,
@@ -242,7 +262,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
                     null, true, true);
 
         if (ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(
-                (DatabaseConnection) connectionsCombo.getSelectedItem())
+                        (DatabaseConnection) connectionsCombo.getSelectedItem())
                 .getDatabaseMetaData().getDatabaseMajorVersion() >= 3) {
 
             mainPanel.add(isExternalTable,
@@ -273,19 +293,19 @@ public abstract class CreateTableFunctionPanel extends JPanel
         JPanel definitionPanel = new JPanel(new GridBagLayout());
 
         definitionPanel.add(tools,
-                gridBagHelper.setLabelDefault().setInsets(5,20,5,0).fillVertical().get());
+                gridBagHelper.setLabelDefault().setInsets(5, 20, 5, 0).fillVertical().get());
 
         definitionPanel.add(tableTabs,
-                gridBagHelper.nextCol().setInsets(0,0,5,0)
+                gridBagHelper.nextCol().setInsets(0, 0, 5, 0)
                         .setWeightY(1.0).setWeightX(0.4).fillBoth().spanX().get());
 
         // -----
 
         mainPanel.add(definitionPanel,
-                gridBagHelper.nextRowFirstCol().setInsets(0,10,5,0).get());
+                gridBagHelper.nextRowFirstCol().setInsets(0, 10, 5, 0).get());
 
         mainPanel.add(sqlText,
-                gridBagHelper.nextRowFirstCol().setWeightY(0.6).setInsets(5,5,5,5).get());
+                gridBagHelper.nextRowFirstCol().setWeightY(0.6).setInsets(5, 5, 5, 5).get());
 
         // ------
 
@@ -323,7 +343,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
     private void externalTablePropsChanged() {
 
-        if(isExternalTable.isSelected()) {
+        if (isExternalTable.isSelected()) {
 
             externalTablePropsPanel.setVisible(true);
             isAdapterNeeded.setVisible(true);

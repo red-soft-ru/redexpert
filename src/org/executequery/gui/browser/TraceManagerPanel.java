@@ -284,6 +284,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         }
                     }
                 }
+                tabPane.setSelectedComponent(loggerPanel);
             }
         });
 
@@ -396,7 +397,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
         gbh.fullDefaults();
 
-        add(topPanel, gbh.fillBoth().spanX().setMaxWeightY().get());
+        add(topPanel, gbh.fillBoth().spanX().setMaxWeightY().topGap(5).get());
 
 
         add(startStopSessionButton, gbh.nextRowFirstCol().setLabelDefault().get());

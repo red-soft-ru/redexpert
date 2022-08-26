@@ -18,7 +18,8 @@ import java.sql.Statement;
  */
 public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
-    private long value = -1;
+    private long currentValue = -1;
+    private long firstValue = -1;
     private Integer increment;
 
 
@@ -57,13 +58,13 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         return false;
     }
 
-    public long getSequenceValue() {
+    public long getSequenceCurrentValue() {
 
         Statement statement = null;
 
-        if (!isMarkedForReload() && value != -1) {
+        if (!isMarkedForReload() && currentValue != -1) {
 
-            return value;
+            return currentValue;
         }
 
         try {
@@ -79,10 +80,10 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
                 ResultSet rs = statement.executeQuery("select gen_id(" + getName() + ", 0) from rdb$database");
 
                 if (rs.next())
-                    value = rs.getLong(1);
+                    currentValue = rs.getLong(1);
             }
 
-            return value;
+            return currentValue;
 
         } catch (SQLException e) {
 
@@ -97,6 +98,52 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
                     Log.error("Error close statement in method getSequenceValue in class DefaultDatabaseSequence", e);
                 }
 
+            setMarkedForReload(false);
+        }
+    }
+
+    public long getSequenceFirstValue() {
+
+        Statement statement = null;
+
+        if (!isMarkedForReload() && firstValue != -1) {
+
+            return firstValue;
+        }
+
+        try {
+
+            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
+
+            String _catalog = getCatalogName();
+            String _schema = getSchemaName();
+
+            if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
+
+                statement = dmd.getConnection().createStatement();
+                ResultSet rs = statement.executeQuery("select r.rdb$initial_value\n" +
+                        "from rdb$generators r\n" +
+                        "where\n" +
+                        "trim(r.rdb$generator_name)='" + getName() + "'");
+
+                if (rs.next())
+                    firstValue = rs.getInt(1);
+            }
+
+            return firstValue;
+
+        } catch (SQLException e) {
+
+            throw new DataSourceException(e);
+
+        } finally {
+            if (statement != null)
+                try {
+                    if (!statement.isClosed())
+                        statement.close();
+                } catch (SQLException e) {
+                    Log.error("Error close statement in method getSequenceFirstValue in class DefaultDatabaseSequence", e);
+                }
             setMarkedForReload(false);
         }
     }
@@ -152,7 +199,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
         String query = "";
         try {
-            query = SQLUtils.generateCreateSequence(getName(), getSequenceValue(), getIncrement(),
+            query = SQLUtils.generateCreateSequence(getName(), getSequenceFirstValue(), getIncrement(),
                     getRemarks(), getVersion(), false);
 
         } catch (SQLException e) { e.printStackTrace(); }

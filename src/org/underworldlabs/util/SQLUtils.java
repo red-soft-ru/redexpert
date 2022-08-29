@@ -20,7 +20,11 @@ import static org.executequery.gui.browser.ColumnConstraint.RULES;
 import static org.executequery.gui.table.CreateTableSQLSyntax.*;
 
 public final class SQLUtils {
-    public static String generateCreateTable(String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList, boolean existTable, boolean temporary, String typeTemporary, String externalFile, String adapter, String tablespace) {
+    public static String generateCreateTable(
+            String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,
+            boolean existTable, boolean temporary, String typeTemporary, String externalFile,
+            String adapter, String tablespace, String comment) {
+
         StringBuilder sqlText = new StringBuilder();
         StringBuilder sqlBuffer = new StringBuilder();
         //List<String> descriptions = new ArrayList<>();
@@ -55,34 +59,50 @@ public final class SQLUtils {
             }
 
         }
+
         if (primary_flag)
             primary.append(primaryText);
+
         primary.append(")");
         String description = generateCommentForColumns(name, columnDataList, "COLUMN", "^");
 
         sqlBuffer.append(MiscUtils.getFormattedObject(name));
+
         if (externalFile != null)
             sqlBuffer.append(NEW_LINE).append("EXTERNAL FILE '").append(externalFile.trim()).append("'");
+
         if (adapter != null)
             sqlBuffer.append(SPACE).append(" ADAPTER '").append(adapter.trim()).append("'");
+
         sqlBuffer.append(SPACE).append(B_OPEN);
         sqlBuffer.append(sqlText.toString().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
+
         if (primary_flag && !existTable)
             sqlBuffer.append(primary);
         columnConstraintList = removeDuplicatesConstraints(columnConstraintList);
+
         for (int i = 0, n = columnConstraintList.size(); i < n; i++) {
             sqlBuffer.append(generateDefinitionColumnConstraint(columnConstraintList.get(i)).replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
 
         }
+
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
+
         if (tablespace != null)
             sqlBuffer.append("\nTABLESPACE ").append(MiscUtils.getFormattedObject(tablespace));
+
         if (temporary)
             sqlBuffer.append("\n").append(typeTemporary);
+
         sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
         sqlBuffer.append("\n").append(description);
+
         if (autoincrementSQLText != null)
-            sqlBuffer.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
+            sqlBuffer.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name))).append(NEW_LINE);
+
+        if (comment != null)
+            sqlBuffer.append("COMMENT ON TABLE ").append(name).append(" IS '").append(comment).append("';\n");
+
         return sqlBuffer.toString();
     }
 

@@ -34,6 +34,7 @@ import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.localization.Bundles;
@@ -56,6 +57,7 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -75,6 +77,10 @@ public abstract class CreateTableFunctionPanel extends JPanel
      * The table name field
      */
     protected JTextField nameField;
+    /**
+     * The table comment area
+     */
+    protected SimpleTextArea commentField;
 
     /**
      * The connection combo selection
@@ -157,6 +163,28 @@ public abstract class CreateTableFunctionPanel extends JPanel
     private void init() throws Exception {
 
         nameField = WidgetFactory.createTextField();
+
+        commentField = new SimpleTextArea();
+        commentField.getTextAreaComponent().getDocument().addDocumentListener(
+                new DocumentListener() {
+
+                    @Override
+                    public void insertUpdate(DocumentEvent e) {
+                        externalTablePropsChanged();
+                    }
+
+                    @Override
+                    public void removeUpdate(DocumentEvent e) {
+                        externalTablePropsChanged();
+                    }
+
+                    @Override
+                    public void changedUpdate(DocumentEvent e) {
+                        externalTablePropsChanged();
+                    }
+
+                });
+
         if (temporary)
             nameField.setText("NEW_GLOBAL_TEMPORARY_TABLE");
         else
@@ -304,8 +332,14 @@ public abstract class CreateTableFunctionPanel extends JPanel
         mainPanel.add(definitionPanel,
                 gridBagHelper.nextRowFirstCol().setInsets(0, 10, 5, 0).get());
 
+        mainPanel.add(new JLabel(bundledString("TableCommentLabel")),
+                gridBagHelper.nextRowFirstCol().setLabelDefault().setInsets(5, 5, 5, 5).get());
+
+        mainPanel.add(commentField,
+                gridBagHelper.nextRowFirstCol().setWeightY(1.0).setWeightX(0.4).fillBoth().spanX().get());
+
         mainPanel.add(sqlText,
-                gridBagHelper.nextRowFirstCol().setWeightY(0.6).setInsets(5, 5, 5, 5).get());
+                gridBagHelper.nextRowFirstCol().setWeightY(0.6).get());
 
         // ------
 
@@ -610,9 +644,13 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 adapter = "CSV";
         }
 
+        String comment = null;
+        if (!Objects.equals(commentField.getTextAreaComponent().getText(), ""))
+            comment = commentField.getTextAreaComponent().getText().trim();
+
         setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
                 false, temporary, "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
-                externalFile, adapter, tablespace));
+                externalFile, adapter, tablespace, comment));
 
     }
 

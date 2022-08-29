@@ -312,7 +312,7 @@ next_transaction
 ;
 
 not_query
-:(plan)?
+:(plan end_line*)?
 (params end_line+)?
 (records_fetched end_line+)?
 (memory_size_rule end_line+)?
@@ -481,7 +481,8 @@ marks
 ;
 
 table_counters : 'Table' (SPACE 'Natural')? (SPACE 'Index')? (SPACE 'Update')?
- (SPACE 'Insert')? (SPACE 'Delete')? (SPACE 'Backout')? (SPACE 'Purge')? (SPACE 'Expunge')? end_line
+ (SPACE 'Insert')? (SPACE 'Delete')? (SPACE 'Backout')? (SPACE 'Purge')? (SPACE 'Expunge')?
+ (SPACE 'Lock')? (SPACE 'Wait')? (SPACE 'Conflict')? (SPACE 'BVersion')? (SPACE 'Fragment')? (SPACE 'Refetch')? end_line
  ('*')+ end_line
  (any_name SPACE ID (SPACE ID)* SPACE? end_line)+;
 

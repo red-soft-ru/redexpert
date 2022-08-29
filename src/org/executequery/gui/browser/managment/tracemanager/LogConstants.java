@@ -113,27 +113,38 @@ public class LogConstants {
                     OLDEST_SNAPSHOT_COLUMN,
                     NEXT_TRANSACTION_COLUMN
             };
-    /*public static final int NUMBER_ID_COLUMN = 0;
-    public static final int NUMBER_TSTAMP_COLUMN = 1;
-    public static final int NUMBER_ID_PROCESS_COLUMN = 2;
-    public static final int NUMBER_ID_THREAD_COLUMN = 3;
-    public static final int NUMBER_EVENT_TYPE_COLUMN = 4;
-    public static final int NUMBER_ID_SESSION_COLUMN = 5;
-    public static final int NUMBER_NAME_SESSION_COLUMN = 6;
-    public static final int NUMBER_ID_SERVICE_COLUMN = 7;
-    public static final int NUMBER_USERNAME_COLUMN = 8;
-    public static final int NUMBER_PROTOCOL_CONNECTION_COLUMN = 9;
-    public static final int NUMBER_CLIENT_ADDRESS_COLUMN = 10;
-    public static final int NUMBER_TYPE_QUERY_SERVICE_COLUMN = 11;
-    public static final int NUMBER_OPTIONS_START_SERVICE_COLUMN = 12;
-    public static final int NUMBER_ROLE_COLUMN = 13;
-    public static final int NUMBER_DATABASE_COLUMN = 14;
-    public static final int NUMBER_CHARSET_COLUMN = 15;
-    public static final int NUMBER_ID_CONNECTION_COLUMN = 16;
-    public static final int NUMBER_CLIENT_PROCESS_COLUMN = 17;
-    public static final int NUMBER_ID_CLIENT_PROCESS_COLUMN = 18;
-    public static final int NUMBER_ID_TRANSACTION_COLUMN = 19;
-    public static final int NUMBER_LEVEL_ISOLATION_COLUMN = 20;
-    public static final int NUMBER_MODE_OF_BLOCK_COLUMN = 21;
-    public static final int NUMBER_MODE_OF_ACCESS_COLUMN = 22;*/
+    public static final String TABLE = "Table";
+    public static final String NATURAL = "Natural";
+    public static final String INDEX = "Index";
+    public static final String UPDATE = "Update";
+    public static final String INSERT = "Insert";
+    public static final String DELETE = "Delete";
+    public static final String BACKOUT = "Backout";
+    public static final String PURGE = "Purge";
+    public static final String EXPUNGE = "Expunge";
+    public static final String LOCK = "Lock";
+    public static final String WAIT = "Wait";
+    public static final String CONFLICT = "Conflict";
+    public static final String BVERSION = "BVersion";
+    public static final String FRAGMENT = "Fragment";
+    public static final String REFETCH = "Refetch";
+    public static final String[] TABLE_COUNTERS = {
+            TABLE,
+            NATURAL,
+            INDEX,
+            UPDATE,
+            INSERT,
+            DELETE,
+            BACKOUT,
+            PURGE,
+            EXPUNGE,
+            LOCK,
+            WAIT,
+            CONFLICT,
+            BVERSION,
+            FRAGMENT,
+            REFETCH
+    };
+
+
 }

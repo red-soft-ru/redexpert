@@ -3,6 +3,7 @@ package org.executequery.gui.browser.managment.tracemanager;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.TraceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
+import org.executequery.gui.browser.managment.tracemanager.net.TableCounter;
 import org.executequery.gui.editor.SimpleDataItemViewerPanel;
 import org.executequery.gui.resultset.SimpleRecordDataItem;
 import org.executequery.gui.text.SimpleSqlTextPanel;
@@ -36,6 +37,10 @@ import java.util.EnumSet;
 public class TablePanel extends JPanel {
 
     JTable table;
+
+    JTable tableCounter;
+
+    TableCounterModel tableCounterModel;
     SimpleSqlTextPanel txtFieldRawSql;
     private ResultSetDataModel dataModel;
     private JComboBox<Filter.FilterType> comboBoxFilterType;
@@ -56,12 +61,6 @@ public class TablePanel extends JPanel {
 
         UserSettingsProperties settings = new UserSettingsProperties();
         return settings.getUserSettingsDirectory() + "audit-columns.txt";
-    }
-
-    private static String filePathWidthCols() {
-
-        UserSettingsProperties settings = new UserSettingsProperties();
-        return settings.getUserSettingsDirectory() + "width-columns.properties";
     }
 
     private static void ensureFileExists(String path) {
@@ -144,6 +143,8 @@ public class TablePanel extends JPanel {
         loadCols();
         dataModel = new ResultSetDataModel(columnsCheckPanel, comboBoxFilterType, comboBoxFilterColumn, txtFldSqlFilter, matchCaseBox);
         table = new JTable(dataModel);
+        tableCounterModel = new TableCounterModel(table);
+        tableCounter = new JTable(tableCounterModel);
         loadWidthCols();
         table.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
             @Override
@@ -185,15 +186,6 @@ public class TablePanel extends JPanel {
                 saveCols();
             }
         });
-        /*for (JCheckBox checkBox : columnsCheckPanel.getCheckBoxMap().values()) {
-            checkBox.addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                    dataModel.rebuildModel();
-                    dataModel.fireTableStructureChanged();
-                }
-            });
-        }*/
         GridBagLayout gridBagLayout = new GridBagLayout();
         setLayout(gridBagLayout);
         GridBagHelper gbh = new GridBagHelper();
@@ -227,13 +219,13 @@ public class TablePanel extends JPanel {
         gbh.fullDefaults();
         add(filterPanel, gbh.fillHorizontally().spanX().get());
 
-        JSplitPane splitPane = new JSplitPane();
-        splitPane.setOneTouchExpandable(true);
-        splitPane.setBorder(null);
-        splitPane.setContinuousLayout(true);
-        splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setResizeWeight(0.8);
-        add(splitPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        JSplitPane littleSplit = new JSplitPane();
+        littleSplit.setOneTouchExpandable(true);
+        littleSplit.setBorder(null);
+        littleSplit.setContinuousLayout(true);
+        littleSplit.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+        littleSplit.setResizeWeight(0.8);
+
 
         JScrollPane logListPanel = new JScrollPane();
         logListPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -247,8 +239,10 @@ public class TablePanel extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 int row = table.getSelectedRow();
-                if (row >= 0)
+                if (row >= 0) {
                     txtFieldRawSql.setSQLText(dataModel.getVisibleRows().get(row).getBody());
+                    fillTableCounters(row);
+                }
 
               /*
                     int col = dataModel.getVisibleColumnNames().indexOf(comboBoxRawSql.getSelectedItem());
@@ -284,12 +278,39 @@ public class TablePanel extends JPanel {
         });
 
 
-        splitPane.setTopComponent(logListPanel);
+        littleSplit.setTopComponent(logListPanel);
         txtFieldRawSql = new SimpleSqlTextPanel();
         txtFieldRawSql.setBorder(BorderFactory.createTitledBorder(TraceManagerPanel.bundleString("Body")));
-        splitPane.setBottomComponent(txtFieldRawSql);
+        littleSplit.setBottomComponent(txtFieldRawSql);
+
+        JSplitPane bigSplit = new JSplitPane();
+        bigSplit.setOneTouchExpandable(true);
+        bigSplit.setBorder(null);
+        bigSplit.setContinuousLayout(true);
+        bigSplit.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        bigSplit.setResizeWeight(0.8);
+
+        bigSplit.setTopComponent(littleSplit);
+        JScrollPane scroll = new JScrollPane(tableCounter);
+        scroll.setBorder(BorderFactory.createTitledBorder("Table counters"));
+        bigSplit.setBottomComponent(scroll);
 
 
+        add(bigSplit, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+
+    }
+
+    private void fillTableCounters(int row) {
+        tableCounterModel.clearAll();
+        LogMessage logMessage = dataModel.getVisibleRows().get(row);
+        String fullBody = logMessage.getTableCounters();
+        if (!MiscUtils.isNull(fullBody)) {
+            String[] rows = fullBody.split("\n");
+            for (int i = 2; i < rows.length; i++) {
+                TableCounter tc = new TableCounter(rows[0], rows[i]);
+                tableCounterModel.addRow(tc);
+            }
+        }
     }
 
     public void addRow(LogMessage message) {

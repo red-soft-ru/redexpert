@@ -20,16 +20,17 @@ class ResultSetDataModel extends AbstractTableModel {
     private List<LogMessage> visibleRows = new ArrayList<>();
     private final JComboBox filterTypeBox;
     private final JComboBox filterColumnBox;
-    private final JComboBox rawSqlBox;
     private final JTextField filterTextField;
+
+    private final JCheckBox matchCaseBox;
     private ListSelectionPanel listSelectionPanel;
 
 
-    public ResultSetDataModel(ListSelectionPanel listSelectionPanel, JComboBox filterTypeBox, JComboBox filterColumnBox, JComboBox rawSqlBox, JTextField filterTextField) {
+    public ResultSetDataModel(ListSelectionPanel listSelectionPanel, JComboBox filterTypeBox, JComboBox filterColumnBox, JTextField filterTextField, JCheckBox matchCaseBox) {
         this.filterTypeBox = filterTypeBox;
         this.filterColumnBox = filterColumnBox;
         this.filterTextField = filterTextField;
-        this.rawSqlBox = rawSqlBox;
+        this.matchCaseBox = matchCaseBox;
         setListSelectionPanel(listSelectionPanel);
         buildHeaders();
         rebuildModel();
@@ -48,11 +49,6 @@ class ResultSetDataModel extends AbstractTableModel {
         model.setElements(visibleColumnNames);
         if (visibleColumnNames.contains(selectedItem))
             filterColumnBox.setSelectedItem(selectedItem);
-        model = (DynamicComboBoxModel) rawSqlBox.getModel();
-        selectedItem = rawSqlBox.getSelectedItem();
-        model.setElements(visibleColumnNames);
-        if (visibleColumnNames.contains(selectedItem))
-            rawSqlBox.setSelectedItem(selectedItem);
         fireTableStructureChanged();
     }
 
@@ -60,6 +56,10 @@ class ResultSetDataModel extends AbstractTableModel {
         String filter = filterTextField.getText();
         if (filterColumnBox.getSelectedItem() != null) {
             String field = String.valueOf(message.getFieldOfName((String) filterColumnBox.getSelectedItem()));
+            if (!matchCaseBox.isSelected()) {
+                field = field.toLowerCase();
+                filter = filter.toLowerCase();
+            }
             if (filterTypeBox.getSelectedItem() == Filter.FilterType.FILTER) {
                 if (field.contains(filter))
                     visibleRows.add(message);

@@ -9,7 +9,9 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,9 +22,9 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.SEQUENCE);
     public static final String ALTER_TITLE = getEditTitle(NamedObject.SEQUENCE);
     private NumberTextField startValueText;
+    private NumberTextField currentValueText;
     private NumberTextField incrementText;
     private SimpleTextArea description;
-    private JLabel labelIncrement;
     private DefaultDatabaseSequence generator;
 
     public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog) {
@@ -75,37 +77,46 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     }
 
     protected void init() {
+
+        // ----- components defining -----
+
         startValueText = new NumberTextField();
         startValueText.setValue(0);
+
+        currentValueText = new NumberTextField();
+        currentValueText.setEditable(false);
+        currentValueText.setValue(0);
+
         incrementText = new NumberTextField();
         incrementText.setValue(1);
+
         this.description = new SimpleTextArea();
 
-        centralPanel.setLayout(new GridBagLayout());
-        JLabel startLabel = new JLabel(bundleString("start-value"));
-        centralPanel.add(startLabel, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(startValueText, new GridBagConstraints(1, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        // ----- preparing panel layout -----
 
-        labelIncrement = new JLabel(bundleString("increment"));
-        centralPanel.add(labelIncrement, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(incrementText, new GridBagConstraints(1, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        centralPanel.setLayout(new GridBagLayout());
+
+        GridBagHelper gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(5, 5, 5, 5);
+        gridBagHelper.anchorNorthWest().fillHorizontally();
+
+        // ----- components arranging -----
+
+        gridBagHelper.addLabelFieldPair(centralPanel,
+                bundleString("start-value"), startValueText,
+                null, true, true);
+
+        if (editing)
+            gridBagHelper.addLabelFieldPair(centralPanel,
+                    bundleString("current-value"), currentValueText,
+                    null, true, true);
+
+        if (getDatabaseVersion() >= 3)
+            gridBagHelper.addLabelFieldPair(centralPanel,
+                    bundleString("increment"), incrementText,
+                    null, true, true);
+
         tabbedPane.add(bundleStaticString("description"), description);
-        if (getDatabaseVersion() < 3) {
-            labelIncrement.setVisible(false);
-            incrementText.setVisible(false);
-        }
 
     }
 
@@ -115,22 +126,13 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     }
 
     protected String generateQuery() {
+
         String query = "";
         try {
-            if (getVersion() == 3) {
-                query = "CREATE OR ALTER SEQUENCE " + getFormattedName() + " START WITH " + startValueText.getStringValue()
-                        + " INCREMENT BY " + incrementText.getStringValue() + ";";
-            } else {
-                if (!editing)
-                    query = "CREATE SEQUENCE " + getFormattedName() + ";";
-                else query = "";
-                query += "\nALTER SEQUENCE " + getFormattedName() + " RESTART WITH " + (startValueText.getLongValue() + incrementText.getLongValue()) + ";";
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        if (!MiscUtils.isNull(description.getTextAreaComponent().getText().trim()))
-            query += "\nCOMMENT ON SEQUENCE " + getFormattedName() + " IS '" + description.getTextAreaComponent().getText() + "'";
+            query = SQLUtils.generateCreateSequence(getFormattedName(), startValueText.getStringValue(),
+                    incrementText.getStringValue(), description.getTextAreaComponent().getText(), getVersion(), editing);
+
+        } catch (SQLException e) { e.printStackTrace(); }
 
         return query;
     }
@@ -145,7 +147,8 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     protected void reset() {
         nameField.setText(generator.getName().trim());
         nameField.setEnabled(false);
-        startValueText.setLongValue(generator.getSequenceValue());
+        startValueText.setLongValue(generator.getSequenceFirstValue());
+        currentValueText.setLongValue(generator.getSequenceCurrentValue());
         if (getDatabaseVersion() >= 3)
             incrementText.setValue(generator.getIncrement());
         description.getTextAreaComponent().setText(generator.getRemarks());

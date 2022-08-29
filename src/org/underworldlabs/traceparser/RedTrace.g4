@@ -3,15 +3,7 @@ grammar RedTrace;
 parse
 :event
 ;
-/*: ( event| error )* EOF
-;
-error
- : UNEXPECTED_CHAR
-   {
-     throw new RuntimeException("UNEXPECTED_CHAR=" + $UNEXPECTED_CHAR.text);
-   }
- ;*/
-//events
+
 event
 :trace_event
 |database_event
@@ -102,7 +94,7 @@ procedure_function_event
 :header_event SPACE type_procedure_event end_line
 connection_info end_line
 (client_process_info end_line)?
- transaction_info ws
+ transaction_info ws+
  procedure_info
 ;
 
@@ -266,8 +258,7 @@ type_trigger_event
  ;
 
 type_error_event
-: 'ERROR AT'
-| 'WARNING AT'
+: ('ERROR AT' | 'WARNING AT') (~('\n'))*
 ;
 
 type_sweep_event
@@ -321,7 +312,7 @@ next_transaction
 ;
 
 not_query
-:(plan end_line+)?
+:(plan)?
 (params end_line+)?
 (records_fetched end_line+)?
 (memory_size_rule end_line+)?
@@ -597,8 +588,7 @@ database
 ;
 
 path
-:PATH
-|any_name;
+:(PATH|'('|')'|ANY_NAME)+;
 
 
 timestamp
@@ -695,7 +685,7 @@ MINUSES
 ;
 
 PATH
-:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|EQUALITY|QUESTION)+
+:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|'='|'?')+
 ;
 
 
@@ -711,25 +701,4 @@ SPACE:(' ')+;
 TAB:
 '\t'
 ;
-
-EQUALITY:
-'='
-;
-
-QUESTION:
-'?'
-;
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 public class StatementTimestampTableCellRenderer extends CustomTableCellRenderer {
 
     private static final long serialVersionUID = 1L;
-    private static final SimpleDateFormat tstampFormat = new SimpleDateFormat("HH:mm:ss.SSS");
+    private static final SimpleDateFormat tstampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     private long deltaTimestampBaseMillis;
 
     @Override

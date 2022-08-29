@@ -1,7 +1,6 @@
 package org.executequery.gui;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabViewActionPanel;
@@ -34,7 +33,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -42,8 +40,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.*;
-
-import static org.apache.commons.lang.StringUtils.chop;
 
 /**
  * @author Alexey Kozlov
@@ -976,14 +972,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             // ----------- open source connection -----------
 
-            String connectionUrl;
+            String connectionUrl = "jdbc:relique:csv:";
             if (UIUtils.isWindows()) {
 
-                connectionUrl = "jdbc:relique:csv:" + directoryOfFile.replace("\\", "/");
+                connectionUrl += directoryOfFile.replace("\\", "/");
 
             } else {
 
-                connectionUrl = "jdbc:relique:csv:" + directoryOfFile;
+                connectionUrl += directoryOfFile;
             }
 
             connection = DriverManager.getConnection(connectionUrl, properties);

@@ -98,7 +98,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
 
         addButtonsPanel(new BottomButtonPanel(
                 this, bundleString("Create"), "create-table", parent.isDialog()));
-        setPreferredSize(new Dimension(750, 480));
+        setPreferredSize(new Dimension(750, 600));
         EventMediator.registerListener(this);
     }
 
@@ -214,8 +214,8 @@ public class CreateTablePanel extends CreateTableFunctionPanel
         try {
             if (!checkFullType())
                 return;
-            String querys = getSQLText();
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundleString("title"), querys, getSelectedConnection(), true, "^");
+            String requests = getSQLText();
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundleString("title"), requests, getSelectedConnection(), true, "^");
             eqd.display();
             boolean commit = eqd.getCommit();
             if (commit) {

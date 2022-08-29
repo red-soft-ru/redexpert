@@ -165,6 +165,23 @@ public class SystemResources {
         }
     }
 
+    public static synchronized void setAuditPreferences(Properties properties) {
+
+        try {
+
+            String path = userSettingsDirectoryForCurrentBuild() + "audit.properties";
+
+            FileUtils.storeProperties(path, properties,
+                    "Red Expert - Audit Properties");
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+            GUIUtilities.displayErrorMessage("Error saving preferences:\n" +
+                    e.getMessage());
+        }
+    }
+
     public static Properties getConsoleProperties() {
         Properties properties = null;
         try {
@@ -384,6 +401,26 @@ public class SystemResources {
             }
 
             // -------------------------------------------
+            // -- Check for ~/audit.properties
+            // -------------------------------------------
+            props = new File(confDir, "audit.properties");
+
+            // create the user defined keywords file
+            if (!props.exists()) {
+
+                created = props.createNewFile();
+
+            } else {
+
+                created = true;
+            }
+
+            if (!created) {
+
+                return false;
+            }
+
+            // -------------------------------------------
             // -- Check for ~/.executequery/conf/eq.user.properties
             // -------------------------------------------
             props = new File(confDir, "eq.user.properties");
@@ -582,7 +619,7 @@ public class SystemResources {
 
     private static void removeOldSettingsDirs() {
 
-        int retainBuildNumberCount = 2; // keep current plus previous of the last settings dirs
+        int retainBuildNumberCount = 3; // keep current plus previous of the last settings dirs
         File userSettingsDir = new File(userSettingsHome());
 
         List<File> dirsToDelete = new ArrayList<File>();

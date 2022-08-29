@@ -2,10 +2,7 @@ package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
-import org.executequery.databaseobjects.FunctionArgument;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.Parameter;
-import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
@@ -23,7 +20,11 @@ import static org.executequery.gui.browser.ColumnConstraint.RULES;
 import static org.executequery.gui.table.CreateTableSQLSyntax.*;
 
 public final class SQLUtils {
-    public static String generateCreateTable(String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList, boolean existTable, boolean temporary, String typeTemporary, String externalFile, String adapter, String tablespace) {
+    public static String generateCreateTable(
+            String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,
+            boolean existTable, boolean temporary, String typeTemporary, String externalFile,
+            String adapter, String tablespace, String comment) {
+
         StringBuilder sqlText = new StringBuilder();
         StringBuilder sqlBuffer = new StringBuilder();
         //List<String> descriptions = new ArrayList<>();
@@ -58,34 +59,50 @@ public final class SQLUtils {
             }
 
         }
+
         if (primary_flag)
             primary.append(primaryText);
+
         primary.append(")");
         String description = generateCommentForColumns(name, columnDataList, "COLUMN", "^");
 
         sqlBuffer.append(MiscUtils.getFormattedObject(name));
+
         if (externalFile != null)
             sqlBuffer.append(NEW_LINE).append("EXTERNAL FILE '").append(externalFile.trim()).append("'");
+
         if (adapter != null)
             sqlBuffer.append(SPACE).append(" ADAPTER '").append(adapter.trim()).append("'");
+
         sqlBuffer.append(SPACE).append(B_OPEN);
         sqlBuffer.append(sqlText.toString().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
+
         if (primary_flag && !existTable)
             sqlBuffer.append(primary);
         columnConstraintList = removeDuplicatesConstraints(columnConstraintList);
+
         for (int i = 0, n = columnConstraintList.size(); i < n; i++) {
             sqlBuffer.append(generateDefinitionColumnConstraint(columnConstraintList.get(i)).replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
 
         }
+
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
+
         if (tablespace != null)
             sqlBuffer.append("\nTABLESPACE ").append(MiscUtils.getFormattedObject(tablespace));
+
         if (temporary)
             sqlBuffer.append("\n").append(typeTemporary);
+
         sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
         sqlBuffer.append("\n").append(description);
+
         if (autoincrementSQLText != null)
-            sqlBuffer.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
+            sqlBuffer.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name))).append(NEW_LINE);
+
+        if (comment != null)
+            sqlBuffer.append("COMMENT ON TABLE ").append(name).append(" IS '").append(comment).append("';\n");
+
         return sqlBuffer.toString();
     }
 
@@ -641,6 +658,36 @@ public final class SQLUtils {
         sb.append(" TABLESPACE ").append(MiscUtils.getFormattedObject(name));
         sb.append(" FILE '").append(file).append("'");
         sb.append(";\n");
+        return sb.toString();
+    }
+
+    public static String generateCreateSequence(
+            String name, Object startValue, Object increment, String description, int databaseVersion, boolean existed) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if (databaseVersion >= 3) {
+
+            sb.append("CREATE OR ALTER SEQUENCE ").append(name);
+            sb.append(" START WITH ").append(startValue);
+            sb.append(" INCREMENT BY ").append(increment);
+            sb.append(";\n");
+
+        } else {
+
+            if (!existed)
+                sb.append("CREATE SEQUENCE ").append(name).append(";\n");
+            sb.append("ALTER SEQUENCE ").append(name);
+            sb.append(" RESTART WITH ").append((long)startValue + (long)increment).append(";\n");
+
+        }
+
+        if (description != null && !description.trim().equals("")) {
+
+            sb.append("COMMENT ON SEQUENCE ").append(name);
+            sb.append(" IS '").append(description).append("';\n");
+        }
+
         return sb.toString();
     }
 

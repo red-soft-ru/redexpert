@@ -1089,7 +1089,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
     }
 
-    return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, null, getExternalFile(), getAdapter(), getTablespace());
+    return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
 
     }
 

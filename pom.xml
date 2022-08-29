@@ -3,13 +3,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    <properties>
+        <antlr.version>4.7</antlr.version>
+    </properties>
     <groupId>org.executequery</groupId>
     <artifactId>RedExpert-parent</artifactId>
     <packaging>pom</packaging>
     <version>2022.02</version>
     <modules>
-		<module>modules/plugins/fbplugin</module>
+        <module>modules/plugins/fbplugin</module>
         <module>modules/plugins/fbplugin-impl</module>
         <module>modules/plugins/sql-parser</module>
         <module>modules/plugins/sqlLexer</module>

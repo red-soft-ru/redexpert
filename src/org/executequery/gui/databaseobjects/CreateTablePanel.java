@@ -98,7 +98,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
 
         addButtonsPanel(new BottomButtonPanel(
                 this, bundleString("Create"), "create-table", parent.isDialog()));
-        setPreferredSize(new Dimension(750, 750));
+        setPreferredSize(new Dimension(750, 600));
         EventMediator.registerListener(this);
     }
 

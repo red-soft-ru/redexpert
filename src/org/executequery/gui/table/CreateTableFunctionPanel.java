@@ -228,6 +228,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 new Insets(2, 2, 2, 2), 0, 0));
 
         tableTabs.add(bundledString("Constraints"), constraintsPanel);
+        tableTabs.add(bundledString("TableCommentLabel"), commentField);
 
         sqlText = new SimpleSqlTextPanel();
         tools = new CreateTableToolBar(this);
@@ -331,12 +332,6 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
         mainPanel.add(definitionPanel,
                 gridBagHelper.nextRowFirstCol().setInsets(0, 10, 5, 0).get());
-
-        mainPanel.add(new JLabel(bundledString("TableCommentLabel")),
-                gridBagHelper.nextRowFirstCol().setLabelDefault().setInsets(5, 5, 5, 5).get());
-
-        mainPanel.add(commentField,
-                gridBagHelper.nextRowFirstCol().setWeightY(1.0).setWeightX(0.4).fillBoth().spanX().get());
 
         mainPanel.add(sqlText,
                 gridBagHelper.nextRowFirstCol().setWeightY(0.6).get());

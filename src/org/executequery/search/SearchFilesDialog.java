@@ -117,7 +117,7 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
     private void jbInit() throws Exception {
         wholeWordsCheck = new JCheckBox(bundleString("WholeWordsCheck"), true);
         matchCaseCheck = new JCheckBox(bundleString("MatchCaseCheck"));
-        searchSubdirsCheck = new JCheckBox(bundleString("message.seachSubdirsCheck"), true);
+        searchSubdirsCheck = new JCheckBox(bundleString("message.searchSubdirsCheck"), true);
         replaceCheck = new JCheckBox(bundleString("Replace") + ':');
         regexCheck = new JCheckBox(bundleString("RegularExpressions"));
 

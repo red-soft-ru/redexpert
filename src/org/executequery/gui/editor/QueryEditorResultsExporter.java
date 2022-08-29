@@ -85,7 +85,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private TableModel model;
 
     // The sender to QueryEditor
-    private static StatementToEditorWriter statementWriter;
+    private StatementToEditorWriter statementWriter;
 
     // SQL format to QueryEditor
     private TokenizingFormatter formatter;

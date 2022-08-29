@@ -359,7 +359,7 @@ public class ApplicationLauncher {
     private void printVersionInfo() {
 
         Log.info(bundleString("console-UsingJavaVersion") +
-                System.getProperty(bundleString("console-JavaVersion")));
+                System.getProperty("java.version"));
         Log.info(bundleString("console-RedExpertVersion") + ": " +
                 System.getProperty("executequery.minor.version") +
                 "-" + System.getProperty("executequery.build"));

@@ -109,7 +109,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                 try {
                     checkFromReleaseHub(unstable);
                 } catch (IOException e) {
-                    Log.warning(String.format(bundledString("console-CannotCheckForUpdates") + ": %s", e.getMessage()));
+                    Log.warning(String.format("Cannot check for updates: %s", e.getMessage()));
                 } catch (Exception e) {
                     checkFromReddatabase(unstable);
                 }
@@ -139,7 +139,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             } else {
 
-                Log.info(bundledString("RedEpertUpToDate"));
+                Log.info(bundledString("console-RedExpertUpToDate"));
             }
 
         } catch (ApplicationException e) {

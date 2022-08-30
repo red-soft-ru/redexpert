@@ -346,11 +346,11 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         GridBagHelper gbhTemp = new GridBagHelper();
 
         addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("add_16.png"));
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
         addRolloverButton.addActionListener(e -> saveComment());
 
         removeRolloverButton = new RolloverButton();
-        removeRolloverButton.setIcon(GUIUtilities.loadIcon("delete_16.png"));
+        removeRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
         removeRolloverButton.addActionListener(e -> removeComment());
 
         commentPanel = new JPanel(new GridBagLayout());

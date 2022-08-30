@@ -119,7 +119,7 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
         btnGroup.add(searchUpRadio);
         btnGroup.add(searchDownRadio);
 
-        findNextButton = new DefaultButton(bundleString("find-next-command"));
+        findNextButton = new DefaultButton(Bundles.get("action.find-next-command"));
         replaceButton = new DefaultButton(bundleString("Replace"));
         replaceAllButton = new DefaultButton(bundleString("ReplaceAll"));
         closeButton = ActionUtilities.createButton(Bundles.get("common.close.button"), "close");

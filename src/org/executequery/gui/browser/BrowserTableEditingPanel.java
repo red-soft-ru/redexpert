@@ -194,7 +194,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     /**
      * the button to save comment
      */
-    private JButton saveCommentButton;
+    RolloverButton addRolloverButton;
+    RolloverButton removeRolloverButton;
 
     /**
      * the browser's control object
@@ -344,15 +345,21 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         //comment panel
         GridBagHelper gbhTemp = new GridBagHelper();
 
-        saveCommentButton = new JButton(bundleString("SaveCommentButton"));
-        saveCommentButton.addActionListener(e -> saveComment());
+        addRolloverButton = new RolloverButton();
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("add_16.png"));
+        addRolloverButton.addActionListener(e -> saveComment());
+
+        removeRolloverButton = new RolloverButton();
+        removeRolloverButton.setIcon(GUIUtilities.loadIcon("delete_16.png"));
+        removeRolloverButton.addActionListener(e -> removeComment());
 
         commentPanel = new JPanel(new GridBagLayout());
-
+        commentPanel.add(addRolloverButton,
+                gbhTemp.setInsets(2, 2, 2, 2).anchorNorthWest().setLabelDefault().get());
+        commentPanel.add(removeRolloverButton,
+                gbhTemp.nextCol().nextCol().get());
         commentPanel.add(commentField,
-                gbhTemp.setInsets(2, 2, 2, 2).anchorSouthWest().fillBoth().spanX().setWidth(2).setMaxWeightY().get());
-        commentPanel.add(saveCommentButton,
-                gbhTemp.nextRow().setLabelDefault().nextCol().anchorSouthEast().get());
+                gbhTemp.nextRowFirstCol().fillBoth().spanX().spanY().setWidth(3).setMaxWeightX().get());
 
         // sql text split pane
         FlatSplitPane splitPane = new FlatSplitPane(FlatSplitPane.VERTICAL_SPLIT);
@@ -548,6 +555,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         lock = new Semaphore(1);
         for (JComponent component : externalFileComponents)
             component.setVisible(false);
+    }
+
+    private void removeComment() {
+        commentField.getTextAreaComponent().setText(table.getRemarks());
     }
 
     private void saveComment() {
@@ -995,7 +1006,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         }
 
-        commentField.getTextAreaComponent().setText(table.getRemarks());
+        removeComment();
 
         reloadView();
         if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {

@@ -28,6 +28,7 @@ import org.executequery.repository.UserFeedback;
 import org.executequery.repository.UserFeedbackRepository;
 import org.executequery.repository.spi.UserFeedbackRepositoryImpl;
 import org.underworldlabs.swing.InterruptibleProgressDialog;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.Interruptible;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
@@ -125,56 +126,23 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         initFieldValues();
 
         JPanel basePanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.gridy++;
-        gbc.gridx++;
-        gbc.insets.top = 5;
-        gbc.insets.bottom = 5;
-        gbc.insets.left = 5;
-        gbc.insets.right = 5;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        basePanel.add(new JLabel(labelText), gbc);
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        gbc.insets.top = 7;
-        gbc.insets.right = 10;
-        gbc.fill = GridBagConstraints.NONE;
-        basePanel.add(new JLabel(Bundles.getCommon("name")), gbc);
-        gbc.gridx++;
-        gbc.insets.left = 0;
-        gbc.weightx = 1.0;
-        gbc.insets.top = 5;
-        gbc.insets.right = 5;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        basePanel.add(nameField, gbc);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        gbc.insets.top = 2;
-        gbc.insets.left = 5;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.insets.right = 10;
-        basePanel.add(new JLabel("Email"), gbc);
-        gbc.gridx++;
-        gbc.insets.left = 0;
-        gbc.weightx = 1.0;
-        gbc.insets.top = 0;
-        gbc.insets.right = 5;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        basePanel.add(emailField, gbc);
 
+        GridBagHelper gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(5,5,5,5).anchorNorthWest();
 
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.insets.top = 0;
-        gbc.insets.left = 5;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        basePanel.add(new JScrollPane(commentsField), gbc);
+        basePanel.add(new JLabel(labelText),
+                gridBagHelper.fillHorizontally().spanX().get());
+
+        gridBagHelper.addLabelFieldPair(basePanel,
+                new JLabel(Bundles.getCommon("name")), nameField,
+                null, true, true);
+
+        gridBagHelper.addLabelFieldPair(basePanel,
+                new JLabel("Email"), emailField,
+                null, true, true);
+
+        basePanel.add(new JScrollPane(commentsField),
+                gridBagHelper.nextRowFirstCol().spanX().spanY().fillBoth().get());
 
         JButton cancelButton = WidgetFactory.createButton(Bundles.get("common.cancel.button"));
         cancelButton.setActionCommand("cancel");
@@ -193,18 +161,17 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
     }
 
     private void initFieldValues() {
-        if (hasUserFullName()) {
 
+        if (hasUserFullName())
             nameField.setText(getUserFullName());
-
-        } else {
-
+        else if (hasUserRedDataBaseName())
+            nameField.setText(getUserRedDataBaseName());
+        else
             nameField.setText(System.getProperty("user.name"));
-        }
-        if (hasUserEmail()) {
 
+        if (hasUserEmail())
             emailField.setText(getUserEmail());
-        }
+
     }
 
     private String getUserEmail() {
@@ -229,6 +196,18 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
         return SystemProperties.containsKey(
                 Constants.USER_PROPERTIES_KEY, "user.full.name");
+    }
+
+    private String getUserRedDataBaseName() {
+
+        return SystemProperties.getProperty(
+                Constants.USER_PROPERTIES_KEY, "reddatabase.user");
+    }
+
+    private boolean hasUserRedDataBaseName() {
+
+        return SystemProperties.containsKey(
+                Constants.USER_PROPERTIES_KEY, "reddatabase.user");
     }
 
     private String createHeader() {

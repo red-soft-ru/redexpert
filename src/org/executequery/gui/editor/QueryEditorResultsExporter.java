@@ -32,7 +32,6 @@ import org.executequery.gui.importexport.DefaultExcelWorkbookBuilder;
 import org.executequery.gui.importexport.ExcelWorkbookBuilder;
 import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.resultset.RecordDataItem;
-import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.gui.resultset.ResultSetTableModelToXMLWriter;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.TokenizingFormatter;
@@ -51,6 +50,7 @@ import javax.xml.transform.TransformerException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,7 +115,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private JComboBox queryComboSQL;
 
     // Name of selected table
-    private String tableNameForExport;
+    private final String tableNameForExport;
 
 
     public QueryEditorResultsExporter(TableModel model, String tableNameForExport) {
@@ -134,7 +134,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         ReflectiveAction action = new ReflectiveAction(this);
 
-        String[] delims = {"Pipe", "Comma", "Semi-colon", "Hash", "Custom"};
+        String[] delims = {"|", ",", ";", "#", "Custom"};
         delimCombo = ActionUtilities.createComboBox(action, delims, "delimeterChanged");
 
         String[] querySQL = {bundleString("SQLInFile"), bundleString("SQLQueryEditor")};
@@ -312,13 +312,13 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         delimCombo.setEnabled(index == 0);
         columnHeadersCheck.setEnabled(index < 2);
         applyQuotesCheck.setEnabled(index < 3);
-        custom.setVisible(index != 3);
-        customDelimiterField.setVisible(index < 3);
-        tableName.setVisible(index >= 3);
-        customNameTable.setVisible(index >= 3);
+        custom.setVisible(index == 0);
+        customDelimiterField.setVisible(index == 0);
+        tableName.setVisible(index == 3);
+        customNameTable.setVisible(index == 3);
         customNameTable.setText(tableNameForExport);
         exportSQL.setVisible(index >= 3);
-        delimiter.setVisible(index < 3);
+        delimiter.setVisible(index == 0);
         if (index == 3 && indexSQL == 1) {
             fileNameField.setVisible(false);
             browse.setVisible(false);
@@ -328,7 +328,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             browse.setVisible(true);
             filePath.setVisible(true);
         }
-        delimCombo.setVisible(index < 3);
+        delimCombo.setVisible(index == 0);
         queryComboSQL.setVisible(index >= 3);
     }
 
@@ -476,7 +476,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
     private Object exportXML() {
 
-        ResultSetTableModelToXMLWriter writer = new ResultSetTableModelToXMLWriter((ResultSetTableModel) model, fileNameField.getText());
+        ResultSetTableModelToXMLWriter writer = new ResultSetTableModelToXMLWriter(model, fileNameField.getText());
         try {
             writer.write();
 
@@ -647,13 +647,20 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 for (int j = 0; j < columnCount; j++) {
 
                     Object value = model.getValueAt(i, j);
-                    if (applyQuotes && isCDATA((RecordDataItem) value)) {
+                    if (value instanceof RecordDataItem) {
+                        if (applyQuotes && isCDATA((RecordDataItem) value)) {
 
-                        rowLines.append("\"" + valueAsString(value) + "\"");
+                            rowLines.append("\"").append(valueAsString(value)).append("\"");
 
+                        } else {
+
+                            rowLines.append(valueAsString(value));
+                        }
                     } else {
-
-                        rowLines.append(valueAsString(value));
+                        if (model.getColumnClass(j) == String.class && applyQuotes)
+                            rowLines.append("\"").append(valueAsString(value).replaceAll("\n", " ")).append("\\n");
+                        else
+                            rowLines.append(valueAsString(value).replaceAll("\n", "\\n"));
                     }
 
                     if (j != columnCount - 1) {
@@ -892,23 +899,44 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 for (int j = 0; j < columnCount; j++) {
 
                     Object value = model.getValueAt(i, j);
-                    if (applyQuotes && isCDATA((RecordDataItem) value)) {
+                    if (value instanceof RecordDataItem) {
+                        if (applyQuotes && isCDATA((RecordDataItem) value)) {
 
-                        if (valueAsString(value).isEmpty()) {
-                            rowLines.append("NULL");
+                            if (valueAsString(value).isEmpty()) {
+                                rowLines.append("NULL");
+                            } else {
+                                rowLines.append('\'' + valueAsString(value) + '\'');
+                            }
+
+                        } else if (isDataTime((RecordDataItem) value)) {
+
+                            String clearText = value.toString();
+                            clearText = clearText.replace('T', ' ');
+                            rowLines.append('\'' + valueAsString(clearText) + '\'');
+                            clearText = null;
                         } else {
-                            rowLines.append('\'' + valueAsString(value) + '\'');
+
+                            rowLines.append(valueAsString(value));
                         }
-
-                    } else if (isDataTime((RecordDataItem) value)) {
-
-                        String clearText = value.toString();
-                        clearText = clearText.replace('T', ' ');
-                        rowLines.append('\'' + valueAsString(clearText) + '\'');
-                        clearText = null;
                     } else {
+                        if (applyQuotes && model.getColumnClass(j) == String.class) {
 
-                        rowLines.append(valueAsString(value));
+                            if (MiscUtils.isNull((String) value)) {
+                                rowLines.append("NULL");
+                            } else {
+                                rowLines.append('\'' + valueAsString(value) + '\'');
+                            }
+
+                        } else if (model.getColumnClass(j) == Timestamp.class && value != null) {
+
+                            String clearText = value.toString();
+                            clearText = clearText.replace('T', ' ');
+                            rowLines.append('\'' + valueAsString(clearText) + '\'');
+                            clearText = null;
+                        } else {
+
+                            rowLines.append(value);
+                        }
                     }
 
                     if (j != columnCount - 1) {

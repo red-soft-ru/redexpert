@@ -145,6 +145,7 @@ public class TablePanel extends JPanel {
         table = new JTable(dataModel);
         tableCounterModel = new TableCounterModel(table);
         tableCounter = new JTable(tableCounterModel);
+        tableCounter.addMouseListener(new TraceManagerPopupMenu(tableCounter));
         loadWidthCols();
         table.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
             @Override
@@ -257,6 +258,8 @@ public class TablePanel extends JPanel {
                 }*/
             }
         });
+
+        table.addMouseListener(new TraceManagerPopupMenu(table));
 
         table.addMouseListener(new MouseAdapter() {
             @Override

@@ -369,12 +369,12 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                     "pp.rdb$parameter_number,\n" +
                     "fs.rdb$character_length, \n" +
                     "pp.rdb$description,\n" +
-                    "pp.rdb$default_source as default_source,\n" +
+                    "null as default_source,\n" +
                     "fs.rdb$field_precision, \n" +
-                    "pp.rdb$parameter_mechanism as AM,\n" +
+                    "null as AM,\n" +
                     "pp.rdb$field_source as FS,\n" +
                     "fs.rdb$default_source, \n" +
-                    "pp.rdb$null_flag as null_flag,\n" +
+                    "null as null_flag,\n" +
                     "null as RN,\n" +
                     "null as FN,\n" +
                     "co2.rdb$collation_name, \n" +
@@ -384,7 +384,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                     "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
                     "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
                     "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
-                    "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
+                    "left join rdb$collations co2 on (fs.rdb$character_set_id = co2.rdb$character_set_id)\n" +
                     "where prc.rdb$procedure_name = '" + name + "'\n" +
                     "order by pp.rdb$parameter_number";
         SqlStatementResult result = sender.getResultSet(sql);

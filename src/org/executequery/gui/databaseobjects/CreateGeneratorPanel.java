@@ -13,7 +13,6 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
-import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
 
@@ -129,8 +128,8 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
 
         String query = "";
         try {
-            query = SQLUtils.generateCreateSequence(getFormattedName(), startValueText.getStringValue(),
-                    incrementText.getStringValue(), description.getTextAreaComponent().getText(), getVersion(), editing);
+            query = SQLUtils.generateCreateSequence(getFormattedName(), Long.parseLong(startValueText.getStringValue()),
+                    Long.parseLong(incrementText.getStringValue()), description.getTextAreaComponent().getText(), getVersion(), editing);
 
         } catch (SQLException e) { e.printStackTrace(); }
 

@@ -2,7 +2,10 @@ package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.FunctionArgument;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.Parameter;
+import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
@@ -662,7 +665,7 @@ public final class SQLUtils {
     }
 
     public static String generateCreateSequence(
-            String name, Object startValue, Object increment, String description, int databaseVersion, boolean existed) {
+            String name, long startValue, long increment, String description, int databaseVersion, boolean existed) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -678,7 +681,7 @@ public final class SQLUtils {
             if (!existed)
                 sb.append("CREATE SEQUENCE ").append(name).append(";\n");
             sb.append("ALTER SEQUENCE ").append(name);
-            sb.append(" RESTART WITH ").append((long)startValue + (long)increment).append(";\n");
+            sb.append(" RESTART WITH ").append(startValue + increment).append(";\n");
 
         }
 

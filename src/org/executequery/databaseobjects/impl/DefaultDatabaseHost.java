@@ -106,7 +106,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Attempts to establish a connection using this host.
      */
     public boolean connect() throws DataSourceException {
-
         if (!isConnected()) {
             countFinishedMetaTags = 0;
 
@@ -136,10 +135,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         } finally {
 
-            schemas = null;
-            catalogs = null;
-            databaseMetaData = null;
-            connection = null;
+            close();
         }
 
     }
@@ -148,11 +144,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Closes the connection associated with this host.
      */
     public void close() {
-        if (connection != null) {
-            databaseMetaData = null;
-            //ConnectionManager.close(getDatabaseConnection(), connection);
-            connection = null;
-        }
+        schemas = null;
+        catalogs = null;
+        databaseMetaData = null;
+        connection = null;
     }
 
     /**

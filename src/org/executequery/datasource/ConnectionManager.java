@@ -219,6 +219,7 @@ public final class ConnectionManager {
 
             connectionPools.remove(databaseConnection);
             databaseConnection.setConnected(false);
+            ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).close();
         }
     }
 

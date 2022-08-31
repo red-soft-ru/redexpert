@@ -25,6 +25,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
@@ -51,7 +52,7 @@ import java.util.*;
  */
 public final class ConnectionManager {
 
-    private static Map<DatabaseConnection, ConnectionPool> connectionPools = Collections.synchronizedMap(new HashMap<DatabaseConnection, ConnectionPool>());
+    private static final Map<DatabaseConnection, ConnectionPool> connectionPools = Collections.synchronizedMap(new HashMap<DatabaseConnection, ConnectionPool>());
     /**
      * Creates a stored data source for the specified database
      * connection properties object.
@@ -84,6 +85,7 @@ public final class ConnectionManager {
         connectionPools.put(databaseConnection, pool);
         databaseConnection.setConnected(true);
         DatabaseObjectNode hostNode = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection);
+        ((DefaultDatabaseHost) hostNode.getDatabaseObject()).resetCountFinishedMetaTags();
         loadTree(hostNode);
         DatabaseHost host = (DatabaseHost) hostNode.getDatabaseObject();
         try {

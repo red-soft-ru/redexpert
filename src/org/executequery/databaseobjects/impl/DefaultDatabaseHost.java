@@ -205,6 +205,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return countFinishedMetaTags;
     }
 
+    public void resetCountFinishedMetaTags() {
+        countFinishedMetaTags = 0;
+    }
+
     @Override
     public void incCountFinishedMetaTags() {
         countFinishedMetaTags++;

@@ -886,26 +886,41 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             if (nameOfTableForExport.isEmpty()) {
                 nameOfTableForExport = tableNameForExport;
             }
-
+            rowLines.append("/*--uncomment this block if the table does not exist in the database\n");
+            rowLines.append("CREATE TABLE ").append(MiscUtils.getFormattedObject(nameOfTableForExport)).append(" (\n");
+            for (int i = 0; i < columnCount; i++) {
+                rowLines.append("\t").append(model.getColumnName(i));
+                String type = "BLOB SUB_TYPE TEXT";
+                if (model.getColumnClass(i) == Integer.class)
+                    type = "INTEGER";
+                else if (model.getColumnClass(i) == Timestamp.class)
+                    type = "TIMESTAMP";
+                rowLines.append(" ").append(type);
+                if (i < columnCount - 1)
+                    rowLines.append(",");
+                rowLines.append("\n");
+            }
+            rowLines.append(");*/\n");
             boolean applyQuotes = applyQuotesCheck.isSelected();
             for (int i = 0; i < rowCount; i++) {
-                rowLines.append("INSERT INTO " + MiscUtils.getFormattedObject(nameOfTableForExport) + '(');
+                rowLines.append("\nINSERT INTO ").append(MiscUtils.getFormattedObject(nameOfTableForExport)).append("(\n");
                 for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) {
 
-                    rowLines.append(MiscUtils.getFormattedObject(model.getColumnName(countColumnName)) + separator);
+                    rowLines.append("\t").append(MiscUtils.getFormattedObject(model.getColumnName(countColumnName))).append(separator).append("\n");
                 }
 
-                rowLines.append(MiscUtils.getFormattedObject(model.getColumnName(model.getColumnCount() - 1)) + ") VALUES (");
+                rowLines.append("\t").append(MiscUtils.getFormattedObject(model.getColumnName(model.getColumnCount() - 1))).append(")\nVALUES (");
                 for (int j = 0; j < columnCount; j++) {
 
                     Object value = model.getValueAt(i, j);
+                    rowLines.append("\t");
                     if (value instanceof RecordDataItem) {
                         if (applyQuotes && isCDATA((RecordDataItem) value)) {
 
                             if (valueAsString(value).isEmpty()) {
                                 rowLines.append("NULL");
                             } else {
-                                rowLines.append('\'' + valueAsString(value) + '\'');
+                                rowLines.append('\'').append(valueAsString(value)).append('\'');
                             }
 
                         } else if (isDataTime((RecordDataItem) value)) {
@@ -941,7 +956,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
                     if (j != columnCount - 1) {
 
-                        rowLines.append(separator);
+                        rowLines.append(separator).append("\n");
                     }
 
                 }
@@ -950,7 +965,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 progressDialog.increment(i + 1);
             }
 
-            return getFormatter().format(stringBuilder.toString());
+            return stringBuilder.toString();/*getFormatter().format(stringBuilder.toString());*/
 
         } catch (Exception e) {
 

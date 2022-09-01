@@ -971,6 +971,8 @@ public class ColumnData implements Serializable {
             defaultValue = defaultValue.trim();
             if (defaultValue.toUpperCase().startsWith("DEFAULT"))
                 defaultValue = defaultValue.substring(7).trim();
+            if (defaultValue.toUpperCase().startsWith("="))
+                defaultValue = defaultValue.substring(1).trim();
             if (defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
                 defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
             }

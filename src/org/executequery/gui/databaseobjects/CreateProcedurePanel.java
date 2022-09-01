@@ -10,6 +10,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
+import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.datasource.PooledDatabaseMetaData;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
@@ -17,6 +18,7 @@ import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
@@ -29,7 +31,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -118,92 +119,14 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
     @Override
     protected void loadParameters() {
-        {
-            inputParametersPanel.clearRows();// remove first empty row
-            outputParametersPanel.clearRows(); // remove first empty row
-            DatabaseHost host = null;
-            try {
-                host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
-                DatabaseMetaData dmd = host.getDatabaseMetaData();
-                List<ProcedureParameter> parameters = new ArrayList<>();
-
-                ResultSet rs = dmd.getProcedureColumns(null, null, this.procedure, null);
-
-                while (rs.next()) {
-                    ProcedureParameter procedureParameter = new ProcedureParameter(rs.getString(4),
-                            rs.getInt(5),
-                            rs.getInt(6),
-                            rs.getString(7),
-                            rs.getInt(8),
-                            0/*rs.getInt(12)*/);
-                    procedureParameter.setScale(rs.getInt(10));
-                    parameters.add(procedureParameter);
-                }
-
-                releaseResources(rs);
-
-                for (ProcedureParameter pp :
-                        parameters) {
-                    ResultSet resultSet = sender.getResultSet("select\n" +
-                            "f.rdb$field_sub_type as field_subtype,\n" +
-                            "f.rdb$segment_length as segment_length,\n" +
-                            "pp.rdb$field_source as field_source,\n" +
-                            "pp.rdb$null_flag as null_flag,\n" +
-                            "cs.rdb$character_set_name as character_set,\n" +
-                            "pp.rdb$description as description,\n" +
-                            "pp.rdb$parameter_mechanism as mechanism,\n" +
-                            "pp.rdb$field_name as field_name,\n" +
-                            "pp.rdb$relation_name as relation_name,\n" +
-                            "pp.rdb$default_source as default_source\n" +
-                            "from rdb$procedure_parameters pp,\n" +
-                            "rdb$fields f\n" +
-                            "left join rdb$character_sets cs on cs.rdb$character_set_id = f.rdb$character_set_id\n" +
-                            "where pp.rdb$parameter_name = '" + pp.getName() + "'\n" +
-                            "and pp.rdb$procedure_name = '" + this.procedure + "'\n" +
-                            "and  pp.rdb$field_source = f.rdb$field_name").getResultSet();
-                    try {
-                        if (resultSet.next()) {
-                            pp.setSubType(resultSet.getInt(1));
-                            int size = resultSet.getInt(2);
-                            if (size != 0)
-                                pp.setSize(size);
-                            pp.setNullable(resultSet.getInt(4) == 1 ? 0 : 1);
-                            String domain = resultSet.getString(3);
-                            if (!domain.contains("RDB$"))
-                                pp.setDomain(domain.trim());
-                            String characterSet = resultSet.getString(5);
-                            if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
-                                pp.setEncoding(characterSet.trim());
-                            pp.setDescription(resultSet.getString(6));
-                            if (resultSet.getInt(7) == 1) {
-                                pp.setTypeOf(true);
-                                pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
-                                String fieldName = resultSet.getString(8);
-                                String relationName = resultSet.getString(9);
-                                if (fieldName != null && !fieldName.isEmpty()
-                                        && relationName != null && !relationName.isEmpty()) {
-                                    pp.setFieldName(fieldName.trim());
-                                    pp.setRelationName(relationName.trim());
-                                    pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
-                                }
-                            }
-                            pp.setDefaultValue(resultSet.getString("default_source"));
-
-                        }
-                    } finally {
-                        sender.releaseResources();
-                    }
-                    if (pp.getType() == DatabaseMetaData.procedureColumnIn)
-                        inputParametersPanel.addRow(pp);
-                    else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
-                        outputParametersPanel.addRow(pp);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (host != null)
-                    host.close();
-            }
+        inputParametersPanel.clearRows();// remove first empty row
+        outputParametersPanel.clearRows(); // remove first empty row
+        List<ProcedureParameter> parameters = ((DefaultDatabaseProcedure) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.PROCEDURE, procedure)).getParameters();
+        for (ProcedureParameter pp : parameters) {
+            if (pp.getType() == DatabaseMetaData.procedureColumnIn)
+                inputParametersPanel.addRow(pp);
+            else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
+                outputParametersPanel.addRow(pp);
         }
 
     }

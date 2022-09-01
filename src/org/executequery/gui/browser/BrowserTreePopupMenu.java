@@ -63,7 +63,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private JCheckBoxMenuItem showDefaultCatalogsAndSchemas;
 
     private JMenu active;
-    private JMenu sql;
+    private JMenu sqlTable;
+    private JMenu sqlView;
     private JMenu exportData;
     private JMenu importData;
 
@@ -117,7 +118,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         //addSeparator();
 
         createActiveInactiveMenu(listener);
-        createSqlMenu(listener);
+        createTableSqlMenu(listener);
+        createViewSqlMenu(listener);
         createExportMenu(listener);
         createImportMenu(listener);
         moveToFolder = createMenuItem(bundleString("moveToFolder"), "moveToFolder", listener);
@@ -175,7 +177,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     selectAllChildren.setVisible(false);
                     selectAll.setVisible(false);
                     active.setVisible(false);
-                    sql.setVisible(false);
+                    sqlTable.setVisible(false);
+                    sqlView.setVisible(false);
                     exportData.setVisible(false);
                     importData.setVisible(false);
 
@@ -241,7 +244,10 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
 
                     boolean importExport = (node.getType() == NamedObject.TABLE);
-                    sql.setVisible(importExport);
+                    sqlTable.setVisible(importExport);
+
+                    boolean viewIsSelected = (node.getType() == NamedObject.VIEW);
+                    sqlView.setVisible(viewIsSelected);
 
                     boolean triggerIndex = (node.getType() == NamedObject.TRIGGER ||
                             node.getType() == NamedObject.DATABASE_TRIGGER ||
@@ -306,7 +312,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             copyName.setVisible(false);
             moveToFolder.setVisible(false);
             dataBaseInformation.setVisible(false);
-            sql.setVisible(false);
+            sqlTable.setVisible(false);
+            sqlView.setVisible(false);
             exportData.setVisible(false);
             importData.setVisible(false);
         }
@@ -344,13 +351,22 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         //add(exportData);
     }
 
-    private void createSqlMenu(ActionListener listener) {
-        sql = MenuItemFactory.createMenu(bundleString("SQL"));
-        sql.add(createMenuItem(bundleString("selectStatement"), "selectStatement", listener));
-        sql.add(createMenuItem(bundleString("insertStatement"), "insertStatement", listener));
-        sql.add(createMenuItem(bundleString("updateStatement"), "updateStatement", listener));
-        sql.add(createMenuItem(bundleString("createTableStatement"), "createTableStatement", listener));
-        add(sql);
+    private void createTableSqlMenu(ActionListener listener) {
+        sqlTable = MenuItemFactory.createMenu(bundleString("SQL"));
+        sqlTable.add(createMenuItem(bundleString("selectStatement"), "tableSelectStatement", listener));
+        sqlTable.add(createMenuItem(bundleString("insertStatement"), "tableInsertStatement", listener));
+        sqlTable.add(createMenuItem(bundleString("updateStatement"), "tableUpdateStatement", listener));
+        sqlTable.add(createMenuItem(bundleString("createTableStatement"), "createTableStatement", listener));
+        add(sqlTable);
+    }
+
+    private void createViewSqlMenu (ActionListener listener) {
+        sqlView = MenuItemFactory.createMenu(bundleString("SQL"));
+        sqlView.add(createMenuItem(bundleString("selectStatement"), "viewSelectStatement", listener));
+        sqlView.add(createMenuItem(bundleString("insertStatement"), "viewInsertStatement", listener));
+        sqlView.add(createMenuItem(bundleString("updateStatement"), "viewUpdateStatement", listener));
+        sqlView.add(createMenuItem(bundleString("createViewStatement"), "createViewStatement", listener));
+        add(sqlView);
     }
 
     private void createActiveInactiveMenu(ActionListener listener) {

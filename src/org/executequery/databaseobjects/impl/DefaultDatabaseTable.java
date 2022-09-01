@@ -1214,94 +1214,94 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   public String getInsertSQLText() {
 
+    String fields = "";
+    String values = "";
+
     try {
 
-      StringBuilder sb = new StringBuilder();
-      sb.append("INSERT INTO ");
-      sb.append(MiscUtils.getFormattedObject(getName().trim()));
-      sb.append(" (");
+      List<DatabaseColumn> columns = getColumns();
 
-      String indent = getSpacesForLength(sb.length());
+      for (int i = 0, n = columns.size(); i < n; i++) {
 
-      List<DatabaseColumn> _columns = getColumns();
-      for (int i = 0, n = _columns.size(); i < n; i++) {
+        DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
 
-        DatabaseTableColumn column = (DatabaseTableColumn) _columns.get(i);
-        sb.append(column.getNameForQuery());
+        fields += column.getNameForQuery();
+        values += toCamelCase(column.getName());
 
         if (i < n - 1) {
-          sb.append(",\n");
-          sb.append(indent);
+
+          fields += ", ";
+          values += ", ";
         }
 
       }
-
-      sb.append(")\n");
-
-      String valuesString = "VALUES (";
-      sb.append(valuesString);
-
-      indent = getSpacesForLength(valuesString.length());
-
-      for (int i = 0, n = _columns.size(); i < n; i++) {
-        DatabaseTableColumn column = (DatabaseTableColumn) _columns.get(i);
-
-        sb.append(columnAsValueString(column.getName()));
-
-        if (i < n - 1) {
-          sb.append(",\n");
-          sb.append(indent);
-        }
-
-      }
-
-      sb.append(");\n");
-
-      return getFormatter().format(sb.toString());
 
     } catch (DataSourceException e) {
 
-      logThrowable(e);
-      return "";
+      fields = "_fields_";
+      values = "_values_";
+      e.printStackTrace();
     }
+
+    return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
+
   }
 
   public String getUpdateSQLText() {
+
+    String settings = "";
+
     try {
-      StringBuilder sb = new StringBuilder();
-      sb.append("UPDATE ");
-      sb.append(MiscUtils.getFormattedObject(getName().trim()));
 
-      String setString = "SET ";
-      sb.append("\n");
-      sb.append(setString);
+      List<DatabaseColumn> columns = getColumns();
 
-      String indent = getSpacesForLength(setString.length());
+      for (int i = 0, n = columns.size(); i < n; i++) {
 
-      List<DatabaseColumn> _columns = getColumns();
+        DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
 
-      for (int i = 0, n = _columns.size(); i < n; i++) {
-        DatabaseTableColumn column = (DatabaseTableColumn) _columns.get(i);
-
-        sb.append(column.getNameForQuery());
-        sb.append(" = ");
-        sb.append(columnAsValueString(column.getName()));
-
-        if (i < n - 1) {
-          sb.append(",\n");
-          sb.append(indent);
-        }
+        settings += column.getNameForQuery() + " = " +
+                toCamelCase(column.getName());
+        if (i < n - 1)
+          settings += ", ";
 
       }
 
-      sb.append(";\n");
-
-      return getFormatter().format(sb.toString());
     } catch (DataSourceException e) {
 
-      logThrowable(e);
-      return "";
+      settings = "_oldValue_ = _newValue_";
+      e.printStackTrace();
     }
+
+    return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings));
+
+  }
+
+  public String getSelectSQLText() {
+
+    String fields = "";
+
+    try {
+
+      List<DatabaseColumn> columns = getColumns();
+
+      for (int i = 0, n = columns.size(); i < n; i++) {
+
+        DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
+
+        fields += column.getNameForQuery();
+        if (i < n - 1)
+          fields += ", ";
+
+      }
+
+    } catch (DataSourceException e) {
+
+      fields = "*";
+      e.printStackTrace();
+    }
+
+    return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields));
+
   }
 
   TokenizingFormatter formatter;
@@ -1310,46 +1310,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     if (formatter == null)
       formatter = new TokenizingFormatter();
     return formatter;
-  }
-
-  public String getSelectSQLText() {
-    try {
-      StringBuilder sb = new StringBuilder();
-      sb.append("SELECT ");
-
-      String indent = getSpacesForLength(sb.length());
-
-      List<DatabaseColumn> _columns = getColumns();
-
-      for (int i = 0, n = _columns.size(); i < n; i++) {
-        DatabaseTableColumn column = (DatabaseTableColumn) _columns.get(i);
-
-        sb.append(column.getNameForQuery());
-
-        if (i < n - 1) {
-          sb.append(",\n");
-          sb.append(indent);
-        }
-
-      }
-
-      sb.append("\nFROM ");
-      sb.append(MiscUtils.getFormattedObject(getName().trim()));
-      sb.append(";\n");
-
-      return getFormatter().format(sb.toString());
-
-    } catch (DataSourceException e) {
-
-      logThrowable(e);
-      return "";
-    }
-
-  }
-
-  private String columnAsValueString(String column) {
-
-    return toCamelCase(column);
   }
 
   private String getSpacesForLength(int length) {

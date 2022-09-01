@@ -25,10 +25,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -843,6 +840,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         return (DatabaseTable) treePanel.getSelectedNamedObject();
     }
 
+    private DatabaseView getSelectedView() {
+        return (DatabaseView) treePanel.getSelectedNamedObject();
+    }
+
     private StatementToEditorWriter getStatementWriter() {
         if (statementWriter == null) {
             statementWriter = new StatementToEditorWriter();
@@ -854,21 +855,41 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         getStatementWriter().writeToOpenEditor(databaseConnection, statement);
     }
 
-    public void selectStatement(ActionEvent e) {
+    public void tableSelectStatement(ActionEvent e) {
         statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedTable().getSelectSQLText());
     }
 
-    public void insertStatement(ActionEvent e) {
+    public void tableInsertStatement(ActionEvent e) {
         statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedTable().getInsertSQLText());
     }
 
-    public void updateStatement(ActionEvent e) {
+    public void tableUpdateStatement(ActionEvent e) {
         statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedTable().getUpdateSQLText());
     }
 
     public void createTableStatement(ActionEvent e) {
         try {
             statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedTable().getCreateSQLText());
+        } catch (DataSourceException dse) {
+            handleException(dse);
+        }
+    }
+
+    public void viewSelectStatement(ActionEvent e) {
+        statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedView().getSelectSQLText());
+    }
+
+    public void viewInsertStatement(ActionEvent e) {
+        statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedView().getInsertSQLText());
+    }
+
+    public void viewUpdateStatement(ActionEvent e) {
+        statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedView().getUpdateSQLText());
+    }
+
+    public void createViewStatement(ActionEvent e) {
+        try {
+            statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedView().getCreateSQLText());
         } catch (DataSourceException dse) {
             handleException(dse);
         }

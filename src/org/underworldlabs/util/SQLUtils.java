@@ -712,6 +712,37 @@ public final class SQLUtils {
         return sb.toString();
     }
 
+    public static String generateDefaultUpdateStatement(String name, String settings) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("UPDATE ").append(format(name.trim()));
+        sb.append(" SET ").append(settings.trim()).append(";\n");
+
+        return sb.toString();
+    }
+
+    public static String generateDefaultInsertStatement(String name, String fields, String values) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("INSERT INTO ").append(format(name.trim()));
+        sb.append(" (").append(fields.trim()).append(") ");
+        sb.append("VALUES (").append(values.trim()).append(");\n");
+
+        return sb.toString();
+    }
+
+    public static String generateDefaultSelectStatement(String name, String fields) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("SELECT ").append(fields.trim());
+        sb.append(" FROM ").append(format(name.trim())).append(";\n");
+
+        return sb.toString();
+    }
+
     private static String format(String object) {
         return MiscUtils.getFormattedObject(object);
     }

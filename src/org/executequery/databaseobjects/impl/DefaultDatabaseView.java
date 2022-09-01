@@ -62,7 +62,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
                 for (int i = 0; i < columns.size(); i++) {
                     fields += " " + MiscUtils.getFormattedObject(columns.get(i).getName());
                     if (i != columns.size() - 1)
-                        fields += ",\n";
+                        fields += ", ";
                 }
             }
 
@@ -70,6 +70,91 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
         return SQLUtils.generateCreateView(getName(), fields, getSource(),
                 getRemarks(), getDatabaseMajorVersion(), false);
+
+    }
+
+    public String getSelectSQLText() {
+
+        String fields = "";
+
+        try {
+
+            List<DatabaseColumn> columns = getColumns();
+
+            for (int i = 0, n = columns.size(); i < n; i++) {
+
+                fields += columns.get(i).getName();
+                if (i < n - 1)
+                    fields += ", ";
+
+            }
+
+        } catch (DataSourceException e) {
+
+            fields = "*";
+            e.printStackTrace();
+        }
+
+        return SQLUtils.generateDefaultSelectStatement(getName(), fields);
+    }
+
+    public String getInsertSQLText() {
+
+        String fields = "";
+        String values = "";
+
+        try {
+
+            List<DatabaseColumn> columns = getColumns();
+
+            for (int i = 0, n = columns.size(); i < n; i++) {
+
+                fields += columns.get(i).getName();
+                values += toCamelCase(columns.get(i).getName());
+
+                if (i < n - 1) {
+
+                    fields += ", ";
+                    values += ", ";
+                }
+
+            }
+
+        } catch (DataSourceException e) {
+
+            fields = "_fields_";
+            values = "_values_";
+            e.printStackTrace();
+        }
+
+        return SQLUtils.generateDefaultInsertStatement(getName(), fields, values);
+
+    }
+
+    public String getUpdateSQLText() {
+
+        String settings = "";
+
+        try {
+
+            List<DatabaseColumn> columns = getColumns();
+
+            for (int i = 0, n = columns.size(); i < n; i++) {
+
+                settings += columns.get(i).getName() + " = " +
+                        toCamelCase(columns.get(i).getName());
+                if (i < n - 1)
+                    settings += ", ";
+
+            }
+
+        } catch (DataSourceException e) {
+
+            settings = "_oldValue_ = _newValue_";
+            e.printStackTrace();
+        }
+
+        return SQLUtils.generateDefaultUpdateStatement(getName(), settings);
 
     }
 

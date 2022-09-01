@@ -24,7 +24,10 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
+import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import java.util.List;
 
@@ -48,32 +51,26 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
     public String getCreateSQLText() throws DataSourceException {
 
-        String sql = getSource();
+        String fields = null;
 
-        StringBuilder sb = new StringBuilder();
+        try {
 
-        List<DatabaseColumn> columns = this.getColumns();
+            List<DatabaseColumn> columns = getColumns();
+            if (columns != null) {
+                fields = "";
 
-        sb.append("CREATE OR ALTER VIEW ");
-        sb.append("\"");
-        sb.append(getName());
-        sb.append("\"");
-        sb.append("(\n");
+                for (int i = 0; i < columns.size(); i++) {
+                    fields += " " + MiscUtils.getFormattedObject(columns.get(i).getName());
+                    if (i != columns.size() - 1)
+                        fields += ",\n";
+                }
+            }
 
-        for (int i = 0; i < columns.size(); i++) {
-            sb.append("\t");
-            sb.append("\"");
-            sb.append(columns.get(i).getName());
-            sb.append("\"");
-            if (i != columns.size() - 1)
-                sb.append(",\n");
-        }
-        sb.append(")\n");
-        sb.append("AS\n");
-        sb.append(sql);
+        } catch (Exception ignored) { }
 
-        sb.append("\n");
-        return sb.toString();
+        return SQLUtils.generateCreateView(getName(), fields, getSource(),
+                getRemarks(), getDatabaseMajorVersion(), false);
+
     }
 
     @Override

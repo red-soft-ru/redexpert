@@ -23,6 +23,8 @@ package org.executequery.gui.editor;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -117,12 +119,18 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     // Name of selected table
     private final String tableNameForExport;
 
+    private final List<DatabaseColumn> databaseColumns;
 
     public QueryEditorResultsExporter(TableModel model, String tableNameForExport) {
+        this(model, tableNameForExport, null);
+    }
+
+    public QueryEditorResultsExporter(TableModel model, String tableNameForExport, List<DatabaseColumn> databaseColumns) {
 
         super(GUIUtilities.getParentFrame(), Bundles.get("QueryEditorResultsExporter.ExportQueryResults"), true);
         this.model = model;
         this.tableNameForExport = tableNameForExport;
+        this.databaseColumns = databaseColumns;
         init();
 
         pack();
@@ -714,7 +722,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             RecordDataItem recordDataItem = (RecordDataItem) value;
             if (!recordDataItem.isValueNull()) {
 
-                return recordDataItem.getDisplayValue().toString();
+                return recordDataItem.getDisplayValue().toString().replaceAll("'", "''");
 
             } else {
 
@@ -723,7 +731,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         } else {
 
-            return (value != null ? value.toString() : "");
+            return (value != null ? value.toString().replaceAll("'", "''") : "");
         }
 
     }
@@ -789,65 +797,18 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     public Object queryEditor() {
         ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
         DatabaseConnection databaseConnection = connectionsTreePanel.getSelectedDatabaseConnection();
-        getStatementWriter().writeToOpenEditor(databaseConnection, querySQLInQueryEditor());
+        getStatementWriter().writeToOpenEditor(databaseConnection, generateSQLScript());
         return Bundles.get("PrintPreviewCommand.done");
     }
 
     public Object querySQLToFile() {
-        char separator = ',';
         ResultsProgressDialog progressDialog = null;
         PrintWriter writer = null;
         File exportFile = null;
-        String nameOfTableForExport = customNameTable.getText();
         try {
             exportFile = new File(fileNameField.getText());
-
-            StringBuilder rowLines = new StringBuilder(5000);
             writer = new PrintWriter(new FileWriter(exportFile, false), true);
-
-            int rowCount = model.getRowCount();
-            int columnCount = model.getColumnCount();
-
-            progressDialog = progressDialog(rowCount);
-
-            if (nameOfTableForExport.isEmpty()) {
-                nameOfTableForExport = tableNameForExport;
-            }
-
-            boolean applyQuotes = applyQuotesCheck.isSelected();
-            for (int i = 0; i < rowCount; i++) {
-                rowLines.append("INSERT INTO " + MiscUtils.getFormattedObject(nameOfTableForExport) + '(');
-                for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) {
-                    rowLines.append(MiscUtils.getFormattedObject(model.getColumnName(countColumnName)) + separator);
-                }
-                rowLines.append(MiscUtils.getFormattedObject(model.getColumnName(model.getColumnCount() - 1)) + ") VALUES (");
-                for (int j = 0; j < columnCount; j++) {
-                    Object value = model.getValueAt(i, j);
-                    if (applyQuotes && isCDATA((RecordDataItem) value)) {
-                        if (valueAsString(value).isEmpty()) {
-                            rowLines.append("NULL");
-                        } else {
-                            rowLines.append('\'' + valueAsString(value) + '\'');
-                        }
-                    } else if (isDataTime((RecordDataItem) value)) {
-                        String clearText = value.toString();
-                        clearText = clearText.replace('T', ' ');
-                        rowLines.append('\'' + valueAsString(clearText) + '\'');
-                        clearText = null;
-                    } else {
-                        rowLines.append(valueAsString(value));
-                    }
-
-                    if (j != columnCount - 1) {
-                        rowLines.append(separator);
-                    }
-
-                }
-
-                writer.println(rowLines + ");");
-                rowLines.setLength(0);
-                progressDialog.increment(i + 1);
-            }
+            writer.println(generateSQLScript());
 
             return Bundles.get("PrintPreviewCommand.done");
 
@@ -866,13 +827,10 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             if (exportFile != null) {
                 exportFile = null;
             }
-            if (nameOfTableForExport != null) {
-                nameOfTableForExport = null;
-            }
         }
     }
 
-    public String querySQLInQueryEditor() {
+    public String generateSQLScript() {
         char separator = ',';
         ResultsProgressDialog progressDialog = null;
         StringBuilder stringBuilder = new StringBuilder();
@@ -887,33 +845,50 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 nameOfTableForExport = tableNameForExport;
             }
             rowLines.append("/*--uncomment this block if the table does not exist in the database\n");
-            rowLines.append("CREATE TABLE ").append(MiscUtils.getFormattedObject(nameOfTableForExport)).append(" (\n");
-            for (int i = 0; i < columnCount; i++) {
-                rowLines.append("\t").append(model.getColumnName(i));
-                String type = "BLOB SUB_TYPE TEXT";
-                if (model.getColumnClass(i) == Integer.class)
-                    type = "INTEGER";
-                else if (model.getColumnClass(i) == Timestamp.class)
-                    type = "TIMESTAMP";
-                rowLines.append(" ").append(type);
-                if (i < columnCount - 1)
-                    rowLines.append(",");
-                rowLines.append("\n");
-            }
-            rowLines.append(");*/\n");
-            boolean applyQuotes = applyQuotesCheck.isSelected();
-            for (int i = 0; i < rowCount; i++) {
-                rowLines.append("\nINSERT INTO ").append(MiscUtils.getFormattedObject(nameOfTableForExport)).append("(\n");
-                for (int countColumnName = 0; countColumnName < model.getColumnCount() - 1; countColumnName++) {
-
-                    rowLines.append("\t").append(MiscUtils.getFormattedObject(model.getColumnName(countColumnName))).append(separator).append("\n");
+            if (databaseColumns != null && !databaseColumns.isEmpty()) {
+                rowLines.append(((AbstractDatabaseObject) databaseColumns.get(0).getParent()).getCreateSQLText());
+            } else {
+                rowLines.append("CREATE TABLE ").append(MiscUtils.getFormattedObject(nameOfTableForExport)).append(" (\n");
+                for (int i = 0; i < columnCount; i++) {
+                    rowLines.append("\t").append(model.getColumnName(i));
+                    String type = "BLOB SUB_TYPE TEXT";
+                    if (model.getColumnClass(i) == Integer.class)
+                        type = "INTEGER";
+                    else if (model.getColumnClass(i) == Timestamp.class)
+                        type = "TIMESTAMP";
+                    rowLines.append(" ").append(type);
+                    if (i < columnCount - 1)
+                        rowLines.append(",");
+                    rowLines.append("\n");
                 }
+                rowLines.append(");");
+            }
+            rowLines.append("*/\n");
+            boolean applyQuotes = applyQuotesCheck.isSelected();
+            StringBuilder insertHeader = new StringBuilder();
+            insertHeader.append("\nINSERT INTO ").append(MiscUtils.getFormattedObject(nameOfTableForExport)).append("(");
+            boolean first = true;
+            for (int countColumnName = 0; countColumnName < model.getColumnCount(); countColumnName++) {
+                if (databaseColumns != null && databaseColumns.get(countColumnName).isGenerated())
+                    continue;
+                if (first) {
+                    first = false;
+                } else insertHeader.append(separator);
+                insertHeader.append("\n").append("\t").append(MiscUtils.getFormattedObject(model.getColumnName(countColumnName)));
+            }
+            insertHeader.append(")\nVALUES (");
+            for (int i = 0; i < rowCount; i++) {
 
-                rowLines.append("\t").append(MiscUtils.getFormattedObject(model.getColumnName(model.getColumnCount() - 1))).append(")\nVALUES (");
+                rowLines.append(insertHeader);
+                first = true;
                 for (int j = 0; j < columnCount; j++) {
-
+                    if (databaseColumns != null && databaseColumns.get(j).isGenerated())
+                        continue;
+                    if (first) {
+                        first = false;
+                    } else rowLines.append(separator);
                     Object value = model.getValueAt(i, j);
-                    rowLines.append("\t");
+                    rowLines.append("\n\t");
                     if (value instanceof RecordDataItem) {
                         if (applyQuotes && isCDATA((RecordDataItem) value)) {
 
@@ -954,18 +929,13 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                         }
                     }
 
-                    if (j != columnCount - 1) {
-
-                        rowLines.append(separator).append("\n");
-                    }
-
                 }
                 stringBuilder.append(rowLines + ");");
                 rowLines.setLength(0);
                 progressDialog.increment(i + 1);
             }
 
-            return stringBuilder.toString();/*getFormatter().format(stringBuilder.toString());*/
+            return stringBuilder.toString();
 
         } catch (Exception e) {
 

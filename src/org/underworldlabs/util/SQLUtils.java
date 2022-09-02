@@ -261,9 +261,9 @@ public final class SQLUtils {
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE]));
         String output = formattedParameters(outputParameters, false);
         if (!MiscUtils.isNull(output.trim())) {
-            sb.append("\nRETURNS (");
+            sb.append("RETURNS (\n");
             sb.append(output);
-            sb.append(")\n");
+            sb.append(")");
         }
         if (!MiscUtils.isNull(entryPoint)) {
             sb.append("\nEXTERNAL NAME '");
@@ -313,10 +313,11 @@ public final class SQLUtils {
         sb.append("CREATE OR ALTER " + metatag + " ");
         sb.append(format(name));
         if (inputParameters != null && inputParameters.size() > 0 && (inputParameters.size() == 1 && !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
-            sb.append(" (");
+            sb.append(" (\n");
             sb.append(formattedParameters(inputParameters, false));
-            sb.append(")\n");
+            sb.append(")");
         }
+        sb.append("\n");
         return sb.toString();
 
     }
@@ -369,7 +370,6 @@ public final class SQLUtils {
 
     public static String formattedParameters(Vector<ColumnData> tableVector, boolean variable) {
         StringBuilder sqlText = new StringBuilder();
-        sqlText.append("\n");
         for (int i = 0, k = tableVector.size(); i < k; i++) {
             ColumnData cd = tableVector.elementAt(i);
             if (!MiscUtils.isNull(cd.getColumnName())) {
@@ -380,8 +380,11 @@ public final class SQLUtils {
                     if (cd.isScroll())
                         sqlText.append("SCROLL ");
                     sqlText.append("(").append(cd.getSelectOperator()).append(")");
-                } else
+                } else {
+                    if (!variable)
+                        sqlText.append("\t");
                     sqlText.append(formattedParameter(cd));
+                }
                 if (variable) {
                     sqlText.append(";");
                     if (cd.getDescription() != null && !cd.getDescription().isEmpty()) {

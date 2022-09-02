@@ -71,7 +71,7 @@ public class ImportConnectionsPanelTwo extends ActionPanel {
         gbc.gridwidth = 3;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(new JLabel(Bundles.get("ExportConnectionsPanelThree.ExportingSelections")), gbc);
+        add(new JLabel(bundleString("ImportingSelections")), gbc);
         gbc.gridy++;
         gbc.gridx = 1;
         gbc.weightx = 1.0;

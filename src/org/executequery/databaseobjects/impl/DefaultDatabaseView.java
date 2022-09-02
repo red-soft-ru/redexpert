@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
 import org.executequery.log.Log;
+import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
@@ -60,7 +61,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
                 fields = "";
 
                 for (int i = 0; i < columns.size(); i++) {
-                    fields += " " + MiscUtils.getFormattedObject(columns.get(i).getName());
+                    fields += MiscUtils.getFormattedObject(columns.get(i).getName());
                     if (i != columns.size() - 1)
                         fields += ", ";
                 }
@@ -68,8 +69,8 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
         } catch (Exception ignored) { }
 
-        return SQLUtils.generateCreateView(getName(), fields, getSource(),
-                getRemarks(), getDatabaseMajorVersion(), false);
+        return getFormatter().format(SQLUtils.generateCreateView(getName(), fields, getSource(),
+                getRemarks(), getDatabaseMajorVersion(), false));
 
     }
 
@@ -95,7 +96,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
             e.printStackTrace();
         }
 
-        return SQLUtils.generateDefaultSelectStatement(getName(), fields);
+        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields));
     }
 
     public String getInsertSQLText() {
@@ -110,7 +111,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
             for (int i = 0, n = columns.size(); i < n; i++) {
 
                 fields += columns.get(i).getName();
-                values += toCamelCase(columns.get(i).getName());
+                values += ":" + toCamelCase(columns.get(i).getName());
 
                 if (i < n - 1) {
 
@@ -127,7 +128,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
             e.printStackTrace();
         }
 
-        return SQLUtils.generateDefaultInsertStatement(getName(), fields, values);
+        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
 
     }
 
@@ -141,7 +142,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
             for (int i = 0, n = columns.size(); i < n; i++) {
 
-                settings += columns.get(i).getName() + " = " +
+                settings += columns.get(i).getName() + " = :" +
                         toCamelCase(columns.get(i).getName());
                 if (i < n - 1)
                     settings += ", ";
@@ -154,8 +155,16 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
             e.printStackTrace();
         }
 
-        return SQLUtils.generateDefaultUpdateStatement(getName(), settings);
+        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings));
 
+    }
+
+    TokenizingFormatter formatter;
+
+    protected TokenizingFormatter getFormatter() {
+        if (formatter == null)
+            formatter = new TokenizingFormatter();
+        return formatter;
     }
 
     @Override

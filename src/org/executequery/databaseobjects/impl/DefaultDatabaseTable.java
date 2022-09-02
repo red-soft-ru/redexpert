@@ -1226,7 +1226,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
 
         fields += column.getNameForQuery();
-        values += toCamelCase(column.getName());
+        values += ":" + toCamelCase(column.getName());
 
         if (i < n - 1) {
 
@@ -1259,7 +1259,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
 
-        settings += column.getNameForQuery() + " = " +
+        settings += column.getNameForQuery() + " = :" +
                 toCamelCase(column.getName());
         if (i < n - 1)
           settings += ", ";

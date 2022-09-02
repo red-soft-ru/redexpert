@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing.wizard;
 
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -165,7 +166,7 @@ public abstract class WizardProcessPanel extends JPanel
         rightContentPanel.add(rightPanel, gbc);
 
         // setup the left panel
-        JLabel stepsLabel = new JLabel("Steps", JLabel.LEFT);
+        JLabel stepsLabel = new JLabel(Bundles.get("WizardProcessPanel.Steps"), JLabel.LEFT);
         stepsLabel.setOpaque(false);
         stepsLabel.setBorder(labelBorder);
         stepsLabel.setFont(selectedLabelFont);
@@ -194,20 +195,20 @@ public abstract class WizardProcessPanel extends JPanel
         add(base, BorderLayout.CENTER);
 
         // setup the button panel
-        nextButton = new WizardPanelButton("Next");
+        nextButton = new WizardPanelButton(Bundles.get("WizardProcessPanel.Next"));
         nextButton.setMnemonic('N');
 
-        backButton = new WizardPanelButton("Back");
+        backButton = new WizardPanelButton(Bundles.get("WizardProcessPanel.Back"));
         backButton.setMnemonic('B');
 
-        cancelButton = new WizardPanelButton("Cancel");
+        cancelButton = new WizardPanelButton(Bundles.get("WizardProcessPanel.Cancel"));
         cancelButton.setMnemonic('C');
 
         nextButton.addActionListener(this);
         backButton.addActionListener(this);
         cancelButton.addActionListener(this);
 
-        helpButton = new WizardPanelButton("Help");
+        helpButton = new WizardPanelButton(Bundles.get("WizardProcessPanel.Help"));
         helpButton.setMnemonic('H');
 
 //        Dimension btnDim = new Dimension(75,25);
@@ -254,6 +255,12 @@ public abstract class WizardProcessPanel extends JPanel
 
     }
 
+    protected String bundleString(String key, Object... args) {
+        return Bundles.get(this.getClass(), key, args);
+    }
+    protected final String getString(String key, Object... args) {
+        return Bundles.get(key, args);
+    }
     protected void prepare() {
 
         // setup the step labels
@@ -297,7 +304,7 @@ public abstract class WizardProcessPanel extends JPanel
     protected void setHelpAction(Action a) {
         helpButton.setAction(a);
         helpButton.setIcon(null);
-        helpButton.setText("Help");
+        helpButton.setText(Bundles.get("WizardProcessPanel.Help"));
     }
 
     /**
@@ -312,7 +319,7 @@ public abstract class WizardProcessPanel extends JPanel
     protected void setHelpAction(Action a, String actionCommand) {
         helpButton.setAction(a);
         helpButton.setIcon(null);
-        helpButton.setText("Help");
+        helpButton.setText(Bundles.get("WizardProcessPanel.Help"));
         helpButton.setActionCommand(actionCommand);
     }
 

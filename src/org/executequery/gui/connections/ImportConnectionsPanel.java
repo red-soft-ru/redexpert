@@ -26,6 +26,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.ActionContainer;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.ConnectionImport;
 import org.executequery.repository.ConnectionImporter;
 import org.executequery.repository.RepositoryException;
@@ -42,17 +43,17 @@ import java.util.List;
  */
 public class ImportConnectionsPanel extends WizardProcessPanel implements ActiveComponent, ImportProcessMonitor {
 
-    public static final String TITLE = "Import Connections";
+    public static final String TITLE = Bundles.get("ImportConnectionPanel.ImportConnections");
     public static final String FRAME_ICON = "ImportConnections16.png";
 
     private static final String[] STEPS = {
-            "Select the import file",
-            "Import from file"
+            Bundles.get("ImportConnectionPanel.StepsOne"),
+            Bundles.get("ImportConnectionPanel.StepsTwo")
     };
 
     private static final String[] TITLES = {
-            "Import file",
-            "Import"
+            Bundles.get("ImportConnectionPanel.TitlesOne"),
+            Bundles.get("ImportConnectionPanel.TitlesTwo")
     };
 
     private ImportConnectionsPanelOne firstPanel;
@@ -112,7 +113,7 @@ public class ImportConnectionsPanel extends WizardProcessPanel implements Active
             public void run() {
                 try {
 
-                    System.out.println("Importing connections from file...");
+                    System.out.println(Bundles.get("ImportConnectionPanel.ImportingConnectionsFromFile"));
 
                     setButtonsEnabled(false);
 
@@ -125,14 +126,14 @@ public class ImportConnectionsPanel extends WizardProcessPanel implements Active
                         setNextButtonEnabled(false);
                         setBackButtonEnabled(true);
                         setCancelButtonEnabled(true);
-                        setCancelButtonText("Finish");
+                        setCancelButtonText(Bundles.get("common.finish.button"));
 
                         secondPanel.stop();
 
-                        secondPanel.append("\nDone.");
-                        secondPanel.append("The import file was processed successfully");
+                        secondPanel.append(Bundles.get("ExportConnectionsPanel.done"));
+                        secondPanel.append(Bundles.get("ImportConnectionPanel.TheImportFileWasProcessedSuccessfully"));
 
-                        System.out.println("Finished importing connections from file.");
+                        System.out.println(Bundles.get("ImportConnectionPanel.FinishedImportingConnectionsFromFile"));
                     }
 
                 } finally {
@@ -161,15 +162,14 @@ public class ImportConnectionsPanel extends WizardProcessPanel implements Active
             EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(
                     this, ConnectionRepositoryEvent.CONNECTION_IMPORTED, connectionImport.getConnections()));
 
-            secondPanel.append("\nProcessed " + connectionImport.getFolderCount() + " folders and "
-                    + connectionImport.getConnectionCount() + " connections");
+            secondPanel.append(getString("ImportConnectionPanel.ProcessedFoldersAndConnections", connectionImport.getFolderCount(), connectionImport.getConnectionCount()));
 
             return true;
 
         } catch (RepositoryException e) {
 
             GUIUtilities.displayExceptionErrorDialog(
-                    "Error reading connections from file.\n\nThe system returned:\n" + e.getMessage(), e);
+                    bundleString("ExceptionErrorMessage", e.getMessage()), e);
             return false;
         }
 

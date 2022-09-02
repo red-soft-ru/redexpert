@@ -26,6 +26,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ConnectionsFolder;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.ConnectionExporter;
 import org.executequery.repository.RepositoryException;
 import org.underworldlabs.swing.GUIUtils;
@@ -44,19 +45,20 @@ import java.util.List;
  */
 public class ExportConnectionsPanel extends WizardProcessPanel implements ActiveComponent {
 
-    public static final String TITLE = "Export Connections";
+    public static final String TITLE = Bundles.get("ExportConnectionsPanel.Title");
     public static final String FRAME_ICON = "ExportConnections16.png";
 
     private static final String[] STEPS = {
-            "Select connections to be exported",
-            "Select the output file",
-            "Export selections"
+            Bundles.get("ExportConnectionsPanel.Step-1"),
+            Bundles.get("ExportConnectionsPanel.Step-2"),
+            Bundles.get("ExportConnectionsPanel.Step-3")
     };
 
     private static final String[] TITLES = {
-            "Folders and connections",
-            "Output file",
-            "Export"
+            Bundles.get("ExportConnectionsPanel.Titles-1"),
+            Bundles.get("ExportConnectionsPanel.Titles-2"),
+            Bundles.get("ExportConnectionsPanel.Titles-3")
+
     };
 
     private ExportConnectionsPanelOne firstPanel;
@@ -106,7 +108,9 @@ public class ExportConnectionsPanel extends WizardProcessPanel implements Active
         }
         return true;
     }
-
+    protected String bundledString(String key, Object... args) {
+        return Bundles.get(this.getClass(), key, args);
+    }
     @Override
     public void cleanup() {
     }
@@ -123,7 +127,7 @@ public class ExportConnectionsPanel extends WizardProcessPanel implements Active
             public void run() {
                 try {
 
-                    System.out.println("Exporting connections to file...");
+                    System.out.println(bundledString("ExportingConnectionsToFile"));
 
                     setButtonsEnabled(false);
 
@@ -136,12 +140,12 @@ public class ExportConnectionsPanel extends WizardProcessPanel implements Active
                         setNextButtonEnabled(false);
                         setBackButtonEnabled(true);
                         setCancelButtonEnabled(true);
-                        setCancelButtonText("Finish");
+                        setCancelButtonText(Bundles.get("common.finish.button"));
 
-                        thirdPanel.append("\nDone.");
-                        thirdPanel.append("The selected connections have been exported to - " + secondPanel.getExportPath());
+                        thirdPanel.append(Bundles.get("ExportConnectionsPanel.done"));
+                        thirdPanel.append(bundledString("TheSelectedConnectionsHaveBeenExportedTo", secondPanel.getExportPath()));
 
-                        System.out.println("Finished exporting connections to file.");
+                        System.out.println(bundledString("FinishedExportingConnectionsToFile"));
                     }
 
                 } finally {
@@ -190,13 +194,13 @@ public class ExportConnectionsPanel extends WizardProcessPanel implements Active
             thirdPanel.append(StringUtils.EMPTY);
             for (ConnectionsFolder folder : folders) {
 
-                thirdPanel.append("Exporting folder: " + folder.getName() + " ... ");
+                thirdPanel.append(bundledString("ExportingFolder",folder.getName()));
             }
 
             thirdPanel.append(StringUtils.EMPTY);
             for (DatabaseConnection connection : connections) {
 
-                thirdPanel.append("Exporting connection: " + connection.getName() + " ... ");
+                thirdPanel.append(bundledString("ExportingConnection", connection.getName()));
             }
 
             new ConnectionExporter().write(fileName, folders, connections);
@@ -205,7 +209,7 @@ public class ExportConnectionsPanel extends WizardProcessPanel implements Active
         } catch (RepositoryException e) {
 
             GUIUtilities.displayExceptionErrorDialog(
-                    "Error writing connections to file.\n\nThe system returned:\n" + e.getMessage(), e);
+                    bundledString("ErrorWritingConnectionsToFileTheSystemReturned") + e.getMessage(), e);
             return false;
         }
 

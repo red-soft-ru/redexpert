@@ -23,6 +23,8 @@ package org.executequery.gui.browser;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
@@ -37,13 +39,19 @@ import org.executequery.gui.databaseobjects.CreateViewPanel;
 import org.executequery.gui.databaseobjects.DefaultDatabaseObjectTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.executequery.sql.SQLFormatter;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.Constants;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
+import org.underworldlabs.swing.RolloverButton;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -137,6 +145,14 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
     private JButton formatSqlButton;
 
+    /**
+     * comment components
+     */
+    private SimpleTextArea commentField;
+    private JPanel commentPanel;
+    private RolloverButton addRolloverButton;
+    private RolloverButton removeRolloverButton;
+
     public ObjectDefinitionPanel(BrowserController controller) {
         super();
         this.controller = controller;
@@ -150,43 +166,21 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
     private void jbInit() {
 
+        GridBagHelper gridBagHelper = new GridBagHelper().
+                anchorNorthWest().fillBoth().setInsets(5,5,5,5);
+
         dependenciesPanel = new DependenciesPanel();
         noResultsLabel = new JLabel("No information for this object is available.",
                 JLabel.CENTER);
 
-        JPanel descPanel = new JPanel(new GridBagLayout());
-
         tableNameField = new DisabledField();
         //schemaNameField = new DisabledField();
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(10, 5, 5, 5);
-        gbc.insets = ins;
-        gbc.anchor = GridBagConstraints.NORTHEAST;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        descPanel.add(new JLabel(Bundles.getCommon("name")), gbc);
-        gbc.insets.left = 5;
-        gbc.insets.right = 5;
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        descPanel.add(tableNameField, gbc);
-        gbc.insets.top = 0;
-        gbc.gridy++;
-        //descPanel.add(schemaNameField, gbc);
-        gbc.insets.right = 5;
-        gbc.insets.left = 5;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        //descPanel.add(new JLabel("Schema:"), gbc);
 
         // configure the table column descriptions panel
         descBottomPanel = new JPanel(new BorderLayout());
         descBottomPanel.setBorder(BorderFactory.createTitledBorder(Bundles.getCommon("columns")));
 
         tableDataPanel = new TableDataTab(true);
-
 
         metaDataPanel = new DatabaseObjectMetaDataPanel();
 
@@ -199,22 +193,32 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             }
         });
 
+        //sql panel
         JPanel sqlPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints sqlGbc = new GridBagConstraints();
-        Insets sqlIns = new Insets(10, 5, 5, 5);
-        sqlGbc.insets = sqlIns;
-        sqlGbc.anchor = GridBagConstraints.NORTHWEST;
-        sqlGbc.fill = GridBagConstraints.NONE;
-        sqlGbc.gridx = 0;
-        sqlGbc.gridy = 0;
-        sqlPanel.add(formatSqlButton, sqlGbc);
-        sqlGbc.gridy++;
-        sqlGbc.fill = GridBagConstraints.BOTH;
-        sqlGbc.weighty = 1;
-        sqlGbc.weightx = 1;
-        sqlPanel.add(sqlTextPanel, sqlGbc);
 
+        sqlPanel.add(formatSqlButton, gridBagHelper.setLabelDefault().get());
+        sqlPanel.add(sqlTextPanel, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
+        //comment panel
+        commentField = new SimpleTextArea();
+
+        addRolloverButton = new RolloverButton();
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        addRolloverButton.addActionListener(e -> saveComment());
+
+        removeRolloverButton = new RolloverButton();
+        removeRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
+        removeRolloverButton.addActionListener(e -> removeComment());
+
+        commentPanel = new JPanel(new GridBagLayout());
+        commentPanel.add(addRolloverButton,
+                gridBagHelper.setInsets(2, 2, 2, 2).anchorNorthWest().setLabelDefault().get());
+        commentPanel.add(removeRolloverButton,
+                gridBagHelper.nextCol().nextCol().get());
+        commentPanel.add(commentField,
+                gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().setWidth(3).setMaxWeightX().get());
+
+        //tabbed panel
         tabPane = new JTabbedPane();
         tabPane.add(Bundles.getCommon("description"), descBottomPanel);
         addPrivilegesTab(tabPane);
@@ -222,26 +226,75 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("SQL"), sqlPanel);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
         tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
+        tabPane.add(Bundles.getCommon("comment-field-label"), commentPanel);
 
-        // add the tab pane
-        gbc.gridy = 2;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.insets.bottom = 5;
-        gbc.insets.top = 5;
-        gbc.insets.right = 5;
-        gbc.insets.left = 5;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        descPanel.add(tabPane, gbc);
+        //components arranging
+        JPanel descPanel = new JPanel(new GridBagLayout());
+
+        gridBagHelper = new GridBagHelper().
+                anchorNorthWest().fillBoth().setInsets(5,5,5,5);
+
+        gridBagHelper.addLabelFieldPair(descPanel,
+                new JLabel(Bundles.getCommon("name")), tableNameField,
+                null, true, true);
+//        gridBagHelper.addLabelFieldPair(descPanel,
+//                new JLabel("Schema:"), schemaNameField,
+//                null, true, true);
+        descPanel.add(tabPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().setMaxWeightY().get());
 
         tabPane.addChangeListener(this);
         //tableDescPanel = new SimpleTableDescriptionPanel();
 
-
-
         setHeader("Database Object", GUIUtilities.loadIcon(BrowserConstants.DATABASE_OBJECT_IMAGE));
         setContentPanel(descPanel);
         //cache = new HashMap();
+    }
+
+    public DatabaseConnection getSelectedConnection() {
+        return currentObjectView.getHost().getDatabaseConnection();
+    }
+
+    private void removeComment() {
+        commentField.getTextAreaComponent().setText(currentObjectView.getRemarks());
+    }
+
+    private void saveComment() {
+
+        DefaultStatementExecutor executor = new DefaultStatementExecutor();
+
+        try {
+
+            String metaTag = "";
+
+            if (currentObjectView.getType() == NamedObject.VIEW)
+                metaTag = "VIEW";
+
+            executor.setCommitMode(false);
+            executor.setKeepAlive(true);
+            executor.setDatabaseConnection(getSelectedConnection());
+
+            String request = SQLUtils.generateComment(currentObjectView.getName(), metaTag,
+                    commentField.getTextAreaComponent().getText().trim(), ";");
+
+            Log.info("Request created: " + request);
+
+            SqlStatementResult result = executor.execute(QueryTypes.COMMENT, request);
+            executor.getConnection().commit();
+
+            if (result.isException())
+                Log.error(result.getErrorMessage());
+            else
+                Log.info("Changes saved");
+
+        } catch (Exception e) {
+
+            Log.error("Error updating comment on table", e);
+
+        } finally {
+
+            executor.releaseResources();
+        }
+
     }
 
     public String getLayoutName() {
@@ -414,6 +467,8 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
         sqlTextPanel.getTextPane().setDatabaseConnection(object.getHost().getDatabaseConnection());
         sqlTextPanel.setSQLText(Constants.EMPTY);
+
+        removeComment();
 
         // header values
         if (object.getType() == NamedObject.VIEW) {

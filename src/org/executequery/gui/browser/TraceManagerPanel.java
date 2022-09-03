@@ -16,6 +16,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
+import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.NumberTextField;
@@ -29,6 +30,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -252,7 +255,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     try {
                         reader = new BufferedReader(
                                 new InputStreamReader(
-                                        new FileInputStream(openFileLogField.getText())));
+                                        Files.newInputStream(Paths.get(openFileLogField.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
                         String line;
                         while ((line = reader.readLine()) != null) {
                             String str = line;

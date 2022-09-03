@@ -323,7 +323,7 @@ not_query
 procedure_info
 :procedure_name ':' end_line
 (params end_line+)?
-('returns: ' return_value end_line+)?
+('returns:' (SPACE|end_line) return_value end_line+)?
 (records_fetched end_line+)?
 (memory_size_rule end_line+)?
 (global_counters end_line+)?
@@ -338,7 +338,8 @@ trigger_info:
 ;
 
 return_value
-:any_name
+:params
+|any_name
 |'"' path '"'
 ;
 

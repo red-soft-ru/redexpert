@@ -255,7 +255,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                                         new FileInputStream(openFileLogField.getText())));
                         String line;
                         while ((line = reader.readLine()) != null) {
-                            String str = line.trim();
+                            String str = line;
                             if (str.matches(".?\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+.*")) {
                                 if (finded) {
                                     LogMessage logMessage = new LogMessage(s);
@@ -465,7 +465,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         boolean finded = false;
         if (!messages.isEmpty())
             for (int i = 0; i < strs.length; i++) {
-                String str = strs[i].trim();
+                String str = strs[i].replace("\r", "");
                 if (str.toLowerCase().startsWith("trace session id")) {
                     if (finded) {
                         parseMessage(s);
@@ -483,27 +483,29 @@ public class TraceManagerPanel extends JPanel implements TabView {
                             stopSession();
                     }
 
-                } else if (str.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")) {
+                } else if (str.matches(".?\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+.*")) {
                     if (finded) {
                         parseMessage(s);
                     }
                     message = Message.LOG_MESSAGE;
                     finded = true;
-                    s = str + "\n";
+                    s = str;
                 } else if (str.matches("^Session ID:.*")) {
                     if (finded) {
                         parseMessage(s);
                     }
                     message = Message.SESSION_INFO;
                     finded = true;
-                    s = str + "\n";
+                    s = str;
                 } else {
-                    s += str + "\n";
+                    s += str;
                 }
+                if (i < strs.length - 1)
+                    s += "\n";
             }
-        if (changed)
+        if (changed) {
             sb.append(s);
-        else if (!s.isEmpty() && !s.toLowerCase().startsWith("trace session")) {
+        } else if (!s.isEmpty() && !s.toLowerCase().startsWith("trace session")) {
             s = s.trim();
             parseMessage(s);
         }

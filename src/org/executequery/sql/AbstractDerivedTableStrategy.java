@@ -30,7 +30,7 @@ public abstract class AbstractDerivedTableStrategy implements DerivedTableStrate
     public List<QueryTable> deriveTables(String query) {
 
         List<QueryTable> queryTables = new ArrayList<QueryTable>();
-        String tables = extractTablesAndAliases(query.toUpperCase());
+        String tables = extractTablesAndAliases(query);
 
         if (StringUtils.isNotBlank(tables)) {
 
@@ -38,6 +38,10 @@ public abstract class AbstractDerivedTableStrategy implements DerivedTableStrate
             for (String nameAndAlias : namesAndAliases) {
 
                 String[] strings = StringUtils.split(nameAndAlias, " ");
+                if (strings.length > 0 && !strings[0].contains("\""))
+                    strings[0] = strings[0].toUpperCase();
+                if (strings.length > 1)
+                    strings[1] = strings[1].toUpperCase();
                 queryTables.add(new QueryTable(strings[0].trim(), strings.length > 1 ? strings[1].trim() : null));
             }
 

@@ -3,9 +3,10 @@ package org.executequery.gui.editor.autocomplete;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObjectFactory;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.editor.ConnectionChangeListener;
 import org.executequery.gui.editor.QueryWithPosition;
 import org.executequery.gui.text.SQLTextArea;
@@ -74,7 +75,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
     private final DatabaseObjectFactory databaseObjectFactory;
 
-    private DatabaseHost databaseHost;
+    private DefaultDatabaseHost databaseHost;
 
     private List<AutoCompleteListItem> autoCompleteListItems;
 
@@ -502,28 +503,35 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         if (hasDotIndex) {
             KeywordRepositoryImpl kw = new KeywordRepositoryImpl();
             List<String> sql92 = kw.getSQL92();
-            Pattern pattern = Pattern.compile("([A-z]*\\$\\w+)\\s("
-                            + tableString
-                            + "\\b)|(\\w+)\\s("
-                            + tableString
-                            + "\\b)",
+            String regex = "([A-z]*\\$\\w+)\\s("
+                    + tableString
+                    + "\\b)|(\\w+)\\s("
+                    + tableString
+                    + "\\b)"
+                    + "|(\".+\")\\s("
+                    + tableString
+                    + "\\b)";
+            Pattern pattern = Pattern.compile(regex,
                     Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(editorText);
             while (matcher.find()) {
                 String tableFromAlias = "";
                 String tableFromAlias1 = matcher.group(1);
                 String tableFromAlias3 = matcher.group(3);
+                String tableFromAlias5 = matcher.group(5);
 
                 if (tableFromAlias1 != null)
                     tableFromAlias = tableFromAlias1;
                 else if (tableFromAlias3 != null)
                     tableFromAlias = tableFromAlias3;
+                else if (tableFromAlias5 != null)
+                    tableFromAlias = tableFromAlias5;
 
-                if (sql92.contains(tableFromAlias.toUpperCase()))
+                if (!tableFromAlias.startsWith("\"") && sql92.contains(tableFromAlias.toUpperCase()))
                     continue;
 
                 List<AutoCompleteListItem> itemsForTable =
-                        selectionsFactory.buildItemsForTable(databaseHost, tableFromAlias.toUpperCase());
+                        selectionsFactory.buildItemsForTable(databaseHost, tableFromAlias.startsWith("\"") ? tableFromAlias : tableFromAlias.toUpperCase());
 
                 if (!itemsForTable.isEmpty()) {
                     itemsForTable =
@@ -876,7 +884,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
         if (databaseConnection != null) {
 
-            databaseHost = databaseObjectFactory.createDatabaseHost(databaseConnection);
+            databaseHost = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection);
             scheduleListItemLoad();
         }
 
@@ -900,7 +908,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
         } else if (databaseHost == null) {
 
-            databaseHost = databaseObjectFactory.createDatabaseHost(selectedConnection);
+            databaseHost = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(selectedConnection);
         }
 
         selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteSchema, sqlTextPane);

@@ -20,10 +20,7 @@
 
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseObjectElement;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.underworldlabs.jdbc.DataSourceException;
 
 /**
@@ -101,7 +98,7 @@ public interface ColumnConstraint extends DatabaseObjectElement {
      *
      * @return the table
      */
-    DatabaseTable getTable();
+    DatabaseTableObject getTable();
 
     void setTable(DatabaseTable table);
 

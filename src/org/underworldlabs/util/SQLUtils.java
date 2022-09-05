@@ -706,8 +706,8 @@ public final class SQLUtils {
             sb.append("ALTER VIEW ").append(format(name));
 
         if (fields != null && !fields.trim().equals(""))
-            sb.append(" (").append(fields.trim()).append(")");
-        sb.append("\nAS ").append(selectStatement.trim()).append(";\n");
+            sb.append(" (").append(fields.trim()).append(") ");
+        sb.append("\nAS \n").append(selectStatement.trim()).append(";\n");
 
         if (description != null && !description.trim().equals(""))
             sb.append(generateComment(name, "VIEW", description.trim(), ";"));

@@ -160,6 +160,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         addPrivilegesTab(tabbedPane);
         addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
+        addCommentTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         reset();
     }
 

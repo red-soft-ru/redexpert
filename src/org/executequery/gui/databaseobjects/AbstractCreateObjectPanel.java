@@ -19,9 +19,12 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.DependenciesPanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
@@ -345,6 +348,11 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         createSqlPanel.getTextPane().setEditable(false);
         createSqlPanel.setSQLText(databaseObject.getCreateSQLText());
         tabbedPane.add(bundleStaticString("createSQL"), createSqlPanel);
+    }
+
+    protected void addCommentTab(DatabaseObject databaseObject) {
+        SimpleCommentPanel commentPanel = new SimpleCommentPanel(databaseObject);
+        tabbedPane.add(Bundles.getCommon("comment-field-label"), commentPanel.getCommentPanel());
     }
 
     @Override

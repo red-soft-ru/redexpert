@@ -202,7 +202,10 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
             query = SQLUtils.generateCreateSequence(getName(), getSequenceFirstValue(), getIncrement(),
                     getRemarks(), getVersion(), false);
 
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            e.printStackTrace();
+        }
 
         return query;
     }

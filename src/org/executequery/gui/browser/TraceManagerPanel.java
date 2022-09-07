@@ -1,11 +1,14 @@
 package org.executequery.gui.browser;
 
 import biz.redsoft.IFBTraceManager;
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.event.ConnectionRepositoryEvent;
+import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.browser.managment.tracemanager.BuildConfigurationPanel;
 import org.executequery.gui.browser.managment.tracemanager.LogConstants;
 import org.executequery.gui.browser.managment.tracemanager.SessionManagerPanel;
@@ -21,6 +24,7 @@ import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -37,8 +41,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class TraceManagerPanel extends JPanel implements TabView {
 
@@ -47,9 +49,11 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private TablePanel loggerPanel;
     private Timer timer;
     private OutputStream fileLog;
-    private OutputStream outputStream;
-    private Lock lock;
-    private StringBuilder sb;
+    private PipedOutputStream outputStream;
+
+    private PipedInputStream inputStream;
+
+    private BufferedReader bufferedReader;
     private JButton fileLogButton;
     private JButton fileDatabaseButton;
     private JButton fileConfButton;
@@ -69,7 +73,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private JTextField sessionField;
     private JComboBox<DatabaseConnection> databaseBox;
     private int idLogMessage = 0;
-    private boolean changed = false;
+    private final boolean changed = false;
     private List<String> charsets;
     private JComboBox charsetCombo;
     private JTabbedPane tabPane;
@@ -96,14 +100,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
         ListSelectionPanel columnsCheckPanel = new ListSelectionPanel(new Vector<>(Arrays.asList(LogConstants.COLUMNS)));
         columnsCheckPanel.selectAllAction();
         loggerPanel = new TablePanel(columnsCheckPanel);
-        lock = new ReentrantLock();
-        timer = new Timer(1500, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                timerAction();
-            }
-        });
-        sb = new StringBuilder();
         fileLogButton = new JButton("...");
         fileDatabaseButton = new JButton("...");
         fileConfButton = new JButton("...");
@@ -170,6 +166,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     portField.setText(dc.getPort());
                     sessionField.setText(dc.getName() + "_trace_session");
                     charsetCombo.setSelectedItem(dc.getCharset());
+                    if (dc.getPathToTraceConfig() != null)
+                        fileConfField.setText(dc.getPathToTraceConfig());
                     if (dc.getServerVersion() >= 3) {
                         confPanel.getAppropriationBox().setSelectedIndex(1);
                     } else {
@@ -247,8 +245,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 int returnVal = fileChooser.showOpenDialog(openFileLog);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     openFileLogField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-                    String s = "";
-                    boolean finded = false;
                     clearAll();
                     idLogMessage = 0;
                     BufferedReader reader = null;
@@ -256,26 +252,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         reader = new BufferedReader(
                                 new InputStreamReader(
                                         Files.newInputStream(Paths.get(openFileLogField.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            String str = line;
-                            if (str.matches(".?\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+.*")) {
-                                if (finded) {
-                                    LogMessage logMessage = new LogMessage(s);
-                                    idLogMessage++;
-                                    logMessage.setId(idLogMessage);
-                                    loggerPanel.addRow(logMessage);
-                                }
-                                finded = true;
-                                s = str + "\n";
-                            } else {
-                                s += str + "\n";
-                            }
-                        }
-                        LogMessage logMessage = new LogMessage(s);
-                        idLogMessage++;
-                        logMessage.setId(idLogMessage);
-                        loggerPanel.addRow(logMessage);
+                        readFromBufferedReader(reader, true);
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     } finally {
@@ -294,42 +271,22 @@ public class TraceManagerPanel extends JPanel implements TabView {
         startStopSessionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (outputStream != null) {
-                    try {
-                        outputStream.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-                outputStream = null;
                 if (startStopSessionButton.getText().toUpperCase().contentEquals(bundleString("Start").toUpperCase())) {
                     if (logToFileBox.isSelected()) {
                         if (fileLog != null) {
-                            outputStream = new OutputStream() {
-                                @Override
-                                public void write(int b) throws IOException {
-                                    fileLog.write(b);
-                                    lock.lock();
-                                    changed = true;
-                                    sb.append((char) b);
-                                    lock.unlock();
-                                }
-                            };
+                            outputStream = new TraceOutputStream();
                         } else {
                             GUIUtilities.displayErrorMessage("File is empty");
                             return;
                         }
+                    } else
+                        outputStream = new PipedOutputStream();
+                    try {
+                        inputStream = new PipedInputStream(outputStream);
+                        bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
                     }
-                    else
-                        outputStream = new OutputStream() {
-                            @Override
-                            public void write(int b) {
-                                lock.lock();
-                                changed = true;
-                                sb.append((char) b);
-                                lock.unlock();
-                            }
-                        };
                     traceManager.setUser(userField.getText());
                     traceManager.setPassword(new String(passwordField.getPassword()));
                     traceManager.setLogger(outputStream);
@@ -340,7 +297,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     traceManager.setDatabase(fileDatabaseField.getText());
                     traceManager.setHost(hostField.getText());
                     traceManager.setPort(portField.getValue());
-                    timer.start();
                     try {
                         String conf;
                         if (useBuildConfBox.isSelected()) {
@@ -349,8 +305,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                                 return;
                             }
                             conf = traceManager.loadConfigurationFromFile(fileConfField.getText());
-                        }
-                        else conf = confPanel.getConfig();
+                        } else conf = confPanel.getConfig();
                         traceManager.startTraceSession(sessionField.getText(), conf);
                         startStopSessionButton.setText(bundleString("Stop"));
                         tabPane.add(bundleString("SessionManager"), sessionManagerPanel);
@@ -358,6 +313,20 @@ public class TraceManagerPanel extends JPanel implements TabView {
                             connectionPanel.getComponents()[i].setEnabled(false);
                         }
                         logToFileBox.setEnabled(false);
+                        SwingWorker sw = new SwingWorker() {
+                            @Override
+                            public Object construct() {
+                                readFromBufferedReader(bufferedReader, false);
+                                return null;
+                            }
+                        };
+                        sw.start();
+                        tabPane.setSelectedComponent(loggerPanel);
+                        DatabaseConnection dc = (DatabaseConnection) databaseBox.getSelectedItem();
+                        dc.setPathToTraceConfig(fileConfField.getText());
+                        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this,
+                                ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) databaseBox.getSelectedItem()
+                        ));
                     } catch (Exception e1) {
                         GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1);
                     }
@@ -412,7 +381,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
         tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));
         tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
         tabPane.add(bundleString("Logger"), loggerPanel);
-        //tabPane.add("Session Manager", sessionManagerPanel);
         connectionPanel.setLayout(new GridBagLayout());
         gbh.fullDefaults();
         gbh.addLabelFieldPair(connectionPanel, bundleString("Connections"), databaseBox, null, true, true);
@@ -459,61 +427,56 @@ public class TraceManagerPanel extends JPanel implements TabView {
         }
     }
 
-    private void timerAction() {
-        lock.lock();
-        String messages = sb.toString();
-        sb.setLength(0);
+    private void readFromBufferedReader(BufferedReader reader, boolean fromFile) {
         String s = "";
-        String[] strs = messages.split("\n");
         boolean finded = false;
-        if (!messages.isEmpty())
-            for (int i = 0; i < strs.length; i++) {
-                String str = strs[i].replace("\r", "");
-                if (str.toLowerCase().startsWith("trace session id")) {
-                    if (finded) {
-                        parseMessage(s);
-                    }
-                    s = str.replace("Trace session ID ", "");
-                    if (s.contains("started")) {
-                        s = s.replace("started", "");
-                        s = s.replace(" ", "");
-                        currentSessionId = Integer.parseInt(s);
-                    } else if (s.contains("stopped")) {
-                        s = s.replace("stopped", "");
-                        s = s.replace(" ", "");
-                        int sessionId = Integer.parseInt(s);
-                        if (sessionId == currentSessionId)
-                            stopSession();
-                    }
-
-                } else if (str.matches(".?\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+.*")) {
-                    if (finded) {
-                        parseMessage(s);
-                    }
-                    message = Message.LOG_MESSAGE;
-                    finded = true;
-                    s = str;
-                } else if (str.matches("^Session ID:.*")) {
-                    if (finded) {
-                        parseMessage(s);
-                    }
-                    message = Message.SESSION_INFO;
-                    finded = true;
-                    s = str;
-                } else {
-                    s += str;
-                }
-                if (i < strs.length - 1)
-                    s += "\n";
+        String line;
+        while (true) {
+            try {
+                if ((line = reader.readLine()) == null)
+                    break;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        if (changed) {
-            sb.append(s);
-        } else if (!s.isEmpty() && !s.toLowerCase().startsWith("trace session")) {
-            s = s.trim();
-            parseMessage(s);
+            String str = line;
+            if (str.toLowerCase().startsWith("trace session id")) {
+                if (finded) {
+                    parseMessage(s, message, fromFile);
+                }
+                message = Message.LOG_MESSAGE;
+                s = str;
+                String temp = str.replace("Trace session ID ", "");
+                if (temp.contains("started")) {
+                    temp = temp.replace("started", "");
+                    temp = temp.replace(" ", "");
+                    currentSessionId = Integer.parseInt(temp);
+                } else if (temp.contains("stopped")) {
+                    temp = temp.replace("stopped", "");
+                    temp = temp.replace(" ", "");
+                    int sessionId = Integer.parseInt(temp);
+                    if (sessionId == currentSessionId && !fromFile)
+                        stopSession();
+                }
+                finded = true;
+            } else if (str.matches(".?\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+.*")) {
+                if (finded) {
+                    parseMessage(s, message, fromFile);
+                }
+                message = Message.LOG_MESSAGE;
+                finded = true;
+                s = str + "\n";
+            } else if (str.matches("^Session ID:.*")) {
+                if (finded) {
+                    parseMessage(s, message, fromFile);
+                }
+                message = Message.SESSION_INFO;
+                finded = true;
+                s = str + "\n";
+            } else {
+                s += str + "\n";
+            }
         }
-        changed = false;
-        lock.unlock();
+        parseMessage(s, message, fromFile);
     }
 
     @Override
@@ -537,13 +500,15 @@ public class TraceManagerPanel extends JPanel implements TabView {
         return true;
     }
 
-    private void parseMessage(String msg) {
+    private void parseMessage(String msg, Message message, boolean fromFile) {
         if (message == Message.LOG_MESSAGE) {
             LogMessage logMessage = new LogMessage(msg);
             idLogMessage++;
             logMessage.setId(idLogMessage);
             loggerPanel.addRow(logMessage);
         } else {
+            if (fromFile)
+                return;
             if (sessionManagerPanel.isRefreshFlag()) {
                 sessions.clear();
                 sessionManagerPanel.setRefreshFlag(false);
@@ -600,10 +565,26 @@ public class TraceManagerPanel extends JPanel implements TabView {
         }
         setEnableElements();
         logToFileBox.setEnabled(true);
+        if (outputStream != null) {
+            try {
+                outputStream.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+        outputStream = null;
     }
 
     enum Message {
         LOG_MESSAGE,
         SESSION_INFO
+    }
+
+    class TraceOutputStream extends PipedOutputStream {
+        @Override
+        public void write(int b) throws IOException {
+            fileLog.write(b);
+            super.write(b);
+        }
     }
 }

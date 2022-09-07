@@ -13,7 +13,6 @@ import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.executequery.sql.SQLFormatter;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -27,8 +26,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusListener, KeyListener {
@@ -36,7 +33,6 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     public static final String EDIT_TITLE = getEditTitle(NamedObject.VIEW);
 
     private SimpleSqlTextPanel sqlTextPanel;
-    private SimpleSqlTextPanel selectStatementPanel;
     private JButton formatSqlButton;
     private SimpleTextArea descriptionTextArea;
     private static final String replacing_name = "<view_name>";
@@ -73,10 +69,6 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
 //        sqlTextPanel.addFocusListener(this);
 //        sqlTextPanel.getTextPane().addKeyListener(this);
 
-        selectStatementPanel = new SimpleSqlTextPanel();
-        selectStatementPanel.getTextPane().setDatabaseConnection(connection);
-        selectStatementPanel.setSQLText("SELECT _fields_ FROM _table_name_ WHERE _conditions_");
-
         JPanel sqlPanel = new JPanel(new GridBagLayout());
 
         GridBagHelper gridBagHelper = new GridBagHelper();
@@ -93,31 +85,41 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             }
         });
 
-        DocumentListener documentListener = new DocumentListener() {
+        nameField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                updateSQL();
+                changeName();
             }
             @Override
             public void removeUpdate(DocumentEvent e) {
-                updateSQL();
+                changeName();
             }
             @Override
             public void changedUpdate(DocumentEvent e) {
-                updateSQL();
+                changeName();
             }
-        };
+        });
 
-        nameField.getDocument().addDocumentListener(documentListener);
-        selectStatementPanel.getTextPane().getDocument().addDocumentListener(documentListener);
-        descriptionTextArea.getTextAreaComponent().getDocument().addDocumentListener(documentListener);
+        descriptionTextArea.getTextAreaComponent().getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changeComment();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changeComment();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changeComment();
+            }
+        });
 
         //create location elements
         tabbedPane.add(bundleStaticString("SQL"), sqlPanel);
-        tabbedPane.add("Select Statement", selectStatementPanel);
         tabbedPane.add(bundleStaticString("description"), descriptionTextArea);
 
-        updateSQL();
+        sqlTextPanel.setSQLText(generateQuery());
     }
 
     @Override
@@ -173,8 +175,8 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
 
         try {
             query = SQLUtils.generateCreateView(nameField.getText(), fields,
-                    selectStatementPanel.getSQLText().replace(";",""),
-                    descriptionTextArea.getTextAreaComponent().getText(), getVersion(), editing);
+                    "SELECT _fields_ FROM _table_ WHERE _conditions_",
+                    descriptionTextArea.getTextAreaComponent().getText(), getDatabaseVersion(), editing);
 
         } catch (Exception e) { e.printStackTrace(); }
 
@@ -182,18 +184,75 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
 
     }
 
-    int getVersion() throws SQLException {
-        DatabaseHost host = new DefaultDatabaseHost(connection);
-        return host.getDatabaseMetaData().getDatabaseMajorVersion();
+    private void changeName() {
+
+        if (Pattern.compile("VIEW \"\"").matcher(sqlTextPanel.getSQLText()).find()) {
+
+            sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
+                    replaceAll("VIEW \"\"", "VIEW " + format(nameField.getText().trim())));
+
+        } else if (Pattern.compile("VIEW \".*\"").matcher(sqlTextPanel.getSQLText()).find()) {
+
+            sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
+                    replaceAll("VIEW \".*\"", "VIEW " + format(nameField.getText().trim())));
+
+        } else if (Pattern.compile("VIEW \\w*\\b").matcher(sqlTextPanel.getSQLText()).find()) {
+
+            sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
+                    replaceAll("VIEW \\w*\\b", "VIEW " + format(nameField.getText().trim())));
+
+        } else {
+
+            sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
+                    replaceAll("VIEW ", "VIEW " + format(nameField.getText().trim())));
+        }
+
     }
 
-    void updateSQL() {
-        sqlTextPanel.setSQLText(generateQuery());
+    private void changeComment() {
+
+        if (sqlTextPanel.getSQLText().contains("COMMENT ON VIEW")) {
+
+            if (Pattern.compile("VIEW \"\"").matcher(sqlTextPanel.getSQLText()).find()) {
+
+                sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
+                        replaceAll("\nCOMMENT ON VIEW \"\" IS '.*';",
+                                SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
+                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";")));
+
+            } else if (Pattern.compile("VIEW \".*\"").matcher(sqlTextPanel.getSQLText()).find()) {
+
+                sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
+                        replaceAll("\nCOMMENT ON VIEW \".*\" IS '.*';",
+                                SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
+                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";")));
+
+            } else if (Pattern.compile("VIEW \\w*\\b").matcher(sqlTextPanel.getSQLText()).find()) {
+
+                sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
+                        replaceAll("\nCOMMENT ON VIEW \\w*\\b IS '.*';",
+                                SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
+                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";")));
+
+            } else {
+
+                sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
+                        replaceAll("\nCOMMENT ON VIEW  IS '.*';",
+                                SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
+                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";")));
+            }
+
+        } else {
+
+            sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim() + "\n" + SQLUtils.generateComment(
+                    nameField.getText().trim(), "VIEW", descriptionTextArea.getTextAreaComponent().getText().trim(), ";"));
+        }
+
     }
 
     @Override
     public void createObject() {
-        displayExecuteQueryDialog(generateQuery(), ";");
+        displayExecuteQueryDialog(sqlTextPanel.getSQLText(), ";");
     }
 
     @Override
@@ -233,4 +292,9 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
 
     protected void reset() {
     }
+
+    private static String format(String object) {
+        return MiscUtils.getFormattedObject(object);
+    }
+
 }

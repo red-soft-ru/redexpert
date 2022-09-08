@@ -21,10 +21,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
 import org.executequery.gui.table.CreateTableSQLSyntax;
-import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.gui.text.SimpleTextArea;
-import org.executequery.gui.text.TextEditor;
-import org.executequery.gui.text.TextEditorContainer;
+import org.executequery.gui.text.*;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.procedureParser.ProcedureParserBaseListener;
@@ -160,7 +157,9 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         addPrivilegesTab(tabbedPane);
         addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
-        addCommentTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
+        tabbedPane.setComponentAt(1, new SimpleCommentPanel((DatabaseObject)
+                ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure)).getCommentPanel());
+
         reset();
     }
 
@@ -417,7 +416,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
         tabbedPane.insertTab(bundleString("Edit"), null, containerPanel, null, 0);
 
-        tabbedPane.insertTab(bundleString("Description"), null, descriptionPanel, null, 1);
+        tabbedPane.insertTab(Bundles.getCommon("comment-field-label"), null, descriptionPanel, null, 1);
 
         ddlTextPanel = new SimpleSqlTextPanel();
 

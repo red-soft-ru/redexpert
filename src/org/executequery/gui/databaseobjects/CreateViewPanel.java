@@ -1,9 +1,11 @@
 package org.executequery.gui.databaseobjects;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseView;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
@@ -90,10 +92,12 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             public void insertUpdate(DocumentEvent e) {
                 changeName();
             }
+
             @Override
             public void removeUpdate(DocumentEvent e) {
                 changeName();
             }
+
             @Override
             public void changedUpdate(DocumentEvent e) {
                 changeName();
@@ -105,10 +109,12 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             public void insertUpdate(DocumentEvent e) {
                 changeComment();
             }
+
             @Override
             public void removeUpdate(DocumentEvent e) {
                 changeComment();
             }
+
             @Override
             public void changedUpdate(DocumentEvent e) {
                 changeComment();
@@ -171,14 +177,22 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
                 }
             }
 
-        } catch (Exception ignored) { }
+        } catch (Exception ignored) {}
 
         try {
-            query = SQLUtils.generateCreateView(nameField.getText(), fields,
-                    "SELECT _fields_ FROM _table_ WHERE _conditions_",
+
+            String selectStatement = "SELECT _fields_ FROM _table_ WHERE _conditions_";
+            if (view != null)
+                selectStatement = view.getSource();
+
+            query = SQLUtils.generateCreateView(nameField.getText(), fields, selectStatement,
                     descriptionTextArea.getTextAreaComponent().getText(), getDatabaseVersion(), editing);
 
-        } catch (Exception e) { e.printStackTrace(); }
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            e.printStackTrace();
+        }
 
         return query;
 

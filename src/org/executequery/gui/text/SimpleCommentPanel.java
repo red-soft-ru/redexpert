@@ -72,12 +72,18 @@ public class SimpleCommentPanel {
 
         DefaultStatementExecutor executor = new DefaultStatementExecutor();
 
+        String comment = commentField.getTextAreaComponent().getText().trim();
+        if (comment.equals(""))
+            comment = "NULL";
+
         try {
 
             String metaTag = "";
 
             if (currentDatabaseObject.getType() == NamedObject.VIEW)
                 metaTag = "VIEW";
+            else if (currentDatabaseObject.getType() == NamedObject.TABLE)
+                metaTag = "TABLE";
             else if (currentDatabaseObject.getType() == NamedObject.PROCEDURE)
                 metaTag = "PROCEDURE";
             else if (currentDatabaseObject.getType() == NamedObject.FUNCTION)
@@ -88,20 +94,23 @@ public class SimpleCommentPanel {
             executor.setDatabaseConnection(getSelectedConnection());
 
             String request = SQLUtils.generateComment(currentDatabaseObject.getName(), metaTag,
-                    commentField.getTextAreaComponent().getText().trim(), ";");
+                    comment, ";");
 
             Log.info("Request created: " + request);
 
             SqlStatementResult result = executor.execute(QueryTypes.COMMENT, request);
             executor.getConnection().commit();
 
-            if (result.isException())
+            if (result.isException()) {
                 Log.error(result.getErrorMessage());
+                GUIUtilities.displayWarningMessage("Error updating comment on table\n" + result.getErrorMessage());
+            }
             else
                 Log.info("Changes saved");
 
         } catch (Exception e) {
 
+            GUIUtilities.displayExceptionErrorDialog("Error updating comment on table", e);
             Log.error("Error updating comment on table", e);
 
         } finally {

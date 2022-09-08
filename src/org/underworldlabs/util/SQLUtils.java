@@ -299,9 +299,11 @@ public final class SQLUtils {
             sb.append("\n");
             sb.append("COMMENT ON " + metatag + " ");
             sb.append(format(name));
-            sb.append(" IS '");
-            sb.append(text);
-            sb.append("'");
+            sb.append(" IS ");
+            if (!text.equals("NULL"))
+                sb.append("'" + text + "'");
+            else
+                sb.append("NULL");
             sb.append(delimiter);
             sb.append("\n");
         }

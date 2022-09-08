@@ -45,6 +45,7 @@ import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.table.KeyCellRenderer;
 import org.executequery.gui.table.TableConstraintFunction;
+import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.gui.text.TextEditor;
@@ -171,11 +172,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      * the erd panel
      */
     private ReferencesDiagramPanel referencesPanel;
-    /**
-     * comment field
-     */
-    private SimpleTextArea commentField;
-
 
     /**
      * the apply changes button
@@ -191,11 +187,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      * the button to get count os table rows
      */
     private JButton rowsCountButton;
-    /**
-     * the button to save comment
-     */
-    RolloverButton addRolloverButton;
-    RolloverButton removeRolloverButton;
 
     /**
      * the browser's control object
@@ -214,7 +205,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private JPanel buttonsEditingConstraintPanel;
     private JPanel buttonsEditingIndexesPanel;
     private JPanel buttonsEditingTriggersPanel;
-    private JPanel commentPanel;
 
     Semaphore lock;
 
@@ -246,8 +236,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         columnIndexTable.setColumnSelectionAllowed(false);
         columnIndexTable.getTableHeader().setReorderingAllowed(false);
-
-        commentField = new SimpleTextArea();
 
         //externalFilePanel
         GridBagHelper gbh = new GridBagHelper();
@@ -341,25 +329,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         createSqlText = new SimpleSqlTextPanel();
         createSqlText.setBorder(BorderFactory.createTitledBorder(bundleString("create-table")));
         createSqlText.getEditorTextComponent().addFocusListener(this);
-
-        //comment panel
-        GridBagHelper gbhTemp = new GridBagHelper();
-
-        addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
-        addRolloverButton.addActionListener(e -> saveComment());
-
-        removeRolloverButton = new RolloverButton();
-        removeRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
-        removeRolloverButton.addActionListener(e -> removeComment());
-
-        commentPanel = new JPanel(new GridBagLayout());
-        commentPanel.add(addRolloverButton,
-                gbhTemp.setInsets(2, 2, 2, 2).anchorNorthWest().setLabelDefault().get());
-        commentPanel.add(removeRolloverButton,
-                gbhTemp.nextCol().nextCol().get());
-        commentPanel.add(commentField,
-                gbhTemp.nextRowFirstCol().fillBoth().spanX().spanY().setWidth(3).setMaxWeightX().get());
 
         // sql text split pane
         FlatSplitPane splitPane = new FlatSplitPane(FlatSplitPane.VERTICAL_SPLIT);
@@ -464,7 +433,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("SQL"), splitPane);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
         tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
-        tabPane.add(bundleString("comment-field-label"), commentPanel);
+        tabPane.add(bundleString("comment-field-label"), null);
         //dependenciesPanel.load();
 
         tabPane.addChangeListener(this);
@@ -555,44 +524,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         lock = new Semaphore(1);
         for (JComponent component : externalFileComponents)
             component.setVisible(false);
-    }
-
-    private void removeComment() {
-        commentField.getTextAreaComponent().setText(table.getRemarks());
-    }
-
-    private void saveComment() {
-
-        DefaultStatementExecutor executor = new DefaultStatementExecutor();
-
-        try {
-
-            executor.setCommitMode(false);
-            executor.setKeepAlive(true);
-            executor.setDatabaseConnection(getSelectedConnection());
-
-            String request = SQLUtils.generateComment(table.getName(), "TABLE",
-                    commentField.getTextAreaComponent().getText().trim(), ";");
-
-            Log.info("Request created: " + request);
-
-            SqlStatementResult result = executor.execute(QueryTypes.COMMENT, request);
-            executor.getConnection().commit();
-
-            if (result.isException())
-                Log.error(result.getErrorMessage());
-            else
-                Log.info("Changes saved");
-
-        } catch (Exception e) {
-
-            Log.error("Error updating comment on table", e);
-
-        } finally {
-
-            executor.releaseResources();
-        }
-
     }
 
     /**
@@ -1006,7 +937,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         }
 
-        removeComment();
+        tabPane.setComponentAt(10, new SimpleCommentPanel(table).getCommentPanel());
 
         reloadView();
         if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {

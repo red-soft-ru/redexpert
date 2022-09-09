@@ -423,7 +423,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane = new JTabbedPane();
         tabPane.setModel(model);
 
-        tabPane.add(Bundles.getCommon("description"), descTablePanel);
+        tabPane.add(Bundles.getCommon("columns"), descTablePanel);
         tabPane.add(Bundles.getCommon("constraints"), constraintsPanel);
         tabPane.add(Bundles.getCommon("indexes"), indexesPanel);
         tabPane.add(Bundles.getCommon("triggers"), triggersPanel);

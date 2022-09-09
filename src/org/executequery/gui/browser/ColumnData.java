@@ -612,6 +612,9 @@ public class ColumnData implements Serializable {
     }
 
     public void setDomainComputedBy(String domainComputedBy) {
+        if (!MiscUtils.isNull(domainComputedBy) && domainComputedBy.startsWith("(")
+                && domainComputedBy.endsWith(")"))
+            domainComputedBy = domainComputedBy.substring(1, domainComputedBy.length() - 1);
         this.domainComputedBy = domainComputedBy;
     }
 

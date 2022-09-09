@@ -982,6 +982,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             String computedSource = rs.getString("COMPUTED");
             if (computedSource != null && !computedSource.isEmpty()) {
                 column.setGenerated(true);
+                if (computedSource.startsWith("(") && computedSource.endsWith(")"))
+                    computedSource = computedSource.substring(1, computedSource.length() - 1);
                 column.setComputedSource(computedSource);
             }
             if (column.getTypeInt() == Types.LONGVARBINARY ||

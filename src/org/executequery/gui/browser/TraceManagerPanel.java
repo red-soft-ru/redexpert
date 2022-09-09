@@ -283,7 +283,10 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         outputStream = new PipedOutputStream();
                     try {
                         inputStream = new PipedInputStream(outputStream);
-                        bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                        String charset = null;
+                        if (charsetCombo.getSelectedIndex() > 0)
+                            charset = MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem());
+                        bufferedReader = new BufferedReader(new InputStreamReader(inputStream, charset));
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -323,7 +326,9 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         sw.start();
                         tabPane.setSelectedComponent(loggerPanel);
                         DatabaseConnection dc = (DatabaseConnection) databaseBox.getSelectedItem();
-                        dc.setPathToTraceConfig(fileConfField.getText());
+                        if (dc != null) {
+                            dc.setPathToTraceConfig(fileConfField.getText());
+                        }
                         EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this,
                                 ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) databaseBox.getSelectedItem()
                         ));

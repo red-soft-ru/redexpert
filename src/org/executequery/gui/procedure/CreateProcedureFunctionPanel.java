@@ -339,8 +339,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         sqlBodyText = new SimpleSqlTextPanel();
         sqlBodyText.appendSQLText(getEmptySqlBody());
         sqlBodyText.setBorder(BorderFactory.createTitledBorder(bundleString("Body", bundleString(getTypeObject()))));
+        sqlBodyText.getTextPane().setDatabaseConnection(connection);
 
         outSqlText = new SimpleSqlTextPanel();
+        outSqlText.getTextPane().setDatabaseConnection(connection);
 
         mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -419,6 +421,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         tabbedPane.insertTab(Bundles.getCommon("comment-field-label"), null, descriptionPanel, null, 1);
 
         ddlTextPanel = new SimpleSqlTextPanel();
+        ddlTextPanel.getTextPane().setDatabaseConnection(connection);
 
         GridBagConstraints gbc2 = new GridBagConstraints();
         gbc2.gridx = 0;

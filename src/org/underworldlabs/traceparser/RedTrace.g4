@@ -395,7 +395,7 @@ plan
 ;
 
 params
-:(PARAM (~('\n'))+ end_line)+
+:(PARAM ((~('\n'))+)|((~('\n'))+ '"' .* '"') end_line)+
 ;
 
 records_fetched
@@ -544,8 +544,7 @@ id_service
 
 client_process
 :path (SPACE path)*
-|client_process 'IP:' client_process
-|client_process ':[' client_process
+|client_process ':' client_process
 ;
 id_client_process
 :ID

@@ -854,6 +854,8 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                     String type = "BLOB SUB_TYPE TEXT";
                     if (model.getColumnClass(i) == Integer.class)
                         type = "INTEGER";
+                    else if (model.getColumnClass(i) == Long.class)
+                        type = "BIGINT";
                     else if (model.getColumnClass(i) == Timestamp.class)
                         type = "TIMESTAMP";
                     rowLines.append(" ").append(type);

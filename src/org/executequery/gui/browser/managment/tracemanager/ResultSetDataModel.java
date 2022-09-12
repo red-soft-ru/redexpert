@@ -101,7 +101,7 @@ class ResultSetDataModel extends AbstractTableModel {
                 || visibleColumnNameFromIndex(columnIndex).contains("COUNT_")
                 || visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.RECORDS_FETCHED_COLUMN)
         )
-            return Integer.class;
+            return Long.class;
         return String.class;
     }
 

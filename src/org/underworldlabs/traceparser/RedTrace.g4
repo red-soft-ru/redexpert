@@ -279,12 +279,15 @@ connection_info
 
 query_and_params
 :query (end_line
- CARETS end_line
+ CARETS)? (end_line
  not_query)?
 ;
 
 query
-:~CARETS*
+:~(CARETS
+|PARAM
+|'records fetched'
+|'sorting memory usage: total: ')*
 ;
 
 oldest_interesting

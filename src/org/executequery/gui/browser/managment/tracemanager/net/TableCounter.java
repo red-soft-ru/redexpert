@@ -1,11 +1,12 @@
 package org.executequery.gui.browser.managment.tracemanager.net;
 
 import org.executequery.gui.browser.managment.tracemanager.LogConstants;
+import org.underworldlabs.util.MiscUtils;
 
 public class TableCounter {
     private String header;
 
-    private final String[] counters;
+    private final Object[] counters;
     private String body;
 
     private static final int COL_WIDTH = 10;
@@ -13,7 +14,7 @@ public class TableCounter {
     public TableCounter(String header, String body) {
         setHeader(header);
         setBody(body);
-        counters = new String[LogConstants.TABLE_COUNTERS.length];
+        counters = new Object[LogConstants.TABLE_COUNTERS.length];
         for (int i = 0; i < LogConstants.TABLE_COUNTERS.length; i++) {
             if (i == 0) {
                 int tableLength = header.indexOf(LogConstants.NATURAL);
@@ -24,7 +25,12 @@ public class TableCounter {
                 int position = header.indexOf(col) + col.length() - COL_WIDTH;
                 if (position > 0 && position < body.length()) {
                     String value = body.substring(position, position + COL_WIDTH).trim();
-                    counters[i] = value;
+                    try {
+                        if (!MiscUtils.isNull(value))
+                            counters[i] = Integer.parseInt(value);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -46,7 +52,7 @@ public class TableCounter {
         this.body = body;
     }
 
-    public String getCounter(int col) {
+    public Object getCounter(int col) {
         return counters[col];
     }
 }

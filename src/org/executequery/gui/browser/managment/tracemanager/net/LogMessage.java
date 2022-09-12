@@ -9,6 +9,7 @@ import org.executequery.log.Log;
 import org.underworldlabs.traceparser.RedTraceBaseListener;
 import org.underworldlabs.traceparser.RedTraceLexer;
 import org.underworldlabs.traceparser.RedTraceParser;
+import org.underworldlabs.util.MiscUtils;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -42,13 +43,13 @@ public class LogMessage {
     private String levelIsolation;
     private String modeOfBlock;
     private String modeOfAccess;
-    private String timeExecution;
-    private String countReads;
-    private String countWrites;
-    private String countFetches;
-    private String countMarks;
+    private Integer timeExecution;
+    private Integer countReads;
+    private Integer countWrites;
+    private Integer countFetches;
+    private Integer countMarks;
     private String idStatement;
-    private String fetchedRecords;
+    private Integer fetchedRecords;
     private String statementText;
     private String paramText;
     private String planText;
@@ -354,12 +355,26 @@ public class LogMessage {
 
     public void setGlobalCounters(RedTraceParser.Global_countersContext ctx) {
         if (ctx != null) {
-            setTimeExecution(textFromRuleContext(ctx.time_execution()));
-            setCountReads(textFromRuleContext(ctx.reads()));
-            setCountWrites(textFromRuleContext(ctx.writes()));
-            setCountFetches(textFromRuleContext(ctx.fetches()));
-            setCountMarks(textFromRuleContext(ctx.marks()));
+            try {
+                setTimeExecution(getIntFromString(textFromRuleContext(ctx.time_execution())));
+                setCountReads(getIntFromString(textFromRuleContext(ctx.reads())));
+                setCountWrites(getIntFromString(textFromRuleContext(ctx.writes())));
+                setCountFetches(getIntFromString(textFromRuleContext(ctx.fetches())));
+                setCountMarks(getIntFromString(textFromRuleContext(ctx.marks())));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    Integer getIntFromString(String str) {
+        if (!MiscUtils.isNull(str))
+            try {
+                return Integer.parseInt(str);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        return null;
     }
 
     public void setQueryAndParams(RedTraceParser.Query_and_paramsContext ctx) {
@@ -369,7 +384,7 @@ public class LogMessage {
                 setPlanText(textFromRuleContext(not_queryContext.plan()));
                 setParamText(textFromRuleContext(not_queryContext.params()));
                 if (not_queryContext.records_fetched() != null)
-                    setFetchedRecords(textFromRuleContext(not_queryContext.records_fetched().ID()));
+                    setFetchedRecords(getIntFromString(textFromRuleContext(not_queryContext.records_fetched().ID())));
                 setGlobalCounters(not_queryContext.global_counters());
                 setTableCounters(textFromRuleContext(not_queryContext.table_counters()));
                 setStatementText(textFromRuleContext(ctx.query()));
@@ -402,7 +417,7 @@ public class LogMessage {
                         redWalker.walk(new RedTraceBaseListener() {
                             @Override
                             public void enterRecords_fetched(RedTraceParser.Records_fetchedContext ctx) {
-                                setFetchedRecords(textFromRuleContext(ctx.ID()));
+                                setFetchedRecords(getIntFromString(textFromRuleContext(ctx.ID())));
                             }
                         }, redTree);
                         query = query.replace(records_fetched, "").trim();
@@ -437,7 +452,7 @@ public class LogMessage {
         setParamText(textFromRuleContext(ctx.params()));
         setGlobalCounters(ctx.global_counters());
         if (ctx.records_fetched() != null)
-            setFetchedRecords(textFromRuleContext(ctx.records_fetched().ID()));
+            setFetchedRecords(getIntFromString(textFromRuleContext(ctx.records_fetched().ID())));
         setTableCounters(textFromRuleContext(ctx.table_counters()));
     }
     private String textFromRuleContext(ParserRuleContext ctx) {
@@ -679,43 +694,43 @@ public class LogMessage {
         this.modeOfAccess = modeOfAccess;
     }
 
-    public String getTimeExecution() {
+    public Integer getTimeExecution() {
         return timeExecution;
     }
 
-    public void setTimeExecution(String timeExecution) {
+    public void setTimeExecution(Integer timeExecution) {
         this.timeExecution = timeExecution;
     }
 
-    public String getCountReads() {
+    public Integer getCountReads() {
         return countReads;
     }
 
-    public void setCountReads(String countReads) {
+    public void setCountReads(Integer countReads) {
         this.countReads = countReads;
     }
 
-    public String getCountWrites() {
+    public Integer getCountWrites() {
         return countWrites;
     }
 
-    public void setCountWrites(String countWrites) {
+    public void setCountWrites(Integer countWrites) {
         this.countWrites = countWrites;
     }
 
-    public String getCountFetches() {
+    public Integer getCountFetches() {
         return countFetches;
     }
 
-    public void setCountFetches(String countFetches) {
+    public void setCountFetches(Integer countFetches) {
         this.countFetches = countFetches;
     }
 
-    public String getCountMarks() {
+    public Integer getCountMarks() {
         return countMarks;
     }
 
-    public void setCountMarks(String countMarks) {
+    public void setCountMarks(Integer countMarks) {
         this.countMarks = countMarks;
     }
 
@@ -727,11 +742,11 @@ public class LogMessage {
         this.idStatement = idStatement;
     }
 
-    public String getFetchedRecords() {
+    public Integer getFetchedRecords() {
         return fetchedRecords;
     }
 
-    public void setFetchedRecords(String fetchedRecords) {
+    public void setFetchedRecords(Integer fetchedRecords) {
         this.fetchedRecords = fetchedRecords;
     }
 
@@ -941,105 +956,110 @@ public class LogMessage {
 
     private String addField(String body, String regex, String[] excludedRegex, String colName) {
         Field field = parseField(body, regex, excludedRegex);
-        switch (colName) {
-            case LogConstants.ID_PROCESS_COLUMN:
-                setIdProcess(field.field);
-                break;
-            case LogConstants.ID_THREAD_COLUMN:
-                setIdThread(field.field);
-                break;
-            case LogConstants.EVENT_TYPE_COLUMN:
-                setTypeEvent(field.field);
-                break;
-            case LogConstants.ID_COLUMN:
-                setId(Integer.parseInt(field.field));
-                break;
-            case LogConstants.TSTAMP_COLUMN:
-                setTimestamp(Timestamp.valueOf(field.field.replace("T", " ")));
-                break;
-            case LogConstants.ID_SESSION_COLUMN:
-                setSessionID(field.field);
-                break;
-            case LogConstants.NAME_SESSION_COLUMN:
-                setSessionName(field.field);
-                break;
-            case LogConstants.ID_SERVICE_COLUMN:
-                setServiceID(field.field);
-                break;
-            case LogConstants.USERNAME_COLUMN:
-                setUserName(field.field);
-                break;
-            case LogConstants.PROTOCOL_CONNECTION_COLUMN:
-                setProtocolConnection(field.field);
-                break;
-            case LogConstants.CLIENT_ADDRESS_COLUMN:
-                setClientAddress(field.field);
-                break;
-            case LogConstants.TYPE_QUERY_SERVICE_COLUMN:
-                setTypeQueryService(field.field);
-                break;
-            case LogConstants.OPTIONS_START_SERVICE_COLUMN:
-                setOptionsStartService(field.field);
-                break;
-            case LogConstants.ROLE_COLUMN:
-                setRole(field.field);
-                break;
-            case LogConstants.DATABASE_COLUMN:
-                setDatabase(field.field);
-                break;
-            case LogConstants.CHARSET_COLUMN:
-                setCharset(field.field);
-                break;
-            case LogConstants.ID_CONNECTION_COLUMN:
-                setIdConnection(field.field);
-                break;
-            case LogConstants.CLIENT_PROCESS_COLUMN:
-                setClientProcess(field.field);
-                break;
-            case LogConstants.ID_CLIENT_PROCESS_COLUMN:
-                setIdClientProcess(field.field);
-                break;
-            case LogConstants.LEVEL_ISOLATION_COLUMN:
-                setLevelIsolation(field.field);
-                break;
-            case LogConstants.ID_TRANSACTION_COLUMN:
-                setIdTransaction(field.field);
-                break;
-            case LogConstants.MODE_OF_BLOCK_COLUMN:
-                setModeOfBlock(field.field);
-                break;
-            case LogConstants.MODE_OF_ACCESS_COLUMN:
-                setModeOfAccess(field.field);
-                break;
-            case LogConstants.TIME_EXECUTION_COLUMN:
-                setTimeExecution(field.field);
-                break;
-            case LogConstants.COUNT_READS_COLUMN:
-                setCountReads(field.field);
-                break;
-            case LogConstants.COUNT_WRITES_COLUMN:
-                setCountWrites(field.field);
-                break;
-            case LogConstants.COUNT_FETCHES_COLUMN:
-                setCountFetches(field.field);
-                break;
-            case LogConstants.COUNT_MARKS_COLUMN:
-                setCountMarks(field.field);
-                break;
-            case LogConstants.ID_STATEMENT_COLUMN:
-                setIdStatement(field.field);
-                break;
-            case LogConstants.RECORDS_FETCHED_COLUMN:
-                setFetchedRecords(field.field);
-                break;
-            case LogConstants.STATEMENT_TEXT_COLUMN:
-                setStatementText(field.field);
-                break;
-            case LogConstants.PARAMETERS_TEXT_COLUMN:
-                setParamText(field.field);
-                break;
-            default:
-                break;
+        try {
+            switch (colName) {
+                case LogConstants.ID_PROCESS_COLUMN:
+                    setIdProcess(field.field);
+                    break;
+                case LogConstants.ID_THREAD_COLUMN:
+                    setIdThread(field.field);
+                    break;
+                case LogConstants.EVENT_TYPE_COLUMN:
+                    setTypeEvent(field.field);
+                    break;
+                case LogConstants.ID_COLUMN:
+                    setId(Integer.parseInt(field.field));
+                    break;
+                case LogConstants.TSTAMP_COLUMN:
+                    setTimestamp(Timestamp.valueOf(field.field.replace("T", " ")));
+                    break;
+                case LogConstants.ID_SESSION_COLUMN:
+                    setSessionID(field.field);
+                    break;
+                case LogConstants.NAME_SESSION_COLUMN:
+                    setSessionName(field.field);
+                    break;
+                case LogConstants.ID_SERVICE_COLUMN:
+                    setServiceID(field.field);
+                    break;
+                case LogConstants.USERNAME_COLUMN:
+                    setUserName(field.field);
+                    break;
+                case LogConstants.PROTOCOL_CONNECTION_COLUMN:
+                    setProtocolConnection(field.field);
+                    break;
+                case LogConstants.CLIENT_ADDRESS_COLUMN:
+                    setClientAddress(field.field);
+                    break;
+                case LogConstants.TYPE_QUERY_SERVICE_COLUMN:
+                    setTypeQueryService(field.field);
+                    break;
+                case LogConstants.OPTIONS_START_SERVICE_COLUMN:
+                    setOptionsStartService(field.field);
+                    break;
+                case LogConstants.ROLE_COLUMN:
+                    setRole(field.field);
+                    break;
+                case LogConstants.DATABASE_COLUMN:
+                    setDatabase(field.field);
+                    break;
+                case LogConstants.CHARSET_COLUMN:
+                    setCharset(field.field);
+                    break;
+                case LogConstants.ID_CONNECTION_COLUMN:
+                    setIdConnection(field.field);
+                    break;
+                case LogConstants.CLIENT_PROCESS_COLUMN:
+                    setClientProcess(field.field);
+                    break;
+                case LogConstants.ID_CLIENT_PROCESS_COLUMN:
+                    setIdClientProcess(field.field);
+                    break;
+                case LogConstants.LEVEL_ISOLATION_COLUMN:
+                    setLevelIsolation(field.field);
+                    break;
+                case LogConstants.ID_TRANSACTION_COLUMN:
+                    setIdTransaction(field.field);
+                    break;
+                case LogConstants.MODE_OF_BLOCK_COLUMN:
+                    setModeOfBlock(field.field);
+                    break;
+                case LogConstants.MODE_OF_ACCESS_COLUMN:
+                    setModeOfAccess(field.field);
+                    break;
+                case LogConstants.TIME_EXECUTION_COLUMN:
+                    setTimeExecution(Integer.parseInt(field.field));
+                    break;
+                case LogConstants.COUNT_READS_COLUMN:
+                    setCountReads(Integer.parseInt(field.field));
+                    break;
+                case LogConstants.COUNT_WRITES_COLUMN:
+                    setCountWrites(Integer.parseInt(field.field));
+                    break;
+                case LogConstants.COUNT_FETCHES_COLUMN:
+                    setCountFetches(Integer.parseInt(field.field));
+                    break;
+                case LogConstants.COUNT_MARKS_COLUMN:
+                    setCountMarks(Integer.parseInt(field.field));
+                    break;
+                case LogConstants.ID_STATEMENT_COLUMN:
+                    setIdStatement(field.field);
+                    break;
+                case LogConstants.RECORDS_FETCHED_COLUMN:
+                    setFetchedRecords(Integer.parseInt(field.field));
+                    break;
+                case LogConstants.STATEMENT_TEXT_COLUMN:
+                    setStatementText(field.field);
+                    break;
+                case LogConstants.PARAMETERS_TEXT_COLUMN:
+                    setParamText(field.field);
+                    break;
+                default:
+                    break;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return field.body;
     }

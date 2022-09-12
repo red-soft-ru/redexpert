@@ -241,6 +241,7 @@ public class TablePanel extends JPanel {
             public void valueChanged(ListSelectionEvent e) {
                 int row = table.getSelectedRow();
                 if (row >= 0) {
+                    row = table.getRowSorter().convertRowIndexToModel(row);
                     txtFieldRawSql.setSQLText(dataModel.getVisibleRows().get(row).getBody());
                     fillTableCounters(row);
                 }

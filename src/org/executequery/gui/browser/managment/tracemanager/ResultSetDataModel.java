@@ -96,7 +96,11 @@ class ResultSetDataModel extends AbstractTableModel {
     public Class<?> getColumnClass(final int columnIndex) {
         if (visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.TSTAMP_COLUMN))
             return Timestamp.class;
-        if (visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.ID_COLUMN))
+        if (visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.ID_COLUMN)
+                || visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.TIME_EXECUTION_COLUMN)
+                || visibleColumnNameFromIndex(columnIndex).contains("COUNT_")
+                || visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.RECORDS_FETCHED_COLUMN)
+        )
             return Integer.class;
         return String.class;
     }

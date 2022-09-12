@@ -27,7 +27,7 @@ public class TableCounter {
                     String value = body.substring(position, position + COL_WIDTH).trim();
                     try {
                         if (!MiscUtils.isNull(value))
-                            counters[i] = Integer.parseInt(value);
+                            counters[i] = Long.parseLong(value);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

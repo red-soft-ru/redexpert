@@ -593,7 +593,7 @@ database
 ;
 
 path
-:(PATH|'('|')'|ANY_NAME)+;
+:(PATH|'('|')'|ANY_NAME|ID)+;
 
 
 timestamp
@@ -690,7 +690,7 @@ MINUSES
 ;
 
 PATH
-:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|'='|'?')+
+:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|'='|'?'|'-')+
 ;
 
 

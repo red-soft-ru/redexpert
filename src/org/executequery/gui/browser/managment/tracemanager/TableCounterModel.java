@@ -87,7 +87,7 @@ public class TableCounterModel extends AbstractTableModel {
         if (visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.TABLE))
             return String.class;
         else
-            return Integer.class;
+            return Long.class;
     }
 
     private String visibleColumnNameFromIndex(int i) {

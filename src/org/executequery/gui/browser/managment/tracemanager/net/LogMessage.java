@@ -43,13 +43,13 @@ public class LogMessage {
     private String levelIsolation;
     private String modeOfBlock;
     private String modeOfAccess;
-    private Integer timeExecution;
-    private Integer countReads;
-    private Integer countWrites;
-    private Integer countFetches;
-    private Integer countMarks;
+    private Long timeExecution;
+    private Long countReads;
+    private Long countWrites;
+    private Long countFetches;
+    private Long countMarks;
     private String idStatement;
-    private Integer fetchedRecords;
+    private Long fetchedRecords;
     private String statementText;
     private String paramText;
     private String planText;
@@ -356,21 +356,21 @@ public class LogMessage {
     public void setGlobalCounters(RedTraceParser.Global_countersContext ctx) {
         if (ctx != null) {
             try {
-                setTimeExecution(getIntFromString(textFromRuleContext(ctx.time_execution())));
-                setCountReads(getIntFromString(textFromRuleContext(ctx.reads())));
-                setCountWrites(getIntFromString(textFromRuleContext(ctx.writes())));
-                setCountFetches(getIntFromString(textFromRuleContext(ctx.fetches())));
-                setCountMarks(getIntFromString(textFromRuleContext(ctx.marks())));
+                setTimeExecution(getLongFromString(textFromRuleContext(ctx.time_execution())));
+                setCountReads(getLongFromString(textFromRuleContext(ctx.reads())));
+                setCountWrites(getLongFromString(textFromRuleContext(ctx.writes())));
+                setCountFetches(getLongFromString(textFromRuleContext(ctx.fetches())));
+                setCountMarks(getLongFromString(textFromRuleContext(ctx.marks())));
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    Integer getIntFromString(String str) {
+    Long getLongFromString(String str) {
         if (!MiscUtils.isNull(str))
             try {
-                return Integer.parseInt(str);
+                return Long.parseLong(str);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -384,7 +384,7 @@ public class LogMessage {
                 setPlanText(textFromRuleContext(not_queryContext.plan()));
                 setParamText(textFromRuleContext(not_queryContext.params()));
                 if (not_queryContext.records_fetched() != null)
-                    setFetchedRecords(getIntFromString(textFromRuleContext(not_queryContext.records_fetched().ID())));
+                    setFetchedRecords(getLongFromString(textFromRuleContext(not_queryContext.records_fetched().ID())));
                 setGlobalCounters(not_queryContext.global_counters());
                 setTableCounters(textFromRuleContext(not_queryContext.table_counters()));
                 setStatementText(textFromRuleContext(ctx.query()));
@@ -417,7 +417,7 @@ public class LogMessage {
                         redWalker.walk(new RedTraceBaseListener() {
                             @Override
                             public void enterRecords_fetched(RedTraceParser.Records_fetchedContext ctx) {
-                                setFetchedRecords(getIntFromString(textFromRuleContext(ctx.ID())));
+                                setFetchedRecords(getLongFromString(textFromRuleContext(ctx.ID())));
                             }
                         }, redTree);
                         query = query.replace(records_fetched, "").trim();
@@ -452,7 +452,7 @@ public class LogMessage {
         setParamText(textFromRuleContext(ctx.params()));
         setGlobalCounters(ctx.global_counters());
         if (ctx.records_fetched() != null)
-            setFetchedRecords(getIntFromString(textFromRuleContext(ctx.records_fetched().ID())));
+            setFetchedRecords(getLongFromString(textFromRuleContext(ctx.records_fetched().ID())));
         setTableCounters(textFromRuleContext(ctx.table_counters()));
     }
     private String textFromRuleContext(ParserRuleContext ctx) {
@@ -694,43 +694,43 @@ public class LogMessage {
         this.modeOfAccess = modeOfAccess;
     }
 
-    public Integer getTimeExecution() {
+    public Long getTimeExecution() {
         return timeExecution;
     }
 
-    public void setTimeExecution(Integer timeExecution) {
+    public void setTimeExecution(Long timeExecution) {
         this.timeExecution = timeExecution;
     }
 
-    public Integer getCountReads() {
+    public Long getCountReads() {
         return countReads;
     }
 
-    public void setCountReads(Integer countReads) {
+    public void setCountReads(Long countReads) {
         this.countReads = countReads;
     }
 
-    public Integer getCountWrites() {
+    public Long getCountWrites() {
         return countWrites;
     }
 
-    public void setCountWrites(Integer countWrites) {
+    public void setCountWrites(Long countWrites) {
         this.countWrites = countWrites;
     }
 
-    public Integer getCountFetches() {
+    public Long getCountFetches() {
         return countFetches;
     }
 
-    public void setCountFetches(Integer countFetches) {
+    public void setCountFetches(Long countFetches) {
         this.countFetches = countFetches;
     }
 
-    public Integer getCountMarks() {
+    public Long getCountMarks() {
         return countMarks;
     }
 
-    public void setCountMarks(Integer countMarks) {
+    public void setCountMarks(Long countMarks) {
         this.countMarks = countMarks;
     }
 
@@ -742,11 +742,11 @@ public class LogMessage {
         this.idStatement = idStatement;
     }
 
-    public Integer getFetchedRecords() {
+    public Long getFetchedRecords() {
         return fetchedRecords;
     }
 
-    public void setFetchedRecords(Integer fetchedRecords) {
+    public void setFetchedRecords(Long fetchedRecords) {
         this.fetchedRecords = fetchedRecords;
     }
 
@@ -1028,25 +1028,25 @@ public class LogMessage {
                     setModeOfAccess(field.field);
                     break;
                 case LogConstants.TIME_EXECUTION_COLUMN:
-                    setTimeExecution(Integer.parseInt(field.field));
+                    setTimeExecution(Long.parseLong(field.field));
                     break;
                 case LogConstants.COUNT_READS_COLUMN:
-                    setCountReads(Integer.parseInt(field.field));
+                    setCountReads(Long.parseLong(field.field));
                     break;
                 case LogConstants.COUNT_WRITES_COLUMN:
-                    setCountWrites(Integer.parseInt(field.field));
+                    setCountWrites(Long.parseLong(field.field));
                     break;
                 case LogConstants.COUNT_FETCHES_COLUMN:
-                    setCountFetches(Integer.parseInt(field.field));
+                    setCountFetches(Long.parseLong(field.field));
                     break;
                 case LogConstants.COUNT_MARKS_COLUMN:
-                    setCountMarks(Integer.parseInt(field.field));
+                    setCountMarks(Long.parseLong(field.field));
                     break;
                 case LogConstants.ID_STATEMENT_COLUMN:
                     setIdStatement(field.field);
                     break;
                 case LogConstants.RECORDS_FETCHED_COLUMN:
-                    setFetchedRecords(Integer.parseInt(field.field));
+                    setFetchedRecords(Long.parseLong(field.field));
                     break;
                 case LogConstants.STATEMENT_TEXT_COLUMN:
                     setStatementText(field.field);

@@ -106,7 +106,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Attempts to establish a connection using this host.
      */
     public boolean connect() throws DataSourceException {
-
         if (!isConnected()) {
             countFinishedMetaTags = 0;
 
@@ -136,10 +135,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         } finally {
 
-            schemas = null;
-            catalogs = null;
-            databaseMetaData = null;
-            connection = null;
+            close();
         }
 
     }
@@ -148,11 +144,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Closes the connection associated with this host.
      */
     public void close() {
-        if (connection != null) {
-            databaseMetaData = null;
-            //ConnectionManager.close(getDatabaseConnection(), connection);
-            connection = null;
-        }
+        schemas = null;
+        catalogs = null;
+        databaseMetaData = null;
+        connection = null;
     }
 
     /**
@@ -203,6 +198,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     @Override
     public int countFinishedMetaTags() {
         return countFinishedMetaTags;
+    }
+
+    public void resetCountFinishedMetaTags() {
+        countFinishedMetaTags = 0;
     }
 
     @Override
@@ -743,6 +742,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         "    cast(RF.RDB$FIELD_NAME as varchar(63)) AS FIELD_NAME,\n" +
                         "    F.RDB$FIELD_TYPE AS FIELD_TYPE,\n" +
                         "    F.RDB$FIELD_SUB_TYPE AS FIELD_SUB_TYPE,\n" +
+                        "    F.RDB$SEGMENT_LENGTH AS SEGMENT_LENGTH,\n" +
                         "    F.RDB$FIELD_PRECISION AS FIELD_PRECISION,\n" +
                         "    F.RDB$FIELD_SCALE AS FIELD_SCALE,\n" +
                         "    F.RDB$FIELD_LENGTH AS FIELD_LENGTH,\n" +
@@ -757,6 +757,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         "    F.RDB$CHARACTER_SET_ID,\n" +
                         "    CH.RDB$CHARACTER_SET_NAME,\n" +
                         "    CO.RDB$COLLATION_NAME,\n" +
+                        "    RF.RDB$FIELD_SOURCE AS DOMAIN,\n" +
+                        "    F.RDB$COMPUTED_SOURCE AS COMPUTED,\n" +
                         identity +
                         "FROM\n" +
                         "    RDB$RELATION_FIELDS RF,\n" +
@@ -973,6 +975,23 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 collate = collate.trim();
             column.setCharset(charset);
             column.setCollate(collate);
+            String domain = rs.getString("DOMAIN");
+            if (domain != null && !domain.isEmpty()) {
+                column.setDomain(domain);
+            }
+            String computedSource = rs.getString("COMPUTED");
+            if (computedSource != null && !computedSource.isEmpty()) {
+                column.setGenerated(true);
+                if (computedSource.startsWith("(") && computedSource.endsWith(")"))
+                    computedSource = computedSource.substring(1, computedSource.length() - 1);
+                column.setComputedSource(computedSource);
+            }
+            if (column.getTypeInt() == Types.LONGVARBINARY ||
+                    column.getTypeInt() == Types.LONGVARCHAR ||
+                    column.getTypeInt() == Types.BLOB) {
+                column.setColumnSubtype(fieldSubType);
+                column.setColumnSize(rs.getInt("SEGMENT_LENGTH"));
+            }
             columns.add(column);
         }
 
@@ -980,13 +999,13 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         Statement statement = null;
 
-        for (Iterator it = columns.iterator(); it.hasNext();) {
+       /* for (Iterator it = columns.iterator(); it.hasNext();) {
             DefaultDatabaseColumn column = (DefaultDatabaseColumn)it.next();
             String computedSource = null;
 
             statement = connection.createStatement();
             try {
-                ResultSet sourceRS = statement.executeQuery("select " +
+                String sql = "select " +
                         " RRF.RDB$FIELD_SOURCE" +
                         " from RDB$FIELDS RF, " +
                         "rdb$relation_fields RRF\n" +
@@ -995,7 +1014,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         "    and\n" +
                         "    RRF.rdb$relation_name = '" + table + "'\n" +
                         "    and\n" +
-                        "    RF.rdb$field_name = RRF.rdb$field_source");
+                        "    RF.rdb$field_name = RRF.rdb$field_source";
+                ResultSet sourceRS = statement.executeQuery(sql);
                 if (sourceRS.next()) {
                     computedSource = sourceRS.getString(1);
                 }
@@ -1012,7 +1032,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 //                if (isGen.compareToIgnoreCase("YES") == 0) {
 //                    column.setGenerated(true);
 //                        Statement statement = dmd.getConnection().createStatement();
-                    /*ResultSet*/
+                    /*ResultSet
                     statement = connection.createStatement();
                     sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, " +
                             " RRF.RDB$FIELD_NAME" +
@@ -1064,7 +1084,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 }
             }
 
-        }
+        }*/
 
         return columns;
     }

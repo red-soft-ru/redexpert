@@ -23,6 +23,7 @@ package org.executequery.print;
 import org.executequery.ActiveComponent;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.RolloverButton;
@@ -50,7 +51,7 @@ public class PrintPreviewer extends AbstractBaseDialog
     /**
      * The title of this panel
      */
-    public static final String TITLE = "Print Preview";
+    public static final String TITLE = Bundles.get("Print_Preview");
 
     /**
      * The icon for this panel
@@ -128,11 +129,19 @@ public class PrintPreviewer extends AbstractBaseDialog
       }
     });
  */
+
+
+
+        RolloverButton printButton = new RolloverButton(bundledString("Print"), null, 28, 55);
+        RolloverButton setupButton = new RolloverButton(bundledString("Page_Setup"), null, 28, 85);
+        RolloverButton closeButton = new RolloverButton(bundledString("Close"), null, 28, 55);
+
         JScrollPane scroller = new JScrollPane(previewContainer);
 
-        RolloverButton printButton = new RolloverButton("Print", null, 28, 55);
-        RolloverButton setupButton = new RolloverButton("Page Setup", null, 28, 85);
-        RolloverButton closeButton = new RolloverButton("Close", null, 28, 55);
+        printButton.setActionCommand("Print");
+        setupButton.setActionCommand("Page Setup");
+        closeButton.setActionCommand("Close");
+
 
         printButton.setMnemonic('P');
         setupButton.setMnemonic('S');
@@ -469,8 +478,11 @@ public class PrintPreviewer extends AbstractBaseDialog
             paintBorder(g);
         }
 
-    } // class PagePreview
 
+    } // class PagePreview
+    public static String bundledString(String key) {
+        return Bundles.get(PrintPreviewer.class, key);
+    }
 }
 
 

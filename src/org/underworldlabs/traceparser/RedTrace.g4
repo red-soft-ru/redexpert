@@ -3,15 +3,7 @@ grammar RedTrace;
 parse
 :event
 ;
-/*: ( event| error )* EOF
-;
-error
- : UNEXPECTED_CHAR
-   {
-     throw new RuntimeException("UNEXPECTED_CHAR=" + $UNEXPECTED_CHAR.text);
-   }
- ;*/
-//events
+
 event
 :trace_event
 |database_event
@@ -102,7 +94,7 @@ procedure_function_event
 :header_event SPACE type_procedure_event end_line
 connection_info end_line
 (client_process_info end_line)?
- transaction_info ws
+ transaction_info ws+
  procedure_info
 ;
 
@@ -266,8 +258,7 @@ type_trigger_event
  ;
 
 type_error_event
-: 'ERROR AT'
-| 'WARNING AT'
+: ('ERROR AT' | 'WARNING AT') (~('\n'))*
 ;
 
 type_sweep_event
@@ -288,12 +279,15 @@ connection_info
 
 query_and_params
 :query (end_line
- CARETS end_line
+ CARETS)? (end_line
  not_query)?
 ;
 
 query
-:~CARETS*
+:~(CARETS
+|PARAM
+|'records fetched'
+|'sorting memory usage: total: ')*
 ;
 
 oldest_interesting
@@ -321,7 +315,7 @@ next_transaction
 ;
 
 not_query
-:(plan end_line+)?
+:(plan end_line*)?
 (params end_line+)?
 (records_fetched end_line+)?
 (memory_size_rule end_line+)?
@@ -332,7 +326,7 @@ not_query
 procedure_info
 :procedure_name ':' end_line
 (params end_line+)?
-('returns: ' return_value end_line+)?
+('returns:' (SPACE|end_line) return_value end_line+)?
 (records_fetched end_line+)?
 (memory_size_rule end_line+)?
 (global_counters end_line+)?
@@ -347,7 +341,8 @@ trigger_info:
 ;
 
 return_value
-:any_name
+:params
+|any_name
 |'"' path '"'
 ;
 
@@ -490,7 +485,8 @@ marks
 ;
 
 table_counters : 'Table' (SPACE 'Natural')? (SPACE 'Index')? (SPACE 'Update')?
- (SPACE 'Insert')? (SPACE 'Delete')? (SPACE 'Backout')? (SPACE 'Purge')? (SPACE 'Expunge')? end_line
+ (SPACE 'Insert')? (SPACE 'Delete')? (SPACE 'Backout')? (SPACE 'Purge')? (SPACE 'Expunge')?
+ (SPACE 'Lock')? (SPACE 'Wait')? (SPACE 'Conflict')? (SPACE 'BVersion')? (SPACE 'Fragment')? (SPACE 'Refetch')? end_line
  ('*')+ end_line
  (any_name SPACE ID (SPACE ID)* SPACE? end_line)+;
 
@@ -597,8 +593,7 @@ database
 ;
 
 path
-:PATH
-|any_name;
+:(PATH|'('|')'|ANY_NAME)+;
 
 
 timestamp
@@ -695,7 +690,7 @@ MINUSES
 ;
 
 PATH
-:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|EQUALITY|QUESTION)+
+:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|'='|'?')+
 ;
 
 
@@ -711,25 +706,4 @@ SPACE:(' ')+;
 TAB:
 '\t'
 ;
-
-EQUALITY:
-'='
-;
-
-QUESTION:
-'?'
-;
-
-
-
-
-
-
-
-
-
-
-
-
-
 

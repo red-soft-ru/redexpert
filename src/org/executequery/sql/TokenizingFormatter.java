@@ -56,7 +56,7 @@ public class TokenizingFormatter {
                 sb.append(DELIMITER);
             }
 
-            sb.append("\n\n");
+            sb.append("\n");
         }
 
         return sb.toString();

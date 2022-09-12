@@ -79,7 +79,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     public String getCreateSQLText() {
 
-        return SQLUtils.generateCreateProcedure(getName(), getParameters(), getProcedureSourceCode(), getRemarks(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateProcedure(getName(), getEntryPoint(), getEngine(), getParameters(), getProcedureSourceCode(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override

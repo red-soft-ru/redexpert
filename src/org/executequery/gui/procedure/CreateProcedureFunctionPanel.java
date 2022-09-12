@@ -9,10 +9,10 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
-import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.impl.DefaultDatabaseExecutable;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteProcedurePanel;
@@ -21,12 +21,8 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
 import org.executequery.gui.table.CreateTableSQLSyntax;
-import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.gui.text.SimpleTextArea;
-import org.executequery.gui.text.TextEditor;
-import org.executequery.gui.text.TextEditorContainer;
+import org.executequery.gui.text.*;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.procedureParser.ProcedureParserBaseListener;
 import org.underworldlabs.procedureParser.ProcedureParserLexer;
@@ -42,8 +38,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Vector;
 
@@ -117,6 +115,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
      */
     protected JPanel mainPanel;
 
+    protected JCheckBox useExternalBox;
+    protected JPanel emptyExternalPanel;
+
+    protected JTextField externalField;
+
+    protected JTextField engineField;
+
     /**
      * <p> Constructs a new instance.
      */
@@ -130,7 +135,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     }
 
     protected void initEditing() {
-        centralPanel.setLayout(new GridBagLayout());
         JButton executeButton = new JButton(Bundles.getCommon("execute"));
         executeButton.addActionListener(new ActionListener() {
             @Override
@@ -139,13 +143,23 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                 dialog.display();
             }
         });
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaults(GridBagHelper.DEFAULT_CONSTRAINTS);
-        centralPanel.add(executeButton, gbh.defaults().setLabelDefault().get());
-        centralPanel.add(new JPanel(), gbh.nextCol().spanX().spanY().get());
+        DefaultDatabaseExecutable executable = (DefaultDatabaseExecutable) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure);
+        if (!MiscUtils.isNull(executable.getEntryPoint())) {
+            useExternalBox.setSelected(true);
+            engineField.setText(executable.getEngine());
+            externalField.setText(executable.getEntryPoint());
+
+        }
+        useExternalBox.setVisible(false);
+        emptyExternalPanel.setVisible(false);
+        centralPanel.add(executeButton, centralGbh.nextRowFirstCol().setLabelDefault().get());
+        centralPanel.add(new JPanel(), centralGbh.nextCol().fillBoth().spanX().spanY().get());
         addPrivilegesTab(tabbedPane);
         addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
+        tabbedPane.setComponentAt(1, new SimpleCommentPanel((DatabaseObject)
+                ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure)).getCommentPanel());
+
         reset();
     }
 
@@ -300,6 +314,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
     protected abstract void loadParameters();
 
+    GridBagHelper centralGbh;
+
     protected void init() {
 
         //initialise the schema label
@@ -323,8 +339,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         sqlBodyText = new SimpleSqlTextPanel();
         sqlBodyText.appendSQLText(getEmptySqlBody());
         sqlBodyText.setBorder(BorderFactory.createTitledBorder(bundleString("Body", bundleString(getTypeObject()))));
+        sqlBodyText.getTextPane().setDatabaseConnection(connection);
 
         outSqlText = new SimpleSqlTextPanel();
+        outSqlText.getTextPane().setDatabaseConnection(connection);
 
         mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -335,6 +353,27 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
         ddlPanel = new JPanel(new GridBagLayout());
 
+        externalField = new JTextField();
+        engineField = new JTextField();
+
+        useExternalBox = new JCheckBox(bundleString("useExternal"));
+        emptyExternalPanel = new JPanel();
+        useExternalBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                checkExternal();
+            }
+        });
+
+
+        centralPanel.setLayout(new GridBagLayout());
+        centralGbh = new GridBagHelper();
+        centralGbh.setDefaultsStatic();
+        centralGbh.defaults();
+        centralPanel.add(useExternalBox, centralGbh.setLabelDefault().setWidth(2).get());
+        centralPanel.add(emptyExternalPanel, centralGbh.nextCol().setWidth(1).fillHorizontally().setMaxWeightX().spanX().get());
+        centralGbh.addLabelFieldPair(centralPanel, bundleString("EntryPoint"), externalField, null);
+        centralGbh.addLabelFieldPair(centralPanel, bundleString("Engine"), engineField, null);
         JPanel topPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
                 1, 1, 1, 1,
@@ -379,9 +418,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
         tabbedPane.insertTab(bundleString("Edit"), null, containerPanel, null, 0);
 
-        tabbedPane.insertTab(bundleString("Description"), null, descriptionPanel, null, 1);
+        tabbedPane.insertTab(Bundles.getCommon("comment-field-label"), null, descriptionPanel, null, 1);
 
         ddlTextPanel = new SimpleSqlTextPanel();
+        ddlTextPanel.getTextPane().setDatabaseConnection(connection);
 
         GridBagConstraints gbc2 = new GridBagConstraints();
         gbc2.gridx = 0;
@@ -419,131 +459,34 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         variablesPanel.setDatabaseConnection(connection);
         //metaData
 
+        checkExternal();
+    }
 
+    protected void checkExternal() {
+        boolean selected = useExternalBox.isSelected();
+        sqlBodyText.getParent().setVisible(!selected);
+        if (!selected) {
+            ((JSplitPane3) sqlBodyText.getParent().getParent()).setDividerLocation(0.3);
+        }
+        int ind = centralPanel.getComponentZOrder(externalField) - 1;
+        externalField.setVisible(selected);
+        centralPanel.getComponent(ind).setVisible(selected);
+        ind = centralPanel.getComponentZOrder(engineField) - 1;
+        engineField.setVisible(selected);
+        centralPanel.getComponent(ind).setVisible(selected);
     }
 
     protected abstract String getEmptySqlBody();
 
-    private String formattedParameter(ColumnData cd) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
-                append(" ");
-        if (MiscUtils.isNull(cd.getComputedBy())) {
-            if (MiscUtils.isNull(cd.getDomain())) {
-                if (cd.getColumnType() != null || cd.isTypeOf()) {
-                    sb.append(cd.getFormattedDataType());
-                }
-            } else {
-                if (cd.isTypeOf())
-                    sb.append(cd.getFormattedDataType());
-                else
-                    sb.append(cd.getFormattedDomain());
-            }
-            sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
-            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue())) {
-                String value = "";
-                boolean str = false;
-                int sqlType = cd.getSQLType();
-                switch (sqlType) {
-
-                    case Types.LONGVARCHAR:
-                    case Types.LONGNVARCHAR:
-                    case Types.CHAR:
-                    case Types.NCHAR:
-                    case Types.VARCHAR:
-                    case Types.VARBINARY:
-                    case Types.BINARY:
-                    case Types.NVARCHAR:
-                    case Types.CLOB:
-                    case Types.DATE:
-                    case Types.TIME:
-                    case Types.TIMESTAMP:
-                        value = "'";
-                        str = true;
-                        break;
-                    default:
-                        break;
-                }
-                value += cd.getDefaultValue();
-                if (str) {
-                    value += "'";
-                }
-                sb.append(" DEFAULT ").append(value);
-            }
-            if (!MiscUtils.isNull(cd.getCheck())) {
-                sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
-            }
-        } else {
-            sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
-        }
-        return sb.toString();
-    }
-
-    protected String formattedParameters(Vector<ColumnData> tableVector, boolean variable) {
-        StringBuilder sqlText = new StringBuilder();
-        sqlText.append("\n");
-        for (int i = 0, k = tableVector.size(); i < k; i++) {
-            ColumnData cd = tableVector.elementAt(i);
-            if (!MiscUtils.isNull(cd.getColumnName())) {
-                if (variable)
-                    sqlText.append("DECLARE ");
-                sqlText.append(formattedParameter(cd));
-                if (variable) {
-                    sqlText.append(";");
-                    if (cd.getDescription() != null && !cd.getDescription().isEmpty()) {
-                        sqlText.append(" /*");
-                        sqlText.append(cd.getDescription());
-                        sqlText.append("*/");
-                    }
-                } else if (i != k - 1) {
-                    sqlText.append(",");
-                }
-                sqlText.append("\n");
-            }
-        }
-        return sqlText.toString();
-    }
 
     protected abstract void generateScript();
 
     String[] getDomains() {
-        java.util.List<String> domains = new ArrayList<>();
-        try {
-            String query = "select " +
-                    "RDB$FIELD_NAME FROM RDB$FIELDS " +
-                    "where RDB$FIELD_NAME not like 'RDB$%'\n" +
-                    "and RDB$FIELD_NAME not like 'MON$%'\n" +
-                    "order by RDB$FIELD_NAME";
-            ResultSet rs = sender.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
-                domains.add(rs.getString(1).trim());
-            }
-            sender.releaseResources();
-            return domains.toArray(new String[domains.size()]);
-        } catch (Exception e) {
-            Log.error("Error loading domains:" + e.getMessage());
-            return null;
-        }
+        java.util.List<String> domains = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.DOMAIN]);
+        return domains.toArray(new String[domains.size()]);
     }
 
-    String[] getGenerators() {
-        List<String> domains = new ArrayList<>();
-        try {
-            String query = "select " +
-                    "RDB$GENERATOR_NAME FROM RDB$GENERATORS " +
-                    "where RDB$SYSTEM_FLAG = 0 " +
-                    "order by 1";
-            ResultSet rs = sender.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
-                domains.add(rs.getString(1).trim());
-            }
-            sender.releaseResources();
-            return domains.toArray(new String[domains.size()]);
-        } catch (Exception e) {
-            Log.error("Error loading generators:" + e.getMessage());
-            return null;
-        }
-    }
+
     /**
      * Returns the procedure name field.
      */

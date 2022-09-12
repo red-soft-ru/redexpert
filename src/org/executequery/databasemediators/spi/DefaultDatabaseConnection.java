@@ -197,6 +197,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     private boolean namesToUpperCase = true;
 
+    String pathToTraceConfig;
+
     @Override
     public boolean isNamesToUpperCase() {
         return namesToUpperCase;
@@ -741,6 +743,15 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         }
     }
 
+    @Override
+    public String getPathToTraceConfig() {
+        return pathToTraceConfig;
+    }
+
+    @Override
+    public void setPathToTraceConfig(String pathToTraceConfig) {
+        this.pathToTraceConfig = pathToTraceConfig;
+    }
 
     private static final long serialVersionUID = 950081216942320441L;
 

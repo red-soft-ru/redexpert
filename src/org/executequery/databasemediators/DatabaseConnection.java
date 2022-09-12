@@ -212,6 +212,10 @@ public interface DatabaseConnection extends Serializable {
     boolean isNamesToUpperCase();
 
     void setNamesToUpperCase(boolean flag);
+
+    void setPathToTraceConfig(String path);
+
+    String getPathToTraceConfig();
 }
 
 

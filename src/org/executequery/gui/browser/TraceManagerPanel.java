@@ -1,11 +1,14 @@
 package org.executequery.gui.browser;
 
 import biz.redsoft.IFBTraceManager;
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.event.ConnectionRepositoryEvent;
+import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.browser.managment.tracemanager.BuildConfigurationPanel;
 import org.executequery.gui.browser.managment.tracemanager.LogConstants;
 import org.executequery.gui.browser.managment.tracemanager.SessionManagerPanel;
@@ -16,9 +19,12 @@ import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
-import org.underworldlabs.swing.CheckBoxPanel;
+import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -28,11 +34,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Vector;
 
 public class TraceManagerPanel extends JPanel implements TabView {
 
@@ -41,9 +49,11 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private TablePanel loggerPanel;
     private Timer timer;
     private OutputStream fileLog;
-    private OutputStream outputStream;
-    private Lock lock;
-    private StringBuilder sb;
+    private PipedOutputStream outputStream;
+
+    private PipedInputStream inputStream;
+
+    private BufferedReader bufferedReader;
     private JButton fileLogButton;
     private JButton fileDatabaseButton;
     private JButton fileConfButton;
@@ -63,7 +73,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private JTextField sessionField;
     private JComboBox<DatabaseConnection> databaseBox;
     private int idLogMessage = 0;
-    private boolean changed = false;
+    private final boolean changed = false;
     private List<String> charsets;
     private JComboBox charsetCombo;
     private JTabbedPane tabPane;
@@ -87,16 +97,9 @@ public class TraceManagerPanel extends JPanel implements TabView {
         sessionField.setText("Session");
         sessionManagerPanel = new SessionManagerPanel(traceManager, sessionField);
         loadCharsets();
-        CheckBoxPanel columnsCheckPanel = new CheckBoxPanel(LogConstants.COLUMNS, 6, true);
+        ListSelectionPanel columnsCheckPanel = new ListSelectionPanel(new Vector<>(Arrays.asList(LogConstants.COLUMNS)));
+        columnsCheckPanel.selectAllAction();
         loggerPanel = new TablePanel(columnsCheckPanel);
-        lock = new ReentrantLock();
-        timer = new Timer(1500, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                timerAction();
-            }
-        });
-        sb = new StringBuilder();
         fileLogButton = new JButton("...");
         fileDatabaseButton = new JButton("...");
         fileConfButton = new JButton("...");
@@ -163,6 +166,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     portField.setText(dc.getPort());
                     sessionField.setText(dc.getName() + "_trace_session");
                     charsetCombo.setSelectedItem(dc.getCharset());
+                    if (dc.getPathToTraceConfig() != null)
+                        fileConfField.setText(dc.getPathToTraceConfig());
                     if (dc.getServerVersion() >= 3) {
                         confPanel.getAppropriationBox().setSelectedIndex(1);
                     } else {
@@ -180,7 +185,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
             }
         });
         fileLogButton.addActionListener(new ActionListener() {
-            FileChooserDialog fileChooser = new FileChooserDialog();
+            final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -207,7 +212,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
 
         fileDatabaseButton.addActionListener(new ActionListener() {
-            FileChooserDialog fileChooser = new FileChooserDialog();
+            final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -220,7 +225,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         });
 
         fileConfButton.addActionListener(new ActionListener() {
-            FileChooserDialog fileChooser = new FileChooserDialog();
+            final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -233,42 +238,21 @@ public class TraceManagerPanel extends JPanel implements TabView {
         });
 
         openFileLog.addActionListener(new ActionListener() {
-            FileChooserDialog fileChooser = new FileChooserDialog();
+            final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 int returnVal = fileChooser.showOpenDialog(openFileLog);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     openFileLogField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-                    String s = "";
-                    boolean finded = false;
                     clearAll();
                     idLogMessage = 0;
                     BufferedReader reader = null;
                     try {
                         reader = new BufferedReader(
                                 new InputStreamReader(
-                                        new FileInputStream(openFileLogField.getText())));
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            String str = line.trim();
-                            if (str.matches(".?\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+.*")) {
-                                if (finded) {
-                                    LogMessage logMessage = new LogMessage(s);
-                                    idLogMessage++;
-                                    logMessage.setId(idLogMessage);
-                                    loggerPanel.addRow(logMessage);
-                                }
-                                finded = true;
-                                s = str + "\n";
-                            } else {
-                                s += str + "\n";
-                            }
-                        }
-                        LogMessage logMessage = new LogMessage(s);
-                        idLogMessage++;
-                        logMessage.setId(idLogMessage);
-                        loggerPanel.addRow(logMessage);
+                                        Files.newInputStream(Paths.get(openFileLogField.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
+                        readFromBufferedReader(reader, true);
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     } finally {
@@ -280,48 +264,32 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         }
                     }
                 }
+                tabPane.setSelectedComponent(loggerPanel);
             }
         });
 
         startStopSessionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (outputStream != null) {
-                    try {
-                        outputStream.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-                outputStream = null;
                 if (startStopSessionButton.getText().toUpperCase().contentEquals(bundleString("Start").toUpperCase())) {
                     if (logToFileBox.isSelected()) {
                         if (fileLog != null) {
-                            outputStream = new OutputStream() {
-                                @Override
-                                public void write(int b) throws IOException {
-                                    fileLog.write(b);
-                                    lock.lock();
-                                    changed = true;
-                                    sb.append((char) b);
-                                    lock.unlock();
-                                }
-                            };
+                            outputStream = new TraceOutputStream();
                         } else {
                             GUIUtilities.displayErrorMessage("File is empty");
                             return;
                         }
+                    } else
+                        outputStream = new PipedOutputStream();
+                    try {
+                        inputStream = new PipedInputStream(outputStream);
+                        String charset = null;
+                        if (charsetCombo.getSelectedIndex() > 0)
+                            charset = MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem());
+                        bufferedReader = new BufferedReader(new InputStreamReader(inputStream, charset));
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
                     }
-                    else
-                        outputStream = new OutputStream() {
-                            @Override
-                            public void write(int b) {
-                                lock.lock();
-                                changed = true;
-                                sb.append((char) b);
-                                lock.unlock();
-                            }
-                        };
                     traceManager.setUser(userField.getText());
                     traceManager.setPassword(new String(passwordField.getPassword()));
                     traceManager.setLogger(outputStream);
@@ -332,7 +300,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     traceManager.setDatabase(fileDatabaseField.getText());
                     traceManager.setHost(hostField.getText());
                     traceManager.setPort(portField.getValue());
-                    timer.start();
                     try {
                         String conf;
                         if (useBuildConfBox.isSelected()) {
@@ -341,8 +308,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                                 return;
                             }
                             conf = traceManager.loadConfigurationFromFile(fileConfField.getText());
-                        }
-                        else conf = confPanel.getConfig();
+                        } else conf = confPanel.getConfig();
                         traceManager.startTraceSession(sessionField.getText(), conf);
                         startStopSessionButton.setText(bundleString("Stop"));
                         tabPane.add(bundleString("SessionManager"), sessionManagerPanel);
@@ -350,6 +316,22 @@ public class TraceManagerPanel extends JPanel implements TabView {
                             connectionPanel.getComponents()[i].setEnabled(false);
                         }
                         logToFileBox.setEnabled(false);
+                        SwingWorker sw = new SwingWorker() {
+                            @Override
+                            public Object construct() {
+                                readFromBufferedReader(bufferedReader, false);
+                                return null;
+                            }
+                        };
+                        sw.start();
+                        tabPane.setSelectedComponent(loggerPanel);
+                        DatabaseConnection dc = (DatabaseConnection) databaseBox.getSelectedItem();
+                        if (dc != null) {
+                            dc.setPathToTraceConfig(fileConfField.getText());
+                        }
+                        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this,
+                                ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) databaseBox.getSelectedItem()
+                        ));
                     } catch (Exception e1) {
                         GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1);
                     }
@@ -378,183 +360,52 @@ public class TraceManagerPanel extends JPanel implements TabView {
         confPanel = new BuildConfigurationPanel();
 
         setLayout(new GridBagLayout());
+        // JSplitPane mainSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new GridBagLayout());
-        topPanel.add(tabPane, new GridBagConstraints(0, 1,
-                3, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        add(topPanel, new GridBagConstraints(0, 0,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0),
-                0, 0));
-
-        add(hideShowTabPaneButton, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        add(startStopSessionButton, new GridBagConstraints(0, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        add(clearTableButton, new GridBagConstraints(1, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
         JLabel label = new JLabel(bundleString("OpenFileLog"));
-        topPanel.add(label, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
+        topPanel.add(label, gbh.setLabelDefault().get());
+        gbh.nextCol();
+        gbh.addLabelFieldPair(topPanel, openFileLog, openFileLogField, null, false, false);
 
-        topPanel.add(openFileLog, new GridBagConstraints(1, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        topPanel.add(tabPane, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
 
-        topPanel.add(openFileLogField, new GridBagConstraints(2, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        gbh.fullDefaults();
 
-        add(loggerPanel, new GridBagConstraints(0, 3,
-                2, 1, 1, 1,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 5, 5, 5),
-                0, 0));
+        add(topPanel, gbh.fillBoth().spanX().setMaxWeightY().topGap(5).get());
+
+
+        add(startStopSessionButton, gbh.nextRowFirstCol().setLabelDefault().get());
+
+        add(clearTableButton, gbh.nextCol().setLabelDefault().get());
+
 
         tabPane.add(bundleString("Connection"), connectionPanel);
         tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));
         tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
-        //tabPane.add("Session Manager", sessionManagerPanel);
+        tabPane.add(bundleString("Logger"), loggerPanel);
         connectionPanel.setLayout(new GridBagLayout());
-
-        label = new JLabel(bundleString("Connections"));
-        connectionPanel.add(label, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectionPanel.add(databaseBox, new GridBagConstraints(1, 0,
-                6, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
+        gbh.fullDefaults();
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Connections"), databaseBox, null, true, true);
+        gbh.nextRowFirstCol();
         label = new JLabel(bundleString("Database"));
-        connectionPanel.add(label, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(fileDatabaseButton, new GridBagConstraints(1, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(fileDatabaseField, new GridBagConstraints(2, 1,
-                5, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("SessionName"));
-        connectionPanel.add(label, new GridBagConstraints(0, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(sessionField, new GridBagConstraints(1, 2,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("Username"));
-        connectionPanel.add(label, new GridBagConstraints(0, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectionPanel.add(userField, new GridBagConstraints(1, 3,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("Password"));
-        connectionPanel.add(label, new GridBagConstraints(3, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectionPanel.add(passwordField, new GridBagConstraints(4, 3,
-                3, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("Host"));
-        connectionPanel.add(label, new GridBagConstraints(3, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(hostField, new GridBagConstraints(4, 2,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("Port"));
-        connectionPanel.add(label, new GridBagConstraints(5, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(portField, new GridBagConstraints(6, 2,
-                1, 1, 0.3, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel(bundleString("Charset"));
-        connectionPanel.add(label, new GridBagConstraints(0, 4,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectionPanel.add(charsetCombo, new GridBagConstraints(1, 4,
-                6, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(useBuildConfBox, new GridBagConstraints(0, 5,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        /*label = new JLabel("Config file");
-        connectionPanel.add(label, new GridBagConstraints(1, 5,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));*/
-
-        connectionPanel.add(fileConfButton, new GridBagConstraints(1, 5,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(fileConfField, new GridBagConstraints(2, 5,
-                5, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(logToFileBox, new GridBagConstraints(0, 6,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectionPanel.add(fileLogButton, new GridBagConstraints(1, 6,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectionPanel.add(fileLogField, new GridBagConstraints(2, 6,
-                5, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        connectionPanel.add(label, gbh.setLabelDefault().get());
+        gbh.addLabelFieldPair(connectionPanel, fileDatabaseButton, fileDatabaseField, null, false, true);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("SessionName"), sessionField, null, true, false, 2);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Host"), hostField, null, false, false);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Port"), portField, null, false, true);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Username"), userField, null, true, false, 2);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Password"), passwordField, null, false, true);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Charset"), charsetCombo, null, true, true);
+        gbh.nextRowFirstCol();
+        connectionPanel.add(useBuildConfBox, gbh.setLabelDefault().get());
+        gbh.addLabelFieldPair(connectionPanel, fileConfButton, fileConfField, null, false, true);
+        gbh.nextRowFirstCol();
+        connectionPanel.add(logToFileBox, gbh.setLabelDefault().get());
+        gbh.addLabelFieldPair(connectionPanel, fileLogButton, fileLogField, null, false, true);
+        connectionPanel.add(new JPanel(), gbh.anchorSouth().nextRowFirstCol().fillBoth().spanX().spanY().get());
         setEnableElements();
 
     }
@@ -581,59 +432,56 @@ public class TraceManagerPanel extends JPanel implements TabView {
         }
     }
 
-    private void timerAction() {
-        lock.lock();
-        String messages = sb.toString();
-        sb.setLength(0);
+    private void readFromBufferedReader(BufferedReader reader, boolean fromFile) {
         String s = "";
-        String[] strs = messages.split("\n");
         boolean finded = false;
-        if (!messages.isEmpty())
-            for (int i = 0; i < strs.length; i++) {
-                String str = strs[i].trim();
-                if (str.toLowerCase().startsWith("trace session id")) {
-                    if (finded) {
-                        parseMessage(s);
-                    }
-                    s = str.replace("Trace session ID ", "");
-                    if (s.contains("started")) {
-                        s = s.replace("started", "");
-                        s = s.replace(" ", "");
-                        currentSessionId = Integer.parseInt(s);
-                    } else if (s.contains("stopped")) {
-                        s = s.replace("stopped", "");
-                        s = s.replace(" ", "");
-                        int sessionId = Integer.parseInt(s);
-                        if (sessionId == currentSessionId)
-                            stopSession();
-                    }
-
-                } else if (str.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")) {
-                    if (finded) {
-                        parseMessage(s);
-                    }
-                    message = Message.LOG_MESSAGE;
-                    finded = true;
-                    s = str + "\n";
-                } else if (str.matches("^Session ID:.*")) {
-                    if (finded) {
-                        parseMessage(s);
-                    }
-                    message = Message.SESSION_INFO;
-                    finded = true;
-                    s = str + "\n";
-                } else {
-                    s += str + "\n";
-                }
+        String line;
+        while (true) {
+            try {
+                if ((line = reader.readLine()) == null)
+                    break;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        if (changed)
-            sb.append(s);
-        else if (!s.isEmpty() && !s.toLowerCase().startsWith("trace session")) {
-            s = s.trim();
-            parseMessage(s);
+            String str = line;
+            if (str.toLowerCase().startsWith("trace session id")) {
+                if (finded) {
+                    parseMessage(s, message, fromFile);
+                }
+                message = Message.LOG_MESSAGE;
+                s = str;
+                String temp = str.replace("Trace session ID ", "");
+                if (temp.contains("started")) {
+                    temp = temp.replace("started", "");
+                    temp = temp.replace(" ", "");
+                    currentSessionId = Integer.parseInt(temp);
+                } else if (temp.contains("stopped")) {
+                    temp = temp.replace("stopped", "");
+                    temp = temp.replace(" ", "");
+                    int sessionId = Integer.parseInt(temp);
+                    if (sessionId == currentSessionId && !fromFile)
+                        stopSession();
+                }
+                finded = true;
+            } else if (str.matches(".?\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+.*")) {
+                if (finded) {
+                    parseMessage(s, message, fromFile);
+                }
+                message = Message.LOG_MESSAGE;
+                finded = true;
+                s = str + "\n";
+            } else if (str.matches("^Session ID:.*")) {
+                if (finded) {
+                    parseMessage(s, message, fromFile);
+                }
+                message = Message.SESSION_INFO;
+                finded = true;
+                s = str + "\n";
+            } else {
+                s += str + "\n";
+            }
         }
-        changed = false;
-        lock.unlock();
+        parseMessage(s, message, fromFile);
     }
 
     @Override
@@ -657,13 +505,15 @@ public class TraceManagerPanel extends JPanel implements TabView {
         return true;
     }
 
-    private void parseMessage(String msg) {
+    private void parseMessage(String msg, Message message, boolean fromFile) {
         if (message == Message.LOG_MESSAGE) {
             LogMessage logMessage = new LogMessage(msg);
             idLogMessage++;
             logMessage.setId(idLogMessage);
             loggerPanel.addRow(logMessage);
         } else {
+            if (fromFile)
+                return;
             if (sessionManagerPanel.isRefreshFlag()) {
                 sessions.clear();
                 sessionManagerPanel.setRefreshFlag(false);
@@ -720,10 +570,26 @@ public class TraceManagerPanel extends JPanel implements TabView {
         }
         setEnableElements();
         logToFileBox.setEnabled(true);
+        if (outputStream != null) {
+            try {
+                outputStream.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+        outputStream = null;
     }
 
     enum Message {
         LOG_MESSAGE,
         SESSION_INFO
+    }
+
+    class TraceOutputStream extends PipedOutputStream {
+        @Override
+        public void write(int b) throws IOException {
+            fileLog.write(b);
+            super.write(b);
+        }
     }
 }

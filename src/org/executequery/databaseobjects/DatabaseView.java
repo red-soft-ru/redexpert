@@ -21,8 +21,17 @@
 package org.executequery.databaseobjects;
 
 
+import org.underworldlabs.jdbc.DataSourceException;
+
 public interface DatabaseView extends DatabaseTableObject {
 
+    String getCreateSQLText() throws DataSourceException;
+
+    String getSelectSQLText() throws DataSourceException;
+
+    String getInsertSQLText() throws DataSourceException;
+
+    String getUpdateSQLText() throws DataSourceException;
 }
 
 

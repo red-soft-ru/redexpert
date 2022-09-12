@@ -1,96 +1,200 @@
 package org.executequery.gui.browser.managment.tracemanager;
 
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.TraceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
+import org.executequery.gui.browser.managment.tracemanager.net.TableCounter;
+import org.executequery.gui.editor.SimpleDataItemViewerPanel;
+import org.executequery.gui.resultset.SimpleRecordDataItem;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.underworldlabs.swing.CheckBoxPanel;
+import org.executequery.localization.Bundles;
+import org.executequery.repository.RepositoryException;
+import org.executequery.util.AuditProperties;
+import org.executequery.util.SystemResources;
+import org.executequery.util.UserSettingsProperties;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.ListSelectionPanel;
+import org.underworldlabs.swing.ListSelectionPanelEvent;
+import org.underworldlabs.swing.ListSelectionPanelListener;
+import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
+import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.EnumSet;
 
 public class TablePanel extends JPanel {
 
     JTable table;
+
+    JTable tableCounter;
+
+    TableCounterModel tableCounterModel;
     SimpleSqlTextPanel txtFieldRawSql;
     private ResultSetDataModel dataModel;
     private JComboBox<Filter.FilterType> comboBoxFilterType;
-
-    private JComboBox<String> comboBoxRawSql;
     private JComboBox<String> comboBoxFilterColumn;
     private JTextField txtFldSqlFilter;
-    private CheckBoxPanel columnsCheckPanel;
+    private final ListSelectionPanel columnsCheckPanel;
+
+    private JCheckBox matchCaseBox;
 
 
-    public TablePanel(CheckBoxPanel columnsCheckPanel) {
+    public TablePanel(ListSelectionPanel columnsCheckPanel) {
         super(new BorderLayout());
         this.columnsCheckPanel = columnsCheckPanel;
         init();
+    }
+
+    private static String filePathVisibleCols() {
+
+        UserSettingsProperties settings = new UserSettingsProperties();
+        return settings.getUserSettingsDirectory() + "audit-columns.txt";
+    }
+
+    private static void ensureFileExists(String path) {
+
+        File file = new File(path);
+        if (!file.exists()) {
+
+            try {
+
+                FileUtils.writeFile(path, "#Red Expert - User Defined System Properties");
+
+            } catch (IOException e) {
+
+                throw new RepositoryException(e);
+            }
+
+        }
+
+    }
+
+    private void loadCols() {
+        ensureFileExists(filePathVisibleCols());
+        try {
+            String strCols = FileUtils.loadFile(filePathVisibleCols());
+            if (!MiscUtils.isNull(strCols)) {
+                String[] cols = strCols.split("\n");
+                columnsCheckPanel.removeAllAction();
+                for (int i = 0; i < cols.length; i++) {
+                    columnsCheckPanel.selectOneStringAction(cols[i]);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    AuditProperties widthProps;
+    boolean loadWidthCols = false;
+    private void loadWidthCols() {
+        loadWidthCols = true;
+        widthProps = AuditProperties.getInstance();
+        try {
+            for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
+                if (widthProps.getProperty(getWidthKey(table.getColumnName(i))) != null)
+                    table.getColumnModel().getColumn(i).setPreferredWidth(Integer.parseInt(widthProps.getProperty(getWidthKey(table.getColumnName(i)))));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            loadWidthCols = false;
+        }
+    }
+
+    String getWidthKey(String key) {
+        return key + ".width";
+    }
+
+    private void saveCols() {
+        ensureFileExists(filePathVisibleCols());
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (Object col : columnsCheckPanel.getSelectedValues()) {
+                sb.append(col).append("\n");
+            }
+            FileUtils.writeFile(filePathVisibleCols(), sb.toString());
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void init() {
         comboBoxFilterType = new JComboBox<>();
         comboBoxFilterColumn = new JComboBox<>();
         txtFldSqlFilter = new JTextField();
-        comboBoxRawSql = new JComboBox<>();
+        matchCaseBox = new JCheckBox(TraceManagerPanel.bundleString("matchCase"));
         DynamicComboBoxModel dynamicComboBoxModel = new DynamicComboBoxModel();
-        comboBoxRawSql.setModel(dynamicComboBoxModel);
         dynamicComboBoxModel = new DynamicComboBoxModel();
         comboBoxFilterColumn.setModel(dynamicComboBoxModel);
-        dataModel = new ResultSetDataModel(columnsCheckPanel.getCheckBoxMap(), comboBoxFilterType, comboBoxFilterColumn, comboBoxRawSql, txtFldSqlFilter);
-        for (JCheckBox checkBox : columnsCheckPanel.getCheckBoxMap().values()) {
-            checkBox.addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                    dataModel.rebuildModel();
-                    dataModel.fireTableStructureChanged();
+        loadCols();
+        dataModel = new ResultSetDataModel(columnsCheckPanel, comboBoxFilterType, comboBoxFilterColumn, txtFldSqlFilter, matchCaseBox);
+        table = new JTable(dataModel);
+        tableCounterModel = new TableCounterModel(table);
+        tableCounter = new JTable(tableCounterModel);
+        tableCounter.addMouseListener(new TraceManagerPopupMenu(tableCounter));
+        loadWidthCols();
+        table.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+            @Override
+            public void columnAdded(TableColumnModelEvent e) {
+                loadWidthCols();
+            }
+
+            @Override
+            public void columnRemoved(TableColumnModelEvent e) {
+                //loadWidthCols();
+            }
+
+            @Override
+            public void columnMoved(TableColumnModelEvent e) {
+                //loadWidthCols();
+            }
+
+            @Override
+            public void columnMarginChanged(ChangeEvent e) {
+                if (!loadWidthCols) {
+                    for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
+                        widthProps.setProperty(getWidthKey(table.getColumnName(i)), String.valueOf(table.getColumnModel().getColumn(i).getPreferredWidth()));
+                    }
+                    SystemResources.setAuditPreferences(widthProps.getProperties());
                 }
-            });
-        }
+            }
+
+            @Override
+            public void columnSelectionChanged(ListSelectionEvent e) {
+
+            }
+        });
+
+        columnsCheckPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
+            @Override
+            public void changed(ListSelectionPanelEvent event) {
+                dataModel.rebuildModel();
+                dataModel.fireTableStructureChanged();
+                saveCols();
+            }
+        });
         GridBagLayout gridBagLayout = new GridBagLayout();
         setLayout(gridBagLayout);
-
-        JPanel topPanel = new JPanel();
-        GridBagConstraints gbc_topPanel = new GridBagConstraints();
-        gbc_topPanel.fill = GridBagConstraints.HORIZONTAL;
-        gbc_topPanel.insets = new Insets(1, 1, 1, 1);
-        gbc_topPanel.gridx = 0;
-        gbc_topPanel.gridy = 0;
-        gbc_topPanel.gridwidth = 1;
-        gbc_topPanel.gridheight = 1;
-        gbc_topPanel.anchor = GridBagConstraints.NORTHWEST;
-        gbc_topPanel.weightx = 1;
-        add(topPanel, gbc_topPanel);
-        GridBagLayout gbl_topPanel = new GridBagLayout();
-        topPanel.setLayout(gbl_topPanel);
-
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
         JPanel filterPanel = new JPanel();
         filterPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), TraceManagerPanel.bundleString("Filter"),
                 TitledBorder.LEADING, TitledBorder.TOP, null, null));
-        GridBagConstraints gbc_filterPanel = new GridBagConstraints();
-        gbc_filterPanel.fill = GridBagConstraints.HORIZONTAL;
-        gbc_filterPanel.insets = new Insets(0, 0, 0, 0);
-        gbc_filterPanel.gridx = 0;
-        gbc_filterPanel.gridy = 0;
-        gbc_filterPanel.gridwidth = 1;
-        gbc_filterPanel.gridheight = 1;
-        gbc_filterPanel.weightx = 1;
-        gbc_filterPanel.anchor = GridBagConstraints.NORTHWEST;
-        topPanel.add(filterPanel, gbc_filterPanel);
-        GridBagLayout gbl_filterPanel = new GridBagLayout();
-        filterPanel.setLayout(gbl_filterPanel);
+        filterPanel.setLayout(new GridBagLayout());
 
         comboBoxFilterType
                 .setModel(new DefaultComboBoxModel<>(EnumSet.allOf(Filter.FilterType.class).toArray(new Filter.FilterType[0])));
@@ -101,122 +205,31 @@ public class TablePanel extends JPanel {
                 dataModel.rebuildModel();
             }
         });
+        filterPanel.add(comboBoxFilterType, gbh.get());
 
+        gbh.addLabelFieldPair(filterPanel, TraceManagerPanel.bundleString("FilterColumn"), comboBoxFilterColumn, null, false, false);
+        filterPanel.add(matchCaseBox, gbh.nextCol().setLabelDefault().get());
 
-        GridBagConstraints gbc_filterTypeComboBox = new GridBagConstraints();
-        gbc_filterTypeComboBox.insets = new Insets(0, 0, 5, 5);
-        gbc_filterTypeComboBox.fill = GridBagConstraints.HORIZONTAL;
-        gbc_filterTypeComboBox.gridx = 0;
-        gbc_filterTypeComboBox.gridy = 0;
-        gbc_filterTypeComboBox.gridheight = 1;
-        gbc_filterTypeComboBox.gridwidth = 1;
-        gbc_filterTypeComboBox.anchor = GridBagConstraints.NORTHWEST;
-        filterPanel.add(comboBoxFilterType, gbc_filterTypeComboBox);
-
-        JLabel lblText = new JLabel(TraceManagerPanel.bundleString("Text"));
-        GridBagConstraints gbc_lblText = new GridBagConstraints();
-        gbc_lblText.anchor = GridBagConstraints.BASELINE_TRAILING;
-        gbc_lblText.insets = new Insets(0, 0, 5, 5);
-        gbc_lblText.gridx = 1;
-        gbc_lblText.gridy = 0;
-        gbc_lblText.gridwidth = 1;
-        gbc_lblText.gridheight = 1;
-        gbc_lblText.anchor = GridBagConstraints.NORTHWEST;
-        filterPanel.add(lblText, gbc_lblText);
-
-        GridBagConstraints gbc_txtFldSqlFilter = new GridBagConstraints();
-        gbc_txtFldSqlFilter.anchor = GridBagConstraints.NORTHWEST;
-        gbc_txtFldSqlFilter.fill = GridBagConstraints.HORIZONTAL;
-        gbc_txtFldSqlFilter.insets = new Insets(0, 0, 5, 0);
-        gbc_txtFldSqlFilter.gridx = 2;
-        gbc_txtFldSqlFilter.gridy = 0;
-        gbc_txtFldSqlFilter.weightx = 1;
-        filterPanel.add(txtFldSqlFilter, gbc_txtFldSqlFilter);
-
-        lblText = new JLabel(TraceManagerPanel.bundleString("FilterColumn"));
-        gbc_lblText = new GridBagConstraints();
-        gbc_lblText.anchor = GridBagConstraints.NORTHWEST;
-        gbc_lblText.insets = new Insets(0, 5, 5, 5);
-        gbc_lblText.gridx = 3;
-        gbc_lblText.gridy = 0;
-        gbc_lblText.gridwidth = 1;
-        gbc_lblText.gridheight = 1;
-        filterPanel.add(lblText, gbc_lblText);
-
-        GridBagConstraints gbc_comboBoxRawSql = new GridBagConstraints();
-        gbc_comboBoxRawSql.insets = new Insets(0, 0, 5, 5);
-        gbc_comboBoxRawSql.fill = GridBagConstraints.HORIZONTAL;
-        gbc_comboBoxRawSql.gridx = 4;
-        gbc_comboBoxRawSql.gridy = 0;
-        gbc_comboBoxRawSql.gridheight = 1;
-        gbc_comboBoxRawSql.gridwidth = 1;
-        gbc_comboBoxRawSql.anchor = GridBagConstraints.NORTHWEST;
-        filterPanel.add(comboBoxFilterColumn, gbc_comboBoxRawSql);
-
-        lblText = new JLabel(TraceManagerPanel.bundleString("RawSQLColumn"));
-        gbc_lblText = new GridBagConstraints();
-        gbc_lblText.anchor = GridBagConstraints.NORTHWEST;
-        gbc_lblText.insets = new Insets(0, 5, 5, 5);
-        gbc_lblText.gridx = 5;
-        gbc_lblText.gridy = 0;
-        gbc_lblText.gridwidth = 1;
-        gbc_lblText.gridheight = 1;
-        filterPanel.add(lblText, gbc_lblText);
-
-        gbc_comboBoxRawSql = new GridBagConstraints();
-        gbc_comboBoxRawSql.insets = new Insets(0, 0, 5, 5);
-        gbc_comboBoxRawSql.fill = GridBagConstraints.HORIZONTAL;
-        gbc_comboBoxRawSql.gridx = 6;
-        gbc_comboBoxRawSql.gridy = 0;
-        gbc_comboBoxRawSql.gridheight = 1;
-        gbc_comboBoxRawSql.gridwidth = 1;
-        gbc_comboBoxRawSql.anchor = GridBagConstraints.NORTHWEST;
-        filterPanel.add(comboBoxRawSql, gbc_comboBoxRawSql);
-
+        gbh.addLabelFieldPair(filterPanel, TraceManagerPanel.bundleString("Text"), txtFldSqlFilter, null, false);
         txtFldSqlFilter.getDocument().addUndoableEditListener(new UndoableEditListener() {
             @Override
             public void undoableEditHappened(final UndoableEditEvent e) {
                 dataModel.rebuildModel();
             }
         });
+        gbh.fullDefaults();
+        add(filterPanel, gbh.fillHorizontally().spanX().get());
 
-        //topPanel.add(hideShowColumnsButton, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
+        JSplitPane littleSplit = new JSplitPane();
+        littleSplit.setOneTouchExpandable(true);
+        littleSplit.setBorder(null);
+        littleSplit.setContinuousLayout(true);
+        littleSplit.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+        littleSplit.setResizeWeight(0.8);
 
-        /*columnsCheckPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Columns",
-                TitledBorder.LEADING, TitledBorder.TOP, null, null));
-        GridBagConstraints gbc_typeEventPanel = new GridBagConstraints();
-        gbc_typeEventPanel.fill = GridBagConstraints.BOTH;
-        gbc_typeEventPanel.insets = new Insets(5, 5, 5, 5);
-        gbc_typeEventPanel.gridx = 0;
-        gbc_typeEventPanel.gridy = 2;
-        gbc_typeEventPanel.gridwidth = 1;
-        gbc_typeEventPanel.gridheight = 1;
-        gbc_typeEventPanel.weightx = 0;
-        gbc_typeEventPanel.weighty = 0;
-        gbc_typeEventPanel.anchor = GridBagConstraints.NORTHWEST;*/
-        //topPanel.add(columnsCheckPanel, gbc_typeEventPanel);
-
-
-        JSplitPane splitPane = new JSplitPane();
-        splitPane.setOneTouchExpandable(true);
-        splitPane.setBorder(null);
-        splitPane.setContinuousLayout(true);
-        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setResizeWeight(0.8);
-        GridBagConstraints gbc_splitPane = new GridBagConstraints();
-        gbc_splitPane.fill = GridBagConstraints.BOTH;
-        gbc_splitPane.insets = new Insets(5, 5, 5, 5);
-        gbc_splitPane.gridx = 0;
-        gbc_splitPane.gridy = 1;
-        gbc_splitPane.gridheight = 1;
-        gbc_splitPane.gridwidth = 1;
-        gbc_splitPane.weighty = 1;
-        gbc_splitPane.anchor = GridBagConstraints.NORTH;
-        add(splitPane, gbc_splitPane);
 
         JScrollPane logListPanel = new JScrollPane();
         logListPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        table = new JTable(dataModel);
         table.setRowSorter(new CustomTableRowSorter(dataModel));
         table.setDefaultRenderer(Object.class, new CustomTableCellRenderer());
         table.setDefaultRenderer(Integer.class, new CustomTableCellRenderer());
@@ -227,24 +240,81 @@ public class TablePanel extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 int row = table.getSelectedRow();
-                int col = dataModel.getVisibleColumnNames().indexOf(comboBoxRawSql.getSelectedItem());
-                if (row >= 0 && col >= 0) {
-                    Object obj = table.getValueAt(row, col);
-                    if (obj == null) {
-                        txtFieldRawSql.setSQLText("null");
-                    } else {
-                        txtFieldRawSql.setSQLText(String.valueOf(obj));
+                if (row >= 0) {
+                    row = table.getRowSorter().convertRowIndexToModel(row);
+                    txtFieldRawSql.setSQLText(dataModel.getVisibleRows().get(row).getBody());
+                    fillTableCounters(row);
+                }
+
+              /*
+                    int col = dataModel.getVisibleColumnNames().indexOf(comboBoxRawSql.getSelectedItem());
+                    if (row >= 0 && col >= 0) {
+                        Object obj = table.getValueAt(row, col);
+                        if (obj == null) {
+                            txtFieldRawSql.setSQLText("null");
+                        } else {
+                            txtFieldRawSql.setSQLText(String.valueOf(obj));
+                        }
+                    }
+                }*/
+            }
+        });
+
+        table.addMouseListener(new TraceManagerPopupMenu(table));
+
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() >= 2) {
+                    int row = table.getSelectedRow();
+                    int col = table.getSelectedColumn();
+                    if (row >= 0 && col >= 0) {
+
+                        SimpleRecordDataItem rdi = new SimpleRecordDataItem("Value", 0, "");
+                        rdi.setValue(table.getValueAt(row, col));
+                        BaseDialog dialog = new BaseDialog(Bundles.get("ResultSetTablePopupMenu.RecordDataItemViewer"), true);
+                        dialog.addDisplayComponentWithEmptyBorder(
+                                new SimpleDataItemViewerPanel(dialog, rdi));
+                        dialog.display();
                     }
                 }
             }
         });
 
 
-        splitPane.setTopComponent(logListPanel);
+        littleSplit.setTopComponent(logListPanel);
         txtFieldRawSql = new SimpleSqlTextPanel();
-        splitPane.setBottomComponent(txtFieldRawSql);
+        txtFieldRawSql.setBorder(BorderFactory.createTitledBorder(TraceManagerPanel.bundleString("Body")));
+        littleSplit.setBottomComponent(txtFieldRawSql);
+
+        JSplitPane bigSplit = new JSplitPane();
+        bigSplit.setOneTouchExpandable(true);
+        bigSplit.setBorder(null);
+        bigSplit.setContinuousLayout(true);
+        bigSplit.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        bigSplit.setResizeWeight(0.8);
+
+        bigSplit.setTopComponent(littleSplit);
+        JScrollPane scroll = new JScrollPane(tableCounter);
+        scroll.setBorder(BorderFactory.createTitledBorder("Table counters"));
+        bigSplit.setBottomComponent(scroll);
 
 
+        add(bigSplit, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+
+    }
+
+    private void fillTableCounters(int row) {
+        tableCounterModel.clearAll();
+        LogMessage logMessage = dataModel.getVisibleRows().get(row);
+        String fullBody = logMessage.getTableCounters();
+        if (!MiscUtils.isNull(fullBody)) {
+            String[] rows = fullBody.split("\n");
+            for (int i = 2; i < rows.length; i++) {
+                TableCounter tc = new TableCounter(rows[0], rows[i]);
+                tableCounterModel.addRow(tc);
+            }
+        }
     }
 
     public void addRow(LogMessage message) {

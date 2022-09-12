@@ -404,8 +404,12 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     protected String generateQuery() {
         StringBuilder query = new StringBuilder("CREATE OR ALTER TRIGGER " + getFormattedName());
         String selectedItem = (String) typeTriggerCombo.getSelectedItem();
-        if (selectedItem == TRIGGER)
-            query.append(" FOR ").append(MiscUtils.getFormattedObject(((String) tablesCombo.getSelectedItem()).trim()));
+        if (selectedItem == TRIGGER) {
+            String table = (String) tablesCombo.getSelectedItem();
+            if (table != null)
+                table = table.trim();
+            query.append(" FOR ").append(MiscUtils.getFormattedObject(table));
+        }
         query.append("\n");
         if (activeBox.isSelected())
             query.append("ACTIVE ");

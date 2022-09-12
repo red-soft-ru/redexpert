@@ -85,7 +85,7 @@ public class SchemaTree extends DynamicTree
 
         setDropMode(DropMode.ON_OR_INSERT);
         setTransferHandler(new TreeTransferHandler());
-        getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         int h = Integer.parseInt(SystemProperties.getProperty("user", "treeconnection.row.height"));
         if (h == 16)
             setRowHeight(17);
@@ -278,22 +278,7 @@ public class SchemaTree extends DynamicTree
             JTree tree = (JTree) support.getComponent();
             int[] selRows = tree.getSelectionRows();
             if (getTreePanel().getTreeType() == TreePanel.TABLESPACE) {
-                /*DependPanel treePanel=(DependPanel) getTreePanel();
-                if(System.currentTimeMillis()-lastTime<1000) {
-                    return false;
-                }
-                TreePath path = ConnectionsTreePanel.getPanelFromBrowser().getTree().getSelectionPath();
-                DatabaseObjectNode firstNode=(DatabaseObjectNode) path.getLastPathComponent();
-                String typeObject = firstNode.getMetaDataKey();
-                String name = firstNode.getName().trim();
-                String query = "ALTER "+typeObject+" "+ MiscUtils.getFormattedObject(name)+" SET TABLESPACE "+
-                        MiscUtils.getFormattedObject(treePanel.getDatabaseObject().getName())+";";
-                ExecuteQueryDialog executeQueryDialog =new ExecuteQueryDialog("",query,treePanel.getDatabaseConnection(),true);
-                executeQueryDialog.display();
-                if(executeQueryDialog.getCommit()) {
-                    treePanel.reloadPath(getPathForRow(0));
-                }
-                lastTime=System.currentTimeMillis();*/
+                support.setDropAction(COPY);
                 return true;
             }
             int dropRow = tree.getRowForPath(dl.getPath());
@@ -451,7 +436,7 @@ public class SchemaTree extends DynamicTree
                 }
 
                 DefaultMutableTreeNode[] nodes = copies.toArray(new DefaultMutableTreeNode[copies.size()]);
-                //nodesToRemove = toRemove.toArray(new DefaultMutableTreeNode[toRemove.size()]);
+                nodesToRemove = toRemove.toArray(new DefaultMutableTreeNode[toRemove.size()]);
 
                 return new NodesTransferable(nodes);
             }

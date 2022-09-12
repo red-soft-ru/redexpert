@@ -8,7 +8,7 @@
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
-            <version>4.7</version>
+            <version>${antlr.version}</version>
         </dependency>
     </dependencies>
 
@@ -33,7 +33,7 @@
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.7</version>
+                <version>${antlr.version}</version>
                 <configuration>
                     <sourceDirectory>${pom.basedir}/../../../src/org/underworldlabs/sqlLexer</sourceDirectory>
                     <outputDirectory>${pom.basedir}/../../../src/org/underworldlabs/sqlLexer</outputDirectory>

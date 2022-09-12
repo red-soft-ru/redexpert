@@ -49,6 +49,7 @@ import java.text.ParseException;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The sql result set table model.
@@ -597,6 +598,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                             }
                             if (columnDataList != null) {
                                 ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getCharset());
+                                if (columnDataList.get(i - 1).getCharset() == null || Objects.equals(columnDataList.get(i - 1).getCharset(), CreateTableSQLSyntax.NONE))
+                                    ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getDatabaseConnection().getCharset());
                             } else ((ClobRecordDataItem) value).setCharset(CreateTableSQLSyntax.NONE);
                             break;
                         case Types.LONGVARBINARY:
@@ -1021,8 +1024,11 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             RecordDataItem rdi = recordDataItemFactory.create(rsch);
             rdi.setValue(null);
             rdi.setNew(true);
-            if (rdi instanceof ClobRecordDataItem)
+            if (rdi instanceof ClobRecordDataItem) {
                 ((ClobRecordDataItem) rdi).setCharset(columnDataList.get(i).getCharset());
+                if (columnDataList.get(i).getCharset() == null || Objects.equals(columnDataList.get(i).getCharset(), CreateTableSQLSyntax.NONE))
+                    ((ClobRecordDataItem) rdi).setCharset(columnDataList.get(i).getDatabaseConnection().getCharset());
+            }
             row.add(rdi);
         }
         AddRow(row);

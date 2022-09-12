@@ -19,9 +19,13 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.DependenciesPanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.RolloverButton;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -38,7 +42,7 @@ import java.sql.SQLException;
 import java.util.Vector;
 
 public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPanel {
-    private JPanel topPanel;
+    protected JPanel topPanel;
     protected JPanel centralPanel;
     protected JTabbedPane tabbedPane;
     protected DatabaseConnection connection;
@@ -168,24 +172,10 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         this.setLayout(new BorderLayout());
         metaData = new MetaDataValues(connection, true);
         topPanel = new JPanel(new GridBagLayout());
-        JLabel connLabel = new JLabel(Bundles.getCommon("connection"));
-        topPanel.add(connLabel, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        topPanel.add(connectionsCombo, new GridBagConstraints(1, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        JLabel nameLabel = new JLabel(Bundles.getCommon("name"));
-        topPanel.add(nameLabel, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        topPanel.add(nameField, new GridBagConstraints(1, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
+        gbh.addLabelFieldPair(topPanel, Bundles.getCommon("connection"), connectionsCombo, null);
+        gbh.addLabelFieldPair(topPanel, Bundles.getCommon("name"), nameField, null);
         centralPanel = new JPanel();
 
         BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(parent != null && parent.isDialog());
@@ -208,19 +198,12 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         bottomButtonPanel.setHelpButtonVisible(false);
 
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEtchedBorder());
-        panel.add(topPanel, new GridBagConstraints(0, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0),
-                0, 0));
-        panel.add(centralPanel, new GridBagConstraints(0, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0),
-                0, 0));
-        panel.add(tabbedPane, new GridBagConstraints(0, 2,
-                1, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0),
-                0, 0));
+        if (parent != null)
+            panel.setBorder(BorderFactory.createEtchedBorder());
+        gbh.fullDefaults();
+        panel.add(topPanel, gbh.setMaxWeightX().fillHorizontally().get());
+        panel.add(centralPanel, gbh.nextRowFirstCol().get());
+        panel.add(tabbedPane, gbh.nextRowFirstCol().fillBoth().spanY().get());
 
         this.add(panel, BorderLayout.CENTER);
         this.add(bottomButtonPanel, BorderLayout.SOUTH);
@@ -365,6 +348,11 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         createSqlPanel.getTextPane().setEditable(false);
         createSqlPanel.setSQLText(databaseObject.getCreateSQLText());
         tabbedPane.add(bundleStaticString("createSQL"), createSqlPanel);
+    }
+
+    protected void addCommentTab(DatabaseObject databaseObject) {
+        SimpleCommentPanel commentPanel = new SimpleCommentPanel(databaseObject);
+        tabbedPane.add(Bundles.getCommon("comment-field-label"), commentPanel.getCommentPanel());
     }
 
     @Override

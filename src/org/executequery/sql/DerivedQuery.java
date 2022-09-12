@@ -199,7 +199,7 @@ public final class DerivedQuery {
         ind = indexSpace(query);
         objectName = query.substring(0, ind);
         objectName = objectName.trim();
-        if (objectName.startsWith("\"")) {
+        if (objectName.startsWith("\"") && objectName.length() > 2) {
             objectName = objectName.substring(0, objectName.length() - 2);
         }
     }

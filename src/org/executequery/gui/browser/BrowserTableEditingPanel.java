@@ -23,6 +23,8 @@ package org.executequery.gui.browser;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
@@ -43,11 +45,14 @@ import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.table.KeyCellRenderer;
 import org.executequery.gui.table.TableConstraintFunction;
+import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -55,6 +60,7 @@ import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -166,8 +172,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      * the erd panel
      */
     private ReferencesDiagramPanel referencesPanel;
-
-
 
     /**
      * the apply changes button
@@ -312,7 +316,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         // table data panel
         tableDataPanel = new TableDataTab(true);
 
-
         // table references erd panel
         referencesPanel = new ReferencesDiagramPanel();
 
@@ -430,6 +433,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("SQL"), splitPane);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
         tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
+        tabPane.add(bundleString("comment-field-label"), null);
         //dependenciesPanel.load();
 
         tabPane.addChangeListener(this);
@@ -698,7 +702,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 //
 //            public void run() {
 
-                tabIndexSelected(index);
+        tabIndexSelected(index);
 //            }
 //
 //        });
@@ -787,7 +791,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         tableNamesAdded.add(tableName);
                         columns.add(controller.getColumnData(constraint.getCatalogName(),
                                 constraint.getSchemaName(),
-                                tableName,table.getHost().getDatabaseConnection()));
+                                tableName, table.getHost().getDatabaseConnection()));
                     }
 
                 } else if (constraint.isForeignKey()) {
@@ -799,7 +803,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         tableNamesAdded.add(referencedTable);
                         columns.add(controller.getColumnData(constraint.getReferencedCatalog(),
                                 constraint.getReferencedSchema(),
-                                referencedTable,table.getHost().getDatabaseConnection()));
+                                referencedTable, table.getHost().getDatabaseConnection()));
                     }
 
                     String columnName = constraint.getColumnName();
@@ -809,7 +813,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         tableNamesAdded.add(tableName);
                         columns.add(controller.getColumnData(constraint.getCatalogName(),
                                 constraint.getSchemaName(),
-                                tableName,table.getHost().getDatabaseConnection()));
+                                tableName, table.getHost().getDatabaseConnection()));
                     }
 
 
@@ -827,7 +831,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     tableNamesAdded.add(parentsName);
                     columns.add(controller.getColumnData(column.getCatalogName(),
                             column.getSchemaName(),
-                            parentsName,table.getHost().getDatabaseConnection()));
+                            parentsName, table.getHost().getDatabaseConnection()));
                 }
 
             }
@@ -933,6 +937,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         }
 
+        tabPane.setComponentAt(10, new SimpleCommentPanel(table).getCommentPanel());
+
         reloadView();
         if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
 
@@ -957,20 +963,38 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             }
 
             referencesLoaded = false;
-
             tableNameField.setText(table.getName());
             descriptionTable.setDatabaseTable(table);
-            constraintsTable.setDatabaseTable(table);
-            loadIndexes();
-            dependenciesPanel.setDatabaseObject(table);
-
-            alterSqlText.setSQLText(EMPTY);
-            createSqlText.setSQLText("Loading data");
             SwingWorker sw = new SwingWorker() {
                 @Override
                 public Object construct() {
+                    constraintsTable.setDatabaseTable(table);
+                    return null;
+                }
+            };
+            sw.start();
+            sw = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    loadIndexes();
+                    return null;
+                }
+            };
+            sw.start();
+            sw = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    dependenciesPanel.setDatabaseObject(table);
+                    return null;
+                }
+            };
+            sw.start();
+            sw = new SwingWorker() {
+                @Override
+                public Object construct() {
                     try {
-
+                        alterSqlText.setSQLText(EMPTY);
+                        createSqlText.setSQLText("Loading data");
                         createSqlText.setSQLText(createTableStatementFormatted());
 
                     } catch (Exception e) { // some liquibase generated issues... ??
@@ -1286,7 +1310,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     private void updateRowCount(final String text) {
-        if(lock.tryAcquire()) {
+        if (lock.tryAcquire()) {
             GUIUtils.invokeLater(new Runnable() {
                 public void run() {
                     synchronized (rowCountField) {

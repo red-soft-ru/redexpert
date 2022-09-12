@@ -23,6 +23,7 @@ package org.executequery.databaseobjects.impl;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
@@ -250,7 +251,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
      *
      * @return the table
      */
-    public DatabaseTable getTable() {
+    public DatabaseTableObject getTable() {
         if (column != null) {
             return column.getTable();
         }

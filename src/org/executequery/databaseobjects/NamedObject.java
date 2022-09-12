@@ -81,9 +81,22 @@ public interface NamedObject extends Named, java.io.Serializable {
     int PRIMARY_KEY = 999;
     int FOREIGN_KEY = 998;
     int UNIQUE_KEY = 997;
-    int TABLE_INDEX = 996;
-    int CHECK_KEY = 995;
+    int CHECK_KEY = 996;
+    int TABLE_INDEX = 995;
 
+    String[] KEYS = {
+            "PRIMARY KEY",
+            "FOREIGN KEY",
+            "UNIQUE KEY",
+            "CHECK KEY"
+    };
+
+    String[] KEYS_BUNDLE = {
+            "PRIMARY_KEY",
+            "FOREIGN_KEY",
+            "UNIQUE_KEY",
+            "CHECK_KEY"
+    };
     String[] META_TYPES = {
             "DOMAIN",
             "TABLE",

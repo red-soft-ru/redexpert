@@ -3,21 +3,21 @@
 
     <!--groupId>biz.redsoft</groupId-->
     <artifactId>sql-parser</artifactId>
-    <version>1.0</version>
-    <dependencies>
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4-runtime</artifactId>
-            <version>4.7</version>
-        </dependency>
-    </dependencies>
-
     <parent>
         <groupId>org.executequery</groupId>
         <artifactId>RedExpert-parent</artifactId>
         <version>2022.05</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
+    <version>1.0</version>
+    <dependencies>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>${antlr.version}</version>
+        </dependency>
+    </dependencies>
+
 
     <build>
         <plugins>
@@ -33,7 +33,7 @@
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.7</version>
+                <version>${antlr.version}</version>
                 <configuration>
                     <sourceDirectory>${pom.basedir}/../../../src/org/underworldlabs/sqlParser</sourceDirectory>
                     <outputDirectory>${pom.basedir}/../../../src/org/underworldlabs/sqlParser</outputDirectory>

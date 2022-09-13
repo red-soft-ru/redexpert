@@ -902,7 +902,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
                         } else if (isDataTime((RecordDataItem) value)) {
 
-                            String clearText = value.toString();
+                            String clearText = valueAsString(value);
                             clearText = clearText.replace('T', ' ');
                             rowLines.append('\'' + valueAsString(clearText) + '\'');
                             clearText = null;

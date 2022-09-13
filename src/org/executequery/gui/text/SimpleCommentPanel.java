@@ -97,7 +97,7 @@ public class SimpleCommentPanel {
             String request = SQLUtils.generateComment(currentDatabaseObject.getName(), metaTag,
                     comment, ";");
 
-            Log.info("Request created: " + request);
+            Log.info("Query created: " + request);
 
             SqlStatementResult result = executor.execute(QueryTypes.COMMENT, request);
             executor.getConnection().commit();

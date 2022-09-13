@@ -1,16 +1,15 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -191,10 +190,10 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public void loadColumns() {
-        Statement statement = null;
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor();
+        querySender.setDatabaseConnection(getHost().getDatabaseConnection());
         try {
-            statement = this.getHost().getConnection().createStatement();
-            ResultSet rs2 = statement.executeQuery("select i.rdb$index_name,\n" +
+            ResultSet rs2 = querySender.getResultSet("select i.rdb$index_name,\n" +
                     "i.rdb$relation_name,\n" +
                     "i.rdb$unique_flag,\n" +
                     "i.rdb$index_inactive,\n" +
@@ -209,7 +208,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
                     "left join rdb$relation_constraints c on i.rdb$index_name = c.rdb$index_name\n" +
                     "left join rdb$index_segments isg on isg.rdb$index_name = i.rdb$index_name\n" +
                     "where (i.rdb$index_name = '" + getName() + "')\n" +
-                    "order by isg.rdb$field_position");
+                    "order by isg.rdb$field_position").getResultSet();
 
             List<DefaultDatabaseIndex.DatabaseIndexColumn> columns = new ArrayList<>();
             while (rs2.next()) {
@@ -227,13 +226,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            if (statement != null)
-                try {
-                    if (!statement.isClosed())
-                        statement.close();
-                } catch (SQLException e) {
-                    Log.error("Error closing statement in method loadColumns of DefaultDatabaseIndex class", e);
-                }
+            querySender.releaseResources();
         }
     }
 

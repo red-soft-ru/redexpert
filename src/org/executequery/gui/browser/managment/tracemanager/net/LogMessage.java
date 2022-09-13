@@ -100,7 +100,7 @@ public class LogMessage {
                     setTypeEvent(textFromRuleContext(ctx.type_start_service_event()));
                     setTypeEventTrace(TypeEventTrace.START_SERVICE_EVENT);
                     setHeader(ctx.header_event());
-                    setServiceID(textFromRuleContext(ctx.id_service().ID()));
+                    setServiceID(textFromRuleContext(ctx.id_service().id()));
                     setUserName(textFromRuleContext(ctx.username()));
                     setProtocolConnection(textFromRuleContext(ctx.protocol()));
                     setClientAddress(textFromRuleContext(ctx.client_address()));
@@ -118,7 +118,7 @@ public class LogMessage {
                     setClientProcessInfo(ctx.client_process_info());
                     setTransactionInfo(ctx.transaction_info());
                     if (ctx.id_statement() != null)
-                        setIdStatement(textFromRuleContext(ctx.id_statement().ID()));
+                        setIdStatement(textFromRuleContext(ctx.id_statement().id()));
                     setQueryAndParams(ctx.query_and_params());
                 }
 
@@ -131,7 +131,7 @@ public class LogMessage {
                     setClientProcessInfo(ctx.client_process_info());
                     setTransactionInfo(ctx.transaction_info());
                     if (ctx.id_statement() != null)
-                        setIdStatement(textFromRuleContext(ctx.id_statement().ID()));
+                        setIdStatement(textFromRuleContext(ctx.id_statement().id()));
                     setQueryAndParams(ctx.query_and_params());
 
                 }
@@ -141,7 +141,7 @@ public class LogMessage {
                     setTypeEvent(ctx.type_trace_event().getText());
                     setTypeEventTrace(TypeEventTrace.TRACE_EVENT);
                     setHeader(ctx.header_event());
-                    String id = textFromRuleContext(ctx.ID_SESSION());
+                    String id = textFromRuleContext(ctx.id_session());
                     if (id != null)
                         setSessionID(id.trim().replace("SESSION_", ""));
                     setSessionName(textFromRuleContext(ctx.name_session()));
@@ -167,7 +167,7 @@ public class LogMessage {
                     setConnectionInfo(ctx.connection_info());
                     setClientProcessInfo(ctx.client_process_info());
                     if (ctx.id_statement() != null)
-                        setIdStatement(textFromRuleContext(ctx.id_statement().ID()));
+                        setIdStatement(textFromRuleContext(ctx.id_statement().id()));
                     setQueryAndParams(ctx.query_and_params());
                 }
 
@@ -215,7 +215,7 @@ public class LogMessage {
                     setClientProcessInfo(ctx.client_process_info());
                     setTransactionInfo(ctx.transaction_info());
                     if (ctx.id_statement() != null)
-                        setIdStatement(textFromRuleContext(ctx.id_statement().ID()));
+                        setIdStatement(textFromRuleContext(ctx.id_statement().id()));
                     setQueryAndParams(ctx.query_and_params());
                 }
 
@@ -228,7 +228,7 @@ public class LogMessage {
                     setClientProcessInfo(ctx.client_process_info());
                     setTransactionInfo(ctx.transaction_info());
                     if (ctx.id_statement() != null)
-                        setIdStatement(textFromRuleContext(ctx.id_statement().ID()));
+                        setIdStatement(textFromRuleContext(ctx.id_statement().id()));
                     setQueryAndParams(ctx.query_and_params());
                 }
 
@@ -248,7 +248,7 @@ public class LogMessage {
                     setTypeEvent(textFromRuleContext(ctx.type_service_event()));
                     setTypeEventTrace(TypeEventTrace.SERVICE_EVENT);
                     setHeader(ctx.header_event());
-                    setServiceID(textFromRuleContext(ctx.id_service().ID()));
+                    setServiceID(textFromRuleContext(ctx.id_service().id()));
                     setUserName(textFromRuleContext(ctx.username()));
                     setProtocolConnection(textFromRuleContext(ctx.protocol()));
                     setClientAddress(textFromRuleContext(ctx.client_address()));
@@ -260,7 +260,7 @@ public class LogMessage {
                     setTypeEvent(textFromRuleContext(ctx.type_query_service_event()));
                     setTypeEventTrace(TypeEventTrace.QUERY_SERVICE_EVENT);
                     setHeader(ctx.header_event());
-                    setServiceID(textFromRuleContext(ctx.id_service().ID()));
+                    setServiceID(textFromRuleContext(ctx.id_service().id()));
                     setUserName(textFromRuleContext(ctx.username()));
                     setProtocolConnection(textFromRuleContext(ctx.protocol()));
                     setClientAddress(textFromRuleContext(ctx.client_address()));
@@ -331,7 +331,7 @@ public class LogMessage {
         if (ctx != null) {
             setCharset(textFromRuleContext(ctx.charset()));
             setDatabase(textFromRuleContext(ctx.database()));
-            idConnection = textFromRuleContext(ctx.ID_CONNECTION());
+            idConnection = textFromRuleContext(ctx.id_connection());
             if (idConnection != null) {
                 setIdConnection(idConnection.replace("ATT_", ""));
             }
@@ -344,7 +344,7 @@ public class LogMessage {
 
     public void setTransactionInfo(RedTraceParser.Transaction_infoContext ctx) {
         if (ctx != null) {
-            String id = textFromRuleContext(ctx.ID_TRANSACTION());
+            String id = textFromRuleContext(ctx.id_transaction());
             if (id != null)
                 setIdTransaction(id.replace("TRA_", ""));
             setLevelIsolation(textFromRuleContext(ctx.level_isolation()));
@@ -384,7 +384,7 @@ public class LogMessage {
                 setPlanText(textFromRuleContext(not_queryContext.plan()));
                 setParamText(textFromRuleContext(not_queryContext.params()));
                 if (not_queryContext.records_fetched() != null)
-                    setFetchedRecords(getLongFromString(textFromRuleContext(not_queryContext.records_fetched().ID())));
+                    setFetchedRecords(getLongFromString(textFromRuleContext(not_queryContext.records_fetched().id())));
                 setGlobalCounters(not_queryContext.global_counters());
                 setTableCounters(textFromRuleContext(not_queryContext.table_counters()));
                 setStatementText(textFromRuleContext(ctx.query()));
@@ -417,7 +417,7 @@ public class LogMessage {
                         redWalker.walk(new RedTraceBaseListener() {
                             @Override
                             public void enterRecords_fetched(RedTraceParser.Records_fetchedContext ctx) {
-                                setFetchedRecords(getLongFromString(textFromRuleContext(ctx.ID())));
+                                setFetchedRecords(getLongFromString(textFromRuleContext(ctx.id())));
                             }
                         }, redTree);
                         query = query.replace(records_fetched, "").trim();
@@ -437,10 +437,10 @@ public class LogMessage {
             setPrivilegeUsername(textFromRuleContext(ctx.username()));
             RedTraceParser.AttachmentContext attachment = ctx.attachment();
             if (attachment != null)
-                setPrivilegeAttachment(textFromRuleContext(attachment.ID()));
+                setPrivilegeAttachment(textFromRuleContext(attachment.id()));
             RedTraceParser.TransactionContext transaction = ctx.transaction();
             if (transaction != null)
-                setPrivilegeTransaction(textFromRuleContext(transaction.ID()));
+                setPrivilegeTransaction(textFromRuleContext(transaction.id()));
 
         }
 
@@ -452,7 +452,7 @@ public class LogMessage {
         setParamText(textFromRuleContext(ctx.params()));
         setGlobalCounters(ctx.global_counters());
         if (ctx.records_fetched() != null)
-            setFetchedRecords(getLongFromString(textFromRuleContext(ctx.records_fetched().ID())));
+            setFetchedRecords(getLongFromString(textFromRuleContext(ctx.records_fetched().id())));
         setTableCounters(textFromRuleContext(ctx.table_counters()));
     }
     private String textFromRuleContext(ParserRuleContext ctx) {

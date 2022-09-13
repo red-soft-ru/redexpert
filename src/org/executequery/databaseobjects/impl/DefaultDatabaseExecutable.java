@@ -520,10 +520,15 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         try {
             loadParameters();
             loadProcedureSourceCode();
+
+            ResultSet rs = sender.getResultSet(queryForInfo()).getResultSet();
+            setInfoFromResultSet(rs);
+
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog("Error loading info about Executable", e);
         } finally {
             setMarkedForReload(false);
+            sender.releaseResources();
         }
     }
 

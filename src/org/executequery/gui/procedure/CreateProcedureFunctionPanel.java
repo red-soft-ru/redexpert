@@ -104,6 +104,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
      */
     private JPanel containerPanel;
 
+    private SimpleCommentPanel simpleCommentPanel;
+
     protected JPanel descriptionPanel;
     protected SimpleTextArea descriptionArea;
 
@@ -156,9 +158,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         centralPanel.add(new JPanel(), centralGbh.nextCol().fillBoth().spanX().spanY().get());
         addPrivilegesTab(tabbedPane);
         addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
-        addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
-        tabbedPane.setComponentAt(1, new SimpleCommentPanel((DatabaseObject)
-                ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure)).getCommentPanel());
+//        addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
+
+        simpleCommentPanel = new SimpleCommentPanel((DatabaseObject)
+                ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
+        simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> {
+            simpleCommentPanel.updateComment();
+            descriptionArea.getTextAreaComponent().setText(((DatabaseObject)
+                    ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure)).getRemarks());
+            generateScript();
+        });
+        tabbedPane.setComponentAt(1, simpleCommentPanel.getCommentPanel());
 
         reset();
     }

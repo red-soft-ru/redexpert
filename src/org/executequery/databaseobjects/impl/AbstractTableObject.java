@@ -1,5 +1,6 @@
 package org.executequery.databaseobjects.impl;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.tree.TreePanel;
@@ -596,6 +597,42 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
                 releaseResources(rs, null);
             }
         }
+    }
+
+    @Override
+    protected String queryForInfo() {
+
+        String query = "select r.rdb$description\n" +
+                "from rdb$relations r\n" +
+                "where r.rdb$relation_name = '" + getName() + "'";
+
+        return query;
+    }
+
+    @Override
+    protected void getObjectInfo() {
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        try {
+            ResultSet rs = querySender.getResultSet(queryForInfo()).getResultSet();
+            setInfoFromResultSet(rs);
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
+        } finally {
+            querySender.releaseResources();
+            setMarkedForReload(false);
+        }
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) {
+
+        try {
+            if (rs.next())
+                setRemarks(rs.getString(1));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private List<DatabaseColumn> databaseColumnListWithSize(int size) {

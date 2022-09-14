@@ -1,4 +1,30 @@
 --- RedExpert  - RELEASE NOTES -
+Major changes - v2022.09
+----------------------------------------
+Added:
+1.	Ability to save columns order and width in trace manager
+2.	Field with performance counters in Trace Manager
+3.	Export tables of Trace Manager
+4.	Import data from a text file with separator
+5.	Export data to SQL script
+6.	Ability to change activity for several triggers and indexes in the object tree
+7.	External tables support
+8.	Support for external procedures and functions
+9.	Support for comments on tables, procedures, functions and views
+10.	English version of the release notes
+
+Fixed:
+1.	Quoting of table names when generating INSERT, UPDATE, DELETE queries
+2.	Slow loading of tables
+3.	Incorrect recognition of default value for procedure parameters if '=' is used
+4.	Table column comment formatting in DDL query
+5.	Rollback transaction on closing request dialog
+6.	Error in generating date and time values in the test data generator
+7.	Wrong message about successful creation of external procedures and functions in request editor
+8.	Incorrect generation of “create generator” query
+9.	Errors of trace parsing
+10.	Autocomplete columns to alias escaped table
+
 Major changes - v2022.05:
 ----------------------------------------
 Added:

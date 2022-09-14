@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.executequery</groupId>
         <artifactId>RedExpert-parent</artifactId>
-        <version>2022.05</version>
+        <version>2022.09</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <version>1.0</version>

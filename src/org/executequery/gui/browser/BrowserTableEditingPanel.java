@@ -23,8 +23,6 @@ package org.executequery.gui.browser;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.QueryTypes;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
@@ -47,12 +45,10 @@ import org.executequery.gui.table.KeyCellRenderer;
 import org.executequery.gui.table.TableConstraintFunction;
 import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
-import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -60,7 +56,6 @@ import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.SQLUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -205,6 +200,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private JPanel buttonsEditingConstraintPanel;
     private JPanel buttonsEditingIndexesPanel;
     private JPanel buttonsEditingTriggersPanel;
+    private SimpleCommentPanel simpleCommentPanel;
 
     Semaphore lock;
 
@@ -423,7 +419,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane = new JTabbedPane();
         tabPane.setModel(model);
 
-        tabPane.add(Bundles.getCommon("description"), descTablePanel);
+        tabPane.add(Bundles.getCommon("columns"), descTablePanel);
         tabPane.add(Bundles.getCommon("constraints"), constraintsPanel);
         tabPane.add(Bundles.getCommon("indexes"), indexesPanel);
         tabPane.add(Bundles.getCommon("triggers"), triggersPanel);
@@ -937,7 +933,12 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         }
 
-        tabPane.setComponentAt(10, new SimpleCommentPanel(table).getCommentPanel());
+        simpleCommentPanel = new SimpleCommentPanel(table);
+        simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> {
+            simpleCommentPanel.updateComment();
+            createSqlText.setSQLText(createTableStatementFormatted());
+        });
+        tabPane.setComponentAt(10, simpleCommentPanel.getCommentPanel());
 
         reloadView();
         if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {

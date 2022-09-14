@@ -14,6 +14,8 @@ import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class SimpleCommentPanel {
 
@@ -50,7 +52,6 @@ public class SimpleCommentPanel {
 
         updateCommentButton = new RolloverButton();
         updateCommentButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
-        updateCommentButton.addActionListener(e -> saveComment());
 
         rollbackCommentButton = new RolloverButton();
         rollbackCommentButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
@@ -96,7 +97,7 @@ public class SimpleCommentPanel {
             String request = SQLUtils.generateComment(currentDatabaseObject.getName(), metaTag,
                     comment, ";");
 
-            Log.info("Request created: " + request);
+            Log.info("Query created: " + request);
 
             SqlStatementResult result = executor.execute(QueryTypes.COMMENT, request);
             executor.getConnection().commit();
@@ -107,6 +108,9 @@ public class SimpleCommentPanel {
             }
             else
                 Log.info("Changes saved");
+
+            currentDatabaseObject.reset();
+            currentDatabaseObject.setRemarks(null);
 
         } catch (Exception e) {
 
@@ -130,6 +134,14 @@ public class SimpleCommentPanel {
 
     public JPanel getCommentPanel() {
         return commentPanel;
+    }
+
+    public RolloverButton getCommentUpdateButton() {
+        return updateCommentButton;
+    }
+
+    public void updateComment() {
+        saveComment();
     }
 
 }

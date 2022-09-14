@@ -21,6 +21,7 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
@@ -145,6 +146,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                     entryPoint = rs.getString("ENTRY_POINT").trim();
                 if ((engine == null || engine.isEmpty()) && rs.getString("ENGINE") != null)
                     engine = rs.getString("ENGINE").trim();
+
+                setRemarks(rs.getString(3));
             }
 
         } catch (SQLException e) {
@@ -238,6 +241,39 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         } finally {
             setMarkedForReload(false);
         }
+
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        try {
+            ResultSet rs = querySender.getResultSet(getDescriptionQuery()).getResultSet();
+            setInfoFromResultSet(rs);
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
+        } finally {
+            querySender.releaseResources();
+            setMarkedForReload(false);
+        }
+    }
+
+    protected String getDescriptionQuery() {
+
+        String query = "select r.rdb$description\n" +
+                "from rdb$relations r\n" +
+                "where r.rdb$relation_name = '" + getName() + "'";
+
+        return query;
+
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) {
+
+        try {
+            if (rs.next())
+                setRemarks(rs.getString(1));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 }
 

@@ -112,6 +112,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
      */
     private JLabel noResultsLabel;
 
+    private SimpleCommentPanel simpleCommentPanel;
     private boolean hasResults;
 
     /**
@@ -187,7 +188,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
         //tabbed panel
         tabPane = new JTabbedPane();
-        tabPane.add(Bundles.getCommon("description"), descBottomPanel);
+        tabPane.add(Bundles.getCommon("columns"), descBottomPanel);
         addPrivilegesTab(tabPane);
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
         tabPane.add(Bundles.getCommon("SQL"), sqlPanel);
@@ -392,7 +393,12 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         sqlTextPanel.getTextPane().setDatabaseConnection(object.getHost().getDatabaseConnection());
         sqlTextPanel.setSQLText(Constants.EMPTY);
 
-        tabPane.setComponentAt(6, new SimpleCommentPanel(currentObjectView).getCommentPanel());
+        simpleCommentPanel = new SimpleCommentPanel(currentObjectView);
+        simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> {
+            simpleCommentPanel.updateComment();
+            sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText());
+        });
+        tabPane.setComponentAt(6, simpleCommentPanel.getCommentPanel());
 
         // header values
         if (object.getType() == NamedObject.VIEW) {

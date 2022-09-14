@@ -331,8 +331,6 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             addingRecord(resultSet, count);
         else {
             resultSet.close();
-            if (executor != null)
-                executor.releaseResources();
             rsClose = true;
         }
     }
@@ -342,8 +340,6 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             addingRecord(resultSet, count);
         fireTableDataChanged();
         resultSet.close();
-        if (executor != null)
-            executor.releaseResources();
         rsClose = true;
     }
 
@@ -1129,6 +1125,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     public void closeResultSet() throws SQLException {
         if (rs != null && !rs.isClosed())
             rs.close();
+        if (executor != null)
+            executor.releaseResources();
     }
 }
 

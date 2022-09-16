@@ -709,9 +709,9 @@ public class QueryDispatcher {
 
                         printPlan(rset);
 
-                        setResultSet(rset, query.getOriginalQuery());
-
                         printExecutionPlan(before, after);
+
+                        setResultSet(rset, query.getOriginalQuery());
                     }
 
                     end = System.currentTimeMillis();

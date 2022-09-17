@@ -115,6 +115,7 @@ public interface ColumnConstraint extends DatabaseObjectElement {
      * @return the column name
      */
     String getColumnName();
+    String getColumnDisplayList();
 
     /**
      * Returns the table column parent to this object.
@@ -174,6 +175,8 @@ public interface ColumnConstraint extends DatabaseObjectElement {
     NamedObject getParent();
 
     void setColumn(DatabaseTableColumn databaseTableColumn);
+
+    void addColumnToDisplayList(DatabaseTableColumn column);
 
     /**
      * Detaches this constraint from the owner column

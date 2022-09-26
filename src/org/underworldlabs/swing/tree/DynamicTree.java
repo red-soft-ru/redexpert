@@ -224,6 +224,7 @@ public class DynamicTree extends JTree {
     public void reset(DefaultMutableTreeNode root) {
 
         setModel(new DefaultTreeModel(root));
+        this.root = root;
         repaint();
     }
 

@@ -270,9 +270,13 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         @Override
                         public void finished() {
                             GUIUtilities.showNormalCursor();
+                            tabPane.setEnabled(true);
+                            loggerPanel.setEnableElements(true);
                         }
                     };
                     GUIUtilities.showWaitCursor();
+                    tabPane.setEnabled(false);
+                    loggerPanel.setEnableElements(false);
                     sw.start();
 
                 }

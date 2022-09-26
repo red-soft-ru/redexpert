@@ -317,6 +317,18 @@ public class TablePanel extends JPanel {
         }
     }
 
+    public void setEnableElements(boolean flag) {
+        setEnableElements(this, flag);
+    }
+
+    public void setEnableElements(Container container, boolean flag) {
+        for (Component component : container.getComponents()) {
+            component.setEnabled(flag);
+            if (component instanceof Container)
+                setEnableElements((Container) component, flag);
+        }
+    }
+
     public void addRow(LogMessage message) {
 
         dataModel.addRow(message);

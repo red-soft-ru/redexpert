@@ -47,7 +47,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
     public static final String TITLE = Bundles.get(TraceManagerPanel.class, "title");
     private IFBTraceManager traceManager;
     private TablePanel loggerPanel;
-    private Timer timer;
     private OutputStream fileLog;
     private PipedOutputStream outputStream;
 
@@ -73,7 +72,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private JTextField sessionField;
     private JComboBox<DatabaseConnection> databaseBox;
     private int idLogMessage = 0;
-    private final boolean changed = false;
     private List<String> charsets;
     private JComboBox charsetCombo;
     private JTabbedPane tabPane;
@@ -244,25 +242,39 @@ public class TraceManagerPanel extends JPanel implements TabView {
             public void actionPerformed(ActionEvent e) {
                 int returnVal = fileChooser.showOpenDialog(openFileLog);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    openFileLogField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-                    clearAll();
-                    idLogMessage = 0;
-                    BufferedReader reader = null;
-                    try {
-                        reader = new BufferedReader(
-                                new InputStreamReader(
-                                        Files.newInputStream(Paths.get(openFileLogField.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
-                        readFromBufferedReader(reader, true);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    } finally {
-                        if (reader != null) {
+                    SwingWorker sw = new SwingWorker() {
+                        @Override
+                        public Object construct() {
+                            openFileLogField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+                            clearAll();
+                            idLogMessage = 0;
+                            BufferedReader reader = null;
                             try {
-                                reader.close();
+                                reader = new BufferedReader(
+                                        new InputStreamReader(
+                                                Files.newInputStream(Paths.get(openFileLogField.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
+                                readFromBufferedReader(reader, true);
                             } catch (IOException e1) {
+                                e1.printStackTrace();
+                            } finally {
+                                if (reader != null) {
+                                    try {
+                                        reader.close();
+                                    } catch (IOException e1) {
+                                    }
+                                }
                             }
+                            return null;
                         }
-                    }
+
+                        @Override
+                        public void finished() {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    };
+                    GUIUtilities.showWaitCursor();
+                    sw.start();
+
                 }
                 tabPane.setSelectedComponent(loggerPanel);
             }

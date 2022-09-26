@@ -443,7 +443,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            String str = line;
+            String str = line.replace("\\r", "");
             if (str.toLowerCase().startsWith("trace session id")) {
                 if (finded) {
                     parseMessage(s, message, fromFile);

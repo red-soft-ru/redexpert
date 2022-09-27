@@ -174,6 +174,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      */
     public Connection getConnection() throws DataSourceException {
 
+        if (!getDatabaseConnection().isConnected()) {
+            connection = null;
+            return connection;
+        }
         try {
 
             if ((connection == null || connection.isClosed())
@@ -185,9 +189,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         } catch (SQLException e) {
 
             throw new DataSourceException(e);
-        } finally {
-            if (!getDatabaseConnection().isConnected())
-                connection = null;
         }
 
         return connection;

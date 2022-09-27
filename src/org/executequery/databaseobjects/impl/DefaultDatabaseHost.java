@@ -185,6 +185,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         } catch (SQLException e) {
 
             throw new DataSourceException(e);
+        } finally {
+            if (!getDatabaseConnection().isConnected())
+                connection = null;
         }
 
         return connection;

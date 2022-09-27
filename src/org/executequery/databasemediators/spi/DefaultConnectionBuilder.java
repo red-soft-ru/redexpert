@@ -23,6 +23,7 @@ package org.executequery.databasemediators.spi;
 import org.executequery.databasemediators.ConnectionBuilder;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.SwingWorker;
 
@@ -65,6 +66,7 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
 
         cancelled = true;
         databaseConnection.setConnected(false);
+        ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).close();
         worker.interrupt();
     }
 

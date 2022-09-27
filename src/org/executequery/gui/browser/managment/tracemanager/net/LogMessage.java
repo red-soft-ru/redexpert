@@ -379,26 +379,25 @@ public class LogMessage {
 
     public void setQueryAndParams(RedTraceParser.Query_and_paramsContext ctx) {
         if (ctx != null) {
-            if (ctx.not_query() != null) {
-                RedTraceParser.Not_queryContext not_queryContext = ctx.not_query();
-                setPlanText(textFromRuleContext(not_queryContext.plan()));
-                setParamText(textFromRuleContext(not_queryContext.params()));
-                if (not_queryContext.records_fetched() != null)
-                    setFetchedRecords(getLongFromString(textFromRuleContext(not_queryContext.records_fetched().id())));
-                setGlobalCounters(not_queryContext.global_counters());
-                setTableCounters(textFromRuleContext(not_queryContext.table_counters()));
-                setStatementText(textFromRuleContext(ctx.query()));
-            } else {
-                String query = textFromRuleContext(ctx);
-                if (query != null) {
-                    if (isFindOfRegex("param0 = .+\n", query)) {
-                        paramText = findOfRegex("(param.+\n)+", query);
-                        if (paramText != null)
-                            query = query.replace(paramText, "").trim();
-                    }
-                    if (isFindOfRegex("[\\d]+ ms.+\n", query)) {
-                        String global_counters = findOfRegex("[\\d]+ ms.+\n", query);
-                        RedTraceParser redTraceParser = buildParser(global_counters);
+            setPlanText(textFromRuleContext(ctx.plan()));
+            setParamText(textFromRuleContext(ctx.params()));
+            if (ctx.records_fetched() != null)
+                setFetchedRecords(getLongFromString(textFromRuleContext(ctx.records_fetched().id())));
+            setGlobalCounters(ctx.global_counters());
+            setTableCounters(textFromRuleContext(ctx.table_counters()));
+            setStatementText(textFromRuleContext(ctx.query()));
+        }
+        if (ctx != null && ctx.global_counters() == null) {
+            String query = textFromRuleContext(ctx);
+            if (query != null) {
+                if (isFindOfRegex("param0 = .+\n", query)) {
+                    paramText = findOfRegex("(param.+\n)+", query);
+                    if (paramText != null)
+                        query = query.replace(paramText, "").trim();
+                }
+                if (isFindOfRegex("[\\d]+ ms.+\n", query)) {
+                    String global_counters = findOfRegex("[\\d]+ ms.+\n", query);
+                    RedTraceParser redTraceParser = buildParser(global_counters);
                         ParseTree redTree = redTraceParser.global_counters();
                         ParseTreeWalker redWalker = new ParseTreeWalker();
                         redWalker.walk(new RedTraceBaseListener() {
@@ -426,7 +425,6 @@ public class LogMessage {
                 }
             }
         }
-    }
 
     public void setPrivilegesChangeInfo(RedTraceParser.Privileges_change_infoContext ctx) {
         if (ctx != null) {

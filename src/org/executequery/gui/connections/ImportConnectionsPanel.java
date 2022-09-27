@@ -26,6 +26,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.ConnectionImport;
 import org.executequery.repository.ConnectionImporter;
@@ -138,6 +139,7 @@ public class ImportConnectionsPanel extends WizardProcessPanel implements Active
 
                 } finally {
 
+                    ConnectionsTreePanel.getPanelFromBrowser().connectionAdded(null);
                     parent.unblock();
                 }
             }

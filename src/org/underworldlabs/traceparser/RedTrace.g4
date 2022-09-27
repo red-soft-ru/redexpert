@@ -44,7 +44,7 @@ statement_event
  connection_info end_line
  (client_process_info end_line)?
  transaction_info ws+
- id_statement end_line
+ (id_statement end_line)?
 MINUSES end_line
 query_and_params
 ;
@@ -279,8 +279,14 @@ connection_info
 
 query_and_params
 :query (end_line
- CARETS)? (end_line
- not_query)?
+ CARETS)? end_line?
+ (plan end_line*)?
+ (params end_line+)?
+ (records_fetched end_line+)?
+ (memory_size_rule end_line+)?
+ (global_counters end_line+)?
+ (table_counters end_line+)?
+
 ;
 
 query
@@ -311,15 +317,6 @@ datetime
 
 next_transaction
 :any_name
-;
-
-not_query
-:(plan end_line*)?
-(params end_line+)?
-(records_fetched end_line+)?
-(memory_size_rule end_line+)?
-(global_counters end_line+)?
-(table_counters end_line+)?
 ;
 
 procedure_info
@@ -394,12 +391,17 @@ plan
 ;
 
 params
-:(param ((~('\n'))+)|((~('\n'))+ ', ' str) end_line)+
+:parameter+
+;
+
+parameter:
+param (((~('"'))+ ', ' str)|(~('\n')))
 ;
 
 str
-:'"' (~('"\n'))* '"'
+:'"' (~'"\n')* '"\n'
 ;
+
 
 
 records_fetched
@@ -646,7 +648,7 @@ MINUSES
 ;
 
 path
-:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|'='|'?'|'-'|'('|')'|IP_SEG)+
+:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|'='|'?'|'-'|'('|')'|IP_SEG|'as')+
 ;
 
 
@@ -662,4 +664,3 @@ SPACE:(' ')+;
 TAB:
 '\t'
 ;
-

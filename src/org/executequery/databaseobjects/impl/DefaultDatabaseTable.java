@@ -36,10 +36,7 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Takis Diakoumis
@@ -264,7 +261,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                   "where C.RDB$RELATION_NAME=? AND C.RDB$CONSTRAINT_TYPE = 'UNIQUE'";
           PreparedStatement st = executor.getPreparedStatement(query);
           st.setString(1, getName());
-          ResultSet rs = executor.getResultSet(-1, st).getResultSet();
+          result = executor.execute(QueryTypes.SELECT, st);
+          ResultSet rs = result.getResultSet();
           if (rs != null) {
             while (rs.next()) {
               String name = rs.getString(1).trim();
@@ -275,7 +273,10 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 if (i.getName().trim().contentEquals(columnName))
                   constraint.setColumn((DatabaseTableColumn) i);
               }
-              constraints.add(constraint);
+              if (isContainsTheSameObjectByName(name))
+                getConstraintByName(name).addColumnToDisplayList(constraint.getColumn());
+              else
+                constraints.add(constraint);
             }
           }
         } catch (Exception e) {
@@ -297,6 +298,37 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return databaseConstraintsListWithSize(0);
       }
     } else return constraints;
+  }
+
+  private boolean isContainsTheSameObjectByName(String name) {
+
+    if (constraints != null) {
+
+      for (ColumnConstraint element : constraints) {
+
+        if (Objects.equals(element.getName(), name))
+          return true;
+      }
+
+    }
+
+    return false;
+  }
+
+  private ColumnConstraint getConstraintByName(String name) {
+
+    ColumnConstraint constraint = null;
+    if (constraints != null) {
+
+      for (ColumnConstraint element : constraints) {
+
+        if (Objects.equals(element.getName(), name))
+          constraint = element;
+      }
+
+    }
+
+    return constraint;
   }
 
   /**

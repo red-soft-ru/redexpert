@@ -232,7 +232,7 @@ public class TablePanel extends JPanel {
         logListPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         table.setRowSorter(new CustomTableRowSorter(dataModel));
         table.setDefaultRenderer(Object.class, new CustomTableCellRenderer());
-        table.setDefaultRenderer(Integer.class, new CustomTableCellRenderer());
+        table.setDefaultRenderer(Long.class, new CustomTableCellRenderer());
         table.setDefaultRenderer(Timestamp.class, new StatementTimestampTableCellRenderer());
         logListPanel.setViewportView(table);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -314,6 +314,18 @@ public class TablePanel extends JPanel {
                 TableCounter tc = new TableCounter(rows[0], rows[i]);
                 tableCounterModel.addRow(tc);
             }
+        }
+    }
+
+    public void setEnableElements(boolean flag) {
+        setEnableElements(this, flag);
+    }
+
+    public void setEnableElements(Container container, boolean flag) {
+        for (Component component : container.getComponents()) {
+            component.setEnabled(flag);
+            if (component instanceof Container)
+                setEnableElements((Container) component, flag);
         }
     }
 

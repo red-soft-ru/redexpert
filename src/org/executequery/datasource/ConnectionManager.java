@@ -104,29 +104,38 @@ public final class ConnectionManager {
 
 
     public static void loadTree(DatabaseObjectNode root) {
-        root.populateChildren();
-        Enumeration<TreeNode> nodes = root.children();
-        while (nodes.hasMoreElements()) {
-            DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-            if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
-                SwingWorker sw = new SwingWorker() {
-                    @Override
-                    public Object construct() {
-                        loadTree(node);
-                        return null;
-                    }
-
-                    @Override
-                    public void finished() {
-                        if (node.getType() == NamedObject.META_TAG) {
-                            ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getHost().incCountFinishedMetaTags();
+        try {
+            root.populateChildren();
+            Enumeration<TreeNode> nodes = root.children();
+            while (nodes.hasMoreElements()) {
+                DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
+                if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
+                    SwingWorker sw = new SwingWorker() {
+                        @Override
+                        public Object construct() {
+                            loadTree(node);
+                            return null;
                         }
-                    }
-                };
-                sw.start();
+
+                        @Override
+                        public void finished() {
+                            if (node.getType() == NamedObject.META_TAG) {
+                                ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getHost().incCountFinishedMetaTags();
+                            }
+                        }
+                    };
+                    sw.start();
+                }
+            }
+        } catch (Exception e) {
+            DefaultDatabaseHost host = null;
+            if (root.isHostNode())
+                host = (DefaultDatabaseHost) root.getDatabaseObject();
+            else host = (DefaultDatabaseHost) ((DefaultDatabaseMetaTag) root.getDatabaseObject()).getHost();
+            if (host.isConnected()) {
+                e.printStackTrace();
             }
         }
-
     }
 
     /**

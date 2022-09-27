@@ -21,6 +21,7 @@
 package org.executequery.datasource;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.ConnectionBuilder;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
@@ -53,6 +54,7 @@ import java.util.*;
 public final class ConnectionManager {
 
     private static final Map<DatabaseConnection, ConnectionPool> connectionPools = Collections.synchronizedMap(new HashMap<DatabaseConnection, ConnectionPool>());
+
     /**
      * Creates a stored data source for the specified database
      * connection properties object.
@@ -60,6 +62,10 @@ public final class ConnectionManager {
      * @param the database connection properties object
      */
     public static synchronized void createDataSource(DatabaseConnection databaseConnection) throws IllegalArgumentException {
+        createDataSource(databaseConnection, null);
+    }
+
+    public static synchronized void createDataSource(DatabaseConnection databaseConnection, ConnectionBuilder connectionBuilder) throws IllegalArgumentException {
 
         // check the connection has a driver
         if (databaseConnection.getJDBCDriver() == null) {
@@ -86,7 +92,7 @@ public final class ConnectionManager {
         databaseConnection.setConnected(true);
         DatabaseObjectNode hostNode = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection);
         ((DefaultDatabaseHost) hostNode.getDatabaseObject()).resetCountFinishedMetaTags();
-        loadTree(hostNode);
+        loadTree(hostNode, connectionBuilder);
         DatabaseHost host = (DatabaseHost) hostNode.getDatabaseObject();
         try {
             while (host.countFinishedMetaTags() < hostNode.getChildCount()) {
@@ -95,15 +101,17 @@ public final class ConnectionManager {
             }
 
         } catch (InterruptedException e) {
-            if(Log.isDebugEnabled())
-            e.printStackTrace();
+            if (Log.isDebugEnabled())
+                e.printStackTrace();
         }
-        if(databaseConnection.isConnected())
-        Log.info("Data source " + databaseConnection.getName() + " initialized.");
+        if (connectionBuilder != null && connectionBuilder.isCancelled())
+            databaseConnection.setConnected(false);
+        if (databaseConnection.isConnected())
+            Log.info("Data source " + databaseConnection.getName() + " initialized.");
     }
 
 
-    public static void loadTree(DatabaseObjectNode root) {
+    public static void loadTree(DatabaseObjectNode root, ConnectionBuilder connectionBuilder) {
         try {
             root.populateChildren();
             Enumeration<TreeNode> nodes = root.children();
@@ -113,7 +121,7 @@ public final class ConnectionManager {
                     SwingWorker sw = new SwingWorker() {
                         @Override
                         public Object construct() {
-                            loadTree(node);
+                            loadTree(node, connectionBuilder);
                             return null;
                         }
 
@@ -128,11 +136,7 @@ public final class ConnectionManager {
                 }
             }
         } catch (Exception e) {
-            DefaultDatabaseHost host = null;
-            if (root.isHostNode())
-                host = (DefaultDatabaseHost) root.getDatabaseObject();
-            else host = (DefaultDatabaseHost) ((DefaultDatabaseMetaTag) root.getDatabaseObject()).getHost();
-            if (host.isConnected()) {
+            if (!connectionBuilder.isCancelled()) {
                 e.printStackTrace();
             }
         }

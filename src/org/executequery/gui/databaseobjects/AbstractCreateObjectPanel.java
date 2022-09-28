@@ -21,10 +21,8 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
-import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
@@ -182,7 +180,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         bottomButtonPanel.setOkButtonAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connection.isNamesToUpperCase())
+                if (connection.isNamesToUpperCase() && !editing)
                     nameField.setText(nameField.getText().toUpperCase());
                 createObject();
             }

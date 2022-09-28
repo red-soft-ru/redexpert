@@ -256,7 +256,7 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
             case 5:
                 return constraint.getReferencedTable();
             case 6:
-                return constraint.getReferencedColumn();
+                return constraint.getReferenceColumnDisplayList();
             case 7:
                 return constraint.getCheck();
             case 8:

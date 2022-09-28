@@ -42,6 +42,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     private DatabaseTableColumn column;
 
     private String columnsDisplayList;
+    private String referenceColumnsDisplayList;
 
     /**
      * The referenced catalog of this constraint
@@ -289,6 +290,9 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     public String getColumnDisplayList() {
         return columnsDisplayList;
     }
+    public String getReferenceColumnDisplayList() {
+        return referenceColumnsDisplayList;
+    }
 
     /**
      * Returns the table column parent to this object.
@@ -313,6 +317,9 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
     public void addColumnToDisplayList(DatabaseTableColumn column) {
         columnsDisplayList += ", " + column.getName();
+    }
+    public void addReferenceColumnToDisplayList(DatabaseTableColumn column) {
+        referenceColumnsDisplayList += ", " + column.getName();
     }
 
     /**
@@ -353,6 +360,8 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
     public void setReferencedColumn(String referencedColumn) {
         this.referencedColumn = referencedColumn;
+        if (referencedColumn != null)
+            referenceColumnsDisplayList = referencedColumn;
     }
 
     public String getReferencedSchema() {

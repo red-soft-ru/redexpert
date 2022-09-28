@@ -210,9 +210,16 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
           if (column.hasConstraints()) {
 
             List<ColumnConstraint> columnConstraints = column.getConstraints();
-            for (ColumnConstraint j : columnConstraints) {
+            for (ColumnConstraint constraint : columnConstraints) {
 
-              constraints.add(j);
+              String name = constraint.getName();
+              if (isContainsTheSameObjectByName(name)) {
+                getConstraintByName(name).addColumnToDisplayList(constraint.getColumn());
+                if (Objects.equals(constraint.getTypeName(), "FOREIGN"))
+                  getConstraintByName(name).addReferenceColumnToDisplayList(constraint.getColumn());
+              } else
+                constraints.add(constraint);
+
             }
 
           }
@@ -266,7 +273,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
           if (rs != null) {
             while (rs.next()) {
               String name = rs.getString(1).trim();
-              ColumnConstraint constraint = new TableColumnConstraint(UNIQUE_KEY);
+                ColumnConstraint constraint = new TableColumnConstraint(UNIQUE_KEY);
               constraint.setName(name);
               String columnName = rs.getString("RDB$FIELD_NAME").trim();
               for (DatabaseColumn i : columns) {

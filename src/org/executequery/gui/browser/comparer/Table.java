@@ -13,8 +13,8 @@ public class Table {
     }
 
     public void init() {
-        firstConnection = comparer.firstConnection;
-        secondConnection = comparer.secondConnection;
+        firstConnection = comparer.compareConnection;
+        secondConnection = comparer.masterConnection;
         dependencies = comparer.dependencies;
         domain = comparer.domain;
         constraint = comparer.constraint;
@@ -1498,7 +1498,7 @@ public class Table {
             System.out.println("table 1408: " + e + query);
         }
 
-        if (!comparer.script.contains(scriptPart)) {
+        if (!comparer.getScript().contains(scriptPart)) {
             return scriptPart;
         } else {
             return "";

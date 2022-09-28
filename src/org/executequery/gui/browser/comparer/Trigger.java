@@ -12,8 +12,8 @@ public class Trigger {
     }
 
     public void init() {
-        firstConnection = comparer.firstConnection;
-        secondConnection = comparer.secondConnection;
+        firstConnection = comparer.compareConnection;
+        secondConnection = comparer.masterConnection;
         dependencies = comparer.dependencies;
     }
 
@@ -25,7 +25,7 @@ public class Trigger {
             + "from rdb$triggers\n"
             + "where rdb$triggers.rdb$system_flag = 0";
 
-    public ArrayList<String> triggerToFill = new ArrayList<String>();
+    public ArrayList<String> triggerToFill = new ArrayList<>();
     private String query = "";
 
     public ArrayList<String> getInfo(StatementExecutor con, String trigger) {
@@ -89,7 +89,7 @@ public class Trigger {
             ResultSet rs = firstConnection.execute(query, true).getResultSet();
 
             while (rs.next()) {
-                ArrayList<String> line = new ArrayList<String>();
+                ArrayList<String> line = new ArrayList<>();
 
                 if (rs.getString(3).trim().equals("0")
                         || rs.getString(3).trim().equals("1")) {

@@ -13,8 +13,8 @@ public class View {
     }
 
     public void init() {
-        firstConnection = comparer.firstConnection;
-        secondConnection = comparer.secondConnection;
+        firstConnection = comparer.compareConnection;
+        secondConnection = comparer.masterConnection;
         dependencies = comparer.dependencies;
     }
 
@@ -28,8 +28,8 @@ public class View {
 
     private String query = "";
 
-    public ArrayList<String> v_fill = new ArrayList<String>();
-    public ArrayList<String> v_create = new ArrayList<String>();
+    public ArrayList<String> v_fill = new ArrayList<>();
+    public ArrayList<String> v_create = new ArrayList<>();
 
     public ArrayList<String> getInfo(StatementExecutor con, String view) {
         ArrayList<String> info = new ArrayList<>();

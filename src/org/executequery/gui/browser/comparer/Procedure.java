@@ -18,8 +18,8 @@ public class Procedure {
     }
 
     public void init() {
-        firstConnection = comparer.firstConnection;
-        secondConnection = comparer.secondConnection;
+        firstConnection = comparer.compareConnection;
+        secondConnection = comparer.masterConnection;
         this.domain = comparer.domain;
         dependencies = comparer.dependencies;
     }

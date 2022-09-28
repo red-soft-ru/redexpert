@@ -13,8 +13,8 @@ public class Generator {
     }
 
     public void init() {
-        firstConnection = comparer.firstConnection;
-        secondConnection = comparer.secondConnection;
+        firstConnection = comparer.compareConnection;
+        secondConnection = comparer.masterConnection;
         dependencies = comparer.dependencies;
     }
 

@@ -8,26 +8,6 @@ import java.util.ArrayList;
 
 public class Dependencies {
 
-    public Dependencies(Comparer comp) {
-        comparer = comp;
-        init();
-
-    }
-
-    public void init() {
-        firstConnection = comparer.firstConnection;
-        secondConnection = comparer.secondConnection;
-        view = comparer.view;
-        constraint = comparer.constraint;
-        index = comparer.index;
-        table = comparer.table;
-        trigger = comparer.trigger;
-        procedure = comparer.procedure;
-        exception = comparer.exception;
-        generator = comparer.generator;
-        udf = comparer.udf;
-    }
-
     Udf udf;
     Generator generator;
     Exception exception;
@@ -41,6 +21,25 @@ public class Dependencies {
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
     private String query = "";
+
+    public Dependencies(Comparer comp) {
+        comparer = comp;
+        init();
+    }
+
+    public void init() {
+        firstConnection = comparer.compareConnection;
+        secondConnection = comparer.masterConnection;
+        view = comparer.view;
+        constraint = comparer.constraint;
+        index = comparer.index;
+        table = comparer.table;
+        trigger = comparer.trigger;
+        procedure = comparer.procedure;
+        exception = comparer.exception;
+        generator = comparer.generator;
+        udf = comparer.udf;
+    }
 
     // удалить поле по его источнику (второе соединение)
     public String dropField(String fs) {

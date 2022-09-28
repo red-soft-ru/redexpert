@@ -16,9 +16,35 @@ import java.util.List;
 
 public class Comparer {
 
-    public Comparer(DatabaseConnection fc, DatabaseConnection sc) {
-        firstConnection = new DefaultStatementExecutor(fc, true);
-        secondConnection = new DefaultStatementExecutor(sc, true);
+    protected Role role;
+    protected Udf udf;
+    protected Generator generator;
+    protected Exception exception;
+    protected Trigger trigger;
+    protected Table table;
+    protected View view;
+    protected Index index;
+    protected Constraint constraint;
+    protected Domain domain;
+    protected Procedure procedure;
+    protected Dependencies dependencies;
+
+    protected StatementExecutor compareConnection;
+    protected StatementExecutor masterConnection;
+
+    private String lists;
+    private ArrayList<String> script;
+    protected ArrayList<String> createdObjects = new ArrayList<>();
+    protected ArrayList<String> alteredObjects = new ArrayList<>();
+    protected ArrayList<String> droppedObjects = new ArrayList<>();
+
+    public Comparer(DatabaseConnection dbSlave, DatabaseConnection dbMaster) {
+
+        script = new ArrayList<>();
+
+        compareConnection = new DefaultStatementExecutor(dbSlave, true);
+        masterConnection = new DefaultStatementExecutor(dbMaster, true);
+        
         procedure = new Procedure(this);
         domain = new Domain(this);
         dependencies = new Dependencies(this);
@@ -31,8 +57,8 @@ public class Comparer {
         generator = new Generator(this);
         udf = new Udf(this);
         role = new Role();
-        init();
 
+        init();
     }
 
     void init() {
@@ -49,59 +75,64 @@ public class Comparer {
         udf.init();
     }
 
-    public Role role;
-    public Udf udf;
-    public Generator generator;
-    public Exception exception;
-    public Trigger trigger;
-    public Table table;
-    public View view;
-    public Index index;
-    public Constraint constraint;
-    public Domain domain;
-    public Procedure procedure;
-    public Dependencies dependencies;
-    public StatementExecutor firstConnection;
-    public StatementExecutor secondConnection;
+    public void createObjects(boolean permission, int type) {
 
-    public ArrayList<String> script = new ArrayList<String>();
-    public String lists;
+        if (permission) {
 
-    public ArrayList<String> createdObjects = new ArrayList<String>();
-    public ArrayList<String> alteredObjects = new ArrayList<String>();
-    public ArrayList<String> droppedObjects = new ArrayList<String>();
+            List<NamedObject> createObjects = createListObjects(type);
 
+            String header = MessageFormat.format(
+                    "/* Creating {0} */\n\n",
+                    Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+            script.add(header);
+
+            for (NamedObject obj : createObjects) {
+                script.add(((AbstractDatabaseObject) obj).getCreateSQL() + "\n");
+                lists += "\t" + obj.getName() + "\n";
+            }
+
+        }
+
+    }
 
     private List<NamedObject> createListObjects(int type) {
-        List<NamedObject> create = new ArrayList<NamedObject>();
-        List<NamedObject> first = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(firstConnection.getDatabaseConnection()).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
-        for (NamedObject databaseObject : first) {
-            if (ConnectionsTreePanel.getNamedObjectFromHost(secondConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
-                create.add(databaseObject);
+
+        List<NamedObject> firstConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+
+        List<NamedObject> createObjects = new ArrayList<>();
+
+        for (NamedObject databaseObject : firstConnectionObjectsList) {
+            if (ConnectionsTreePanel.getNamedObjectFromHost(
+                    masterConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
+
+                createObjects.add(databaseObject);
             }
         }
 
-        return create;
+        return createObjects;
     }
 
+    // создать список создаваемых объектов
     private ArrayList<String> createList(String query) {
-        ArrayList<String> second = new ArrayList<String>();
-        ArrayList<String> create = new ArrayList<String>();
+        ArrayList<String> second = new ArrayList<>();
+        ArrayList<String> create = new ArrayList<>();
 
         try {
-            ResultSet rs = secondConnection.execute(query, true).getResultSet();
+            ResultSet rs = masterConnection.execute(query, true).getResultSet();
             while (rs.next()) {
                 second.add(rs.getString(1).trim());
             }
 
             rs.close();
-            secondConnection.releaseResources();
+            masterConnection.releaseResources();
         } catch (java.sql.SQLException e) {
             Log.error("Comparer 42: " + e);
         }
 
         try {
-            ResultSet rs = firstConnection.execute(query, true).getResultSet();
+            ResultSet rs = compareConnection.execute(query, true).getResultSet();
             while (rs.next()) {
                 String obj = rs.getString(1).trim();
                 if (!second.contains(obj)) {
@@ -109,7 +140,7 @@ public class Comparer {
                 }
             }
             rs.close();
-            firstConnection.releaseResources();
+            compareConnection.releaseResources();
 
         } catch (java.sql.SQLException e) {
             System.out.println("Comparer 57: " + e);
@@ -120,20 +151,20 @@ public class Comparer {
 
     // создать список удаляемых объектов
     private ArrayList<String> dropList(String query) {
-        ArrayList<String> first = new ArrayList<String>();
-        ArrayList<String> drop = new ArrayList<String>();
+        ArrayList<String> first = new ArrayList<>();
+        ArrayList<String> drop = new ArrayList<>();
         try {
-            ResultSet rs = firstConnection.execute(query, true).getResultSet();
+            ResultSet rs = compareConnection.execute(query, true).getResultSet();
             while (rs.next()) {
                 first.add(rs.getString(1).trim());
             }
         } catch (java.sql.SQLException e) {
             Log.error("Comparer 78: " + e);
         } finally {
-            firstConnection.releaseResources();
+            compareConnection.releaseResources();
         }
         try {
-            ResultSet rs = secondConnection.execute(query, true).getResultSet();
+            ResultSet rs = masterConnection.execute(query, true).getResultSet();
             while (rs.next()) {
                 String obj = rs.getString(1).trim();
                 if (!first.contains(obj)) {
@@ -144,7 +175,7 @@ public class Comparer {
         } catch (java.sql.SQLException e) {
             System.out.println("Comparer 93: " + e);
         } finally {
-            secondConnection.releaseResources();
+            masterConnection.releaseResources();
         }
 
         return drop;
@@ -152,20 +183,20 @@ public class Comparer {
 
     // создать список изменяемых объектов
     private ArrayList<String> alterList(String query) {
-        ArrayList<String> second = new ArrayList<String>();
-        ArrayList<String> alter = new ArrayList<String>();
+        ArrayList<String> second = new ArrayList<>();
+        ArrayList<String> alter = new ArrayList<>();
         try {
-            ResultSet rs = secondConnection.execute(query, true).getResultSet();
+            ResultSet rs = masterConnection.execute(query, true).getResultSet();
             while (rs.next()) {
                 second.add(rs.getString(1).trim());
             }
         } catch (java.sql.SQLException e) {
             Log.error("Comparer 114: " + e);
         } finally {
-            secondConnection.releaseResources();
+            masterConnection.releaseResources();
         }
         try {
-            ResultSet rs = firstConnection.execute(query, true).getResultSet();
+            ResultSet rs = compareConnection.execute(query, true).getResultSet();
             while (rs.next()) {
                 String obj = rs.getString(1).trim();
                 if (second.contains(obj)) {
@@ -177,30 +208,15 @@ public class Comparer {
         } catch (java.sql.SQLException e) {
             System.out.println("Comparer 129: " + e);
         } finally {
-            firstConnection.releaseResources();
+            compareConnection.releaseResources();
         }
 
         return alter;
     }
 
-    public void createObjects(boolean permission, int type) {
-        if (permission) {
-
-            List<NamedObject> cObjects = createListObjects(type);
-            String header = "/* Creating {0} */\n\n";
-            header = MessageFormat.format(header, Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
-            script.add(header);
-            for (NamedObject obj : cObjects) {
-
-                script.add(((AbstractDatabaseObject) obj).getCreateSQL() + "\n");
-                lists = lists + "   " + obj.getName() + "\n";
-            }
-        }
-    }
-
     public void createDomains(boolean permission) {
         if (permission) {
-            ArrayList<String> cDomains = new ArrayList<String>();
+            ArrayList<String> cDomains = new ArrayList<>();
             cDomains = createList(domain.collect);
 
             script.add("/* Creating Domains */\n\n");
@@ -214,7 +230,7 @@ public class Comparer {
 
     public void alterDomains(boolean permission) {
         if (permission) {
-            ArrayList<String> aDomains = new ArrayList<String>();
+            ArrayList<String> aDomains = new ArrayList<>();
             aDomains = alterList(domain.collect);
 
             script.add("/* Altering Domains */\n\n");
@@ -232,7 +248,7 @@ public class Comparer {
 
     public void dropDomains(boolean permission) {
         if (permission) {
-            ArrayList<String> dDomains = new ArrayList<String>();
+            ArrayList<String> dDomains = new ArrayList<>();
             dDomains = dropList(domain.collect);
 
             script.add("/* Dropping Domains */\n\n");
@@ -246,7 +262,7 @@ public class Comparer {
 
     public void createExceptions(boolean permission) {
         if (permission) {
-            ArrayList<String> cExc = new ArrayList<String>();
+            ArrayList<String> cExc = new ArrayList<>();
             cExc = createList(exception.collect);
 
             script.add("/* Creating Exceptions */\n\n");
@@ -260,7 +276,7 @@ public class Comparer {
 
     public void alterExceptions(boolean permission) {
         if (permission) {
-            ArrayList<String> aExc = new ArrayList<String>();
+            ArrayList<String> aExc = new ArrayList<>();
             aExc = alterList(exception.collect);
 
             script.add("/* Altering Exceptions */\n\n");
@@ -277,7 +293,7 @@ public class Comparer {
 
     public void dropExceptions(boolean permission) {
         if (permission) {
-            ArrayList<String> dExc = new ArrayList<String>();
+            ArrayList<String> dExc = new ArrayList<>();
             dExc = dropList(exception.collect);
 
             script.add("/* Dropping Exceptions */\n\n");
@@ -291,7 +307,7 @@ public class Comparer {
 
     public void createUDFs(boolean permission) {
         if (permission) {
-            ArrayList<String> cUDFs = new ArrayList<String>();
+            ArrayList<String> cUDFs = new ArrayList<>();
             cUDFs = createList(udf.collect);
 
             script.add("/* Creating UDFs */\n\n");
@@ -305,7 +321,7 @@ public class Comparer {
 
     public void alterUDFs(boolean permission) {
         if (permission) {
-            ArrayList<String> aUDFs = new ArrayList<String>();
+            ArrayList<String> aUDFs = new ArrayList<>();
             aUDFs = alterList(udf.collect);
 
             script.add("/* Altering UDFs */\n\n");
@@ -322,7 +338,7 @@ public class Comparer {
 
     public void dropUDFs(boolean permission) {
         if (permission) {
-            ArrayList<String> dUDFs = new ArrayList<String>();
+            ArrayList<String> dUDFs = new ArrayList<>();
             dUDFs = dropList(udf.collect);
 
             script.add("/* Dropping UDFs */\n\n");
@@ -336,7 +352,7 @@ public class Comparer {
 
     public void createGenerators(boolean permission) {
         if (permission) {
-            ArrayList<String> cGen = new ArrayList<String>();
+            ArrayList<String> cGen = new ArrayList<>();
             cGen = createList(generator.collect);
 
             script.add("/* Creating Generators */\n\n");
@@ -350,7 +366,7 @@ public class Comparer {
 
     public void alterGenerators(boolean permission) {
         if (permission) {
-            ArrayList<String> aGen = new ArrayList<String>();
+            ArrayList<String> aGen = new ArrayList<>();
             aGen = alterList(generator.collect);
 
             script.add("/* Altering Generators */\n\n");
@@ -367,7 +383,7 @@ public class Comparer {
 
     public void dropGenerators(boolean permission) {
         if (permission) {
-            ArrayList<String> dGen = new ArrayList<String>();
+            ArrayList<String> dGen = new ArrayList<>();
             dGen = dropList(generator.collect);
 
             script.add("/* Dropping Generators */\n\n");
@@ -381,7 +397,7 @@ public class Comparer {
 
     public void createRoles(boolean permission) {
         if (permission) {
-            ArrayList<String> cRoles = new ArrayList<String>();
+            ArrayList<String> cRoles = new ArrayList<>();
             cRoles = createList(role.collect);
 
             script.add("/* Creating Roles */\n\n");
@@ -395,7 +411,7 @@ public class Comparer {
 
     public void dropRoles(boolean permission) {
         if (permission) {
-            ArrayList<String> dRoles = new ArrayList<String>();
+            ArrayList<String> dRoles = new ArrayList<>();
             dRoles = dropList(role.collect);
 
             script.add("/* Dropping Roles */\n\n");
@@ -409,7 +425,7 @@ public class Comparer {
 
     public void createTriggers(boolean permission) {
         if (permission) {
-            ArrayList<String> cTriggers = new ArrayList<String>();
+            ArrayList<String> cTriggers = new ArrayList<>();
             cTriggers = createList(trigger.collect);
 
             script.add("/* Creating Triggers */\n\n");
@@ -423,7 +439,7 @@ public class Comparer {
 
     public void alterTriggers(boolean permission) {
         if (permission) {
-            ArrayList<String> aTriggers = new ArrayList<String>();
+            ArrayList<String> aTriggers = new ArrayList<>();
             aTriggers = alterList(trigger.collect);
 
             script.add("/* Altering Triggers */\n\n");
@@ -440,7 +456,7 @@ public class Comparer {
 
     public void dropTriggers(boolean permission) {
         if (permission) {
-            ArrayList<String> dTrigger = new ArrayList<String>();
+            ArrayList<String> dTrigger = new ArrayList<>();
             dTrigger = dropList(trigger.collect);
 
             script.add("/* Dropping Triggers */\n\n");
@@ -454,7 +470,7 @@ public class Comparer {
 
     public void createTables(boolean permission) {
         if (permission) {
-            ArrayList<String> cTables = new ArrayList<String>();
+            ArrayList<String> cTables = new ArrayList<>();
             cTables = createList(table.collect);
 
             script.add("/* Creating Tables */\n\n");
@@ -468,7 +484,7 @@ public class Comparer {
 
     public void alterTables(boolean permission) {
         if (permission) {
-            ArrayList<String> aTables = new ArrayList<String>();
+            ArrayList<String> aTables = new ArrayList<>();
             aTables = alterList(table.collect);
 
             script.add("/* Alter Tables */\n\n");
@@ -485,7 +501,7 @@ public class Comparer {
 
     public void dropTables(boolean permission) {
         if (permission) {
-            ArrayList<String> dTables = new ArrayList<String>();
+            ArrayList<String> dTables = new ArrayList<>();
             dTables = dropList(table.collect);
 
             script.add("/* Dropping Tables */\n\n");
@@ -499,7 +515,7 @@ public class Comparer {
 
     public void createProcedures(boolean permission) {
         if (permission) {
-            ArrayList<String> cProcedures = new ArrayList<String>();
+            ArrayList<String> cProcedures = new ArrayList<>();
             cProcedures = createList(procedure.collect);
 
             script.add("/* Creating Procedures */\n\n");
@@ -513,8 +529,8 @@ public class Comparer {
 
     public void alterProcedures(boolean permission) {
         if (permission) {
-            ArrayList<String> aProcedures = new ArrayList<String>();
-            ArrayList<String> fProcedures = new ArrayList<String>();
+            ArrayList<String> aProcedures = new ArrayList<>();
+            ArrayList<String> fProcedures = new ArrayList<>();
 
             aProcedures = alterList(procedure.collect);
 
@@ -538,7 +554,7 @@ public class Comparer {
 
     public void dropProcedures(boolean permission) {
         if (permission) {
-            ArrayList<String> dProcedures = new ArrayList<String>();
+            ArrayList<String> dProcedures = new ArrayList<>();
             dProcedures = dropList(procedure.collect);
 
             script.add("/* Dropping Procedures */\n\n");
@@ -557,7 +573,7 @@ public class Comparer {
 
     public void createViews(boolean permission) {
         if (permission) {
-            ArrayList<String> cViews = new ArrayList<String>();
+            ArrayList<String> cViews = new ArrayList<>();
             cViews = createList(view.collect);
 
             script.add("/* Creating Views */\n\n");
@@ -571,7 +587,7 @@ public class Comparer {
 
     public void alterViews(boolean permission) {
         if (permission) {
-            ArrayList<String> aViews = new ArrayList<String>();
+            ArrayList<String> aViews = new ArrayList<>();
             aViews = alterList(view.collect);
 
             script.add("/* Altering Views */\n\n");
@@ -588,7 +604,7 @@ public class Comparer {
 
     public void dropViews(boolean permission) {
         if (permission) {
-            ArrayList<String> dViews = new ArrayList<String>();
+            ArrayList<String> dViews = new ArrayList<>();
             dViews = dropList(view.collect);
 
             script.add("/* Dropping Views */\n\n");
@@ -602,7 +618,7 @@ public class Comparer {
 
     public void createIndices(boolean permission) {
         if (permission) {
-            ArrayList<String> cIndices = new ArrayList<String>();
+            ArrayList<String> cIndices = new ArrayList<>();
             cIndices = createList(index.collect);
 
             script.add("/* Creating Indices */\n\n");
@@ -616,7 +632,7 @@ public class Comparer {
 
     public void alterIndices(boolean permission) {
         if (permission) {
-            ArrayList<String> aIndices = new ArrayList<String>();
+            ArrayList<String> aIndices = new ArrayList<>();
             aIndices = alterList(index.collect);
 
             script.add("/* Altering Indices */\n\n");
@@ -633,7 +649,7 @@ public class Comparer {
 
     public void dropIndices(boolean permission) {
         if (permission) {
-            ArrayList<String> dIndices = new ArrayList<String>();
+            ArrayList<String> dIndices = new ArrayList<>();
             dIndices = dropList(index.collect);
 
             script.add("/* Dropping Indices */\n\n");
@@ -647,7 +663,7 @@ public class Comparer {
 
     public void createChecks(boolean permission) {
         if (permission) {
-            ArrayList<String> cChecks = new ArrayList<String>();
+            ArrayList<String> cChecks = new ArrayList<>();
             cChecks = createList(constraint.collect_check);
 
             script.add("/* Creating Checks */\n\n");
@@ -661,7 +677,7 @@ public class Comparer {
 
     public void alterChecks(boolean permission) {
         if (permission) {
-            ArrayList<String> aChecks = new ArrayList<String>();
+            ArrayList<String> aChecks = new ArrayList<>();
             aChecks = alterList(constraint.collect_check);
 
             script.add("/* Altering Checks */\n\n");
@@ -678,7 +694,7 @@ public class Comparer {
 
     public void dropChecks(boolean permission) {
         if (permission) {
-            ArrayList<String> dChecks = new ArrayList<String>();
+            ArrayList<String> dChecks = new ArrayList<>();
             dChecks = dropList(constraint.collect_check);
 
             script.add("/* Dropping Checks */\n\n");
@@ -692,7 +708,7 @@ public class Comparer {
 
     public void createUniques(boolean permission) {
         if (permission) {
-            ArrayList<String> cUniques = new ArrayList<String>();
+            ArrayList<String> cUniques = new ArrayList<>();
             cUniques = createList(constraint.collect_unique);
 
             script.add("/* Creating Uniques */\n\n");
@@ -706,7 +722,7 @@ public class Comparer {
 
     public void alterUniques(boolean permission) {
         if (permission) {
-            ArrayList<String> aUniques = new ArrayList<String>();
+            ArrayList<String> aUniques = new ArrayList<>();
             aUniques = alterList(constraint.collect_unique);
 
             script.add("/* Altering Uniques */\n\n");
@@ -723,7 +739,7 @@ public class Comparer {
 
     public void dropUniques(boolean permission) {
         if (permission) {
-            ArrayList<String> dUniques = new ArrayList<String>();
+            ArrayList<String> dUniques = new ArrayList<>();
             dUniques = dropList(constraint.collect_unique);
 
             script.add("/* Dropping Uniques */\n\n");
@@ -737,7 +753,7 @@ public class Comparer {
 
     public void createFKs(boolean permission) {
         if (permission) {
-            ArrayList<String> cFKs = new ArrayList<String>();
+            ArrayList<String> cFKs = new ArrayList<>();
             cFKs = createList(constraint.collect_fk);
 
             script.add("/* Creating Foreign keys */\n\n");
@@ -751,7 +767,7 @@ public class Comparer {
 
     public void alterFKs(boolean permission) {
         if (permission) {
-            ArrayList<String> aFKs = new ArrayList<String>();
+            ArrayList<String> aFKs = new ArrayList<>();
             aFKs = alterList(constraint.collect_fk);
 
             script.add("/* Altering Foreign keys */\n\n");
@@ -768,7 +784,7 @@ public class Comparer {
 
     public void dropFKs(boolean permission) {
         if (permission) {
-            ArrayList<String> dFKs = new ArrayList<String>();
+            ArrayList<String> dFKs = new ArrayList<>();
             dFKs = dropList(constraint.collect_fk);
 
             script.add("/* Dropping Foreign keys */\n\n");
@@ -782,7 +798,7 @@ public class Comparer {
 
     public void createPKs(boolean permission) {
         if (permission) {
-            ArrayList<String> cPKs = new ArrayList<String>();
+            ArrayList<String> cPKs = new ArrayList<>();
             cPKs = createList(constraint.collect_pk);
 
             script.add("/* Creating Primary keys */\n\n");
@@ -796,7 +812,7 @@ public class Comparer {
 
     public void alterPKs(boolean permission) {
         if (permission) {
-            ArrayList<String> aPKs = new ArrayList<String>();
+            ArrayList<String> aPKs = new ArrayList<>();
             aPKs = alterList(constraint.collect_pk);
 
             script.add("/* Altering Primary keys */\n\n");
@@ -813,7 +829,7 @@ public class Comparer {
 
     public void dropPKs(boolean permission) {
         if (permission) {
-            ArrayList<String> dPKs = new ArrayList<String>();
+            ArrayList<String> dPKs = new ArrayList<>();
             dPKs = dropList(constraint.collect_pk);
 
             script.add("/* Dropping Primary keys */\n\n");
@@ -914,5 +930,37 @@ public class Comparer {
             constraint.checkstoRecreate.clear();
         }
     }
+
+    public String getLists() {
+        return lists;
+    }
+    public void setLists(String lists) {
+        this.lists = lists;
+    }
+
+    public ArrayList<String> getScript() {
+        return script;
+    }
+    public String getScript(int elemIndex) {
+        return script.get(elemIndex);
+    }
+    public void addToScript(String addedScript) {
+        script.add(addedScript);
+    }
+
+    public StatementExecutor getCompareConnection() {
+        return compareConnection;
+    }
+    public StatementExecutor getMasterConnection() {
+        return masterConnection;
+    }
+
+    public void clearLists() {
+        createdObjects.clear();
+        alteredObjects.clear();
+        droppedObjects.clear();
+        script.clear();
+    }
+
 }
 

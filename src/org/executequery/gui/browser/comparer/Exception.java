@@ -12,8 +12,8 @@ public class Exception {
     }
 
     public void init() {
-        firstConnection = comparer.firstConnection;
-        secondConnection = comparer.secondConnection;
+        firstConnection = comparer.compareConnection;
+        secondConnection = comparer.masterConnection;
         dependencies = comparer.dependencies;
     }
 

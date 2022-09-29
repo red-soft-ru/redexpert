@@ -133,7 +133,7 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
 
         try {
 
-            ConnectionManager.createDataSource(databaseConnection);
+            ConnectionManager.createDataSource(databaseConnection, this);
 
         } catch (DataSourceException e) {
 

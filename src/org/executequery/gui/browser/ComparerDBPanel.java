@@ -36,6 +36,7 @@ public class ComparerDBPanel extends JPanel {
     private JComboBox dbCompareComboBox;
     private JButton compareButton;
     private JButton saveScriptButton;
+    private JButton executeScriptButton;
     private JButton selectAllAttributesButton;
     private JButton selectAllPropertiesButton;
     private LoggingOutputPanel loggingOutputPanel;
@@ -66,7 +67,7 @@ public class ComparerDBPanel extends JPanel {
 
     private void init() {
 
-        databaseConnectionList = new ArrayList<DatabaseConnection>();
+        databaseConnectionList = new ArrayList<>();
 
         // --- buttons defining ---
 
@@ -77,6 +78,10 @@ public class ComparerDBPanel extends JPanel {
         saveScriptButton = new JButton();
         saveScriptButton.setText("Save Script");
         saveScriptButton.addActionListener(e -> saveScript());
+
+        executeScriptButton = new JButton();
+        executeScriptButton.setText("Execute Script");
+        executeScriptButton.addActionListener(e -> executeScript());
 
         selectAllAttributesButton = new JButton();
         selectAllAttributesButton.setText("Select All");
@@ -131,8 +136,11 @@ public class ComparerDBPanel extends JPanel {
         JPanel connectionsPanel = new JPanel(new GridBagLayout());
         connectionsPanel.setBorder(BorderFactory.createTitledBorder("Connections"));
 
-        gridBagHelper.addLabelFieldPair(connectionsPanel, "Master database", dbMasterComboBox, null);
-        gridBagHelper.addLabelFieldPair(connectionsPanel, "Compare database", dbCompareComboBox, null);
+        gridBagHelper.addLabelFieldPair(connectionsPanel,
+                "Master database:", dbMasterComboBox, null);
+        gridBagHelper.addLabelFieldPair(connectionsPanel,
+                "Compare database:", dbCompareComboBox, null);
+        connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().get());
 
         // --- attributes panel ---
 
@@ -140,12 +148,19 @@ public class ComparerDBPanel extends JPanel {
         gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
 
         JPanel attributesPanel = new JPanel(new GridBagLayout());
-        JScrollPane attributesPanelWithScrolls = new JScrollPane(attributesPanel);
-        attributesPanelWithScrolls.setBorder(BorderFactory.createTitledBorder("Attributes"));
 
         attributesPanel.add(selectAllAttributesButton, gridBagHelper.nextRowFirstCol().setLabelDefault().anchorNorthWest().get());
         for (JCheckBox checkBox : attributesCheckBoxMap.values())
             attributesPanel.add(checkBox, gridBagHelper.nextRowFirstCol().get());
+        attributesPanel.add(new JPanel(), gridBagHelper.nextRowFirstCol().setMaxWeightY().spanY().get());
+
+        attributesPanel.add(new JScrollPane());
+
+        JScrollPane attributesPanelWithScrolls = new JScrollPane(attributesPanel,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        attributesPanelWithScrolls.setBorder(BorderFactory.createTitledBorder("Attributes"));
+        attributesPanelWithScrolls.setMinimumSize(new Dimension(220, 150));
 
         // --- properties panel ---
 
@@ -153,30 +168,47 @@ public class ComparerDBPanel extends JPanel {
         gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
 
         JPanel propertiesPanel = new JPanel(new GridBagLayout());
-        JScrollPane propertiesPanelWithScrolls = new JScrollPane(propertiesPanel);
-        propertiesPanelWithScrolls.setBorder(BorderFactory.createTitledBorder("Properties"));
 
         propertiesPanel.add(selectAllPropertiesButton, gridBagHelper.nextRowFirstCol().setLabelDefault().anchorNorthWest().get());
         for (JCheckBox checkBox : propertiesCheckBoxMap.values())
             propertiesPanel.add(checkBox, gridBagHelper.nextRowFirstCol().get());
+        propertiesPanel.add(new JPanel(), gridBagHelper.nextRowFirstCol().setMaxWeightY().spanY().get());
+
+        JScrollPane propertiesPanelWithScrolls = new JScrollPane(propertiesPanel,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        propertiesPanelWithScrolls.setBorder(BorderFactory.createTitledBorder("Properties"));
+        propertiesPanelWithScrolls.setMinimumSize(new Dimension(220, 150));
+
+        // --- SQL panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+
+        JPanel sqlPanel = new JPanel(new GridBagLayout());
+
+        sqlPanel.add(sqlTextPanel, gridBagHelper.setWidth(3).setMaxWeightY().spanX().get());
+        sqlPanel.add(saveScriptButton, gridBagHelper.setLabelDefault().nextRowFirstCol().get());
+        sqlPanel.add(executeScriptButton, gridBagHelper.nextCol().get());
+        sqlPanel.add(new JPanel(), gridBagHelper.nextCol().get());
 
         // --- tabbed pane ---
 
         JTabbedPane tabPane = new JTabbedPane();
 
         tabPane.add("Output", loggingOutputPanel);
-        tabPane.add("SQL", sqlTextPanel);
+        tabPane.add("SQL", sqlPanel);
 
         // --- compare panel ---
 
         gridBagHelper = new GridBagHelper();
-        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
 
         JPanel comparePanel = new JPanel(new GridBagLayout());
 
         comparePanel.add(connectionsPanel, gridBagHelper.setWidth(2).get());
         comparePanel.add(attributesPanelWithScrolls, gridBagHelper.nextRowFirstCol().setWidth(1).get());
-        comparePanel.add(propertiesPanelWithScrolls, gridBagHelper.nextCol().fillHorizontally().get());
+        comparePanel.add(propertiesPanelWithScrolls, gridBagHelper.nextCol().spanY().get());
 
         // --- main panel ---
 
@@ -185,19 +217,23 @@ public class ComparerDBPanel extends JPanel {
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
-        mainPanel.add(comparePanel, gridBagHelper.setMinWeightX().get());
-        mainPanel.add(tabPane, gridBagHelper.nextCol().spanX().get());
+        mainPanel.add(comparePanel, gridBagHelper.get());
+        mainPanel.add(tabPane, gridBagHelper.nextCol().spanY().spanX().get());
 
-        add(mainPanel);
+        // --- layout configure ---
+
+        setLayout(new BorderLayout());
+        add(mainPanel, BorderLayout.CENTER);
 
     }
 
-    // --- buttons handler ---
+    // --- buttons handlers ---
 
     private void compareDatabase() {
 
-        if (databaseConnectionList.size() < 2 || dbCompareComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
-            loggingOutputPanel.append("\nError: Unable to compare");
+        if (databaseConnectionList.size() < 2 || 
+                dbCompareComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
+            loggingOutputPanel.appendError("\nError: Unable to compare");
             return;
         }
 
@@ -205,7 +241,9 @@ public class ComparerDBPanel extends JPanel {
                 databaseConnectionList.get(dbCompareComboBox.getSelectedIndex()),
                 databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()));
 
-        loggingOutputPanel.append("\nStart comparing DBs\n");
+        loggingOutputPanel.clear();
+        loggingOutputPanel.append(WELCOME_TEXT);
+        loggingOutputPanel.appendAction("\nStart comparing DBs\n");
 
         sqlTextPanel.setSQLText("");
         comparer.clearLists();
@@ -216,13 +254,9 @@ public class ComparerDBPanel extends JPanel {
         String query = "select rdb$database.rdb$character_set_name\n"
                 + "from rdb$database\n";
 
-        try {
-            ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet();
-
-            while (rs.next()) {
-
+        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
+            while (rs.next())
                 charset = rs.getString(1).trim();
-            }
 
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
@@ -234,13 +268,9 @@ public class ComparerDBPanel extends JPanel {
         query = "select mon$database.mon$sql_dialect\n"
                 + "from mon$database\n";
 
-        try {
-            ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet();
-
-            while (rs.next()) {
-
+        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()){
+            while (rs.next())
                 dialect = rs.getString(1).trim();
-            }
 
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
@@ -282,9 +312,12 @@ public class ComparerDBPanel extends JPanel {
         */
 
         for (Integer type : attributesCheckBoxMap.keySet()) {
+            
             comparer.setLists("");
             comparer.createObjects(attributesCheckBoxMap.get(type).isSelected(), type);
-            loggingOutputPanel.append(MessageFormat.format("\n============= {0} to create  =============\n\n", Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+            
+            loggingOutputPanel.append(MessageFormat.format("============= {0} to create  =============\n",
+                    Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
             loggingOutputPanel.append(comparer.getLists());
         }
 
@@ -443,87 +476,70 @@ public class ComparerDBPanel extends JPanel {
         logPanel.append(comparer.lists);
         */
 
-        for (int i = 0; i < comparer.getScript().size(); i++) {
-            //System.out.println(comparer.script.get(i));
+        for (int i = 0; i < comparer.getScript().size(); i++)
             sqlTextPanel.getTextPane().append(comparer.getScript(i));
-        }
-        /*for (int i = 0; i < comparer.warnings.size(); i++) {
-         System.out.println(i + 1 + ": " + comparer.warnings.get(i));
-         }*/
 
     }
 
     private void saveScript() {
 
-        /*String s = "";
-
-         for (int i = 0; i < comparer.script.size(); i++){
-         s = s + comparer.script.get(i);
-         }
-
-         try{
-         BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("output_file.txt"), "Cp1251"));
-         w.write(s);
-         w.flush();
-         w.close();}
-         catch(IOException ex){}*/
-
-        if (comparer == null) {
-            loggingOutputPanel.append("\nNothing to save - script is empty");
-            return;
-        }
-        if (comparer.getScript().isEmpty()) {
-            loggingOutputPanel.append("\nNothing to save - script is empty");
+        if (comparer == null || comparer.getScript().isEmpty()) {
+            loggingOutputPanel.appendError("\nError: nothing to save (script is empty)");
             return;
         }
 
-        JFileChooser filesave = new JFileChooser("C:\\");
+        JFileChooser fileSave = new JFileChooser("C:\\");
 
-        //FileNameExtensionFilter filter = new FileNameExtensionFilter("*.*");
-        //filesave.setFileFilter(filter);
         FileFilter sqlFilter = new FileTypeFilter(".sql", "SQL files");
         FileFilter txtFilter = new FileTypeFilter(".txt", "Text files");
 
-        filesave.addChoosableFileFilter(sqlFilter);
-        filesave.addChoosableFileFilter(txtFilter);
-        filesave.setAcceptAllFileFilterUsed(false);
+        fileSave.addChoosableFileFilter(sqlFilter);
+        fileSave.addChoosableFileFilter(txtFilter);
+        fileSave.setAcceptAllFileFilterUsed(false);
 
-        int ret = filesave.showDialog(null, "Save Script");
+        int ret = fileSave.showDialog(null, "Save Script");
 
         if (ret == JFileChooser.APPROVE_OPTION) {
-            File file = filesave.getSelectedFile();
-
-            String text, n = "\n";
-
+            
+            File file = fileSave.getSelectedFile();
             String name = file.getAbsoluteFile().toString();
 
             int dot = name.lastIndexOf(".");
             dot = dot == -1 ? name.length() : dot;
 
-            String name_ = name.substring(0, dot)
-                    + filesave.getFileFilter().getDescription().substring(filesave.getFileFilter().getDescription().indexOf("(*") + 2,
-                    filesave.getFileFilter().getDescription().lastIndexOf(")"));
+            String fileSavePath = name.substring(0, dot)
+                    + fileSave.getFileFilter().getDescription().substring(fileSave.getFileFilter().getDescription().indexOf("(*") + 2,
+                    fileSave.getFileFilter().getDescription().lastIndexOf(")"));
+            
             comparer.addToScript("русский текст");
-            try (FileOutputStream path = new FileOutputStream(name_)) {
+            
+            try (FileOutputStream path = new FileOutputStream(fileSavePath)) {
+                
                 for (int i = 0; i < comparer.getScript().size(); i++) {
-                    text = comparer.getScript(i);
-
-                    //String str = new String(text.getBytes(), "Cp1251");
+                    String text = comparer.getScript(i);
                     byte[] buffer = text.getBytes();
-
                     path.write(buffer, 0, buffer.length);
-
-                    /*byte[] bufferN = n.getBytes();
-                     path.write(bufferN, 0, bufferN.length);*/
                 }
 
-                loggingOutputPanel.append("\nScript was saved:\n" + "«" + name_ + "»");
-            } catch (IOException ex) {
+                loggingOutputPanel.appendAction("\nScript was saved successfully");
+                loggingOutputPanel.append("Saved to: " + fileSavePath);
 
-                System.out.println(ex.getMessage());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            
         }
 
+    }
+
+    private void executeScript() {
+
+        if (comparer == null || comparer.getScript().isEmpty()) {
+            loggingOutputPanel.appendError("\nError: nothing to execute (script is empty)");
+            return;
+        }
+
+        loggingOutputPanel.appendError("\nThis function not implemented yet");
     }
 
     private void selectAll(String selectedBox) {
@@ -549,7 +565,7 @@ public class ComparerDBPanel extends JPanel {
 
     // ---
 
-    public class FileTypeFilter extends FileFilter {
+    public static class FileTypeFilter extends FileFilter {
 
         private final String extension;
         private final String description;
@@ -560,18 +576,19 @@ public class ComparerDBPanel extends JPanel {
         }
 
         public boolean accept(File file) {
-            if (file.isDirectory()) {
+            if (file.isDirectory())
                 return true;
-            }
+                
             return file.getName().endsWith(extension);
         }
 
         public String getDescription() {
             return description + String.format(" (*%s)", extension);
         }
+        
     }
 
-    public String bundleString(String key) {
+    public static String  bundleString(String key) {
         return Bundles.get(ComparerDBPanel.class, key);
     }
 

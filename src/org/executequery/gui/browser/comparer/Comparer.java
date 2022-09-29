@@ -44,7 +44,7 @@ public class Comparer {
 
         compareConnection = new DefaultStatementExecutor(dbSlave, true);
         masterConnection = new DefaultStatementExecutor(dbMaster, true);
-        
+
         procedure = new Procedure(this);
         domain = new Domain(this);
         dependencies = new Dependencies(this);
@@ -77,20 +77,19 @@ public class Comparer {
 
     public void createObjects(boolean permission, int type) {
 
-        if (permission) {
+        if (!permission)
+            return;
 
-            List<NamedObject> createObjects = createListObjects(type);
+        List<NamedObject> createObjects = createListObjects(type);
 
-            String header = MessageFormat.format(
-                    "/* Creating {0} */\n\n",
-                    Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
-            script.add(header);
+        String header = MessageFormat.format(
+                "/* Creating {0} */\n\n",
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+        script.add(header);
 
-            for (NamedObject obj : createObjects) {
-                script.add(((AbstractDatabaseObject) obj).getCreateSQL() + "\n");
-                lists += "\t" + obj.getName() + "\n";
-            }
-
+        for (NamedObject obj : createObjects) {
+            script.add(((AbstractDatabaseObject) obj).getCreateSQL() + "\n");
+            lists += "\t" + obj.getName() + "\n";
         }
 
     }
@@ -116,34 +115,35 @@ public class Comparer {
 
     // создать список создаваемых объектов
     private ArrayList<String> createList(String query) {
+
         ArrayList<String> second = new ArrayList<>();
         ArrayList<String> create = new ArrayList<>();
 
-        try {
-            ResultSet rs = masterConnection.execute(query, true).getResultSet();
-            while (rs.next()) {
-                second.add(rs.getString(1).trim());
-            }
+        try(ResultSet rs = masterConnection.execute(query, true).getResultSet()) {
 
-            rs.close();
-            masterConnection.releaseResources();
+            while (rs.next())
+                second.add(rs.getString(1).trim());
+
         } catch (java.sql.SQLException e) {
-            Log.error("Comparer 42: " + e);
+            Log.error("ComparerError 42", e);
+
+        } finally {
+            masterConnection.releaseResources();
         }
 
-        try {
-            ResultSet rs = compareConnection.execute(query, true).getResultSet();
+        try(ResultSet rs = compareConnection.execute(query, true).getResultSet()) {
+
             while (rs.next()) {
                 String obj = rs.getString(1).trim();
-                if (!second.contains(obj)) {
+                if (!second.contains(obj))
                     create.add(obj);
-                }
             }
-            rs.close();
-            compareConnection.releaseResources();
 
         } catch (java.sql.SQLException e) {
-            System.out.println("Comparer 57: " + e);
+            Log.error("ComparerError 57", e);
+
+        } finally {
+            compareConnection.releaseResources();
         }
 
         return create;
@@ -151,29 +151,33 @@ public class Comparer {
 
     // создать список удаляемых объектов
     private ArrayList<String> dropList(String query) {
+
         ArrayList<String> first = new ArrayList<>();
         ArrayList<String> drop = new ArrayList<>();
-        try {
-            ResultSet rs = compareConnection.execute(query, true).getResultSet();
-            while (rs.next()) {
+
+        try(ResultSet rs = compareConnection.execute(query, true).getResultSet()) {
+
+            while (rs.next())
                 first.add(rs.getString(1).trim());
-            }
+
         } catch (java.sql.SQLException e) {
-            Log.error("Comparer 78: " + e);
+            Log.error("ComparerError 78", e);
+
         } finally {
             compareConnection.releaseResources();
         }
-        try {
-            ResultSet rs = masterConnection.execute(query, true).getResultSet();
+
+        try(ResultSet rs = masterConnection.execute(query, true).getResultSet()) {
+
             while (rs.next()) {
                 String obj = rs.getString(1).trim();
-                if (!first.contains(obj)) {
+                if (!first.contains(obj))
                     drop.add(obj);
-                }
             }
 
         } catch (java.sql.SQLException e) {
-            System.out.println("Comparer 93: " + e);
+            Log.error("ComparerError 93", e);
+
         } finally {
             masterConnection.releaseResources();
         }
@@ -183,36 +187,41 @@ public class Comparer {
 
     // создать список изменяемых объектов
     private ArrayList<String> alterList(String query) {
+
         ArrayList<String> second = new ArrayList<>();
         ArrayList<String> alter = new ArrayList<>();
-        try {
-            ResultSet rs = masterConnection.execute(query, true).getResultSet();
-            while (rs.next()) {
+
+        try(ResultSet rs = masterConnection.execute(query, true).getResultSet()) {
+
+            while (rs.next())
                 second.add(rs.getString(1).trim());
-            }
+
         } catch (java.sql.SQLException e) {
-            Log.error("Comparer 114: " + e);
+            Log.error("ComparerError 114", e);
+
         } finally {
             masterConnection.releaseResources();
         }
-        try {
-            ResultSet rs = compareConnection.execute(query, true).getResultSet();
+
+        try(ResultSet rs = compareConnection.execute(query, true).getResultSet()) {
+
             while (rs.next()) {
                 String obj = rs.getString(1).trim();
-                if (second.contains(obj)) {
+                if (second.contains(obj))
                     alter.add(obj);
-                }
             }
 
-
         } catch (java.sql.SQLException e) {
-            System.out.println("Comparer 129: " + e);
+            Log.error("ComparerError 129", e);
+
         } finally {
             compareConnection.releaseResources();
         }
 
         return alter;
     }
+
+    // --- domains ---
 
     public void createDomains(boolean permission) {
         if (permission) {
@@ -260,6 +269,8 @@ public class Comparer {
         }
     }
 
+    // --- exceptions ---
+
     public void createExceptions(boolean permission) {
         if (permission) {
             ArrayList<String> cExc = new ArrayList<>();
@@ -304,6 +315,8 @@ public class Comparer {
             }
         }
     }
+
+    // --- UDFs ---
 
     public void createUDFs(boolean permission) {
         if (permission) {
@@ -350,6 +363,8 @@ public class Comparer {
         }
     }
 
+    // --- generators ---
+
     public void createGenerators(boolean permission) {
         if (permission) {
             ArrayList<String> cGen = new ArrayList<>();
@@ -395,6 +410,8 @@ public class Comparer {
         }
     }
 
+    // --- roles ---
+
     public void createRoles(boolean permission) {
         if (permission) {
             ArrayList<String> cRoles = new ArrayList<>();
@@ -422,6 +439,8 @@ public class Comparer {
             }
         }
     }
+
+    // --- triggers ---
 
     public void createTriggers(boolean permission) {
         if (permission) {
@@ -468,6 +487,8 @@ public class Comparer {
         }
     }
 
+    // --- tables ---
+
     public void createTables(boolean permission) {
         if (permission) {
             ArrayList<String> cTables = new ArrayList<>();
@@ -512,6 +533,8 @@ public class Comparer {
             }
         }
     }
+
+    // --- procedures ---
 
     public void createProcedures(boolean permission) {
         if (permission) {
@@ -571,6 +594,8 @@ public class Comparer {
         }
     }
 
+    // --- views ---
+
     public void createViews(boolean permission) {
         if (permission) {
             ArrayList<String> cViews = new ArrayList<>();
@@ -615,6 +640,8 @@ public class Comparer {
             }
         }
     }
+
+    // --- indices ---
 
     public void createIndices(boolean permission) {
         if (permission) {
@@ -661,6 +688,8 @@ public class Comparer {
         }
     }
 
+    // --- checks ---
+
     public void createChecks(boolean permission) {
         if (permission) {
             ArrayList<String> cChecks = new ArrayList<>();
@@ -705,6 +734,8 @@ public class Comparer {
             }
         }
     }
+
+    // --- uniques ---
 
     public void createUniques(boolean permission) {
         if (permission) {
@@ -751,6 +782,8 @@ public class Comparer {
         }
     }
 
+    // --- foreign keys ---
+
     public void createFKs(boolean permission) {
         if (permission) {
             ArrayList<String> cFKs = new ArrayList<>();
@@ -796,6 +829,8 @@ public class Comparer {
         }
     }
 
+    // --- primary keys ---
+
     public void createPKs(boolean permission) {
         if (permission) {
             ArrayList<String> cPKs = new ArrayList<>();
@@ -840,6 +875,8 @@ public class Comparer {
             }
         }
     }
+
+    // ---
 
     public void computedField(boolean permission) {
         if (permission) {
@@ -930,6 +967,8 @@ public class Comparer {
             constraint.checkstoRecreate.clear();
         }
     }
+
+    // ---
 
     public String getLists() {
         return lists;

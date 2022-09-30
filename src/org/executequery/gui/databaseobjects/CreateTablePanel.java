@@ -37,7 +37,9 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.CreateTableFunctionPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.UpperFilter;
 
+import javax.swing.text.PlainDocument;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -89,6 +91,10 @@ public class CreateTablePanel extends CreateTableFunctionPanel
     public CreateTablePanel(DatabaseConnection dc, ActionContainer parent, boolean temporary) {
         this(parent, temporary);
         connectionsCombo.setSelectedItem(dc);
+        if (getSelectedConnection() != null && getSelectedConnection().isNamesToUpperCase()) {
+            PlainDocument doc = (PlainDocument) nameField.getDocument();
+            doc.setDocumentFilter(new UpperFilter());
+        }
     }
 
     /**

@@ -161,9 +161,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
     }
 
     private void init() throws Exception {
-
-        nameField = WidgetFactory.createTextField();
-
+        nameField = new JFormattedTextField();
         commentField = new SimpleTextArea();
         commentField.getTextAreaComponent().getDocument().addDocumentListener(
                 new DocumentListener() {
@@ -622,9 +620,6 @@ public abstract class CreateTableFunctionPanel extends JPanel
     }
 
     public void setSQLText() {
-
-        if (getSelectedConnection().isNamesToUpperCase())
-            nameField.setText(nameField.getText().toUpperCase());
 
         String tablespace = null;
         if (tablespacesCombo.getSelectedItem() != null)

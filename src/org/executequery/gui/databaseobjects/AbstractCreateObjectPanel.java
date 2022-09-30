@@ -23,14 +23,12 @@ import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.UpperFilter;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
 import javax.swing.text.PlainDocument;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -368,16 +366,6 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         return getEditTitle();
     }
 
-    class UpperFilter extends DocumentFilter {
-        public void insertString(FilterBypass fb, int offset, String string,
-                                 AttributeSet attr) throws BadLocationException {
-            super.insertString(fb, offset, string.toUpperCase(), attr);
-        }
 
-        public void replace(FilterBypass fb, int offset, int length, String text,
-                            AttributeSet attrs) throws BadLocationException {
-            super.replace(fb, offset, length, text.toUpperCase(), attrs);
-        }
-    }
 
 }

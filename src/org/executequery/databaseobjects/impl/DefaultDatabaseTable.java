@@ -958,6 +958,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     return query.replaceAll("\\^", ";");
   }
 
+  @Override
+  public String getDropSQL() throws DataSourceException {
+    return null;
+  }
+
   public String getAlterSQL(AbstractDatabaseObject databaseObject) {
     return databaseObject.getCreateSQL().replaceFirst("CREATE", "CREATE OR ALTER");
   }

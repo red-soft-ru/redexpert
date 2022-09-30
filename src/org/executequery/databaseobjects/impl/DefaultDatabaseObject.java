@@ -69,6 +69,11 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getDropSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
     public String getFillSQL() throws DataSourceException {
         return null;
     }

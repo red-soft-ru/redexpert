@@ -2,6 +2,7 @@ package org.executequery.gui.browser;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.text.SimpleSqlTextPanel;
@@ -25,7 +26,12 @@ public class ComparerDBPanel extends JPanel {
 
     public static final String TITLE = Bundles.get(ComparerDBPanel.class, "ComparerDB");
     public static final String FRAME_ICON = "ComparerDB_16.png";
-    private static final String WELCOME_TEXT = "Master database will be modified." + '\n' + "Compare database is an example.";
+    private static final String WELCOME_TEXT =
+            "Master database will be modified." +
+            "\nCompare database is an example.";
+    private static final String TABLESPACE_NOT_INCLUDED =
+            "\nAt least one of the connection use RDB version below 4.0" +
+            "\nTablespace will not be included in the comparison";
 
     private Comparer comparer;
     private List<DatabaseConnection> databaseConnectionList;
@@ -91,18 +97,19 @@ public class ComparerDBPanel extends JPanel {
         selectAllPropertiesButton.setText("Select All");
         selectAllPropertiesButton.addActionListener(e -> selectAll("properties"));
 
-        // --- checkBoxes defining ---
+        // --- attributes checkBox defining ---
 
         attributesCheckBoxMap = new HashMap<>();
         for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++)
             attributesCheckBoxMap.put(i, new JCheckBox(Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[i])));
 
+        // --- properties checkBox defining ---
+
         propertiesCheckBoxMap = new HashMap<>();
         propertiesCheckBoxMap.put(0, new JCheckBox("Check for CREATE"));
         propertiesCheckBoxMap.put(1, new JCheckBox("Check for ALTER"));
         propertiesCheckBoxMap.put(2, new JCheckBox("Check for DROP"));
-        propertiesCheckBoxMap.put(3, new JCheckBox("Safe type conversion"));
-        propertiesCheckBoxMap.put(4, new JCheckBox("Ignore RDB$ elements"));
+//        propertiesCheckBoxMap.put(3, new JCheckBox("Safe type conversion"));
 
         // --- comboBoxes defining ---
 
@@ -231,9 +238,15 @@ public class ComparerDBPanel extends JPanel {
 
     private void compareDatabase() {
 
-        if (databaseConnectionList.size() < 2 || 
+        if (databaseConnectionList.size() < 2 ||
                 dbCompareComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
-            loggingOutputPanel.appendError("\nError: Unable to compare");
+            loggingOutputPanel.appendError("Error: Unable to compare");
+            return;
+        }
+        if (!propertiesCheckBoxMap.get(0).isSelected() &&
+                !propertiesCheckBoxMap.get(1).isSelected() &&
+                !propertiesCheckBoxMap.get(2).isSelected()) {
+            loggingOutputPanel.appendError("Error: No properties for comparing selected");
             return;
         }
 
@@ -243,10 +256,19 @@ public class ComparerDBPanel extends JPanel {
 
         loggingOutputPanel.clear();
         loggingOutputPanel.append(WELCOME_TEXT);
-        loggingOutputPanel.appendAction("\nStart comparing DBs\n");
-
+        loggingOutputPanel.appendAction("Start comparing DBs");
         sqlTextPanel.setSQLText("");
         comparer.clearLists();
+
+        try {
+            if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||
+                    new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4) {
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
+                loggingOutputPanel.append(TABLESPACE_NOT_INCLUDED);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         String charset = "";
         String dialect = "";
@@ -268,7 +290,7 @@ public class ComparerDBPanel extends JPanel {
         query = "select mon$database.mon$sql_dialect\n"
                 + "from mon$database\n";
 
-        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()){
+        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
             while (rs.next())
                 dialect = rs.getString(1).trim();
 
@@ -284,197 +306,45 @@ public class ComparerDBPanel extends JPanel {
         comparer.addToScript("set sql dialect " + dialect + ";\n");
         comparer.addToScript(
                 "connect '" + comparer.getMasterConnection().getDatabaseConnection().getName() +
-                " ' user '" + comparer.getMasterConnection().getDatabaseConnection().getUserName() + "' "
-                + "password '" + comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword() + "';\n");
-        comparer.addToScript("set autoddl on;\n\n");
+                        " ' user '" + comparer.getMasterConnection().getDatabaseConnection().getUserName() + "' "
+                        + "password '" + comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword() + "';\n");
+        comparer.addToScript("set autoddl on;\n");
 
-        comparer.setLists("");
+        if (propertiesCheckBoxMap.get(0).isSelected()) {
+            for (Integer type : attributesCheckBoxMap.keySet()) {
 
-        /*
-        comparer.dropFKs(jCheckBox12.isSelected());
-        logPanel.append("\n============= Foreign keys to drop =============\n\n");
-        logPanel.append(comparer.lists);
+                comparer.setLists("");
+                comparer.createObjects(attributesCheckBoxMap.get(type).isSelected(), type);
 
-        comparer.lists = "";
-        comparer.dropPKs(jCheckBox11.isSelected());
-        logPanel.append("\n============= Primary keys to drop =============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropUniques(jCheckBox13.isSelected());
-        logPanel.append("\n=============== Uniques to drop ===============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropChecks(jCheckBox14.isSelected());
-        logPanel.append("\n=============== Checks to drop  ===============\n\n");
-        logPanel.append(comparer.lists);
-        */
-
-        for (Integer type : attributesCheckBoxMap.keySet()) {
-            
-            comparer.setLists("");
-            comparer.createObjects(attributesCheckBoxMap.get(type).isSelected(), type);
-            
-            loggingOutputPanel.append(MessageFormat.format("============= {0} to create  =============\n",
-                    Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-            loggingOutputPanel.append(comparer.getLists());
+                loggingOutputPanel.append(MessageFormat.format("============= {0} to CREATE  =============",
+                        Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                loggingOutputPanel.append(comparer.getLists());
+            }
         }
 
-        /*
-        comparer.lists = "";
-        comparer.alterExceptions(jCheckBox7.isSelected());
-        logPanel.append("\n============== Exceptions to alter ==============\n\n");
-        logPanel.append(comparer.lists);
+        if (propertiesCheckBoxMap.get(1).isSelected()) {
+            for (Integer type : attributesCheckBoxMap.keySet()) {
 
+                comparer.setLists("");
+                comparer.alterObjects(attributesCheckBoxMap.get(type).isSelected(), type);
 
-        comparer.lists = "";
-        comparer.alterGenerators(jCheckBox6.isSelected());
-        logPanel.append("\n============== Generators to alter ==============\n\n");
-        logPanel.append(comparer.lists);
+                loggingOutputPanel.append(MessageFormat.format("============= {0} to ALTER  =============",
+                        Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                loggingOutputPanel.append(comparer.getLists());
+            }
+        }
 
+        if (propertiesCheckBoxMap.get(2).isSelected()) {
+            for (Integer type : attributesCheckBoxMap.keySet()) {
 
-        comparer.lists = "";
-        comparer.alterUDFs(jCheckBox8.isSelected());
-        logPanel.append("\n================ UDFs to alter ================\n\n");
-        logPanel.append(comparer.lists);
+                comparer.setLists("");
+                comparer.dropObjects(attributesCheckBoxMap.get(type).isSelected(), type);
 
-
-        comparer.lists = "";
-        comparer.alterDomains(jCheckBox2.isSelected());
-        logPanel.append("\n=============== Domains to alter ===============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropIndices(jCheckBox10.isSelected());
-        logPanel.append("\n================ Indices to drop  ===============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropTriggers(jCheckBox5.isSelected());
-        logPanel.append("\n=============== Triggers to drop  ===============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropViews(jCheckBox3.isSelected());
-        logPanel.append("\n================ Views to drop ================\n\n");
-        logPanel.append(comparer.lists);
-
-
-        comparer.lists = "";
-        comparer.alterTables(jCheckBox1.isSelected());
-        logPanel.append("\n================ Tables to alter ================\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropTables(jCheckBox1.isSelected());
-        logPanel.append("\n================ Tables to drop ================\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterProcedures(jCheckBox4.isSelected());
-        logPanel.append("\n============== Procedures to alter ==============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropProcedures(jCheckBox4.isSelected());
-        logPanel.append("\n============== Procedures to drop  ==============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createViews(jCheckBox3.isSelected());
-        comparer.retViews(true);
-        logPanel.append("\n================ Views to create  ===============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterViews(jCheckBox3.isSelected());
-        logPanel.append("\n================= Views to alter ================\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createChecks(jCheckBox14.isSelected());
-        logPanel.append("\n=============== Checks to create  ===============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterChecks(jCheckBox14.isSelected());
-        logPanel.append("\n================ Checks to alter ================\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createUniques(jCheckBox13.isSelected());
-        logPanel.append("\n=============== Uniques to create ===============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterUniques(jCheckBox13.isSelected());
-        logPanel.append("\n================ Uniques to alter  ===============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createPKs(jCheckBox11.isSelected());
-        logPanel.append("\n============= Primary keys to create =============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterPKs(jCheckBox11.isSelected());
-        logPanel.append("\n=============  Primary keys to alter ==============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createFKs(jCheckBox12.isSelected());
-        logPanel.append("\n============= Foreign keys to create =============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterFKs(jCheckBox12.isSelected());
-        logPanel.append("\n============== Foreign keys to alter  =============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropDomains(jCheckBox2.isSelected());
-        logPanel.append("\n=============== Domains to drop ===============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropUDFs(jCheckBox8.isSelected());
-        logPanel.append("\n================ UDFs to drop  ================\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropExceptions(jCheckBox7.isSelected());
-        logPanel.append("\n============== Exceptions to drop  ==============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropGenerators(jCheckBox6.isSelected());
-        logPanel.append("\n============== Generators to drop  ==============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterTriggers(jCheckBox5.isSelected());
-        logPanel.append("\n=============== Triggers to alter  ===============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.computedField(true);
-        comparer.fillViews(true);
-        comparer.fillProcedures(true);
-        comparer.fillTriggers(true);
-        comparer.recreateChecks(true);
-
-        comparer.lists = "";
-        comparer.alterIndices(jCheckBox10.isSelected());
-        logPanel.append("\n================ Indices to alter  ===============\n\n");
-        logPanel.append(comparer.lists);
-
-        comparer.fillIndices(true);
-
-        comparer.lists = "";
-        comparer.dropRoles(jCheckBox9.isSelected());
-        logPanel.append("\n================ Roles to drop  ================\n\n");
-        logPanel.append(comparer.lists);
-        */
+                loggingOutputPanel.append(MessageFormat.format("============= {0} to DROP  =============",
+                        Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                loggingOutputPanel.append(comparer.getLists());
+            }
+        }
 
         for (int i = 0; i < comparer.getScript().size(); i++)
             sqlTextPanel.getTextPane().append(comparer.getScript(i));
@@ -484,7 +354,7 @@ public class ComparerDBPanel extends JPanel {
     private void saveScript() {
 
         if (comparer == null || comparer.getScript().isEmpty()) {
-            loggingOutputPanel.appendError("\nError: nothing to save (script is empty)");
+            loggingOutputPanel.appendError("Error: nothing to save (script is empty)");
             return;
         }
 
@@ -500,7 +370,7 @@ public class ComparerDBPanel extends JPanel {
         int ret = fileSave.showDialog(null, "Save Script");
 
         if (ret == JFileChooser.APPROVE_OPTION) {
-            
+
             File file = fileSave.getSelectedFile();
             String name = file.getAbsoluteFile().toString();
 
@@ -510,24 +380,24 @@ public class ComparerDBPanel extends JPanel {
             String fileSavePath = name.substring(0, dot)
                     + fileSave.getFileFilter().getDescription().substring(fileSave.getFileFilter().getDescription().indexOf("(*") + 2,
                     fileSave.getFileFilter().getDescription().lastIndexOf(")"));
-            
+
             comparer.addToScript("русский текст");
-            
+
             try (FileOutputStream path = new FileOutputStream(fileSavePath)) {
-                
+
                 for (int i = 0; i < comparer.getScript().size(); i++) {
                     String text = comparer.getScript(i);
                     byte[] buffer = text.getBytes();
                     path.write(buffer, 0, buffer.length);
                 }
 
-                loggingOutputPanel.appendAction("\nScript was saved successfully");
+                loggingOutputPanel.appendAction("Script was saved successfully");
                 loggingOutputPanel.append("Saved to: " + fileSavePath);
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            
+
         }
 
     }
@@ -535,11 +405,11 @@ public class ComparerDBPanel extends JPanel {
     private void executeScript() {
 
         if (comparer == null || comparer.getScript().isEmpty()) {
-            loggingOutputPanel.appendError("\nError: nothing to execute (script is empty)");
+            loggingOutputPanel.appendError("Error: nothing to execute (script is empty)");
             return;
         }
 
-        loggingOutputPanel.appendError("\nThis function not implemented yet");
+        loggingOutputPanel.appendError("This function not implemented yet");
     }
 
     private void selectAll(String selectedBox) {
@@ -578,17 +448,17 @@ public class ComparerDBPanel extends JPanel {
         public boolean accept(File file) {
             if (file.isDirectory())
                 return true;
-                
+
             return file.getName().endsWith(extension);
         }
 
         public String getDescription() {
             return description + String.format(" (*%s)", extension);
         }
-        
+
     }
 
-    public static String  bundleString(String key) {
+    public static String bundleString(String key) {
         return Bundles.get(ComparerDBPanel.class, key);
     }
 

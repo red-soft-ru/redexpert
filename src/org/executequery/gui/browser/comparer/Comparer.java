@@ -83,26 +83,52 @@ public class Comparer {
         List<NamedObject> createObjects = createListObjects(type);
 
         String header = MessageFormat.format(
-                "/* Creating {0} */\n\n",
+                "\n/* Creating {0} */\n",
                 Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
         script.add(header);
 
         for (NamedObject obj : createObjects) {
-            script.add(((AbstractDatabaseObject) obj).getCreateSQL() + "\n");
+            script.add("\n" + ((AbstractDatabaseObject) obj).getCreateSQL());
             lists += "\t" + obj.getName() + "\n";
         }
 
     }
 
+    public void dropObjects(boolean permission, int type) {
+
+        if (!permission)
+            return;
+
+        List<NamedObject> dropObjects = dropListObjects(type);
+
+        String header = MessageFormat.format(
+                "\n/* Dropping {0} */\n",
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+        script.add(header);
+
+        for (NamedObject obj : dropObjects) {
+            script.add("\n" + ((AbstractDatabaseObject) obj).getDropSQL());
+            lists += "\t" + obj.getName() + "\n";
+        }
+
+    }
+
+    public void alterObjects(boolean permission, int type) {
+
+        if (!permission)
+            return;
+
+    }
+
     private List<NamedObject> createListObjects(int type) {
 
-        List<NamedObject> firstConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+        List<NamedObject> compareConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
                 getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
                 getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
 
         List<NamedObject> createObjects = new ArrayList<>();
 
-        for (NamedObject databaseObject : firstConnectionObjectsList) {
+        for (NamedObject databaseObject : compareConnectionObjectsList) {
             if (ConnectionsTreePanel.getNamedObjectFromHost(
                     masterConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
 
@@ -113,76 +139,27 @@ public class Comparer {
         return createObjects;
     }
 
-    // создать список создаваемых объектов
-    private ArrayList<String> createList(String query) {
+    private List<NamedObject> dropListObjects(int type) {
 
-        ArrayList<String> second = new ArrayList<>();
-        ArrayList<String> create = new ArrayList<>();
+        List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
 
-        try(ResultSet rs = masterConnection.execute(query, true).getResultSet()) {
+        List<NamedObject> dropObjects = new ArrayList<>();
 
-            while (rs.next())
-                second.add(rs.getString(1).trim());
+        for (NamedObject databaseObject : masterConnectionObjectsList) {
+            if (ConnectionsTreePanel.getNamedObjectFromHost(
+                    compareConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
 
-        } catch (java.sql.SQLException e) {
-            Log.error("ComparerError 42", e);
-
-        } finally {
-            masterConnection.releaseResources();
-        }
-
-        try(ResultSet rs = compareConnection.execute(query, true).getResultSet()) {
-
-            while (rs.next()) {
-                String obj = rs.getString(1).trim();
-                if (!second.contains(obj))
-                    create.add(obj);
+                dropObjects.add(databaseObject);
             }
-
-        } catch (java.sql.SQLException e) {
-            Log.error("ComparerError 57", e);
-
-        } finally {
-            compareConnection.releaseResources();
         }
 
-        return create;
+        return dropObjects;
     }
 
-    // создать список удаляемых объектов
-    private ArrayList<String> dropList(String query) {
-
-        ArrayList<String> first = new ArrayList<>();
-        ArrayList<String> drop = new ArrayList<>();
-
-        try(ResultSet rs = compareConnection.execute(query, true).getResultSet()) {
-
-            while (rs.next())
-                first.add(rs.getString(1).trim());
-
-        } catch (java.sql.SQLException e) {
-            Log.error("ComparerError 78", e);
-
-        } finally {
-            compareConnection.releaseResources();
-        }
-
-        try(ResultSet rs = masterConnection.execute(query, true).getResultSet()) {
-
-            while (rs.next()) {
-                String obj = rs.getString(1).trim();
-                if (!first.contains(obj))
-                    drop.add(obj);
-            }
-
-        } catch (java.sql.SQLException e) {
-            Log.error("ComparerError 93", e);
-
-        } finally {
-            masterConnection.releaseResources();
-        }
-
-        return drop;
+    private List<NamedObject>[] alterListObjects(int type) {
+        return null;
     }
 
     // создать список изменяемых объектов
@@ -221,22 +198,6 @@ public class Comparer {
         return alter;
     }
 
-    // --- domains ---
-
-    public void createDomains(boolean permission) {
-        if (permission) {
-            ArrayList<String> cDomains = new ArrayList<>();
-            cDomains = createList(domain.collect);
-
-            script.add("/* Creating Domains */\n\n");
-            for (String d : cDomains) {
-
-                script.add(domain.create(d));
-                lists = lists + "   " + d + "\n";
-            }
-        }
-    }
-
     public void alterDomains(boolean permission) {
         if (permission) {
             ArrayList<String> aDomains = new ArrayList<>();
@@ -251,36 +212,6 @@ public class Comparer {
                     script.add(line);
                 }
                 lists = lists + "   " + d + "\n";
-            }
-        }
-    }
-
-    public void dropDomains(boolean permission) {
-        if (permission) {
-            ArrayList<String> dDomains = new ArrayList<>();
-            dDomains = dropList(domain.collect);
-
-            script.add("/* Dropping Domains */\n\n");
-            for (String d : dDomains) {
-
-                script.add(domain.drop(d));
-                lists = lists + "   " + d + "\n";
-            }
-        }
-    }
-
-    // --- exceptions ---
-
-    public void createExceptions(boolean permission) {
-        if (permission) {
-            ArrayList<String> cExc = new ArrayList<>();
-            cExc = createList(exception.collect);
-
-            script.add("/* Creating Exceptions */\n\n");
-            for (String e : cExc) {
-
-                script.add(exception.create(e));
-                lists = lists + "   " + e + "\n";
             }
         }
     }
@@ -302,36 +233,6 @@ public class Comparer {
         }
     }
 
-    public void dropExceptions(boolean permission) {
-        if (permission) {
-            ArrayList<String> dExc = new ArrayList<>();
-            dExc = dropList(exception.collect);
-
-            script.add("/* Dropping Exceptions */\n\n");
-            for (String e : dExc) {
-
-                script.add(exception.drop(e));
-                lists = lists + "   " + e + "\n";
-            }
-        }
-    }
-
-    // --- UDFs ---
-
-    public void createUDFs(boolean permission) {
-        if (permission) {
-            ArrayList<String> cUDFs = new ArrayList<>();
-            cUDFs = createList(udf.collect);
-
-            script.add("/* Creating UDFs */\n\n");
-            for (String u : cUDFs) {
-
-                script.add(udf.create(u));
-                lists = lists + "   " + u + "\n";
-            }
-        }
-    }
-
     public void alterUDFs(boolean permission) {
         if (permission) {
             ArrayList<String> aUDFs = new ArrayList<>();
@@ -345,36 +246,6 @@ public class Comparer {
                     script.add(line);
                 }
                 lists = lists + "   " + u + "\n";
-            }
-        }
-    }
-
-    public void dropUDFs(boolean permission) {
-        if (permission) {
-            ArrayList<String> dUDFs = new ArrayList<>();
-            dUDFs = dropList(udf.collect);
-
-            script.add("/* Dropping UDFs */\n\n");
-            for (String u : dUDFs) {
-
-                script.add(udf.drop(u));
-                lists = lists + "   " + u + "\n";
-            }
-        }
-    }
-
-    // --- generators ---
-
-    public void createGenerators(boolean permission) {
-        if (permission) {
-            ArrayList<String> cGen = new ArrayList<>();
-            cGen = createList(generator.collect);
-
-            script.add("/* Creating Generators */\n\n");
-            for (String g : cGen) {
-
-                script.add(generator.create(g));
-                lists = lists + "   " + g + "\n";
             }
         }
     }
@@ -396,66 +267,6 @@ public class Comparer {
         }
     }
 
-    public void dropGenerators(boolean permission) {
-        if (permission) {
-            ArrayList<String> dGen = new ArrayList<>();
-            dGen = dropList(generator.collect);
-
-            script.add("/* Dropping Generators */\n\n");
-            for (String g : dGen) {
-
-                script.add(generator.drop(g));
-                lists = lists + "   " + g + "\n";
-            }
-        }
-    }
-
-    // --- roles ---
-
-    public void createRoles(boolean permission) {
-        if (permission) {
-            ArrayList<String> cRoles = new ArrayList<>();
-            cRoles = createList(role.collect);
-
-            script.add("/* Creating Roles */\n\n");
-            for (String r : cRoles) {
-
-                script.add(role.create(r));
-                lists = lists + "   " + r + "\n";
-            }
-        }
-    }
-
-    public void dropRoles(boolean permission) {
-        if (permission) {
-            ArrayList<String> dRoles = new ArrayList<>();
-            dRoles = dropList(role.collect);
-
-            script.add("/* Dropping Roles */\n\n");
-            for (String r : dRoles) {
-
-                script.add(role.drop(r));
-                lists = lists + "   " + r + "\n";
-            }
-        }
-    }
-
-    // --- triggers ---
-
-    public void createTriggers(boolean permission) {
-        if (permission) {
-            ArrayList<String> cTriggers = new ArrayList<>();
-            cTriggers = createList(trigger.collect);
-
-            script.add("/* Creating Triggers */\n\n");
-            for (String t : cTriggers) {
-
-                script.add(trigger.create(t));
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
     public void alterTriggers(boolean permission) {
         if (permission) {
             ArrayList<String> aTriggers = new ArrayList<>();
@@ -468,36 +279,6 @@ public class Comparer {
                 if (!line.equals("")) {
                     script.add(line);
                 }
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    public void dropTriggers(boolean permission) {
-        if (permission) {
-            ArrayList<String> dTrigger = new ArrayList<>();
-            dTrigger = dropList(trigger.collect);
-
-            script.add("/* Dropping Triggers */\n\n");
-            for (String t : dTrigger) {
-
-                script.add(trigger.drop(t));
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    // --- tables ---
-
-    public void createTables(boolean permission) {
-        if (permission) {
-            ArrayList<String> cTables = new ArrayList<>();
-            cTables = createList(table.collect);
-
-            script.add("/* Creating Tables */\n\n");
-            for (String t : cTables) {
-
-                script.add(table.create(t));
                 lists = lists + "   " + t + "\n";
             }
         }
@@ -516,36 +297,6 @@ public class Comparer {
                     script.add(line);
                 }
                 lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    public void dropTables(boolean permission) {
-        if (permission) {
-            ArrayList<String> dTables = new ArrayList<>();
-            dTables = dropList(table.collect);
-
-            script.add("/* Dropping Tables */\n\n");
-            for (String t : dTables) {
-
-                script.add(table.drop(t));
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    // --- procedures ---
-
-    public void createProcedures(boolean permission) {
-        if (permission) {
-            ArrayList<String> cProcedures = new ArrayList<>();
-            cProcedures = createList(procedure.collect);
-
-            script.add("/* Creating Procedures */\n\n");
-            for (String p : cProcedures) {
-
-                script.add(procedure.create(p));
-                lists = lists + "   " + p + "\n";
             }
         }
     }
@@ -575,41 +326,6 @@ public class Comparer {
         }
     }
 
-    public void dropProcedures(boolean permission) {
-        if (permission) {
-            ArrayList<String> dProcedures = new ArrayList<>();
-            dProcedures = dropList(procedure.collect);
-
-            script.add("/* Dropping Procedures */\n\n");
-            for (String p : dProcedures) {
-
-                script.add(procedure.empty(p));
-            }
-
-            for (String p : dProcedures) {
-
-                script.add(procedure.drop(p));
-                lists = lists + "   " + p + "\n";
-            }
-        }
-    }
-
-    // --- views ---
-
-    public void createViews(boolean permission) {
-        if (permission) {
-            ArrayList<String> cViews = new ArrayList<>();
-            cViews = createList(view.collect);
-
-            script.add("/* Creating Views */\n\n");
-            for (String v : cViews) {
-
-                script.add(view.create(v));
-                lists = lists + "   " + v + "\n";
-            }
-        }
-    }
-
     public void alterViews(boolean permission) {
         if (permission) {
             ArrayList<String> aViews = new ArrayList<>();
@@ -623,36 +339,6 @@ public class Comparer {
                     script.add(line);
                 }
                 lists = lists + "   " + v + "\n";
-            }
-        }
-    }
-
-    public void dropViews(boolean permission) {
-        if (permission) {
-            ArrayList<String> dViews = new ArrayList<>();
-            dViews = dropList(view.collect);
-
-            script.add("/* Dropping Views */\n\n");
-            for (String v : dViews) {
-
-                script.add(view.drop(v));
-                lists = lists + "   " + v + "\n";
-            }
-        }
-    }
-
-    // --- indices ---
-
-    public void createIndices(boolean permission) {
-        if (permission) {
-            ArrayList<String> cIndices = new ArrayList<>();
-            cIndices = createList(index.collect);
-
-            script.add("/* Creating Indices */\n\n");
-            for (String i : cIndices) {
-
-                script.add(index.create(i));
-                lists = lists + "   " + i + "\n";
             }
         }
     }
@@ -674,36 +360,6 @@ public class Comparer {
         }
     }
 
-    public void dropIndices(boolean permission) {
-        if (permission) {
-            ArrayList<String> dIndices = new ArrayList<>();
-            dIndices = dropList(index.collect);
-
-            script.add("/* Dropping Indices */\n\n");
-            for (String i : dIndices) {
-
-                script.add(index.drop(i));
-                lists = lists + "   " + i + "\n";
-            }
-        }
-    }
-
-    // --- checks ---
-
-    public void createChecks(boolean permission) {
-        if (permission) {
-            ArrayList<String> cChecks = new ArrayList<>();
-            cChecks = createList(constraint.collect_check);
-
-            script.add("/* Creating Checks */\n\n");
-            for (String c : cChecks) {
-
-                script.add(constraint.createCheck(c));
-                lists = lists + "   " + c + "\n";
-            }
-        }
-    }
-
     public void alterChecks(boolean permission) {
         if (permission) {
             ArrayList<String> aChecks = new ArrayList<>();
@@ -717,36 +373,6 @@ public class Comparer {
                     script.add(line);
                 }
                 lists = lists + "   " + c + "\n";
-            }
-        }
-    }
-
-    public void dropChecks(boolean permission) {
-        if (permission) {
-            ArrayList<String> dChecks = new ArrayList<>();
-            dChecks = dropList(constraint.collect_check);
-
-            script.add("/* Dropping Checks */\n\n");
-            for (String c : dChecks) {
-
-                script.add(constraint.dropCheck(c));
-                lists = lists + "   " + c + "\n";
-            }
-        }
-    }
-
-    // --- uniques ---
-
-    public void createUniques(boolean permission) {
-        if (permission) {
-            ArrayList<String> cUniques = new ArrayList<>();
-            cUniques = createList(constraint.collect_unique);
-
-            script.add("/* Creating Uniques */\n\n");
-            for (String u : cUniques) {
-
-                script.add(constraint.createUnique(u));
-                lists = lists + "   " + u + "\n";
             }
         }
     }
@@ -768,36 +394,6 @@ public class Comparer {
         }
     }
 
-    public void dropUniques(boolean permission) {
-        if (permission) {
-            ArrayList<String> dUniques = new ArrayList<>();
-            dUniques = dropList(constraint.collect_unique);
-
-            script.add("/* Dropping Uniques */\n\n");
-            for (String u : dUniques) {
-
-                script.add(constraint.dropUnique(u));
-                lists = lists + "   " + u + "\n";
-            }
-        }
-    }
-
-    // --- foreign keys ---
-
-    public void createFKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> cFKs = new ArrayList<>();
-            cFKs = createList(constraint.collect_fk);
-
-            script.add("/* Creating Foreign keys */\n\n");
-            for (String f : cFKs) {
-
-                script.add(constraint.createFK(f));
-                lists = lists + "   " + f + "\n";
-            }
-        }
-    }
-
     public void alterFKs(boolean permission) {
         if (permission) {
             ArrayList<String> aFKs = new ArrayList<>();
@@ -815,36 +411,6 @@ public class Comparer {
         }
     }
 
-    public void dropFKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> dFKs = new ArrayList<>();
-            dFKs = dropList(constraint.collect_fk);
-
-            script.add("/* Dropping Foreign keys */\n\n");
-            for (String f : dFKs) {
-
-                script.add(constraint.dropFK(f));
-                lists = lists + "   " + f + "\n";
-            }
-        }
-    }
-
-    // --- primary keys ---
-
-    public void createPKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> cPKs = new ArrayList<>();
-            cPKs = createList(constraint.collect_pk);
-
-            script.add("/* Creating Primary keys */\n\n");
-            for (String p : cPKs) {
-
-                script.add(constraint.createPK(p));
-                lists = lists + "   " + p + "\n";
-            }
-        }
-    }
-
     public void alterPKs(boolean permission) {
         if (permission) {
             ArrayList<String> aPKs = new ArrayList<>();
@@ -857,20 +423,6 @@ public class Comparer {
                 if (!line.equals("")) {
                     script.add(line);
                 }
-                lists = lists + "   " + p + "\n";
-            }
-        }
-    }
-
-    public void dropPKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> dPKs = new ArrayList<>();
-            dPKs = dropList(constraint.collect_pk);
-
-            script.add("/* Dropping Primary keys */\n\n");
-            for (String p : dPKs) {
-
-                script.add(constraint.dropPK(p));
                 lists = lists + "   " + p + "\n";
             }
         }
@@ -999,6 +551,7 @@ public class Comparer {
         alteredObjects.clear();
         droppedObjects.clear();
         script.clear();
+        lists = "";
     }
 
 }

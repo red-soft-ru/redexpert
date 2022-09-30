@@ -96,6 +96,11 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getDropSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseDomain domain = (DefaultDatabaseDomain) databaseObject;
         return getAlterSQL(domain.getDomainData());

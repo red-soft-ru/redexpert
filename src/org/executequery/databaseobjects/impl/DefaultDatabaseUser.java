@@ -226,6 +226,11 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getDropSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return null;
     }

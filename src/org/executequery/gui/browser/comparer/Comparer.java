@@ -7,12 +7,9 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 
-import java.sql.ResultSet;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Comparer {
 
@@ -75,12 +72,12 @@ public class Comparer {
         udf.init();
     }
 
-    public void createObjects(boolean permission, int type) {
-
-        if (!permission)
-            return;
+    public void createObjects(int type) {
 
         List<NamedObject> createObjects = createListObjects(type);
+
+        if (createObjects.size() < 1)
+            return;
 
         String header = MessageFormat.format(
                 "\n/* Creating {0} */\n",
@@ -94,12 +91,12 @@ public class Comparer {
 
     }
 
-    public void dropObjects(boolean permission, int type) {
-
-        if (!permission)
-            return;
+    public void dropObjects(int type) {
 
         List<NamedObject> dropObjects = dropListObjects(type);
+
+        if (dropObjects.size() < 1)
+            return;
 
         String header = MessageFormat.format(
                 "\n/* Dropping {0} */\n",
@@ -113,11 +110,22 @@ public class Comparer {
 
     }
 
-    public void alterObjects(boolean permission, int type) {
+    public void alterObjects(int type) {
 
-        if (!permission)
+        Map<NamedObject, NamedObject> alterObjects = alterListObjects(type);
+
+        if (alterObjects.size() < 1)
             return;
 
+        String header = MessageFormat.format(
+                "\n/* Altering {0} */\n",
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+        script.add(header);
+
+        for (NamedObject obj : alterObjects.keySet()) {
+            script.add("\n" + ((AbstractDatabaseObject) obj).getAlterSQL((AbstractDatabaseObject) alterObjects.get(obj)));
+            lists += "\t" + obj.getName() + "\n";
+        }
     }
 
     private List<NamedObject> createListObjects(int type) {
@@ -158,274 +166,25 @@ public class Comparer {
         return dropObjects;
     }
 
-    private List<NamedObject>[] alterListObjects(int type) {
-        return null;
-    }
+    private Map<NamedObject, NamedObject> alterListObjects(int type) {
 
-    // создать список изменяемых объектов
-    private ArrayList<String> alterList(String query) {
+        List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+        List<NamedObject> compareConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
 
-        ArrayList<String> second = new ArrayList<>();
-        ArrayList<String> alter = new ArrayList<>();
+        Map<NamedObject, NamedObject> alterObjects = new HashMap<>();
 
-        try(ResultSet rs = masterConnection.execute(query, true).getResultSet()) {
-
-            while (rs.next())
-                second.add(rs.getString(1).trim());
-
-        } catch (java.sql.SQLException e) {
-            Log.error("ComparerError 114", e);
-
-        } finally {
-            masterConnection.releaseResources();
-        }
-
-        try(ResultSet rs = compareConnection.execute(query, true).getResultSet()) {
-
-            while (rs.next()) {
-                String obj = rs.getString(1).trim();
-                if (second.contains(obj))
-                    alter.add(obj);
-            }
-
-        } catch (java.sql.SQLException e) {
-            Log.error("ComparerError 129", e);
-
-        } finally {
-            compareConnection.releaseResources();
-        }
-
-        return alter;
-    }
-
-    public void alterDomains(boolean permission) {
-        if (permission) {
-            ArrayList<String> aDomains = new ArrayList<>();
-            aDomains = alterList(domain.collect);
-
-            script.add("/* Altering Domains */\n\n");
-            for (String d : aDomains) {
-
-
-                String line = domain.alter(d);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + d + "\n";
+        for (NamedObject compareObject : compareConnectionObjectsList) {
+            for (NamedObject masterObject : masterConnectionObjectsList) {
+                if (Objects.equals(masterObject.getName(), compareObject.getName()))
+                    alterObjects.put(masterObject, compareObject);
             }
         }
-    }
 
-    public void alterExceptions(boolean permission) {
-        if (permission) {
-            ArrayList<String> aExc = new ArrayList<>();
-            aExc = alterList(exception.collect);
-
-            script.add("/* Altering Exceptions */\n\n");
-            for (String e : aExc) {
-
-                String line = exception.alter(e);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + e + "\n";
-            }
-        }
-    }
-
-    public void alterUDFs(boolean permission) {
-        if (permission) {
-            ArrayList<String> aUDFs = new ArrayList<>();
-            aUDFs = alterList(udf.collect);
-
-            script.add("/* Altering UDFs */\n\n");
-            for (String u : aUDFs) {
-
-                String line = udf.alter(u);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + u + "\n";
-            }
-        }
-    }
-
-    public void alterGenerators(boolean permission) {
-        if (permission) {
-            ArrayList<String> aGen = new ArrayList<>();
-            aGen = alterList(generator.collect);
-
-            script.add("/* Altering Generators */\n\n");
-            for (String g : aGen) {
-
-                String line = generator.alter(g);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + g + "\n";
-            }
-        }
-    }
-
-    public void alterTriggers(boolean permission) {
-        if (permission) {
-            ArrayList<String> aTriggers = new ArrayList<>();
-            aTriggers = alterList(trigger.collect);
-
-            script.add("/* Altering Triggers */\n\n");
-            for (String t : aTriggers) {
-
-                String line = trigger.alter(t);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    public void alterTables(boolean permission) {
-        if (permission) {
-            ArrayList<String> aTables = new ArrayList<>();
-            aTables = alterList(table.collect);
-
-            script.add("/* Alter Tables */\n\n");
-            for (String t : aTables) {
-
-                String line = table.alter(t);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    public void alterProcedures(boolean permission) {
-        if (permission) {
-            ArrayList<String> aProcedures = new ArrayList<>();
-            ArrayList<String> fProcedures = new ArrayList<>();
-
-            aProcedures = alterList(procedure.collect);
-
-            script.add("/* Altering Procedures */\n\n");
-            for (String p : aProcedures) {
-
-                String line = procedure.alter(p);
-                if (!line.equals("")) {
-                    script.add(line);
-                    fProcedures.add(p);
-                }
-                lists = lists + "   " + p + "\n";
-            }
-
-            for (String p : fProcedures) {
-
-                script.add(procedure.fill(p));
-            }
-        }
-    }
-
-    public void alterViews(boolean permission) {
-        if (permission) {
-            ArrayList<String> aViews = new ArrayList<>();
-            aViews = alterList(view.collect);
-
-            script.add("/* Altering Views */\n\n");
-            for (String v : aViews) {
-
-                String line = view.alter(v);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + v + "\n";
-            }
-        }
-    }
-
-    public void alterIndices(boolean permission) {
-        if (permission) {
-            ArrayList<String> aIndices = new ArrayList<>();
-            aIndices = alterList(index.collect);
-
-            script.add("/* Altering Indices */\n\n");
-            for (String i : aIndices) {
-
-                String line = index.alter(i);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + i + "\n";
-            }
-        }
-    }
-
-    public void alterChecks(boolean permission) {
-        if (permission) {
-            ArrayList<String> aChecks = new ArrayList<>();
-            aChecks = alterList(constraint.collect_check);
-
-            script.add("/* Altering Checks */\n\n");
-            for (String c : aChecks) {
-
-                String line = constraint.alterCheck(c);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + c + "\n";
-            }
-        }
-    }
-
-    public void alterUniques(boolean permission) {
-        if (permission) {
-            ArrayList<String> aUniques = new ArrayList<>();
-            aUniques = alterList(constraint.collect_unique);
-
-            script.add("/* Altering Uniques */\n\n");
-            for (String u : aUniques) {
-
-                String line = constraint.alterUnique(u);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + u + "\n";
-            }
-        }
-    }
-
-    public void alterFKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> aFKs = new ArrayList<>();
-            aFKs = alterList(constraint.collect_fk);
-
-            script.add("/* Altering Foreign keys */\n\n");
-            for (String f : aFKs) {
-
-                String line = constraint.alterFK(f);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + f + "\n";
-            }
-        }
-    }
-
-    public void alterPKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> aPKs = new ArrayList<>();
-            aPKs = alterList(constraint.collect_pk);
-
-            script.add("/* Altering Primary keys */\n\n");
-            for (String p : aPKs) {
-
-                String line = constraint.alterPK(p);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + p + "\n";
-            }
-        }
+        return alterObjects;
     }
 
     // ---

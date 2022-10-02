@@ -243,6 +243,14 @@ public class ComparerDBPanel extends JPanel {
             loggingOutputPanel.appendError("Error: Unable to compare");
             return;
         }
+        for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++) {
+            if (attributesCheckBoxMap.get(i).isSelected())
+                break;
+            if (i == NamedObject.SYSTEM_DOMAIN - 1) {
+                loggingOutputPanel.appendError("Error: No attributes for comparing selected");
+                return;
+            }
+        }
         if (!propertiesCheckBoxMap.get(0).isSelected() &&
                 !propertiesCheckBoxMap.get(1).isSelected() &&
                 !propertiesCheckBoxMap.get(2).isSelected()) {
@@ -312,37 +320,52 @@ public class ComparerDBPanel extends JPanel {
 
         if (propertiesCheckBoxMap.get(0).isSelected()) {
             for (Integer type : attributesCheckBoxMap.keySet()) {
+                if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                comparer.setLists("");
-                comparer.createObjects(attributesCheckBoxMap.get(type).isSelected(), type);
+                    comparer.setLists("");
+                    comparer.createObjects(type);
 
-                loggingOutputPanel.append(MessageFormat.format("============= {0} to CREATE  =============",
-                        Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                loggingOutputPanel.append(comparer.getLists());
+                    if (!Objects.equals(comparer.getLists(), "")) {
+                        loggingOutputPanel.append(MessageFormat.format("============= {0} to CREATE  =============",
+                                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                        loggingOutputPanel.append(comparer.getLists());
+                    }
+
+                }
             }
         }
 
         if (propertiesCheckBoxMap.get(1).isSelected()) {
             for (Integer type : attributesCheckBoxMap.keySet()) {
+                if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                comparer.setLists("");
-                comparer.alterObjects(attributesCheckBoxMap.get(type).isSelected(), type);
+                    comparer.setLists("");
+                    comparer.alterObjects(type);
 
-                loggingOutputPanel.append(MessageFormat.format("============= {0} to ALTER  =============",
-                        Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                loggingOutputPanel.append(comparer.getLists());
+                    if (!Objects.equals(comparer.getLists(), "")) {
+                        loggingOutputPanel.append(MessageFormat.format("============= {0} to ALTER  =============",
+                                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                        loggingOutputPanel.append(comparer.getLists());
+                    }
+
+                }
             }
         }
 
         if (propertiesCheckBoxMap.get(2).isSelected()) {
             for (Integer type : attributesCheckBoxMap.keySet()) {
+                if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                comparer.setLists("");
-                comparer.dropObjects(attributesCheckBoxMap.get(type).isSelected(), type);
+                    comparer.setLists("");
+                    comparer.dropObjects(type);
 
-                loggingOutputPanel.append(MessageFormat.format("============= {0} to DROP  =============",
-                        Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                loggingOutputPanel.append(comparer.getLists());
+                    if (!Objects.equals(comparer.getLists(), "")) {
+                        loggingOutputPanel.append(MessageFormat.format("============= {0} to DROP  =============",
+                                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                        loggingOutputPanel.append(comparer.getLists());
+                    }
+
+                }
             }
         }
 

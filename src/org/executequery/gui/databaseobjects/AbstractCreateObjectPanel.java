@@ -142,6 +142,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     }
 
     private void initComponents() {
+        metaData = new MetaDataValues(true);
         nameField = new JFormattedTextField();
         nameField.setText(SQLUtils.generateNameForDBObject(getTypeObject(), connection));
         if (connection.isNamesToUpperCase() && !editing) {
@@ -165,8 +166,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         if (connection != null) {
             connectionsCombo.setSelectedItem(connection);
         } else connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
+        metaData.setDatabaseConnection(connection);
         this.setLayout(new BorderLayout());
-        metaData = new MetaDataValues(connection, true);
         topPanel = new JPanel(new GridBagLayout());
         GridBagHelper gbh = new GridBagHelper();
         gbh.setDefaultsStatic().defaults();

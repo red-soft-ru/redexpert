@@ -391,8 +391,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             if (rollbackOnError) {
                 try {
                     getHost().getConnection().rollback();
-                } catch (SQLException e1) {
-                }
+                } catch (SQLException ignore) {}
             }
 
             throw e;
@@ -418,7 +417,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     private ResultSet executeQuery(String query) throws DataSourceException {
 
-        ResultSet rs = null;
+        ResultSet rs;
 
         try {
 
@@ -427,8 +426,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
                     statement.close();
 
-                } catch (SQLException e) {
-                }
+                } catch (SQLException ignore) {}
             }
             if (connection == null || connection.isClosed())
                 connection = getHost().getTemporaryConnection();

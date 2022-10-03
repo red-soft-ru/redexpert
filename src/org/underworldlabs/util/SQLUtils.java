@@ -12,6 +12,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.table.TableDefinitionPanel;
+import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
@@ -123,7 +124,6 @@ public final class SQLUtils {
             sqlBuffer.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
         return sqlBuffer.toString();
     }
-
 
     public static String generateDefinitionColumn(ColumnData cd, boolean withoutDependencies) {
         StringBuilder sqlText = new StringBuilder();
@@ -681,6 +681,70 @@ public final class SQLUtils {
         sb.append("DROP ").append(metaTag).append(" ");
         sb.append(MiscUtils.getFormattedObject(name));
         sb.append(";\n");
+        return sb.toString();
+    }
+
+    public static String generateAlterDomain(ColumnData thisDomainData, ColumnData domainData) throws DataSourceException {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER DOMAIN ").append(thisDomainData.getFormattedColumnName()).append("\n");
+        String begin = sb.toString();
+
+        if (!thisDomainData.getColumnName().contentEquals(domainData.getColumnName()))
+            sb.append("TO ").append(domainData.getFormattedColumnName()).append("\n");
+
+        if (!MiscUtils.compareStrings(thisDomainData.getDefaultValue(), domainData.getDefaultValue())) {
+
+            if (MiscUtils.isNull(domainData.getDefaultValue()))
+                sb.append("DROP DEFAULT\n");
+
+            else {
+                sb.append("SET DEFAULT ");
+                if (domainData.getDefaultValue().toUpperCase().trim().equals("NULL"))
+                    sb.append("NULL");
+                else
+                    sb.append(MiscUtils.formattedSQLValue(domainData.getDefaultValue(), domainData.getSQLType()));
+                sb.append("\n");
+            }
+        }
+
+        if (thisDomainData.isDomainNotNull() != domainData.isRequired()) {
+
+            if (domainData.isRequired())
+                sb.append("SET ");
+            else
+                sb.append("DROP ");
+
+            sb.append("NOT NULL\n");
+
+        }
+        if (!MiscUtils.compareStrings(thisDomainData.getCheck(), domainData.getCheck())) {
+
+            sb.append("DROP CONSTRAINT\n");
+            if (!MiscUtils.isNull(domainData.getCheck()))
+                sb.append("ADD CHECK (").append(domainData.getCheck()).append(")\n");
+
+        }
+
+        if (!MiscUtils.compareStrings(thisDomainData.getFormattedDomainDataType(), domainData.getFormattedDataType()))
+            sb.append("TYPE ").append(domainData.getFormattedDataType());
+
+        sb.append(";");
+
+        if (MiscUtils.compareStrings(thisDomainData.getDescription(), domainData.getDescription())) {
+
+            sb.append("\nCOMMENT ON DOMAIN ").append(domainData.getFormattedColumnName()).append(" IS ");
+            if (!MiscUtils.isNull(domainData.getDescription()))
+                sb.append("'").append(domainData.getDescription()).append("'");
+            else
+                sb.append("NULL");
+            sb.append(";");
+
+        }
+
+        if (sb.toString().contentEquals(begin))
+            return "";
+
         return sb.toString();
     }
 

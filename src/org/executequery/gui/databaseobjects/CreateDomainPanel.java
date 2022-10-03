@@ -189,11 +189,9 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
     protected String generateQuery() {
-        StringBuilder sb = new StringBuilder();
         columnData.setColumnName(nameField.getText());
-        sb.setLength(0);
         if (editing) {
-            return domain.getAlterSQL(columnData);
+            return SQLUtils.generateAlterDomain(domain.getDomainData(), columnData);
         } else {
             return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false);
         }

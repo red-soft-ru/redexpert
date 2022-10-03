@@ -103,62 +103,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseDomain domain = (DefaultDatabaseDomain) databaseObject;
-        return getAlterSQL(domain.getDomainData());
-    }
-
-    public String getAlterSQL(ColumnData domainData) throws DataSourceException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("ALTER DOMAIN ").append(getDomainData().getFormattedColumnName()).append("\n");
-        String begin = sb.toString();
-        if (!getDomainData().getColumnName().contentEquals(domainData.getColumnName())) {
-            sb.append("TO ").append(domainData.getFormattedColumnName()).append("\n");
-        }
-        if (!MiscUtils.compareStrings(getDomainData().getDefaultValue(), domainData.getDefaultValue())) {
-            if (MiscUtils.isNull(domainData.getDefaultValue()))
-                sb.append("DROP DEFAULT\n");
-            else {
-                sb.append("SET DEFAULT ");
-                if (domainData.getDefaultValue().toUpperCase().trim().equals("NULL")) {
-                    sb.append("NULL");
-                } else {
-                    sb.append(MiscUtils.formattedSQLValue(domainData.getDefaultValue(), domainData.getSQLType()));
-                }
-                sb.append("\n");
-
-            }
-        }
-        if (getDomainData().isDomainNotNull() != domainData.isRequired()) {
-            if (domainData.isRequired()) {
-                sb.append("SET ");
-            } else {
-                sb.append("DROP ");
-            }
-            sb.append("NOT NULL\n");
-
-        }
-        if (!MiscUtils.compareStrings(getDomainData().getCheck(), domainData.getCheck())) {
-            sb.append("DROP CONSTRAINT\n");
-            if (!MiscUtils.isNull(domainData.getCheck())) {
-                sb.append("ADD CHECK (").append(domainData.getCheck()).append(")\n");
-            }
-        }
-        if (!MiscUtils.compareStrings(getDomainData().getFormattedDomainDataType(), domainData.getFormattedDataType())) {
-            sb.append("TYPE ").append(domainData.getFormattedDataType());
-        }
-        sb.append(";");
-        if (MiscUtils.compareStrings(getDomainData().getDescription(), domainData.getDescription())) {
-            sb.append("\nCOMMENT ON DOMAIN ").append(domainData.getFormattedColumnName()).append(" IS ");
-            if (!MiscUtils.isNull(domainData.getDescription())) {
-
-                sb.append("'").append(domainData.getDescription()).append("'");
-            } else {
-                sb.append("NULL");
-            }
-            sb.append(";");
-        }
-        if (sb.toString().contentEquals(begin))
-            return "";
-        return sb.toString();
+        return SQLUtils.generateAlterDomain(getDomainData(), domain.getDomainData());
     }
 
     @Override
@@ -191,8 +136,8 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
                 .append("(F.RDB$CHARACTER_SET_ID = CO.RDB$CHARACTER_SET_ID))\n")
                 .append("WHERE\n")
                 .append("TRIM(F.RDB$FIELD_NAME) = '").append(getName()).append("'");
-        String query = sb.toString();
-        return query;
+
+        return sb.toString();
     }
 
     @Override

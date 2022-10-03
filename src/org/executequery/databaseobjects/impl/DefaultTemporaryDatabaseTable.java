@@ -95,4 +95,9 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
         return true;
     }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropRequest("GLOBAL TEMPORARY TABLE", getName());
+    }
 }

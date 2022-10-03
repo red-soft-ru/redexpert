@@ -676,5 +676,13 @@ public final class SQLUtils {
         return sb.toString();
     }
 
+    public static String generateDefaultDropRequest(String metaTag, String name) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("DROP ").append(metaTag).append(" ");
+        sb.append(MiscUtils.getFormattedObject(name));
+        sb.append(";\n");
+        return sb.toString();
+    }
+
 }
 

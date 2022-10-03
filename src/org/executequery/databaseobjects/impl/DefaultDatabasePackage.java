@@ -5,6 +5,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -164,7 +165,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("PACKAGE", getName());
     }
 
     @Override

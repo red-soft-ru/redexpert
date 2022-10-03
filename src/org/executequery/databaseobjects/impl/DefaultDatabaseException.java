@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -96,7 +97,7 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("EXCEPTION", getName());
     }
 
     @Override

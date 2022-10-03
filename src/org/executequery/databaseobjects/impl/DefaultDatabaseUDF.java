@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -459,7 +460,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("UDF", getName());
     }
 
     @Override

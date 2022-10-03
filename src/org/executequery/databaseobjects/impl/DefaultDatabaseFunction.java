@@ -405,7 +405,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("FUNCTION", getName());
     }
 
     @Override

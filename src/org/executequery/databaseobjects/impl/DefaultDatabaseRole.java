@@ -3,6 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,7 +30,7 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("ROLE", getName());
     }
 
     @Override

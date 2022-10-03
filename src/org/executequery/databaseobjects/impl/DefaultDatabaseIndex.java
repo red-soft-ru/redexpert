@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -278,7 +279,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("INDEX", getName());
     }
 
     @Override

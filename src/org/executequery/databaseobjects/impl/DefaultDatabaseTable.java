@@ -960,7 +960,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   @Override
   public String getDropSQL() throws DataSourceException {
-    return null;
+    return SQLUtils.generateDefaultDropRequest("TABLE", getName());
   }
 
   public String getAlterSQL(AbstractDatabaseObject databaseObject) {

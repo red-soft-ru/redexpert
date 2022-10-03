@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.util.List;
 
@@ -74,6 +75,16 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
         sb.append("\n");
         return sb.toString();
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropRequest("VIEW", getName());
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
     }
 
     @Override

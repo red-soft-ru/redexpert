@@ -163,7 +163,7 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("TABLESPACE", getName());
     }
 
     @Override

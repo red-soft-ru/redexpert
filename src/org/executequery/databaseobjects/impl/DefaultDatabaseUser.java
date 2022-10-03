@@ -227,7 +227,7 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("USER", getName());
     }
 
     @Override

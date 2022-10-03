@@ -90,7 +90,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("PROCEDURE", getName());
     }
 
     @Override

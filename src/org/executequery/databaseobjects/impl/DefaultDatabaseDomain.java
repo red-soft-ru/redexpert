@@ -97,7 +97,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("DOMAIN", getName());
     }
 
     @Override

@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -415,7 +416,7 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("TRIGGER", getName());
     }
 
     @Override

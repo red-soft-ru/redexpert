@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -164,7 +165,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
+        return SQLUtils.generateDefaultDropRequest("SEQUENCE", getName());
     }
 
     @Override

@@ -50,6 +50,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -1085,5 +1086,30 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             }
         }
         treePanel.getTree().selectNodes(nodes);
+    }
+
+    private static final String DELIMITER = "<RedExpert-Delimiter>";
+
+    public void recompileAll(ActionEvent e) {
+        StringBuilder sb = new StringBuilder();
+        if (currentPath != null) {
+            DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+            if (node != null)
+                if (node.getType() != NamedObject.META_TAG)
+                    node = (DatabaseObjectNode) node.getParent();
+            if (node != null) {
+                List<DatabaseObjectNode> childs = node.getChildObjects();
+
+                if (childs != null)
+                    for (DatabaseObjectNode child : childs) {
+                        sb.append(((AbstractDatabaseObject) child.getDatabaseObject()).getCreateSQLText());
+                        if (!sb.toString().trim().endsWith("^"))
+                            sb.append("^");
+                    }
+            }
+
+        }
+        ExecuteQueryDialog eqd = new ExecuteQueryDialog("Recompile", sb.toString(), currentSelection, true, "^");
+        eqd.display();
     }
 }

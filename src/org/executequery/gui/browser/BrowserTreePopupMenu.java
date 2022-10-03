@@ -57,6 +57,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private final JMenuItem selectAll;
     private final JMenuItem selectAllChildren;
 
+    private final JMenuItem recompileAll;
+
 
     private final JMenuItem dataBaseInformation;
 
@@ -115,6 +117,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
         selectAllChildren = createMenuItem(bundleString("selectAllChildren"), "selectAllChildren", listener);
         add(selectAllChildren);
+        recompileAll = createMenuItem(bundleString("recompileAll"), "recompileAll", listener);
+        recompileAll.setVisible(false);
+        add(recompileAll);
         //addSeparator();
 
         createActiveInactiveMenu(listener);
@@ -219,27 +224,22 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                         editObject.setText(bundleString("edit", node.getName()));
                     }
                     if (createObjectEnabled) {
-                        String str = "";
-                        if (type == NamedObject.META_TAG)
-                            str = NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) node.getDatabaseObject()).getSubType()];
-                        else
-                            str = NamedObject.META_TYPES_FOR_BUNDLE[node.getType()];
-                        createObject.setText(bundleString("create", bundleString(str)));
+                        createObject.setText(bundleString("create", bundleString(getMetaTagFromNode(node))));
                     }
-
+                    boolean recompileEnabled = false;
                     if (node.getType() == NamedObject.META_TAG) {
-                        if (node.getAllowsChildren()) {
-                            if (node.getChildObjects().size() > 0) {
-                                int nodeType = node.getChildObjects().get(0).getType();
-                                boolean selectAllChildrenEnabled =
-                                        nodeType == NamedObject.TRIGGER ||
-                                                nodeType == NamedObject.DDL_TRIGGER ||
-                                                nodeType == NamedObject.DATABASE_TRIGGER ||
-                                                nodeType == NamedObject.INDEX;
-                                selectAllChildren.setVisible(selectAllChildrenEnabled);
-                                selectAllChildren.setText(bundleString("selectAll", label));
-                            }
-                        }
+                        int nodeType = ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getSubType();
+                        boolean selectAllChildrenEnabled =
+                                nodeType == NamedObject.TRIGGER ||
+                                        nodeType == NamedObject.DDL_TRIGGER ||
+                                        nodeType == NamedObject.DATABASE_TRIGGER ||
+                                        nodeType == NamedObject.INDEX;
+                        selectAllChildren.setVisible(selectAllChildrenEnabled);
+                        selectAllChildren.setText(bundleString("selectAll", label));
+                        recompileEnabled = nodeType == NamedObject.PROCEDURE
+                                || nodeType == NamedObject.FUNCTION
+                                || nodeType == NamedObject.PACKAGE
+                                || nodeType >= NamedObject.TRIGGER && nodeType <= NamedObject.DATABASE_TRIGGER;
                     }
 
 
@@ -263,6 +263,14 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                             selectAll.setText(bundleString("selectAll", parentName));
                         } else selectAll.setText(bundleString("selectAll", parentName));
                     }
+                    recompileEnabled = node.getType() == NamedObject.PROCEDURE
+                            || node.getType() == NamedObject.FUNCTION
+                            || node.getType() == NamedObject.PACKAGE
+                            || node.getType() >= NamedObject.TRIGGER && node.getType() <= NamedObject.DATABASE_TRIGGER
+                            || recompileEnabled;
+                    recompileAll.setVisible(recompileEnabled);
+                    if (recompileEnabled)
+                        recompileAll.setText(bundleString("recompileAll", Bundles.get(NamedObject.class, getMetaTagFromNode(node))));
 
 
                 }
@@ -317,6 +325,16 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             exportData.setVisible(false);
             importData.setVisible(false);
         }
+    }
+
+    private String getMetaTagFromNode(DatabaseObjectNode node) {
+
+        String str = "";
+        if (node.getType() == NamedObject.META_TAG)
+            str = NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) node.getDatabaseObject()).getSubType()];
+        else
+            str = NamedObject.META_TYPES_FOR_BUNDLE[node.getType()];
+        return str;
     }
 
     private DatabaseCatalog asDatabaseCatalog(DefaultMutableTreeNode currentPathComponent) {

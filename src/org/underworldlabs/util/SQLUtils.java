@@ -14,7 +14,6 @@ import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.table.TableDefinitionPanel;
 
 import java.sql.DatabaseMetaData;
-import java.sql.Types;
 import java.util.*;
 
 import static org.executequery.databaseobjects.NamedObject.*;
@@ -127,35 +126,8 @@ public final class SQLUtils {
                 if (cd.getAutoincrement().getStartValue() != 0)
                     sqlText.append(" START WITH " + cd.getAutoincrement().getStartValue() + ")");
             }
-            if (!MiscUtils.isNull(cd.getDefaultValue())) {
-                String value = "";
-                boolean str = false;
-                int sqlType = cd.getSQLType();
-                switch (sqlType) {
-
-                    case Types.LONGVARCHAR:
-                    case Types.LONGNVARCHAR:
-                    case Types.CHAR:
-                    case Types.NCHAR:
-                    case Types.VARCHAR:
-                    case Types.NVARCHAR:
-                    case Types.CLOB:
-                    case Types.DATE:
-                    case Types.TIME:
-                    case Types.TIMESTAMP:
-                        value = "'";
-                        str = true;
-                        break;
-                    default:
-                        break;
-                }
-                value += cd.getDefaultValue();
-                if (str) {
-                    value += "'";
-                }
-                if (MiscUtils.checkKeyword(cd.getDefaultValue()) || cd.getDefaultValue().startsWith("'"))
-                    value = cd.getDefaultValue();
-                sqlText.append(" DEFAULT " + value);
+            if (!MiscUtils.isNull(cd.getDefaultValue().getValue())) {
+                sqlText.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
             }
             sqlText.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
             if (!MiscUtils.isNull(cd.getCheck())) {
@@ -424,40 +396,8 @@ public final class SQLUtils {
                     sb.append(cd.getFormattedDomain());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
-            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue())) {
-                String value = "";
-                boolean str = false;
-                int sqlType = cd.getSQLType();
-                switch (sqlType) {
-
-                    case Types.LONGVARCHAR:
-                    case Types.LONGNVARCHAR:
-                    case Types.CHAR:
-                    case Types.NCHAR:
-                    case Types.VARCHAR:
-                    case Types.VARBINARY:
-                    case Types.BINARY:
-                    case Types.NVARCHAR:
-                    case Types.CLOB:
-                    case Types.DATE:
-                    case Types.TIME:
-                    case Types.TIMESTAMP:
-                        value = "'";
-                        str = true;
-                        break;
-                    default:
-                        break;
-                }
-                value += cd.getDefaultValue();
-                if (str) {
-                    value += "'";
-                }
-                if (MiscUtils.checkKeyword(cd.getDefaultValue()))
-                    value = cd.getDefaultValue();
-                if (cd.getDefaultValue().trim().toLowerCase().contentEquals("= null")
-                        || cd.getDefaultValue().trim().toLowerCase().contentEquals("=null"))
-                    value = cd.getDefaultValue();
-                sb.append(" DEFAULT ").append(value);
+            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue().getValue())) {
+                sb.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
             }
             if (!MiscUtils.isNull(cd.getCheck())) {
                 sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
@@ -601,8 +541,8 @@ public final class SQLUtils {
             sb.append(columnData.getFormattedDomainDataType());
         else sb.append(columnData.getFormattedDataType());
         sb.append("\n");
-        if (!MiscUtils.isNull(columnData.getDefaultValue())) {
-            sb.append(" DEFAULT ").append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
+        if (!MiscUtils.isNull(columnData.getDefaultValue().getValue())) {
+            sb.append(MiscUtils.formattedDefaultValue(columnData.getDefaultValue(), columnData.getSQLType()));
         }
         sb.append(columnData.isRequired() ? " NOT NULL" : "");
         if (!MiscUtils.isNull(columnData.getCheck())) {

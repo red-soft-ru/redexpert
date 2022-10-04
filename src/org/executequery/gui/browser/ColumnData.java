@@ -139,7 +139,7 @@ public class ColumnData implements Serializable {
     /**
      * the column's default value
      */
-    private String defaultValue;
+    private DefaultValue defaultValue;
 
     /**
      * This column's constraints as a <code>Vector</code>
@@ -300,6 +300,7 @@ public class ColumnData implements Serializable {
         executor = new DefaultStatementExecutor(dc, true);
         tables = new ArrayList<>();
         columns = new ArrayList<>();
+        defaultValue = new DefaultValue();
     }
 
     public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn) {
@@ -567,12 +568,16 @@ public class ColumnData implements Serializable {
         this.markedDeleted = markedDeleted;
     }
 
-    public String getDefaultValue() {
+    public DefaultValue getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(String defaultValue) {
+    public void setDefaultValue(DefaultValue defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue.value = defaultValue;
     }
 
     public String getDomain() {
@@ -869,13 +874,13 @@ public class ColumnData implements Serializable {
         if (!hasCopy()) {
             return false;
         }
-        if (MiscUtils.isNull(copy.getDefaultValue())) {
-            return !MiscUtils.isNull(getDefaultValue());
+        if (MiscUtils.isNull(copy.getDefaultValue().getValue())) {
+            return !MiscUtils.isNull(getDefaultValue().getValue());
         } else {
-            if (MiscUtils.isNull(getDefaultValue()))
+            if (MiscUtils.isNull(getDefaultValue().getValue()))
                 return true;
         }
-        return !copy.getDefaultValue().equalsIgnoreCase(getDefaultValue());
+        return !copy.getDefaultValue().getValue().equalsIgnoreCase(getDefaultValue().getValue());
     }
 
     public boolean isCheckChanged() {
@@ -962,6 +967,7 @@ public class ColumnData implements Serializable {
         }
     }
 
+
     public void setDefaultValue(String defaultValue, boolean needProcessing) {
         if (needProcessing) {
             defaultValue = processedDefaultValue(defaultValue);
@@ -972,12 +978,17 @@ public class ColumnData implements Serializable {
     public String processedDefaultValue(String defaultValue) {
         if (!MiscUtils.isNull(defaultValue)) {
             defaultValue = defaultValue.trim();
-            if (defaultValue.toUpperCase().startsWith("DEFAULT"))
+            if (defaultValue.toUpperCase().startsWith("DEFAULT")) {
                 defaultValue = defaultValue.substring(7).trim();
-            if (defaultValue.toUpperCase().startsWith("="))
+                this.defaultValue.setOriginOperator("DEFAULT");
+            }
+            if (defaultValue.toUpperCase().startsWith("=")) {
                 defaultValue = defaultValue.substring(1).trim();
+                this.defaultValue.setOriginOperator("=");
+            }
             if (defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
                 defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+                this.defaultValue.setUseQuotes(true);
             }
         }
         return defaultValue;
@@ -1112,6 +1123,36 @@ public class ColumnData implements Serializable {
 
     public void setSelectOperator(String selectOperator) {
         this.selectOperator = selectOperator;
+    }
+
+    public class DefaultValue {
+        String originOperator;
+        String value;
+        boolean useQuotes = false;
+
+        public String getOriginOperator() {
+            return originOperator;
+        }
+
+        public void setOriginOperator(String originOperator) {
+            this.originOperator = originOperator;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public boolean isUseQuotes() {
+            return useQuotes;
+        }
+
+        public void setUseQuotes(boolean useQuotes) {
+            this.useQuotes = useQuotes;
+        }
     }
 }
 

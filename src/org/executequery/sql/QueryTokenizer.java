@@ -208,10 +208,10 @@ public class QueryTokenizer {
     }
 
     private boolean notInAllTokens(int index) {
-        boolean notAny = notInAnyToken(index);
-        boolean wdb = withinDeclareBlock(index, index);
+        return notInAnyToken(index);
+        /*boolean wdb = withinDeclareBlock(index, index);
         boolean wbeb = withinBeginEndBlock(index, index);
-        return notAny && !wdb && !wbeb;
+        return notAny && !wdb && !wbeb;*/
     }
 
     private void extractDeclareBlockTokens(String query) {
@@ -305,8 +305,8 @@ public class QueryTokenizer {
 
     public void extractTokens(String query) {
         extractStringAndCommentsTokens(query);
-        extractDeclareBlockTokens(query);
-        extractBeginEndBlockTokens(query);
+        /*extractDeclareBlockTokens(query);
+        extractBeginEndBlockTokens(query);*/
     }
 
     private void addTokensForMatcherWhenNotInString(Matcher matcher, String query, List<Token> tokens) {

@@ -13,6 +13,7 @@ import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.QueryTokenizer;
 import org.executequery.sql.SqlMessages;
 import org.executequery.sql.SqlStatementResult;
+import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -79,17 +80,30 @@ public class ExecuteQueryDialog extends BaseDialog {
     }
 
     public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter) {
+        this(name, query, databaseConnection, keepAlive, delimiter, false);
+
+    }
+
+    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter, boolean autocommit) {
         super(name, true, true);
         this.query = query;
         this.delimiter = delimiter;
         this.dc = databaseConnection;
         queryTokenizer = new QueryTokenizer();
         querySender = new DefaultStatementExecutor(dc, keepAlive);
-        querySender.setCommitMode(false);
+        querySender.setCommitMode(autocommit);
         init();
-        execute();
+        SwingWorker sw = new SwingWorker() {
+            @Override
+            public Object construct() {
+                execute();
+                return null;
+            }
+        };
+        sw.start();
 
     }
+
 
     void init() {
         mainPanel = new JPanel();

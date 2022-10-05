@@ -49,7 +49,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         checkPanel = new JPanel();
         descriptionPanel = new JPanel();
         sqlPanel = new JPanel();
-        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), columnData, false);
+        selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(), connection.getIntDataTypesArray(), columnData, false);
         notNullBox = new JCheckBox("Not Null");
         scrollDefaultValue = new JScrollPane();
         scrollCheck = new JScrollPane();

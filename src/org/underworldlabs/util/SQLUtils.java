@@ -1,7 +1,6 @@
 package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.FunctionArgument;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.Parameter;
@@ -218,10 +217,10 @@ public final class SQLUtils {
         Vector<ColumnData> outputs = new Vector<>();
         for (ProcedureParameter parameter : parameters) {
             if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
-                ColumnData cd = columnDataFromProcedureParameter(parameter, dc);
+                ColumnData cd = columnDataFromProcedureParameter(parameter, dc, false);
                 inputs.add(cd);
             } else {
-                ColumnData cd = columnDataFromProcedureParameter(parameter, dc);
+                ColumnData cd = columnDataFromProcedureParameter(parameter, dc, false);
                 outputs.add(cd);
             }
         }
@@ -317,9 +316,9 @@ public final class SQLUtils {
         ColumnData returnType = null;
         for (FunctionArgument parameter : argumentList) {
             if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
-                ColumnData cd = columnDataFromProcedureParameter(parameter, dc);
+                ColumnData cd = columnDataFromProcedureParameter(parameter, dc, false);
                 inputs.add(cd);
-            } else returnType = columnDataFromProcedureParameter(parameter, dc);
+            } else returnType = columnDataFromProcedureParameter(parameter, dc, false);
         }
         return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, comment);
     }
@@ -408,10 +407,10 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static ColumnData columnDataFromProcedureParameter(Parameter parameter, DatabaseConnection dc) {
+    public static ColumnData columnDataFromProcedureParameter(Parameter parameter, DatabaseConnection dc, boolean loadDomainInfo) {
         ColumnData cd = new ColumnData(true, dc);
         cd.setColumnName(parameter.getName());
-        cd.setDomain(parameter.getDomain());
+        cd.setDomain(parameter.getDomain(), loadDomainInfo);
         cd.setColumnSubtype(parameter.getSubType());
         cd.setSQLType(parameter.getDataType());
         cd.setColumnSize(parameter.getSize());
@@ -426,10 +425,8 @@ public final class SQLUtils {
         cd.setColumnTable(parameter.getFieldName());
         cd.setDefaultValue(parameter.getDefaultValue(), true);
         cd.setDescriptionAsSingleComment(parameter.isDescriptionAsSingleComment());
-        MetaDataValues metaData = new MetaDataValues(true);
-        metaData.setDatabaseConnection(dc);
-        String[] dataTypes = metaData.getDataTypesArray();
-        int[] intDataTypes = metaData.getIntDataTypesArray();
+        String[] dataTypes = dc.getDataTypesArray();
+        int[] intDataTypes = dc.getIntDataTypesArray();
         for (int i = 0; i < dataTypes.length; i++) {
             if (dataTypes[i].equalsIgnoreCase(parameter.getSqlType()))
                 cd.setSQLType(intDataTypes[i]);

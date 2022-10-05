@@ -11,7 +11,6 @@ import org.executequery.gui.datatype.DomainPanel;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
@@ -19,7 +18,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * Panel for creating and editing function
@@ -49,8 +47,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         super(dc, dialog, procedure, new Object[]{databaseFunction});
         parametersTabs.remove(outputParametersPanel);
         parametersTabs.setTitleAt(0, bundledString("Arguments"));
-        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(),
-                metaData.getIntDataTypesArray(), returnType, true);
+        selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(),
+                connection.getIntDataTypesArray(), returnType, true);
         returnType.setDomain(returnType.getDomain());
         selectTypePanel.refresh();
         domainPanel = new DomainPanel(returnType, returnType.getDomain());
@@ -194,18 +192,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         ddlTextPanel.setSQLText(generateQuery());
     }
 
-    @Override
-    public Vector<String> getColumnNamesVector(String tableName, String schemaName) {
-        try {
-            return metaData.getColumnNamesVector(tableName, schemaName);
-        } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the column names for the " +
-                            "selected table.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e);
-            return new Vector<>(0);
-        }
-    }
 
     @Override
     protected void initEdited() {

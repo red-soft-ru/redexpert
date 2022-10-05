@@ -8,7 +8,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
@@ -94,10 +93,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
     //    private CreateTableToolBar tools;
 
-    /**
-     * Utility to retrieve database meta data
-     */
-    protected MetaDataValues metaData;
+
 
     /**
      * The base panel
@@ -329,7 +325,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     protected void init() {
 
         //initialise the schema label
-        metaData = new MetaDataValues(true);
 
         parametersTabs = new JTabbedPane();
         // create the column definition panel
@@ -455,16 +450,15 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         sqlBuffer = new StringBuffer(CreateTableSQLSyntax.CREATE_TABLE);
 
         // check initial values for possible value inits
-        metaData.setDatabaseConnection(connection);
-        inputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        inputParametersPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         inputParametersPanel.setDomains(getDomains());
         inputParametersPanel.setDatabaseConnection(connection);
 
-        outputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        outputParametersPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         outputParametersPanel.setDomains(getDomains());
         outputParametersPanel.setDatabaseConnection(connection);
 
-        variablesPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        variablesPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         variablesPanel.setDomains(getDomains());
         variablesPanel.setDatabaseConnection(connection);
         //metaData
@@ -551,7 +545,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                 (DatabaseConnection) connectionsCombo.getSelectedItem();
 
         // reset meta data
-        metaData.setDatabaseConnection(connection);
         inputParametersPanel.setDatabaseConnection(connection);
         outputParametersPanel.setDatabaseConnection(connection);
         variablesPanel.setDatabaseConnection(connection);
@@ -559,7 +552,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
         // reset data types
         try {
-            populateDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+            populateDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving the data types for the " +
@@ -622,7 +615,18 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     // --- TableConstraintFunction implementations ---
     // -----------------------------------------------
 
-    public abstract Vector<String> getColumnNamesVector(String tableName, String schemaName);
+
+    public List<String> getColumnNamesVector(String tableName) {
+        try {
+            return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getColumnNames(tableName);
+        } catch (DataSourceException e) {
+            GUIUtilities.displayExceptionErrorDialog(
+                    "Error retrieving the column names for the " +
+                            "selected table.\n\nThe system returned:\n" +
+                            e.getExtendedMessage(), e);
+            return new Vector<>(0);
+        }
+    }
 
     public void resetSQLText() {
         inputParametersPanel.resetSQLText();

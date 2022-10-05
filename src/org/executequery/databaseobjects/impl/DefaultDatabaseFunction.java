@@ -142,10 +142,16 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 arguments.add(fp);
                 if (functionSourceCode == null || functionSourceCode.isEmpty())
                     functionSourceCode = rs.getString(2);
-                if ((entryPoint == null || entryPoint.isEmpty()) && rs.getString("ENTRY_POINT") != null)
-                    entryPoint = rs.getString("ENTRY_POINT").trim();
-                if ((engine == null || engine.isEmpty()) && rs.getString("ENGINE") != null)
-                    engine = rs.getString("ENGINE").trim();
+                if ((entryPoint == null || entryPoint.isEmpty())) {
+                    if (rs.getString("ENTRY_POINT") != null)
+                        entryPoint = rs.getString("ENTRY_POINT").trim();
+                    else entryPoint = "";
+                }
+                if ((engine == null || engine.isEmpty())) {
+                    if (rs.getString("ENGINE") != null)
+                        engine = rs.getString("ENGINE").trim();
+                    else engine = "";
+                }
 
                 setRemarks(rs.getString(3));
             }

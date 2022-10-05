@@ -27,6 +27,7 @@ import org.executequery.crypto.PasswordEncoderDecoder;
 import org.executequery.crypto.spi.DefaultPasswordEncoderDecoderFactory;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -198,6 +199,9 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     private boolean namesToUpperCase = true;
 
     String pathToTraceConfig;
+
+    String[] dataTypesArray;
+    int[] intDataTypesArray;
 
     @Override
     public boolean isNamesToUpperCase() {
@@ -751,6 +755,26 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     @Override
     public void setPathToTraceConfig(String pathToTraceConfig) {
         this.pathToTraceConfig = pathToTraceConfig;
+    }
+
+    @Override
+    public String[] getDataTypesArray() {
+        if (dataTypesArray == null) {
+            MetaDataValues metaData = new MetaDataValues(true);
+            metaData.setDatabaseConnection(this);
+            dataTypesArray = metaData.getDataTypesArray();
+        }
+        return dataTypesArray;
+    }
+
+    @Override
+    public int[] getIntDataTypesArray() {
+        if (intDataTypesArray == null) {
+            MetaDataValues metaData = new MetaDataValues(true);
+            metaData.setDatabaseConnection(this);
+            intDataTypesArray = metaData.getIntDataTypesArray();
+        }
+        return intDataTypesArray;
     }
 
     private static final long serialVersionUID = 950081216942320441L;

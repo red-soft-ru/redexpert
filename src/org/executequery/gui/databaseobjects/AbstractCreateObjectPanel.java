@@ -3,7 +3,6 @@ package org.executequery.gui.databaseobjects;
 import org.executequery.GUIUtilities;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
@@ -48,7 +47,6 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     protected ActionContainer parent;
     protected JTextField nameField;
     protected DefaultStatementExecutor sender;
-    protected MetaDataValues metaData;
     private ConnectionsTreePanel treePanel;
     private TreePath currentPath;
     private boolean commit;
@@ -142,7 +140,6 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     }
 
     private void initComponents() {
-        metaData = new MetaDataValues(true);
         nameField = new JFormattedTextField();
         nameField.setText(SQLUtils.generateNameForDBObject(getTypeObject(), connection));
         if (connection.isNamesToUpperCase() && !editing) {
@@ -161,12 +158,10 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
             }
             connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
             sender.setDatabaseConnection(connection);
-            metaData.setDatabaseConnection(connection);
         });
         if (connection != null) {
             connectionsCombo.setSelectedItem(connection);
         } else connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
-        metaData.setDatabaseConnection(connection);
         this.setLayout(new BorderLayout());
         topPanel = new JPanel(new GridBagLayout());
         GridBagHelper gbh = new GridBagHelper();

@@ -65,7 +65,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         computedPanel = new SimpleSqlTextPanel();
         descriptionPanel = new SimpleSqlTextPanel();
         sqlPanel = new SimpleSqlTextPanel();
-        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), columnData, false);
+        selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(), connection.getIntDataTypesArray(), columnData, false);
         selectTypePanel.setDisabledCollate(editing);
         autoIncrementPanel = new AutoIncrementPanel(connection, null, columnData.getAutoincrement(), table.getName(), getGenerators());
         tableLabel = new JLabel(bundleString("Table"));

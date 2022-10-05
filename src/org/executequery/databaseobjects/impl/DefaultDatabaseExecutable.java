@@ -503,8 +503,10 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                         if (rs.next()) {
                             if (rs.getString("ENTRY_POINT") != null)
                                 entryPoint = rs.getString("ENTRY_POINT").trim();
+                            else entryPoint = "";
                             if (rs.getString("ENGINE") != null)
                                 engine = rs.getString("ENGINE").trim();
+                            else engine = "";
                         }
                     }
                 } catch (SQLException e) {
@@ -512,6 +514,9 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 } finally {
                     sender.releaseResources();
                 }
+            } else {
+                setEngine("");
+                setEntryPoint("");
             }
         }
     }

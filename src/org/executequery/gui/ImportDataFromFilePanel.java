@@ -10,7 +10,6 @@ import org.executequery.components.TableSelectionCombosGroup;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
@@ -779,8 +778,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         tableCombo.removeAllItems();
         tableCombo.addItem(bundledString("SelectTable"));
-        for (String tableName : dbHost.getTableNames(
-                null, null, NamedObject.META_TYPES[NamedObject.TABLE])) {
+        for (String tableName : dbHost.getTableNames()) {
 
             tableCombo.addItem(tableName);
         }

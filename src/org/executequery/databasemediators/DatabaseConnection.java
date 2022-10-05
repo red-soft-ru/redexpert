@@ -216,6 +216,10 @@ public interface DatabaseConnection extends Serializable {
     void setPathToTraceConfig(String path);
 
     String getPathToTraceConfig();
+
+    String[] getDataTypesArray();
+
+    int[] getIntDataTypesArray();
 }
 
 

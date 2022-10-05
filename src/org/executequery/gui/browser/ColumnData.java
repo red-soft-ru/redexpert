@@ -21,23 +21,19 @@
 package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.T;
+import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
-import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 
 import java.io.Serializable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -276,8 +272,8 @@ public class ColumnData implements Serializable {
 
     boolean cstring;
 
-    String table;
-    List<String> tables;
+    AbstractTableObject table;
+    List<NamedObject> tables;
     String columnTable;
     List<String> columns;
 
@@ -584,9 +580,14 @@ public class ColumnData implements Serializable {
         return domain;
     }
 
-    public void setDomain(String Domain) {
-        domain = Domain;
-        if (!MiscUtils.isNull(domain)) {
+    public void setDomain(String domain) {
+        setDomain(domain, true);
+
+    }
+
+    public void setDomain(String domain, boolean loadDomainInfo) {
+        this.domain = domain;
+        if (!MiscUtils.isNull(domain) && loadDomainInfo) {
             getDomainInfo();
         }
 
@@ -942,29 +943,21 @@ public class ColumnData implements Serializable {
     }
 
     public void setTable(String table) {
-        this.table = table;
-        columns.clear();
-        String query = "SELECT RDB$FIELD_NAME FROM RDB$RELATION_FIELDS WHERE RDB$RELATION_NAME = ?";
-        SqlStatementResult result = null;
-        try {
-            PreparedStatement st = executor.getPreparedStatement(query);
-            st.setString(1,table);
-            result = executor.getResultSet(-1,st);
-            ResultSet rs = result.getResultSet();
-            while (rs.next()) {
-                columns.add(rs.getString(1).trim());
+        if (table == null)
+            return;
+        for (NamedObject namedObject : getTables()) {
+            if (namedObject.getName().contentEquals(table)) {
+                this.table = (AbstractTableObject) namedObject;
+                break;
             }
-            if (!columns.isEmpty())
-                setColumnTable(columns.get(0));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            if (result != null) {
-                GUIUtilities.displayErrorMessage(result.getMessage());
-            }
-        } finally {
-            executor.releaseResources();
         }
+        columns.clear();
+        for (DatabaseColumn column : this.table.getColumns()) {
+            columns.add(column.getName());
+        }
+        if (!columns.isEmpty())
+            setColumnTable(columns.get(0));
+
     }
 
 
@@ -994,16 +987,16 @@ public class ColumnData implements Serializable {
         return defaultValue;
     }
 
-    public String getTable() {
+    public AbstractTableObject getTable() {
         return table;
     }
 
     public String getFormattedTable() {
-        return getFormattedObject(table);
+        return getFormattedObject(table.getName());
     }
 
     public void setTable(int tableIndex) {
-        setTable(getTables().get(tableIndex));
+        setTable(getTables().get(tableIndex).getName());
     }
 
     public String getColumnTable() {
@@ -1022,21 +1015,9 @@ public class ColumnData implements Serializable {
         return columns;
     }
 
-    public List<String> getTables() {
+    public List<NamedObject> getTables() {
         if (tables.isEmpty()) {
-            String query = "SELECT RDB$RELATION_NAME FROM RDB$RELATIONS ORDER BY 1";
-            try {
-                ResultSet rs = executor.getResultSet(query).getResultSet();
-                while (rs != null && rs.next()) {
-                    String tableName = rs.getString(1);
-                    if (tableName != null)
-                        tables.add(tableName.trim());
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                executor.releaseResources();
-            }
+            tables.addAll(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).getTables());
         }
         return tables;
     }

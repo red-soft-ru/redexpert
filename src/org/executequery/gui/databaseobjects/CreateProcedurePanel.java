@@ -20,7 +20,6 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
-import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -211,24 +210,12 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         outSqlText.setSQLKeywords(true);
     }
 
-    public Vector<String> getColumnNamesVector(String tableName, String schemaName) {
-        try {
-            return metaData.getColumnNamesVector(tableName, schemaName);
-        } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the column names for the " +
-                            "selected table.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e);
-            return new Vector<>(0);
-        }
-    }
 
     /**
      * Releases database resources before closing.
      */
     public void cleanup() {
         EventMediator.deregisterListener(this);
-        metaData.closeConnection();
     }
 
     /**

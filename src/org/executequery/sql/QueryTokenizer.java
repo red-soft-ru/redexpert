@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  */
 public class QueryTokenizer {
 
-    private /*static final*/ String QUERY_DELIMITER = ";";
+    private /*static final*/ String queryDelimiter = ";";
 
     private final List<Token> stringTokens;
 
@@ -106,7 +106,7 @@ public class QueryTokenizer {
 
         List<DerivedQuery> queries = new ArrayList<DerivedQuery>();
 
-        while ((index = query.indexOf(QUERY_DELIMITER, index + 1)) != -1) {
+        while ((index = query.indexOf(queryDelimiter, index + 1)) != -1) {
 
             if (Thread.interrupted()) {
 
@@ -123,13 +123,13 @@ public class QueryTokenizer {
                 Matcher m = p.matcher(substring);
 
                 if (m.find()) {
-                    QUERY_DELIMITER = substring.substring(m.end()).trim();
+                    queryDelimiter = substring.substring(m.end()).trim();
                     lastIndex = index + (substring.length() - m.end());
                     continue;
                 }
 
                 queries.add(new DerivedQuery(substring));
-                lastIndex = index + QUERY_DELIMITER.length();/*1;*/
+                lastIndex = index + queryDelimiter.length();/*1;*/
             }
 
         }

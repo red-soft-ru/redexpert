@@ -79,20 +79,12 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
     }
 
     public String getCreateFullSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE EXCEPTION \n");
-        sb.append(getName());
-        sb.append("\n");
-        sb.append("'");
-        sb.append(getExceptionText());
-        sb.append("';");
-
-        return sb.toString();
+        return SQLUtils.generateCreateException(getName(), getExceptionText());
     }
 
     @Override
     public String getCreateSQL() throws DataSourceException {
-        return null;
+        return getCreateFullSQLText();
     }
 
     @Override

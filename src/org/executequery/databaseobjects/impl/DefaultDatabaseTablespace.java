@@ -158,7 +158,7 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQL() throws DataSourceException {
-        return null;
+        return getCreateFullSQLText();
     }
 
     @Override

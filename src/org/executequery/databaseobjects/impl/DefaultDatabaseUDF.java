@@ -405,57 +405,12 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
     }
 
     public String getCreateFullSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("DECLARE EXTERNAL FUNCTION ");
-        sb.append(getName());
-        sb.append("\n");
-        String args = "";
-        for (int i = 0; i < parameters.size(); i++) {
-            if (returnArg == 0 && i == 0)
-                continue;
-            args += "\t" + parameters.get(i).getFieldStringType();
-            if (parameters.get(i).getMechanism() != BY_VALUE &&
-                    parameters.get(i).getMechanism() != BY_REFERENCE
-                    ) {
-                if (parameters.get(i).isNotNull() || parameters.get(i).getMechanism() == BY_DESCRIPTOR)
-                        args += " " + parameters.get(i).getStringMechanism();
-            }
-            if (!parameters.get(i).isNotNull() && parameters.get(i).getMechanism() != BY_DESCRIPTOR &&
-                    parameters.get(i).getMechanism() != BY_REFERENCE && returnArg - 1 != i)
-                args += " " + "NULL";
-            args += ",\n";
-        }
-        if (!args.isEmpty())
-            args = args.substring(0, args.length() - 2);
-        sb.append(args);
-        sb.append("\n");
-        sb.append("RETURNS\n");
-        if (returnArg == 0) {
-            sb.append(parameters.get(0).getFieldStringType());
-            if (parameters.get(0).getMechanism() != BY_REFERENCE &&
-                    parameters.get(0).getMechanism() != -1) {
-                sb.append(" ");
-                sb.append(parameters.get(0).getStringMechanism());
-            }
-        }
-        else
-            sb.append("PARAMETER " + returnArg);
-        if (this.freeIt)
-            sb.append(" FREE_IT ");
-        sb.append("\n");
-        sb.append("ENTRY_POINT '");
-        if (!MiscUtils.isNull(getEntryPoint()))
-            sb.append(getEntryPoint());
-        sb.append("' MODULE_NAME '");
-        if (!MiscUtils.isNull(getModuleName()))
-            sb.append(getModuleName());
-        sb.append("';");
-        return sb.toString();
+        return SQLUtils.generateCreateUDF(getName(), parameters, returnArg, getEntryPoint(), getModuleName(), freeIt);
     }
 
     @Override
     public String getCreateSQL() throws DataSourceException {
-        return null;
+        return getCreateFullSQLText();
     }
 
     @Override

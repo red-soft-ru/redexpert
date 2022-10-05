@@ -56,9 +56,9 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         }
         String typeTemporary = "";
         if (type == 4)
-            typeTemporary += " ON COMMIT PRESERVE ROWS;\n\n";
+            typeTemporary += " ON COMMIT PRESERVE ROWS";
         else if (type == 5)
-            typeTemporary += " ON COMMIT DELETE ROWS;\n\n";
+            typeTemporary += " ON COMMIT DELETE ROWS";
         List<ColumnData> listCD=new ArrayList<>();
         for(int i=0;i<getColumnCount();i++)
         {
@@ -69,7 +69,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         {
             listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
         }
-        return formatSqlText(SQLUtils.generateCreateTable(getName(), listCD, listCC, true, true, typeTemporary, getExternalFile(), getAdapter(), getTablespace()));
+        return formatSqlText(SQLUtils.generateCreateTable(getName(), listCD, true, listCC, true, true, typeTemporary, getExternalFile(), getAdapter(), getTablespace()));
     }
 
     private String formatSqlText(String text) {
@@ -94,6 +94,11 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     public boolean hasSQLDefinition() {
 
         return true;
+    }
+
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return getCreateFullSQLText();
     }
 
     @Override

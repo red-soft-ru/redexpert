@@ -79,13 +79,12 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     public String getCreateFullSQLText() {
-
         return SQLUtils.generateCreateProcedure(getName(), getParameters(), getProcedureSourceCode(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getCreateSQL() throws DataSourceException {
-        return null;
+        return getCreateFullSQLText();
     }
 
     @Override

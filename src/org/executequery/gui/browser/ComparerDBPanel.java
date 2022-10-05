@@ -110,6 +110,7 @@ public class ComparerDBPanel extends JPanel {
         propertiesCheckBoxMap.put(1, new JCheckBox("Check for ALTER"));
         propertiesCheckBoxMap.put(2, new JCheckBox("Check for DROP"));
 //        propertiesCheckBoxMap.put(3, new JCheckBox("Safe type conversion"));
+//        propertiesCheckBoxMap.put(4, new JCheckBox("Create tables without constraints"));
 
         // --- comboBoxes defining ---
 
@@ -310,13 +311,13 @@ public class ComparerDBPanel extends JPanel {
         }
 
         comparer.addToScript("\n/* Setting properties */\n\n");
-        comparer.addToScript("set names " + charset + ";\n");
-        comparer.addToScript("set sql dialect " + dialect + ";\n");
+        comparer.addToScript("SET NAMES " + charset + ";\n");
+        comparer.addToScript("SET SQL DIALECT " + dialect + ";\n");
         comparer.addToScript(
-                "connect '" + comparer.getMasterConnection().getDatabaseConnection().getName() +
-                        " ' user '" + comparer.getMasterConnection().getDatabaseConnection().getUserName() + "' "
-                        + "password '" + comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword() + "';\n");
-        comparer.addToScript("set autoddl on;\n");
+                "CONNECT '" + comparer.getMasterConnection().getDatabaseConnection().getName() +
+                        " ' USER '" + comparer.getMasterConnection().getDatabaseConnection().getUserName() + "' "
+                        + "PASSWORD '" + comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword() + "';\n");
+        comparer.addToScript("SET AUTO DDL ON;\n");
 
         if (propertiesCheckBoxMap.get(0).isSelected()) {
             for (Integer type : attributesCheckBoxMap.keySet()) {

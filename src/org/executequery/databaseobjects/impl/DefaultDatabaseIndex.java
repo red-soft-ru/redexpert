@@ -1,6 +1,7 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -269,12 +270,12 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     public String getCreateFullSQLText() {
-        return "";
+        return SQLUtils.generateCreateIndex(getName(), getType(), getNamePrefix(), getTableName(), null, getIndexColumns());
     }
 
     @Override
     public String getCreateSQL() throws DataSourceException {
-        return null;
+        return getCreateFullSQLText();
     }
 
     @Override

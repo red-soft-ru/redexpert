@@ -216,13 +216,12 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     public String getCreateFullSQLText() throws DataSourceException {
-
         return SQLUtils.generateCreateUser(this);
     }
 
     @Override
     public String getCreateSQL() throws DataSourceException {
-        return null;
+        return getCreateFullSQLText();
     }
 
     @Override

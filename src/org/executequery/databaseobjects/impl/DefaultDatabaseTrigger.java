@@ -389,29 +389,12 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
 
     @Override
     public String getCreateFullSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE OR ALTER TRIGGER ");
-        sb.append(MiscUtils.getFormattedObject(getName()));
-        if (!getTriggerTableName().isEmpty()) {
-            sb.append(" FOR ");
-            sb.append(MiscUtils.getFormattedObject(getTriggerTableName()));
-        }
-        sb.append("\n");
-        sb.append(isTriggerActive() ? "ACTIVE" : "INACTIVE");
-        sb.append(" ");
-        sb.append(getStringTriggerType());
-        sb.append(" POSITION ");
-        sb.append(getTriggerSequence());
-        sb.append("\n");
-        if (triggerSourceCode != null) {
-            sb.append(getTriggerSourceCode());
-        }
-        return sb.toString();
+        return SQLUtils.generateCreateTrigger(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(), getTriggerSequence(), getTriggerSourceCode());
     }
 
     @Override
     public String getCreateSQL() throws DataSourceException {
-        return null;
+        return getCreateFullSQLText();
     }
 
     @Override

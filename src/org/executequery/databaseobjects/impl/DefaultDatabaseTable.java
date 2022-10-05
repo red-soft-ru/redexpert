@@ -949,13 +949,16 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   }
 
   public String getCreateSQL() throws DataSourceException {
-    List<ColumnData> listCD = new ArrayList<>();
-    for (int i = 0; i < getColumnCount(); i++) {
-      if (!getColumns().get(i).isGenerated())
-        listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
-    }
-    String query = SQLUtils.generateCreateTableWithoutDependencies(getName(), listCD, false, null, getExternalFile(), getAdapter());
-    return query.replaceAll("\\^", ";");
+
+//    List<ColumnData> listCD = new ArrayList<>();
+//    for (int i = 0; i < getColumnCount(); i++) {
+//      if (!getColumns().get(i).isGenerated())
+//        listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
+//    }
+//    String query = SQLUtils.generateCreateTableWithoutDependencies(getName(), listCD, false, null, getExternalFile(), getAdapter());
+//    return query.replaceAll("\\^", ";");
+
+    return generateCreateTableSQLText();
   }
 
   @Override
@@ -1096,8 +1099,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
    */
   public String getCreateSQLText(int style) throws DataSourceException {
 
-    return formatSqlText(generateCreateTableSQLText().replaceAll("\\^",";"));
-
+    return generateCreateTableSQLText();
   }
 
 
@@ -1113,7 +1115,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
     }
 
-    return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, null, getExternalFile(), getAdapter(), getTablespace());
+    return SQLUtils.generateCreateTable(getName(), listCD, true, listCC, true, false, null, getExternalFile(), getAdapter(), getTablespace());
 
     }
 

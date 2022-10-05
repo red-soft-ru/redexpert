@@ -473,7 +473,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         String tablespace = null;
         if (tablespacesCombo.getSelectedItem() != null)
             tablespace = ((NamedObject) tablespacesCombo.getSelectedItem()).getName();
-        setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(), false, temporary, "ON COMMIT " + typeTemporaryBox.getSelectedItem(), null, null, tablespace));
+        setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), true, consPanel.getKeys(), false, temporary, "ON COMMIT " + typeTemporaryBox.getSelectedItem(), null, null, tablespace));
     }
 
     private void setSQLText(final String text) {

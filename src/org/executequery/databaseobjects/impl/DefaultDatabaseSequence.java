@@ -150,17 +150,12 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     @Override
     public String getCreateFullSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Create sequence ");
-        sb.append(getName());
-        sb.append(";");
-
-        return sb.toString();
+        return SQLUtils.generateCreateSequence(getName(), getSequenceValue(), getIncrement(), getDescription(), true, getDatabaseMajorVersion());
     }
 
     @Override
     public String getCreateSQL() throws DataSourceException {
-        return null;
+        return getCreateFullSQLText();
     }
 
     @Override

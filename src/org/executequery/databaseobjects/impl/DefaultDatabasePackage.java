@@ -128,39 +128,12 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     @Override
     public String getCreateFullSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("set term ^ ;");
-        sb.append("\n");
-        sb.append("\n");
-        sb.append(getHeaderSource());
-        sb.append("^");
-        sb.append("\n");
-        sb.append("\n");
-        sb.append(getBodySource());
-        sb.append("^");
-        sb.append("\n");
-        sb.append("\n");
-        sb.append("set term ; ^");
-        sb.append("\n");
-        sb.append("\n");
-        if (this.description != null && !this.description.isEmpty()) {
-            sb.append("comment on package");
-            sb.append(" ");
-            sb.append(getName());
-            sb.append(" ");
-            sb.append("is");
-            sb.append("\n");
-            sb.append("'");
-            sb.append(getDescription());
-            sb.append("';");
-        }
-
-        return sb.toString();
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), getDescription());
     }
 
     @Override
     public String getCreateSQL() throws DataSourceException {
-        return null;
+        return getCreateFullSQLText();
     }
 
     @Override

@@ -2,10 +2,9 @@ package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
-import org.executequery.databaseobjects.FunctionArgument;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.Parameter;
-import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
+import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
@@ -51,15 +50,15 @@ public final class SQLUtils {
             sqlBuffer.append(SPACE).append(" ADAPTER '").append(adapter.trim()).append("'");
         if (temporary)
             sqlBuffer.append("\n").append(typeTemporary);
-        sqlBuffer.append(sqlText.toString().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
-        sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
+        sqlBuffer.append(" (").append(sqlText.toString().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
+        sqlBuffer.append(")").append(CreateTableSQLSyntax.SEMI_COLON);
         sqlBuffer.append("\n").append(description);
         if (autoincrementSQLText != null)
             sqlBuffer.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
         return sqlBuffer.toString();
     }
 
-    public static String generateCreateTable(String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList, boolean existTable, boolean temporary, String typeTemporary, String externalFile, String adapter, String tablespace) {
+    public static String generateCreateTable(String name, List<ColumnData> columnDataList, boolean setConstraints, List<ColumnConstraint> columnConstraintList, boolean existTable, boolean temporary, String typeTemporary, String externalFile, String adapter, String tablespace) {
         StringBuilder sqlText = new StringBuilder();
         StringBuilder sqlBuffer = new StringBuilder();
         //List<String> descriptions = new ArrayList<>();
@@ -97,7 +96,7 @@ public final class SQLUtils {
         if (primary_flag)
             primary.append(primaryText);
         primary.append(")");
-        String description = generateCommentForColumns(name, columnDataList, "COLUMN", "^");
+        String description = generateCommentForColumns(name, columnDataList, "COLUMN", ";");
 
         sqlBuffer.append(MiscUtils.getFormattedObject(name));
         if (externalFile != null)
@@ -108,21 +107,208 @@ public final class SQLUtils {
         sqlBuffer.append(sqlText.toString().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
         if (primary_flag && !existTable)
             sqlBuffer.append(primary);
-        columnConstraintList = removeDuplicatesConstraints(columnConstraintList);
-        for (ColumnConstraint columnConstraint : columnConstraintList) {
-            sqlBuffer.append(generateDefinitionColumnConstraint(columnConstraint).replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
-
+        if (setConstraints) {
+            columnConstraintList = removeDuplicatesConstraints(columnConstraintList);
+            for (ColumnConstraint columnConstraint : columnConstraintList)
+                sqlBuffer.append(generateDefinitionColumnConstraint(columnConstraint).replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
         }
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
         if (tablespace != null)
             sqlBuffer.append("\nTABLESPACE ").append(MiscUtils.getFormattedObject(tablespace));
         if (temporary)
             sqlBuffer.append("\n").append(typeTemporary);
-        sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
+        sqlBuffer.append(";");
         sqlBuffer.append("\n").append(description);
         if (autoincrementSQLText != null)
             sqlBuffer.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
         return sqlBuffer.toString();
+    }
+
+    public static String generateCreateView(String name, List<DatabaseColumn> columns, String sqlSelectStatement) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CREATE OR ALTER VIEW ");
+        sb.append(MiscUtils.getFormattedObject(name)).append("(\n");
+
+        for (int i = 0; i < columns.size(); i++) {
+            sb.append("\t").append(MiscUtils.getFormattedObject(columns.get(i).getName()));
+            if (i != columns.size() - 1)
+                sb.append(",\n");
+        }
+        sb.append(")\n").append("AS\n").append(sqlSelectStatement).append(";\n");
+
+        return sb.toString();
+    }
+
+    public static String generateCreateException(String name, String exceptionText) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CREATE EXCEPTION ");
+        sb.append(MiscUtils.getFormattedObject(name));
+        sb.append("\n'").append(exceptionText).append("';\n");
+
+        return sb.toString();
+    }
+
+    public static String generateCreatePackage(String name, String headerSource, String bodySource, String description) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("SET TERM ^ ;");
+        sb.append("\n").append(headerSource);
+        sb.append("^\n").append(bodySource);
+        sb.append("^\n").append("SET TERM ; ^").append("\n");
+
+        if (description != null && !description.isEmpty())
+            sb.append(generateComment(name, "PACKAGE", description, "^"));
+
+        return sb.toString();
+    }
+
+    public static String generateCreateTrigger(String name, String tableName, boolean activity, String type, int sequence, String sourceCode) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CREATE OR ALTER TRIGGER ");
+        sb.append(MiscUtils.getFormattedObject(name));
+        if (!tableName.isEmpty())
+            sb.append(" FOR ").append(MiscUtils.getFormattedObject(tableName));
+        sb.append("\n").append(activity ? "ACTIVE" : "INACTIVE");
+        sb.append(" ").append(type).append(" POSITION ").append(sequence).append("\n");
+        if (sourceCode != null)
+            sb.append(sourceCode);
+        sb.append("\n");
+
+        return sb.toString();
+    }
+
+    public static String generateCreateSequence(String name, long startValue, long increment, String description, boolean editing, int majorVersion) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if (majorVersion < 3) {
+            if (!editing)
+                sb.append("CREATE SEQUENCE ").append(MiscUtils.getFormattedObject(name)).append(";");
+            sb.append("\nALTER SEQUENCE ").append(MiscUtils.getFormattedObject(name));
+            sb.append(" RESTART WITH ").append(startValue + increment).append(";");
+
+        } else {
+            sb.append("CREATE OR ALTER SEQUENCE ").append(MiscUtils.getFormattedObject(name));
+            sb.append(" START WITH ").append(startValue).append(" INCREMENT BY ").append(increment).append(";\n");
+        }
+
+        if (description != null && !description.equals(""))
+            sb.append(generateComment(name, "SEQUENCE", description.trim(), ";"));
+
+        return sb.toString();
+    }
+
+    public static String generateCreateUDF(String name, List<DefaultDatabaseUDF.UDFParameter> parameters, int returnArg, String entryPoint, String moduleName, boolean freeIt) {
+
+        int BY_VALUE = 0;
+        int BY_REFERENCE = 1;
+        int BY_DESCRIPTOR = 2;
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("DECLARE EXTERNAL FUNCTION ").append(MiscUtils.getFormattedObject(name)).append("\n");
+
+        String args = "";
+        for (int i = 0; i < parameters.size(); i++) {
+
+            if (returnArg == 0 && i == 0)
+                continue;
+
+            args += "\t" + parameters.get(i).getFieldStringType();
+            if (parameters.get(i).getMechanism() != BY_VALUE && parameters.get(i).getMechanism() != BY_REFERENCE)
+                if (parameters.get(i).isNotNull() || parameters.get(i).getMechanism() == BY_DESCRIPTOR)
+                    args += " " + parameters.get(i).getStringMechanism();
+
+            if (!parameters.get(i).isNotNull() && parameters.get(i).getMechanism() != BY_DESCRIPTOR &&
+                    parameters.get(i).getMechanism() != BY_REFERENCE && returnArg - 1 != i)
+                args += " " + "NULL";
+
+            args += ",\n";
+        }
+
+        if (!args.isEmpty())
+            args = args.substring(0, args.length() - 2);
+
+        sb.append(args).append("\nRETURNS\n");
+
+        if (returnArg == 0) {
+
+            sb.append(parameters.get(0).getFieldStringType());
+            if (parameters.get(0).getMechanism() != BY_REFERENCE && parameters.get(0).getMechanism() != -1)
+                sb.append(" ").append(parameters.get(0).getStringMechanism());
+
+        } else
+            sb.append("PARAMETER ").append(returnArg);
+
+        if (freeIt)
+            sb.append(" FREE_IT ");
+        sb.append("\nENTRY_POINT '");
+        if (!MiscUtils.isNull(entryPoint))
+            sb.append(entryPoint);
+        sb.append("' MODULE_NAME '");
+        if (!MiscUtils.isNull(moduleName))
+            sb.append(moduleName);
+        sb.append("';\n");
+
+        return sb.toString();
+    }
+
+    public static String generateCreateRole(String name) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CREATE ROLE ").append(MiscUtils.getFormattedObject(name)).append(";\n");
+
+        return sb.toString();
+    }
+
+    public static String generateCreateIndex(String name, int type, String namePrefix, String tableName, List<DatabaseColumn> databaseColumns, List<DefaultDatabaseIndex.DatabaseIndexColumn> databaseIndexColumns) {
+
+        StringBuilder sb = new StringBuilder();
+
+        String stringType = "";
+        if (type == 1)
+            stringType = "BITMAP ";
+        if (type == 3)
+            stringType = "UNIQUE ";
+
+        sb.append("CREATE ").append(stringType);
+        sb.append("INDEX ").append(MiscUtils.getFormattedObject(name));
+        sb.append("\n\tON ");
+
+        if (namePrefix != null)
+            sb.append(namePrefix).append(".");
+
+        sb.append(MiscUtils.getFormattedObject(tableName)).append(" (");
+
+        if (databaseColumns != null)
+            for (int i = 0, n = databaseColumns.size(); i < n; i++) {
+                sb.append(databaseColumns.get(i).getName());
+                if (i < n - 1)
+                    sb.append(", ");
+            }
+        if (databaseIndexColumns != null)
+            for (int i = 0, n = databaseIndexColumns.size(); i < n; i++) {
+                sb.append(databaseIndexColumns.get(i).getFieldName());
+                if (i < n - 1)
+                    sb.append(", ");
+            }
+
+        sb.append(")");
+
+        if (type == 2)
+            sb.append(" NOSORT");
+
+        sb.append(";\n");
+
+        return sb.toString();
     }
 
     public static String generateDefinitionColumn(ColumnData cd, boolean withoutDependencies) {
@@ -255,7 +441,7 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
         sb.append(formattedParameters(variables, true));
         sb.append(procedureBody);
-        return generateCreateProcedure(name,inputParameters,outputParameters,sb.toString(),comment);
+        return generateCreateProcedure(name, inputParameters, outputParameters, sb.toString(), comment);
     }
 
     public static String generateCreateProcedure(String name,List<ProcedureParameter> parameters,String fullProcedureBody,String comment,DatabaseConnection dc) {
@@ -375,9 +561,8 @@ public final class SQLUtils {
             sb.append(entryPoint).append("'");
             sb.append(" ENGINE ").append(engine);
         } else sb.append(generateSQLBody(fullFunctionBody));
-        sb.append("\n");
-        sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^"));
 
+        sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^"));
         sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
         return sb.toString();
     }

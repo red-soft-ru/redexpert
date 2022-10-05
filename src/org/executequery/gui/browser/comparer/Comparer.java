@@ -80,11 +80,12 @@ public class Comparer {
             return;
 
         String header = MessageFormat.format(
-                "\n/* Creating {0} */\n",
+                "\n/* ----- Creating {0} ----- */\n",
                 Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
         script.add(header);
 
         for (NamedObject obj : createObjects) {
+            script.add("\n/* " + obj.getName() + " */");
             script.add("\n" + ((AbstractDatabaseObject) obj).getCreateSQL());
             lists += "\t" + obj.getName() + "\n";
         }
@@ -99,11 +100,12 @@ public class Comparer {
             return;
 
         String header = MessageFormat.format(
-                "\n/* Dropping {0} */\n",
+                "\n/* ----- Dropping {0} ----- */\n",
                 Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
         script.add(header);
 
         for (NamedObject obj : dropObjects) {
+            script.add("\n/* " + obj.getName() + " */");
             script.add("\n" + ((AbstractDatabaseObject) obj).getDropSQL());
             lists += "\t" + obj.getName() + "\n";
         }
@@ -118,11 +120,12 @@ public class Comparer {
             return;
 
         String header = MessageFormat.format(
-                "\n/* Altering {0} */\n",
+                "\n/* ----- Altering {0} ----- */\n",
                 Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
         script.add(header);
 
         for (NamedObject obj : alterObjects.keySet()) {
+            script.add("\n/* " + obj.getName() + " */");
             script.add("\n" + ((AbstractDatabaseObject) obj).getAlterSQL((AbstractDatabaseObject) alterObjects.get(obj)));
             lists += "\t" + obj.getName() + "\n";
         }

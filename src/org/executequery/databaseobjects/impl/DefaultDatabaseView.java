@@ -48,33 +48,12 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
     }
 
     public String getCreateFullSQLText() throws DataSourceException {
+        return SQLUtils.generateCreateView(getName(), getColumns(), getSource());
+    }
 
-        String sql = getSource();
-
-        StringBuilder sb = new StringBuilder();
-
-        List<DatabaseColumn> columns = this.getColumns();
-
-        sb.append("CREATE OR ALTER VIEW ");
-        sb.append("\"");
-        sb.append(getName());
-        sb.append("\"");
-        sb.append("(\n");
-
-        for (int i = 0; i < columns.size(); i++) {
-            sb.append("\t");
-            sb.append("\"");
-            sb.append(columns.get(i).getName());
-            sb.append("\"");
-            if (i != columns.size() - 1)
-                sb.append(",\n");
-        }
-        sb.append(")\n");
-        sb.append("AS\n");
-        sb.append(sql);
-
-        sb.append("\n");
-        return sb.toString();
+    @Override
+    public String getCreateSQL() throws DataSourceException {
+        return getCreateFullSQLText();
     }
 
     @Override

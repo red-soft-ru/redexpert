@@ -132,7 +132,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     @Override
-    public String getCreateSQL() throws DataSourceException {
+    public String getCompareCreateSQL() throws DataSourceException {
         return getCreateFullSQLText();
     }
 

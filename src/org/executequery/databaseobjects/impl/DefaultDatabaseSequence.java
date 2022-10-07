@@ -155,7 +155,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCreateSQL() throws DataSourceException {
+    public String getCompareCreateSQL() throws DataSourceException {
         return getCreateFullSQLText();
     }
 

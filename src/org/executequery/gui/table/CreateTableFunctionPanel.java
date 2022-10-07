@@ -639,7 +639,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
             comment = commentField.getTextAreaComponent().getText().trim();
 
         setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
-                false, temporary, "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
+                false, temporary, true, "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
                 externalFile, adapter, tablespace, comment));
 
     }

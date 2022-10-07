@@ -110,7 +110,7 @@ public class ComparerDBPanel extends JPanel {
         propertiesCheckBoxMap.put(1, new JCheckBox("Check for ALTER"));
         propertiesCheckBoxMap.put(2, new JCheckBox("Check for DROP"));
 //        propertiesCheckBoxMap.put(3, new JCheckBox("Safe type conversion"));
-//        propertiesCheckBoxMap.put(4, new JCheckBox("Create tables without constraints"));
+        propertiesCheckBoxMap.put(4, new JCheckBox("Ignore tables constraints"));
 
         // --- comboBoxes defining ---
 
@@ -262,6 +262,7 @@ public class ComparerDBPanel extends JPanel {
         comparer = new Comparer(
                 databaseConnectionList.get(dbCompareComboBox.getSelectedIndex()),
                 databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()));
+        Comparer.TABLE_CONSTRAINTS_NEED = !propertiesCheckBoxMap.get(4).isSelected();
 
         loggingOutputPanel.clear();
         loggingOutputPanel.append(WELCOME_TEXT);

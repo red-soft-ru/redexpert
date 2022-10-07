@@ -59,7 +59,7 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCreateSQL() throws DataSourceException {
+    public String getCompareCreateSQL() throws DataSourceException {
         return null;
     }
 

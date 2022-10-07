@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -73,7 +74,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
             listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, true,
+                getName(), listCD, listCC, true, true, true,
                 typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
@@ -97,8 +98,11 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     }
 
     @Override
-    public String getCreateSQL() throws DataSourceException {
-        return getCreateFullSQLText();
+    public String getCompareCreateSQL() throws DataSourceException {
+        if (Comparer.TABLE_CONSTRAINTS_NEED)
+            return null;
+        else
+            return getCreateFullSQLText();
     }
 
     @Override

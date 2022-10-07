@@ -26,7 +26,7 @@ public final class SQLUtils {
 
     public static String generateCreateTable(
             String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,
-            boolean existTable, boolean temporary, String typeTemporary, String externalFile,
+            boolean existTable, boolean temporary, boolean constraints, String typeTemporary, String externalFile,
             String adapter, String tablespace, String comment) {
 
         StringBuilder sb = new StringBuilder();
@@ -94,8 +94,9 @@ public final class SQLUtils {
 
         columnConstraintList = removeDuplicatesConstraints(columnConstraintList);
 
-        for (ColumnConstraint columnConstraint : columnConstraintList)
-            sb.append(generateDefinitionColumnConstraint(columnConstraint).replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
+        if (constraints)
+            for (ColumnConstraint columnConstraint : columnConstraintList)
+                sb.append(generateDefinitionColumnConstraint(columnConstraint).replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
 
         sb.append(CreateTableSQLSyntax.B_CLOSE);
 

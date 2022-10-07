@@ -561,16 +561,13 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     public boolean hasSQLDefinition() {
-
         return false;
     }
 
     public abstract String getCreateFullSQLText() throws DataSourceException;
-
-    public abstract String getCreateSQL() throws DataSourceException;
     public abstract String getDropSQL() throws DataSourceException;
     public abstract String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException;
-
+    public abstract String getCompareCreateSQL() throws DataSourceException;
     public abstract String getFillSQL() throws DataSourceException;
 
     public int getDatabaseMajorVersion() {

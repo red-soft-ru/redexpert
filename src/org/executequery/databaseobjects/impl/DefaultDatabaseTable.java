@@ -25,10 +25,10 @@ import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.log.Log;
-import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -79,6 +79,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     private String externalFile;
 
     private String tablespace;
+
+    private List<ColumnData> listCD;
+    private List<org.executequery.gui.browser.ColumnConstraint> listCC;
 
     public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
 
@@ -938,14 +941,15 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return sb.toString();
     }
 
-    public String getCreateFullSQLText() throws DataSourceException {
-
-        return getFormatter().format(getCreateSQLText(STYLE_CONSTRAINTS_ALTER));
-    }
-
     @Override
-    public String getCreateSQL() throws DataSourceException {
-        return generateCreateTableSQLText();
+    public String getCompareCreateSQL() throws DataSourceException {
+
+        updateListCD();
+        updateListCC();
+
+        return SQLUtils.generateCreateTable(
+                getName(), listCD, listCC, true, false, Comparer.TABLE_CONSTRAINTS_NEED,
+                null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
     @Override
@@ -955,7 +959,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) {
-        return databaseObject.getCreateSQL().replaceFirst("CREATE", "CREATE OR ALTER");
+        return databaseObject.getCompareCreateSQL().replaceFirst("CREATE", "CREATE OR ALTER");
     }
 
     public String getDropSQLText(boolean cascadeConstraints) {
@@ -1082,29 +1086,30 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
      * this does not include constraint meta data.
      */
     public String getCreateSQLText(int style) throws DataSourceException {
-        return generateCreateTableSQLText();
-    }
 
-
-    private String generateCreateTableSQLText() {
-
-        List<ColumnData> listCD = new ArrayList<>();
-        for (int i = 0; i < getColumnCount(); i++)
-            listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
-
-        List<org.executequery.gui.browser.ColumnConstraint> listCC = new ArrayList<>();
-        for (int i = 0; i < getConstraints().size(); i++)
-            listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
+        updateListCD();
+        updateListCC();
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, false,
+                getName(), listCD, listCC, true, false, true,
                 null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
+    }
+
+    private void updateListCD() {
+        listCD = new ArrayList<>();
+        for (int i = 0; i < getColumnCount(); i++)
+            listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
+    }
+    private void updateListCC() {
+        listCC = new ArrayList<>();
+        for (int i = 0; i < getConstraints().size(); i++)
+            listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
     }
 
     /**
      * Returns the CREATE TABLE statement for this database table.
      * This will be table column (plus data type) definitions only,
-     * this does not include constraint meta data.
+     * this does not include constraint metadata.
      */
     public String getCreateSQLTextX(int style) throws DataSourceException {
 

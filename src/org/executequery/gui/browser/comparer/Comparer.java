@@ -13,6 +13,8 @@ import java.util.*;
 
 public class Comparer {
 
+    public static boolean TABLE_CONSTRAINTS_NEED;
+
     protected Role role;
     protected Udf udf;
     protected Generator generator;
@@ -55,6 +57,8 @@ public class Comparer {
         udf = new Udf(this);
         role = new Role();
 
+        TABLE_CONSTRAINTS_NEED = false;
+
         init();
     }
 
@@ -86,7 +90,7 @@ public class Comparer {
 
         for (NamedObject obj : createObjects) {
             script.add("\n/* " + obj.getName() + " */");
-            script.add("\n" + ((AbstractDatabaseObject) obj).getCreateSQL());
+            script.add("\n" + ((AbstractDatabaseObject) obj).getCompareCreateSQL());
             lists += "\t" + obj.getName() + "\n";
         }
 

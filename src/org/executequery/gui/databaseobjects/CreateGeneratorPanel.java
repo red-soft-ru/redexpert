@@ -116,35 +116,8 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     }
 
     protected String generateQuery() {
-//        String query = "";
-//        try {
-//            if (getVersion() == 3) {
-//                query = "CREATE OR ALTER SEQUENCE " + getFormattedName() + " START WITH " + startValueText.getStringValue()
-//                        + " INCREMENT BY " + incrementText.getStringValue() + ";";
-//            } else {
-//                if (!editing)
-//                    query = "CREATE SEQUENCE " + getFormattedName() + ";";
-//                else query = "";
-//                query += "\nALTER SEQUENCE " + getFormattedName() + " RESTART WITH " + (startValueText.getLongValue() + incrementText.getLongValue()) + ";";
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        if (!MiscUtils.isNull(description.getTextAreaComponent().getText().trim()))
-//            query += "\nCOMMENT ON SEQUENCE " + getFormattedName() + " IS '" + description.getTextAreaComponent().getText() + "'";
-//
-//        return query;
-
-        int majorVersion;
-        try {
-            majorVersion = getVersion();
-        } catch (Exception e) {
-            majorVersion = 0;
-            e.printStackTrace();
-        }
-
         return SQLUtils.generateCreateSequence(getFormattedName(), startValueText.getLongValue(), incrementText.getLongValue(),
-                description.getTextAreaComponent().getText(), editing, majorVersion);
+                description.getTextAreaComponent().getText(), getDatabaseVersion(), editing);
     }
 
     private void createGenerator() throws SQLException {

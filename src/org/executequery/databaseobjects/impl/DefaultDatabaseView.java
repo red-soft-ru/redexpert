@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.util.List;
@@ -48,7 +49,25 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
     }
 
     public String getCreateFullSQLText() throws DataSourceException {
-        return SQLUtils.generateCreateView(getName(), getColumns(), getSource());
+
+        String fields = null;
+
+        try {
+
+            List<DatabaseColumn> columns = getColumns();
+            if (columns != null) {
+                fields = "";
+
+                for (int i = 0; i < columns.size(); i++) {
+                    fields += MiscUtils.getFormattedObject(columns.get(i).getName());
+                    if (i != columns.size() - 1)
+                        fields += ", ";
+                }
+            }
+
+        } catch (Exception ignored) { }
+
+        return SQLUtils.generateCreateView(getName(), fields, getSource(),getRemarks(), getDatabaseMajorVersion(), false);
     }
 
     @Override

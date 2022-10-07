@@ -35,46 +35,46 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     public String getCreateFullSQLText() throws DataSourceException {
 
-
         DefaultStatementExecutor querySender = new DefaultStatementExecutor();
         querySender.setDatabaseConnection(getHost().getDatabaseConnection());
+
         int type = -1;
         try {
+
             SqlStatementResult result = querySender.getResultSet("Select RDB$RELATION_TYPE FROM RDB$RELATIONS R \n" +
                     "WHERE R.RDB$RELATION_NAME = '" + getName() + "'");
+
             if (result.isException())
                 throw result.getSqlException();
-            ResultSet resultSet=result.getResultSet();
 
+            ResultSet resultSet = result.getResultSet();
             resultSet.next();
             type = resultSet.getInt(1);
 
         } catch (SQLException e) {
             e.printStackTrace();
+
         } finally {
             querySender.releaseResources();
         }
+
         String typeTemporary = "";
         if (type == 4)
             typeTemporary += " ON COMMIT PRESERVE ROWS";
         else if (type == 5)
             typeTemporary += " ON COMMIT DELETE ROWS";
-        List<ColumnData> listCD=new ArrayList<>();
-        for(int i=0;i<getColumnCount();i++)
-        {
-            listCD.add(new ColumnData(getHost().getDatabaseConnection(),getColumns().get(i)));
-        }
-        List<org.executequery.gui.browser.ColumnConstraint> listCC=new ArrayList<>();
-        for(int i=0;i<getConstraints().size();i++)
-        {
-            listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
-        }
-        return formatSqlText(SQLUtils.generateCreateTable(getName(), listCD, true, listCC, true, true, typeTemporary, getExternalFile(), getAdapter(), getTablespace()));
-    }
 
-    private String formatSqlText(String text) {
+        List<ColumnData> listCD = new ArrayList<>();
+        for (int i = 0; i < getColumnCount(); i++)
+            listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
 
-        return new SQLFormatter(text).format();
+        List<org.executequery.gui.browser.ColumnConstraint> listCC = new ArrayList<>();
+        for (int i = 0; i < getConstraints().size(); i++)
+            listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
+
+        return SQLUtils.generateCreateTable(
+                getName(), listCD, listCC, true, true,
+                typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
     public int getType() {

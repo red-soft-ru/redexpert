@@ -150,7 +150,8 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     @Override
     public String getCreateFullSQLText() {
-        return SQLUtils.generateCreateSequence(getName(), getSequenceValue(), getIncrement(), getDescription(), true, getDatabaseMajorVersion());
+        return SQLUtils.generateCreateSequence(getName(), getSequenceValue(), getIncrement(),
+                getRemarks(), getDatabaseMajorVersion(), false);
     }
 
     @Override
@@ -211,4 +212,9 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         return "select rdb$description from rdb$generators where \n" +
                 "     rdb$generator_name='" + getName().trim() + "'";
     }
+
+    int getVersion() throws SQLException {
+        return getHost().getDatabaseMetaData().getDatabaseMajorVersion();
+    }
+
 }

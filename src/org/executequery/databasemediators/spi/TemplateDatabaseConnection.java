@@ -1,22 +1,3 @@
-/*
- * DefaultDatabaseConnection.java
- *
- * Copyright (C) 2002-2017 Takis Diakoumis
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
- */
 
 package org.executequery.databasemediators.spi;
 
@@ -27,6 +8,7 @@ import org.executequery.crypto.PasswordEncoderDecoder;
 import org.executequery.crypto.spi.DefaultPasswordEncoderDecoderFactory;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -188,6 +170,10 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
 
   private boolean namesToUpperCase = true;
 
+  String pathToTraceConfig;
+  String[] dataTypesArray;
+  int[] intDataTypesArray;
+
   @Override
   public boolean isNamesToUpperCase() {
     return namesToUpperCase;
@@ -196,6 +182,36 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
   @Override
   public void setNamesToUpperCase(boolean namesToUpperCase) {
     this.namesToUpperCase = namesToUpperCase;
+  }
+
+  @Override
+  public void setPathToTraceConfig(String pathToTraceConfig) {
+    this.pathToTraceConfig = pathToTraceConfig;
+  }
+
+  @Override
+  public String getPathToTraceConfig() {
+    return pathToTraceConfig;
+  }
+
+  @Override
+  public String[] getDataTypesArray() {
+    if (dataTypesArray == null) {
+      MetaDataValues metaData = new MetaDataValues(true);
+      metaData.setDatabaseConnection(this);
+      dataTypesArray = metaData.getDataTypesArray();
+    }
+    return dataTypesArray;
+  }
+
+  @Override
+  public int[] getIntDataTypesArray() {
+    if (intDataTypesArray == null) {
+      MetaDataValues metaData = new MetaDataValues(true);
+      metaData.setDatabaseConnection(this);
+      intDataTypesArray = metaData.getIntDataTypesArray();
+    }
+    return intDataTypesArray;
   }
 
   /**

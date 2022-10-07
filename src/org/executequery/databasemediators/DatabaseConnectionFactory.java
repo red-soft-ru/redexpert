@@ -20,6 +20,8 @@
 
 package org.executequery.databasemediators;
 
+import org.executequery.databasemediators.spi.TemplateDatabaseConnection;
+
 public interface DatabaseConnectionFactory {
 
     DatabaseConnection create();
@@ -27,6 +29,8 @@ public interface DatabaseConnectionFactory {
     DatabaseConnection create(String name);
 
     DatabaseConnection create(String name, String sourceName);
+
+    DatabaseConnection create(String name, String sourceName, TemplateDatabaseConnection tdc);
 
 }
 

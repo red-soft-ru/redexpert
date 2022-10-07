@@ -26,6 +26,7 @@ import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseConnectionFactory;
 import org.executequery.databasemediators.spi.DatabaseConnectionFactoryImpl;
+import org.executequery.databasemediators.spi.TemplateDatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObjectFactory;
 import org.executequery.databaseobjects.NamedObject;
@@ -846,8 +847,12 @@ public class ConnectionsTreePanel extends TreePanel
 
   public void newConnection(String sourceName) {
 
+    String username = SystemProperties.getProperty("user", "startup.default.connection.username");
+    String password = SystemProperties.getProperty("user", "startup.default.connection.password");
+    String charset = SystemProperties.getProperty("user", "startup.default.connection.charset");
+    TemplateDatabaseConnection tdc = new TemplateDatabaseConnection(username, password, charset, true);
     String name = buildConnectionName(Bundles.getCommon("newConnection.button"));
-    newConnection(databaseConnectionFactory().create(name, sourceName));
+    newConnection(databaseConnectionFactory().create(name, sourceName, tdc));
   }
 
   /**

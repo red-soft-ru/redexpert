@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.ActionPanel;
 
 import javax.swing.*;
@@ -44,7 +45,7 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
 
         fileNameField = WidgetFactory.createTextField();
 
-        JButton button = WidgetFactory.createInlineFieldButton("Browse");
+        JButton button = WidgetFactory.createInlineFieldButton(Bundles.get("CreateTableFunctionPanel.BrowseButtonText"));
         button.setActionCommand("browse");
         button.addActionListener(this);
         button.setMnemonic('r');
@@ -62,7 +63,7 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
         gbc.gridwidth = 3;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(new JLabel("Select the file to export the selections below."), gbc);
+        add(new JLabel(bundleString("SelectTheFileToExportTheSelectionsBelow")), gbc);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.weightx = 0;
@@ -72,7 +73,7 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
         gbc.weighty = 1.0;
         gbc.insets.bottom = 20;
         gbc.fill = GridBagConstraints.NONE;
-        add(new JLabel("Export File:"), gbc);
+        add(new JLabel(bundleString("ExportFile")), gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.insets.top = 0;
@@ -92,7 +93,7 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
 
         if (StringUtils.isBlank(fileNameField.getText())) {
 
-            GUIUtilities.displayErrorMessage("You must select a file path to export to");
+            GUIUtilities.displayErrorMessage(bundleString("YouMustSelectAFilePathToExportTo"));
             return false;
         }
         return true;
@@ -109,10 +110,10 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
 
-        fileChooser.setDialogTitle("Select Export File Path");
+        fileChooser.setDialogTitle(Bundles.get("QueryEditorResultsExporter.SelectExportFilePath"));
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
 
-        int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), "Select");
+        int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), Bundles.get("common.select.button"));
         if (result == JFileChooser.CANCEL_OPTION) {
 
             return;

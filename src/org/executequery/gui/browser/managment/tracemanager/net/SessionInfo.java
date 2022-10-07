@@ -32,7 +32,7 @@ public class SessionInfo {
 
                 @Override
                 public void enterSession_info(RedTraceParser.Session_infoContext ctx) {
-                    setId(textFromRuleContext(ctx.ID()));
+                    setId(textFromRuleContext(ctx.id()));
                     setName(textFromRuleContext(ctx.name_session()));
                     setUser(textFromRuleContext(ctx.username()));
                     setDatetime(textFromRuleContext(ctx.datetime()));

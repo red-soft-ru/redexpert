@@ -24,6 +24,7 @@ import biz.redsoft.IFBDatabasePerformance;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.SystemProperties;
 
@@ -574,7 +575,7 @@ public class PooledConnection implements Connection {
         databaseConnection.setConnected(false);
         ConnectionMediator.getInstance().disconnect(databaseConnection);
         timer.cancel();
-        GUIUtilities.displayErrorMessage("lost connection to server");
+        GUIUtilities.displayErrorMessage(Bundles.getCommon("lost-connection"));
     }
 
     public int getHoldability() throws SQLException {

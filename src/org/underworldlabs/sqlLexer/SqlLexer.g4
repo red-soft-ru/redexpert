@@ -164,6 +164,7 @@ KEYWORD
   | K_COMMITTED
   | K_COMMON
   | K_COMPARE_DECFLOAT
+  | K_COMPUTED
   | K_CONDITION_NUMBER
   | K_CONNECT
   | K_CONNECTION
@@ -734,6 +735,7 @@ fragment K_COMMIT : C O M M I T ;
 fragment K_COMMITTED : C O M M I T T E D ;
 fragment K_COMMON : C O M M O N ;
 fragment K_COMPARE_DECFLOAT : C O M P A R E '_' D E C F L O A T ;
+fragment K_COMPUTED : C O M P U T E D ;
 fragment K_CONDITION_NUMBER : C O N D I T I O N '_' N U M B E R ;
 fragment K_CONNECT : C O N N E C T ;
 fragment K_CONNECTION : C O N N E C T I O N ;

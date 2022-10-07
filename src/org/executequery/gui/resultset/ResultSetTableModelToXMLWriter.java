@@ -24,6 +24,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import javax.swing.table.TableModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,10 +47,10 @@ import java.util.Map.Entry;
  */
 public class ResultSetTableModelToXMLWriter {
 
-    private String outputPath;
-    private ResultSetTableModel model;
+    private final String outputPath;
+    private final TableModel model;
 
-    public ResultSetTableModelToXMLWriter(ResultSetTableModel model, String outputPath) {
+    public ResultSetTableModelToXMLWriter(TableModel model, String outputPath) {
 
         this.model = model;
         this.outputPath = outputPath;
@@ -62,10 +63,11 @@ public class ResultSetTableModelToXMLWriter {
         Document document = documentBuilder.newDocument();
         Element rootElement = element(document, "result-set");
         document.appendChild(rootElement);
-
-        Element queryElement = element(document, "query");
-        queryElement.appendChild(document.createTextNode("\n" + model.getQuery() + "\n"));
-        rootElement.appendChild(queryElement);
+        if (model instanceof ResultSetTableModel) {
+            Element queryElement = element(document, "query");
+            queryElement.appendChild(document.createTextNode("\n" + ((ResultSetTableModel) model).getQuery() + "\n"));
+            rootElement.appendChild(queryElement);
+        }
 
         Map<String, String> cdata = new HashMap<String, String>();
         Element dataElement = element(document, "data");
@@ -80,21 +82,34 @@ public class ResultSetTableModelToXMLWriter {
             for (int j = 0, m = model.getColumnCount(); j < m; j++) {
 
                 Element valueElement = element(document, model.getColumnName(j));
-                RecordDataItem valueAt = (RecordDataItem) model.getValueAt(i, j);
-                if (!valueAt.isValueNull()) {
+                if (model instanceof ResultSetTableModel) {
+                    RecordDataItem valueAt = (RecordDataItem) model.getValueAt(i, j);
+                    if (!valueAt.isValueNull()) {
 
-                    valueElement.appendChild(document.createTextNode(valueAt.toString()));
+                        valueElement.appendChild(document.createTextNode(valueAt.toString()));
 
-                    String name = valueAt.getName();
-                    if (isCDATA(valueAt) && !cdata.containsKey(name)) {
+                        String name = valueAt.getName();
+                        if (isCDATA(valueAt) && !cdata.containsKey(name)) {
 
-                        cdata.put(name, name);
+                            cdata.put(name, name);
+                        }
+
+
+                    } else {
+
+                        valueElement.appendChild(document.createTextNode("NULL"));
                     }
-
-
                 } else {
+                    Object value = model.getValueAt(i, j);
+                    if (value != null) {
 
-                    valueElement.appendChild(document.createTextNode("NULL"));
+                        valueElement.appendChild(document.createTextNode(value.toString()));
+
+
+                    } else {
+
+                        valueElement.appendChild(document.createTextNode("NULL"));
+                    }
                 }
 
                 rowElement.appendChild(valueElement);

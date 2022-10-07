@@ -21,7 +21,7 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.underworldlabs.util.MiscUtils;
@@ -48,7 +48,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     /**
      * The table this column belongs to
      */
-    protected DatabaseTable table;
+    protected DatabaseTableObject table;
 
     /**
      * constraints of this column
@@ -70,7 +70,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      * Creates a new instance of DatabaseTableColumn belonging to the
      * specified table.
      */
-    public DatabaseTableColumn(DatabaseTable table) {
+    public DatabaseTableColumn(DatabaseTableObject table) {
         this(table, null);
     }
 
@@ -78,7 +78,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      * Creates a new instance of DatabaseTableColumn with values derived from
      * the specified column and belonging to the specified table.
      */
-    public DatabaseTableColumn(DatabaseTable table, DatabaseColumn column) {
+    public DatabaseTableColumn(DatabaseTableObject table, DatabaseColumn column) {
         setTable(table);
         if (column != null) {
             initValues(column);
@@ -555,7 +555,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      *
      * @return this column's table
      */
-    public DatabaseTable getTable() {
+    public DatabaseTableObject getTable() {
 
         return table;
     }
@@ -565,7 +565,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      *
      * @param table the table
      */
-    public void setTable(DatabaseTable table) {
+    public void setTable(DatabaseTableObject table) {
 
         this.table = table;
     }

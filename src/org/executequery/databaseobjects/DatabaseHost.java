@@ -181,7 +181,7 @@ public interface DatabaseHost extends NamedObject {
      * @param table   the database object name
      * @return the column names
      */
-    List<String> getColumnNames(String catalog, String schema, String table)
+    List<String> getColumnNames(String table)
             throws DataSourceException;
 
     /**
@@ -193,7 +193,7 @@ public interface DatabaseHost extends NamedObject {
      * @param type    the table type
      * @return the hosted tables
      */
-    List<String> getTableNames(String catalog, String schema, String type)
+    List<String> getTableNames()
             throws DataSourceException;
 
     /**

@@ -21,6 +21,7 @@
 package org.executequery.components;
 
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.HeapMemoryDialog;
 
@@ -58,6 +59,10 @@ public class HeapMemoryStatusSnippet extends JPanel
 
     }
 
+    String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
+
     private void jbInit() throws Exception {
         ProgressModel progModel = new ProgressModel();
         memProgress = new JProgressBar(progModel);
@@ -86,7 +91,7 @@ public class HeapMemoryStatusSnippet extends JPanel
         free = (int) Runtime.getRuntime().freeMemory();
         int totalUserAfter = total - free;
 
-        Log.info("Garbage collection released " +
+        Log.info(bundleString("GarbageCollection") +
                 ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
     }
 
@@ -136,7 +141,7 @@ public class HeapMemoryStatusSnippet extends JPanel
             int free = (int) Runtime.getRuntime().freeMemory();
             int used = total - free;
             String text = (used / 1000) + "Kb/" + (total / 1000) + "Kb";
-            memProgress.setToolTipText("Java heap size: " + text);
+            memProgress.setToolTipText(Bundles.get("HeapMemoryStatusSnippet.console-JavaHeapSize") + text);
         }
 
     } // class ProgressMouseAdapter

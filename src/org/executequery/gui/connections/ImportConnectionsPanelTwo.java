@@ -20,6 +20,7 @@
 
 package org.executequery.gui.connections;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.ActionPanel;
 import org.underworldlabs.swing.ProgressBar;
 import org.underworldlabs.swing.ProgressBarFactory;
@@ -70,7 +71,7 @@ public class ImportConnectionsPanelTwo extends ActionPanel {
         gbc.gridwidth = 3;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(new JLabel("Exporting selections..."), gbc);
+        add(new JLabel(bundleString("ImportingSelections")), gbc);
         gbc.gridy++;
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -111,7 +112,7 @@ public class ImportConnectionsPanelTwo extends ActionPanel {
     public void start() {
 
         progressBar.start();
-        append("Importing ... ");
+        append(bundleString("Importing"));
     }
 
 }

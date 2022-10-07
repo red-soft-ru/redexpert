@@ -285,7 +285,7 @@ public class TableSelectionPanel extends ActionPanel
 
     private void handleDataSourceException(DataSourceException e) {
 
-        Log.error("Error during database object selection", e);
+        Log.error(Bundles.get("TableSelectionCombosGroup.error.selection-object"), e);
         throw new ApplicationException(e);
     }
 

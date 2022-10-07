@@ -2,7 +2,6 @@ package org.executequery.gui.browser.managment.tracemanager;
 
 
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
-//import sun.swing.DefaultLookup;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -10,6 +9,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 
 public class CustomTableCellRenderer extends JLabel implements TableCellRenderer {
@@ -24,7 +25,7 @@ public class CustomTableCellRenderer extends JLabel implements TableCellRenderer
     // These ivars will be made protected when their names are finalized.
     private Color unselectedForeground;
     private Color unselectedBackground;
-    private UIDefaults uiDefaults = new UIDefaults();
+    private final UIDefaults uiDefaults = new UIDefaults();
 
     /**
      * Creates a default table cell renderer.
@@ -183,6 +184,7 @@ public class CustomTableCellRenderer extends JLabel implements TableCellRenderer
             setBorder(getNoFocusBorder());
         }
 
+
         setValue(value);
 
         return this;
@@ -303,6 +305,9 @@ public class CustomTableCellRenderer extends JLabel implements TableCellRenderer
      * @see JLabel#setText
      */
     protected void setValue(Object value) {
+        if (value instanceof Long) {
+            value = NumberFormat.getInstance(new Locale("ru", "RU")).format(value);
+        }
         setText((value == null) ? "" : value.toString());
     }
 

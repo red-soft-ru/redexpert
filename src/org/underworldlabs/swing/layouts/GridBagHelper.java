@@ -32,6 +32,11 @@ public class GridBagHelper {
         return this;
     }
 
+    public GridBagHelper setDefaultsStatic() {
+        this.defaultConstraints = DEFAULT_CONSTRAINTS;
+        return this;
+    }
+
     public GridBagHelper defaults() {
         constraints.fill = defaultConstraints.fill;
         constraints.anchor = defaultConstraints.anchor;
@@ -42,6 +47,13 @@ public class GridBagHelper {
         constraints.insets = defaultConstraints.insets;
         constraints.ipadx = defaultConstraints.ipadx;
         constraints.ipadx = defaultConstraints.ipady;
+        return this;
+    }
+
+    public GridBagHelper fullDefaults() {
+        defaults();
+        constraints.gridx = defaultConstraints.gridx;
+        constraints.gridy = defaultConstraints.gridy;
         return this;
     }
 
@@ -278,7 +290,7 @@ public class GridBagHelper {
     }
 
     public GridBagHelper setLabelDefault() {
-        return setWidth(1).setHeight(1).setWeights(0, 0);
+        return setWidth(1).setHeight(1).setWeights(0, 0).fillNone();
     }
 
     public void insertEmptyRow(Container c, int height) {
@@ -335,27 +347,27 @@ public class GridBagHelper {
         addLabelFieldPair(panel, new JLabel(label), field, toolTip, newLine, spanX, fieldWidth, leftGap);
     }
 
-    public void addLabelFieldPair(JPanel panel, JLabel label,
+    public void addLabelFieldPair(JPanel panel, JComponent label,
                                   JComponent field, String toolTip) {
         addLabelFieldPair(panel, label, field, toolTip, true);
     }
 
-    public void addLabelFieldPair(JPanel panel, JLabel label,
+    public void addLabelFieldPair(JPanel panel, JComponent label,
                                   JComponent field, String toolTip, boolean newLine) {
         addLabelFieldPair(panel, label, field, toolTip, newLine, true);
     }
 
-    public void addLabelFieldPair(JPanel panel, JLabel label,
+    public void addLabelFieldPair(JPanel panel, JComponent label,
                                   JComponent field, String toolTip, boolean newLine, boolean spanX) {
         addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, 1);
     }
 
-    public void addLabelFieldPair(JPanel panel, JLabel label,
+    public void addLabelFieldPair(JPanel panel, JComponent label,
                                   JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth) {
         addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, fieldWidth, 10);
     }
 
-    public void addLabelFieldPair(JPanel panel, JLabel label,
+    public void addLabelFieldPair(JPanel panel, JComponent label,
                                   JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth, int leftGap) {
         if (newLine)
             nextRowFirstCol();

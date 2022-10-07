@@ -21,10 +21,10 @@
 package org.executequery.gui.resultset;
 
 import biz.redsoft.IFBClob;
-import org.apache.commons.lang.CharUtils;
 import org.executequery.Constants;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import java.io.ByteArrayInputStream;
@@ -37,7 +37,7 @@ import java.util.Objects;
 
 public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
-    private int displayLength;
+    private final int displayLength;
 
     private static final String CLOB_DATA = "<CLOB Data>";
 
@@ -64,7 +64,8 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
                 if (charset == null || Objects.equals(charset, CreateTableSQLSyntax.NONE))
                     dataAsText = new String(data);
                 else try {
-                    dataAsText = new String(data, charset);
+                    String encode = MiscUtils.getJavaCharsetFromSqlCharset(charset);
+                    dataAsText = new String(data, encode);
                 } catch (UnsupportedEncodingException e) {
                     Log.error("Error method loadTextData in class LobDataItemViewerPanel:", e);
                     dataAsText = new String(data);

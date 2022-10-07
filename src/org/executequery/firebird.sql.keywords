@@ -139,6 +139,7 @@ Firebird 2.5
     CALLER
     CHAR_TO_UUID
     COMMON
+    COMPUTED
     DATA
     FIRSTNAME
     GRANTED

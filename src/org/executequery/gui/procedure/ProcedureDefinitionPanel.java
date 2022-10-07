@@ -629,7 +629,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         }
 
 
-        ColumnData cd = SQLUtils.columnDataFromProcedureParameter(parameter, dc);
+        ColumnData cd = SQLUtils.columnDataFromProcedureParameter(parameter, dc, true);
         addRow(cd);
         table.setEditingRow(tableVector.size() - 1);
         _model.fireTableRowsUpdated(tableVector.size() - 1, tableVector.size() - 1);

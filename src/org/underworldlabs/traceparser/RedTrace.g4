@@ -3,15 +3,7 @@ grammar RedTrace;
 parse
 :event
 ;
-/*: ( event| error )* EOF
-;
-error
- : UNEXPECTED_CHAR
-   {
-     throw new RuntimeException("UNEXPECTED_CHAR=" + $UNEXPECTED_CHAR.text);
-   }
- ;*/
-//events
+
 event
 :trace_event
 |database_event
@@ -34,7 +26,7 @@ event
 ;
 
 trace_event
-:header_event SPACE type_trace_event end_line ID_SESSION SPACE name_session end_line database
+:header_event SPACE type_trace_event end_line id_session SPACE name_session end_line database
 ;
 
 database_event
@@ -51,8 +43,8 @@ statement_event
 :header_event SPACE type_statement_event end_line
  connection_info end_line
  (client_process_info end_line)?
- transaction_info ws
- id_statement end_line
+ transaction_info ws+
+ (id_statement end_line)?
 MINUSES end_line
 query_and_params
 ;
@@ -102,7 +94,7 @@ procedure_function_event
 :header_event SPACE type_procedure_event end_line
 connection_info end_line
 (client_process_info end_line)?
- transaction_info ws
+ transaction_info ws+
  procedure_info
 ;
 
@@ -178,7 +170,7 @@ connection_info end_line
 ;
 
 session_info:
-'Session ID:' SPACE ID end_line
+'Session ID:' SPACE id end_line
 'name:' SPACE name_session end_line
 'user:' SPACE username? end_line
 'date:' SPACE datetime end_line
@@ -266,8 +258,7 @@ type_trigger_event
  ;
 
 type_error_event
-: 'ERROR AT'
-| 'WARNING AT'
+: ('ERROR AT' | 'WARNING AT') (~('\n'))*
 ;
 
 type_sweep_event
@@ -283,17 +274,25 @@ header_event
 ;
 
 connection_info
-:begin_line database SPACE? '(' ID_CONNECTION ', '  username ':' rolename ', ' charset ', ' SPACE? (( protocol ':' client_address)|'<internal>') SPACE? ')'
+:begin_line database SPACE? '(' id_connection ', '  username ':' rolename ', ' charset ', ' SPACE? (( protocol ':' client_address)|'<internal>') SPACE? ')'
 ;
 
 query_and_params
 :query (end_line
- CARETS end_line
- not_query)?
+ CARETS)? end_line?
+ (plan end_line*)?
+ (params end_line+)?
+ (records_fetched end_line+)?
+ (memory_size_rule end_line+)?
+ (global_counters end_line+)?
+ (table_counters end_line+)?
+
 ;
 
 query
-:~CARETS*
+:~(CARETS
+|'records fetched'
+|'sorting memory usage: total: ')*
 ;
 
 oldest_interesting
@@ -320,19 +319,10 @@ next_transaction
 :any_name
 ;
 
-not_query
-:(plan end_line+)?
-(params end_line+)?
-(records_fetched end_line+)?
-(memory_size_rule end_line+)?
-(global_counters end_line+)?
-(table_counters end_line+)?
-;
-
 procedure_info
 :procedure_name ':' end_line
 (params end_line+)?
-('returns: ' return_value end_line+)?
+('returns:' (SPACE|end_line) return_value end_line+)?
 (records_fetched end_line+)?
 (memory_size_rule end_line+)?
 (global_counters end_line+)?
@@ -347,7 +337,8 @@ trigger_info:
 ;
 
 return_value
-:any_name
+:params
+|any_name
 |'"' path '"'
 ;
 
@@ -375,11 +366,11 @@ grantor
 ;
 
 attachment
-:'Attachment:' SPACE ID
+:'Attachment:' SPACE id
 ;
 
 transaction
-:'Transaction:' SPACE ID
+:'Transaction:' SPACE id
 ;
 
 object
@@ -400,15 +391,25 @@ plan
 ;
 
 params
-:(PARAM (~('\n'))+ end_line)+
+:parameter+
 ;
 
+parameter:
+param (((~('"'))+ ', ' str)|(~('\n')))
+;
+
+str
+:'"' (~'"\n')* '"\n'
+;
+
+
+
 records_fetched
-:ID SPACE 'records fetched' (SPACE 'without sorting')?
+:id SPACE 'records fetched' (SPACE 'without sorting')?
 ;
 
 transaction_info
-:'(' ID_TRANSACTION ', ' level_isolation ' | ' mode_of_block ' | ' mode_of_access ')'
+:'(' id_transaction ', ' level_isolation ' | ' mode_of_block ' | ' mode_of_access ')'
 ;
 
 level_isolation
@@ -421,7 +422,7 @@ mode_of_block
 ;
 
 time_wait
-:ID
+:id
 ;
 
 mode_of_access
@@ -446,7 +447,7 @@ size_cache SPACE 'bytes'
 ;
 
 size_cache
-:ID
+:id
 ;
 
 global_counters
@@ -454,7 +455,7 @@ global_counters
 ;
 
 id_statement
-:'Statement' SPACE ID ':'
+:'Statement' SPACE id ':'
 ;
 
 sended_data
@@ -470,65 +471,30 @@ error_message
 ;
 
 time_execution
-:ID
+:id
 ;
 
 reads
-:ID
+:id
 ;
 
 writes
-:ID
+:id
 ;
 
 fetches
-:ID
+:id
 ;
 
 marks
-:ID
+:id
 ;
 
 table_counters : 'Table' (SPACE 'Natural')? (SPACE 'Index')? (SPACE 'Update')?
- (SPACE 'Insert')? (SPACE 'Delete')? (SPACE 'Backout')? (SPACE 'Purge')? (SPACE 'Expunge')? end_line
+ (SPACE 'Insert')? (SPACE 'Delete')? (SPACE 'Backout')? (SPACE 'Purge')? (SPACE 'Expunge')?
+ (SPACE 'Lock')? (SPACE 'Wait')? (SPACE 'Conflict')? (SPACE 'BVersion')? (SPACE 'Fragment')? (SPACE 'Refetch')? end_line
  ('*')+ end_line
- (any_name SPACE ID (SPACE ID)* SPACE? end_line)+;
-
-table
-:any_name
-;
-
-natural
-:ID
-;
-
-index
-:ID
-;
-
-update
-:ID
-;
-
-insert
-:ID
-;
-
-delete
-:ID
-;
-
-backout
-:ID
-;
-
-purge
-:ID
-;
-
-expunge
-:ID
-;
+ (any_name SPACE id (SPACE id)* SPACE? end_line)+;
 
 options_service
 : .*?
@@ -543,21 +509,17 @@ client_process_info
 ;
 
 id_service
-:'Service' SPACE ID
+:'Service' SPACE id
 ;
 
 client_process
 :path (SPACE path)*
-|client_process 'IP:' client_process
-|client_process ':[' client_process
+|client_process ':' client_process
 ;
 id_client_process
-:ID
+:id
 ;
-client_address
-:CLIENT_ADDRESS
-|any_name
-;
+
 
 protocol
 :any_name
@@ -574,17 +536,13 @@ rolename
 charset
 :any_name
 ;
-any_name
-:ID
-|ANY_NAME
-;
 
 id_process
-:ID
+:id
 ;
 
 id_thread
-:ID
+:id
 ;
 
 name_session
@@ -596,9 +554,7 @@ database
 |database SPACE path
 ;
 
-path
-:PATH
-|any_name;
+
 
 
 timestamp
@@ -629,31 +585,28 @@ CARETS
 :('^')+
 ;
 
-PARAM
-:'param' ID ' = '
+param
+:'param' id ' = '
 ;
 
-ID_TRANSACTION
-:'TRA_' ID
+id_transaction
+:'TRA_' id
 ;
 
-ID_CONNECTION
-:'ATT_' ID
+id_connection
+:'ATT_' id
 ;
 
-ID_SESSION
-:'SESSION_' ID
+id_session
+:'SESSION_' id
 ;
 
-SIMPLE_ID
-:'ID_' ID
+client_address
+:ip_address ('/' (DIGIT|IP_SEG)+)?
+|any_name
 ;
 
-CLIENT_ADDRESS
-:IP_ADDRESS ('/' DIGIT+)?
-;
-
-IP_ADDRESS
+ip_address
 :IP_SEG '.' IP_SEG '.' IP_SEG '.' IP_SEG
 ;
 
@@ -672,7 +625,7 @@ DATE
 fragment FOUR_DIGIT
 :TWO_DIGIT TWO_DIGIT;
 
-fragment IP_SEG
+IP_SEG
 :DIGIT
 |TWO_DIGIT
 |TWO_DIGIT DIGIT
@@ -682,54 +635,32 @@ fragment TWO_DIGIT
 :DIGIT DIGIT
 ;
 
-ID
-:(LETTER|DIGIT)+
+id
+:(LETTER|DIGIT|IP_SEG)+
 ;
 
-ANY_NAME
-:(LETTER|DIGIT|'_'|'$'|'@'|'.')+
+any_name
+:(LETTER|DIGIT|'_'|'$'|'@'|'.'|IP_SEG)+
 ;
 
 MINUSES
 :('-')+
 ;
 
-PATH
-:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|EQUALITY|QUESTION)+
+path
+:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|'='|'?'|'-'|'('|')'|IP_SEG|'as')+
 ;
 
 
 
-fragment DIGIT:[0-9];
+DIGIT:[0-9];
 
-fragment LETTER:[a-zA-Z];
+LETTER:[a-zA-Z];
 
-fragment CYRILLIC_LETTER:[\u0410-\u042F\u0430-\u044F];
+CYRILLIC_LETTER:[\u0410-\u042F\u0430-\u044F];
 
 SPACE:(' ')+;
 
 TAB:
 '\t'
 ;
-
-EQUALITY:
-'='
-;
-
-QUESTION:
-'?'
-;
-
-
-
-
-
-
-
-
-
-
-
-
-
-

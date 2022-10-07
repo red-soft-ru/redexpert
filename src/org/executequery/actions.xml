@@ -699,6 +699,11 @@
             large-icon="/org/executequery/icons/ExportDelimited24.png"
             execute-class="org.executequery.actions.databasecommands.ExportResultSetCommand"/>
 
+    <action id="import-data-from-file-command"
+            name="Import data from file"
+            description="Import data into database from local files (*.csv, *.xlsx, ...)"
+            execute-class="org.executequery.actions.databasecommands.ImportDataFromFileCommand"/>
+
     <action id="execute-sql-script-command"
             name="Execute SQL Script"
             mnemonic="S"

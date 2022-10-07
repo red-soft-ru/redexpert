@@ -3,6 +3,7 @@ package org.executequery.gui.table;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTablespace;
 import org.executequery.databaseobjects.impl.TableColumnConstraint;
@@ -161,17 +162,18 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
 
         fieldConstraint = new ListSelectionPanel();
         fieldConstraint.createAvailableList(getColumnNamesFromColumns(table.getColumns()));
-        List<String> tables = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]);
+        List<NamedObject> tables = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]);
         DynamicComboBoxModel referenceTableModel = new DynamicComboBoxModel();
         referenceTableModel.setElements(tables);
         referenceTable = new JComboBox(referenceTableModel);
         referenceColumn = new ListSelectionPanel();
-        referenceColumn.createAvailableList(metaData.getColumnNames((String) referenceTable.getSelectedItem(), null));
+        referenceColumn.createAvailableList(getColumnNamesFromColumns(((AbstractTableObject) referenceTable.getSelectedItem()).getColumns()));
+
         referenceTable.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    referenceColumn.createAvailableList(metaData.getColumnNames((String) referenceTable.getSelectedItem(), null));
+                    referenceColumn.createAvailableList(getColumnNamesFromColumns(((AbstractTableObject) referenceTable.getSelectedItem()).getColumns()));
 
                 }
             }

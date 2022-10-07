@@ -24,7 +24,11 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
+import org.executequery.log.Log;
+import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import java.util.List;
 
@@ -48,32 +52,119 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
     public String getCreateSQLText() throws DataSourceException {
 
-        String sql = getSource();
+        String fields = null;
 
-        StringBuilder sb = new StringBuilder();
+        try {
 
-        List<DatabaseColumn> columns = this.getColumns();
+            List<DatabaseColumn> columns = getColumns();
+            if (columns != null) {
+                fields = "";
 
-        sb.append("CREATE OR ALTER VIEW ");
-        sb.append("\"");
-        sb.append(getName());
-        sb.append("\"");
-        sb.append("(\n");
+                for (int i = 0; i < columns.size(); i++) {
+                    fields += MiscUtils.getFormattedObject(columns.get(i).getName());
+                    if (i != columns.size() - 1)
+                        fields += ", ";
+                }
+            }
 
-        for (int i = 0; i < columns.size(); i++) {
-            sb.append("\t");
-            sb.append("\"");
-            sb.append(columns.get(i).getName());
-            sb.append("\"");
-            if (i != columns.size() - 1)
-                sb.append(",\n");
+        } catch (Exception ignored) { }
+
+        return getFormatter().format(SQLUtils.generateCreateView(getName(), fields, getSource(),
+                getRemarks(), getDatabaseMajorVersion(), false));
+
+    }
+
+    public String getSelectSQLText() {
+
+        String fields = "";
+
+        try {
+
+            List<DatabaseColumn> columns = getColumns();
+
+            for (int i = 0, n = columns.size(); i < n; i++) {
+
+                fields += columns.get(i).getName();
+                if (i < n - 1)
+                    fields += ", ";
+
+            }
+
+        } catch (DataSourceException e) {
+
+            fields = "*";
+            e.printStackTrace();
         }
-        sb.append(")\n");
-        sb.append("AS\n");
-        sb.append(sql);
 
-        sb.append("\n");
-        return sb.toString();
+        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields));
+    }
+
+    public String getInsertSQLText() {
+
+        String fields = "";
+        String values = "";
+
+        try {
+
+            List<DatabaseColumn> columns = getColumns();
+
+            for (int i = 0, n = columns.size(); i < n; i++) {
+
+                fields += columns.get(i).getName();
+                values += ":" + toCamelCase(columns.get(i).getName());
+
+                if (i < n - 1) {
+
+                    fields += ", ";
+                    values += ", ";
+                }
+
+            }
+
+        } catch (DataSourceException e) {
+
+            fields = "_fields_";
+            values = "_values_";
+            e.printStackTrace();
+        }
+
+        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
+
+    }
+
+    public String getUpdateSQLText() {
+
+        String settings = "";
+
+        try {
+
+            List<DatabaseColumn> columns = getColumns();
+
+            for (int i = 0, n = columns.size(); i < n; i++) {
+
+                settings += columns.get(i).getName() + " = :" +
+                        toCamelCase(columns.get(i).getName());
+                if (i < n - 1)
+                    settings += ", ";
+
+            }
+
+        } catch (DataSourceException e) {
+
+            settings = "_oldValue_ = _newValue_";
+            e.printStackTrace();
+        }
+
+        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings));
+
+    }
+
+    TokenizingFormatter formatter;
+
+    protected TokenizingFormatter getFormatter() {
+        if (formatter == null)
+            formatter = new TokenizingFormatter();
+        return formatter;
     }
 
     @Override

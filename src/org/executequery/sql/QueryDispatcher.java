@@ -709,9 +709,9 @@ public class QueryDispatcher {
 
                         printPlan(rset);
 
-                        setResultSet(rset, query.getOriginalQuery());
-
                         printExecutionPlan(before, after);
+
+                        setResultSet(rset, query.getOriginalQuery());
                     }
 
                     end = System.currentTimeMillis();
@@ -1504,7 +1504,7 @@ public class QueryDispatcher {
         PreparedStatement statement = prepareStatementWithParameters(sql, variables.toString());
         SqlStatementResult result = querySender.execute(QueryTypes.CREATE_OBJECT, statement);
 
-        if (result.getUpdateCount() == -1) {
+        if (result.getUpdateCount() == -1 || result.isException()) {
 
             setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
             setStatusMessage(ERROR_EXECUTING);

@@ -14,7 +14,7 @@
         <groupId>org.executequery</groupId>
         <artifactId>RedExpert-parent</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>2022.02</version>
+        <version>2022.09</version>
     </parent>
 
     <dependencies>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
-            <version>4.7</version>
+            <version>${antlr.version}</version>
         </dependency>
 
         <dependency>
@@ -137,6 +137,12 @@
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
             <version>5.5.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.csvjdbc</groupId>
+            <artifactId>csvjdbc</artifactId>
+            <version>1.0.40</version>
         </dependency>
 
         <dependency>

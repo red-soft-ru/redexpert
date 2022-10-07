@@ -20,10 +20,7 @@
 
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseObjectElement;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.underworldlabs.jdbc.DataSourceException;
 
 /**
@@ -101,7 +98,7 @@ public interface ColumnConstraint extends DatabaseObjectElement {
      *
      * @return the table
      */
-    DatabaseTable getTable();
+    DatabaseTableObject getTable();
 
     void setTable(DatabaseTable table);
 
@@ -118,6 +115,8 @@ public interface ColumnConstraint extends DatabaseObjectElement {
      * @return the column name
      */
     String getColumnName();
+    String getColumnDisplayList();
+    String getReferenceColumnDisplayList();
 
     /**
      * Returns the table column parent to this object.
@@ -177,6 +176,9 @@ public interface ColumnConstraint extends DatabaseObjectElement {
     NamedObject getParent();
 
     void setColumn(DatabaseTableColumn databaseTableColumn);
+
+    void addColumnToDisplayList(DatabaseTableColumn column);
+    void addReferenceColumnToDisplayList(DatabaseTableColumn column);
 
     /**
      * Detaches this constraint from the owner column

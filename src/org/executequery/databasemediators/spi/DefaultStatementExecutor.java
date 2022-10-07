@@ -33,6 +33,7 @@ import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.editor.autocomplete.Parameter;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -247,7 +248,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
             } else {
 
-                statementResult.setMessage("Invalid table name");
+                statementResult.setMessage(bundleString("table.invalid-name"));
             }
 
         } catch (SQLException e) {
@@ -276,8 +277,8 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
         if (isUseDatabaseConnection() && (databaseConnection == null || !databaseConnection.isConnected())) {
 
-            statementResult.setMessage("Not Connected");
-            statementResult.setOtherException(new UndeclaredThrowableException(new Throwable(), "Not Connected"));
+            statementResult.setMessage(Bundles.get("ConnectionPanel.status.NotConnected"));
+            statementResult.setOtherException(new UndeclaredThrowableException(new Throwable(), Bundles.get("ConnectionPanel.status.NotConnected")));
             return false;
         }
 
@@ -1931,6 +1932,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
     public void setCloseConnectionAfterQuery(boolean closeConnectionAfterQuery) {
         this.closeConnectionAfterQuery = closeConnectionAfterQuery;
+    }
+
+    public String bundleString(String key) {
+        return Bundles.get(getClass(), key);
     }
 }
 

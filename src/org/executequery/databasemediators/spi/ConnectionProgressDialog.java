@@ -110,7 +110,7 @@ public class ConnectionProgressDialog extends JDialog
 
     public void updateLabel(String name) {
 
-        connectionNameLabel.setText("Establishing connection to " + name);
+        connectionNameLabel.setText(bundleString("connectionLabel") + name);
         Runnable update = new Runnable() {
             public void run() {
                 Dimension dim = connectionNameLabel.getSize();
@@ -122,7 +122,7 @@ public class ConnectionProgressDialog extends JDialog
 
     public void actionPerformed(ActionEvent e) {
 
-        Log.info("Connection cancelled");
+        Log.info(bundleString("connection-canceled"));
 
         connectonBuilder.cancel();
         dispose();
@@ -139,6 +139,9 @@ public class ConnectionProgressDialog extends JDialog
         super.dispose();
     }
 
+    public String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
 
     class CancelButton extends JButton {
 

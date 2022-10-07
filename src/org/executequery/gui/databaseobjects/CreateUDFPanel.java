@@ -65,9 +65,9 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         cstringLengthField = new NumberTextField();
         cstringLengthField.setValue(0);
         parametersPanel = new UDFDefinitionPanel();
-        parametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        parametersPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         returnsType = new ColumnData(connection);
-        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), returnsType, false);
+        selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(), connection.getIntDataTypesArray(), returnsType, false);
 
         parameterBox.addActionListener(actionEvent -> {
             parameterBoxChanged();

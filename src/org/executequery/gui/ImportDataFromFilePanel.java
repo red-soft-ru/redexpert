@@ -51,6 +51,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     public static final String TITLE = bundledString("Title");
     public static final String FRAME_ICON = "ImportDelimited16.png";
 
+    private static final int PREVIEW_ROWS_COUNT = 50;
+    private static final int MIN_COLUMN_WIDTH = 100;
+    private static final String NOTHING_HEADER = "NOTHING";
+
+
     // ----- main components of this panel -----
 
     private JComboBox connectionsCombo; //target database
@@ -92,8 +97,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private String pathToFile;
     private String sourceFileName;
     private ArrayList<String> headersOfSourceArray;
-    private String nothingHeaderOfMappingTable;
-    private int previewRowsCount;
     private DefaultProgressDialog progressDialog;
 
     public ImportDataFromFilePanel() {
@@ -119,9 +122,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         String[] timestampDelimiters = {bundledString("SelectTimestampDelimiterFormat"),
                 "\"spase\"", "_", "T"};
-
-        nothingHeaderOfMappingTable = "NOTHING";
-        previewRowsCount = 50;
 
         // ---------- comboBoxes ----------
 
@@ -167,8 +167,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         dataPreviewTableModel = new DefaultTableModel();
         dataPreviewTable = new JTable(dataPreviewTableModel);
-
-        dataPreviewTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
         // ---------- column mapping table ----------
 
@@ -433,7 +431,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         // ----------- creating source comboBox -----------
 
         JComboBox sourceComboBox = new JComboBox();
-        sourceComboBox.addItem(nothingHeaderOfMappingTable);
+        sourceComboBox.addItem(NOTHING_HEADER);
 
         for (String tempHeader : headersOfSourceArray) {
 
@@ -461,10 +459,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     public void startImport() {
 
-        if (!startImportAllowed()) {
-
+        if (!startImportAllowed())
             return;
-        }
 
         Log.info("ImportDataFromFilePanel: import process started...");
 
@@ -489,7 +485,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         for (int i = 0; i < dataFromTableVector.size(); i++) {
 
-            if (dataFromTableVector.get(i).get(2) != nothingHeaderOfMappingTable) {
+            if (dataFromTableVector.get(i).get(2) != NOTHING_HEADER && dataFromTableVector.get(i).get(2) != null) {
 
                 targetColumnList.append(MiscUtils.getFormattedObject(dataFromTableVector.get(i).get(0).toString()));
                 sourceColumnList.append(MiscUtils.getFormattedObject(dataFromTableVector.get(i).get(2).toString()));
@@ -827,14 +823,19 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             // ----------- generating columns dataPreviewTableModel -----------
 
-            for (String tempHeader : headersOfSourceArray) {
-
+            for (String tempHeader : headersOfSourceArray)
                 dataPreviewTableModel.addColumn(tempHeader);
-            }
+            for (String tempHeader : headersOfSourceArray)
+                dataPreviewTable.getColumn(tempHeader).setMinWidth(MIN_COLUMN_WIDTH);
+
+            if (headersOfSourceArray.size() < 6)
+                dataPreviewTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            else
+                dataPreviewTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
             // ----------- filling dataPreviewTableModel -----------
 
-            for (int i = 0; i < previewRowsCount; i++) {
+            for (int i = 0; i < PREVIEW_ROWS_COUNT; i++) {
 
                 dataPreviewTableModel.addRow(readData[i].split(
                         Objects.requireNonNull(delimiterCombo.getSelectedItem()).toString()));
@@ -859,7 +860,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             headersOfSourceArray.clear();
         }
 
-        String[] readData = new String[previewRowsCount];
+        String[] readData = new String[PREVIEW_ROWS_COUNT];
 
         try {
 
@@ -868,7 +869,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             String firstRowFromSource = "";
 
-            for (int i = 0; i < previewRowsCount; i++) {
+            for (int i = 0; i < PREVIEW_ROWS_COUNT; i++) {
 
                 if (scan.hasNextLine()) {
 
@@ -1040,26 +1041,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private boolean startImportAllowed() {
 
-        if (!fillMappingTableAllowed(true)) {
+        if (!fillMappingTableAllowed(true))
             return false;
-        }
 
-        if (isEraseDatabase.isSelected()) {
-
+        if (isEraseDatabase.isSelected())
             eraseDatabaseTable();
-        }
-
-        Vector<Vector> tableData = columnMappingTableModel.getDataVector();
-
-        for (int i = 0; i < tableData.size(); i++) {
-
-            if (tableData.get(i).get(2) == null) {
-
-                GUIUtilities.displayWarningMessage(
-                        bundledString("NoSourceSelectedMessage") + (i + 1));
-                return false;
-            }
-        }
 
         return true;
     }

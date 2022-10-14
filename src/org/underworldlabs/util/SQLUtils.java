@@ -62,11 +62,9 @@ public final class SQLUtils {
                 primary_flag = true;
             }
 
-/*
-            if (!MiscUtils.isNull(cd.getDescription())) {
-                //descriptions.add(cd.getFormattedColumnName() + " is '" + cd.getDescription() + "'");
-            }
-*/
+//            if (!MiscUtils.isNull(cd.getDescription())) {
+//                descriptions.add(cd.getFormattedColumnName() + " is '" + cd.getDescription() + "'");
+//            }
 
             sqlText.append(generateDefinitionColumn(cd));
             if (i != k - 1)
@@ -911,7 +909,7 @@ public final class SQLUtils {
 
         StringBuilder sb = new StringBuilder();
         sb.append("ALTER DOMAIN ").append(thisDomainData.getFormattedColumnName()).append("\n");
-        String begin = sb.toString();
+        String noChangesCheckString = sb.toString();
 
         if (!thisDomainData.getColumnName().contentEquals(domainData.getColumnName()))
             sb.append("TO ").append(domainData.getFormattedColumnName()).append("\n");
@@ -949,25 +947,52 @@ public final class SQLUtils {
 
         }
 
-        if (!MiscUtils.compareStrings(thisDomainData.getFormattedDomainDataType(), domainData.getFormattedDataType()))
-            sb.append("TYPE ").append(domainData.getFormattedDataType());
+        if (!MiscUtils.compareStrings(thisDomainData.getDomainTypeName(), domainData.getDomainTypeName()))
+            sb.append("TYPE ").append(domainData.getDomainTypeName());
 
-        sb.append(";");
+        if (noChangesCheckString.equals(sb.toString()))
+            sb = new StringBuilder();
+        else
+            sb.append(";\n");
 
-        if (MiscUtils.compareStrings(thisDomainData.getDescription(), domainData.getDescription())) {
+        return sb.toString();
+    }
 
-            sb.append("\nCOMMENT ON DOMAIN ").append(domainData.getFormattedColumnName()).append(" IS ");
-            if (!MiscUtils.isNull(domainData.getDescription()))
-                sb.append("'").append(domainData.getDescription()).append("'");
-            else
-                sb.append("NULL");
-            sb.append(";");
+    public static String generateAlterTable() {
+        return null;
+    }
 
-        }
+    public static String generateAlterUDF(String name, String newEntryPoint, String newModuleName) {
 
-        if (sb.toString().contentEquals(begin))
-            return "";
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER EXTERNAL FUNCTION ").append(format(name));
+        String noChangesCheckString = sb.toString();
 
+        if (newEntryPoint != null)
+            sb.append("\nENTRY_POINT '").append(newEntryPoint).append("'");
+        if (newModuleName != null)
+            sb.append("\nMODULE_NAME '").append(newModuleName).append("'");
+
+        if (noChangesCheckString.equals(sb.toString()))
+            sb = new StringBuilder();
+        else
+            sb.append(";\n");
+
+        return sb.toString();
+    }
+
+    public static String generateAlterIndex(String name, boolean active) {
+        StringBuilder sb = new StringBuilder();
+        String activeString = active ? " ACTIVE" : " INACTIVE";
+        sb.append("ALTER INDEX ").append(format(name));
+        sb.append(activeString).append(";\n");
+        return sb.toString();
+    }
+
+    public static String generateAlterTablespace(String name, String file) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER TABLESPACE ").append(format(name));
+        sb.append(" SET FILE '").append(file).append("';\n");
         return sb.toString();
     }
 

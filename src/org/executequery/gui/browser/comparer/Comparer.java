@@ -123,6 +123,9 @@ public class Comparer {
         if (alterObjects.size() < 1)
             return;
 
+        if (Objects.equals(Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), "ROLE"))
+            return;
+
         String header = MessageFormat.format(
                 "\n/* ----- Altering {0} ----- */\n",
                 Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
@@ -192,98 +195,6 @@ public class Comparer {
         }
 
         return alterObjects;
-    }
-
-    // ---
-
-    public void computedField(boolean permission) {
-        if (permission) {
-            script.add("/* Filling computed fields */\n\n");
-
-            for (ArrayList<String> cf : table.cf_fill) {
-                script.add(table.fillTables(cf.get(0), cf.get(1)));
-            }
-
-            table.cf_fill.clear();
-        }
-    }
-
-    public void fillProcedures(boolean permission) {
-        if (permission) {
-            script.add("/* Filling procedures code */\n\n");
-
-            for (String p : procedure.procToFill) {
-
-                script.add(procedure.fill(p));
-            }
-
-            procedure.procToFill.clear();
-        }
-    }
-
-    public void fillViews(boolean permission) {
-        if (permission) {
-            script.add("/* Filling views code */\n\n");
-
-            for (String v : view.v_fill) {
-
-                script.add(view.fill(v));
-            }
-
-            view.v_fill.clear();
-        }
-    }
-
-    public void retViews(boolean permission) {
-        if (permission) {
-            script.add("/* Creating views */\n\n");
-
-            for (String v : view.v_create) {
-
-                script.add(view.create(v));
-            }
-
-            view.v_create.clear();
-        }
-    }
-
-    public void fillTriggers(boolean permission) {
-        if (permission) {
-            script.add("/* Altering triggers */\n\n");
-
-            for (String t : trigger.triggerToFill) {
-
-                script.add(trigger.create(t));
-            }
-
-            trigger.triggerToFill.clear();
-        }
-    }
-
-    public void fillIndices(boolean permission) {
-        if (permission) {
-            script.add("/* Altering indices */\n\n");
-
-            for (String i : index.indicesToFill) {
-
-                script.add(index.create(i));
-            }
-
-            index.indicesToFill.clear();
-        }
-    }
-
-    public void recreateChecks(boolean permission) {
-        if (permission) {
-            script.add("/* Recreating Checks */\n\n");
-
-            for (String c : constraint.checkstoRecreate) {
-
-                script.add(constraint.createCheck(c));
-            }
-
-            constraint.checkstoRecreate.clear();
-        }
     }
 
     // ---

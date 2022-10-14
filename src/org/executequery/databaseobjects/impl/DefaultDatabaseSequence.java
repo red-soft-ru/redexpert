@@ -166,7 +166,9 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
+        return databaseObject.getCreateFullSQLText().
+                replaceFirst("CREATE OR ", "").
+                replaceFirst("CREATE", "ALTER");
     }
 
     @Override

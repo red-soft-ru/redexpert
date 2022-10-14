@@ -959,7 +959,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) {
-        return databaseObject.getCompareCreateSQL().replaceFirst("CREATE", "CREATE OR ALTER");
+        return null;
     }
 
     public String getDropSQLText(boolean cascadeConstraints) {

@@ -26,7 +26,6 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     public DefaultTemporaryDatabaseTable(DatabaseObject object) {
 
         super(object, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
-
     }
 
     public DefaultTemporaryDatabaseTable(DatabaseHost host) {
@@ -34,6 +33,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         super(host, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
     }
 
+    @Override
     public String getCreateFullSQLText() throws DataSourceException {
 
         DefaultStatementExecutor querySender = new DefaultStatementExecutor();
@@ -78,14 +78,24 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
                 typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropRequest("GLOBAL TEMPORARY TABLE", getName());
+    }
+
+    @Override
+    public String getAlterSQL(AbstractDatabaseObject databaseObject) {
+        return null;
+    }
+
     public int getType() {
         return GLOBAL_TEMPORARY;
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         return NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY];
@@ -105,8 +115,4 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
             return getCreateFullSQLText();
     }
 
-    @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("GLOBAL TEMPORARY TABLE", getName());
-    }
 }

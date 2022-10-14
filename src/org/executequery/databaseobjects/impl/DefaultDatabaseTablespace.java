@@ -152,7 +152,6 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
     }
 
     public String getCreateFullSQLText() throws DataSourceException {
-
         return SQLUtils.generateCreateTablespace(getName(), getFileName());
     }
 
@@ -168,7 +167,8 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
+        DefaultDatabaseTablespace comparingTablespace = (DefaultDatabaseTablespace) databaseObject;
+        return SQLUtils.generateAlterTablespace(getName(), comparingTablespace.getFileName());
     }
 
     @Override

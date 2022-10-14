@@ -420,7 +420,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
+        DefaultDatabaseUDF comparingUDF = (DefaultDatabaseUDF) databaseObject;
+        return SQLUtils.generateAlterUDF(getName(), comparingUDF.getEntryPoint(), comparingUDF.getModuleName());
     }
 
     @Override
@@ -434,7 +435,6 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {}
 
-    }
 }

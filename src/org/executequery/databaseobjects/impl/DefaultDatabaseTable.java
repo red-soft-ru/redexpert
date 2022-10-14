@@ -80,8 +80,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     private String tablespace;
 
-    private List<ColumnData> listCD;
-    private List<org.executequery.gui.browser.ColumnConstraint> listCC;
+    protected List<ColumnData> listCD;
+    protected List<org.executequery.gui.browser.ColumnConstraint> listCC;
 
     public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
 
@@ -959,7 +959,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) {
-        return null;
+        DefaultDatabaseTable comparingTable = (DefaultDatabaseTable) databaseObject;
+        return getDropSQL() + comparingTable.getCompareCreateSQL();
     }
 
     public String getDropSQLText(boolean cascadeConstraints) {

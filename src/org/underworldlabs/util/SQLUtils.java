@@ -160,9 +160,12 @@ public final class SQLUtils {
     }
 
     public static String generateCreateTrigger(
-            String name, String tableName, boolean activity, String type, int sequence, String sourceCode) {
+            String name, String tableName, boolean activity, String type, int sequence, String sourceCode, boolean setTerm) {
 
         StringBuilder sb = new StringBuilder();
+
+        if (setTerm)
+            sb.append("SET TERM #;\n");
 
         sb.append("CREATE OR ALTER TRIGGER ");
         sb.append(format(name));
@@ -172,6 +175,8 @@ public final class SQLUtils {
         sb.append(" ").append(type).append(" POSITION ").append(sequence).append("\n");
         if (sourceCode != null)
             sb.append(sourceCode);
+        if (setTerm)
+            sb.append("#\nSET TERM ;#");
         sb.append("\n");
 
         return sb.toString();
@@ -397,15 +402,15 @@ public final class SQLUtils {
 
     public static String generateCreateProcedure(
             String name, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters,
-            Vector<ColumnData> variables, String procedureBody, String comment) {
+            Vector<ColumnData> variables, String procedureBody, String comment, boolean setTerm) {
 
         StringBuilder sb = new StringBuilder();
         sb.append(formattedParameters(variables, true));
         sb.append(procedureBody);
-        return generateCreateProcedure(name, inputParameters, outputParameters, sb.toString(), comment);
+        return generateCreateProcedure(name, inputParameters, outputParameters, sb.toString(), comment, setTerm);
     }
     public static String generateCreateProcedure(
-            String name, List<ProcedureParameter> parameters, String fullProcedureBody, String comment, DatabaseConnection dc) {
+            String name, List<ProcedureParameter> parameters, String fullProcedureBody, String comment, DatabaseConnection dc, boolean setTerm) {
 
         Vector<ColumnData> inputs = new Vector<>();
         Vector<ColumnData> outputs = new Vector<>();
@@ -418,12 +423,16 @@ public final class SQLUtils {
                 outputs.add(cd);
         }
 
-        return generateCreateProcedure(name, inputs, outputs, fullProcedureBody, comment);
+        return generateCreateProcedure(name, inputs, outputs, fullProcedureBody, comment, setTerm);
     }
     public static String generateCreateProcedure(
-            String name, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters, String fullProcedureBody, String comment) {
+            String name, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters,
+            String fullProcedureBody, String comment, boolean setTerm) {
 
         StringBuilder sb = new StringBuilder();
+
+        if (setTerm)
+            sb.append("SET TERM #;\n");
 
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE]));
 
@@ -435,6 +444,8 @@ public final class SQLUtils {
         }
         sb.append(generateSQLBody(fullProcedureBody));
 
+        if (setTerm)
+            sb.append("#\nSET TERM ;#");
         sb.append("\n");
 
         // add procedure description
@@ -951,15 +962,8 @@ public final class SQLUtils {
             sb.append("TYPE ").append(domainData.getDomainTypeName());
 
         if (noChangesCheckString.equals(sb.toString()))
-            sb = new StringBuilder();
-        else
-            sb.append(";\n");
-
-        return sb.toString();
-    }
-
-    public static String generateAlterTable() {
-        return null;
+            return "";
+        return sb.append(";\n").toString();
     }
 
     public static String generateAlterUDF(String name, String newEntryPoint, String newModuleName) {
@@ -974,11 +978,8 @@ public final class SQLUtils {
             sb.append("\nMODULE_NAME '").append(newModuleName).append("'");
 
         if (noChangesCheckString.equals(sb.toString()))
-            sb = new StringBuilder();
-        else
-            sb.append(";\n");
-
-        return sb.toString();
+            return "";
+        return sb.append(";\n").toString();
     }
 
     public static String generateAlterIndex(String name, boolean active) {

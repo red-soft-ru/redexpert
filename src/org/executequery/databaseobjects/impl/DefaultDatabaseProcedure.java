@@ -79,12 +79,16 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     public String getCreateFullSQLText() {
-        return SQLUtils.generateCreateProcedure(getName(), getParameters(), getProcedureSourceCode(), getRemarks(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateProcedure(
+                getName(), getParameters(), getProcedureSourceCode(),
+                getRemarks(), getHost().getDatabaseConnection(), false);
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateFullSQLText();
+        return SQLUtils.generateCreateProcedure(
+                getName(), getParameters(), getProcedureSourceCode(),
+                getRemarks(), getHost().getDatabaseConnection(), true);
     }
 
     @Override

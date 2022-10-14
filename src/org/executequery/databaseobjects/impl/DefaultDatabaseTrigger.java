@@ -389,12 +389,16 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
 
     @Override
     public String getCreateFullSQLText() {
-        return SQLUtils.generateCreateTrigger(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(), getTriggerSequence(), getTriggerSourceCode());
+        return SQLUtils.generateCreateTrigger(
+                getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
+                getTriggerSequence(), getTriggerSourceCode(), false);
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateFullSQLText();
+        return SQLUtils.generateCreateTrigger(
+                getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
+                getTriggerSequence(), getTriggerSourceCode(), true);
     }
 
     @Override

@@ -85,7 +85,8 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) {
-        return null;
+        DefaultTemporaryDatabaseTable comparingTable = (DefaultTemporaryDatabaseTable) databaseObject;
+        return getDropSQL() + comparingTable.getCompareCreateSQL();
     }
 
     public int getType() {
@@ -103,7 +104,6 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     @Override
     public boolean hasSQLDefinition() {
-
         return true;
     }
 

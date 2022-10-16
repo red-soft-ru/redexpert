@@ -960,7 +960,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultDatabaseTable comparingTable = (DefaultDatabaseTable) databaseObject;
-        return getDropSQL() + comparingTable.getCompareCreateSQL();
+        return SQLUtils.generateAlterTable(this, comparingTable, false, Comparer.TABLE_CONSTRAINTS_NEED);
     }
 
     public String getDropSQLText(boolean cascadeConstraints) {

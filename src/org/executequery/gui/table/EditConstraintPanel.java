@@ -437,7 +437,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
             cc.setName(generateName());
         }*/
         sb.append("ADD  ");
-        sb.append(SQLUtils.generateDefinitionColumnConstraint(cc).trim().substring(1).trim());
+        sb.append(SQLUtils.generateDefinitionColumnConstraint(cc, true).trim().substring(1).trim());
         return sb.toString();
     }
 

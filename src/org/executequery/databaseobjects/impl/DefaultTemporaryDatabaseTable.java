@@ -86,7 +86,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultTemporaryDatabaseTable comparingTable = (DefaultTemporaryDatabaseTable) databaseObject;
-        return getDropSQL() + comparingTable.getCompareCreateSQL();
+        return SQLUtils.generateAlterTable(this, comparingTable, true, Comparer.TABLE_CONSTRAINTS_NEED);
     }
 
     public int getType() {

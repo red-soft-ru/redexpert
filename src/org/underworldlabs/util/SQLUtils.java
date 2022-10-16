@@ -4,6 +4,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.browser.ColumnConstraint;
@@ -66,7 +67,7 @@ public final class SQLUtils {
 //                descriptions.add(cd.getFormattedColumnName() + " is '" + cd.getDescription() + "'");
 //            }
 
-            sqlText.append(generateDefinitionColumn(cd));
+            sqlText.append(generateDefinitionColumn(cd, true));
             if (i != k - 1)
                 sqlText.append(COMMA);
         }
@@ -94,7 +95,7 @@ public final class SQLUtils {
 
         if (constraints)
             for (ColumnConstraint columnConstraint : columnConstraintList)
-                sb.append(generateDefinitionColumnConstraint(columnConstraint).replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
+                sb.append(generateDefinitionColumnConstraint(columnConstraint, true).replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
 
         sb.append(CreateTableSQLSyntax.B_CLOSE);
 
@@ -409,6 +410,7 @@ public final class SQLUtils {
         sb.append(procedureBody);
         return generateCreateProcedure(name, inputParameters, outputParameters, sb.toString(), comment, setTerm);
     }
+
     public static String generateCreateProcedure(
             String name, List<ProcedureParameter> parameters, String fullProcedureBody, String comment, DatabaseConnection dc, boolean setTerm) {
 
@@ -425,6 +427,7 @@ public final class SQLUtils {
 
         return generateCreateProcedure(name, inputs, outputs, fullProcedureBody, comment, setTerm);
     }
+
     public static String generateCreateProcedure(
             String name, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters,
             String fullProcedureBody, String comment, boolean setTerm) {
@@ -465,6 +468,7 @@ public final class SQLUtils {
         sb.append(functionBody);
         return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, comment);
     }
+
     public static String generateCreateFunction(
             String name, List<FunctionArgument> argumentList, String fullFunctionBody,
             String entryPoint, String engine, String comment, DatabaseConnection dc) {
@@ -482,6 +486,7 @@ public final class SQLUtils {
 
         return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, comment);
     }
+
     public static String generateCreateFunction(
             String name, Vector<ColumnData> inputArguments, ColumnData returnType,
             String fullFunctionBody, String entryPoint, String engine, String comment) {
@@ -506,7 +511,7 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateDefinitionColumnConstraint(ColumnConstraint cc) {
+    public static String generateDefinitionColumnConstraint(ColumnConstraint cc, boolean startWithNewLine) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -522,7 +527,9 @@ public final class SQLUtils {
 
         if (hasName) {
 
-            sb.append(COMMA).append(NEW_LINE_2).append(CreateTableSQLSyntax.CONSTRAINT);
+            if (startWithNewLine)
+                sb.append(COMMA).append(NEW_LINE_2);
+            sb.append(CreateTableSQLSyntax.CONSTRAINT);
             sb.append(format(nameConstraint)).append(SPACE);
 
             if (cc.getType() != -1) {
@@ -582,13 +589,14 @@ public final class SQLUtils {
 
         return sb.toString();
     }
-    public static String generateDefinitionColumn(ColumnData cd) {
+
+    public static String generateDefinitionColumn(ColumnData cd, boolean startWithNewLine) {
 
         StringBuilder sqlText = new StringBuilder();
 
-        sqlText.append(NEW_LINE_2).append(
-                        cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getFormattedColumnName()).
-                append(SPACE);
+        if (startWithNewLine)
+            sqlText.append(NEW_LINE_2);
+        sqlText.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getFormattedColumnName()).append(SPACE);
 
         if (MiscUtils.isNull(cd.getComputedBy())) {
 
@@ -617,6 +625,51 @@ public final class SQLUtils {
             sqlText.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
 
         return sqlText.toString();
+    }
+
+    public static String generateAlterDefinitionColumn(ColumnData thisCD, ColumnData comparingCD) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if (MiscUtils.isNull(thisCD.getComputedBy()) && MiscUtils.isNull(comparingCD.getComputedBy())) {
+
+            if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
+                        append(" TYPE ").append(comparingCD.getColumnType());
+            if (!Objects.equals(thisCD.getDefaultValue(), comparingCD.getDefaultValue()))
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
+                        append(" SET DEFAULT ").append(comparingCD.getDefaultValue());
+            if (thisCD.isRequired() && !comparingCD.isRequired())
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
+                        append(" DROP NOT NULL");
+            else if (!thisCD.isRequired() && comparingCD.isRequired())
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
+                        append(" SET NOT NULL");
+
+            if (thisCD.isAutoincrement() && comparingCD.isAutoincrement())
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
+                        append(" RESTART WITH ").append(comparingCD.getAutoincrement().getStartValue());
+
+        } else if (!MiscUtils.isNull(thisCD.getComputedBy()) && !MiscUtils.isNull(comparingCD.getComputedBy())) {
+
+            if (!Objects.equals(thisCD.getComputedBy(), comparingCD.getComputedBy())) {
+
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()));
+
+                if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
+                    sb.append(" TYPE ").append(comparingCD.getColumnType());
+
+                sb.append(" COMMUTED BY (").append(comparingCD.getComputedBy()).append(")");
+            }
+
+        } else {
+            sb.append("\n\tDROP ").append(format(thisCD.getColumnName()));
+            sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, false));
+        }
+
+        if (sb.toString().equals(""))
+            return "";
+        return sb.append(COMMA).toString();
     }
 
     public static String generateCommentForColumns(
@@ -962,8 +1015,90 @@ public final class SQLUtils {
             sb.append("TYPE ").append(domainData.getDomainTypeName());
 
         if (noChangesCheckString.equals(sb.toString()))
-            return "";
+            return "/* there are no changes */\n";
         return sb.append(";\n").toString();
+    }
+
+    public static String generateAlterTable(
+            DefaultDatabaseTable thisTable, DefaultDatabaseTable comparingTable,
+            boolean temporary, boolean constraints) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if (temporary)
+            sb.append("ALTER GLOBAL TEMPORARY TABLE ");
+        else
+            sb.append("ALTER TABLE ");
+        sb.append(format(thisTable.getName()));
+        String noChangesCheckString = sb.toString();
+
+        List<String> thisColumnsNames = thisTable.getColumnNames();
+        List<String> comparingColumnsNames = comparingTable.getColumnNames();
+
+        for (String thisColumn : thisColumnsNames) {
+
+            int dropCheck = 0;
+
+            //check for ALTER COLUMN
+            for (String comparingColumn : comparingColumnsNames) {
+                if (Objects.equals(thisColumn, comparingColumn)) {
+                    sb.append(generateAlterDefinitionColumn(
+                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn)),
+                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn))));
+                    break;
+
+                } else dropCheck++;
+            }
+
+            //check for DROP COLUMN
+            if (dropCheck == comparingColumnsNames.size())
+                sb.append("\n\tDROP ").append(format(thisColumn)).append(COMMA);
+        }
+
+        //check for ADD COLUMN
+        for (String comparingColumn : comparingColumnsNames)
+            if (!thisColumnsNames.contains(comparingColumn))
+                sb.append("\n\tADD ").append(generateDefinitionColumn(new ColumnData(
+                                comparingTable.getHost().getDatabaseConnection(),
+                                comparingTable.getColumn(comparingColumn)), false))
+                        .append(COMMA);
+
+        if (constraints) {
+
+            List<org.executequery.databaseobjects.impl.ColumnConstraint> thisConstraints = thisTable.getConstraints();
+            List<org.executequery.databaseobjects.impl.ColumnConstraint> comparingConstraints = comparingTable.getConstraints();
+
+            //check for DROP CONSTRAINT
+            for (org.executequery.databaseobjects.impl.ColumnConstraint thisConstraint : thisConstraints) {
+                int dropCheck = 0;
+                for (org.executequery.databaseobjects.impl.ColumnConstraint comparingConstraint : comparingConstraints)
+                    if (!Objects.equals(thisConstraint.getName(), comparingConstraint.getName()))
+                        dropCheck++;
+                    else break;
+
+                if (dropCheck == comparingConstraints.size())
+                    sb.append("\n\tDROP CONSTRAINT ").append(format(thisConstraint.getName())).append(COMMA);
+            }
+
+            //check for ADD CONSTRAINT
+            for (org.executequery.databaseobjects.impl.ColumnConstraint comparingConstraint : comparingConstraints) {
+                int addCheck = 0;
+                for (org.executequery.databaseobjects.impl.ColumnConstraint thisConstraint : thisConstraints)
+                    if (!Objects.equals(thisConstraint.getName(), comparingConstraint.getName()))
+                        addCheck++;
+                    else break;
+
+                if (addCheck == thisConstraints.size())
+                    sb.append("\n\tADD ").append(generateDefinitionColumnConstraint(
+                            new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint), false))
+                            .append(COMMA);
+            }
+
+        }
+
+        if (noChangesCheckString.equals(sb.toString()))
+            return "/* there are no changes */\n";
+        return sb.deleteCharAt(sb.length() - 1).append(";\n").toString();
     }
 
     public static String generateAlterUDF(String name, String newEntryPoint, String newModuleName) {
@@ -978,7 +1113,7 @@ public final class SQLUtils {
             sb.append("\nMODULE_NAME '").append(newModuleName).append("'");
 
         if (noChangesCheckString.equals(sb.toString()))
-            return "";
+            return "/* there are no changes */\n";
         return sb.append(";\n").toString();
     }
 

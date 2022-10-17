@@ -34,10 +34,11 @@ public final class SQLUtils {
         else
             sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
         StringBuilder primaryText = new StringBuilder();
-        StringBuffer primary = new StringBuffer(50);
+        StringBuilder primary = new StringBuilder(50);
         primary.setLength(0);
-        primary.append(",\nCONSTRAINT PK_");
-        primary.append(name);
+        primary.append(",\nCONSTRAINT ");
+        String primaryName = "PK_" + name;
+        primary.append(MiscUtils.getFormattedObject(primaryName));
         primary.append(" PRIMARY KEY (");
         boolean primary_flag = false;
         String autoincrementSQLText = "";

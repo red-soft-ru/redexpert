@@ -168,7 +168,7 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseTablespace comparingTablespace = (DefaultDatabaseTablespace) databaseObject;
-        return SQLUtils.generateAlterTablespace(getName(), comparingTablespace.getFileName());
+        return SQLUtils.generateAlterTablespace(this, comparingTablespace);
     }
 
     @Override

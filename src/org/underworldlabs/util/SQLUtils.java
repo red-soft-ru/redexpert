@@ -3,10 +3,7 @@ package org.underworldlabs.util;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.*;
-import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
-import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
-import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
-import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -1101,34 +1098,76 @@ public final class SQLUtils {
         return sb.deleteCharAt(sb.length() - 1).append(";\n").toString();
     }
 
-    public static String generateAlterUDF(String name, String newEntryPoint, String newModuleName) {
+    public static String generateAlterException(
+            DefaultDatabaseException thisException, DefaultDatabaseException comparingException) {
+
+        String comparingExceptionText = comparingException.getExceptionText();
+        if (Objects.equals(thisException.getExceptionText(), comparingExceptionText))
+            return "/* there are no changes */\n";
 
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER EXTERNAL FUNCTION ").append(format(name));
+        sb.append("ALTER EXCEPTION ").append(format(thisException.getName()));
+        sb.append(SPACE).append(comparingExceptionText).append(";\n");
+        return sb.toString();
+    }
+
+    public static String generateAlterSequence(
+            DefaultDatabaseSequence thisSequence, DefaultDatabaseSequence comparingSequence) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER SEQUENCE ").append(format(thisSequence.getName()));
         String noChangesCheckString = sb.toString();
 
-        if (newEntryPoint != null)
-            sb.append("\nENTRY_POINT '").append(newEntryPoint).append("'");
-        if (newModuleName != null)
-            sb.append("\nMODULE_NAME '").append(newModuleName).append("'");
+        if (thisSequence.getSequenceValue() != comparingSequence.getSequenceValue())
+            sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceValue());
+        if (thisSequence.getIncrement() != comparingSequence.getIncrement())
+            sb.append("\n\tINCREMENT BY ").append(comparingSequence.getIncrement());
 
         if (noChangesCheckString.equals(sb.toString()))
             return "/* there are no changes */\n";
         return sb.append(";\n").toString();
     }
 
-    public static String generateAlterIndex(String name, boolean active) {
+    public static String generateAlterUDF(
+            DefaultDatabaseUDF thisUDF, DefaultDatabaseUDF comparingUDF) {
+
         StringBuilder sb = new StringBuilder();
-        String activeString = active ? " ACTIVE" : " INACTIVE";
-        sb.append("ALTER INDEX ").append(format(name));
+        sb.append("ALTER EXTERNAL FUNCTION ").append(format(thisUDF.getName()));
+        String noChangesCheckString = sb.toString();
+
+        if (!Objects.equals(thisUDF.getEntryPoint(), comparingUDF.getEntryPoint()))
+            sb.append("\nENTRY_POINT '").append(comparingUDF.getEntryPoint()).append("'");
+        if (!Objects.equals(thisUDF.getModuleName(), comparingUDF.getModuleName()))
+            sb.append("\nMODULE_NAME '").append(comparingUDF.getModuleName()).append("'");
+
+        if (noChangesCheckString.equals(sb.toString()))
+            return "/* there are no changes */\n";
+        return sb.append(";\n").toString();
+    }
+
+    public static String generateAlterIndex(
+            DefaultDatabaseIndex thisIndex, DefaultDatabaseIndex comparingIndex) {
+
+        if (thisIndex.isActive() ^ comparingIndex.isActive())
+            return "/* there are no changes */\n";
+
+        StringBuilder sb = new StringBuilder();
+        String activeString = comparingIndex.isActive() ? " ACTIVE" : " INACTIVE";
+        sb.append("ALTER INDEX ").append(format(thisIndex.getName()));
         sb.append(activeString).append(";\n");
         return sb.toString();
     }
 
-    public static String generateAlterTablespace(String name, String file) {
+    public static String generateAlterTablespace(
+            DefaultDatabaseTablespace thisTablespace, DefaultDatabaseTablespace comparingTablespace) {
+
+        String comparingFileName = comparingTablespace.getFileName();
+        if (!Objects.equals(thisTablespace.getFileName(), comparingFileName))
+            return "/* there are no changes */\n";
+
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLESPACE ").append(format(name));
-        sb.append(" SET FILE '").append(file).append("';\n");
+        sb.append("ALTER TABLESPACE ").append(format(thisTablespace.getName()));
+        sb.append(" SET FILE '").append(comparingFileName).append("';\n");
         return sb.toString();
     }
 

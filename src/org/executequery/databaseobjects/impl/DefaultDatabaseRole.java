@@ -36,7 +36,7 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return "";
+        return "/* there are no changes */\n";
     }
 
     @Override

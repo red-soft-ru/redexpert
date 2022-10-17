@@ -286,7 +286,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseIndex comparingIndex = (DefaultDatabaseIndex) databaseObject;
-        return SQLUtils.generateAlterIndex(getName(), comparingIndex.isActive);
+        return SQLUtils.generateAlterIndex(this, comparingIndex);
     }
 
     @Override

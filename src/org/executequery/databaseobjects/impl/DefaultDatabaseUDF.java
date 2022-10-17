@@ -421,7 +421,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseUDF comparingUDF = (DefaultDatabaseUDF) databaseObject;
-        return SQLUtils.generateAlterUDF(getName(), comparingUDF.getEntryPoint(), comparingUDF.getModuleName());
+        return SQLUtils.generateAlterUDF(this, comparingUDF);
     }
 
     @Override

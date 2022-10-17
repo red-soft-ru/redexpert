@@ -6,6 +6,7 @@ import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 
 /**
  * Created by vasiliy on 13.02.17.
@@ -94,9 +95,8 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCreateFullSQLText().
-                replaceFirst("CREATE OR ", "").
-                replaceFirst("CREATE", "ALTER");
+        DefaultDatabaseException comparingException = (DefaultDatabaseException) databaseObject;
+        return SQLUtils.generateAlterException(this, comparingException);
     }
 
     @Override

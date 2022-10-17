@@ -440,7 +440,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
         dc = databaseConnection;
-        tableEditorModel.setElements(new ColumnData(dc).getTables());
+        tableEditorModel.setElements(new ColumnData(dc).getTableNames());
         for (ColumnData cd : tableVector) {
             cd.setDatabaseConnection(dc);
         }

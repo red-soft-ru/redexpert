@@ -1022,6 +1022,13 @@ public class ColumnData implements Serializable {
         return tables;
     }
 
+    public List<String> getTableNames() {
+        ArrayList<String> list = new ArrayList<>();
+        for (NamedObject table : getTables())
+            list.add(table.getName());
+        return list;
+    }
+
     public int getTypeOfFrom() {
         return typeOfFrom;
     }

@@ -665,10 +665,10 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                             rowLines.append(valueAsString(value));
                         }
                     } else {
-                        if (model.getColumnClass(j) == String.class && applyQuotes)
-                            rowLines.append("\"").append(valueAsString(value).replaceAll("\n", " ")).append("\\n");
+                        if (model.getColumnClass(j) == String.class && applyQuotes && !valueAsString(value).isEmpty())
+                            rowLines.append("\"").append(valueAsString(value)).append("\"");
                         else
-                            rowLines.append(valueAsString(value).replaceAll("\n", "\\n"));
+                            rowLines.append(valueAsString(value));
                     }
 
                     if (j != columnCount - 1) {

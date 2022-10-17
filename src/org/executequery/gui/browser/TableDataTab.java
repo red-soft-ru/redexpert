@@ -44,6 +44,7 @@ import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.SortableHeaderRenderer;
 import org.underworldlabs.swing.table.TableSorter;
@@ -59,10 +60,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -1095,6 +1093,19 @@ public class TableDataTab extends JPanel
             }
         });
         bar.add(refreshButton);
+
+        RolloverButton switchAutoresizeModeButton = new RolloverButton();
+        switchAutoresizeModeButton.setIcon(GUIUtilities.loadIcon("Zoom16.png"));
+        switchAutoresizeModeButton.setToolTipText(bundleString("SwitchTableAutoresizeMode"));
+        switchAutoresizeModeButton.setMnemonic(KeyEvent.VK_ADD);
+        switchAutoresizeModeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                table.switchAutoResizeMode();
+            }
+        });
+        bar.add(switchAutoresizeModeButton);
+
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingPanel.add(bar, gbc3);

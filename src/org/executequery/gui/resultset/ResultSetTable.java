@@ -67,6 +67,8 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     private ResultSetTableCellRenderer cellRenderer;
 
+    private boolean isAutoResizeable;
+
     private final TableColumn dummyColumn = new TableColumn();
 
     public DefaultTableModel myTableModel = new DefaultTableModel();
@@ -95,12 +97,16 @@ public class ResultSetTable extends JTable implements StandardTable {
         dateTimeCellEditor = new DateTimeCellEditor();
         timeCellEditor = new TimeCellEditor();
 
+        isAutoResizeable = false;
+
     }
 
     public ResultSetTable(TableModel model) {
 
         super(model);
         setDefaultOptions();
+
+        isAutoResizeable = false;
     }
 
     public void setModel(TableModel model) {
@@ -755,6 +761,11 @@ public class ResultSetTable extends JTable implements StandardTable {
     public void stopEditing() {
         if (isEditing())
             getCellEditor().stopCellEditing();
+    }
+
+    public void switchAutoResizeMode() {
+        isAutoResizeable = !isAutoResizeable;
+        setAutoResizeMode(isAutoResizeable ? JTable.AUTO_RESIZE_ALL_COLUMNS : JTable.AUTO_RESIZE_OFF);
     }
 
 }

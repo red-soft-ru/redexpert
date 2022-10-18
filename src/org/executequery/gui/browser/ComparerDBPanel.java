@@ -26,11 +26,9 @@ import java.util.List;
 
 public class ComparerDBPanel extends JPanel {
 
-    public static final String TITLE = Bundles.get(ComparerDBPanel.class, "ComparerDB");
+    public static final String TITLE = bundleString("ComparerDB");
     public static final String FRAME_ICON = "ComparerDB_16.png";
-    private static final String WELCOME_TEXT =
-            "Master database will be modified." +
-            "\nCompare database is an example.";
+    private static final String WELCOME_TEXT = bundleString("WelcomeText");
 
     private Comparer comparer;
     private List<DatabaseConnection> databaseConnectionList;
@@ -104,23 +102,23 @@ public class ComparerDBPanel extends JPanel {
         // --- buttons defining ---
 
         compareButton = new JButton();
-        compareButton.setText("Compare");
+        compareButton.setText(bundleString("CompareButton"));
         compareButton.addActionListener(e -> compareDatabase());
 
         saveScriptButton = new JButton();
-        saveScriptButton.setText("Save Script");
+        saveScriptButton.setText(bundleString("SaveScriptButton"));
         saveScriptButton.addActionListener(e -> saveScript());
 
         executeScriptButton = new JButton();
-        executeScriptButton.setText("Execute Script");
+        executeScriptButton.setText(bundleString("ExecuteScriptButton"));
         executeScriptButton.addActionListener(e -> executeScript());
 
         selectAllAttributesButton = new JButton();
-        selectAllAttributesButton.setText("Select All");
+        selectAllAttributesButton.setText(bundleString("SelectAllButton"));
         selectAllAttributesButton.addActionListener(e -> selectAll("attributes"));
 
         selectAllPropertiesButton = new JButton();
-        selectAllPropertiesButton.setText("Select All");
+        selectAllPropertiesButton.setText(bundleString("SelectAllButton"));
         selectAllPropertiesButton.addActionListener(e -> selectAll("properties"));
 
         // --- attributes checkBox defining ---
@@ -132,11 +130,11 @@ public class ComparerDBPanel extends JPanel {
         // --- properties checkBox defining ---
 
         propertiesCheckBoxMap = new HashMap<>();
-        propertiesCheckBoxMap.put(0, new JCheckBox("Check for CREATE"));
-        propertiesCheckBoxMap.put(1, new JCheckBox("Check for ALTER"));
-        propertiesCheckBoxMap.put(2, new JCheckBox("Check for DROP"));
-//        propertiesCheckBoxMap.put(3, new JCheckBox("Safe type conversion"));
-        propertiesCheckBoxMap.put(4, new JCheckBox("Ignore tables constraints"));
+        propertiesCheckBoxMap.put(0, new JCheckBox(bundleString("CheckCreate")));
+        propertiesCheckBoxMap.put(1, new JCheckBox(bundleString("CheckAlter")));
+        propertiesCheckBoxMap.put(2, new JCheckBox(bundleString("CheckDrop")));
+//        propertiesCheckBoxMap.put(3, new JCheckBox(bundleString("SafeTypeConversion")));
+        propertiesCheckBoxMap.put(4, new JCheckBox(bundleString("IgnoreTablesConstraints")));
 
         // --- comboBoxes defining ---
 
@@ -168,12 +166,12 @@ public class ComparerDBPanel extends JPanel {
         gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
 
         JPanel connectionsPanel = new JPanel(new GridBagLayout());
-        connectionsPanel.setBorder(BorderFactory.createTitledBorder("Connections"));
+        connectionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ConnectionsLabel")));
 
         gridBagHelper.addLabelFieldPair(connectionsPanel,
-                "Master database:", dbMasterComboBox, null);
+                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
         gridBagHelper.addLabelFieldPair(connectionsPanel,
-                "Compare database:", dbCompareComboBox, null);
+                bundleString("CompareDatabaseLabel"), dbCompareComboBox, null);
         connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().get());
 
         // --- attributes panel ---
@@ -193,7 +191,7 @@ public class ComparerDBPanel extends JPanel {
         JScrollPane attributesPanelWithScrolls = new JScrollPane(attributesPanel,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        attributesPanelWithScrolls.setBorder(BorderFactory.createTitledBorder("Attributes"));
+        attributesPanelWithScrolls.setBorder(BorderFactory.createTitledBorder(bundleString("AttributesLabel")));
         attributesPanelWithScrolls.setMinimumSize(new Dimension(220, 150));
 
         // --- properties panel ---
@@ -211,7 +209,7 @@ public class ComparerDBPanel extends JPanel {
         JScrollPane propertiesPanelWithScrolls = new JScrollPane(propertiesPanel,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        propertiesPanelWithScrolls.setBorder(BorderFactory.createTitledBorder("Properties"));
+        propertiesPanelWithScrolls.setBorder(BorderFactory.createTitledBorder(bundleString("PropertiesLabel")));
         propertiesPanelWithScrolls.setMinimumSize(new Dimension(220, 150));
 
         // --- SQL panel ---
@@ -230,7 +228,7 @@ public class ComparerDBPanel extends JPanel {
 
         JTabbedPane tabPane = new JTabbedPane();
 
-        tabPane.add("Output", loggingOutputPanel);
+        tabPane.add(bundleString("OutputLabel"), loggingOutputPanel);
         tabPane.add("SQL", sqlPanel);
 
         // --- compare panel ---
@@ -267,21 +265,21 @@ public class ComparerDBPanel extends JPanel {
 
         if (databaseConnectionList.size() < 2 ||
                 dbCompareComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
-            loggingOutputPanel.appendError("Error: Unable to compare");
+            GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
             return;
         }
         for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++) {
             if (attributesCheckBoxMap.get(i).isSelected())
                 break;
             if (i == NamedObject.SYSTEM_DOMAIN - 1) {
-                loggingOutputPanel.appendError("Error: No attributes for comparing selected");
+                GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoAttributes"));
                 return;
             }
         }
         if (!propertiesCheckBoxMap.get(0).isSelected() &&
                 !propertiesCheckBoxMap.get(1).isSelected() &&
                 !propertiesCheckBoxMap.get(2).isSelected()) {
-            loggingOutputPanel.appendError("Error: No properties for comparing selected");
+            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoProperties"));
             return;
         }
 
@@ -292,7 +290,6 @@ public class ComparerDBPanel extends JPanel {
 
         loggingOutputPanel.clear();
         loggingOutputPanel.append(WELCOME_TEXT);
-        loggingOutputPanel.appendAction("Start comparing DBs");
         sqlTextPanel.setSQLText("");
         comparer.clearLists();
 
@@ -300,9 +297,7 @@ public class ComparerDBPanel extends JPanel {
             if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||
                     new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4) {
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
-                loggingOutputPanel.append(
-                        "\nAt least one of the connection use RDB version below 4.0" +
-                        "\nTablespace will not be included in the comparison");
+                loggingOutputPanel.append(bundleString("RDBVersionBelow4"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -427,7 +422,7 @@ public class ComparerDBPanel extends JPanel {
     private void saveScript() {
 
         if (comparer == null || comparer.getScript().isEmpty()) {
-            loggingOutputPanel.appendError("Error: nothing to save (script is empty)");
+            GUIUtilities.displayWarningMessage(bundleString("NothingToSave"));
             return;
         }
 
@@ -464,8 +459,8 @@ public class ComparerDBPanel extends JPanel {
                     path.write(buffer, 0, buffer.length);
                 }
 
-                loggingOutputPanel.appendAction("Script was saved successfully");
-                loggingOutputPanel.append("Saved to: " + fileSavePath);
+                loggingOutputPanel.appendAction(bundleString("ScriptSaved"));
+                loggingOutputPanel.append(bundleString("SavedTo") + fileSavePath);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -478,7 +473,7 @@ public class ComparerDBPanel extends JPanel {
     private void executeScript() {
 
         if (comparer == null || comparer.getScript().isEmpty()) {
-            loggingOutputPanel.appendError("Error: nothing to execute (script is empty)");
+            GUIUtilities.displayWarningMessage(bundleString("NothingToExecute"));
             return;
         }
 

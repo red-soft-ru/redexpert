@@ -20,6 +20,7 @@
 
 package org.executequery.gui.editor;
 
+import org.apache.poi.ss.SpreadsheetVersion;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -385,7 +386,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         int exportFormatType = getExportFormatType();
         if (exportFormatType == ImportExportDataProcess.EXCEL) {
 
-            suffix = ".xls";
+            suffix = ".xlsx";
 
         } else if (exportFormatType == ImportExportDataProcess.XML) {
 
@@ -522,6 +523,12 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             builder.createSheet("Result Set Export");
 
             int rowCount = model.getRowCount();
+            if (rowCount > SpreadsheetVersion.EXCEL2007.getLastRowIndex()) {
+                GUIUtilities.displayWarningMessage(bundleString("maxRowMessage", SpreadsheetVersion.EXCEL2007.getLastRowIndex()));
+                rowCount = SpreadsheetVersion.EXCEL2007.getLastRowIndex();
+            }
+
+
             int columnCount = model.getColumnCount();
 
             progressDialog = progressDialog(rowCount);
@@ -789,9 +796,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
     } // class ResultsProgressDialog
 
-    private String bundleString(String key) {
+    private String bundleString(String key, Object... args) {
 
-        return Bundles.get(getClass(), key);
+        return Bundles.get(getClass(), key, args);
     }
 
     public Object queryEditor() {

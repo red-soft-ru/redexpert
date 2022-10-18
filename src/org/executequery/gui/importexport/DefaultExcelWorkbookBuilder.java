@@ -20,7 +20,7 @@
 
 package org.executequery.gui.importexport;
 
-import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.xssf.usermodel.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,15 +33,15 @@ public class DefaultExcelWorkbookBuilder implements ExcelWorkbookBuilder {
 
     private int currentRow;
 
-    private HSSFWorkbook workbook;
+    private final XSSFWorkbook workbook;
 
-    private HSSFSheet currentSheet;
+    private XSSFSheet currentSheet;
 
-    private HSSFCellStyle defaultCellStyle;
+    private final XSSFCellStyle defaultCellStyle;
 
     public DefaultExcelWorkbookBuilder() {
 
-        workbook = new HSSFWorkbook();
+        workbook = new XSSFWorkbook();
         defaultCellStyle = createStyle();
     }
 
@@ -73,41 +73,41 @@ public class DefaultExcelWorkbookBuilder implements ExcelWorkbookBuilder {
             currentRow++;
         }
 
-        HSSFFont font = createFont();
-        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        XSSFFont font = createFont();
+        font.setBold(true);
 
-        HSSFCellStyle style = createStyle();
+        XSSFCellStyle style = createStyle();
         style.setFont(font);
 
         fillRow(values, createRow(currentRow), style);
     }
 
-    private HSSFRow createRow(int rowNumber) {
+    private XSSFRow createRow(int rowNumber) {
 
         return currentSheet.createRow(rowNumber);
     }
 
-    private void fillRow(List<String> values, HSSFRow row, HSSFCellStyle style) {
+    private void fillRow(List<String> values, XSSFRow row, XSSFCellStyle style) {
 
         for (int i = 0, n = values.size(); i < n; i++) {
 
-            HSSFCell cell = row.createCell(i);
+            XSSFCell cell = row.createCell(i);
 
             // set encoding no longer supported in POI 3.2
-//            cell.setEncoding(HSSFCell.ENCODING_UTF_16);
+//            cell.setEncoding(XSSFCell.ENCODING_UTF_16);
 
             cell.setCellStyle(style);
-            cell.setCellValue(new HSSFRichTextString(values.get(i)));
+            cell.setCellValue(new XSSFRichTextString(values.get(i)));
         }
 
     }
 
-    private HSSFCellStyle createStyle() {
+    private XSSFCellStyle createStyle() {
 
         return workbook.createCellStyle();
     }
 
-    private HSSFFont createFont() {
+    private XSSFFont createFont() {
 
         return workbook.createFont();
     }

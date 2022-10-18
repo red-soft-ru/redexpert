@@ -29,12 +29,11 @@ public class ComparerDBPanel extends JPanel {
     private static final String WELCOME_TEXT =
             "Master database will be modified." +
             "\nCompare database is an example.";
-    private static final String TABLESPACE_NOT_INCLUDED =
-            "\nAt least one of the connection use RDB version below 4.0" +
-            "\nTablespace will not be included in the comparison";
 
     private Comparer comparer;
     private List<DatabaseConnection> databaseConnectionList;
+    private List<Integer> scriptGenerationOrder;
+    private boolean isScriptGeneratorOrderReversed;
 
     // --- panel components ---
 
@@ -74,6 +73,29 @@ public class ComparerDBPanel extends JPanel {
     private void init() {
 
         databaseConnectionList = new ArrayList<>();
+
+        // --- script generation order defining ---
+
+        scriptGenerationOrder = new ArrayList<>();
+        isScriptGeneratorOrderReversed = false;
+
+        scriptGenerationOrder.add(NamedObject.DOMAIN);
+        scriptGenerationOrder.add(NamedObject.TABLE);
+        scriptGenerationOrder.add(NamedObject.GLOBAL_TEMPORARY);
+        scriptGenerationOrder.add(NamedObject.TABLESPACE);
+        scriptGenerationOrder.add(NamedObject.VIEW);
+        scriptGenerationOrder.add(NamedObject.INDEX);
+        scriptGenerationOrder.add(NamedObject.SEQUENCE);
+        scriptGenerationOrder.add(NamedObject.EXCEPTION);
+        scriptGenerationOrder.add(NamedObject.PACKAGE);
+        scriptGenerationOrder.add(NamedObject.ROLE);
+        scriptGenerationOrder.add(NamedObject.USER);
+        scriptGenerationOrder.add(NamedObject.PROCEDURE);
+        scriptGenerationOrder.add(NamedObject.FUNCTION);
+        scriptGenerationOrder.add(NamedObject.UDF);
+        scriptGenerationOrder.add(NamedObject.TRIGGER);
+        scriptGenerationOrder.add(NamedObject.DDL_TRIGGER);
+        scriptGenerationOrder.add(NamedObject.DATABASE_TRIGGER);
 
         // --- buttons defining ---
 
@@ -274,7 +296,9 @@ public class ComparerDBPanel extends JPanel {
             if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||
                     new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4) {
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
-                loggingOutputPanel.append(TABLESPACE_NOT_INCLUDED);
+                loggingOutputPanel.append(
+                        "\nAt least one of the connection use RDB version below 4.0" +
+                        "\nTablespace will not be included in the comparison");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -321,7 +345,13 @@ public class ComparerDBPanel extends JPanel {
         comparer.addToScript("SET AUTO DDL ON;\n");
 
         if (propertiesCheckBoxMap.get(0).isSelected()) {
-            for (Integer type : attributesCheckBoxMap.keySet()) {
+
+            if (isScriptGeneratorOrderReversed) {
+                isScriptGeneratorOrderReversed = false;
+                Collections.reverse(scriptGenerationOrder);
+            }
+
+            for (Integer type : scriptGenerationOrder) {
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
                     comparer.setLists("");
@@ -338,7 +368,13 @@ public class ComparerDBPanel extends JPanel {
         }
 
         if (propertiesCheckBoxMap.get(1).isSelected()) {
-            for (Integer type : attributesCheckBoxMap.keySet()) {
+
+            if (isScriptGeneratorOrderReversed) {
+                isScriptGeneratorOrderReversed = false;
+                Collections.reverse(scriptGenerationOrder);
+            }
+
+            for (Integer type : scriptGenerationOrder) {
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
                     comparer.setLists("");
@@ -355,7 +391,13 @@ public class ComparerDBPanel extends JPanel {
         }
 
         if (propertiesCheckBoxMap.get(2).isSelected()) {
-            for (Integer type : attributesCheckBoxMap.keySet()) {
+
+            if (!isScriptGeneratorOrderReversed) {
+                isScriptGeneratorOrderReversed = true;
+                Collections.reverse(scriptGenerationOrder);
+            }
+
+            for (Integer type : scriptGenerationOrder) {
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
                     comparer.setLists("");

@@ -1,10 +1,12 @@
 package org.executequery.gui.browser;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -49,6 +51,8 @@ public class ComparerDBPanel extends JPanel {
 
     private Map<Integer, JCheckBox> attributesCheckBoxMap;
     private Map<Integer, JCheckBox> propertiesCheckBoxMap;
+
+    private StringBuilder settingScriptProps;
 
     // ---
 
@@ -335,14 +339,16 @@ public class ComparerDBPanel extends JPanel {
             comparer.getMasterConnection().releaseResources();
         }
 
-        comparer.addToScript("\n/* Setting properties */\n\n");
-        comparer.addToScript("SET NAMES " + charset + ";\n");
-        comparer.addToScript("SET SQL DIALECT " + dialect + ";\n");
-        comparer.addToScript(
-                "CONNECT '" + comparer.getMasterConnection().getDatabaseConnection().getName() +
-                        " ' USER '" + comparer.getMasterConnection().getDatabaseConnection().getUserName() + "' "
-                        + "PASSWORD '" + comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword() + "';\n");
-        comparer.addToScript("SET AUTO DDL ON;\n");
+        settingScriptProps = new StringBuilder();
+        settingScriptProps.append("\n/* Setting properties */\n\n");
+        settingScriptProps.append("SET NAMES ").append(charset).append(";\n");
+        settingScriptProps.append("SET SQL DIALECT ").append(dialect).append(";\n");
+        settingScriptProps.append("CONNECT '").append(comparer.getMasterConnection().getDatabaseConnection().getName());
+        settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getDatabaseConnection().getUserName());
+        settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword());
+        settingScriptProps.append("';\nSET AUTO DDL ON;\n");
+
+        comparer.addToScript(settingScriptProps.toString());
 
         if (propertiesCheckBoxMap.get(0).isSelected()) {
 
@@ -476,7 +482,12 @@ public class ComparerDBPanel extends JPanel {
             return;
         }
 
-        loggingOutputPanel.appendError("This function not implemented yet");
+        QueryEditor queryEditor = new QueryEditor(sqlTextPanel.getSQLText().replace(settingScriptProps.toString(), ""));
+        queryEditor.setSelectedConnection(comparer.getMasterConnection().getDatabaseConnection());
+        GUIUtilities.addCentralPane(
+                QueryEditor.TITLE, QueryEditor.FRAME_ICON,
+                queryEditor, null, true);
+
     }
 
     private void selectAll(String selectedBox) {

@@ -79,7 +79,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     public String getCreateSQLText() {
 
-        return SQLUtils.generateCreateProcedure(getName(), getParameters(), getProcedureSourceCode(), getRemarks(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateProcedure(getName(), getEntryPoint(), getEngine(), getParameters(), getProcedureSourceCode(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -93,8 +93,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     protected void setInfoFromResultSet(ResultSet rs) {
         try {
             if (rs != null && rs.next()) {
-                setRemarks(rs.getString(1));
-            }
+                if (rs.getString(1) != null)
+                    setRemarks(rs.getString(1));
+                else setRemarks("");
+            } else setRemarks("");
         } catch (Exception e) {
             e.printStackTrace();
         }

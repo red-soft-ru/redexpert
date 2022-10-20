@@ -224,6 +224,7 @@ public class DynamicTree extends JTree {
     public void reset(DefaultMutableTreeNode root) {
 
         setModel(new DefaultTreeModel(root));
+        this.root = root;
         repaint();
     }
 
@@ -302,6 +303,17 @@ public class DynamicTree extends JTree {
         TreePath path = new TreePath(node.getPath());
         scrollPathToVisible(path);
         setSelectionPath(path);
+    }
+
+    public void selectNodes(DefaultMutableTreeNode[] nodes) {
+        TreePath[] paths = new TreePath[nodes.length];
+
+        for (int i = 0; i < nodes.length; i++) {
+            TreePath path = new TreePath(nodes[i].getPath());
+            paths[i] = path;
+            scrollPathToVisible(path);
+        }
+        setSelectionPaths(paths);
     }
 
     public int getIndexWithinParent(TreeNode node) {

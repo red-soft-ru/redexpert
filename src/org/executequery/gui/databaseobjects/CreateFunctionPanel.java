@@ -11,7 +11,6 @@ import org.executequery.gui.datatype.DomainPanel;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
@@ -19,7 +18,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * Panel for creating and editing function
@@ -49,8 +47,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         super(dc, dialog, procedure, new Object[]{databaseFunction});
         parametersTabs.remove(outputParametersPanel);
         parametersTabs.setTitleAt(0, bundledString("Arguments"));
-        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(),
-                metaData.getIntDataTypesArray(), returnType, true);
+        selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(),
+                connection.getIntDataTypesArray(), returnType, true);
         returnType.setDomain(returnType.getDomain());
         selectTypePanel.refresh();
         domainPanel = new DomainPanel(returnType, returnType.getDomain());
@@ -184,52 +182,9 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     }
 
     protected String generateQuery() {
-        return SQLUtils.generateCreateFunction(getName(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
+        return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 variablesPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
-                null, null, descriptionArea.getTextAreaComponent().getText());
-        /*StringBuilder sb = new StringBuilder();
-        sb.append("CREATE OR ALTER FUNCTION ");
-        sb.append(getFormattedName());
-        sb.append(" (");
-        sb.append(formattedParameters(inputParametersPanel.getProcedureParameterModel().getTableVector(), false));
-        sb.append(")\n");
-        sb.append("RETURNS ");
-        sb.append(returnType.getFormattedDataType());
-        sb.append("\n");
-        sb.append("AS");
-        sb.append(formattedParameters(variablesPanel.getProcedureParameterModel().getTableVector(), true));
-        sb.append(sqlBodyText.getSQLText());
-        sb.append("^\n");
-
-        sb.append("\n");
-
-        // add procedure description
-        String text = descriptionArea.getTextAreaComponent().getText();
-        if (text != null && !text.isEmpty()) {
-            sb.append("\n");
-            sb.append("COMMENT ON FUNCTION ");
-            sb.append(getFormattedName());
-            sb.append(" IS '");
-            sb.append(text);
-            sb.append("'");
-            sb.append("^\n");
-        }
-
-        for (ColumnData cd :
-                inputParametersPanel.getProcedureParameterModel().getTableVector()) {
-            String cdText = cd.getDescription();
-            if (cdText != null && !cdText.isEmpty()) {
-                sb.append("\n");
-                sb.append("COMMENT ON PARAMETER ");
-                sb.append(getFormattedName()).append(".");
-                sb.append(cd.getFormattedColumnName());
-                sb.append(" IS '");
-                sb.append(cdText);
-                sb.append("'\n");
-                sb.append("^\n");
-            }
-        }
-        return sb.toString();*/
+                externalField.getText(), engineField.getText(), descriptionArea.getTextAreaComponent().getText());
     }
 
     @Override
@@ -237,18 +192,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         ddlTextPanel.setSQLText(generateQuery());
     }
 
-    @Override
-    public Vector<String> getColumnNamesVector(String tableName, String schemaName) {
-        try {
-            return metaData.getColumnNamesVector(tableName, schemaName);
-        } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the column names for the " +
-                            "selected table.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e);
-            return new Vector<>(0);
-        }
-    }
 
     @Override
     protected void initEdited() {

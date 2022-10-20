@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.ActionPanel;
 
 import javax.swing.*;
@@ -44,7 +45,7 @@ public class ImportConnectionsPanelOne extends ActionPanel {
 
         fileNameField = WidgetFactory.createTextField();
 
-        JButton button = WidgetFactory.createInlineFieldButton("Browse");
+        JButton button = WidgetFactory.createInlineFieldButton(Bundles.get("CreateTableFunctionPanel.BrowseButtonText"));
         button.setActionCommand("browse");
         button.addActionListener(this);
         button.setMnemonic('r');
@@ -63,18 +64,14 @@ public class ImportConnectionsPanelOne extends ActionPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
 
-        add(new JLabel("<html>This allows you to import connections from a file - usually generated from the export on another"
-                + " instance of this application.<br />&nbsp;</html>"), gbc);
+        add(new JLabel(bundleString("MessageOne")), gbc);
 
         gbc.gridy++;
-        add(new JLabel("<html><b><i>Note: </i></b>Any folders with existing names will be merged with "
-                + "those in the file.<br />Any connections with existing names will be added with the suffix '_1'.<br />"
-                + "Driver libraries are not part of the import process and will need to be added separately."
-                + "<br />&nbsp;</html>"), gbc);
+        add(new JLabel(bundleString("MessageTwo")), gbc);
 
         gbc.gridy++;
         gbc.insets.top = 10;
-        add(new JLabel("Select the file to import folders and connections from."), gbc);
+        add(new JLabel(Bundles.get("ImportConnectionPanelOne.SelectTheFileToImportFoldersAndConnectionsFrom")), gbc);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.weightx = 0;
@@ -84,7 +81,7 @@ public class ImportConnectionsPanelOne extends ActionPanel {
         gbc.weighty = 1.0;
         gbc.insets.bottom = 20;
         gbc.fill = GridBagConstraints.NONE;
-        add(new JLabel("Import File:"), gbc);
+        add(new JLabel(Bundles.get("ImportConnectionPanelOne.ImportFile")), gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.insets.top = 0;
@@ -104,7 +101,7 @@ public class ImportConnectionsPanelOne extends ActionPanel {
 
         if (StringUtils.isBlank(fileNameField.getText())) {
 
-            GUIUtilities.displayErrorMessage("You must select a file path to import from");
+            GUIUtilities.displayErrorMessage(Bundles.get("ImportConnectionPanelOne.ErrorMessageOne"));
             return false;
         }
         return true;
@@ -121,7 +118,7 @@ public class ImportConnectionsPanelOne extends ActionPanel {
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
 
-        fileChooser.setDialogTitle("Select Import File Path");
+        fileChooser.setDialogTitle(bundleString("SelectImportFilePath"));
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
 
         int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), "Select");

@@ -27,6 +27,7 @@ import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.databaseobjects.impl.DefaultDatabaseSchema;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -640,7 +641,7 @@ public class TableSelectionCombosGroup implements ItemListener {
 
     private void handleDataSourceException(DataSourceException e) {
 
-        Log.error("Error during database object selection", e);
+        Log.error(bundleString("error.selection-object"), e);
 
         throw new ApplicationException(e);
     }
@@ -689,6 +690,9 @@ public class TableSelectionCombosGroup implements ItemListener {
 
         }
 
+    }
+    public String bundleString(String key) {
+        return Bundles.get(getClass(), key);
     }
 
 }

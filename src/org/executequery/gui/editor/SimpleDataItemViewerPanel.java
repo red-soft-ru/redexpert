@@ -71,6 +71,7 @@ public class SimpleDataItemViewerPanel extends DefaultActionButtonsPanel {
         textPanel.setBorder(emptyBorder);
 
         textArea = createTextArea();
+        textArea.setLineWrap(true);
         textPanel.add(new JScrollPane(textArea), BorderLayout.CENTER);
 
         JTabbedPane tabbedPane = new JTabbedPane();

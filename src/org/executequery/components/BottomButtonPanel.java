@@ -24,6 +24,7 @@ import org.executequery.actions.othercommands.CancelCommand;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,7 +55,7 @@ public class BottomButtonPanel extends JPanel {
     /**
      * Indicates whether this is a dialog
      */
-    private boolean isDialog;
+    private final boolean isDialog;
 
     public BottomButtonPanel(boolean isDialog) {
         super(new GridBagLayout());
@@ -132,19 +133,12 @@ public class BottomButtonPanel extends JPanel {
         helpButton = new DefaultPanelButton(localisedHelpLabel());
         okButton = new DefaultPanelButton(Bundles.get("common.ok.button"));
         cancelButton = new DefaultPanelButton(new CancelCommand(isDialog));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets.top = 5;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.weightx = 0.5;
-        add(helpButton, gbc);
-        gbc.gridx = 1;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.weightx = 0;
-        add(okButton, gbc);
-        gbc.insets.left = 5;
-        gbc.gridx = 2;
-        add(cancelButton, gbc);
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
+        add(helpButton, gbh.setLabelDefault().anchorWest().get());
+        add(new JPanel(), gbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        add(okButton, gbh.nextCol().setLabelDefault().anchorEast().get());
+        add(cancelButton, gbh.nextCol().get());
     }
 
     public void enableButtons(boolean enable) {

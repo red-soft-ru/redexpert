@@ -62,7 +62,7 @@ public class ExportConnectionsPanelThree extends ActionPanel {
         gbc.gridwidth = 3;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(new JLabel("Exporting selections..."), gbc);
+        add(new JLabel(bundleString("ExportingSelections")), gbc);
         gbc.gridy++;
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -103,7 +103,7 @@ public class ExportConnectionsPanelThree extends ActionPanel {
     public void start() {
 
         progressBar.start();
-        append("Exporting ... ");
+        append(bundleString("Exporting"));
     }
 
 }

@@ -104,11 +104,10 @@ public class ExportConnectionsPanelOne extends ActionPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
 
-        add(new JLabel("Select the connections and/or folders you wish to export below."), gbc);
+        add(new JLabel(bundleString("SelectTheConnectionsAndOrFoldersYouWishToExportBelow")), gbc);
 
         gbc.gridy++;
-        add(new JLabel("<html><b><i>Note: </i></b>Passwords will be exported as they are stored - if you "
-                + "have selected that they be encrypted, they will be exported encrypted, otherwise in plain text.</html>"), gbc);
+        add(new JLabel(bundleString("PasswordsWillBeExportedAsTheyAreStoredIfYou")), gbc);
 
         gbc.gridy++;
         gbc.weighty = 1.0;
@@ -131,7 +130,7 @@ public class ExportConnectionsPanelOne extends ActionPanel {
 
         if (checkTreeManager.getSelectionModel().getSelectionCount() == 0) {
 
-            GUIUtilities.displayErrorMessage("You must select at least one connection or folder to export");
+            GUIUtilities.displayErrorMessage(bundleString("YouMustSelectAtLeastOneConnectionOrFolderToExport"));
             return false;
         }
         return true;

@@ -49,7 +49,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         checkPanel = new JPanel();
         descriptionPanel = new JPanel();
         sqlPanel = new JPanel();
-        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), columnData, false);
+        selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(), connection.getIntDataTypesArray(), columnData, false);
         notNullBox = new JCheckBox("Not Null");
         scrollDefaultValue = new JScrollPane();
         scrollCheck = new JScrollPane();
@@ -117,7 +117,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         columnData.setDefaultValue(columnData.getDomainDefault());
         descriptionTextPane.setText(columnData.getDescription());
         checkTextPane.setText(columnData.getCheck());
-        defaultValueTextPane.setText(columnData.getDefaultValue());
+        defaultValueTextPane.setText(columnData.getDefaultValue().getValue());
         nameField.setText(columnData.getColumnName());
         notNullBox.setSelected(columnData.isRequired());
         if (getDatabaseVersion() < 3)
@@ -201,15 +201,11 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
                     sb.append("TO ").append(columnData.getFormattedColumnName()).append("\n");
                 }
                 if (columnData.isDefaultChanged()) {
-                    if (MiscUtils.isNull(columnData.getDefaultValue()))
+                    if (MiscUtils.isNull(columnData.getDefaultValue().getValue()))
                         sb.append("DROP DEFAULT\n");
                     else {
                         sb.append("SET DEFAULT ");
-                        if (columnData.getDefaultValue().toUpperCase().trim().equals("NULL")) {
-                            sb.append("NULL");
-                        } else {
-                            sb.append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
-                        }
+                        sb.append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
                         sb.append("\n");
 
                     }

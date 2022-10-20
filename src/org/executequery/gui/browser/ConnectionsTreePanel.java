@@ -26,6 +26,7 @@ import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseConnectionFactory;
 import org.executequery.databasemediators.spi.DatabaseConnectionFactoryImpl;
+import org.executequery.databasemediators.spi.TemplateDatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObjectFactory;
 import org.executequery.databaseobjects.NamedObject;
@@ -846,8 +847,12 @@ public class ConnectionsTreePanel extends TreePanel
 
   public void newConnection(String sourceName) {
 
+    String username = SystemProperties.getProperty("user", "startup.default.connection.username");
+    String password = SystemProperties.getProperty("user", "startup.default.connection.password");
+    String charset = SystemProperties.getProperty("user", "startup.default.connection.charset");
+    TemplateDatabaseConnection tdc = new TemplateDatabaseConnection(username, password, charset, true);
     String name = buildConnectionName(Bundles.getCommon("newConnection.button"));
-    newConnection(databaseConnectionFactory().create(name, sourceName));
+    newConnection(databaseConnectionFactory().create(name, sourceName, tdc));
   }
 
   /**
@@ -1835,6 +1840,54 @@ public class ConnectionsTreePanel extends TreePanel
     return tree.getSelectionPath();
   }
 
+  public TreePath[] getTreeSelectionPaths() {
+    return tree.getSelectionPaths();
+  }
+
+  private boolean selectedPathsOnlyThisTyped(int namedObject){
+    boolean flag = true;
+    TreePath[] treePaths = tree.getSelectionPaths();
+    if (treePaths == null)
+      return false;
+    DatabaseObjectNode Object;
+    for (int i = 0; i < treePaths.length; i++) {
+      Object = (DatabaseObjectNode) treePaths[i].getLastPathComponent();
+      if (Object.getType() != namedObject)
+        flag = false;
+    }
+    return flag;
+  }
+
+  private boolean checkPathForLocationInSelectedTree(TreePath treePathForLocation) {
+    if (treePathForLocation == null)
+      return false;
+    boolean flag = false;
+    try {
+      TreePath[] treePaths = tree.getSelectionPaths();
+      if (treePaths == null)
+        return false;
+
+      for (int i = 0; i < treePaths.length; i++) {
+        if (treePaths[i].getLastPathComponent() == treePathForLocation.getLastPathComponent())
+          flag = true;
+      }
+    } catch (Exception e) {
+      return false;
+    }
+    return flag;
+  }
+
+  private boolean checkShowActiveMenu(TreePath treePathForLocation) {
+    return selectedTriggersOrIndexesOnly() && checkPathForLocationInSelectedTree(treePathForLocation);
+  }
+
+  private boolean selectedTriggersOrIndexesOnly() {
+    return selectedPathsOnlyThisTyped(NamedObject.TRIGGER) ||
+            selectedPathsOnlyThisTyped(NamedObject.DDL_TRIGGER) ||
+            selectedPathsOnlyThisTyped(NamedObject.DATABASE_TRIGGER) ||
+            selectedPathsOnlyThisTyped(NamedObject.INDEX);
+  }
+
   protected TreePath getTreePathForLocation(int x, int y) {
     return tree.getPathForLocation(x, y);
   }
@@ -1907,16 +1960,18 @@ public class ConnectionsTreePanel extends TreePanel
 
         Point point = new Point(e.getX(), e.getY());
         TreePath treePathForLocation = getTreePathForLocation(point.x, point.y);
-        try {
 
-          removeTreeSelectionListener();
-          setTreeSelectionPath(treePathForLocation);
+        if (!checkShowActiveMenu(treePathForLocation)) {
+          try {
 
-        } finally {
+            removeTreeSelectionListener();
+            setTreeSelectionPath(treePathForLocation);
 
-          addTreeSelectionListener();
+          } finally {
+
+            addTreeSelectionListener();
+          }
         }
-
         if (treePathForLocation != null) {
 
           JPopupMenu popupMenu = null;
@@ -1926,15 +1981,19 @@ public class ConnectionsTreePanel extends TreePanel
             popupMenu = getBrowserTreeFolderPopupMenu();
 
           } else if (isRootNode(object)) {
-
             popupMenu = getBrowserRootTreePopupMenu();
 
           } else {
 
             popupMenu = getBrowserTreePopupMenu();
             BrowserTreePopupMenu browserPopup = (BrowserTreePopupMenu) popupMenu;
-            browserPopup.setCurrentPath(treePathForLocation);
-
+            if ((checkShowActiveMenu(treePathForLocation)) && tree.getSelectionPaths().length > 1) {
+              browserPopup.setTreePaths(tree.getSelectionPaths());
+              browserPopup.setSelectedSeveralPaths(true);
+            } else {
+              browserPopup.setCurrentPath(treePathForLocation);
+              browserPopup.setSelectedSeveralPaths(false);
+            }
             DatabaseConnection connection = getConnectionAt(point);
             if (connection == null) {
               return;

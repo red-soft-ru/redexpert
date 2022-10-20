@@ -17,6 +17,7 @@ public class ValueOrNullParameterField extends JPanel {
 
     public ValueOrNullParameterField(JTextField textField) {
         this.textField = textField;
+        textField.setColumns(15);
         init();
     }
 

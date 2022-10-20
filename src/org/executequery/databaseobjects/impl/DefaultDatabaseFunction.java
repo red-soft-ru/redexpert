@@ -21,6 +21,7 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
@@ -96,24 +97,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         return arguments;
     }
 
-    private String entryPoint;
-    private String engine;
 
-    public String getEntryPoint() {
-        return entryPoint;
-    }
-
-    public void setEntryPoint(String entryPoint) {
-        this.entryPoint = entryPoint;
-    }
-
-    public String getEngine() {
-        return engine;
-    }
-
-    public void setEngine(String engine) {
-        this.engine = engine;
-    }
 
     void loadFunctionArguments() {
         ResultSet rs = null;
@@ -158,10 +142,18 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 arguments.add(fp);
                 if (functionSourceCode == null || functionSourceCode.isEmpty())
                     functionSourceCode = rs.getString(2);
-                if ((entryPoint == null || entryPoint.isEmpty()) && rs.getString("ENTRY_POINT") != null)
-                    entryPoint = rs.getString("ENTRY_POINT").trim();
-                if ((engine == null || engine.isEmpty()) && rs.getString("ENGINE") != null)
-                    engine = rs.getString("ENGINE").trim();
+                if ((entryPoint == null || entryPoint.isEmpty())) {
+                    if (rs.getString("ENTRY_POINT") != null)
+                        entryPoint = rs.getString("ENTRY_POINT").trim();
+                    else entryPoint = "";
+                }
+                if ((engine == null || engine.isEmpty())) {
+                    if (rs.getString("ENGINE") != null)
+                        engine = rs.getString("ENGINE").trim();
+                    else engine = "";
+                }
+
+                setRemarks(rs.getString(3));
             }
 
         } catch (SQLException e) {
@@ -245,157 +237,6 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
     public String getCreateSQLText() {
         return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getFunctionSourceCode(), getEntryPoint(), getEngine(), getRemarks(), getHost().getDatabaseConnection());
-
-        /*StringBuilder sb = new StringBuilder();
-        StringBuilder sbInput = new StringBuilder();
-        StringBuilder sbOutput = new StringBuilder();
-
-        sb.append("SET TERM ^ ;");
-        sb.append("\n\n");
-        sb.append("CREATE OR ALTER FUNCTION \n");
-        sb.append(getName());
-        sb.append("\n");
-
-        sbInput.append("( \n");
-        
-        List<FunctionArgument> arguments = getFunctionArguments();
-
-        for (FunctionArgument argument : arguments) {
-            if (argument.getType() == DatabaseMetaData.procedureColumnIn) {
-                sbInput.append("\t");
-                sbInput.append(argument.getName());
-                sbInput.append(" ");
-                if (argument.isTypeOf()) {
-                    sbInput.append(" TYPE OF ");
-                    if (argument.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
-                        sbInput.append(argument.getDomain());
-                    else {
-                        sbInput.append("COLUMN ");
-                        sbInput.append(argument.getRelationName());
-                        sbInput.append(".");
-                        sbInput.append(argument.getFieldName()).append(" ");
-                    }
-                    if (argument.getNullable() == 1)
-                        sbInput.append(" NOT NULL ");
-                    if (!MiscUtils.isNull(argument.getDefaultValue()))
-                        sbInput.append(argument.getDefaultValue());
-                    sbInput.append(",\n");
-                } else {
-                    if (argument.getDomain() != null) {
-                        sbInput.append(argument.getDomain());
-                    } else {
-                        if (argument.getSqlType().contains("SUB_TYPE")) {
-                            sbInput.append(argument.getSqlType().replace("<0", String.valueOf(argument.getSubType())));
-                            sbInput.append(" SEGMENT SIZE ");
-                            sbInput.append(argument.getSize());
-                        } else {
-                            sbInput.append(argument.getSqlType());
-                            if (argument.getDataType() == Types.CHAR
-                                    || argument.getDataType() == Types.VARCHAR
-                                    || argument.getDataType() == Types.NVARCHAR
-                                    || argument.getDataType() == Types.VARBINARY) {
-                                sbInput.append("(");
-                                sbInput.append(argument.getSize());
-                                sbInput.append(")");
-                            }
-                        }
-                    }
-                    if (argument.getEncoding() != null) {
-                        sbInput.append(" CHARACTER SET ");
-                        sbInput.append(argument.getEncoding()).append(" ");
-                    }
-                    if (argument.getNullable() == 1)
-                        sbInput.append(" NOT NULL ");
-                    if (!MiscUtils.isNull(argument.getDefaultValue()))
-                        sbInput.append(" ").append(argument.getDefaultValue());
-                    sbInput.append(",\n");
-                }
-            } else if (argument.getType() == DatabaseMetaData.procedureColumnReturn) {
-                sbOutput.append(" ");
-                if (argument.isTypeOf()) {
-                    sbOutput.append("TYPE OF ");
-                    if (argument.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
-                        sbOutput.append(argument.getDomain());
-                    else {
-                        sbOutput.append("COLUMN ");
-                        sbOutput.append(argument.getRelationName());
-                        sbOutput.append(".");
-                        sbOutput.append(argument.getFieldName());
-                    }
-                    if (argument.getNullable() == 1)
-                        sbOutput.append(" NOT NULL,\n");
-                    else
-                        sbOutput.append(",\n");
-                } else {
-                    if (argument.getDomain() != null) {
-                        sbOutput.append(argument.getDomain());
-                    } else {
-                        if (argument.getSqlType().contains("SUB_TYPE")) {
-                            sbOutput.append(argument.getSqlType().replace("<0", String.valueOf(argument.getSubType())));
-                            sbOutput.append(" SEGMENT SIZE ");
-                            sbOutput.append(argument.getSize());
-                        } else {
-                            sbOutput.append(argument.getSqlType());
-                            if (argument.getDataType() == Types.CHAR
-                                    || argument.getDataType() == Types.VARCHAR
-                                    || argument.getDataType() == Types.NVARCHAR
-                                    || argument.getDataType() == Types.VARBINARY) {
-
-                                sbOutput.append(argument.getSize());
-                            }
-                        }
-                    }
-                    if (argument.getEncoding() != null) {
-                        sbOutput.append(" CHARACTER SET ");
-                        sbOutput.append(argument.getEncoding());
-                    }
-                    if (argument.getNullable() == 1)
-                        sbOutput.append(" NOT NULL,\n");
-                    else
-                        sbOutput.append(",\n");
-                }
-            }
-        }
-
-        String input = null;
-        if (sbInput.length() > 3) {
-            input = sbInput.substring(0, sbInput.length() - 2);
-            input += "\n) \n";
-        }
-
-        if (input != null) {
-            sb.append(input);
-            sb.append("\n");
-        }
-
-        String output = null;
-        if (sbOutput.length() > 3) {
-            output = sbOutput.substring(0, sbOutput.length() - 2);
-        }
-
-        if (output != null) {
-            sb.append("RETURNS ");
-            sb.append(output);
-            sb.append("\n");
-        }
-
-        if (getEntryPoint() != null) {
-            sb.append("EXTERNAL NAME '");
-            sb.append(getEntryPoint()).append("'");
-            sb.append(" ENGINE ").append(getEngine());
-        } else {
-            sb.append("AS");
-            sb.append("\n");
-
-            sb.append(getFunctionSourceCode());
-
-
-        }
-        sb.append("\n\n");
-        sb.append("SET TERM ; ^");
-
-
-        return sb.toString();*/
     }
 
     protected void getObjectInfo() {
@@ -406,6 +247,39 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         } finally {
             setMarkedForReload(false);
         }
+
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        try {
+            ResultSet rs = querySender.getResultSet(getDescriptionQuery()).getResultSet();
+            setInfoFromResultSet(rs);
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
+        } finally {
+            querySender.releaseResources();
+            setMarkedForReload(false);
+        }
+    }
+
+    protected String getDescriptionQuery() {
+
+        String query = "select r.rdb$description\n" +
+                "from rdb$relations r\n" +
+                "where r.rdb$relation_name = '" + getName() + "'";
+
+        return query;
+
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) {
+
+        try {
+            if (rs.next())
+                setRemarks(rs.getString(1));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 }
 

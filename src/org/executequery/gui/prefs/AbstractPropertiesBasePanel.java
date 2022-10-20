@@ -121,6 +121,9 @@ abstract class AbstractPropertiesBasePanel extends JPanel
         return Bundles.get("preferences." + key);
     }
 
+    String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
 }
 
 

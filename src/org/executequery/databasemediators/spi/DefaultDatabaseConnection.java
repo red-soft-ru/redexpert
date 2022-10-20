@@ -27,6 +27,7 @@ import org.executequery.crypto.PasswordEncoderDecoder;
 import org.executequery.crypto.spi.DefaultPasswordEncoderDecoderFactory;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -197,6 +198,11 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     private boolean namesToUpperCase = true;
 
+    String pathToTraceConfig;
+
+    String[] dataTypesArray;
+    int[] intDataTypesArray;
+
     @Override
     public boolean isNamesToUpperCase() {
         return namesToUpperCase;
@@ -219,7 +225,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
      * Creates a new empty <code>DatabaseConnection</code> object
      * with the specified name.
      *
-     * @param A unique name for this connection.
+     * @param name - A unique name for this connection.
      */
     public DefaultDatabaseConnection(String name) {
 
@@ -227,11 +233,28 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         transactionIsolation = -1;
     }
 
+    /**
+     * @param name - A unique name for this connection
+     * @param sourceName - File path for this connection
+     */
     public DefaultDatabaseConnection(String name, String sourceName) {
 
         this.name = name;
         this.sourceName = sourceName;
         transactionIsolation = -1;
+    }
+
+    public DefaultDatabaseConnection(String name, String sourceName, TemplateDatabaseConnection tdc) {
+
+        this.name = name;
+        this.sourceName = sourceName;
+        transactionIsolation = -1;
+
+        this.userName = tdc.getUserName();
+        this.password = tdc.getPassword();
+        this.passwordStored = tdc.isPasswordStored();
+        this.charset = tdc.getCharset();
+
     }
 
     public boolean isPasswordStored() {
@@ -748,6 +771,35 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         }
     }
 
+    @Override
+    public String getPathToTraceConfig() {
+        return pathToTraceConfig;
+    }
+
+    @Override
+    public void setPathToTraceConfig(String pathToTraceConfig) {
+        this.pathToTraceConfig = pathToTraceConfig;
+    }
+
+    @Override
+    public String[] getDataTypesArray() {
+        if (dataTypesArray == null) {
+            MetaDataValues metaData = new MetaDataValues(true);
+            metaData.setDatabaseConnection(this);
+            dataTypesArray = metaData.getDataTypesArray();
+        }
+        return dataTypesArray;
+    }
+
+    @Override
+    public int[] getIntDataTypesArray() {
+        if (intDataTypesArray == null) {
+            MetaDataValues metaData = new MetaDataValues(true);
+            metaData.setDatabaseConnection(this);
+            intDataTypesArray = metaData.getIntDataTypesArray();
+        }
+        return intDataTypesArray;
+    }
 
     private static final long serialVersionUID = 950081216942320441L;
 

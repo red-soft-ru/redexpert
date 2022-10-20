@@ -47,7 +47,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
 
     private Point lastPopupPoint;
 
-    private ReflectiveAction reflectiveAction;
+    private final ReflectiveAction reflectiveAction;
 
     private final ResultSetTable table;
 
@@ -251,10 +251,10 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     public void exportSelection(ActionEvent e) {
 
         TableModel selected = table.selectedCellsAsTableModel();
-
         if (selected != null) {
-
-            new QueryEditorResultsExporter(selected);
+            if (tableObject != null)
+                new QueryEditorResultsExporter(selected, tableObject.getName());
+            else new QueryEditorResultsExporter(selected, null);
         }
     }
 
@@ -308,8 +308,9 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     }
 
     public void exportTable(ActionEvent e) {
-
-        new QueryEditorResultsExporter(resultSetTableModel());
+        if (tableObject != null)
+            new QueryEditorResultsExporter(resultSetTableModel(), tableObject.getName(), tableObject.getColumns());
+        else new QueryEditorResultsExporter(resultSetTableModel(), null);
     }
 
     public void printSelection(ActionEvent e) {

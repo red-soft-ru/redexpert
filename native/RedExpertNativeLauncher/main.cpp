@@ -2335,7 +2335,7 @@ int main(int argc, char* argv[])
     app_exe_path = str;
     char buf[256];
     GetCurrentDirectoryA(256, buf);
-    bin_dir = std::string(buf);
+    bin_dir = app_exe_path.substr(0, app_exe_path.find_last_of(file_separator()));
     app_pid = GetCurrentProcessId();
 #endif
 

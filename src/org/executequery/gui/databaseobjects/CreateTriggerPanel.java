@@ -10,10 +10,14 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +84,12 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
      * The table combo selection
      */
     private JComboBox tablesCombo;
+
+    protected JCheckBox useExternalBox;
+    protected JPanel emptyExternalPanel;
+    protected JTextField externalField;
+
+    protected JTextField engineField;
 
     /**
      * The constructor
@@ -156,7 +166,27 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
         anyDdlBox.addActionListener(actionEvent -> changeAnyDdlBox());
 
+        externalField = new JTextField();
+        engineField = new JTextField();
+
+        useExternalBox = new JCheckBox(bundleStaticString("useExternal"));
+        emptyExternalPanel = new JPanel();
+        useExternalBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                checkExternal();
+            }
+        });
+
+
         centralPanel.setLayout(new GridBagLayout());
+        GridBagHelper centralGbh = new GridBagHelper();
+        centralGbh.setDefaultsStatic();
+        centralGbh.defaults();
+        centralPanel.add(useExternalBox, centralGbh.setLabelDefault().setWidth(2).get());
+        centralPanel.add(emptyExternalPanel, centralGbh.nextCol().setWidth(1).fillHorizontally().setMaxWeightX().spanX().get());
+        centralGbh.addLabelFieldPair(centralPanel, bundleStaticString("EntryPoint"), externalField, null);
+        centralGbh.addLabelFieldPair(centralPanel, bundleStaticString("Engine"), engineField, null);
         JPanel commonPanel = new JPanel(new GridBagLayout());
         commonPanel.add(typeTriggerCombo, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
@@ -174,10 +204,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        centralPanel.add(commonPanel, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        centralPanel.add(commonPanel, centralGbh.nextRowFirstCol().fillHorizontally().spanX().get());
         JPanel topPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
                 1, 1, 1, 1,
@@ -188,10 +215,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         gbcTop.fill = GridBagConstraints.BOTH;
         topPanel.add(ddlTableTriggerPanel, gbcTop);
 
-        centralPanel.add(topPanel, new GridBagConstraints(0, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        centralPanel.add(topPanel, centralGbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
         tabbedPane.add(bundleStaticString("SQL"), sqlBodyText);
         tabbedPane.add(bundleStaticString("description"), descriptionText);
@@ -289,6 +313,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         }
 
         changeTypeTrigger();
+        checkExternal();
 
     }
 
@@ -302,9 +327,28 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     protected void initEdited() {
         reset();
-        //addCreateSqlTab(trigger);
         addDependenciesTab(trigger);
         addCreateSqlTab(trigger);
+    }
+
+    protected void checkExternal() {
+        boolean selected = useExternalBox.isSelected();
+        sqlBodyText.setVisible(!selected);
+        if (!selected) {
+            if (tabbedPane.getComponentZOrder(sqlBodyText) < 0) {
+                tabbedPane.insertTab(bundleStaticString("SQL"), null, sqlBodyText, null, 0);
+                tabbedPane.setSelectedComponent(sqlBodyText);
+            }
+        } else {
+            if (tabbedPane.getComponentZOrder(sqlBodyText) >= 0)
+                tabbedPane.remove(sqlBodyText);
+        }
+        int ind = centralPanel.getComponentZOrder(externalField) - 1;
+        externalField.setVisible(selected);
+        centralPanel.getComponent(ind).setVisible(selected);
+        ind = centralPanel.getComponentZOrder(engineField) - 1;
+        engineField.setVisible(selected);
+        centralPanel.getComponent(ind).setVisible(selected);
     }
 
     protected void reset() {
@@ -349,6 +393,14 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 }
             }
         }
+        if (!MiscUtils.isNull(trigger.getEntryPoint())) {
+            useExternalBox.setSelected(true);
+            engineField.setText(trigger.getEngine());
+            externalField.setText(trigger.getEntryPoint());
+
+        }
+        useExternalBox.setVisible(false);
+        emptyExternalPanel.setVisible(false);
     }
 
     @Override
@@ -402,65 +454,56 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     protected String generateQuery() {
-        StringBuilder query = new StringBuilder("CREATE OR ALTER TRIGGER " + getFormattedName());
         String selectedItem = (String) typeTriggerCombo.getSelectedItem();
+        String table = null;
         if (selectedItem == TRIGGER) {
-            String table = (String) tablesCombo.getSelectedItem();
+            table = (String) tablesCombo.getSelectedItem();
             if (table != null)
                 table = table.trim();
-            query.append(" FOR ").append(MiscUtils.getFormattedObject(table));
         }
-        query.append("\n");
-        if (activeBox.isSelected())
-            query.append("ACTIVE ");
-        else query.append("INACTIVE ");
+        StringBuilder triggerType = new StringBuilder();
         if (selectedItem == TRIGGER) {
-            query.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
+            triggerType.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
             boolean first = true;
             if (insertBox.isSelected()) {
                 first = false;
-                query.append("INSERT ");
+                triggerType.append("INSERT ");
             }
             if (updateBox.isSelected()) {
                 if (!first)
-                    query.append("OR ");
+                    triggerType.append("OR ");
                 first = false;
-                query.append("UPDATE ");
+                triggerType.append("UPDATE ");
             }
             if (deleteBox.isSelected()) {
                 if (!first)
-                    query.append("OR ");
-                query.append("DELETE ");
+                    triggerType.append("OR ");
+                triggerType.append("DELETE ");
             }
 
         } else {
             if (selectedItem == DB_TRIGGER)
-                query.append("ON ").append(actionCombo.getSelectedItem()).append(" ");
+                triggerType.append("ON ").append(actionCombo.getSelectedItem()).append(" ");
             else {
-                query.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
+                triggerType.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
                 boolean first = true;
                 if (anyDdlBox.isSelected()) {
-                    query.append(anyDdlBox.getText()).append(" ");
+                    triggerType.append(anyDdlBox.getText()).append(" ");
                 } else {
                     for (JCheckBox checkBox : ddlCheckBoxes) {
                         if (checkBox.isSelected()) {
                             if (!first)
-                                query.append("OR ");
-                            query.append(checkBox.getText()).append(" ");
+                                triggerType.append("OR ");
+                            triggerType.append(checkBox.getText()).append(" ");
                             first = false;
                         }
                     }
                 }
             }
         }
-        query.append("POSITION ").append(positionField.getValue()).append("\n");
-        query.append(sqlBodyText.getSQLText()).append("^");
-        String comment = descriptionText.getTextAreaComponent().getText();
-        if (!MiscUtils.isNull(comment) && !comment.trim().isEmpty()) {
-            comment = comment.replace("'", "''");
-            query.append("COMMENT ON TRIGGER ").append(getFormattedName()).append(" IS '").append(comment).append("'^");
-        }
-        return query.toString();
+        String query = SQLUtils.generateCreateTriggerStatement(nameField.getText(), table, activeBox.isSelected(), triggerType.toString(),
+                (int) positionField.getValue(), sqlBodyText.getSQLText(), engineField.getText(), externalField.getText(), descriptionText.getTextAreaComponent().getText());
+        return query;
     }
 
     private void generateScript() {

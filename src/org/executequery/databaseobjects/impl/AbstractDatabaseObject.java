@@ -629,6 +629,14 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     public DatabaseMetaTag getMetaTagParent() {
         return metaTagParent;
     }
+
+    String getFromResultSet(ResultSet rs, String colName) throws SQLException {
+        String res = rs.getString(colName);
+        if (res == null)
+            res = "";
+        else res = res.trim();
+        return res;
+    }
 }
 
 

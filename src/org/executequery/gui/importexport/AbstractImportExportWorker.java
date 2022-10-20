@@ -574,7 +574,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
         if (format == null || format.length() == 0) {
 
             int yesNo = GUIUtilities.displayConfirmDialog(
-                    Bundles.get("AsbtractImportExportWorker.cancelProcessConfirm"));
+                    Bundles.get("AbstractImportExportWorker.cancelProcessConfirm"));
 
             if (yesNo == JOptionPane.YES_OPTION) {
                 cancelTransfer();
@@ -842,7 +842,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
             sb.append("\n\n");
 
             writer = new PrintWriter(new FileWriter(path, true), true);
-            writer.println(sb.toString());
+            writer.println(sb);
             sb = null;
         } catch (IOException io) {
         } finally {

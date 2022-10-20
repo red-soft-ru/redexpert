@@ -361,7 +361,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         externalField = new JTextField();
         engineField = new JTextField();
 
-        useExternalBox = new JCheckBox(bundleString("useExternal"));
+        useExternalBox = new JCheckBox(bundleStaticString("useExternal"));
         emptyExternalPanel = new JPanel();
         useExternalBox.addItemListener(new ItemListener() {
             @Override
@@ -377,8 +377,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         centralGbh.defaults();
         centralPanel.add(useExternalBox, centralGbh.setLabelDefault().setWidth(2).get());
         centralPanel.add(emptyExternalPanel, centralGbh.nextCol().setWidth(1).fillHorizontally().setMaxWeightX().spanX().get());
-        centralGbh.addLabelFieldPair(centralPanel, bundleString("EntryPoint"), externalField, null);
-        centralGbh.addLabelFieldPair(centralPanel, bundleString("Engine"), engineField, null);
+        centralGbh.addLabelFieldPair(centralPanel, bundleStaticString("EntryPoint"), externalField, null);
+        centralGbh.addLabelFieldPair(centralPanel, bundleStaticString("Engine"), engineField, null);
         JPanel topPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
                 1, 1, 1, 1,

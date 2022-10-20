@@ -363,7 +363,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     void execute() {
         String queries = query;
-        if (queries.endsWith(";")) {
+        if (queries.endsWith(delimiter)) {
             queries = queries.substring(0, queries.length() - 1);
         }
         String query = "";

@@ -686,6 +686,34 @@ public final class SQLUtils {
         return sb.toString();
     }
 
+    public static String generateCreateTriggerStatement(String name, String tableName, boolean active,
+                                                        String triggerType, int position, String sourceCode,
+                                                        String engine, String entryPoint, String comment) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE OR ALTER TRIGGER ").append(format(name));
+        if (!MiscUtils.isNull(tableName))
+            sb.append(" FOR ").append(format(tableName));
+        sb.append("\n");
+        sb.append(active ? "ACTIVE" : "INACTIVE");
+        sb.append(" ").append(triggerType);
+        sb.append(" POSITION ").append(position);
+        sb.append("\n");
+        if (!MiscUtils.isNull(entryPoint)) {
+            sb.append("EXTERNAL NAME '").append(entryPoint).append("'");
+            if (!MiscUtils.isNull(engine)) {
+                sb.append("\n").append("ENGINE ").append(engine);
+            }
+        } else if (!MiscUtils.isNull(sourceCode)) {
+            sb.append(sourceCode);
+        }
+        sb.append("^");
+        if (!MiscUtils.isNull(comment)) {
+            comment = comment.replace("'", "''");
+            sb.append("COMMENT ON TRIGGER ").append(format(name)).append(" IS '").append(comment).append("'^");
+        }
+        return sb.toString();
+    }
+
     private static String format(String object) {
         return MiscUtils.getFormattedObject(object);
     }

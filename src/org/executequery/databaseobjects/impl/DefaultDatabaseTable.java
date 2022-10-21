@@ -948,7 +948,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         updateListCC();
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, false, Comparer.TABLE_CONSTRAINTS_NEED,
+                getName(), listCD, listCC, true, false, false,
                 null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 

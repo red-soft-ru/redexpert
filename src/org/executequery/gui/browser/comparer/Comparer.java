@@ -5,8 +5,12 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
+import org.executequery.databaseobjects.impl.ColumnConstraint;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
+import org.executequery.databaseobjects.impl.DefaultTemporaryDatabaseTable;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.util.SQLUtils;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -33,6 +37,10 @@ public class Comparer {
 
     private String lists;
     private ArrayList<String> script;
+
+    private String constraintsList;
+    private List<org.executequery.gui.browser.ColumnConstraint> constraints;
+
     protected ArrayList<String> createdObjects = new ArrayList<>();
     protected ArrayList<String> alteredObjects = new ArrayList<>();
     protected ArrayList<String> droppedObjects = new ArrayList<>();
@@ -40,6 +48,7 @@ public class Comparer {
     public Comparer(DatabaseConnection dbSlave, DatabaseConnection dbMaster) {
 
         script = new ArrayList<>();
+        constraints = new ArrayList<>();
 
         compareConnection = new DefaultStatementExecutor(dbSlave, true);
         masterConnection = new DefaultStatementExecutor(dbMaster, true);
@@ -138,6 +147,28 @@ public class Comparer {
         }
     }
 
+    public void createConstraints() {
+
+        if (constraints.size() < 1)
+            return;
+
+        script.add("\n/* ----- Constraints defining ----- */\n");
+
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraints)
+            if (obj.getType() == NamedObject.PRIMARY_KEY)
+                addConstraintToScript(obj);
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraints)
+            if (obj.getType() != NamedObject.PRIMARY_KEY)
+                addConstraintToScript(obj);
+
+    }
+
+    private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
+        script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
+        script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
+                SQLUtils.generateDefinitionColumnConstraint(obj, false) + ";\n");
+    }
+
     private List<NamedObject> createListObjects(int type) {
 
         List<NamedObject> compareConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
@@ -151,6 +182,10 @@ public class Comparer {
                     masterConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
 
                 createObjects.add(databaseObject);
+
+                if (TABLE_CONSTRAINTS_NEED)
+                    if (databaseObject.getType() == NamedObject.TABLE || databaseObject.getType() == NamedObject.GLOBAL_TEMPORARY)
+                        createListConstraints(databaseObject);
             }
         }
 
@@ -197,11 +232,40 @@ public class Comparer {
         return alterObjects;
     }
 
+    private void createListConstraints(NamedObject databaseObject) {
+
+        if (constraintsList == null)
+            constraintsList = "";
+
+        if (databaseObject.getType() == NamedObject.TABLE) {
+
+            DefaultDatabaseTable tempTable = (DefaultDatabaseTable) databaseObject;
+            for (ColumnConstraint cc : tempTable.getConstraints()) {
+                constraintsList += "\t" + databaseObject.getName() + "." + cc.getName() + "\n";
+                constraints.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+            }
+
+        } else if (databaseObject.getType() == NamedObject.GLOBAL_TEMPORARY) {
+
+            DefaultTemporaryDatabaseTable tempTable = (DefaultTemporaryDatabaseTable) databaseObject;
+            for (ColumnConstraint cc : tempTable.getConstraints()) {
+                constraintsList += "\t" + databaseObject.getName() + "." + cc.getName() + "\n";
+                constraints.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+            }
+
+        }
+    }
+
     // ---
 
     public String getLists() {
         return lists;
     }
+
+    public String getConstraintsList() {
+        return constraintsList;
+    }
+
     public void setLists(String lists) {
         this.lists = lists;
     }
@@ -209,9 +273,11 @@ public class Comparer {
     public ArrayList<String> getScript() {
         return script;
     }
+
     public String getScript(int elemIndex) {
         return script.get(elemIndex);
     }
+
     public void addToScript(String addedScript) {
         script.add(addedScript);
     }
@@ -219,6 +285,7 @@ public class Comparer {
     public StatementExecutor getCompareConnection() {
         return compareConnection;
     }
+
     public StatementExecutor getMasterConnection() {
         return masterConnection;
     }

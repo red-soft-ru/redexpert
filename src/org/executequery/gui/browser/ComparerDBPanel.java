@@ -414,6 +414,14 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
+        if (!propertiesCheckBoxMap.get(4).isSelected()) {
+            comparer.createConstraints();
+            if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null) {
+                loggingOutputPanel.append("============= CONSTRAINTS defining  =============");
+                loggingOutputPanel.append(comparer.getConstraintsList());
+            }
+        }
+
         for (int i = 0; i < comparer.getScript().size(); i++)
             sqlTextPanel.getTextPane().append(comparer.getScript(i));
 

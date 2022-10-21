@@ -74,7 +74,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
             listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, true, true,
+                getName(), listCD, listCC, true, true, false,
                 typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
@@ -89,6 +89,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         return SQLUtils.generateAlterTable(this, comparingTable, true, Comparer.TABLE_CONSTRAINTS_NEED);
     }
 
+    @Override
     public int getType() {
         return GLOBAL_TEMPORARY;
     }
@@ -98,6 +99,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
      *
      * @return the metadata key name.
      */
+    @Override
     public String getMetaDataKey() {
         return NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY];
     }
@@ -109,10 +111,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        if (Comparer.TABLE_CONSTRAINTS_NEED)
-            return null;
-        else
-            return getCreateFullSQLText();
+        return getCreateFullSQLText();
     }
 
 }

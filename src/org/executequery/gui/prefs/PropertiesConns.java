@@ -24,8 +24,10 @@ package org.executequery.gui.prefs;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,6 +78,28 @@ public class PropertiesConns extends AbstractPropertiesBasePanel {
                 bundledString("StartupConnection"),
                 SystemProperties.getProperty("user", key),
                 connectionNames()));
+        key = "startup.default.connection.username";
+        list.add(new UserPreference(
+            UserPreference.STRING_TYPE,
+            key,
+            bundledString("ConnectAtStartup.username"),
+            SystemProperties.getProperty("user", key)
+        ));
+        key = "startup.default.connection.password";
+        list.add(new UserPreference(
+            UserPreference.STRING_TYPE,
+            key,
+            bundledString("ConnectAtStartup.password"),
+            SystemProperties.getProperty("user", key)
+        ));
+        key = "startup.default.connection.charset";
+        list.add(new UserPreference(
+            UserPreference.STRING_TYPE,
+            key,
+            bundledString("ConnectAtStartup.charset"),
+            SystemProperties.getProperty("user", key),
+            availableCharsets()
+        ));
 
         UserPreference[] preferences =
                 list.toArray(new UserPreference[list.size()]);
@@ -108,6 +132,23 @@ public class PropertiesConns extends AbstractPropertiesBasePanel {
 
         return ((DatabaseConnectionRepository) RepositoryCache.load(
                 DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
+    }
+
+    private String[] availableCharsets() {
+        List<String> available = new ArrayList<>();
+        try {
+            String resource = FileUtils.loadResource("org/executequery/charsets.properties");
+            String[] strings = resource.split("\n");
+            for (String s : strings) {
+                if (!s.startsWith("#") && !s.isEmpty())
+                    available.add(s);
+            }
+            java.util.Collections.sort(available);
+            available.add(0, "NONE");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return available.toArray(new String[0]);
     }
 
 }

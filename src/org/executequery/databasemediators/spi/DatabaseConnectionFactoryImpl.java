@@ -35,6 +35,16 @@ public class DatabaseConnectionFactoryImpl implements DatabaseConnectionFactory 
         return new DefaultDatabaseConnection(name);
     }
 
+    public DatabaseConnection create(String name, String sourceName) {
+
+        return new DefaultDatabaseConnection(name, sourceName);
+    }
+
+    public DatabaseConnection create(String name, String sourceName, TemplateDatabaseConnection tdc) {
+
+        return new DefaultDatabaseConnection(name, sourceName, tdc);
+    }
+
 }
 
 

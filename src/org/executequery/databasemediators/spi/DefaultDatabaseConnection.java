@@ -225,12 +225,36 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
      * Creates a new empty <code>DatabaseConnection</code> object
      * with the specified name.
      *
-     * @param A unique name for this connection.
+     * @param name - A unique name for this connection.
      */
     public DefaultDatabaseConnection(String name) {
 
         this.name = name;
         transactionIsolation = -1;
+    }
+
+    /**
+     * @param name - A unique name for this connection
+     * @param sourceName - File path for this connection
+     */
+    public DefaultDatabaseConnection(String name, String sourceName) {
+
+        this.name = name;
+        this.sourceName = sourceName;
+        transactionIsolation = -1;
+    }
+
+    public DefaultDatabaseConnection(String name, String sourceName, TemplateDatabaseConnection tdc) {
+
+        this.name = name;
+        this.sourceName = sourceName;
+        transactionIsolation = -1;
+
+        this.userName = tdc.getUserName();
+        this.password = tdc.getPassword();
+        this.passwordStored = tdc.isPasswordStored();
+        this.charset = tdc.getCharset();
+
     }
 
     public boolean isPasswordStored() {

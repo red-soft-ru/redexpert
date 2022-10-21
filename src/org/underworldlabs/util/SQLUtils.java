@@ -131,8 +131,8 @@ public final class SQLUtils {
                     sb.append(" (START WITH ").append(cd.getAutoincrement().getStartValue()).append(")");
             }
 
-//            if (!MiscUtils.isNull(cd.getDefaultValue().getValue()))
-//                sb.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
+            if (!MiscUtils.isNull(cd.getDefaultValue().getValue()))
+                sb.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
 
             sb.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
             if (!MiscUtils.isNull(cd.getCheck()))
@@ -260,8 +260,7 @@ public final class SQLUtils {
 
     public static String generateCommentForColumns(String relationName, List<ColumnData> cols, String metaTag, String delimiter) {
         StringBuilder sb = new StringBuilder();
-        for (ColumnData cd :
-                cols) {
+        for (ColumnData cd : cols) {
             String name = format(relationName) + "." + cd.getFormattedColumnName();
             sb.append(generateComment(name, metaTag, cd.getDescription(), delimiter));
         }

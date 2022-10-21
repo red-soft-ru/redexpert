@@ -15,6 +15,7 @@ import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,11 +24,14 @@ import java.awt.event.KeyListener;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyListener {
+
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.TABLE_COLUMN);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.TABLE_COLUMN);
+
     private DomainPanel domainPanel;
     private SimpleTextArea defaultValuePanel;
     private SimpleSqlTextPanel checkPanel;
@@ -56,35 +60,39 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
     protected void init() {
+
         String domain = null;
         if (editing)
             domain = columnEdited.getDomain();
+
         domainPanel = new DomainPanel(columnData, domain);
         defaultValuePanel = new SimpleTextArea();
         checkPanel = new SimpleSqlTextPanel();
         computedPanel = new SimpleSqlTextPanel();
         descriptionPanel = new SimpleSqlTextPanel();
         sqlPanel = new SimpleSqlTextPanel();
-        selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(), connection.getIntDataTypesArray(), columnData, false);
+        selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(),
+                connection.getIntDataTypesArray(), columnData, false);
         selectTypePanel.setDisabledCollate(editing);
-        autoIncrementPanel = new AutoIncrementPanel(connection, null, columnData.getAutoincrement(), table.getName(), getGenerators());
+        autoIncrementPanel = new AutoIncrementPanel(connection, null,
+                columnData.getAutoincrement(), table.getName(), getGenerators());
         tableLabel = new JLabel(bundleString("Table"));
         tableNameField = new JTextField(table.getName());
         notNullBox = new JCheckBox(bundleString("NotNull"));
         primaryBox = new JCheckBox(bundleString("PrimaryKey"));
 
         tableNameField.setEnabled(false);
-
         nameField.addKeyListener(this);
 
         notNullBox.addActionListener(actionEvent -> {
-
             columnData.setNotNull(notNullBox.isSelected());
             if (editing) {
                 column.makeCopy();
                 column.setRequired(notNullBox.isSelected());
             }
+            generateSQL();
         });
+
         columnData.setNotNull(notNullBox.isSelected());
         primaryBox.addActionListener(actionEvent -> columnData.setPrimaryKey(primaryBox.isSelected()));
 
@@ -95,6 +103,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
                 column.makeCopy();
                 column.setDomain((String) domainPanel.getDomainComboBoxSelectedItem());
             }
+            generateSQL();
         });
 
         tabbedPane.addChangeListener(changeEvent -> {
@@ -107,6 +116,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         checkPanel.getTextPane().addKeyListener(this);
         computedPanel.getTextPane().addKeyListener(this);
         descriptionPanel.getTextPane().addKeyListener(this);
+
         centralPanel.setLayout(new GridBagLayout());
         centralPanel.add(tableLabel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
@@ -124,6 +134,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
+
         tabbedPane.add(bundleString("Domain"), domainPanel);
         if (!editing || columnEdited.getDomain().toUpperCase().startsWith("RDB$"))
             tabbedPane.add(bundleString("Type"), selectTypePanel);
@@ -135,7 +146,9 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         tabbedPane.add(bundleString("Autoincrement"), autoIncrementPanel);
         tabbedPane.add(bundleString("Description"), descriptionPanel);
         tabbedPane.add(bundleString("SQL"), sqlPanel);
+
         columnData.setColumnName(nameField.getText());
+        columnData.setTableName(table.getName());
     }
 
     @Override
@@ -149,9 +162,8 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
     @Override
     public void createObject() {
-        if (tabbedPane.getSelectedComponent() != sqlPanel)
-            generateSQL();
-        displayExecuteQueryDialog(sqlPanel.getSQLText(), "^");
+        generateSQL();
+        displayExecuteQueryDialog(sqlPanel.getSQLText(), ";");
     }
 
     @Override
@@ -171,9 +183,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-
         columnEdited = (DatabaseColumn) databaseObject;
-
     }
 
     @Override
@@ -185,6 +195,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
     void init_edited_elements() {
+
         columnData.setSQLType(column.getTypeInt());
         columnData.setColumnType(column.getTypeName());
         columnData.setColumnSize(column.getColumnSize());
@@ -199,54 +210,58 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         defaultValuePanel.getTextAreaComponent().setText(columnEdited.getDefaultValue() != null ? columnEdited.getDefaultValue() : "");
         computedPanel.setSQLText(columnEdited.getComputedSource() != null ? columnEdited.getComputedSource() : "");
         descriptionPanel.setSQLText(columnEdited.getRemarks() != null ? columnEdited.getRemarks() : "");
-        /*if(!MiscUtils.isNull(columnEdited.getComputedSource()))
-        {
-            notNullBox.setEnabled(false);
-        }*/
+//        if(!MiscUtils.isNull(columnEdited.getComputedSource()))
+//            notNullBox.setEnabled(false);
         primaryBox.setEnabled(false);
-    }
-
-
-    @Override
-    public void keyTyped(KeyEvent keyEvent) {
 
     }
 
     @Override
-    public void keyPressed(KeyEvent keyEvent) {
+    public void keyTyped(KeyEvent keyEvent) {}
 
-    }
+    @Override
+    public void keyPressed(KeyEvent keyEvent) {}
 
     @Override
     public void keyReleased(KeyEvent keyEvent) {
+
         if (keyEvent.getSource() == defaultValuePanel.getTextAreaComponent()) {
+
             columnData.setDefaultValue(defaultValuePanel.getTextAreaComponent().getText());
             if (editing) {
                 column.makeCopy();
                 column.setDefaultValue(defaultValuePanel.getTextAreaComponent().getText());
             }
+
         } else if (keyEvent.getSource() == checkPanel.getTextPane()) {
+
             columnData.setCheck(checkPanel.getSQLText());
+
         } else if (keyEvent.getSource() == computedPanel.getTextPane()) {
+
             columnData.setComputedBy(computedPanel.getSQLText());
             if (editing) {
                 column.makeCopy();
                 column.setComputedSource(computedPanel.getSQLText());
             }
+
         } else if (keyEvent.getSource() == descriptionPanel.getTextPane()) {
+
             columnData.setDescription(descriptionPanel.getSQLText());
             if (editing) {
                 column.makeCopy();
                 column.setColumnDescription(descriptionPanel.getSQLText());
             }
+
         } else if (keyEvent.getSource() == nameField) {
+
             columnData.setColumnName(nameField.getText());
             if (editing) {
                 column.makeCopy();
                 column.setName(nameField.getText());
             }
         }
-
+        generateSQL();
     }
 
     String[] getGenerators() {
@@ -269,13 +284,16 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         }
     }
 
-    protected void reset() {
-    }
+    @Override
+    protected void reset() {}
 
 
+    @Override
     protected String generateQuery() {
+
         sb.setLength(0);
         if (editing) {
+
             columnData.setColumnName(nameField.getText());
             column.makeCopy();
             column.setTypeInt(columnData.getSQLType());
@@ -286,54 +304,30 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             column.setCollate(columnData.getCollate());
             sb.append(alterColumn().replace(";", "^"));
             autoIncrementPanel.generateAI();
-            if (columnData.isAutoincrement()) {
+            if (columnData.isAutoincrement())
                 sb.append(columnData.getAutoincrement().getSqlAutoincrement());
-            }
+
         } else {
+            columnData.getAutoincrement().setStartValue(autoIncrementPanel.getStartValue());
             columnData.setColumnName(nameField.getText());
-            sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName())).append("\nADD ").append(columnData.getFormattedColumnName()).append("\n");
-            if (MiscUtils.isNull(columnData.getComputedBy())) {
-                if (MiscUtils.isNull(columnData.getDomain())) {
-                    if (columnData.getColumnType() != null) {
-                        sb.append(columnData.getFormattedDataType());
-                    }
-                } else {
-                    sb.append(columnData.getFormattedDomain());
-                }
-                if (columnData.isAutoincrement() && columnData.getAutoincrement().isIdentity()) {
-                    sb.append("\nGENERATED BY DEFAULT AS IDENTITY (START WITH " + columnData.getAutoincrement().getStartValue() + ")");
-                } else {
-                    if (!MiscUtils.isNull(columnData.getDefaultValue().getValue())) {
-                        sb.append(MiscUtils.formattedDefaultValue(columnData.getDefaultValue(), columnData.getSQLType()));
-                    }
-                    sb.append(columnData.isRequired() ? " NOT NULL" : "");
-                    if (!MiscUtils.isNull(columnData.getCheck())) {
-                        sb.append(" CHECK ( ").append(columnData.getCheck()).append(")");
-                    }
-                }
-            } else sb.append("COMPUTED BY ( " + columnData.getComputedBy() + ")");
-            if (columnData.isPrimaryKey()) {
-                sb.append(" PRIMARY KEY");
-            }
-            sb.append("^");
-            if (!MiscUtils.isNull(columnData.getDescription())) {
-                sb.append("\nCOMMENT ON COLUMN ").append(MiscUtils.getFormattedObject(table.getName())).append(".").append(columnData.getFormattedColumnName()).append(" IS '")
-                        .append(columnData.getDescription()).append("'^");
-            }
-            autoIncrementPanel.generateAI();
-            if (columnData.isAutoincrement()) {
-                sb.append(columnData.getAutoincrement().getSqlAutoincrement());
-            }
+            sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()));
+            sb.append("\n\tADD ").append(SQLUtils.generateDefinitionColumn(columnData, false));
         }
+
+        if (columnData.getDescription() != null && !Objects.equals(columnData.getDescription(), ""))
+            sb.append(";\nCOMMENT ON COLUMN").append(MiscUtils.getFormattedObject(columnData.getTableName()))
+                    .append(".").append(columnData.getFormattedColumnName())
+                    .append(" IS '").append(columnData.getDescription()).append("';\n");
+
         return sb.toString();
     }
 
     void generateSQL() {
-
         sqlPanel.setSQLText(generateQuery());
     }
 
     private String alterColumn() {
+
         StringBuilder sb = new StringBuilder();
 
         if (column.isNameChanged()) {
@@ -388,4 +382,5 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
         return sb.toString();
     }
+
 }

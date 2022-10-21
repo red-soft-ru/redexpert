@@ -85,7 +85,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     public String getCreateSQLText() {
 
-        return SQLUtils.generateCreateProcedure(getName(), getEntryPoint(), getEngine(), getParameters(), getProcedureSourceCode(), getRemarks(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateProcedure(getName(), getEntryPoint(), getEngine(), getParameters(), getSourceCode(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -121,9 +121,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "co2.rdb$collation_name, \n" +
                     "cr.rdb$default_collate_name, \n" +
                     "prc.rdb$engine_name as ENGINE,\n" +
-                    "prc.rdb$entrypoint as ENTRY_POINT\n" +
+                    "prc.rdb$entrypoint as ENTRY_POINT,\n" +
+                    "prc.rdb$sql_security as SQL_SECURITY\n" +
                     "from rdb$procedures prc\n" +
-                    "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                    "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                     "and (pp.rdb$package_name is null)\n" +
                     "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
                     "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
@@ -161,9 +162,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "co2.rdb$collation_name, \n" +
                     "cr.rdb$default_collate_name \n" +
                     "prc.rdb$language as ENGINE,\n" +
-                    "prc.rdb$external_name as ENTRY_POINT\n" +
+                    "prc.rdb$external_name as ENTRY_POINT,\n" +
+                    "null as SQL_SECURITY\n" +
                     "from rdb$procedures prc\n" +
-                    "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                    "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                     "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
                     "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
                     "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
@@ -199,9 +201,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "co2.rdb$collation_name, \n" +
                     "cr.rdb$default_collate_name, \n" +
                     "null as ENGINE,\n" +
-                    "null as ENTRY_POINT\n" +
+                    "null as ENTRY_POINT,\n" +
+                    "null as SQL_SECURITY\n" +
                     "from rdb$procedures prc\n" +
-                    "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                    "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                     "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
                     "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
                     "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
@@ -219,45 +222,47 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
             procedureOutputParameters = new ArrayList<ProcedureParameter>();
             boolean first = true;
             while (rs.next()) {
+                String parameterName = rs.getString(4);
+                if (parameterName != null) {
+                    ProcedureParameter pp = new ProcedureParameter(parameterName.trim(),
+                            rs.getInt(5) == 0 ? DatabaseMetaData.procedureColumnIn : DatabaseMetaData.procedureColumnOut,
+                            DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(7), rs.getInt(10)),
+                            DatabaseTypeConverter.getDataTypeName(rs.getInt(7), rs.getInt(10), rs.getInt(9)),
+                            rs.getInt(8),
+                            1 - rs.getInt("null_flag"));
 
-                ProcedureParameter pp = new ProcedureParameter(rs.getString(4).trim(),
-                        rs.getInt(5) == 0 ? DatabaseMetaData.procedureColumnIn : DatabaseMetaData.procedureColumnOut,
-                        DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(7), rs.getInt(10)),
-                        DatabaseTypeConverter.getDataTypeName(rs.getInt(7), rs.getInt(10), rs.getInt(9)),
-                        rs.getInt(8),
-                        1 - rs.getInt("null_flag"));
+                    if (pp.getDataType() == Types.LONGVARBINARY ||
+                            pp.getDataType() == Types.LONGVARCHAR ||
+                            pp.getDataType() == Types.BLOB) {
+                        pp.setSubType(rs.getInt(10));
+                        pp.setSize(rs.getInt("segment_length"));
+                    }
 
-                if (pp.getDataType() == Types.LONGVARBINARY ||
-                        pp.getDataType() == Types.LONGVARCHAR ||
-                        pp.getDataType() == Types.BLOB) {
-                    pp.setSubType(rs.getInt(10));
-                    pp.setSize(rs.getInt("segment_length"));
+                    String domain = rs.getString(6);
+                    if (domain != null && !domain.startsWith("RDB$"))
+                        pp.setDomain(domain.trim());
+                    pp.setTypeOf(rs.getInt("AM") == 1);
+                    String relationName = rs.getString("RN");
+                    if (relationName != null)
+                        pp.setRelationName(relationName.trim());
+                    String fieldName = rs.getString("FN");
+                    if (fieldName != null)
+                        pp.setFieldName(fieldName.trim());
+
+                    if (pp.getRelationName() != null && pp.getFieldName() != null)
+                        pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                    String characterSet = rs.getString("character_set_name");
+                    if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
+                        pp.setEncoding(characterSet.trim());
+                    pp.setDefaultValue(rs.getString("default_source"));
+                    if (pp.getType() == DatabaseMetaData.procedureColumnIn)
+                        procedureInputParameters.add(pp);
+                    else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
+                        procedureOutputParameters.add(pp);
+                    parameters.add(pp);
                 }
-
-                String domain = rs.getString(6);
-                if (domain != null && !domain.startsWith("RDB$"))
-                    pp.setDomain(domain.trim());
-                pp.setTypeOf(rs.getInt("AM") == 1);
-                String relationName = rs.getString("RN");
-                if (relationName != null)
-                    pp.setRelationName(relationName.trim());
-                String fieldName = rs.getString("FN");
-                if (fieldName != null)
-                    pp.setFieldName(fieldName.trim());
-
-                if (pp.getRelationName() != null && pp.getFieldName() != null)
-                    pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
-                String characterSet = rs.getString("character_set_name");
-                if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
-                    pp.setEncoding(characterSet.trim());
-                pp.setDefaultValue(rs.getString("default_source"));
-                if (pp.getType() == DatabaseMetaData.procedureColumnIn)
-                    procedureInputParameters.add(pp);
-                else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
-                    procedureOutputParameters.add(pp);
-                parameters.add(pp);
                 if (first) {
-                    procedureSourceCode = getFromResultSet(rs, "PROCEDURE_SOURCE");
+                    sourceCode = getFromResultSet(rs, "PROCEDURE_SOURCE");
                     entryPoint = getFromResultSet(rs, "ENTRY_POINT");
                     engine = getFromResultSet(rs, "ENGINE");
                     setRemarks(getFromResultSet(rs, "DESCRIPTION"));

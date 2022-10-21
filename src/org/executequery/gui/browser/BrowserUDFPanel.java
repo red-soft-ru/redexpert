@@ -13,7 +13,6 @@ import org.underworldlabs.swing.StyledLogPane;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.print.Printable;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -177,11 +176,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
         udfs.clear();
         udfs.add(udf);
 
-        try {
-            udf.loadParameters();
-        } catch (SQLException e) {
-            controller.handleException(e);
-        }
+        udf.getEntryPoint();
 
         objectNameLabel.setText(bundleString("UDFName"));
         setHeaderText(bundleString("DatabaseUDF"));

@@ -27,6 +27,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
+import org.executequery.gui.AnaliseRecompileDialog;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.managment.WindowAddRole;
@@ -50,7 +51,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -1091,25 +1091,13 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     private static final String DELIMITER = "<RedExpert-Delimiter>";
 
     public void recompileAll(ActionEvent e) {
-        StringBuilder sb = new StringBuilder();
-        if (currentPath != null) {
-            DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-            if (node != null)
-                if (node.getType() != NamedObject.META_TAG)
-                    node = (DatabaseObjectNode) node.getParent();
-            if (node != null) {
-                List<DatabaseObjectNode> childs = node.getChildObjects();
-
-                if (childs != null)
-                    for (DatabaseObjectNode child : childs) {
-                        sb.append(((AbstractDatabaseObject) child.getDatabaseObject()).getCreateSQLText());
-                        if (!sb.toString().trim().endsWith("^"))
-                            sb.append("^");
-                    }
-            }
-
+        DatabaseConnection dc = currentSelection;
+        AnaliseRecompileDialog ard = new AnaliseRecompileDialog("Analise", true, (DatabaseObjectNode) currentPath.getLastPathComponent());
+        ard.display();
+        if (ard.success) {
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Recompile", ard.sb.toString(), dc, true, "^");
+            eqd.display();
         }
-        ExecuteQueryDialog eqd = new ExecuteQueryDialog("Recompile", sb.toString(), currentSelection, true, "^");
-        eqd.display();
+
     }
 }

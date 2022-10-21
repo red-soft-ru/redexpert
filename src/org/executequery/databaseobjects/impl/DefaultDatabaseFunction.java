@@ -20,8 +20,6 @@
 
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
@@ -29,7 +27,10 @@ import org.executequery.databaseobjects.FunctionArgument;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
-import java.sql.*;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     /**
      * function sql
      */
-    private String functionSourceCode;
+
 
     /**
      * Creates a new instance of DefaultDatabaseFunction
@@ -99,72 +100,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
 
 
-    void loadFunctionArguments() {
-        ResultSet rs = null;
-        try {
 
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-            arguments = new ArrayList<>();
-
-
-            rs = getFunctionArguments(getName());
-
-            while (rs.next()) {
-                FunctionArgument fp = new FunctionArgument(rs.getString(4),
-                        DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(6), rs.getInt(9)),
-                        rs.getInt(7),
-                        rs.getInt(18),
-                        rs.getInt(8),
-                        rs.getInt(9),
-                        rs.getInt(14),
-                        rs.getInt("AM"),
-                        rs.getString("RN"),
-                        rs.getString("FN")
-                );
-                int return_arg = rs.getInt("RETURN_ARGUMENT");
-                if (return_arg == fp.getPosition())
-                    fp.setType(DatabaseMetaData.procedureColumnReturn);
-                else fp.setType(DatabaseMetaData.procedureColumnIn);
-                String domain = rs.getString("FS");
-                if (domain != null && !domain.startsWith("RDB$"))
-                    fp.setDomain(domain.trim());
-                fp.setNullable(rs.getInt("null_flag"));
-                if (fp.getDataType() == Types.LONGVARBINARY ||
-                        fp.getDataType() == Types.LONGVARCHAR ||
-                        fp.getDataType() == Types.BLOB) {
-                    fp.setSize(rs.getInt("segment_length"));
-                }
-                String characterSet = rs.getString("character_set_name");
-                if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
-                    fp.setEncoding(characterSet.trim());
-                fp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(6), fp.getSubType(), fp.getScale()));
-                fp.setDefaultValue(rs.getString("DEFAULT_SOURCE"));
-                arguments.add(fp);
-                if (functionSourceCode == null || functionSourceCode.isEmpty())
-                    functionSourceCode = rs.getString(2);
-                if ((entryPoint == null || entryPoint.isEmpty())) {
-                    if (rs.getString("ENTRY_POINT") != null)
-                        entryPoint = rs.getString("ENTRY_POINT").trim();
-                    else entryPoint = "";
-                }
-                if ((engine == null || engine.isEmpty())) {
-                    if (rs.getString("ENGINE") != null)
-                        engine = rs.getString("ENGINE").trim();
-                    else engine = "";
-                }
-
-                setRemarks(rs.getString(3));
-            }
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-
-        } finally {
-
-            releaseResources(rs, this.getMetaTagParent().getHost().getConnection());
-        }
-    }
     /**
      * Returns this object's arguments as an array.
      */
@@ -181,14 +117,16 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
      *
      * @return the result set
      */
-    private ResultSet getFunctionArguments(String name) throws SQLException {
 
-        Connection connection = this.getMetaTagParent().getHost().getConnection();
-        Statement statement = connection.createStatement();
+    public String getCreateSQLText() {
+        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(), getEngine(), getRemarks(), getHost().getDatabaseConnection());
+    }
 
+    @Override
+    protected String queryForInfo() {
         String sql = "select fnc.rdb$function_name,\n" +
-                "fnc.rdb$function_source,\n" +
-                "fnc.rdb$description,\n" +
+                "fnc.rdb$function_source as SOURCE_CODE,\n" +
+                "fnc.rdb$description as DESCRIPTION,\n" +
                 "fa.rdb$argument_name,\n" +
                 "fs.rdb$field_name,\n" +
                 "fs.rdb$field_type,\n" +
@@ -216,7 +154,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "fa.rdb$argument_position,\n" +
                 "fnc.rdb$deterministic_flag,\n" +
                 "fnc.rdb$engine_name as ENGINE,\n" +
-                "fnc.rdb$entrypoint as ENTRY_POINT\n" +
+                "fnc.rdb$entrypoint as ENTRY_POINT,\n" +
+                "fnc.rdb$sql_security as SQL_SECURITY\n" +
                 "from rdb$functions fnc\n" +
                 "left join rdb$function_arguments fa on fa.rdb$function_name = fnc.rdb$function_name\n" +
                 "and (fa.rdb$package_name is null)\n" +
@@ -224,58 +163,60 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id\n" +
                 "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id))\n" +
                 "left join rdb$collations co2 on ((fa.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                "where fnc.rdb$function_name = '" + name + "'\n" +
+                "where fnc.rdb$function_name = '" + getName() + "'\n" +
                 "and (fnc.rdb$package_name is null)\n" +
                 "order by fa.rdb$argument_position";
-
-        return statement.executeQuery(sql);
-    }
-
-    public String getFunctionSourceCode() {
-        return functionSourceCode;
-    }
-
-    public String getCreateSQLText() {
-        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getFunctionSourceCode(), getEntryPoint(), getEngine(), getRemarks(), getHost().getDatabaseConnection());
-    }
-
-    protected void getObjectInfo() {
-        try {
-            loadFunctionArguments();
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Error loading info about Function", e);
-        } finally {
-            setMarkedForReload(false);
-        }
-
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        try {
-            ResultSet rs = querySender.getResultSet(getDescriptionQuery()).getResultSet();
-            setInfoFromResultSet(rs);
-        } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
-        } finally {
-            querySender.releaseResources();
-            setMarkedForReload(false);
-        }
-    }
-
-    protected String getDescriptionQuery() {
-
-        String query = "select r.rdb$description\n" +
-                "from rdb$relations r\n" +
-                "where r.rdb$relation_name = '" + getName() + "'";
-
-        return query;
-
+        return sql;
     }
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) {
 
         try {
-            if (rs.next())
-                setRemarks(rs.getString(1));
+            boolean first = true;
+            arguments = new ArrayList<>();
+            while (rs.next()) {
+                String parameterName = rs.getString(4);
+                if (parameterName != null) {
+                    FunctionArgument fp = new FunctionArgument(parameterName.trim(),
+                            DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(6), rs.getInt(9)),
+                            rs.getInt(7),
+                            rs.getInt(18),
+                            rs.getInt(8),
+                            rs.getInt(9),
+                            rs.getInt(14),
+                            rs.getInt("AM"),
+                            rs.getString("RN"),
+                            rs.getString("FN")
+                    );
+                    int return_arg = rs.getInt("RETURN_ARGUMENT");
+                    if (return_arg == fp.getPosition())
+                        fp.setType(DatabaseMetaData.procedureColumnReturn);
+                    else fp.setType(DatabaseMetaData.procedureColumnIn);
+                    String domain = rs.getString("FS");
+                    if (domain != null && !domain.startsWith("RDB$"))
+                        fp.setDomain(domain.trim());
+                    fp.setNullable(rs.getInt("null_flag"));
+                    if (fp.getDataType() == Types.LONGVARBINARY ||
+                            fp.getDataType() == Types.LONGVARCHAR ||
+                            fp.getDataType() == Types.BLOB) {
+                        fp.setSize(rs.getInt("segment_length"));
+                    }
+                    String characterSet = rs.getString("character_set_name");
+                    if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
+                        fp.setEncoding(characterSet.trim());
+                    fp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(6), fp.getSubType(), fp.getScale()));
+                    fp.setDefaultValue(rs.getString("DEFAULT_SOURCE"));
+                    arguments.add(fp);
+                }
+                if (first) {
+                    sourceCode = getFromResultSet(rs, "SOURCE_CODE");
+                    entryPoint = getFromResultSet(rs, "ENTRY_POINT");
+                    engine = getFromResultSet(rs, "ENGINE");
+                    setRemarks(getFromResultSet(rs, "DESCRIPTION"));
+                    first = false;
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -3,6 +3,9 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * Created by vasiliy on 02.02.17.
  */
@@ -11,6 +14,16 @@ public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
 
     public DefaultDatabaseRole(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
+    }
+
+    @Override
+    protected String queryForInfo() {
+        return null;
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+
     }
 
     @Override

@@ -27,7 +27,6 @@ import org.executequery.databaseobjects.ProcedureParameter;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +34,7 @@ import java.util.List;
 /**
  * @author takisd
  */
-public class DefaultDatabaseExecutable extends AbstractDatabaseObject
+public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         implements DatabaseExecutable {
 
 
@@ -49,7 +48,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
      */
     private short executableType;
 
-    protected String procedureSourceCode;
+    protected String sourceCode;
 
     protected List<ProcedureParameter> procedureInputParameters;
     protected List<ProcedureParameter> procedureOutputParameters;
@@ -72,16 +71,6 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
             setSchemaName(metaTagParent.getSchema().getName());
         }
 
-
-    }
-
-    @Override
-    protected String queryForInfo() {
-        return null;
-    }
-
-    @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
 
     }
 
@@ -231,14 +220,11 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         this.executableType = executableType;
     }
 
-    public String getProcedureSourceCode() {
-        checkOnReload(procedureSourceCode);
-        return procedureSourceCode;
+    public String getSourceCode() {
+        checkOnReload(sourceCode);
+        return sourceCode;
 
     }
-
-
-
 
 
     public List<ProcedureParameter> getProcedureInputParameters() {

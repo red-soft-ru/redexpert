@@ -699,6 +699,8 @@ public abstract class TableDefinitionPanel extends JPanel
 
         if (selection == -1 || selection == tableVector.size()) {
             tableVector.add(new ColumnData(dc));
+            newRow = tableVector.size() - 1;
+            selection = newRow - 1;
         } else {
             tableVector.add(newRow, new ColumnData(dc));
         }

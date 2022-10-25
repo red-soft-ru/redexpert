@@ -182,11 +182,6 @@ public abstract class CreateTableFunctionPanel extends JPanel
                     }
 
                 });
-
-        if (temporary)
-            nameField.setText("NEW_GLOBAL_TEMPORARY_TABLE");
-        else
-            nameField.setText("NEW_TABLE");
         //initialise the schema label
         metaData = new MetaDataValues(true);
 

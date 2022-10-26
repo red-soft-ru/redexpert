@@ -1083,7 +1083,7 @@ public abstract class TableDefinitionPanel extends JPanel
                     cd.setColumnSubtype(Integer.parseInt((String) value));
                     break;
                 case REQUIRED_COLUMN:
-                    cd.setColumnRequired(((Boolean) value).booleanValue() ? 0 : 1);
+                    cd.setNotNull(((Boolean) value).booleanValue());
                     break;
                 case CHECK_COLUMN:
                     cd.setCheck((String) value);

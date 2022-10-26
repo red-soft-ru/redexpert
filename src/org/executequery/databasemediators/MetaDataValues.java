@@ -72,7 +72,7 @@ public class MetaDataValues implements ConnectionListener {
     /**
      * Whether to keep the connection open.
      */
-    private boolean keepAlive;
+    private final boolean keepAlive;
 
     /**
      * the database connection object associated with this instance
@@ -82,7 +82,7 @@ public class MetaDataValues implements ConnectionListener {
     /**
      * the connection 'container'
      */
-    private Map<DatabaseConnection, Connection> connections;
+    private final Map<DatabaseConnection, Connection> connections;
 
     /**
      * <p>Constructs a new instance where the conection
@@ -620,7 +620,7 @@ public class MetaDataValues implements ConnectionListener {
                 cd.setColumnType(rs.getString(6));
                 cd.setColumnSize(rs.getInt(7));
                 cd.setColumnScale(rs.getInt(9));
-                cd.setColumnRequired(rs.getInt(11));
+                cd.setNotNull(rs.getInt(11) == 0);
                 cd.setDefaultValue(rs.getString(13));
                 cd.setTableName(name);
 
@@ -797,8 +797,7 @@ public class MetaDataValues implements ConnectionListener {
                 rs.close();
             }
 
-            return (DefaultDatabaseProcedure[])
-                    list.toArray(new DefaultDatabaseProcedure[names.length]);
+            return list.toArray(new DefaultDatabaseProcedure[names.length]);
         } catch (SQLException e) {
             throw new DataSourceException(e);
         } finally {
@@ -1443,7 +1442,7 @@ public class MetaDataValues implements ConnectionListener {
                 cd.setSQLType(rs.getInt(5));
                 cd.setColumnType(rs.getString(6));
                 cd.setColumnSize(rs.getInt(7));
-                cd.setColumnRequired(rs.getInt(11));
+                cd.setNotNull(rs.getInt(11) == 0);
                 cd.setTableName(name);
                 v.add(cd);
             }
@@ -1545,7 +1544,7 @@ public class MetaDataValues implements ConnectionListener {
                     list.add(st.nextToken());
                 }
 
-                return (String[]) list.toArray(new String[list.size()]);
+                return list.toArray(new String[list.size()]);
             }
 
             return new String[0];

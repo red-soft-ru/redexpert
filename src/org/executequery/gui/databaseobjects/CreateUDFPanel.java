@@ -160,7 +160,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 else
                     sb.append(param.getFormattedDataType()).append(" ");
                 if (!MiscUtils.isNull(param.getMechanism()) &&
-                        param.getColumnRequired() == 1 &&
+                        !param.isNotNull() &&
                         !param.getMechanism().contains("BY VALUE") &&
                         !param.getMechanism().contains("BY REFERENCE") &&
                         !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
@@ -320,7 +320,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                     parameter.getFieldSubType(), parameter.getFieldScale()));
             cd.setMechanism(parameter.getStringMechanism());
             cd.setCstring(parameter.isCString());
-            cd.setColumnRequired(parameter.isNotNull() ? 0 : 1);
+            cd.setNotNull(parameter.isNotNull());
             parametersPanel.addRow(cd);
         }
     }

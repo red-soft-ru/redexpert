@@ -51,12 +51,12 @@ public class EditTablePanel extends TableDefinitionPanel {
     /**
      * The table creator object - parent to this
      */
-    private TableModifier creator;
+    private final TableModifier creator;
 
     /**
      * The buffer off all SQL generated
      */
-    private StringBuffer sqlText;
+    private final StringBuffer sqlText;
 
     /**
      * Holds temporary SQL text during modifications
@@ -71,12 +71,12 @@ public class EditTablePanel extends TableDefinitionPanel {
     /**
      * The string literal 'ALTER TABLE '
      */
-    private static String DROP_COLUMN_1 = "ALTER TABLE ";
+    private static final String DROP_COLUMN_1 = "ALTER TABLE ";
 
     /**
      * The string literal ' DROP COLUMN '
      */
-    private static String DROP_COLUMN_2 = " DROP COLUMN ";
+    private static final String DROP_COLUMN_2 = " DROP COLUMN ";
 
     //------------------------------------------------
     // The following are reuseable String constants
@@ -301,7 +301,7 @@ public class EditTablePanel extends TableDefinitionPanel {
 
         int newRow = selection + 1;
         ColumnData cd = new ColumnData(true, dc);
-        cd.setColumnRequired(ColumnData.VALUE_NOT_REQUIRED);
+        cd.setNotNull(false);
 
         if (selection == tableVector.size()) {
             tableVector.add(cd);
@@ -378,7 +378,7 @@ public class EditTablePanel extends TableDefinitionPanel {
 
     public void tableChanged(int col, int row, String value) {
         sqlText.setLength(0);
-        ColumnData cd = (ColumnData) tableVector.get(row);
+        ColumnData cd = tableVector.get(row);
 
         switch (col) {
 

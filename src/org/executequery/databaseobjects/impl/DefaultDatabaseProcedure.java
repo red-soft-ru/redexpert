@@ -160,7 +160,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "pp.rdb$relation_name as RN,\n" +
                     "pp.rdb$field_name as FN,\n" +
                     "co2.rdb$collation_name, \n" +
-                    "cr.rdb$default_collate_name \n" +
+                    "cr.rdb$default_collate_name, \n" +
                     "prc.rdb$language as ENGINE,\n" +
                     "prc.rdb$external_name as ENTRY_POINT,\n" +
                     "null as SQL_SECURITY\n" +

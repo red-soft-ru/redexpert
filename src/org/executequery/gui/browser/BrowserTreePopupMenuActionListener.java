@@ -1095,7 +1095,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         AnaliseRecompileDialog ard = new AnaliseRecompileDialog("Analise", true, (DatabaseObjectNode) currentPath.getLastPathComponent());
         ard.display();
         if (ard.success) {
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Recompile", ard.sb.toString(), dc, true, "^");
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Recompile", ard.sb.toString(), dc, true, "^", true, false);
             eqd.display();
         }
 

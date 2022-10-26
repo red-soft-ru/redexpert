@@ -69,6 +69,7 @@ public class ExecuteQueryDialog extends BaseDialog {
     ListActionsModel model;
 
     String delimiter = ";";
+    boolean stopOnError = true;
 
     public static void setClipboard(String str) {
         StringSelection ss = new StringSelection(str);
@@ -80,15 +81,16 @@ public class ExecuteQueryDialog extends BaseDialog {
     }
 
     public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter) {
-        this(name, query, databaseConnection, keepAlive, delimiter, false);
+        this(name, query, databaseConnection, keepAlive, delimiter, false, true);
 
     }
 
-    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter, boolean autocommit) {
+    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter, boolean autocommit, boolean stopOnError) {
         super(name, true, true);
         this.query = query;
         this.delimiter = delimiter;
         this.dc = databaseConnection;
+        this.stopOnError = stopOnError;
         queryTokenizer = new QueryTokenizer();
         querySender = new DefaultStatementExecutor(dc, keepAlive);
         querySender.setCommitMode(autocommit);
@@ -372,7 +374,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         String lowQuery = queries.toLowerCase();
         QueryTokenizer queryTokenizer = new QueryTokenizer();
         queryTokenizer.extractTokens(queries);
-        while (queries.trim().length() > 0 && commit) {
+        while (queries.trim().length() > 0 && (commit || !stopOnError)) {
             QueryTokenizer.QueryTokenized fquery = queryTokenizer.tokenizeFirstQuery(queries, lowQuery, startIndex, delimiter);
             queries = fquery.script;
             delimiter = fquery.delimiter;

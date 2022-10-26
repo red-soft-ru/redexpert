@@ -77,8 +77,10 @@ public class QueryTokenizer {
     public QueryTokenized tokenizeFirstQuery(String query,String lowQuery,int startQueryIndex, String delimiter) {
 
         QueryTokenized fquery = firstQuery(query, delimiter, startQueryIndex, lowQuery);
-        String noCommentsQuery = removeAllCommentsFromQuery(fquery.query.getOriginalQuery());
-        fquery.query.setQueryWithoutComments(noCommentsQuery.trim());
+        if (fquery.query != null) {
+            String noCommentsQuery = removeAllCommentsFromQuery(fquery.query.getOriginalQuery());
+            fquery.query.setQueryWithoutComments(noCommentsQuery.trim());
+        }
         return fquery;
     }
 

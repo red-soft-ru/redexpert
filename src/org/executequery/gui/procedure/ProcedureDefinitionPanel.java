@@ -901,7 +901,9 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     return cd.getDescription();
 
                 case DEFAULT_COLUMN:
-                    return cd.getDefaultValue();
+                    if (cd.getDefaultValue() != null)
+                        return cd.getDefaultValue().getValue();
+                    else return null;
 
                 case ENCODING_COLUMN:
                     return cd.getCharset();
@@ -1035,7 +1037,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     cd.setCharset((String) value);
                     break;
                 case REQUIRED_COLUMN:
-                    cd.setColumnRequired((Boolean) value ? 0 : 1);
+                    cd.setNotNull((Boolean) value);
                     break;
             }
 

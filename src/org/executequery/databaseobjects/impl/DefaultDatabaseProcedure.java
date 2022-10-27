@@ -131,7 +131,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "fs.rdb$field_precision, \n" +
                     "pp.rdb$parameter_mechanism as AM,\n" +
                     "pp.rdb$field_source as FS,\n" +
-                    "fs.rdb$default_source, \n" +
+                    "fs.rdb$default_source as FS_DEFAULT_SOURCE, \n" +
                     "pp.rdb$null_flag as null_flag,\n" +
                     "pp.rdb$relation_name as RN,\n" +
                     "pp.rdb$field_name as FN,\n" +
@@ -172,12 +172,12 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "fs.rdb$field_precision, \n" +
                     "pp.rdb$parameter_mechanism as AM,\n" +
                     "pp.rdb$field_source as FS,\n" +
-                    "fs.rdb$default_source, \n" +
+                    "fs.rdb$default_source as FS_DEFAULT_SOURCE, \n" +
                     "pp.rdb$null_flag as null_flag,\n" +
                     "pp.rdb$relation_name as RN,\n" +
                     "pp.rdb$field_name as FN,\n" +
                     "co2.rdb$collation_name, \n" +
-                    "cr.rdb$default_collate_name \n" +
+                    "cr.rdb$default_collate_name, \n" +
                     "prc.rdb$language as ENGINE,\n" +
                     "prc.rdb$external_name as ENTRY_POINT,\n" +
                     "null as SQL_SECURITY\n" +
@@ -211,7 +211,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "fs.rdb$field_precision, \n" +
                     "null as AM,\n" +
                     "pp.rdb$field_source as FS,\n" +
-                    "fs.rdb$default_source, \n" +
+                    "fs.rdb$default_source as FS_DEFAULT_SOURCE, \n" +
                     "null as null_flag,\n" +
                     "null as RN,\n" +
                     "null as FN,\n" +
@@ -272,6 +272,8 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
                         pp.setEncoding(characterSet.trim());
                     pp.setDefaultValue(rs.getString("default_source"));
+                    if (pp.getDefaultValue() == null)
+                        pp.setDefaultValue(rs.getString("FS_DEFAULT_SOURCE"));
                     if (pp.getType() == DatabaseMetaData.procedureColumnIn)
                         procedureInputParameters.add(pp);
                     else if (pp.getType() == DatabaseMetaData.procedureColumnOut)

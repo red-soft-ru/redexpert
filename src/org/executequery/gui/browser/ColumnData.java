@@ -55,10 +55,6 @@ public class ColumnData implements Serializable {
 
     static final long serialVersionUID = -4937385038396757064L;
 
-    public static final int VALUE_REQUIRED = 0;
-
-    public static final int VALUE_NOT_REQUIRED = 1;
-
     public static final int INPUT_PARAMETER = 0;
 
     public static final int OUTPUT_PARAMETER = 1;
@@ -130,7 +126,7 @@ public class ColumnData implements Serializable {
     /**
      * Whether this column is required ie. NOT NULL
      */
-    private int columnRequired;
+    private boolean notNull;
 
     /**
      * The mapped SQL type
@@ -392,7 +388,7 @@ public class ColumnData implements Serializable {
         primaryKey = cd.isPrimaryKey();
         foreignKey = cd.isForeignKey();
         columnSize = cd.getColumnSize();
-        columnRequired = cd.getColumnRequired();
+        notNull = cd.isNotNull();
         sqlType = cd.getSQLType();
         domain = cd.getDomain();
         dc = cd.getDatabaseConnection();
@@ -447,12 +443,12 @@ public class ColumnData implements Serializable {
         this.foreignKey = foreignKey;
     }
 
-    public void setColumnRequired(int columnRequired) {
-        this.columnRequired = columnRequired;
+    public void setNotNull(boolean notNull) {
+        this.notNull = notNull;
     }
 
-    public int getColumnRequired() {
-        return columnRequired;
+    public boolean isNotNull() {
+        return notNull;
     }
 
     /**
@@ -462,7 +458,7 @@ public class ColumnData implements Serializable {
      * @return true | false
      */
     public boolean isRequired() {
-        return columnRequired == VALUE_REQUIRED;
+        return notNull;
     }
 
     public void setKeyType(String keyType) {
@@ -824,13 +820,6 @@ public class ColumnData implements Serializable {
     public Autoincrement getAutoincrement() {
         ai.setFieldName(getColumnName());
         return ai;
-    }
-
-    public void setNotNull(boolean notNull) {
-        if (notNull)
-            columnRequired = VALUE_REQUIRED;
-        else
-            columnRequired = VALUE_NOT_REQUIRED;
     }
 
     public void setCharset(String charset) {

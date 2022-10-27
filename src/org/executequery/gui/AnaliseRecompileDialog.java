@@ -1,6 +1,5 @@
 package org.executequery.gui;
 
-import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
@@ -68,10 +67,8 @@ public class AnaliseRecompileDialog extends BaseDialog {
     }
 
     public void executeAnalise() {
-        if (databaseObjectNode != null)
-            if (databaseObjectNode.getType() != NamedObject.META_TAG)
-                databaseObjectNode = (DatabaseObjectNode) databaseObjectNode.getParent();
         if (databaseObjectNode != null) {
+
             List<DatabaseObjectNode> childs = databaseObjectNode.getChildObjects();
 
             if (childs != null) {

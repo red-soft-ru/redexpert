@@ -1092,12 +1092,19 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     public void recompileAll(ActionEvent e) {
         DatabaseConnection dc = currentSelection;
-        AnaliseRecompileDialog ard = new AnaliseRecompileDialog("Analise", true, (DatabaseObjectNode) currentPath.getLastPathComponent());
-        ard.display();
-        if (ard.success) {
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Recompile", ard.sb.toString(), dc, true, "^");
-            eqd.display();
+        DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        if (databaseObjectNode != null)
+            if (databaseObjectNode.getType() != NamedObject.META_TAG)
+                databaseObjectNode = (DatabaseObjectNode) databaseObjectNode.getParent();
+        if (databaseObjectNode != null) {
+            if (GUIUtilities.displayConfirmDialog(bundledString("recompile-message", Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType()]))) == JOptionPane.YES_OPTION) {
+                AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode);
+                ard.display();
+                if (ard.success) {
+                    ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb.toString(), dc, true, "^", true, false);
+                    eqd.display();
+                }
+            }
         }
-
     }
 }

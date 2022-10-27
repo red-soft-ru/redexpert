@@ -721,7 +721,7 @@ public final class SQLUtils {
         cd.setColumnSize(parameter.getSize());
         cd.setColumnType(parameter.getSqlType());
         cd.setColumnScale(parameter.getScale());
-        cd.setColumnRequired(parameter.getNullable());
+        cd.setNotNull(parameter.getNullable() == 0);
         cd.setCharset(parameter.getEncoding());
         cd.setDescription(parameter.getDescription());
         cd.setTypeOf(parameter.isTypeOf());

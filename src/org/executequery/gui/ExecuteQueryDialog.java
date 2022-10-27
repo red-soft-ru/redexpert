@@ -13,6 +13,7 @@ import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.QueryTokenizer;
 import org.executequery.sql.SqlMessages;
 import org.executequery.sql.SqlStatementResult;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
@@ -66,9 +67,14 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     LoggingOutputPanel errorPane;
 
+    LoggingOutputPanel logPane;
+
     ListActionsModel model;
 
     String delimiter = ";";
+    boolean stopOnError;
+
+    JTabbedPane tabbedPane;
 
     public static void setClipboard(String str) {
         StringSelection ss = new StringSelection(str);
@@ -80,15 +86,16 @@ public class ExecuteQueryDialog extends BaseDialog {
     }
 
     public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter) {
-        this(name, query, databaseConnection, keepAlive, delimiter, false);
+        this(name, query, databaseConnection, keepAlive, delimiter, false, true);
 
     }
 
-    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter, boolean autocommit) {
+    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter, boolean autocommit, boolean stopOnError) {
         super(name, true, true);
         this.query = query;
         this.delimiter = delimiter;
         this.dc = databaseConnection;
+        this.stopOnError = stopOnError;
         queryTokenizer = new QueryTokenizer();
         querySender = new DefaultStatementExecutor(dc, keepAlive);
         querySender.setCommitMode(autocommit);
@@ -118,6 +125,8 @@ public class ExecuteQueryDialog extends BaseDialog {
         rollbackButton = new JButton();
         queryPane = new SQLTextArea();
         errorPane = new LoggingOutputPanel();
+        logPane = new LoggingOutputPanel();
+        tabbedPane = new JTabbedPane();
         tableAction = new DefaultTable();
         BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();
         tableAction.setDefaultRenderer(Object.class, bctr);
@@ -151,6 +160,7 @@ public class ExecuteQueryDialog extends BaseDialog {
                 int row = tableAction.getSelectedRow();
                 if (row >= 0) {
                     setMessages(model.data.elementAt(row));
+                    tabbedPane.setSelectedComponent(errorPane);
                 }
             }
         });
@@ -204,68 +214,22 @@ public class ExecuteQueryDialog extends BaseDialog {
         //queryPane.setText(query);
         queryPane.setEditable(false);
 
-        GroupLayout layout = new GroupLayout(mainPanel);
-        mainPanel.setLayout(layout);
+        tabbedPane.addTab(bundleString("Single"), errorPane);
+        tabbedPane.addTab(bundleString("FullLog"), logPane);
 
-        layout.setHorizontalGroup(
-                layout.createSequentialGroup()
-                        .addGap(10)
-                        .addGroup(
-                                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(listActionsLabel)
-                                                .addComponent(tableScroll)
-                                                .addComponent(operatorLabel)
-                                                .addComponent(queryScroll, GroupLayout.PREFERRED_SIZE, 500, Short.MAX_VALUE)
-                                                .addComponent(errorLabel)
-                                                .addComponent(errorPane)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addGroup(layout.createSequentialGroup()
-                                                                .addComponent(copyQueryButton)
-                                                                .addContainerGap()
-                                                                .addComponent(copyErrorButton)
-                                                        )
-                                                        .addGroup(layout.createSequentialGroup()
-                                                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                                .addComponent(commitButton)
-                                                                .addContainerGap()
-                                                                .addComponent(rollbackButton)
-                                                        )
-                                                )
-                                        )
-                        )
-                        .addGap(10)
-        );
-
-        layout.setVerticalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addGap(10)
-                                .addComponent(listActionsLabel)
-                                .addContainerGap()
-                                .addComponent(tableScroll, GroupLayout.PREFERRED_SIZE, 150, /*GroupLayout.PREFERRED_SIZE*/Short.MAX_VALUE)
-                                .addContainerGap()
-                                .addComponent(operatorLabel)
-                                .addContainerGap()
-                                .addComponent(queryScroll, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap()
-                                .addComponent(errorLabel)
-                                .addContainerGap()
-                                .addComponent(errorPane, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE)
-                                .addGap(18)
-                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(rollbackButton)
-                                                .addComponent(commitButton)
-                                        )
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(copyErrorButton)
-                                                .addComponent(copyQueryButton)
-                                        )
-                                )
-                                .addGap(10)
-                        )
-        );
+        mainPanel.setLayout(new GridBagLayout());
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
+        mainPanel.add(listActionsLabel, gbh.setLabelDefault().get());
+        mainPanel.add(tableScroll, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
+        mainPanel.add(operatorLabel, gbh.nextRowFirstCol().setLabelDefault().get());
+        mainPanel.add(queryScroll, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
+        mainPanel.add(errorLabel, gbh.nextRowFirstCol().setLabelDefault().get());
+        mainPanel.add(tabbedPane, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
+        mainPanel.add(copyQueryButton, gbh.nextRowFirstCol().setLabelDefault().anchorSouthWest().get());
+        mainPanel.add(copyErrorButton, gbh.nextCol().setLabelDefault().anchorSouthWest().get());
+        mainPanel.add(commitButton, gbh.nextCol().setLabelDefault().anchorSouthEast().get());
+        mainPanel.add(rollbackButton, gbh.nextCol().setLabelDefault().anchorSouthEast().get());
         addDisplayComponent(mainPanel);
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -296,6 +260,12 @@ public class ExecuteQueryDialog extends BaseDialog {
         if (row.executed)
             setOutputMessage(SqlMessages.PLAIN_MESSAGE, row.SQLmessage);
         else setOutputMessage(SqlMessages.ERROR_MESSAGE, row.SQLmessage);
+    }
+
+    private void addMessages(RowAction row) {
+        if (row.executed)
+            addOutputMessage(SqlMessages.PLAIN_MESSAGE, row.SQLmessage);
+        else addOutputMessage(SqlMessages.ERROR_MESSAGE, row.SQLmessage);
     }
 
     private void copyErrorButtonActionPerformed(ActionEvent evt) {
@@ -372,7 +342,11 @@ public class ExecuteQueryDialog extends BaseDialog {
         String lowQuery = queries.toLowerCase();
         QueryTokenizer queryTokenizer = new QueryTokenizer();
         queryTokenizer.extractTokens(queries);
-        while (queries.trim().length() > 0 && commit) {
+        int success = 0;
+        int failed = 0;
+        if (!stopOnError)
+            tabbedPane.setSelectedComponent(logPane);
+        while (queries.trim().length() > 0 && (commit || !stopOnError)) {
             QueryTokenizer.QueryTokenized fquery = queryTokenizer.tokenizeFirstQuery(queries, lowQuery, startIndex, delimiter);
             queries = fquery.script;
             delimiter = fquery.delimiter;
@@ -385,9 +359,19 @@ public class ExecuteQueryDialog extends BaseDialog {
             }
             RowAction action = new RowAction(query);
             commit = execute_query(action);
-            model.addRow(action);
+            if (commit)
+                model.addRow(action);
+            else model.insertRow(action, 0);
             setMessages(action);
+            addMessages(action);
+            if (action.executed)
+                success++;
+            else failed++;
         }
+        if (success > 0)
+            addOutputMessage(SqlMessages.PLAIN_MESSAGE, success + " queries successfully completed");
+        if (failed > 0)
+            addOutputMessage(SqlMessages.ERROR_MESSAGE, failed + " queries failed");
     }
 
     boolean execute_query(RowAction query) {
@@ -396,6 +380,7 @@ public class ExecuteQueryDialog extends BaseDialog {
             String queryToExecute = q.getOriginalQuery();
             int type = q.getQueryType();
             String metaName = q.getMetaName();
+            String name = q.getObjectName();
             Log.info("Executing:" + queryToExecute);
             SqlStatementResult result = querySender.execute(type, queryToExecute);
             int updateCount = result.getUpdateCount();
@@ -414,7 +399,7 @@ public class ExecuteQueryDialog extends BaseDialog {
                     return false;
                 } else {
                     type = result.getType();
-                    query.SQLmessage = getResultText(updateCount, type, metaName);
+                    query.SQLmessage = getResultText(updateCount, type, metaName, name);
                     query.executed = true;
                     query.status = "Success";
                     return true;
@@ -431,7 +416,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     }
 
-    public String getResultText(int result, int type, String metaName) {
+    public String getResultText(int result, int type, String metaName, String objectName) {
 
         String row = " row ";
         if (result > 1 || result == 0) {
@@ -466,17 +451,17 @@ public class ExecuteQueryDialog extends BaseDialog {
                 rText = "Revoke succeeded.";
                 break;
             case QueryTypes.DROP_OBJECT:
-                rText = metaName + " dropped.";
+                rText = metaName + " " + objectName + " dropped.";
                 break;
             case QueryTypes.COMMENT:
                 rText = "Description added";
                 break;
             case QueryTypes.CREATE_OBJECT:
             case QueryTypes.CREATE_OR_ALTER:
-                rText = metaName + " created";
+                rText = metaName + " " + objectName + " created";
                 break;
             case QueryTypes.ALTER_OBJECT:
-                rText = metaName + " altered";
+                rText = metaName + " " + objectName + " altered";
                 break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:
@@ -510,6 +495,10 @@ public class ExecuteQueryDialog extends BaseDialog {
     void setOutputMessage(int type, String text) {
         errorPane.clear();
         errorPane.append(type, text);
+    }
+
+    void addOutputMessage(int type, String text) {
+        logPane.append(type, text);
     }
 
     String bundleString(String key) {
@@ -642,6 +631,11 @@ public class ExecuteQueryDialog extends BaseDialog {
 
         public void addRow(RowAction row) {
             data.add(row);
+            fireTableDataChanged();
+        }
+
+        public void insertRow(RowAction row, int index) {
+            data.insertElementAt(row, index);
             fireTableDataChanged();
         }
     }

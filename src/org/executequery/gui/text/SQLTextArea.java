@@ -1,5 +1,6 @@
 package org.executequery.gui.text;
 
+import org.apache.log4j.lf5.viewer.categoryexplorer.TreeModelAdapter;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.searchcommands.FindAction;
@@ -23,10 +24,7 @@ import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.*;
 import javax.swing.text.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -299,6 +297,17 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         registerFindAction();
         registerReplaceAction();
         registerCommentAction();
+        ConnectionsTreePanel.getPanelFromBrowser().getTree().getModel().addTreeModelListener(new TreeModelAdapter() {
+
+            @Override
+            public void treeStructureChanged(TreeModelEvent e) {
+                if (databaseConnection != null) {
+                    setDbobjects(databaseConnection.getListObjectsDB());
+                    autoCompletePopup.resetAutoCompleteListItems();
+                    autoCompletePopup.scheduleListItemLoad();
+                }
+            }
+        });
     }
 
     protected void registerCommentAction() {

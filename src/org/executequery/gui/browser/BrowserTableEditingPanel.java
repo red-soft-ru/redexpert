@@ -870,7 +870,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     /**
      * Loads database table indexes.
      */
-    private void loadIndexes() {
+    private synchronized void loadIndexes() {
         try {
             // reset the data
             citm.setIndexData(table.getIndexes());

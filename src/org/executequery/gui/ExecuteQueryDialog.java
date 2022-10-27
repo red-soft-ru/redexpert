@@ -344,7 +344,8 @@ public class ExecuteQueryDialog extends BaseDialog {
         queryTokenizer.extractTokens(queries);
         int success = 0;
         int failed = 0;
-        tabbedPane.setSelectedComponent(logPane);
+        if (!stopOnError)
+            tabbedPane.setSelectedComponent(logPane);
         while (queries.trim().length() > 0 && (commit || !stopOnError)) {
             QueryTokenizer.QueryTokenized fquery = queryTokenizer.tokenizeFirstQuery(queries, lowQuery, startIndex, delimiter);
             queries = fquery.script;

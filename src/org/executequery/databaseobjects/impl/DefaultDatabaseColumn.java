@@ -20,10 +20,7 @@
 
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
@@ -397,7 +394,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
                         _type == Types.LONGVARBINARY ||
                         _type == Types.BLOB)) {
 
-            if (getColumnSize() > 0 && !typeName.contains("" + getColumnSize())
+            if (isEditSize() && getColumnSize() > 0 && !typeName.contains("" + getColumnSize())
                     && !isDateDataType() && !isNonPrecisionType()) {
 
                 buffer.append("(");
@@ -416,6 +413,15 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         }
 
         return buffer.toString();
+    }
+
+    public boolean isEditSize() {
+        return getTypeName() != null && (getTypeInt() == Types.NUMERIC || getTypeInt() == Types.CHAR || getTypeInt() == Types.VARCHAR
+                || getTypeInt() == Types.DECIMAL || getTypeInt() == Types.BLOB || getTypeInt() == Types.LONGVARCHAR
+                || getTypeInt() == Types.LONGVARBINARY
+                || getTypeName().equalsIgnoreCase("VARCHAR")
+                || getTypeName().equalsIgnoreCase("CHAR"))
+                || getTypeName().equalsIgnoreCase(T.DECFLOAT);
     }
 
     /**

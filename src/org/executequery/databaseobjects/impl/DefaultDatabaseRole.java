@@ -7,7 +7,6 @@ import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
 
 /**
  * Created by vasiliy on 02.02.17.
@@ -20,13 +19,13 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCreateFullSQLText() throws DataSourceException {
+    public String getCreateSQLText() throws DataSourceException {
         return SQLUtils.generateCreateRole(getName());
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateFullSQLText();
+        return this.getCreateSQLText();
     }
 
     @Override

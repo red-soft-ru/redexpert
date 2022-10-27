@@ -23,6 +23,7 @@ package org.executequery.repository;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.gui.connections.ImportProcessMonitor;
+import org.executequery.localization.Bundles;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,9 @@ import java.util.Map;
 
 public class ConnectionImporter {
 
+    protected final String getString(String key, Object... args) {
+        return Bundles.get(key, args);
+    }
     public ConnectionImport read(String fileName, ImportProcessMonitor importProcessMonitor) {
 
         Map<String, String> connectionMappings = new HashMap<>();
@@ -38,7 +42,7 @@ public class ConnectionImporter {
         List<DatabaseConnection> connections = databaseConnectionRepository.open(fileName);
         for (DatabaseConnection databaseConnection : connections) {
 
-            importProcessMonitor.progress("Importing connection [ " + databaseConnection.getName() + " ]");
+            importProcessMonitor.progress(getString("ConnectionImporter.ImportingConnection", databaseConnection.getName()));
 
             connectionMappings.put(databaseConnection.getId(), databaseConnection.withNewId().getId());
             databaseConnectionRepository.add(databaseConnection);

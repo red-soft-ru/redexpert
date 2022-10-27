@@ -54,13 +54,19 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private final JMenuItem recycleConnection;
     private final JMenuItem copyName;
     private final JMenuItem moveToFolder;
+    private final JMenuItem selectAll;
+    private final JMenuItem selectAllChildren;
+
+    private final JMenuItem recompileAll;
 
 
     private final JMenuItem dataBaseInformation;
 
     private JCheckBoxMenuItem showDefaultCatalogsAndSchemas;
 
-    private JMenu sql;
+    private JMenu active;
+    private JMenu sqlTable;
+    private JMenu sqlView;
     private JMenu exportData;
     private JMenu importData;
 
@@ -74,7 +80,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         add(connect);
         disconnect = createMenuItem(bundleString("disconnect"), "disconnect", listener);
         add(disconnect);
-        dataBaseInformation = createMenuItem ("dataBaseInformation","dataBaseInformation", listener);
+        dataBaseInformation = createMenuItem("dataBaseInformation", "dataBaseInformation", listener);
         add(dataBaseInformation);
         reload = createMenuItem(bundleString("reload"), "reload", listener);
         add(reload);
@@ -106,9 +112,19 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         copyName = createMenuItem(bundleString("copyName"), "copyName", listener);
         add(copyName);
 
+        selectAll = createMenuItem(bundleString("selectAllTriggers"), "selectAll", listener);
+        add(selectAll);
+
+        selectAllChildren = createMenuItem(bundleString("selectAllChildren"), "selectAllChildren", listener);
+        add(selectAllChildren);
+        recompileAll = createMenuItem(bundleString("recompileAll"), "recompileAll", listener);
+        recompileAll.setVisible(false);
+        add(recompileAll);
         //addSeparator();
 
-        createSqlMenu(listener);
+        createActiveInactiveMenu(listener);
+        createTableSqlMenu(listener);
+        createViewSqlMenu(listener);
         createExportMenu(listener);
         createImportMenu(listener);
         moveToFolder = createMenuItem(bundleString("moveToFolder"), "moveToFolder", listener);
@@ -163,7 +179,11 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                 if (node.isHostNode()) {
 
                     //reload.setEnabled(false);
-                    sql.setVisible(false);
+                    selectAllChildren.setVisible(false);
+                    selectAll.setVisible(false);
+                    active.setVisible(false);
+                    sqlTable.setVisible(false);
+                    sqlView.setVisible(false);
                     exportData.setVisible(false);
                     importData.setVisible(false);
 
@@ -180,6 +200,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     label = node.getName();
                     if (node.getType() == NamedObject.META_TAG)
                         label = label.toLowerCase();
+                    selectAllChildren.setVisible(false);
+                    selectAll.setVisible(false);
                     disconnect.setVisible(false);
                     dataBaseInformation.setVisible(false);
                     reload.setVisible(true);
@@ -202,17 +224,55 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                         editObject.setText(bundleString("edit", node.getName()));
                     }
                     if (createObjectEnabled) {
-                        String str = "";
-                        if (type == NamedObject.META_TAG)
-                            str = NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) node.getDatabaseObject()).getSubType()];
-                        else
-                            str = NamedObject.META_TYPES_FOR_BUNDLE[node.getType()];
-                        createObject.setText(bundleString("create", bundleString(str)));
+                        createObject.setText(bundleString("create", bundleString(getMetaTagFromNode(node))));
+                    }
+                    boolean recompileEnabled = false;
+                    if (node.getType() == NamedObject.META_TAG) {
+                        int nodeType = ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getSubType();
+                        boolean selectAllChildrenEnabled =
+                                nodeType == NamedObject.TRIGGER ||
+                                        nodeType == NamedObject.DDL_TRIGGER ||
+                                        nodeType == NamedObject.DATABASE_TRIGGER ||
+                                        nodeType == NamedObject.INDEX;
+                        selectAllChildren.setVisible(selectAllChildrenEnabled);
+                        selectAllChildren.setText(bundleString("selectAll", label));
+                        recompileEnabled = nodeType == NamedObject.PROCEDURE
+                                || nodeType == NamedObject.FUNCTION
+                                || nodeType == NamedObject.PACKAGE
+                                || nodeType >= NamedObject.TRIGGER && nodeType <= NamedObject.DATABASE_TRIGGER;
                     }
 
 
                     boolean importExport = (node.getType() == NamedObject.TABLE);
-                    sql.setVisible(importExport);
+                    sqlTable.setVisible(importExport);
+
+                    boolean viewIsSelected = (node.getType() == NamedObject.VIEW);
+                    sqlView.setVisible(viewIsSelected);
+
+                    boolean triggerIndex = (node.getType() == NamedObject.TRIGGER ||
+                            node.getType() == NamedObject.DATABASE_TRIGGER ||
+                            node.getType() == NamedObject.DDL_TRIGGER ||
+                            node.getType() == NamedObject.INDEX);
+                    active.setVisible(triggerIndex);
+                    selectAll.setVisible(triggerIndex);
+                    if (triggerIndex) {
+                        DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
+                        String parentName = parent.getName();
+                        parentName = parentName.toLowerCase();
+                        if (node.getType() == NamedObject.TRIGGER) {
+                            selectAll.setText(bundleString("selectAll", parentName));
+                        } else selectAll.setText(bundleString("selectAll", parentName));
+                    }
+                    recompileEnabled = node.getType() == NamedObject.PROCEDURE
+                            || node.getType() == NamedObject.FUNCTION
+                            || node.getType() == NamedObject.PACKAGE
+                            || node.getType() >= NamedObject.TRIGGER && node.getType() <= NamedObject.DATABASE_TRIGGER
+                            || recompileEnabled;
+                    recompileAll.setVisible(recompileEnabled);
+                    if (recompileEnabled)
+                        recompileAll.setText(bundleString("recompileAll", Bundles.get(NamedObject.class, getMetaTagFromNode(node))));
+
+
                 }
             }
         }
@@ -240,13 +300,41 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             }
 
             if (label != null) {
-                reload.setText(bundleString("reload", label));
+                reload.setText(bundleString("reload", label));              //Кнопка перезагрузки(Если нажать по узлу триггеров то покажет меню "перезагрузить триггеры")
             } else {
                 reload.setText(bundleString("reload", StringUtils.EMPTY));
             }
-
         }
+        if (listener.getSelectedSeveralPaths()) {
 
+            addNewConnection.setVisible(false);
+            connect.setVisible(false);
+            disconnect.setVisible(false);
+            reload.setVisible(true);
+            reload.setText(bundleString("reload", StringUtils.EMPTY));
+            createObject.setVisible(false);
+            editObject.setVisible(false);
+            deleteObject.setVisible(false);
+            duplicate.setVisible(false);
+            recycleConnection.setVisible(false);
+            copyName.setVisible(false);
+            moveToFolder.setVisible(false);
+            dataBaseInformation.setVisible(false);
+            sqlTable.setVisible(false);
+            sqlView.setVisible(false);
+            exportData.setVisible(false);
+            importData.setVisible(false);
+        }
+    }
+
+    private String getMetaTagFromNode(DatabaseObjectNode node) {
+
+        String str = "";
+        if (node.getType() == NamedObject.META_TAG)
+            str = NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) node.getDatabaseObject()).getSubType()];
+        else
+            str = NamedObject.META_TYPES_FOR_BUNDLE[node.getType()];
+        return str;
     }
 
     private DatabaseCatalog asDatabaseCatalog(DefaultMutableTreeNode currentPathComponent) {
@@ -281,13 +369,29 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         //add(exportData);
     }
 
-    private void createSqlMenu(ActionListener listener) {
-        sql = MenuItemFactory.createMenu(bundleString("SQL"));
-        sql.add(createMenuItem(bundleString("selectStatement"), "selectStatement", listener));
-        sql.add(createMenuItem(bundleString("insertStatement"), "insertStatement", listener));
-        sql.add(createMenuItem(bundleString("updateStatement"), "updateStatement", listener));
-        sql.add(createMenuItem(bundleString("createTableStatement"), "createTableStatement", listener));
-        add(sql);
+    private void createTableSqlMenu(ActionListener listener) {
+        sqlTable = MenuItemFactory.createMenu(bundleString("SQL"));
+        sqlTable.add(createMenuItem(bundleString("selectStatement"), "tableSelectStatement", listener));
+        sqlTable.add(createMenuItem(bundleString("insertStatement"), "tableInsertStatement", listener));
+        sqlTable.add(createMenuItem(bundleString("updateStatement"), "tableUpdateStatement", listener));
+        sqlTable.add(createMenuItem(bundleString("createTableStatement"), "createTableStatement", listener));
+        add(sqlTable);
+    }
+
+    private void createViewSqlMenu (ActionListener listener) {
+        sqlView = MenuItemFactory.createMenu(bundleString("SQL"));
+        sqlView.add(createMenuItem(bundleString("selectStatement"), "viewSelectStatement", listener));
+        sqlView.add(createMenuItem(bundleString("insertStatement"), "viewInsertStatement", listener));
+        sqlView.add(createMenuItem(bundleString("updateStatement"), "viewUpdateStatement", listener));
+        sqlView.add(createMenuItem(bundleString("createViewStatement"), "createViewStatement", listener));
+        add(sqlView);
+    }
+
+    private void createActiveInactiveMenu(ActionListener listener) {
+        active = MenuItemFactory.createMenu(bundleString("switch"));
+        active.add(createMenuItem(bundleString("active"), "active", listener));
+        active.add(createMenuItem(bundleString("inactive"), "inactive", listener));
+        add(active);
     }
 
     protected DatabaseConnection getCurrentSelection() {
@@ -300,6 +404,14 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
     protected void setCurrentPath(TreePath currentPath) {
         listener.setCurrentPath(currentPath);
+    }
+
+    protected void setTreePaths(TreePath[] treePaths) {
+        listener.setTreePaths(treePaths);
+    }
+
+    protected void setSelectedSeveralPaths(boolean selectedSeveralPaths) {
+        listener.setSelectedSeveralPaths(selectedSeveralPaths);
     }
 
     protected boolean hasCurrentSelection() {

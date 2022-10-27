@@ -197,7 +197,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
             idField.setText(exception.getID());
             exceptionTextPane.setText(exception.getExceptionText());
             descriptionPane.setText(exception.getRemarks());
-            sqlPane.setText(exception.getCreateFullSQLText());
+            sqlPane.setText(exception.getCreateSQLText());
         } catch (DataSourceException e) {
             controller.handleException(e);
         }
@@ -220,7 +220,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
             idField.setText(exception.getID());
             exceptionTextPane.setText(exception.getExceptionText());
             descriptionPane.setText(exception.getRemarks());
-            sqlPane.setText(exception.getCreateFullSQLText());
+            sqlPane.setText(exception.getCreateSQLText());
 
         } else {
             exceptionNameField.setText(metaObject.getName());

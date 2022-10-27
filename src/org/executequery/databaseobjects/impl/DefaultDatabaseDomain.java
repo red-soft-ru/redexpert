@@ -86,13 +86,13 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCreateFullSQLText() {
+    public String getCreateSQLText() {
         return SQLUtils.generateCreateDomain(getDomainData(), getName(), true);
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateFullSQLText();
+        return this.getCreateSQLText();
     }
 
     @Override

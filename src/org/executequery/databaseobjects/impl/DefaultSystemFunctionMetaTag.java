@@ -124,7 +124,7 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
     }
 
     @Override
-    public String getCreateFullSQLText() throws DataSourceException {
+    public String getCreateSQLText() throws DataSourceException {
         return null;
     }
 

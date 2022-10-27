@@ -21,6 +21,7 @@
 package org.underworldlabs.util;
 
 import org.executequery.ApplicationContext;
+import org.executequery.gui.browser.ColumnData;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.util.StringBundle;
@@ -669,6 +670,29 @@ public final class MiscUtils {
 
     public static String generateUniqueId() {
         return UUID.randomUUID().toString();
+    }
+
+    public static String formattedDefaultValue(ColumnData.DefaultValue defaultValue, int type) {
+        StringBuilder sqlText = new StringBuilder();
+        String value = formattedSQLValue(defaultValue, type);
+        sqlText.append(" ");
+        if (defaultValue.getOriginOperator() != null)
+            sqlText.append(defaultValue.getOriginOperator());
+        else sqlText.append("DEFAULT");
+        sqlText.append(" ").append(value);
+        return sqlText.toString();
+    }
+
+    public static String formattedSQLValue(ColumnData.DefaultValue value, int type) {
+        if ((checkKeyword(value.getValue()) || value.getValue().startsWith("'")
+                || value.getValue().trim().contentEquals("null")
+                || value.getValue().trim().contentEquals("=null")
+                || value.getValue().trim().contentEquals("= null"))
+                && !value.isUseQuotes())
+            return value.getValue();
+        if (value.isUseQuotes())
+            return "'" + value.getValue() + "'";
+        else return formattedSQLValue(value.getValue(), type);
     }
 
     public static String formattedSQLValue(String value, int type) {

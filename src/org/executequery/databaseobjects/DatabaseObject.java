@@ -99,6 +99,11 @@ public interface DatabaseObject extends NamedObject {
     String getRemarks();
 
     /**
+     * Setting remarks attached to this object.
+     */
+    void setRemarks(String description);
+
+    /**
      * Sets the parent object to that specified.
      *
      * @param the parent named object
@@ -134,7 +139,7 @@ public interface DatabaseObject extends NamedObject {
 
     ResultSet getMetaData() throws DataSourceException;
 
-    String getCreateFullSQLText() throws DataSourceException;
+    String getCreateSQLText() throws DataSourceException;
 
     String getSource();
 

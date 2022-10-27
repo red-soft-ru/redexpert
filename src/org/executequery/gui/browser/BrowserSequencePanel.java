@@ -30,7 +30,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
     private JLabel objectNameLabel;
 
     private JLabel valueLabel;
-    private JTextField valueField;
+    private JTextField firstValueField;
 
     private JTextPane descriptionPane;
     private SQLTextArea sqlPane;
@@ -68,11 +68,11 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         valueLabel = new JLabel();
         valueLabel.setText(Bundles.getCommon("value"));
 
-        valueField = new DisabledField();
+        firstValueField = new DisabledField();
 
         paramPanel.add(valueLabel, new GridBagConstraints(0, 0, 1, 1, 0, 0,
                 GridBagConstraints.LINE_START, GridBagConstraints.LINE_START, new Insets(5, 0, 5, 5), 0, 0));
-        paramPanel.add(valueField, new GridBagConstraints(1, 0, 1, 1, 1, 0,
+        paramPanel.add(firstValueField, new GridBagConstraints(1, 0, 1, 1, 1, 0,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 0, 5, 5), 0, 0));
 
         panel.add(paramPanel, BorderLayout.NORTH);
@@ -174,11 +174,10 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         try {
             sequenceNameField.setText(sequence.getName());
-            valueField.setText(String.valueOf(sequence.getSequenceValue()));
+            firstValueField.setText(String.valueOf(sequence.getSequenceFirstValue()));
             descriptionPane.setText(sequence.getRemarks());
-            sqlPane.setText(sequence.getCreateFullSQLText() +
-                    "\n\n" +
-                    sequence.getAlterSQLText());
+            sqlPane.setText(sequence.getCreateSQLText());
+
         } catch (DataSourceException e) {
             controller.handleException(e);
         }
@@ -197,11 +196,9 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         if (sequence != null) {
             sequenceNameField.setText(sequence.getName());
-            valueField.setText(String.valueOf(sequence.getSequenceValue()));
+            firstValueField.setText(String.valueOf(sequence.getSequenceFirstValue()));
             descriptionPane.setText(sequence.getDescription());
-            sqlPane.setText(sequence.getCreateFullSQLText() +
-                    "\n\n" +
-                    sequence.getAlterSQLText());
+            sqlPane.setText(sequence.getCreateSQLText());
 
         } else {
             sequenceNameField.setText(metaObject.getName());

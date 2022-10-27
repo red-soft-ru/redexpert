@@ -38,6 +38,8 @@ public interface DatabaseConnectionRepository extends Repository {
 
     DatabaseConnection findByName(String name);
 
+    DatabaseConnection findBySourceName(String sourceName);
+
     boolean nameExists(DatabaseConnection exclude, String name);
 
     void save(String path, List<DatabaseConnection> databaseConnections);

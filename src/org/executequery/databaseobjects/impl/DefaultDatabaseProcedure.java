@@ -23,9 +23,15 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.executequery.databaseobjects.DatabaseTypeConverter;
+import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.util.SQLUtils;
 
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.Types;
+import java.util.ArrayList;
 
 /**
  * Default database procedure implementation.
@@ -34,13 +40,6 @@ import java.sql.ResultSet;
  */
 public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
-
-    /**
-     * Creates a new instance of DefaultDatabaseProcedure.
-     */
-    public DefaultDatabaseProcedure() {
-    }
-
 
     /**
      * Creates a new instance of DefaultDatabaseProcedure
@@ -68,9 +67,9 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name
+     * @return the metadata key name
      */
 
 
@@ -78,16 +77,14 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         return META_TYPES[PROCEDURE];
     }
 
-    public String getCreateFullSQLText() {
-        return SQLUtils.generateCreateProcedure(
-                getName(), getParameters(), getProcedureSourceCode(),
-                getRemarks(), getHost().getDatabaseConnection(), false);
+    public String getCreateSQLText() {
+        return SQLUtils.generateCreateProcedure(getName(), getEntryPoint(), getEngine(), getParameters(), getSourceCode(), getRemarks(), getHost().getDatabaseConnection(), false);
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
         return SQLUtils.generateCreateProcedure(
-                getName(), getParameters(), getProcedureSourceCode(),
+                getName(), getEntryPoint(), getEngine(), getParameters(), getSourceCode(),
                 getRemarks(), getHost().getDatabaseConnection(), true);
     }
 
@@ -98,7 +95,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCreateFullSQLText().
+        return databaseObject.getCreateSQLText().
                 replaceFirst("CREATE OR ", "").
                 replaceFirst("CREATE", "ALTER");
     }
@@ -110,16 +107,184 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     @Override
     protected String queryForInfo() {
-        return "select rdb$description\n" +
-                "from rdb$procedures \n" +
-                "where rdb$procedure_name = '" + getName().trim() + "'";
+        String name = getName();
+        String sql;
+        if (getDatabaseMajorVersion() >= 3)
+            sql = "select prc.rdb$procedure_name,\n" +
+                    "prc.rdb$procedure_source as PROCEDURE_SOURCE,\n" +
+                    "prc.rdb$description AS DESCRIPTION, \n" +
+                    "pp.rdb$parameter_name,\n" +
+                    "pp.rdb$parameter_type,\n" +
+                    "fs.rdb$field_name, \n" +
+                    "fs.rdb$field_type, \n" +
+                    "fs.rdb$field_length, \n" +
+                    "fs.rdb$field_scale, \n" +
+                    "fs.rdb$field_sub_type, \n" +
+                    "fs.rdb$segment_length as segment_length, \n" +
+                    "fs.rdb$dimensions, \n" +
+                    "cr.rdb$character_set_name as character_set_name, \n" +
+                    "co.rdb$collation_name, \n" +
+                    "pp.rdb$parameter_number,\n" +
+                    "fs.rdb$character_length, \n" +
+                    "pp.rdb$description,\n" +
+                    "pp.rdb$default_source as default_source,\n" +
+                    "fs.rdb$field_precision, \n" +
+                    "pp.rdb$parameter_mechanism as AM,\n" +
+                    "pp.rdb$field_source as FS,\n" +
+                    "fs.rdb$default_source, \n" +
+                    "pp.rdb$null_flag as null_flag,\n" +
+                    "pp.rdb$relation_name as RN,\n" +
+                    "pp.rdb$field_name as FN,\n" +
+                    "co2.rdb$collation_name, \n" +
+                    "cr.rdb$default_collate_name, \n" +
+                    "prc.rdb$engine_name as ENGINE,\n" +
+                    "prc.rdb$entrypoint as ENTRY_POINT,\n" +
+                    "prc.rdb$sql_security as SQL_SECURITY\n" +
+                    "from rdb$procedures prc\n" +
+                    "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                    "and (pp.rdb$package_name is null)\n" +
+                    "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
+                    "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
+                    "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
+                    "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
+                    "where prc.rdb$procedure_name = '" + name + "'\n" +
+                    "and (prc.rdb$package_name is null) \n" +
+                    "order by pp.rdb$parameter_number";
+        else if (getDatabaseMinorVersion() >= 5)
+            sql = "select prc.rdb$procedure_name,\n" +
+                    "prc.rdb$procedure_source as PROCEDURE_SOURCE,\n" +
+                    "prc.rdb$description AS DESCRIPTION, \n" +
+                    "pp.rdb$parameter_name,\n" +
+                    "pp.rdb$parameter_type,\n" +
+                    "fs.rdb$field_name, \n" +
+                    "fs.rdb$field_type, \n" +
+                    "fs.rdb$field_length, \n" +
+                    "fs.rdb$field_scale, \n" +
+                    "fs.rdb$field_sub_type, \n" +
+                    "fs.rdb$segment_length as segment_length, \n" +
+                    "fs.rdb$dimensions, \n" +
+                    "cr.rdb$character_set_name as character_set_name, \n" +
+                    "co.rdb$collation_name, \n" +
+                    "pp.rdb$parameter_number,\n" +
+                    "fs.rdb$character_length, \n" +
+                    "pp.rdb$description,\n" +
+                    "pp.rdb$default_source as default_source,\n" +
+                    "fs.rdb$field_precision, \n" +
+                    "pp.rdb$parameter_mechanism as AM,\n" +
+                    "pp.rdb$field_source as FS,\n" +
+                    "fs.rdb$default_source, \n" +
+                    "pp.rdb$null_flag as null_flag,\n" +
+                    "pp.rdb$relation_name as RN,\n" +
+                    "pp.rdb$field_name as FN,\n" +
+                    "co2.rdb$collation_name, \n" +
+                    "cr.rdb$default_collate_name \n" +
+                    "prc.rdb$language as ENGINE,\n" +
+                    "prc.rdb$external_name as ENTRY_POINT,\n" +
+                    "null as SQL_SECURITY\n" +
+                    "from rdb$procedures prc\n" +
+                    "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                    "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
+                    "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
+                    "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
+                    "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
+                    "where prc.rdb$procedure_name = '" + name + "'\n" +
+                    "order by pp.rdb$parameter_number";
+        else
+            sql = "select prc.rdb$procedure_name,\n" +
+                    "prc.rdb$procedure_source as PROCEDURE_SOURCE,\n" +
+                    "prc.rdb$description as DESCRIPTION, \n" +
+                    "pp.rdb$parameter_name,\n" +
+                    "pp.rdb$parameter_type,\n" +
+                    "fs.rdb$field_name, \n" +
+                    "fs.rdb$field_type, \n" +
+                    "fs.rdb$field_length, \n" +
+                    "fs.rdb$field_scale, \n" +
+                    "fs.rdb$field_sub_type, \n" +
+                    "fs.rdb$segment_length as segment_length, \n" +
+                    "fs.rdb$dimensions, \n" +
+                    "cr.rdb$character_set_name as character_set_name, \n" +
+                    "co.rdb$collation_name, \n" +
+                    "pp.rdb$parameter_number,\n" +
+                    "fs.rdb$character_length, \n" +
+                    "pp.rdb$description,\n" +
+                    "null as default_source,\n" +
+                    "fs.rdb$field_precision, \n" +
+                    "null as AM,\n" +
+                    "pp.rdb$field_source as FS,\n" +
+                    "fs.rdb$default_source, \n" +
+                    "null as null_flag,\n" +
+                    "null as RN,\n" +
+                    "null as FN,\n" +
+                    "co2.rdb$collation_name, \n" +
+                    "cr.rdb$default_collate_name, \n" +
+                    "null as ENGINE,\n" +
+                    "null as ENTRY_POINT,\n" +
+                    "null as SQL_SECURITY\n" +
+                    "from rdb$procedures prc\n" +
+                    "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                    "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
+                    "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
+                    "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
+                    "left join rdb$collations co2 on (fs.rdb$character_set_id = co2.rdb$character_set_id)\n" +
+                    "where prc.rdb$procedure_name = '" + name + "'\n" +
+                    "order by pp.rdb$parameter_number";
+        return sql;
     }
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) {
         try {
-            if (rs != null && rs.next()) {
-                setRemarks(rs.getString(1));
+            parameters = new ArrayList<>();
+            procedureInputParameters = new ArrayList<>();
+            procedureOutputParameters = new ArrayList<>();
+            boolean first = true;
+            while (rs.next()) {
+                String parameterName = rs.getString(4);
+                if (parameterName != null) {
+                    ProcedureParameter pp = new ProcedureParameter(parameterName.trim(),
+                            rs.getInt(5) == 0 ? DatabaseMetaData.procedureColumnIn : DatabaseMetaData.procedureColumnOut,
+                            DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(7), rs.getInt(10)),
+                            DatabaseTypeConverter.getDataTypeName(rs.getInt(7), rs.getInt(10), rs.getInt(9)),
+                            rs.getInt(8),
+                            1 - rs.getInt("null_flag"));
+
+                    if (pp.getDataType() == Types.LONGVARBINARY ||
+                            pp.getDataType() == Types.LONGVARCHAR ||
+                            pp.getDataType() == Types.BLOB) {
+                        pp.setSubType(rs.getInt(10));
+                        pp.setSize(rs.getInt("segment_length"));
+                    }
+
+                    String domain = rs.getString(6);
+                    if (domain != null && !domain.startsWith("RDB$"))
+                        pp.setDomain(domain.trim());
+                    pp.setTypeOf(rs.getInt("AM") == 1);
+                    String relationName = rs.getString("RN");
+                    if (relationName != null)
+                        pp.setRelationName(relationName.trim());
+                    String fieldName = rs.getString("FN");
+                    if (fieldName != null)
+                        pp.setFieldName(fieldName.trim());
+
+                    if (pp.getRelationName() != null && pp.getFieldName() != null)
+                        pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                    String characterSet = rs.getString("character_set_name");
+                    if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
+                        pp.setEncoding(characterSet.trim());
+                    pp.setDefaultValue(rs.getString("default_source"));
+                    if (pp.getType() == DatabaseMetaData.procedureColumnIn)
+                        procedureInputParameters.add(pp);
+                    else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
+                        procedureOutputParameters.add(pp);
+                    parameters.add(pp);
+                }
+                if (first) {
+                    sourceCode = getFromResultSet(rs, "PROCEDURE_SOURCE");
+                    entryPoint = getFromResultSet(rs, "ENTRY_POINT");
+                    engine = getFromResultSet(rs, "ENGINE");
+                    setRemarks(getFromResultSet(rs, "DESCRIPTION"));
+                    first = false;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

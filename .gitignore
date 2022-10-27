@@ -57,3 +57,5 @@ src/org/underworldlabs/procedureParser/ProcedureParserLexer.tokens
 src/org/underworldlabs/procedureParser/ProcedureParserListener.java
 src/org/underworldlabs/procedureParser/ProcedureParserParser.java
 src/org/underworldlabs/procedureParser/ProcedureParserVisitor.java
+/src/org/underworldlabs/sqlLexer/SqlLexer.java
+/src/org/underworldlabs/sqlLexer/SqlLexer.tokens

@@ -13,8 +13,11 @@ import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.QueryTokenizer;
 import org.executequery.sql.SqlMessages;
 import org.executequery.sql.SqlStatementResult;
+import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -77,17 +80,30 @@ public class ExecuteQueryDialog extends BaseDialog {
     }
 
     public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter) {
+        this(name, query, databaseConnection, keepAlive, delimiter, false);
+
+    }
+
+    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter, boolean autocommit) {
         super(name, true, true);
         this.query = query;
         this.delimiter = delimiter;
         this.dc = databaseConnection;
         queryTokenizer = new QueryTokenizer();
         querySender = new DefaultStatementExecutor(dc, keepAlive);
-        querySender.setCommitMode(false);
+        querySender.setCommitMode(autocommit);
         init();
-        execute();
+        SwingWorker sw = new SwingWorker() {
+            @Override
+            public Object construct() {
+                execute();
+                return null;
+            }
+        };
+        sw.start();
 
     }
+
 
     void init() {
         mainPanel = new JPanel();
@@ -114,7 +130,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
             }
         });
-        tableAction.addMouseListener(new MouseListener() {
+        tableAction.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
@@ -125,30 +141,17 @@ public class ExecuteQueryDialog extends BaseDialog {
                             model.data.elementAt(row).copyScript = !model.data.elementAt(row).copyScript;
                             model.fireTableDataChanged();
                         }
-                    } else {
-                        setMessages(model.data.elementAt(row));
                     }
                 }
             }
-
+        });
+        tableAction.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
-            public void mousePressed(MouseEvent mouseEvent) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent mouseEvent) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent mouseEvent) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent mouseEvent) {
-
+            public void valueChanged(ListSelectionEvent e) {
+                int row = tableAction.getSelectedRow();
+                if (row >= 0) {
+                    setMessages(model.data.elementAt(row));
+                }
             }
         });
         tableAction.getTableHeader().setReorderingAllowed(false);
@@ -359,20 +362,24 @@ public class ExecuteQueryDialog extends BaseDialog {
     }
 
     void execute() {
-        String querys = query;
-        if (querys.endsWith(";")) {
-            querys = querys.substring(0, querys.length() - 1);
+        String queries = query;
+        if (queries.endsWith(delimiter)) {
+            queries = queries.substring(0, queries.length() - 1);
         }
         String query = "";
         boolean commit = true;
-        while (querys.trim().length() > 0 && commit) {
-            if (querys.contains(delimiter)) {
-                query = querys.substring(0, querys.indexOf(delimiter));
-                querys = querys.substring(querys.indexOf(delimiter) + 1);
-            } else {
-                query = querys;
-                querys = "";
-            }
+        int startIndex = 0;
+        String lowQuery = queries.toLowerCase();
+        QueryTokenizer queryTokenizer = new QueryTokenizer();
+        queryTokenizer.extractTokens(queries);
+        while (queries.trim().length() > 0 && commit) {
+            QueryTokenizer.QueryTokenized fquery = queryTokenizer.tokenizeFirstQuery(queries, lowQuery, startIndex, delimiter);
+            queries = fquery.script;
+            delimiter = fquery.delimiter;
+            DerivedQuery dQuery = fquery.query;
+            lowQuery = fquery.lowScript;
+            startIndex = fquery.startIndex;
+            query = dQuery.getDerivedQuery();
             while (query.indexOf("\n") == 0) {
                 query = query.substring(1);
             }

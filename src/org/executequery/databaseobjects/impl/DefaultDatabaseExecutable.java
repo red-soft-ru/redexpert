@@ -20,13 +20,10 @@
 
 package org.executequery.databaseobjects.impl;
 
-import biz.redsoft.IFBDatabaseMetadata;
-import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.*;
-import org.executequery.datasource.PooledDatabaseMetaData;
-import org.executequery.gui.browser.ColumnData;
-import org.executequery.sql.SqlStatementResult;
+import org.executequery.databaseobjects.DatabaseExecutable;
+import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.ProcedureParameter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
@@ -46,22 +43,25 @@ import java.util.List;
 public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         implements DatabaseExecutable {
 
+
     /**
      * proc parameters
      */
-    private ArrayList<ProcedureParameter> parameters;
+    protected ArrayList<ProcedureParameter> parameters;
 
     /**
      * the proc type
      */
     private short executableType;
 
-    private String procedureSourceCode;
+    protected String sourceCode;
 
-    private DefaultStatementExecutor sender;
+    protected List<ProcedureParameter> procedureInputParameters;
+    protected List<ProcedureParameter> procedureOutputParameters;
 
-    private List<ProcedureParameter> procedureInputParameters;
-    private List<ProcedureParameter> procedureOutputParameters;
+    protected String entryPoint;
+    protected String engine;
+
 
     public DefaultDatabaseExecutable() {
         super((DatabaseMetaTag) null);
@@ -76,11 +76,8 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         if (metaTagParent.getSchema() != null) {
             setSchemaName(metaTagParent.getSchema().getName());
         }
-        sender = new DefaultStatementExecutor(metaTagParent.getHost().getDatabaseConnection(), true);
-
 
     }
-
 
     /**
      * Indicates whether this executable object has any parameters.
@@ -168,217 +165,14 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
     }
 
-    private void loadParameters() throws DataSourceException {
-        ResultSet rs = null;
-        try {
 
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-            parameters = new ArrayList<ProcedureParameter>();
-            procedureInputParameters = new ArrayList<ProcedureParameter>();
-            procedureOutputParameters = new ArrayList<ProcedureParameter>();
-            String _catalog = getCatalogName();
-            String _schema = getSchemaName();
-
-            int type = getType();
-            if (type == SYSTEM_FUNCTION ||
-                    type == SYSTEM_STRING_FUNCTIONS ||
-                    type == SYSTEM_NUMERIC_FUNCTIONS ||
-                    type == SYSTEM_DATE_TIME_FUNCTIONS) {
-
-                _catalog = null;
-                _schema = null;
-
-            } else {
-
-                // check that the db supports catalog and
-                // schema names for this call
-                if (!dmd.supportsCatalogsInProcedureCalls()) {
-                    _catalog = null;
-                }
-
-                if (!dmd.supportsSchemasInProcedureCalls()) {
-                    _schema = null;
-                }
-
-            }
-            rs = getProcedureParameters(getName());
-
-            while (rs.next()) {
-
-                ProcedureParameter pp = new ProcedureParameter(rs.getString(4).trim(),
-                        rs.getInt(5) == 0 ? DatabaseMetaData.procedureColumnIn : DatabaseMetaData.procedureColumnOut,
-                        DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(7), rs.getInt(10)),
-                        DatabaseTypeConverter.getDataTypeName(rs.getInt(7), rs.getInt(10), rs.getInt(9)),
-                        rs.getInt(8),
-                        1 - rs.getInt("null_flag"));
-
-                if (pp.getDataType() == Types.LONGVARBINARY ||
-                        pp.getDataType() == Types.LONGVARCHAR ||
-                        pp.getDataType() == Types.BLOB) {
-                    pp.setSubType(rs.getInt(10));
-                    pp.setSize(rs.getInt("segment_length"));
-                }
-
-                String domain = rs.getString(6);
-                if (domain != null && !domain.startsWith("RDB$"))
-                    pp.setDomain(domain.trim());
-                pp.setTypeOf(rs.getInt("AM") == 1);
-                String relationName = rs.getString("RN");
-                if (relationName != null)
-                    pp.setRelationName(relationName.trim());
-                String fieldName = rs.getString("FN");
-                if (fieldName != null)
-                    pp.setFieldName(fieldName.trim());
-
-                if (pp.getRelationName() != null && pp.getFieldName() != null)
-                    pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
-                String characterSet = rs.getString("character_set_name");
-                if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
-                    pp.setEncoding(characterSet.trim());
-                pp.setDefaultValue(rs.getString("default_source"));
-                if (pp.getType() == DatabaseMetaData.procedureColumnIn)
-                    procedureInputParameters.add(pp);
-                else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
-                    procedureOutputParameters.add(pp);
-                parameters.add(pp);
-            }
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-
-        } finally {
-
-            sender.releaseResources();
-        }
-    }
 
     /**
      * Returns the procedure parameters.
      *
      * @return the result set
      */
-    private ResultSet getProcedureParameters(String name) throws SQLException {
 
-        String sql;
-        if (getDatabaseMajorVersion() >= 3)
-            sql = "select prc.rdb$procedure_name,\n" +
-                "prc.rdb$procedure_source,\n" +
-                "prc.rdb$description, \n" +
-                "pp.rdb$parameter_name,\n" +
-                "pp.rdb$parameter_type,\n" +
-                "fs.rdb$field_name, \n" +
-                "fs.rdb$field_type, \n" +
-                "fs.rdb$field_length, \n" +
-                "fs.rdb$field_scale, \n" +
-                "fs.rdb$field_sub_type, \n" +
-                "fs.rdb$segment_length as segment_length, \n" +
-                "fs.rdb$dimensions, \n" +
-                "cr.rdb$character_set_name as character_set_name, \n" +
-                "co.rdb$collation_name, \n" +
-                "pp.rdb$parameter_number,\n" +
-                "fs.rdb$character_length, \n" +
-                "pp.rdb$description,\n" +
-                "pp.rdb$default_source as default_source,\n" +
-                "fs.rdb$field_precision, \n" +
-                "pp.rdb$parameter_mechanism as AM,\n" +
-                "pp.rdb$field_source as FS,\n" +
-                "fs.rdb$default_source, \n" +
-                "pp.rdb$null_flag as null_flag,\n" +
-                "pp.rdb$relation_name as RN,\n" +
-                "pp.rdb$field_name as FN,\n" +
-                "co2.rdb$collation_name, \n" +
-                "cr.rdb$default_collate_name, \n" +
-                "prc.rdb$engine_name, \n" +
-                "prc.rdb$entrypoint \n" +
-                "from rdb$procedures prc\n" +
-                "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
-                "and (pp.rdb$package_name is null)\n" +
-                "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
-                "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
-                "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
-                "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                "where prc.rdb$procedure_name = '" + name + "'\n" +
-                "and (prc.rdb$package_name is null) \n" +
-                "order by pp.rdb$parameter_number";
-        else if (getDatabaseMinorVersion() >= 5)
-            sql = "select prc.rdb$procedure_name,\n" +
-                    "prc.rdb$procedure_source,\n" +
-                    "prc.rdb$description, \n" +
-                    "pp.rdb$parameter_name,\n" +
-                    "pp.rdb$parameter_type,\n" +
-                    "fs.rdb$field_name, \n" +
-                    "fs.rdb$field_type, \n" +
-                    "fs.rdb$field_length, \n" +
-                    "fs.rdb$field_scale, \n" +
-                    "fs.rdb$field_sub_type, \n" +
-                    "fs.rdb$segment_length as segment_length, \n" +
-                    "fs.rdb$dimensions, \n" +
-                    "cr.rdb$character_set_name as character_set_name, \n" +
-                    "co.rdb$collation_name, \n" +
-                    "pp.rdb$parameter_number,\n" +
-                    "fs.rdb$character_length, \n" +
-                    "pp.rdb$description,\n" +
-                    "pp.rdb$default_source as default_source,\n" +
-                    "fs.rdb$field_precision, \n" +
-                    "pp.rdb$parameter_mechanism as AM,\n" +
-                    "pp.rdb$field_source as FS,\n" +
-                    "fs.rdb$default_source, \n" +
-                    "pp.rdb$null_flag as null_flag,\n" +
-                    "pp.rdb$relation_name as RN,\n" +
-                    "pp.rdb$field_name as FN,\n" +
-                    "co2.rdb$collation_name, \n" +
-                    "cr.rdb$default_collate_name \n" +
-                    "from rdb$procedures prc\n" +
-                    "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
-                    "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
-                    "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
-                    "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
-                    "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                    "where prc.rdb$procedure_name = '" + name + "'\n" +
-                    "order by pp.rdb$parameter_number";
-        else
-            sql = "select prc.rdb$procedure_name,\n" +
-                    "prc.rdb$procedure_source,\n" +
-                    "prc.rdb$description, \n" +
-                    "pp.rdb$parameter_name,\n" +
-                    "pp.rdb$parameter_type,\n" +
-                    "fs.rdb$field_name, \n" +
-                    "fs.rdb$field_type, \n" +
-                    "fs.rdb$field_length, \n" +
-                    "fs.rdb$field_scale, \n" +
-                    "fs.rdb$field_sub_type, \n" +
-                    "fs.rdb$segment_length as segment_length, \n" +
-                    "fs.rdb$dimensions, \n" +
-                    "cr.rdb$character_set_name as character_set_name, \n" +
-                    "co.rdb$collation_name, \n" +
-                    "pp.rdb$parameter_number,\n" +
-                    "fs.rdb$character_length, \n" +
-                    "pp.rdb$description,\n" +
-                    "pp.rdb$default_source as default_source,\n" +
-                    "fs.rdb$field_precision, \n" +
-                    "pp.rdb$parameter_mechanism as AM,\n" +
-                    "pp.rdb$field_source as FS,\n" +
-                    "fs.rdb$default_source, \n" +
-                    "pp.rdb$null_flag as null_flag,\n" +
-                    "null as RN,\n" +
-                    "null as FN,\n" +
-                    "co2.rdb$collation_name, \n" +
-                    "cr.rdb$default_collate_name \n" +
-                    "from rdb$procedures prc\n" +
-                    "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
-                    "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
-                    "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
-                    "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
-                    "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                    "where prc.rdb$procedure_name = '" + name + "'\n" +
-                    "order by pp.rdb$parameter_number";
-        SqlStatementResult result = sender.getResultSet(sql);
-        if (result.isException()) {
-            result.getSqlException();
-        }
-        return result.getResultSet();
-    }
 
     /**
      * Returns the database object type.
@@ -431,62 +225,12 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         this.executableType = executableType;
     }
 
-    public String getProcedureSourceCode() {
-        checkOnReload(procedureSourceCode);
-        return procedureSourceCode;
+    public String getSourceCode() {
+        checkOnReload(sourceCode);
+        return sourceCode;
 
     }
 
-    private void loadProcedureSourceCode() {
-        procedureSourceCode = "";
-
-        try {
-
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-            PooledDatabaseMetaData poolMetaData = (PooledDatabaseMetaData)dmd;
-            DatabaseMetaData dMetaData = poolMetaData.getInner();
-            if (this.getHost() != null && this.getHost().getDatabaseConnection().getJDBCDriver().getClassName().contains("FBDriver")) {
-
-                URL[] urls = new URL[0];
-                Class clazzdb = null;
-                Object odb = null;
-                try {
-                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-                    ClassLoader cl = new URLClassLoader(urls, dMetaData.getClass().getClassLoader());
-                    clazzdb = cl.loadClass("biz.redsoft.FBDatabaseMetadataImpl");
-                    odb = clazzdb.newInstance();
-                    IFBDatabaseMetadata db = (IFBDatabaseMetadata) odb;
-
-                    procedureSourceCode = db.getProcedureSourceCode(dMetaData, getName());
-
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        } finally {
-
-        }
-    }
-
-    protected void getObjectInfo() {
-        try {
-            loadParameters();
-            loadProcedureSourceCode();
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Error loading info about Executable", e);
-        } finally {
-            setMarkedForReload(false);
-        }
-    }
 
     public List<ProcedureParameter> getProcedureInputParameters() {
         return procedureInputParameters;
@@ -495,6 +239,25 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
     public List<ProcedureParameter> getProcedureOutputParameters() {
         return procedureOutputParameters;
     }
+
+    public String getEntryPoint() {
+        checkOnReload(entryPoint);
+        return entryPoint;
+    }
+
+    public void setEntryPoint(String entryPoint) {
+        this.entryPoint = entryPoint;
+    }
+
+    public String getEngine() {
+        checkOnReload(engine);
+        return engine;
+    }
+
+    public void setEngine(String engine) {
+        this.engine = engine;
+    }
+
 }
 
 

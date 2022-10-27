@@ -440,7 +440,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
         dc = databaseConnection;
-        tableEditorModel.setElements(new ColumnData(dc).getTables());
+        tableEditorModel.setElements(new ColumnData(dc).getTableNames());
         for (ColumnData cd : tableVector) {
             cd.setDatabaseConnection(dc);
         }
@@ -629,7 +629,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         }
 
 
-        ColumnData cd = SQLUtils.columnDataFromProcedureParameter(parameter, dc);
+        ColumnData cd = SQLUtils.columnDataFromProcedureParameter(parameter, dc, true);
         addRow(cd);
         table.setEditingRow(tableVector.size() - 1);
         _model.fireTableRowsUpdated(tableVector.size() - 1, tableVector.size() - 1);

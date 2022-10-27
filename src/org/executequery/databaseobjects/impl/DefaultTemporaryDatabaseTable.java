@@ -24,7 +24,6 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
 
     public DefaultTemporaryDatabaseTable(DatabaseObject object) {
-
         super(object, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
     }
 
@@ -34,7 +33,8 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     }
 
     @Override
-    public String getCreateFullSQLText() throws DataSourceException {
+    public String getCreateSQLText() throws DataSourceException {
+
 
         DefaultStatementExecutor querySender = new DefaultStatementExecutor();
         querySender.setDatabaseConnection(getHost().getDatabaseConnection());
@@ -63,6 +63,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         if (type == 4)
             typeTemporary += " ON COMMIT PRESERVE ROWS";
         else if (type == 5)
+
             typeTemporary += " ON COMMIT DELETE ROWS";
 
         List<ColumnData> listCD = new ArrayList<>();
@@ -79,6 +80,11 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     }
 
     @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return getCreateSQLText();
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropRequest("GLOBAL TEMPORARY TABLE", getName());
     }
@@ -87,6 +93,10 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     public String getAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultTemporaryDatabaseTable comparingTable = (DefaultTemporaryDatabaseTable) databaseObject;
         return SQLUtils.generateAlterTable(this, comparingTable, true, Comparer.TABLE_CONSTRAINTS_NEED);
+    }
+
+    private String formatSqlText(String text) {
+        return new SQLFormatter(text).format();
     }
 
     @Override
@@ -107,11 +117,6 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     @Override
     public boolean hasSQLDefinition() {
         return true;
-    }
-
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateFullSQLText();
     }
 
 }

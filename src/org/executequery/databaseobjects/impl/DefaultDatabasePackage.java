@@ -127,13 +127,13 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     @Override
-    public String getCreateFullSQLText() {
+    public String getCreateSQLText() {
         return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), getDescription());
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateFullSQLText();
+        return this.getCreateSQLText();
     }
 
     @Override
@@ -143,7 +143,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCreateFullSQLText().
+        return databaseObject.getCreateSQLText().
                 replaceFirst("CREATE OR ", "").
                 replaceFirst("CREATE", "ALTER");
     }

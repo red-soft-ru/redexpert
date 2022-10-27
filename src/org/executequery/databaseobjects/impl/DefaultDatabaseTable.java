@@ -36,20 +36,12 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Takis Diakoumis
  */
 public class DefaultDatabaseTable extends AbstractTableObject implements DatabaseTable {
-
-    /**
-     * the table columns
-     */
-    private List<DatabaseColumn> columns;
 
     /**
      * the table columns exported
@@ -72,9 +64,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
      * Creates a new instance of DatabaseTable
      */
 
-    private int typeTree;
-
-    private DatabaseObject dependObject;
 
     private String externalFile;
 
@@ -110,26 +99,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     public DefaultDatabaseTable(DatabaseHost host, String metaDataKey) {
         super(host, metaDataKey);
-    }
-
-    /**
-     * Propagates the call to getColumns().
-     */
-    public List<NamedObject> getObjects() throws DataSourceException {
-
-        List<DatabaseColumn> _columns = getColumns();
-        if (_columns == null) {
-
-            return null;
-        }
-
-        List<NamedObject> objects = new ArrayList<NamedObject>(_columns.size());
-        for (DatabaseColumn i : _columns) {
-
-            objects.add(i);
-        }
-
-        return objects;
     }
 
     @Override
@@ -173,21 +142,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
 
         List<ColumnConstraint> constraints = getConstraints();
-
         String anotherTableName = anotherTable.getName();
 
-        for (ColumnConstraint constraint : constraints) {
-
-            if (constraint.isForeignKey()) {
-
-                if (constraint.getReferencedTable().equals(anotherTableName)) {
-
+        for (ColumnConstraint constraint : constraints)
+            if (constraint.isForeignKey())
+                if (constraint.getReferencedTable().equals(anotherTableName))
                     return true;
-                }
-
-            }
-
-        }
 
         return false;
 
@@ -203,172 +163,14 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return getColumns().size();
     }
 
-    /**
-     * Returns the columns of this table.
-     *
-     * @return the columns
-     */
-    public synchronized List<DatabaseColumn> getColumns() throws DataSourceException {
-
-        if (!isMarkedForReload() && columns != null) {
-
-            return columns;
-        }
-
-        // otherwise cleanup existing references
-        if (columns != null) {
-
-            columns.clear();
-            columns = null;
-        }
-
-        DatabaseHost host = getHost();
-        if (host != null) {
-
-            ResultSet rs = null;
-            try {
-
-                List<DatabaseColumn> _columns = null;
-                if (typeTree == TreePanel.DEFAULT)
-                    _columns = host.getColumns(getCatalogName(),
-                            getSchemaName(),
-                            getName());
-                if (typeTree == TreePanel.DEPENDED_ON)
-                    _columns = getDependedColumns();
-                if (typeTree == TreePanel.DEPENDENT)
-                    _columns = getDependentColumns();
-                if (_columns != null) {
-
-                    columns = databaseColumnListWithSize(_columns.size());
-                    for (DatabaseColumn i : _columns) {
-
-                        columns.add(new DatabaseTableColumn(this, i));
-                    }
-
-                    // reload and define the constraints
-                    String _catalog = host.getCatalogNameForQueries(getCatalogName());
-                    String _schema = host.getSchemaNameForQueries(getSchemaName());
-                    DatabaseMetaData dmd = host.getDatabaseMetaData();
-                    rs = dmd.getPrimaryKeys(_catalog, _schema, getName());
-                    while (rs.next()) {
-
-                        String pkColumn = rs.getString(4);
-                        for (DatabaseColumn i : columns) {
-
-                            if (i.getName().equalsIgnoreCase(pkColumn)) {
-
-                                DatabaseTableColumn column = (DatabaseTableColumn) i;
-                                TableColumnConstraint constraint = new TableColumnConstraint(column, ColumnConstraint.PRIMARY_KEY);
-
-                                constraint.setName(rs.getString(6));
-                                constraint.setMetaData(resultSetRowToMap(rs));
-                                column.addConstraint(constraint);
-                                break;
-
-                            }
-                        }
-                    }
-                    releaseResources(rs, null);
-
-                    try {
-
-                        // TODO: XXX
-
-                        // sapdb amd maxdb dump on imported/exported keys
-                        // surround with try/catch hack to get at least a columns list
-
-                        rs = dmd.getImportedKeys(_catalog, _schema, getName());
-
-                        while (rs.next()) {
-
-                            String fkColumn = rs.getString(8);
-
-                            for (DatabaseColumn i : columns) {
-
-                                if (i.getName().equalsIgnoreCase(fkColumn)) {
-                                    DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-                                    DatabaseTableColumn column = (DatabaseTableColumn) i;
-                                    List<String> row = new ArrayList<>();
-                                    for (int g = 1; g <= rs.getMetaData().getColumnCount(); g++)
-                                        row.add(rs.getString(g));
-                                    TableColumnConstraint constraint = new TableColumnConstraint(column, ColumnConstraint.FOREIGN_KEY);
-                                    constraint.setReferencedCatalog(rs.getString(1));
-                                    constraint.setReferencedSchema(rs.getString(2));
-                                    constraint.setReferencedTable(rs.getString(3));
-                                    constraint.setReferencedColumn(rs.getString(4));
-                                    constraint.setName(rs.getString(12));
-                                    constraint.setDeferrability(rs.getShort(14));
-                                    constraint.setMetaData(resultSetRowToMap(rs));
-                                    ResultSet rulesRS = querySender.getResultSet("select RDB$REF_CONSTRAINTS.RDB$UPDATE_RULE, RDB$REF_CONSTRAINTS.RDB$DELETE_RULE" +
-                                            " from rdb$ref_constraints where RDB$REF_CONSTRAINTS.RDB$CONSTRAINT_NAME='" + constraint.getName() + "'").getResultSet();
-                                    try {
-                                        if (rulesRS.next()) {
-                                            for (int g = 1; g <= 2; g++) {
-                                                String rule = rulesRS.getString(g);
-                                                if (rule != null) {
-                                                    if (g == 1)
-                                                        constraint.setUpdateRule(rule.trim());
-                                                    else
-                                                        constraint.setDeleteRule(rule.trim());
-                                                }
-                                            }
-                                        }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    } finally {
-                                        querySender.releaseResources();
-                                    }
-                                    column.addConstraint(constraint);
-                                    break;
-
-                                }
-                            }
-                        }
-
-                    } catch (SQLException e) {
-                        Log.error("Error get imported keys for " + getName() + ": " + e.getMessage());
-                    }
-                }
-
-            } catch (DataSourceException e) {
-
-                // catch and re-throw here to create
-                // an empty column list so we don't
-                // keep hitting the same error
-                columns = databaseColumnListWithSize(0);
-                throw e;
-
-            } catch (SQLException e) {
-
-                // catch and re-throw here to create
-                // an empty column list so we don't
-                // keep hitting the same error
-                columns = databaseColumnListWithSize(0);
-                throw new DataSourceException(e);
-
-            } finally {
-
-                releaseResources(rs, null);
-                setMarkedForReload(false);
-            }
-
-        }
-        return columns;
-    }
-
-    private List<DatabaseColumn> databaseColumnListWithSize(int size) {
-
-        return Collections.synchronizedList(new ArrayList<DatabaseColumn>(size));
-    }
-
     private List<ColumnConstraint> databaseConstraintsListWithSize(int size) {
 
-        return Collections.synchronizedList(new ArrayList<ColumnConstraint>(size));
+        return Collections.synchronizedList(new ArrayList<>(size));
     }
 
     private List<DefaultDatabaseIndex> databaseIndexListWithSize(int size) {
 
-        return Collections.synchronizedList(new ArrayList<DefaultDatabaseIndex>(size));
+        return Collections.synchronizedList(new ArrayList<>(size));
     }
 
     List<ColumnConstraint> constraints;
@@ -384,7 +186,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
             if (getColumns() != null) {
 
-                constraints = new ArrayList<ColumnConstraint>();
+                constraints = new ArrayList<>();
 
                 for (DatabaseColumn i : columns) {
 
@@ -392,9 +194,16 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                     if (column.hasConstraints()) {
 
                         List<ColumnConstraint> columnConstraints = column.getConstraints();
-                        for (ColumnConstraint j : columnConstraints) {
+                        for (ColumnConstraint constraint : columnConstraints) {
 
-                            constraints.add(j);
+                            String name = constraint.getName();
+                            if (isContainsTheSameObjectByName(name)) {
+                                getConstraintByName(name).addColumnToDisplayList(constraint.getColumn());
+                                if (Objects.equals(constraint.getTypeName(), "FOREIGN"))
+                                    getConstraintByName(name).addReferenceColumnToDisplayList(constraint.getColumn());
+                            } else
+                                constraints.add(constraint);
+
                         }
 
                     }
@@ -443,7 +252,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                             "where C.RDB$RELATION_NAME=? AND C.RDB$CONSTRAINT_TYPE = 'UNIQUE'";
                     PreparedStatement st = executor.getPreparedStatement(query);
                     st.setString(1, getName());
-                    ResultSet rs = executor.getResultSet(-1, st).getResultSet();
+                    result = executor.execute(QueryTypes.SELECT, st);
+                    ResultSet rs = result.getResultSet();
                     if (rs != null) {
                         while (rs.next()) {
                             String name = rs.getString(1).trim();
@@ -454,14 +264,19 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                                 if (i.getName().trim().contentEquals(columnName))
                                     constraint.setColumn((DatabaseTableColumn) i);
                             }
-                            constraints.add(constraint);
+                            if (isContainsTheSameObjectByName(name))
+                                getConstraintByName(name).addColumnToDisplayList(constraint.getColumn());
+                            else
+                                constraints.add(constraint);
                         }
                     }
                 } catch (Exception e) {
                     Log.error("Error loading unique-constraints:" + result.getErrorMessage(), e);
+
                 } finally {
                     executor.releaseResources();
                 }
+
                 constraints.removeAll(Collections.singleton(null));
                 constraints.sort(new Comparator<ColumnConstraint>() {
                     @Override
@@ -476,6 +291,37 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 return databaseConstraintsListWithSize(0);
             }
         } else return constraints;
+    }
+
+    private boolean isContainsTheSameObjectByName(String name) {
+
+        if (constraints != null) {
+
+            for (ColumnConstraint element : constraints) {
+
+                if (Objects.equals(element.getName(), name))
+                    return true;
+            }
+
+        }
+
+        return false;
+    }
+
+    private ColumnConstraint getConstraintByName(String name) {
+
+        ColumnConstraint constraint = null;
+        if (constraints != null) {
+
+            for (ColumnConstraint element : constraints) {
+
+                if (Objects.equals(element.getName(), name))
+                    constraint = element;
+            }
+
+        }
+
+        return constraint;
     }
 
     /**
@@ -533,7 +379,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         } catch (DataSourceException e) {
 
             // catch and re-throw here to create
-            // an empty index list so we don't
+            // an empty index list, so we don't
             // keep hitting the same error
             indexes = databaseIndexListWithSize(0);
             throw e;
@@ -541,7 +387,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         } catch (SQLException e) {
 
             // catch and re-throw here to create
-            // an empty index list so we don't
+            // an empty index list, so we don't
             // keep hitting the same error
             indexes = databaseIndexListWithSize(0);
             throw new DataSourceException(e);
@@ -557,11 +403,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public List<DefaultDatabaseTrigger> getTriggers() throws DataSourceException {
-        if (!isMarkedForReload() && triggers != null) {
+
+        if (!isMarkedForReload() && triggers != null)
             return triggers;
-        }
+
         triggers = new ArrayList<>();
-        ResultSet rs = null;
+        ResultSet rs;
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
         String query = "select T.RDB$TRIGGER_NAME,\n" +
                 "T.RDB$RELATION_NAME\n" +
@@ -571,7 +418,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 "and (C.RDB$TRIGGER_NAME is NULL)\n" +
                 "and (T.RDB$RELATION_NAME = ?)\n" +
                 "order by  T.RDB$TRIGGER_SEQUENCE, T.RDB$TRIGGER_NAME";
+
         try {
+
             PreparedStatement st = querySender.getPreparedStatement(query);
             st.setString(1, getName());
             rs = querySender.getResultSet(-1, st).getResultSet();
@@ -585,9 +434,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         } catch (SQLException e) {
             e.printStackTrace();
+
         } finally {
             querySender.releaseResources();
         }
+
         return triggers;
     }
 
@@ -613,9 +464,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
@@ -666,7 +517,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
      */
     public void revert() {
 
-        List<DatabaseColumn> newColumns = new ArrayList<DatabaseColumn>();
+        List<DatabaseColumn> newColumns = new ArrayList<>();
         for (DatabaseColumn i : columns) {
 
             DatabaseTableColumn column = (DatabaseTableColumn) i;
@@ -732,9 +583,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             Connection connection = getHost().getConnection();
             stmnt = connection.createStatement();
 
-            for (int i = 0; i < queries.length; i++) {
+            for (String s : queries) {
 
-                String query = queries[i].trim();
+                String query = s.trim();
                 if (StringUtils.isNotBlank(query)) {
 
                     result += stmnt.executeUpdate(query);
@@ -911,9 +762,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         boolean first = true;
         sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(getName()));
         if (_constraints != null) {
-            for (int i = 0; i < _constraints.size(); i++) {
-                if (_constraints.get(i) instanceof TableColumnConstraint) {
-                    TableColumnConstraint dtc = (TableColumnConstraint) _constraints.get(i);
+            for (ColumnConstraint constraint : _constraints) {
+                if (constraint instanceof TableColumnConstraint) {
+                    TableColumnConstraint dtc = (TableColumnConstraint) constraint;
                     if (dtc.isMarkedDeleted()) {
                         if (!first)
                             sb.append(",");
@@ -924,9 +775,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             }
         }
         if (_columns != null) {
-            for (int i = 0; i < _columns.size(); i++) {
-                if (_columns.get(i) instanceof DatabaseTableColumn) {
-                    DatabaseTableColumn dtc = (DatabaseTableColumn) _columns.get(i);
+            for (DatabaseColumn column : _columns) {
+                if (column instanceof DatabaseTableColumn) {
+                    DatabaseTableColumn dtc = (DatabaseTableColumn) column;
                     if (dtc.isMarkedDeleted()) {
                         if (!first)
                             sb.append(",");
@@ -941,8 +792,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return sb.toString();
     }
 
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
+    public String getCreateSQLText() throws DataSourceException {
 
         updateListCD();
         updateListCC();
@@ -950,6 +800,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, false, false,
                 null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return getCreateSQLText();
     }
 
     @Override
@@ -997,11 +852,10 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     public List<ColumnConstraint> getPrimaryKeys() {
 
-        List<ColumnConstraint> primaryKeys = new ArrayList<ColumnConstraint>();
+        List<ColumnConstraint> primaryKeys = new ArrayList<>();
         List<ColumnConstraint> _constraints = getConstraints();
-        for (int i = 0, n = _constraints.size(); i < n; i++) {
+        for (ColumnConstraint columnConstraint : _constraints) {
 
-            ColumnConstraint columnConstraint = _constraints.get(i);
             if (columnConstraint.isPrimaryKey()) {
 
                 primaryKeys.add(columnConstraint);
@@ -1014,11 +868,10 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     public List<ColumnConstraint> getForeignKeys() {
 
-        List<ColumnConstraint> foreignKeys = new ArrayList<ColumnConstraint>();
+        List<ColumnConstraint> foreignKeys = new ArrayList<>();
         List<ColumnConstraint> _constraints = getConstraints();
-        for (int i = 0, n = _constraints.size(); i < n; i++) {
+        for (ColumnConstraint columnConstraint : _constraints) {
 
-            ColumnConstraint columnConstraint = _constraints.get(i);
             if (columnConstraint.isForeignKey()) {
 
                 foreignKeys.add(columnConstraint);
@@ -1031,12 +884,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     public List<ColumnConstraint> getUniqueKeys() {
 
-        List<ColumnConstraint> uniqueKeys = new ArrayList<ColumnConstraint>();
+        List<ColumnConstraint> uniqueKeys = new ArrayList<>();
         List<ColumnConstraint> _constraints = getConstraints();
 
-        for (int i = 0, n = _constraints.size(); i < n; i++) {
+        for (ColumnConstraint columnConstraint : _constraints) {
 
-            ColumnConstraint columnConstraint = _constraints.get(i);
             if (columnConstraint.isUniqueKey()) {
 
                 uniqueKeys.add(columnConstraint);
@@ -1084,7 +936,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     /**
      * Returns the CREATE TABLE statement for this database table.
      * This will be table column (plus data type) definitions only,
-     * this does not include constraint meta data.
+     * this does not include constraint metadata.
      */
     public String getCreateSQLText(int style) throws DataSourceException {
 
@@ -1101,6 +953,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         for (int i = 0; i < getColumnCount(); i++)
             listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
     }
+
     private void updateListCC() {
         listCC = new ArrayList<>();
         for (int i = 0; i < getConstraints().size(); i++)
@@ -1132,7 +985,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         // add another 5 spaces from the max
         maxLength += 5;
 
-        int secondIndentLength = 0;
+        int secondIndentLength;
         for (int i = 0, n = columns.size(); i < n; i++) {
             DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
 
@@ -1211,8 +1064,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
      * @return the modified SQL
      */
     public String getModifiedSQLText() throws DataSourceException {
-        if (modifiedSQLText == null)
+        if (modifiedSQLText == null) {
             return getAlteredSQLText();
+        }
         return modifiedSQLText;
     }
 
@@ -1222,94 +1076,94 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     public String getInsertSQLText() {
 
+        String fields = "";
+        String values = "";
+
         try {
 
-            StringBuilder sb = new StringBuilder();
-            sb.append("INSERT INTO ");
-            sb.append(MiscUtils.getFormattedObject(getName().trim()));
-            sb.append(" (");
+            List<DatabaseColumn> columns = getColumns();
 
-            String indent = getSpacesForLength(sb.length());
+            for (int i = 0, n = columns.size(); i < n; i++) {
 
-            List<DatabaseColumn> _columns = getColumns();
-            for (int i = 0, n = _columns.size(); i < n; i++) {
+                DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
 
-                DatabaseTableColumn column = (DatabaseTableColumn) _columns.get(i);
-                sb.append(column.getNameForQuery());
+                fields += column.getNameForQuery();
+                values += ":" + toCamelCase(column.getName());
 
                 if (i < n - 1) {
-                    sb.append(",\n");
-                    sb.append(indent);
+
+                    fields += ", ";
+                    values += ", ";
                 }
 
             }
-
-            sb.append(")\n");
-
-            String valuesString = "VALUES (";
-            sb.append(valuesString);
-
-            indent = getSpacesForLength(valuesString.length());
-
-            for (int i = 0, n = _columns.size(); i < n; i++) {
-                DatabaseTableColumn column = (DatabaseTableColumn) _columns.get(i);
-
-                sb.append(columnAsValueString(column.getName()));
-
-                if (i < n - 1) {
-                    sb.append(",\n");
-                    sb.append(indent);
-                }
-
-            }
-
-            sb.append(");\n");
-
-            return getFormatter().format(sb.toString());
 
         } catch (DataSourceException e) {
 
-            logThrowable(e);
-            return "";
+            fields = "_fields_";
+            values = "_values_";
+            e.printStackTrace();
         }
+
+        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
+
     }
 
     public String getUpdateSQLText() {
+
+        String settings = "";
+
         try {
-            StringBuilder sb = new StringBuilder();
-            sb.append("UPDATE ");
-            sb.append(MiscUtils.getFormattedObject(getName().trim()));
 
-            String setString = "SET ";
-            sb.append("\n");
-            sb.append(setString);
+            List<DatabaseColumn> columns = getColumns();
 
-            String indent = getSpacesForLength(setString.length());
+            for (int i = 0, n = columns.size(); i < n; i++) {
 
-            List<DatabaseColumn> _columns = getColumns();
+                DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
 
-            for (int i = 0, n = _columns.size(); i < n; i++) {
-                DatabaseTableColumn column = (DatabaseTableColumn) _columns.get(i);
-
-                sb.append(column.getNameForQuery());
-                sb.append(" = ");
-                sb.append(columnAsValueString(column.getName()));
-
-                if (i < n - 1) {
-                    sb.append(",\n");
-                    sb.append(indent);
-                }
+                settings += column.getNameForQuery() + " = :" +
+                        toCamelCase(column.getName());
+                if (i < n - 1)
+                    settings += ", ";
 
             }
 
-            sb.append(";\n");
-
-            return getFormatter().format(sb.toString());
         } catch (DataSourceException e) {
 
-            logThrowable(e);
-            return "";
+            settings = "_oldValue_ = _newValue_";
+            e.printStackTrace();
         }
+
+        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings));
+
+    }
+
+    public String getSelectSQLText() {
+
+        String fields = "";
+
+        try {
+
+            List<DatabaseColumn> columns = getColumns();
+
+            for (int i = 0, n = columns.size(); i < n; i++) {
+
+                DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
+
+                fields += column.getNameForQuery();
+                if (i < n - 1)
+                    fields += ", ";
+
+            }
+
+        } catch (DataSourceException e) {
+
+            fields = "*";
+            e.printStackTrace();
+        }
+
+        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields));
+
     }
 
     TokenizingFormatter formatter;
@@ -1318,46 +1172,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         if (formatter == null)
             formatter = new TokenizingFormatter();
         return formatter;
-    }
-
-    public String getSelectSQLText() {
-        try {
-            StringBuilder sb = new StringBuilder();
-            sb.append("SELECT ");
-
-            String indent = getSpacesForLength(sb.length());
-
-            List<DatabaseColumn> _columns = getColumns();
-
-            for (int i = 0, n = _columns.size(); i < n; i++) {
-                DatabaseTableColumn column = (DatabaseTableColumn) _columns.get(i);
-
-                sb.append(column.getNameForQuery());
-
-                if (i < n - 1) {
-                    sb.append(",\n");
-                    sb.append(indent);
-                }
-
-            }
-
-            sb.append("\nFROM ");
-            sb.append(MiscUtils.getFormattedObject(getName().trim()));
-            sb.append(";\n");
-
-            return getFormatter().format(sb.toString());
-
-        } catch (DataSourceException e) {
-
-            logThrowable(e);
-            return "";
-        }
-
-    }
-
-    private String columnAsValueString(String column) {
-
-        return toCamelCase(column);
     }
 
     private String getSpacesForLength(int length) {
@@ -1426,7 +1240,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         }
 
         sb.deleteCharAt(sb.length() - 1);
-        sb.append("\nORDER BY " + cols.get(0) + " \n");
+        sb.append("\nORDER BY ").append(cols.get(0)).append(" \n");
         sb.append("ROWS 1");
         return sb.toString();
     }
@@ -1459,7 +1273,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         }
 
         sb.deleteCharAt(sb.length() - 1);
-        sb.append("\nORDER BY " + cols.get(0) + " \n");
+        sb.append("\nORDER BY ").append(cols.get(0)).append(" \n");
         sb.append("ROWS 1");
         return sb.toString();
     }
@@ -1551,7 +1365,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     private List<String> namesFromConstraints(List<ColumnConstraint> constraints) {
 
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (ColumnConstraint constraint : constraints) {
 
             names.add(constraint.getColumnName());
@@ -1559,265 +1373,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         return names;
 
-    }
-
-    @Override
-    public int getTypeTree() {
-        return typeTree;
-    }
-
-    @Override
-    public void setTypeTree(int typeTree) {
-        this.typeTree = typeTree;
-    }
-
-    @Override
-    public DatabaseObject getDependObject() {
-        return dependObject;
-    }
-
-    public void setDependObject(DatabaseObject dependObject) {
-        this.dependObject = dependObject;
-    }
-
-    private List<DatabaseColumn> getDependedColumns() {
-        ResultSet rs = null;
-
-        List<DatabaseColumn> columns = new ArrayList<DatabaseColumn>();
-
-        try {
-            DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-            String packageField = "";
-            if (dmd.getDatabaseMajorVersion() > 2)
-                packageField = "and (T1.RDB$PACKAGE_NAME IS NULL)\n";
-            Connection connection = dmd.getConnection();
-            Statement statement = null;
-            String firebirdSql = "select distinct \n" +
-                    "D.RDB$FIELD_NAME as FK_Field\n" +
-                    "from RDB$REF_CONSTRAINTS B, RDB$RELATION_CONSTRAINTS A, RDB$RELATION_CONSTRAINTS C,\n" +
-                    "RDB$INDEX_SEGMENTS D, RDB$INDEX_SEGMENTS E, RDB$INDICES I\n" +
-                    "where (A.RDB$CONSTRAINT_TYPE = 'FOREIGN KEY') and\n" +
-                    "(A.RDB$CONSTRAINT_NAME = B.RDB$CONSTRAINT_NAME) and\n" +
-                    "(B.RDB$CONST_NAME_UQ=C.RDB$CONSTRAINT_NAME) and (C.RDB$INDEX_NAME=D.RDB$INDEX_NAME) and\n" +
-                    "(A.RDB$INDEX_NAME=E.RDB$INDEX_NAME) and\n" +
-                    "(A.RDB$INDEX_NAME=I.RDB$INDEX_NAME)\n" +
-                    "and (A.RDB$RELATION_NAME = '" + dependObject.getName() + "')\n" +
-                    "and (C.RDB$RELATION_NAME = '" + getName() + "')\n" +
-                    "union all\n" +
-                    "select cast(t1.RDB$FIELD_NAME as varchar(64))\n" +
-                    "from RDB$DEPENDENCIES t1 where (t1.RDB$DEPENDENT_NAME = '" + dependObject.getName() + "')\n" +
-                    "and (t1.RDB$DEPENDENT_TYPE = 0)\n" +
-                    packageField +
-                    "and (T1.RDB$DEPENDED_ON_NAME = '" + getName() + "')\n" +
-                    "union all\n" +
-                    "select distinct cast(d.rdb$field_name as varchar(64))\n" +
-                    "from rdb$dependencies d, rdb$relation_fields f\n" +
-                    "where (d.rdb$dependent_type = 3) and\n" +
-                    "(d.rdb$dependent_name = f.rdb$field_source)\n" +
-                    "and (f.rdb$relation_name = '" + dependObject.getName() + "')\n" +
-                    "and (d.RDB$DEPENDED_ON_NAME = '" + getName() + "')\n" +
-                    "order by 1";
-
-            statement = connection.createStatement();
-            rs = statement.executeQuery(firebirdSql);
-
-
-            while (rs.next()) {
-
-                DefaultDatabaseColumn column = new DefaultDatabaseColumn();
-
-                column.setName(rs.getString(1));
-
-                columns.add(column);
-            }
-            releaseResources(rs, connection);
-
-            int columnCount = columns.size();
-            if (columnCount > 0) {
-
-                // check for primary keys
-                rs = dmd.getPrimaryKeys(null, null, getName());
-                while (rs.next()) {
-
-                    String pkColumn = rs.getString(4);
-
-                    // find the pk column in the previous list
-                    for (int i = 0; i < columnCount; i++) {
-
-                        DatabaseColumn column = columns.get(i);
-                        String columnName = column.getName();
-
-                        if (columnName.equalsIgnoreCase(pkColumn)) {
-                            ((DefaultDatabaseColumn) column).setPrimaryKey(true);
-                            break;
-                        }
-
-                    }
-
-                }
-                releaseResources(rs, connection);
-
-                // check for foreign keys
-                rs = dmd.getImportedKeys(null, null, getName());
-                while (rs.next()) {
-                    String fkColumn = rs.getString(8);
-
-                    // find the fk column in the previous list
-                    for (int i = 0; i < columnCount; i++) {
-                        DatabaseColumn column = columns.get(i);
-                        String columnName = column.getName();
-                        if (columnName.equalsIgnoreCase(fkColumn)) {
-                            ((DefaultDatabaseColumn) column).setForeignKey(true);
-                            break;
-                        }
-                    }
-
-                }
-
-            }
-
-            return columns;
-
-        } catch (SQLException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.error("Error retrieving column data for table " + getName()
-                        + " using connection " + getHost().getDatabaseConnection(), e);
-            }
-
-            return columns;
-
-//            throw new DataSourceException(e);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    private List<DatabaseColumn> getDependentColumns() {
-        ResultSet rs = null;
-
-        List<DatabaseColumn> columns = new ArrayList<DatabaseColumn>();
-
-        try {
-            DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-            String packageField = "";
-            if (dmd.getDatabaseMajorVersion() > 2) {
-                packageField = "and (T1.RDB$PACKAGE_NAME IS NULL)\n";
-            }
-            Connection connection = dmd.getConnection();
-            Statement statement = null;
-            String firebirdSql = "select " +
-                    "E.RDB$FIELD_NAME as OnField\n" +
-                    "from RDB$REF_CONSTRAINTS B, RDB$RELATION_CONSTRAINTS A, RDB$RELATION_CONSTRAINTS C,\n" +
-                    "RDB$INDEX_SEGMENTS D, RDB$INDEX_SEGMENTS E\n" +
-                    "where (A.RDB$CONSTRAINT_TYPE = 'FOREIGN KEY') and\n" +
-                    "(A.RDB$CONSTRAINT_NAME = B.RDB$CONSTRAINT_NAME) and\n" +
-                    "(B.RDB$CONST_NAME_UQ=C.RDB$CONSTRAINT_NAME) and (C.RDB$INDEX_NAME=D.RDB$INDEX_NAME) and\n" +
-                    "(A.RDB$INDEX_NAME=E.RDB$INDEX_NAME)\n" +
-                    "and (C.RDB$RELATION_NAME = '" + dependObject.getName() + "')\n" +
-                    "and (A.RDB$RELATION_NAME = '" + getName() + "')\n" +
-                    "union all\n" +
-                    "select cast(t1.RDB$FIELD_NAME as varchar(64))\n" +
-                    "from RDB$DEPENDENCIES t1 where (t1.RDB$DEPENDENT_NAME = '" + dependObject.getName() + "')\n" +
-                    "and (t1.RDB$DEPENDENT_TYPE = 0)\n" +
-                    packageField +
-                    "and t1.RDB$DEPENDED_ON_NAME = '" + getName() + "'\n" +
-                    "union all\n" +
-                    "select distinct cast(d.rdb$field_name as varchar(64))\n" +
-                    "from rdb$dependencies d, rdb$relation_fields f\n" +
-                    "where (d.rdb$dependent_type = 3) and\n" +
-                    "(d.rdb$dependent_name = f.rdb$field_source)\n" +
-                    "and (f.rdb$relation_name = '" + dependObject.getName() + "')\n" +
-                    "and  d.rdb$depended_on_name = '" + getName() + "'\n" +
-                    "order by 1";
-
-            statement = connection.createStatement();
-            rs = statement.executeQuery(firebirdSql);
-
-
-            while (rs.next()) {
-
-                DefaultDatabaseColumn column = new DefaultDatabaseColumn();
-
-                column.setName(rs.getString(1));
-
-                columns.add(column);
-            }
-            releaseResources(rs, connection);
-
-            int columnCount = columns.size();
-            if (columnCount > 0) {
-
-                // check for primary keys
-                rs = dmd.getPrimaryKeys(null, null, getName());
-                while (rs.next()) {
-
-                    String pkColumn = rs.getString(4);
-
-                    // find the pk column in the previous list
-                    for (int i = 0; i < columnCount; i++) {
-
-                        DatabaseColumn column = columns.get(i);
-                        String columnName = column.getName();
-
-                        if (columnName.equalsIgnoreCase(pkColumn)) {
-                            ((DefaultDatabaseColumn) column).setPrimaryKey(true);
-                            break;
-                        }
-
-                    }
-
-                }
-                releaseResources(rs, connection);
-
-                // check for foreign keys
-                rs = dmd.getImportedKeys(null, null, getName());
-                while (rs.next()) {
-                    String fkColumn = rs.getString(8);
-
-                    // find the fk column in the previous list
-                    for (int i = 0; i < columnCount; i++) {
-                        DatabaseColumn column = columns.get(i);
-                        String columnName = column.getName();
-                        if (columnName.equalsIgnoreCase(fkColumn)) {
-                            ((DefaultDatabaseColumn) column).setForeignKey(true);
-                            break;
-                        }
-                    }
-
-                }
-
-            }
-
-            return columns;
-
-        } catch (SQLException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.error("Error retrieving column data for table " + getName()
-                        + " using connection " + getHost().getDatabaseConnection(), e);
-            }
-
-            return columns;
-
-//            throw new DataSourceException(e);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
     }
 
     public String getTablespace() {

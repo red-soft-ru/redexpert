@@ -6,7 +6,6 @@ import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Objects;
 
 /**
  * Created by vasiliy on 13.02.17.
@@ -79,13 +78,13 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
         this.exceptionText = exceptionText;
     }
 
-    public String getCreateFullSQLText() {
+    public String getCreateSQLText() {
         return SQLUtils.generateCreateException(getName(), getExceptionText());
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateFullSQLText();
+        return this.getCreateSQLText();
     }
 
     @Override

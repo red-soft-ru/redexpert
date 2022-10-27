@@ -564,7 +564,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         return false;
     }
 
-    public abstract String getCreateFullSQLText() throws DataSourceException;
+    public abstract String getCreateSQLText() throws DataSourceException;
     public abstract String getDropSQL() throws DataSourceException;
     public abstract String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException;
     public abstract String getCompareCreateSQL() throws DataSourceException;
@@ -626,6 +626,14 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     public DatabaseMetaTag getMetaTagParent() {
         return metaTagParent;
+    }
+
+    String getFromResultSet(ResultSet rs, String colName) throws SQLException {
+        String res = rs.getString(colName);
+        if (res == null)
+            res = "";
+        else res = res.trim();
+        return res;
     }
 }
 

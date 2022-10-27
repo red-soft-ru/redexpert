@@ -1,11 +1,8 @@
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
@@ -14,7 +11,7 @@ import java.sql.SQLException;
 /**
  * Created by vasiliy on 26.01.17.
  */
-public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
+public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
 
     private String triggerSourceCode;
     private boolean triggerActive;
@@ -156,6 +153,7 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
      */
 
     private int type = -1;
+
     public int getType() {
         if (type == -1) {
             if (getParent().getMetaDataKey().equalsIgnoreCase(META_TYPES[NamedObject.DATABASE_TRIGGER]))
@@ -198,8 +196,6 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
     public String getTriggerTableName() {
         if (isMarkedForReload())
             getObjectInfo();
-        if (tableName == null)
-            return "";
         return tableName;
     }
 
@@ -388,17 +384,14 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCreateFullSQLText() {
-        return SQLUtils.generateCreateTrigger(
-                getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
-                getTriggerSequence(), getTriggerSourceCode(), false);
+    public String getCreateSQLText() {
+        return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getRemarks());
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return SQLUtils.generateCreateTrigger(
-                getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
-                getTriggerSequence(), getTriggerSourceCode(), true);
+        return getCreateSQLText();
     }
 
     @Override
@@ -408,7 +401,7 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCreateFullSQLText().
+        return databaseObject.getCreateSQLText().
                 replaceFirst("CREATE OR ", "").
                 replaceFirst("CREATE", "ALTER");
     }
@@ -419,43 +412,34 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
     }
 
     protected String queryForInfo() {
+        String externalTriggerInfo = "t.RDB$ENGINE_NAME as ENGINE,\n" +
+                "t.RDB$ENTRYPOINT as ENTRY_POINT\n";
+        if (getDatabaseMajorVersion() < 3)
+            externalTriggerInfo = "null as ENGINE,\n" +
+                    "null as ENTRY_POINT\n";
         return "select 0,\n" +
-                "t.rdb$trigger_source,\n" +
-                "t.rdb$relation_name,\n" +
+                "t.rdb$trigger_source as SOURCE_CODE,\n" +
+                "t.rdb$relation_name as TABLE_NAME,\n" +
                 "t.rdb$trigger_sequence,\n" +
                 "t.rdb$trigger_type,\n" +
                 "t.rdb$trigger_inactive,\n" +
-                "t.rdb$description\n" +
+                "t.rdb$description as DESCRIPTION,\n" +
+                externalTriggerInfo +
                 "from rdb$triggers t\n" +
                 "where t.rdb$trigger_name = '" + getName().trim() + "'";
     }
 
-    @Override
-    protected void getObjectInfo() {
-        super.getObjectInfo();
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        try {
-            ResultSet rs = querySender.getResultSet(queryForInfo()).getResultSet();
-            setInfoFromResultSet(rs);
-        } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
-        } finally {
-            querySender.releaseResources();
-            setMarkedForReload(false);
-        }
-
-
-    }
-
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         if (rs.next()) {
-            setTableName(rs.getString(3));
+            setTableName(getFromResultSet(rs, "TABLE_NAME"));
             setTriggerSequence(rs.getInt(4));
             setTriggerActive(rs.getInt(6) != 1);
             setTriggerType(rs.getLong(5));
-            setTriggerDescription(rs.getString(7));
-            setTriggerSourceCode(rs.getString(2));
-            setRemarks(rs.getString(7));
+            setTriggerDescription(getFromResultSet(rs, "DESCRIPTION"));
+            setTriggerSourceCode(getFromResultSet(rs, "SOURCE_CODE"));
+            setRemarks(getFromResultSet(rs, "DESCRIPTION"));
+            setEngine(getFromResultSet(rs, "ENGINE"));
+            setEntryPoint(getFromResultSet(rs, "ENTRY_POINT"));
         }
     }
 

@@ -1,12 +1,15 @@
 package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.text.SQLTextArea;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
@@ -18,7 +21,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.DOMAIN);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.DOMAIN);
     private ColumnData columnData;
-    private DefaultDatabaseDomain domain;
+    private String domain;
     private JScrollPane scrollDefaultValue;
     private JScrollPane scrollCheck;
     private JScrollPane scrollDescription;
@@ -34,7 +37,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     private SelectTypePanel selectTypePanel;
     private JCheckBox notNullBox;
 
-    public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent, DefaultDatabaseDomain domain) {
+    public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent, String domain) {
         super(connection, parent, domain);
     }
 
@@ -47,7 +50,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         checkPanel = new JPanel();
         descriptionPanel = new JPanel();
         sqlPanel = new JPanel();
-        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), columnData, false);
+        selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(), connection.getIntDataTypesArray(), columnData, false);
         notNullBox = new JCheckBox("Not Null");
         scrollDefaultValue = new JScrollPane();
         scrollCheck = new JScrollPane();
@@ -102,20 +105,20 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
 
     protected void initEdited() {
         reset();
-        addDependenciesTab(domain);
-        addCreateSqlTab(domain);
+        addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain));
+        addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain));
     }
 
     protected void reset() {
-        columnData.setColumnName(domain.getName());
-        columnData.setDomain(domain.getName());
+        columnData.setColumnName(domain);
+        columnData.setDomain(domain);
         columnData.setDescription(columnData.getDomainDescription());
         columnData.setCheck(columnData.getDomainCheck());
         columnData.setNotNull(columnData.isDomainNotNull());
         columnData.setDefaultValue(columnData.getDomainDefault());
         descriptionTextPane.setText(columnData.getDescription());
         checkTextPane.setText(columnData.getCheck());
-        defaultValueTextPane.setText(columnData.getDefaultValue());
+        defaultValueTextPane.setText(columnData.getDefaultValue().getValue());
         nameField.setText(columnData.getColumnName());
         notNullBox.setSelected(columnData.isRequired());
         if (getDatabaseVersion() < 3)
@@ -148,7 +151,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-        this.domain = (DefaultDatabaseDomain) databaseObject;
+        this.domain = (String) databaseObject;
         columnData = new ColumnData(connection);
     }
 
@@ -191,7 +194,9 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     protected String generateQuery() {
         columnData.setColumnName(nameField.getText());
         if (editing) {
-            return SQLUtils.generateAlterDomain(domain.getDomainData(), columnData);
+            return SQLUtils.generateAlterDomain(
+                    ((DefaultDatabaseDomain)(ConnectionsTreePanel
+                            .getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain))).getDomainData(), columnData);
         } else {
             return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false);
         }

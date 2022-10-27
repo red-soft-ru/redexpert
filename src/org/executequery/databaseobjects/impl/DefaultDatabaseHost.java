@@ -106,7 +106,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Attempts to establish a connection using this host.
      */
     public boolean connect() throws DataSourceException {
-
         if (!isConnected()) {
             countFinishedMetaTags = 0;
 
@@ -136,10 +135,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         } finally {
 
-            schemas = null;
-            catalogs = null;
-            databaseMetaData = null;
-            connection = null;
+            close();
         }
 
     }
@@ -148,11 +144,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Closes the connection associated with this host.
      */
     public void close() {
-        if (connection != null) {
-            databaseMetaData = null;
-            //ConnectionManager.close(getDatabaseConnection(), connection);
-            connection = null;
-        }
+        schemas = null;
+        catalogs = null;
+        databaseMetaData = null;
+        connection = null;
     }
 
     /**
@@ -179,6 +174,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      */
     public Connection getConnection() throws DataSourceException {
 
+        if (!getDatabaseConnection().isConnected()) {
+            connection = null;
+            return connection;
+        }
         try {
 
             if ((connection == null || connection.isClosed())
@@ -203,6 +202,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     @Override
     public int countFinishedMetaTags() {
         return countFinishedMetaTags;
+    }
+
+    public void resetCountFinishedMetaTags() {
+        countFinishedMetaTags = 0;
     }
 
     @Override
@@ -545,54 +548,26 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * @param type    the table type
      * @return the hosted tables
      */
-    public List<String> getTableNames(String catalog, String schema, String type)
+    public List<String> getTableNames()
             throws DataSourceException {
 
-        ResultSet rs = null;
-        try {
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
-
-            String typeName = null;
-            List<String> tables = new ArrayList<String>();
-
-            String[] types = null;
-            if (type != null) {
-
-                types = new String[]{type};
-            }
-
-            rs = dmd.getTables(_catalog, _schema, null, types);
-            while (rs.next()) {
-
-                typeName = rs.getString(4);
-
-                // only include if the returned reported type matches
-                if (type != null && type.equalsIgnoreCase(typeName)) {
-
-                    tables.add(rs.getString(3));
-                }
-
-            }
-
-            return tables;
-
-        } catch (SQLException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.error("Tables not available for type "
-                        + type + " - driver returned: " + e.getMessage());
-            }
-
-            return new ArrayList<String>(0);
-
-        } finally {
-
-            releaseResources(rs, null);
+        List<String> tables = new ArrayList<>();
+        for (NamedObject table : getTables()) {
+            tables.add(table.getName());
         }
+        return tables;
 
+    }
+
+    public List<NamedObject> getTables()
+            throws DataSourceException {
+
+        List<NamedObject> tables = new ArrayList<>();
+        tables.addAll(getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]));
+        tables.addAll(getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]));
+        tables.addAll(getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.VIEW]));
+        tables.addAll(getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.SYSTEM_TABLE]));
+        return tables;
     }
 
     /**
@@ -603,41 +578,18 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * @param table   the database object name
      * @return the column names
      */
-    public List<String> getColumnNames(String catalog, String schema, String table)
+    public List<String> getColumnNames(String table)
             throws DataSourceException {
 
-        ResultSet rs = null;
-        List<String> columns = new ArrayList<String>();
+        List<String> columns = new ArrayList<>();
 
-        try {
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
-
-            // retrieve the base column info
-            rs = dmd.getColumns(_catalog, _schema, table, null);
-            while (rs.next()) {
-
-                columns.add(rs.getString(4));
-            }
-
-            return columns;
-
-        } catch (SQLException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.error("Error retrieving column data for table " + table
-                        + " using connection " + getDatabaseConnection(), e);
-            }
-
-            return columns;
-
-        } finally {
-
-            releaseResources(rs, null);
+        for (NamedObject namedObject : getTables()) {
+            if (namedObject.getName().contentEquals(table))
+                for (DatabaseColumn column : ((AbstractTableObject) namedObject).getColumns()) {
+                    columns.add(column.getName());
+                }
         }
-
+        return columns;
     }
 
     private final transient ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
@@ -983,6 +935,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             String computedSource = rs.getString("COMPUTED");
             if (computedSource != null && !computedSource.isEmpty()) {
                 column.setGenerated(true);
+                if (computedSource.startsWith("(") && computedSource.endsWith(")"))
+                    computedSource = computedSource.substring(1, computedSource.length() - 1);
                 column.setComputedSource(computedSource);
             }
             if (column.getTypeInt() == Types.LONGVARBINARY ||
@@ -1416,7 +1370,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
         if (driver.getClass().getName().contains("FBDriver")) {
-            Connection conn = connection.unwrap(Connection.class);
+            Connection conn = getConnection().unwrap(Connection.class);
             URL[] urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
             ClassLoader cl = new URLClassLoader(urls, conn.getClass().getClassLoader());
             IFBDatabaseConnection db;

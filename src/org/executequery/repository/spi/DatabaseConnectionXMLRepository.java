@@ -102,6 +102,25 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
         return null;
     }
 
+    @Override
+    public DatabaseConnection findBySourceName(String sourceName) {
+        List<DatabaseConnection> _connections = connections();
+        synchronized (_connections) {
+
+            for (DatabaseConnection connection : _connections) {
+
+                if (connection.getSourceName().equals(sourceName)) {
+
+                    return connection;
+                }
+
+            }
+
+        }
+
+        return null;
+    }
+
     public boolean nameExists(DatabaseConnection exclude, String name) {
 
         DatabaseConnection connection = findByName(name);
@@ -238,9 +257,11 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     private static final String SSH_STORE_PASSWORD = "sshstorepassword";
     private static final String NAMES_TO_UPPER_CASE = "namestouppercase";
 
+    private static final String PATH_TO_TRACE_CONFIG = "pathtotraceconfig";
+
     class DatabaseConnectionHandler extends AbstractXMLRepositoryHandler<DatabaseConnection> {
 
-        private List<DatabaseConnection> connections;
+        private final List<DatabaseConnection> connections;
 
         private DatabaseConnection connection;
 
@@ -491,6 +512,11 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                     databaseConnection.setNamesToUpperCase(true);
                 }
 
+            } else if (localNameIsKey(localName, PATH_TO_TRACE_CONFIG)) {
+                if (hasContents()) {
+
+                    databaseConnection.setPathToTraceConfig(contentsAsString);
+                }
             } else if (localNameIsKey(localName, CONNECTION)) {
 
                 if (databaseConnection != null) {
@@ -539,7 +565,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
 
     class DatabaseConnectionInputSource extends InputSource {
 
-        private List<DatabaseConnection> connections;
+        private final List<DatabaseConnection> connections;
 
         public DatabaseConnectionInputSource(List<DatabaseConnection> connections) {
 
@@ -681,6 +707,8 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                         valueToString(connection.getSshPort()), INDENT_TWO);
                 writeXML(NAMES_TO_UPPER_CASE,
                         valueToString(connection.isNamesToUpperCase()), INDENT_TWO);
+                writeXML(PATH_TO_TRACE_CONFIG,
+                        connection.getPathToTraceConfig(), INDENT_TWO);
 
                 if (connection.isSshPasswordStored()) {
 

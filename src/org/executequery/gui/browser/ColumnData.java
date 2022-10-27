@@ -27,6 +27,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.T;
+import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -139,7 +140,7 @@ public class ColumnData implements Serializable {
     /**
      * the column's default value
      */
-    private String defaultValue;
+    private DefaultValue defaultValue;
 
     /**
      * This column's constraints as a <code>Vector</code>
@@ -276,8 +277,8 @@ public class ColumnData implements Serializable {
 
     boolean cstring;
 
-    String table;
-    List<String> tables;
+    AbstractTableObject table;
+    List<NamedObject> tables;
     String columnTable;
     List<String> columns;
 
@@ -300,6 +301,7 @@ public class ColumnData implements Serializable {
         executor = new DefaultStatementExecutor(dc, true);
         tables = new ArrayList<>();
         columns = new ArrayList<>();
+        defaultValue = new DefaultValue();
     }
 
     public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn) {
@@ -567,21 +569,29 @@ public class ColumnData implements Serializable {
         this.markedDeleted = markedDeleted;
     }
 
-    public String getDefaultValue() {
+    public DefaultValue getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(String defaultValue) {
+    public void setDefaultValue(DefaultValue defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue.value = defaultValue;
     }
 
     public String getDomain() {
         return domain;
     }
 
-    public void setDomain(String Domain) {
-        domain = Domain;
-        if (!MiscUtils.isNull(domain)) {
+    public void setDomain(String domain) {
+        setDomain(domain, true);
+    }
+
+    public void setDomain(String domain, boolean loadDomainInfo) {
+        this.domain = domain;
+        if (!MiscUtils.isNull(domain) && loadDomainInfo) {
             getDomainInfo();
         }
 
@@ -612,6 +622,9 @@ public class ColumnData implements Serializable {
     }
 
     public void setDomainComputedBy(String domainComputedBy) {
+        if (!MiscUtils.isNull(domainComputedBy) && domainComputedBy.startsWith("(")
+                && domainComputedBy.endsWith(")"))
+            domainComputedBy = domainComputedBy.substring(1, domainComputedBy.length() - 1);
         this.domainComputedBy = domainComputedBy;
     }
 
@@ -867,14 +880,26 @@ public class ColumnData implements Serializable {
         if (!hasCopy()) {
             return false;
         }
-        return !MiscUtils.compareStrings(getDefaultValue(), copy.getDefaultValue());
+        if (MiscUtils.isNull(copy.getDefaultValue().getValue())) {
+            return !MiscUtils.isNull(getDefaultValue().getValue());
+        } else {
+            if (MiscUtils.isNull(getDefaultValue().getValue()))
+                return true;
+        }
+        return !copy.getDefaultValue().getValue().equalsIgnoreCase(getDefaultValue().getValue());
     }
 
     public boolean isCheckChanged() {
         if (!hasCopy()) {
             return false;
         }
-        return !MiscUtils.compareStrings(getCheck(), copy.getCheck());
+        if (MiscUtils.isNull(copy.getCheck())) {
+            return !MiscUtils.isNull(getCheck());
+        } else {
+            if (MiscUtils.isNull(getCheck()))
+                return true;
+        }
+        return !copy.getCheck().equalsIgnoreCase(getCheck());
     }
 
     public boolean isTypeChanged() {
@@ -923,30 +948,23 @@ public class ColumnData implements Serializable {
     }
 
     public void setTable(String table) {
-        this.table = table;
-        columns.clear();
-        String query = "SELECT RDB$FIELD_NAME FROM RDB$RELATION_FIELDS WHERE RDB$RELATION_NAME = ?";
-        SqlStatementResult result = null;
-        try {
-            PreparedStatement st = executor.getPreparedStatement(query);
-            st.setString(1,table);
-            result = executor.getResultSet(-1,st);
-            ResultSet rs = result.getResultSet();
-            while (rs.next()) {
-                columns.add(rs.getString(1).trim());
+        if (table == null)
+            return;
+        for (NamedObject namedObject : getTables()) {
+            if (namedObject.getName().contentEquals(table)) {
+                this.table = (AbstractTableObject) namedObject;
+                break;
             }
-            if (!columns.isEmpty())
-                setColumnTable(columns.get(0));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            if (result != null) {
-                GUIUtilities.displayErrorMessage(result.getMessage());
-            }
-        } finally {
-            executor.releaseResources();
         }
+        columns.clear();
+        for (DatabaseColumn column : this.table.getColumns()) {
+            columns.add(column.getName());
+        }
+        if (!columns.isEmpty())
+            setColumnTable(columns.get(0));
+
     }
+
 
     public void setDefaultValue(String defaultValue, boolean needProcessing) {
         if (needProcessing) {
@@ -958,25 +976,32 @@ public class ColumnData implements Serializable {
     public String processedDefaultValue(String defaultValue) {
         if (!MiscUtils.isNull(defaultValue)) {
             defaultValue = defaultValue.trim();
-            if (defaultValue.toUpperCase().startsWith("DEFAULT"))
+            if (defaultValue.toUpperCase().startsWith("DEFAULT")) {
                 defaultValue = defaultValue.substring(7).trim();
+                this.defaultValue.setOriginOperator("DEFAULT");
+            }
+            if (defaultValue.toUpperCase().startsWith("=")) {
+                defaultValue = defaultValue.substring(1).trim();
+                this.defaultValue.setOriginOperator("=");
+            }
             if (defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
                 defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+                this.defaultValue.setUseQuotes(true);
             }
         }
         return defaultValue;
     }
 
-    public String getTable() {
+    public AbstractTableObject getTable() {
         return table;
     }
 
     public String getFormattedTable() {
-        return getFormattedObject(table);
+        return getFormattedObject(table.getName());
     }
 
     public void setTable(int tableIndex) {
-        setTable(getTables().get(tableIndex));
+        setTable(getTables().get(tableIndex).getName());
     }
 
     public String getColumnTable() {
@@ -995,23 +1020,18 @@ public class ColumnData implements Serializable {
         return columns;
     }
 
-    public List<String> getTables() {
+    public List<NamedObject> getTables() {
         if (tables.isEmpty()) {
-            String query = "SELECT RDB$RELATION_NAME FROM RDB$RELATIONS ORDER BY 1";
-            try {
-                ResultSet rs = executor.getResultSet(query).getResultSet();
-                while (rs != null && rs.next()) {
-                    String tableName = rs.getString(1);
-                    if (tableName != null)
-                        tables.add(tableName.trim());
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                executor.releaseResources();
-            }
+            tables.addAll(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).getTables());
         }
         return tables;
+    }
+
+    public List<String> getTableNames() {
+        ArrayList<String> list = new ArrayList<>();
+        for (NamedObject table : getTables())
+            list.add(table.getName());
+        return list;
     }
 
     public int getTypeOfFrom() {
@@ -1096,6 +1116,36 @@ public class ColumnData implements Serializable {
 
     public void setSelectOperator(String selectOperator) {
         this.selectOperator = selectOperator;
+    }
+
+    public class DefaultValue {
+        String originOperator;
+        String value;
+        boolean useQuotes = false;
+
+        public String getOriginOperator() {
+            return originOperator;
+        }
+
+        public void setOriginOperator(String originOperator) {
+            this.originOperator = originOperator;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public boolean isUseQuotes() {
+            return useQuotes;
+        }
+
+        public void setUseQuotes(boolean useQuotes) {
+            this.useQuotes = useQuotes;
+        }
     }
 }
 

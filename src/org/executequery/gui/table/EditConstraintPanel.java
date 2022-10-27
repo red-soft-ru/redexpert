@@ -3,6 +3,7 @@ package org.executequery.gui.table;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTablespace;
 import org.executequery.databaseobjects.impl.TableColumnConstraint;
@@ -118,7 +119,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         panel.add(primaryIndexField, gbh.nextCol().spanX().get());
         label = new JLabel(bundleString("Sorting"));
         panel.add(label, gbh.nextRowFirstCol().setLabelDefault().get());
-        panel.add(primarySortingBox, gbh.nextCol().spanX().get());
+        panel.add(primarySortingBox, gbh.nextCol().fillHorizontally().spanX().get());
         onFieldPrimaryPanel = new ListSelectionPanel();
         onFieldPrimaryPanel.createAvailableList(getColumnNamesFromColumns(table.getColumns()));
         onFieldPrimaryPanel.setBorder(BorderFactory.createTitledBorder(bundleString("OnField")));
@@ -142,16 +143,16 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         label = new JLabel(bundleString("Index"));
         gbh.defaults().setXY(0, 0);
         foreignPanel.add(label, gbh.setLabelDefault().get());
-        foreignPanel.add(foreignIndexField, gbh.nextCol().spanX().get());
+        foreignPanel.add(foreignIndexField, gbh.nextCol().fillHorizontally().spanX().get());
         label = new JLabel(bundleString("Sorting"));
         foreignPanel.add(label, gbh.nextRowFirstCol().setLabelDefault().get());
-        foreignPanel.add(foreignSortingBox, gbh.nextCol().spanX().get());
+        foreignPanel.add(foreignSortingBox, gbh.nextCol().fillHorizontally().spanX().get());
         label = new JLabel(bundleString("UpdateRule"));
         foreignPanel.add(label, gbh.setLabelDefault().nextRowFirstCol().get());
-        foreignPanel.add(updateRuleBox, gbh.nextCol().spanX().get());
+        foreignPanel.add(updateRuleBox, gbh.nextCol().fillHorizontally().spanX().get());
         label = new JLabel(bundleString("DeleteRule"));
         foreignPanel.add(label, gbh.setLabelDefault().nextRowFirstCol().get());
-        foreignPanel.add(deleteRuleBox, gbh.nextCol().spanX().get());
+        foreignPanel.add(deleteRuleBox, gbh.nextCol().fillHorizontally().spanX().get());
         //TODO CHECK MOVE TO END
         /*foreignPanel.add(new JPanel(), new GridBagConstraints(1, 12,
                 1, 1, 1, 1,
@@ -161,17 +162,18 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
 
         fieldConstraint = new ListSelectionPanel();
         fieldConstraint.createAvailableList(getColumnNamesFromColumns(table.getColumns()));
-        List<String> tables = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]);
+        List<NamedObject> tables = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]);
         DynamicComboBoxModel referenceTableModel = new DynamicComboBoxModel();
         referenceTableModel.setElements(tables);
         referenceTable = new JComboBox(referenceTableModel);
         referenceColumn = new ListSelectionPanel();
-        referenceColumn.createAvailableList(metaData.getColumnNames((String) referenceTable.getSelectedItem(), null));
+        referenceColumn.createAvailableList(getColumnNamesFromColumns(((AbstractTableObject) referenceTable.getSelectedItem()).getColumns()));
+
         referenceTable.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    referenceColumn.createAvailableList(metaData.getColumnNames((String) referenceTable.getSelectedItem(), null));
+                    referenceColumn.createAvailableList(getColumnNamesFromColumns(((AbstractTableObject) referenceTable.getSelectedItem()).getColumns()));
 
                 }
             }
@@ -180,7 +182,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         tabbedPane.addTab(bundleString("ReferenceColumn"), referenceColumn);
         label = new JLabel(bundleString("ReferenceTable"));
         foreignPanel.add(label, gbh.setLabelDefault().nextRowFirstCol().get());
-        foreignPanel.add(referenceTable, gbh.nextCol().spanX().get());
+        foreignPanel.add(referenceTable, gbh.nextCol().fillBoth().spanX().get());
         foreignPanel.add(tabbedPane, gbh.nextRowFirstCol().spanX().spanY().get());
 
 
@@ -409,7 +411,11 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                 cc.setType(NamedObject.FOREIGN_KEY);
                 cc.setColumn(getColumnsFromVector(fieldConstraint.getSelectedValues()));
                 cc.setCountCols(fieldConstraint.getSelectedValues().size());
-                cc.setRefTable((String) referenceTable.getSelectedItem());
+                String refTable = null;
+                if (referenceTable.getSelectedItem() instanceof AbstractTableObject)
+                    refTable = ((AbstractTableObject) referenceTable.getSelectedItem()).getName();
+                else refTable = (String) referenceTable.getSelectedItem();
+                cc.setRefTable(refTable);
                 cc.setRefColumn(getColumnsFromVector(referenceColumn.getSelectedValues()));
                 if (!foreignIndexField.getText().isEmpty()) {
                     String sorting = "";

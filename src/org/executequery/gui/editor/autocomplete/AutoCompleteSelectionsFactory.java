@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnInformation;
@@ -605,48 +606,27 @@ public class AutoCompleteSelectionsFactory {
     }
 
     public List<AutoCompleteListItem> buildItemsForTable(DatabaseHost databaseHost, String tableString) {
-        ResultSet rs = null;
-        List<ColumnInformation> columns = new ArrayList<ColumnInformation>();
+        //List<ColumnInformation> columns = new ArrayList<ColumnInformation>();
         List<AutoCompleteListItem> list = new ArrayList<AutoCompleteListItem>();
-
-        String catalog = databaseHost.getCatalogNameForQueries(defaultCatalogForHost(databaseHost));
-        String schema = databaseHost.getSchemaNameForQueries(defaultSchemaForHost(databaseHost));
-        DatabaseMetaData dmd = databaseHost.getDatabaseMetaData();
-
-        try {
-
-            rs = dmd.getColumns(catalog, schema, tableString, null);
-            while (rs.next()) {
-
-                String name = rs.getString(4);
-                columns.add(columnInformationFactory.build(
-                        tableString,
-                        name,
-                        rs.getString(6),
-                        rs.getInt(5),
-                        rs.getInt(7),
-                        rs.getInt(9),
-                        rs.getInt(11) == DatabaseMetaData.columnNoNulls));
+        if (tableString.startsWith("\""))
+            tableString = tableString.substring(1, tableString.length() - 1);
+        List<DatabaseMetaTag> databaseMetaTags = databaseHost.getMetaObjects();
+        NamedObject table = null;
+        for (DatabaseMetaTag databaseMetaTag : databaseMetaTags) {
+            if (databaseMetaTag.getSubType() == NamedObject.TABLE || databaseMetaTag.getSubType() == NamedObject.GLOBAL_TEMPORARY
+                    || databaseMetaTag.getSubType() == NamedObject.VIEW || databaseMetaTag.getSubType() == NamedObject.SYSTEM_TABLE
+                    || databaseMetaTag.getSubType() == NamedObject.SYSTEM_VIEW) {
+                table = databaseMetaTag.getNamedObject(tableString);
+                if (table != null)
+                    break;
             }
-
-            for (ColumnInformation column : columns) {
-
-                list.add(new AutoCompleteListItem(
-                        column.getName(),
-                        tableString,
-                        column.getDescription(),
-                        DATABASE_COLUMN_DESCRIPTION,
+        }
+        if (table != null) {
+            List<NamedObject> cols = table.getObjects();
+            for (NamedObject col : cols) {
+                list.add(new AutoCompleteListItem(col.getName(), tableString, col.getDescription(), DATABASE_COLUMN_DESCRIPTION,
                         AutoCompleteListItemType.DATABASE_TABLE_COLUMN));
             }
-        } catch (Throwable e) {
-
-            // don't want to break the editor here so just log and bail...
-
-            error("Error retrieving column data for table " + tableString + " - driver returned: " + e.getMessage());
-
-        } finally {
-
-            releaseResources(rs);
         }
 
         return list;

@@ -22,12 +22,14 @@ package org.underworldlabs.swing;
 
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionUtilities;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.IconUtilities;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -72,6 +74,8 @@ public class ListSelectionPanel extends ActionPanel
 
     private static final int DEFAULT_ROW_HEIGHT = 20;
 
+    private List<ListSelectionPanelListener> listeners;
+
     public ListSelectionPanel() {
         this(null);
     }
@@ -88,6 +92,7 @@ public class ListSelectionPanel extends ActionPanel
     public ListSelectionPanel(String availLabel, String selectLabel, Vector v) {
         super(new GridBagLayout());
         try {
+            listeners = new ArrayList<>();
             init();
             selections = new Vector();
             createAvailableList(v);
@@ -144,11 +149,24 @@ public class ListSelectionPanel extends ActionPanel
                 bundleString("moveSelectionUp"),
                 "moveSelectionUp");
 
+        JButton movePageUpButton = ActionUtilities.createButton(
+                this,
+                "UpUp16.png",
+                bundleString("moveSelectionPageUp"),
+                "moveSelectionPageUp");
+
         JButton moveDownButton = ActionUtilities.createButton(
                 this,
                 "Down16.png",
                 bundleString("moveSelectionDown"),
                 "moveSelectionDown");
+
+
+        JButton movePageDownButton = ActionUtilities.createButton(
+                this,
+                "DownDown16.png",
+                bundleString("moveSelectionPageDown"),
+                "moveSelectionPageDown");
 
         // initialise the lists
         availableList = new JList();
@@ -165,86 +183,33 @@ public class ListSelectionPanel extends ActionPanel
         availableScrollPane.setPreferredSize(listDim);
         selectedScrollPane.setPreferredSize(listDim);
 
-        GridBagConstraints gbc = new GridBagConstraints();
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
 
-        // first column - available list
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(availableLabel, gbc);
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.gridy++;
-        gbc.insets.top = 2;
-        add(availableScrollPane, gbc);
 
-        // second column - selection buttons
+        //  selection buttons
         JPanel buttonPanel = new JPanel(new GridBagLayout());
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        gbc.weighty = 0;
-        gbc.insets.top = 10;
-        gbc.insets.bottom = 5;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.CENTER;
-        buttonPanel.add(selectOneButton, gbc);
-        gbc.gridy++;
-        gbc.insets.top = 0;
-        buttonPanel.add(selectAllButton, gbc);
-        gbc.gridy++;
-        buttonPanel.add(removeOneButton, gbc);
-        gbc.gridy++;
-        buttonPanel.add(removeAllButton, gbc);
+        buttonPanel.add(selectOneButton, gbh.setLabelDefault().anchorCenter().topGap(15).bottomGap(5).get());
+        buttonPanel.add(selectAllButton, gbh.topGap(0).nextRow().get());
+        buttonPanel.add(removeOneButton, gbh.nextRow().get());
+        buttonPanel.add(removeAllButton, gbh.nextRow().get());
 
-        gbc.gridy = 0;
-        gbc.gridx = 1;
-        gbc.insets.left = 5;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridheight = GridBagConstraints.REMAINDER;
-        add(buttonPanel, gbc);
-
-        // third column - selected list
-        gbc.gridx = 2;
-        gbc.gridy = 0;
-        gbc.gridheight = 1;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(selectedLabel, gbc);
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.gridy++;
-        gbc.insets.top = 2;
-        gbc.insets.bottom = 0;
-        add(selectedScrollPane, gbc);
-
-        // fourth column - move buttons
         JPanel buttonMovePanel = new JPanel(new GridBagLayout());
-        gbc.insets.top = 10;
-        gbc.insets.left = 0;
-        gbc.insets.bottom = 5;
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        gbc.weighty = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.CENTER;
-        buttonMovePanel.add(moveUpButton, gbc);
-        gbc.gridy++;
-        gbc.insets.top = 0;
-        buttonMovePanel.add(new JLabel(bundleString("Move")), gbc);
-        gbc.gridy++;
-        buttonMovePanel.add(moveDownButton, gbc);
+        gbh.fullDefaults();
+        buttonMovePanel.add(movePageUpButton, gbh.setLabelDefault().anchorCenter().topGap(15).bottomGap(5).get());
+        buttonMovePanel.add(moveUpButton, gbh.topGap(0).nextRow().get());
+        buttonMovePanel.add(new JLabel(bundleString("Move")), gbh.nextRow().get());
+        buttonMovePanel.add(moveDownButton, gbh.nextRow().get());
+        buttonMovePanel.add(movePageDownButton, gbh.nextRow().get());
 
-        gbc.gridy = 0;
-        gbc.gridx = 3;
-        gbc.insets.left = 5;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridheight = GridBagConstraints.REMAINDER;
-        add(buttonMovePanel, gbc);
+        gbh.fullDefaults();
+        add(availableLabel, gbh.setLabelDefault().get());
+        add(availableScrollPane, gbh.nextRow().fillBoth().setMaxWeightX().spanY().get());
+        add(buttonPanel, gbh.previousRow().nextCol().setLabelDefault().fillVertical().spanY().get());
+        add(selectedLabel, gbh.nextCol().setLabelDefault().get());
+        add(selectedScrollPane, gbh.nextRow().fillBoth().setMaxWeightX().spanY().get());
+
+        add(buttonMovePanel, gbh.previousRow().nextCol().setLabelDefault().fillVertical().spanY().get());
 
         ListMouseSelectionListener mouseSelectionListener = new ListMouseSelectionListener();
         availableList.addMouseListener(mouseSelectionListener);
@@ -265,6 +230,7 @@ public class ListSelectionPanel extends ActionPanel
             selections.clear();
             selectedList.setListData(selections);
         }
+        fireChange(ListSelectionPanelEvent.CLEAR);
     }
 
     public void createAvailableList(List values) {
@@ -280,6 +246,7 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setListData(available);
         selections.clear();
         selectedList.setListData(selections);
+        fireChange(ListSelectionPanelEvent.ADD);
     }
 
     public void createAvailableList(Vector v) {
@@ -291,6 +258,7 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setListData(available);
         selections.clear();
         selectedList.setListData(selections);
+        fireChange(ListSelectionPanelEvent.ADD);
     }
 
     public void addAvailableItem(Object obj) {
@@ -300,6 +268,7 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setListData(available);
         selections.clear();
         selectedList.setListData(selections);
+        fireChange(ListSelectionPanelEvent.ADD);
     }
 
     public void removeAllAction() {
@@ -313,6 +282,7 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setListData(available);
         selections.clear();
         selectedList.setListData(selections);
+        fireChange(ListSelectionPanelEvent.DESELECT);
     }
 
     public void removeOneAction() {
@@ -330,6 +300,7 @@ public class ListSelectionPanel extends ActionPanel
         selectedList.setListData(selections);
         availableList.setListData(available);
         selectedList.setSelectedIndex(index);
+        fireChange(ListSelectionPanelEvent.DESELECT);
     }
 
     public void selectAllAction() {
@@ -342,6 +313,7 @@ public class ListSelectionPanel extends ActionPanel
         selectedList.setListData(selections);
         available.clear();
         availableList.setListData(available);
+        fireChange(ListSelectionPanelEvent.SELECT);
     }
 
     public void selectOneAction() {
@@ -359,6 +331,7 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setListData(available);
         selectedList.setListData(selections);
         availableList.setSelectedIndex(index);
+        fireChange(ListSelectionPanelEvent.SELECT);
     }
 
     public void selectOneAction(int indexAvailable) {
@@ -369,6 +342,7 @@ public class ListSelectionPanel extends ActionPanel
 
         availableList.setListData(available);
         selectedList.setListData(selections);
+        fireChange(ListSelectionPanelEvent.SELECT);
     }
 
     public void selectOneStringAction(String object) {
@@ -416,6 +390,22 @@ public class ListSelectionPanel extends ActionPanel
         selections.add(index + 1, move);
         selectedList.setListData(selections);
         selectedList.setSelectedIndex(index + 1);
+        fireChange(ListSelectionPanelEvent.MOVE);
+    }
+
+    public void moveSelectionPageDown() {
+        if (selectedList.isSelectionEmpty() ||
+                selectedList.getSelectedIndex() == selections.size() - 1) {
+            return;
+        }
+
+        int index = selectedList.getSelectedIndex();
+        Object move = selectedList.getSelectedValue();
+        selections.removeElementAt(index);
+        selections.add(move);
+        selectedList.setListData(selections);
+        selectedList.setSelectedIndex(selections.size() - 1);
+        fireChange(ListSelectionPanelEvent.MOVE);
     }
 
     public void moveSelectionUp() {
@@ -430,6 +420,36 @@ public class ListSelectionPanel extends ActionPanel
         selections.add(index - 1, move);
         selectedList.setListData(selections);
         selectedList.setSelectedIndex(index - 1);
+        fireChange(ListSelectionPanelEvent.MOVE);
+    }
+
+    public void moveSelectionPageUp() {
+        if (selectedList.isSelectionEmpty() ||
+                selectedList.getSelectedIndex() == 0) {
+            return;
+        }
+
+        int index = selectedList.getSelectedIndex();
+        Object move = selectedList.getSelectedValue();
+        selections.removeElementAt(index);
+        selections.add(0, move);
+        selectedList.setListData(selections);
+        selectedList.setSelectedIndex(0);
+        fireChange(ListSelectionPanelEvent.MOVE);
+    }
+
+    public void addListSelectionPanelListener(ListSelectionPanelListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListSelectionPanelListener(ListSelectionPanelListener listener) {
+        listeners.remove(listener);
+    }
+
+    private void fireChange(int type) {
+        ListSelectionPanelEvent event = new ListSelectionPanelEvent(this, type);
+        for (ListSelectionPanelListener listener : listeners)
+            listener.changed(event);
     }
 
 
@@ -454,6 +474,5 @@ public class ListSelectionPanel extends ActionPanel
         }
 
     }
-
 }
 

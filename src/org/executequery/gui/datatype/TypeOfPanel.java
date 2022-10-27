@@ -23,7 +23,7 @@ public class TypeOfPanel extends JPanel {
 
     private void init(ColumnData cd) {
         tableModel = new DynamicComboBoxModel();
-        tableModel.setElements(columnData.getTables());
+        tableModel.setElements(columnData.getTableNames());
         tablesBox = new JComboBox(tableModel);
         tablesBox.setEnabled(false);
         tablesBox.addActionListener(actionEvent -> {

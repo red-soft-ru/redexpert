@@ -146,7 +146,7 @@ public class SqlScriptRunner {
                 if (query.getQueryType() == QueryTypes.SQL_DIALECT) {
                     Pattern pattern = Pattern.compile("\\d",
                             Pattern.CASE_INSENSITIVE);
-                    Matcher matcher = pattern.matcher(query.getDerivedQuery());
+                    Matcher matcher = pattern.matcher(query.getQueryWithoutComments());
                     if (matcher.find())
                         sqlDialect = matcher.group().trim();
                     continue;

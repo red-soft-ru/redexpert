@@ -24,8 +24,10 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ExecuteQueryFrame;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -151,7 +153,10 @@ public class ApplicationLauncher {
 
             advanceSplash(splash);
 
-            boolean openConnection =
+            String fileForOpenPath = ApplicationContext.getInstance().getFileForOpenPath();
+            boolean needOpenConnectionByFile = StringUtils.isNotBlank(fileForOpenPath);
+
+            boolean needAutoLogin =
                     booleanUserProperty("startup.connection.connect");
 
             advanceSplash(splash);
@@ -191,10 +196,28 @@ public class ApplicationLauncher {
 
                 frame.setTitle("Red Expert - " + System.getProperty("executequery.minor.version"));
 
-                // auto-login if selected
-                if (openConnection) {
+                if (needOpenConnectionByFile) {
+                    fileForOpenPath = fileForOpenPath.replace("\\", "/");
+                    ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) GUIUtilities.
+                        getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+                    DatabaseConnection dc = databaseConnectionRepository().findBySourceName(fileForOpenPath);
+                    if (dc != null) {
+                        if (connectionsTreePanel != null) { //show connection panel
+                            connectionsTreePanel.getController().valueChanged_(connectionsTreePanel.getHostNode(dc), dc);
+                        }
+                        if (StringUtils.isNotBlank(dc.getPassword()) && StringUtils.isNotBlank(dc.getUserName()))
+                            openStartupConnection(dc);
+                    } else {
+                        if (connectionsTreePanel != null)
+                            connectionsTreePanel.newConnection(fileForOpenPath);
+                    }
+                }
 
-                    openStartupConnection();
+                // auto-login if selected
+                if (needAutoLogin) {
+
+                    openStartupConnection(
+                        databaseConnectionRepository().findByName(stringUserProperty("startup.connection.name")));
                 }
                 QueryEditorHistory.restoreTabs(null);
 
@@ -357,16 +380,16 @@ public class ApplicationLauncher {
 
     private void printVersionInfo() {
 
-        Log.info("Using Java version " +
+        Log.info(bundleString("console-UsingJavaVersion") +
                 System.getProperty("java.version"));
-        Log.info("Red Expert version: " +
+        Log.info(bundleString("console-RedExpertVersion") + ": " +
                 System.getProperty("executequery.minor.version") +
                 "-" + System.getProperty("executequery.build"));
-        Log.info("Operating System: " +
+        Log.info(bundleString("console-OSVersion") + ": " +
                 System.getProperty("os.name") +
                 " [ " + System.getProperty("os.version") + " ]");
 
-        Log.info("System is ready.");
+        Log.info(bundleString("console-SystemReady"));
     }
 
     private void advanceSplash(SplashPanel splash) {
@@ -449,18 +472,16 @@ public class ApplicationLauncher {
         return ApplicationProperties.getInstance();
     }
 
-    private void openStartupConnection() {
+    private void openStartupConnection(DatabaseConnection dc) {
 
-        final String name = stringUserProperty("startup.connection.name");
-
-        if (!MiscUtils.isNull(name)) {
+        if (dc != null) {
 
             ThreadUtils.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
 
-                    openConnection(databaseConnectionRepository().findByName(name));
+                    openConnection(dc);
                 }
 
             });
@@ -569,7 +590,9 @@ public class ApplicationLauncher {
 
     }
 
-
+    String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
 
 }
 

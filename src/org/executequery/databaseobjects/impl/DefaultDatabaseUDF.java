@@ -38,8 +38,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
             return mechanisms[mechanism];
         else if (mechanism == -1) {
             return mechanisms[1];
-        }
-        else
+        } else
             return "";
     }
 
@@ -246,97 +245,6 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         setHost(host);
     }
 
-    public void loadParameters() throws SQLException {
-        String sqlQuery = "select f.rdb$function_name,\n" +
-                "f.rdb$module_name,\n" +
-                "f.rdb$entrypoint,\n" +
-                "f.rdb$return_argument,\n" +
-                "f.rdb$description,\n" +
-                "fa.rdb$argument_position,\n" +
-                "fa.rdb$mechanism,\n" +
-                "fa.rdb$field_type,\n" +
-                "fa.rdb$field_scale,\n" +
-                "fa.rdb$field_length,\n" +
-                "fa.rdb$field_sub_type,\n" +
-                "c.rdb$bytes_per_character,\n" +
-                "c.rdb$character_set_name as character_set_name,\n" +
-                "fa.rdb$field_precision\n";
-                if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() >= 3)
-                    sqlQuery += ",fa.rdb$null_flag as null_flag\n";
-                sqlQuery += "from rdb$functions f\n" +
-                "left join rdb$function_arguments fa on f.rdb$function_name = fa.rdb$function_name\n" +
-                "left join rdb$character_sets c on fa.rdb$character_set_id = c.rdb$character_set_id\n" +
-                "where (f.rdb$function_name = '" + getName() + "')\n" +
-                "order by fa.rdb$argument_position";
-
-        Statement statement = null;
-        ResultSet rs = null;
-
-        parameters.clear();
-        inputParameters = "";
-
-        try {
-            statement = this.getHost().getConnection().createStatement();
-
-            rs = statement.executeQuery(sqlQuery);
-
-            while (rs.next()) {
-                UDFParameter udfParameter = new UDFParameter(rs.getInt(6),
-                        rs.getInt(7), rs.getInt(8), rs.getInt(9),
-                        rs.getInt(10), rs.getInt(11), rs.getInt(14));
-                int nullFlag = 0;
-                if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() >= 3)
-                    nullFlag = rs.getInt("null_flag");
-                if (rs.getInt(7) != BY_REFERENCE_WITH_NULL) // already setup
-                    udfParameter.setNotNull(nullFlag != 0);
-                udfParameter.setEncoding(rs.getString("character_set_name"));
-                parameters.add(udfParameter);
-            }
-
-            releaseResources(rs, this.getHost().getConnection());
-
-            if (returnArg != 0) {
-                returnMechanism = parameters.get(returnArg - 1).getStringMechanism();
-                if (parameters.get(returnArg - 1).getMechanism() == -1)
-                    this.freeIt = true;
-            } else {
-                returnMechanism = parameters.get(0).getStringMechanism();
-                if (parameters.get(0).getMechanism() == -1)
-                    this.freeIt = true;
-            }
-
-            for (int i = 0; i < parameters.size(); i++) {
-                if (returnArg == 0 && i == 0)
-                    continue;
-                inputParameters += parameters.get(i).getFieldStringType();
-                if (parameters.get(i).getMechanism() != BY_REFERENCE &&
-                        parameters.get(i).getMechanism() != BY_VALUE) {
-                    inputParameters += " " + parameters.get(i).getStringMechanism();
-                }
-                inputParameters += ", ";
-            }
-            if (!inputParameters.isEmpty())
-                inputParameters = inputParameters.substring(0, inputParameters.length() - 2);
-
-            if (returnArg != 0)
-                returns = "Parameter " + returnArg;
-            else {
-                returns = parameters.get(0).getFieldStringType();
-                if (parameters.get(0).getMechanism() != BY_REFERENCE &&
-                        parameters.get(0).getMechanism() != -1) {
-                    returns += " ";
-                    returns += parameters.get(0).getStringMechanism();
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            releaseResources(rs, this.getHost().getConnection());
-        }
-
-    }
-
     /**
      * Creates a new instance with
      * the specified values.
@@ -353,14 +261,6 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
     public void setModuleName(String moduleName) {
         this.moduleName = moduleName;
-    }
-
-    public String getEntryPoint() {
-        return entryPoint;
-    }
-
-    public void setEntryPoint(String entryPoint) {
-        this.entryPoint = entryPoint;
     }
 
     public int getReturnArg() {
@@ -404,13 +304,13 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         this.description = description;
     }
 
-    public String getCreateFullSQLText() {
+    public String getCreateSQLText() {
         return SQLUtils.generateCreateUDF(getName(), parameters, returnArg, getEntryPoint(), getModuleName(), freeIt);
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateFullSQLText();
+        return getCreateSQLText();
     }
 
     @Override
@@ -431,10 +331,79 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
     @Override
     protected String queryForInfo() {
-        return null;
+        String sqlQuery = "select f.rdb$function_name,\n" +
+                "f.rdb$module_name,\n" +
+                "f.rdb$entrypoint,\n" +
+                "f.rdb$return_argument,\n" +
+                "f.rdb$description,\n" +
+                "fa.rdb$argument_position,\n" +
+                "fa.rdb$mechanism,\n" +
+                "fa.rdb$field_type,\n" +
+                "fa.rdb$field_scale,\n" +
+                "fa.rdb$field_length,\n" +
+                "fa.rdb$field_sub_type,\n" +
+                "c.rdb$bytes_per_character,\n" +
+                "c.rdb$character_set_name as character_set_name,\n" +
+                "fa.rdb$field_precision\n";
+        if (getDatabaseMajorVersion() >= 3)
+            sqlQuery += ",fa.rdb$null_flag as null_flag\n";
+        sqlQuery += "from rdb$functions f\n" +
+                "left join rdb$function_arguments fa on f.rdb$function_name = fa.rdb$function_name\n" +
+                "left join rdb$character_sets c on fa.rdb$character_set_id = c.rdb$character_set_id\n" +
+                "where (f.rdb$function_name = '" + getName() + "')\n" +
+                "order by fa.rdb$argument_position";
+        return sqlQuery;
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {}
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+        parameters.clear();
+        inputParameters = "";
+        while (rs.next()) {
+            UDFParameter udfParameter = new UDFParameter(rs.getInt(6),
+                    rs.getInt(7), rs.getInt(8), rs.getInt(9),
+                    rs.getInt(10), rs.getInt(11), rs.getInt(14));
+            int nullFlag = 0;
+            if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() >= 3)
+                nullFlag = rs.getInt("null_flag");
+            if (rs.getInt(7) != BY_REFERENCE_WITH_NULL) // already setup
+                udfParameter.setNotNull(nullFlag != 0);
+            udfParameter.setEncoding(rs.getString("character_set_name"));
+            parameters.add(udfParameter);
+        }
 
+        if (returnArg != 0) {
+            returnMechanism = parameters.get(returnArg - 1).getStringMechanism();
+            if (parameters.get(returnArg - 1).getMechanism() == -1)
+                this.freeIt = true;
+        } else {
+            returnMechanism = parameters.get(0).getStringMechanism();
+            if (parameters.get(0).getMechanism() == -1)
+                this.freeIt = true;
+        }
+
+        for (int i = 0; i < parameters.size(); i++) {
+            if (returnArg == 0 && i == 0)
+                continue;
+            inputParameters += parameters.get(i).getFieldStringType();
+            if (parameters.get(i).getMechanism() != BY_REFERENCE &&
+                    parameters.get(i).getMechanism() != BY_VALUE) {
+                inputParameters += " " + parameters.get(i).getStringMechanism();
+            }
+            inputParameters += ", ";
+        }
+        if (!inputParameters.isEmpty())
+            inputParameters = inputParameters.substring(0, inputParameters.length() - 2);
+
+        if (returnArg != 0)
+            returns = "Parameter " + returnArg;
+        else {
+            returns = parameters.get(0).getFieldStringType();
+            if (parameters.get(0).getMechanism() != BY_REFERENCE &&
+                    parameters.get(0).getMechanism() != -1) {
+                returns += " ";
+                returns += parameters.get(0).getStringMechanism();
+            }
+        }
+    }
 }

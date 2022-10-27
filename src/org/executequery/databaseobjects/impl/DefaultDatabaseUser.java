@@ -215,13 +215,13 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         loadTags();
     }
 
-    public String getCreateFullSQLText() throws DataSourceException {
+    public String getCreateSQLText() throws DataSourceException {
         return SQLUtils.generateCreateUser(this);
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateFullSQLText();
+        return getCreateSQLText();
     }
 
     @Override
@@ -231,7 +231,7 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
 
     @Override
     public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCreateFullSQLText().
+        return databaseObject.getCreateSQLText().
                 replaceFirst("CREATE OR ", "").
                 replaceFirst("CREATE", "ALTER");
     }

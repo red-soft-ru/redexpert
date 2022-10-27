@@ -3,13 +3,13 @@ package org.executequery.gui.browser.managment.tracemanager;
 
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.ListSelectionPanel;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 class ResultSetDataModel extends AbstractTableModel {
@@ -18,19 +18,20 @@ class ResultSetDataModel extends AbstractTableModel {
     private List<String> visibleColumnNames = new ArrayList<>();
     private List<LogMessage> rows = new ArrayList<>();
     private List<LogMessage> visibleRows = new ArrayList<>();
-    private JComboBox filterTypeBox;
-    private JComboBox filterColumnBox;
-    private JComboBox rawSqlBox;
-    private JTextField filterTextField;
-    private Map<String, JCheckBox> mapCheckBox;
+    private final JComboBox filterTypeBox;
+    private final JComboBox filterColumnBox;
+    private final JTextField filterTextField;
+
+    private final JCheckBox matchCaseBox;
+    private ListSelectionPanel listSelectionPanel;
 
 
-    public ResultSetDataModel(Map<String, JCheckBox> mapCheckBox, JComboBox filterTypeBox, JComboBox filterColumnBox, JComboBox rawSqlBox, JTextField filterTextField) {
+    public ResultSetDataModel(ListSelectionPanel listSelectionPanel, JComboBox filterTypeBox, JComboBox filterColumnBox, JTextField filterTextField, JCheckBox matchCaseBox) {
         this.filterTypeBox = filterTypeBox;
         this.filterColumnBox = filterColumnBox;
         this.filterTextField = filterTextField;
-        this.rawSqlBox = rawSqlBox;
-        setMapCheckBox(mapCheckBox);
+        this.matchCaseBox = matchCaseBox;
+        setListSelectionPanel(listSelectionPanel);
         buildHeaders();
         rebuildModel();
     }
@@ -38,10 +39,7 @@ class ResultSetDataModel extends AbstractTableModel {
     public void rebuildModel() {
 
         visibleColumnNames = new ArrayList<>();
-        for (int i = 0; i < columnNames.size(); i++) {
-            if (mapCheckBox.get(columnNames.get(i)).isSelected())
-                visibleColumnNames.add(columnNames.get(i));
-        }
+        visibleColumnNames.addAll(listSelectionPanel.getSelectedValues());
         visibleRows = new ArrayList<>();
         for (int i = 0; i < rows.size(); i++) {
             checkFilterMessage(rows.get(i));
@@ -51,11 +49,6 @@ class ResultSetDataModel extends AbstractTableModel {
         model.setElements(visibleColumnNames);
         if (visibleColumnNames.contains(selectedItem))
             filterColumnBox.setSelectedItem(selectedItem);
-        model = (DynamicComboBoxModel) rawSqlBox.getModel();
-        selectedItem = rawSqlBox.getSelectedItem();
-        model.setElements(visibleColumnNames);
-        if (visibleColumnNames.contains(selectedItem))
-            rawSqlBox.setSelectedItem(selectedItem);
         fireTableStructureChanged();
     }
 
@@ -63,6 +56,10 @@ class ResultSetDataModel extends AbstractTableModel {
         String filter = filterTextField.getText();
         if (filterColumnBox.getSelectedItem() != null) {
             String field = String.valueOf(message.getFieldOfName((String) filterColumnBox.getSelectedItem()));
+            if (!matchCaseBox.isSelected()) {
+                field = field.toLowerCase();
+                filter = filter.toLowerCase();
+            }
             if (filterTypeBox.getSelectedItem() == Filter.FilterType.FILTER) {
                 if (field.contains(filter))
                     visibleRows.add(message);
@@ -99,8 +96,12 @@ class ResultSetDataModel extends AbstractTableModel {
     public Class<?> getColumnClass(final int columnIndex) {
         if (visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.TSTAMP_COLUMN))
             return Timestamp.class;
-        if (visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.ID_COLUMN))
-            return Integer.class;
+        if (visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.ID_COLUMN)
+                || visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.TIME_EXECUTION_COLUMN)
+                || visibleColumnNameFromIndex(columnIndex).contains("COUNT_")
+                || visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.RECORDS_FETCHED_COLUMN)
+        )
+            return Long.class;
         return String.class;
     }
 
@@ -122,12 +123,12 @@ class ResultSetDataModel extends AbstractTableModel {
         return columnNames;
     }
 
-    public Map<String, JCheckBox> getMapCheckBox() {
-        return mapCheckBox;
+    public ListSelectionPanel getListSelectionPanel() {
+        return listSelectionPanel;
     }
 
-    public void setMapCheckBox(Map<String, JCheckBox> mapCheckBox) {
-        this.mapCheckBox = mapCheckBox;
+    public void setListSelectionPanel(ListSelectionPanel listSelectionPanel) {
+        this.listSelectionPanel = listSelectionPanel;
     }
 
     private void buildHeaders() {

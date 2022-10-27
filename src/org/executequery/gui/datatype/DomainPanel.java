@@ -12,6 +12,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 public class DomainPanel extends JPanel {
@@ -51,7 +52,9 @@ public class DomainPanel extends JPanel {
         });
         editDomainButton.addActionListener(actionEvent -> {
             BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, true);
-            CreateDomainPanel panel = new CreateDomainPanel(columnData.getDatabaseConnection(), dialog, (DefaultDatabaseDomain) domainBox.getSelectedItem());
+            CreateDomainPanel panel = new CreateDomainPanel(
+                    columnData.getDatabaseConnection(), dialog,
+                    ((DefaultDatabaseDomain) Objects.requireNonNull(domainBox.getSelectedItem())).getName());
             dialog.addDisplayComponent(panel);
             dialog.display();
         });

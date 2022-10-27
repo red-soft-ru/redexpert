@@ -679,7 +679,7 @@ public class UserManagerPanel extends JPanel {
                 try {
                     userManager.delete(((IFBUser) (users.values().toArray()[ind])));
                 } catch (Exception e) {
-                    System.out.println(e.toString());
+                    System.out.println(e);
                 }
                 act = Action.REFRESH;
                 executeThread();
@@ -700,7 +700,7 @@ public class UserManagerPanel extends JPanel {
                     executeThread();
                 } catch (Exception e) {
                     GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
-                    System.out.println(e.toString());
+                    System.out.println(e);
                 } finally {
                     if(!state.isClosed())
                         state.close();
@@ -898,7 +898,7 @@ public class UserManagerPanel extends JPanel {
                 ((RoleTableModel) usersTable.getModel()).addRow(rowData);
             }
         } catch (Exception e) {
-            System.out.println(e.toString());
+            System.out.println(e);
             GUIUtilities.displayErrorMessage(e.toString());
         }
     }
@@ -1025,7 +1025,7 @@ public class UserManagerPanel extends JPanel {
                     String u = resultSet.getString(3);
                     u = u.trim();
                     int ind = role_names.indexOf(u);
-                    if (resultSet.getObject(2).equals(0))
+                    if (resultSet.getInt(2) == 0)
                         roleData.set(ind, gr);
                     else
                         roleData.set(ind, adm);
@@ -1142,8 +1142,8 @@ public class UserManagerPanel extends JPanel {
     }
 
     public class UserRole {
-        private String name;
-        private boolean isUser;
+        private final String name;
+        private final boolean isUser;
 
         public UserRole(String name, boolean isUser) {
             this.name = name;

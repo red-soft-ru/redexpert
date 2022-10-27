@@ -1,7 +1,6 @@
 package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.ColumnConstraint;
@@ -12,7 +11,6 @@ import org.executequery.gui.table.TableDefinitionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
-import java.sql.Types;
 import java.util.*;
 
 import static org.executequery.databaseobjects.NamedObject.*;
@@ -39,8 +37,9 @@ public final class SQLUtils {
         StringBuilder primary = new StringBuilder(50);
 
         primary.setLength(0);
-        primary.append(",\nCONSTRAINT PK_").append(name).append(" PRIMARY KEY (");
-
+        primary.append(",\nCONSTRAINT ");
+        primary.append(format("PK_" + name));
+        primary.append(" PRIMARY KEY (");
         boolean primary_flag = false;
         String autoincrementSQLText = "";
 
@@ -60,9 +59,8 @@ public final class SQLUtils {
                 primary_flag = true;
             }
 
-//            if (!MiscUtils.isNull(cd.getDescription())) {
+//            if (!MiscUtils.isNull(cd.getDescription()))
 //                descriptions.add(cd.getFormattedColumnName() + " is '" + cd.getDescription() + "'");
-//            }
 
             sqlText.append(generateDefinitionColumn(cd, true));
             if (i != k - 1)
@@ -98,6 +96,7 @@ public final class SQLUtils {
 
         if (tablespace != null)
             sb.append("\nTABLESPACE ").append(format(tablespace));
+
         if (temporary)
             sb.append("\n").append(typeTemporary);
 
@@ -134,7 +133,6 @@ public final class SQLUtils {
     }
 
     public static String generateCreateException(String name, String exceptionText) {
-
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE EXCEPTION ").append(format(name));
         sb.append("\n'").append(exceptionText).append("';\n");
@@ -153,29 +151,6 @@ public final class SQLUtils {
 
         if (description != null && !description.isEmpty())
             sb.append(generateComment(name, "PACKAGE", description, "^"));
-
-        return sb.toString();
-    }
-
-    public static String generateCreateTrigger(
-            String name, String tableName, boolean activity, String type, int sequence, String sourceCode, boolean setTerm) {
-
-        StringBuilder sb = new StringBuilder();
-
-        if (setTerm)
-            sb.append("SET TERM #;\n");
-
-        sb.append("CREATE OR ALTER TRIGGER ");
-        sb.append(format(name));
-        if (!tableName.isEmpty())
-            sb.append(" FOR ").append(format(tableName));
-        sb.append("\n").append(activity ? "ACTIVE" : "INACTIVE");
-        sb.append(" ").append(type).append(" POSITION ").append(sequence).append("\n");
-        if (sourceCode != null)
-            sb.append(sourceCode);
-        if (setTerm)
-            sb.append("#\nSET TERM ;#");
-        sb.append("\n");
 
         return sb.toString();
     }
@@ -319,193 +294,45 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateCreateDomain(ColumnData columnData, String name, boolean useDomainType) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE DOMAIN ").append(name).append(" AS ");
-        if (useDomainType)
-            sb.append(columnData.getFormattedDomainDataType());
-        else sb.append(columnData.getFormattedDataType());
-        if (!MiscUtils.isNull(columnData.getDefaultValue())) {
-            sb.append("\n DEFAULT ").append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
-        }
-        sb.append(columnData.isRequired() ? " NOT NULL" : "");
-        if (!MiscUtils.isNull(columnData.getCheck())) {
-            sb.append("\n CHECK (").append(columnData.getCheck()).append(")");
-        }
-        if (columnData.getCollate() != null && !columnData.getCollate().trim().contentEquals("NONE"))
-            sb.append(" COLLATE ").append(columnData.getCollate());
-        sb.append(";\n");
-        if (!MiscUtils.isNull(columnData.getDescription())) {
-            sb.append("COMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS '")
-                    .append(columnData.getDescription()).append("';\n");
-        }
-        return sb.toString();
-    }
 
-    public static String generateCreateUser(DefaultDatabaseUser user) {
+    public static String generateDefinitionColumn(ColumnData cd, boolean startWithNewLine) {
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append("CREATE");
-        sb.append(" USER ").append(format(user.getName()));
+        if (startWithNewLine)
+            sb.append(NEW_LINE_2);
+        sb.append(cd.getColumnName() == null ?
+                CreateTableSQLSyntax.EMPTY : cd.getFormattedColumnName()).append(SPACE);
 
-        if (!MiscUtils.isNull(user.getFirstName()))
-            sb.append("\nFIRSTNAME '").append(user.getFirstName()).append("'");
-        if (!MiscUtils.isNull(user.getMiddleName()))
-            sb.append("\nMIDDLENAME '").append(user.getMiddleName()).append("'");
-        if (!MiscUtils.isNull(user.getLastName()))
-            sb.append("\nLASTNAME '").append(user.getLastName()).append("'");
-        if (!MiscUtils.isNull(user.getPassword()))
-            sb.append("\nPASSWORD '").append(user.getPassword()).append("'");
+        if (MiscUtils.isNull(cd.getComputedBy())) {
 
-        if (user.getActive())
-            sb.append("\nACTIVE");
-        else
-            sb.append("\nINACTIVE");
-
-        if (user.getAdministrator())
-            sb.append("\nGRANT ADMIN ROLE");
-        if (!user.getPlugin().equals(""))
-            sb.append("\nUSING PLUGIN ").append(user.getPlugin());
-
-        Map<String, String> tags = user.getTags();
-        if (tags.size() > 0) {
-
-            sb.append("\nTAGS (");
-
-            boolean first = true;
-            for (String tag : tags.keySet()) {
-                if (!first)
-                    sb.append(", ");
-                first = false;
-                sb.append(tag).append(" = '").append(tags.get(tag)).append("'");
-            }
-            sb.append(" )");
-
-        }
-
-        sb.append(";\n");
-        if (!MiscUtils.isNull(user.getComment()))
-            sb.append("COMMENT ON USER ").append(format(user.getName())).append(" is '").append(user.getComment()).append("'");
-
-        return sb.toString();
-    }
-
-    public static String generateCreateTablespace(String name, String file) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE TABLESPACE ").append(format(name));
-        sb.append(" FILE '").append(file).append("';\n");
-        return sb.toString();
-    }
-
-    public static String generateCreateProcedure(
-            String name, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters,
-            Vector<ColumnData> variables, String procedureBody, String comment, boolean setTerm) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(formattedParameters(variables, true));
-        sb.append(procedureBody);
-        return generateCreateProcedure(name, inputParameters, outputParameters, sb.toString(), comment, setTerm);
-    }
-
-    public static String generateCreateProcedure(
-            String name, List<ProcedureParameter> parameters, String fullProcedureBody, String comment, DatabaseConnection dc, boolean setTerm) {
-
-        Vector<ColumnData> inputs = new Vector<>();
-        Vector<ColumnData> outputs = new Vector<>();
-
-        for (ProcedureParameter parameter : parameters) {
-            ColumnData cd = columnDataFromProcedureParameter(parameter, dc);
-            if (parameter.getType() == DatabaseMetaData.procedureColumnIn)
-                inputs.add(cd);
+            if (MiscUtils.isNull(cd.getDomain()) || cd.getDomain().startsWith("RDB$"))
+                sb.append(cd.getFormattedDataType());
             else
-                outputs.add(cd);
-        }
+                sb.append(cd.getFormattedDomain());
 
-        return generateCreateProcedure(name, inputs, outputs, fullProcedureBody, comment, setTerm);
-    }
+            if (cd.isAutoincrement() && cd.getAutoincrement().isIdentity()) {
+                sb.append(" GENERATED BY DEFAULT AS IDENTITY");
+                if (cd.getAutoincrement().getStartValue() != 0)
+                    sb.append(" (START WITH ")
+                            .append(cd.getAutoincrement().getStartValue()).append(")");
+            }
 
-    public static String generateCreateProcedure(
-            String name, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters,
-            String fullProcedureBody, String comment, boolean setTerm) {
+            if (!MiscUtils.isNull(cd.getDefaultValue().getValue()))
+                sb.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
 
-        StringBuilder sb = new StringBuilder();
+            sb.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
+            if (!MiscUtils.isNull(cd.getCheck()))
+                sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
 
-        if (setTerm)
-            sb.append("SET TERM #;\n");
+            if (cd.getCollate() != null && !cd.getCollate().equals(CreateTableSQLSyntax.NONE))
+                sb.append(" COLLATE ").append(cd.getCollate());
 
-        sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE]));
-
-        String output = formattedParameters(outputParameters, false);
-        if (!MiscUtils.isNull(output.trim())) {
-            sb.append("\nRETURNS (");
-            sb.append(output);
-            sb.append(")\n");
-        }
-        sb.append(generateSQLBody(fullProcedureBody));
-
-        if (setTerm)
-            sb.append("#\nSET TERM ;#");
-        sb.append("\n");
-
-        // add procedure description
-        sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^"));
-        sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
-        sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
-
-        return sb.toString();
-    }
-
-    public static String generateCreateFunction(
-            String name, Vector<ColumnData> argumentList, Vector<ColumnData> variables,
-            ColumnData returnType, String functionBody, String entryPoint, String engine, String comment) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(formattedParameters(variables, true));
-        sb.append(functionBody);
-        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, comment);
-    }
-
-    public static String generateCreateFunction(
-            String name, List<FunctionArgument> argumentList, String fullFunctionBody,
-            String entryPoint, String engine, String comment, DatabaseConnection dc) {
-
-        Vector<ColumnData> inputs = new Vector<>();
-        ColumnData returnType = null;
-
-        for (FunctionArgument parameter : argumentList) {
-            if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
-                ColumnData cd = columnDataFromProcedureParameter(parameter, dc);
-                inputs.add(cd);
-            } else
-                returnType = columnDataFromProcedureParameter(parameter, dc);
-        }
-
-        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, comment);
-    }
-
-    public static String generateCreateFunction(
-            String name, Vector<ColumnData> inputArguments, ColumnData returnType,
-            String fullFunctionBody, String entryPoint, String engine, String comment) {
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION]));
-        sb.append("RETURNS ");
-
-        if (returnType != null)
-            sb.append(returnType.getFormattedDataType());
-        if (entryPoint != null) {
-            sb.append("EXTERNAL NAME '");
-            sb.append(entryPoint).append("'");
-            sb.append(" ENGINE ").append(engine);
         } else
-            sb.append(generateSQLBody(fullFunctionBody));
-
-        sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^"));
-        sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
+            sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
 
         return sb.toString();
+
     }
 
     public static String generateDefinitionColumnConstraint(ColumnConstraint cc, boolean startWithNewLine) {
@@ -587,86 +414,69 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateDefinitionColumn(ColumnData cd, boolean startWithNewLine) {
+    public static String generateCreateProcedure(
+            String name, String entryPoint, String engine, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters,
+            Vector<ColumnData> variables, String procedureBody, String comment, boolean setTerm) {
 
-        StringBuilder sqlText = new StringBuilder();
-
-        if (startWithNewLine)
-            sqlText.append(NEW_LINE_2);
-        sqlText.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getFormattedColumnName()).append(SPACE);
-
-        if (MiscUtils.isNull(cd.getComputedBy())) {
-
-            if (MiscUtils.isNull(cd.getDomain()) || cd.getDomain().startsWith("RDB$"))
-                sqlText.append(cd.getFormattedDataType());
-            else
-                sqlText.append(cd.getFormattedDomain());
-
-            if (cd.isAutoincrement() && cd.getAutoincrement().isIdentity()) {
-                sqlText.append(" GENERATED BY DEFAULT AS IDENTITY");
-                if (cd.getAutoincrement().getStartValue() != 0)
-                    sqlText.append(" START WITH ").append(cd.getAutoincrement().getStartValue()).append(")");
-            }
-
-//            if (!MiscUtils.isNull(cd.getDefaultValue().getValue()))
-//                sqlText.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
-
-            sqlText.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
-            if (!MiscUtils.isNull(cd.getCheck()))
-                sqlText.append(" CHECK ( ").append(cd.getCheck()).append(")");
-
-            if (cd.getCollate() != null && !cd.getCollate().equals(CreateTableSQLSyntax.NONE))
-                sqlText.append(" COLLATE ").append(cd.getCollate());
-
-        } else
-            sqlText.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
-
-        return sqlText.toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append(formattedParameters(variables, true));
+        sb.append(procedureBody);
+        return generateCreateProcedure(name, entryPoint, engine, inputParameters, outputParameters, sb.toString(), comment, setTerm);
     }
 
-    public static String generateAlterDefinitionColumn(ColumnData thisCD, ColumnData comparingCD) {
+    public static String generateCreateProcedure(
+            String name, String entryPoint, String engine, List<ProcedureParameter> parameters, String fullProcedureBody, String comment, DatabaseConnection dc, boolean setTerm) {
+
+        Vector<ColumnData> inputs = new Vector<>();
+        Vector<ColumnData> outputs = new Vector<>();
+
+        for (ProcedureParameter parameter : parameters) {
+            ColumnData cd = columnDataFromProcedureParameter(parameter, dc, false);
+            if (parameter.getType() == DatabaseMetaData.procedureColumnIn)
+                inputs.add(cd);
+            else
+                outputs.add(cd);
+        }
+
+        return generateCreateProcedure(name, entryPoint, engine, inputs, outputs, fullProcedureBody, comment, setTerm);
+    }
+
+    public static String generateCreateProcedure(
+            String name, String entryPoint, String engine, Vector<ColumnData> inputParameters,
+            Vector<ColumnData> outputParameters, String fullProcedureBody, String comment, boolean setTerm) {
 
         StringBuilder sb = new StringBuilder();
 
-        if (MiscUtils.isNull(thisCD.getComputedBy()) && MiscUtils.isNull(comparingCD.getComputedBy())) {
+        if (setTerm)
+            sb.append("SET TERM #;\n");
 
-            if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
-                        append(" TYPE ").append(comparingCD.getColumnType());
-            if (!Objects.equals(thisCD.getDefaultValue(), comparingCD.getDefaultValue()))
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
-                        append(" SET DEFAULT ").append(comparingCD.getDefaultValue());
-            if (thisCD.isRequired() && !comparingCD.isRequired())
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
-                        append(" DROP NOT NULL");
-            else if (!thisCD.isRequired() && comparingCD.isRequired())
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
-                        append(" SET NOT NULL");
+        sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE]));
 
-            if (thisCD.isAutoincrement() && comparingCD.isAutoincrement())
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
-                        append(" RESTART WITH ").append(comparingCD.getAutoincrement().getStartValue());
-
-        } else if (!MiscUtils.isNull(thisCD.getComputedBy()) && !MiscUtils.isNull(comparingCD.getComputedBy())) {
-
-            if (!Objects.equals(thisCD.getComputedBy(), comparingCD.getComputedBy())) {
-
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()));
-
-                if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
-                    sb.append(" TYPE ").append(comparingCD.getColumnType());
-
-                sb.append(" COMMUTED BY (").append(comparingCD.getComputedBy()).append(")");
-            }
-
-        } else {
-            sb.append("\n\tDROP ").append(format(thisCD.getColumnName()));
-            sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, false));
+        String output = formattedParameters(outputParameters, false);
+        if (!MiscUtils.isNull(output.trim())) {
+            sb.append("RETURNS (\n");
+            sb.append(output);
+            sb.append(")");
         }
+        if (!MiscUtils.isNull(entryPoint)) {
 
-        if (sb.toString().equals(""))
-            return "";
-        return sb.append(COMMA).toString();
+            sb.append("\nEXTERNAL NAME '");
+            sb.append(entryPoint).append("'");
+            sb.append(" ENGINE ").append(engine);
+
+        } else
+            sb.append(generateSQLBody(fullProcedureBody));
+
+        if (setTerm)
+            sb.append("#\nSET TERM ;#");
+        sb.append("\n");
+
+        // add procedure description
+        sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^"));
+        sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
+        sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
+
+        return sb.toString();
     }
 
     public static String generateCommentForColumns(
@@ -726,6 +536,102 @@ public final class SQLUtils {
         return sb.toString();
     }
 
+    public static String generateCreateFunction(String name, Vector<ColumnData> argumentList, Vector<ColumnData> variables, ColumnData returnType, String functionBody, String entryPoint, String engine, String comment) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(formattedParameters(variables, true));
+        sb.append(functionBody);
+        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, comment);
+    }
+
+
+
+    public static String generateCreateFunction(
+            String name, List<FunctionArgument> argumentList, String fullFunctionBody,
+            String entryPoint, String engine, String comment, DatabaseConnection dc) {
+
+        Vector<ColumnData> inputs = new Vector<>();
+        ColumnData returnType = null;
+
+        for (FunctionArgument parameter : argumentList) {
+            if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
+                ColumnData cd = columnDataFromProcedureParameter(parameter, dc, false);
+                inputs.add(cd);
+            } else
+                returnType = columnDataFromProcedureParameter(parameter, dc, false);
+        }
+
+        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, comment);
+    }
+
+    public static String generateCreateFunction(
+            String name, Vector<ColumnData> inputArguments, ColumnData returnType,
+            String fullFunctionBody, String entryPoint, String engine, String comment) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION]));
+        sb.append("RETURNS ");
+
+        if (returnType != null)
+            sb.append(returnType.getFormattedDataType());
+        if (!MiscUtils.isNull(entryPoint)) {
+            sb.append("\nEXTERNAL NAME '");
+            sb.append(entryPoint).append("'");
+            sb.append(" ENGINE ").append(engine);
+        } else
+            sb.append(generateSQLBody(fullFunctionBody));
+
+        sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^"));
+        sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
+
+        return sb.toString();
+    }
+
+    public static String generateAlterDefinitionColumn(ColumnData thisCD, ColumnData comparingCD) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if (MiscUtils.isNull(thisCD.getComputedBy()) && MiscUtils.isNull(comparingCD.getComputedBy())) {
+
+            if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
+                        append(" TYPE ").append(comparingCD.getColumnType());
+            if (!Objects.equals(thisCD.getDefaultValue(), comparingCD.getDefaultValue()))
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
+                        append(" SET DEFAULT ").append(comparingCD.getDefaultValue());
+            if (thisCD.isRequired() && !comparingCD.isRequired())
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
+                        append(" DROP NOT NULL");
+            else if (!thisCD.isRequired() && comparingCD.isRequired())
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
+                        append(" SET NOT NULL");
+
+            if (thisCD.isAutoincrement() && comparingCD.isAutoincrement())
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
+                        append(" RESTART WITH ").append(comparingCD.getAutoincrement().getStartValue());
+
+        } else if (!MiscUtils.isNull(thisCD.getComputedBy()) && !MiscUtils.isNull(comparingCD.getComputedBy())) {
+
+            if (!Objects.equals(thisCD.getComputedBy(), comparingCD.getComputedBy())) {
+
+                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()));
+
+                if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
+                    sb.append(" TYPE ").append(comparingCD.getColumnType());
+
+                sb.append(" COMMUTED BY (").append(comparingCD.getComputedBy()).append(")");
+            }
+
+        } else {
+            sb.append("\n\tDROP ").append(format(thisCD.getColumnName()));
+            sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, false));
+        }
+
+        if (sb.toString().equals(""))
+            return "";
+        return sb.append(COMMA).toString();
+    }
+
     public static String formattedParameters(Vector<ColumnData> tableVector, boolean variable) {
 
         StringBuilder sb = new StringBuilder();
@@ -746,8 +652,13 @@ public final class SQLUtils {
                         sb.append("SCROLL ");
                     sb.append("(").append(cd.getSelectOperator()).append(")");
 
-                } else
+                } else {
+
+                    if (!variable)
+                        sb.append("\t");
                     sb.append(formattedParameter(cd));
+
+                }
 
                 if (variable) {
 
@@ -789,40 +700,8 @@ public final class SQLUtils {
                     sb.append(cd.getFormattedDomain());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
-            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue())) {
-                String value = "";
-                boolean str = false;
-                int sqlType = cd.getSQLType();
-                switch (sqlType) {
-
-                    case Types.LONGVARCHAR:
-                    case Types.LONGNVARCHAR:
-                    case Types.CHAR:
-                    case Types.NCHAR:
-                    case Types.VARCHAR:
-                    case Types.VARBINARY:
-                    case Types.BINARY:
-                    case Types.NVARCHAR:
-                    case Types.CLOB:
-                    case Types.DATE:
-                    case Types.TIME:
-                    case Types.TIMESTAMP:
-                        value = "'";
-                        str = true;
-                        break;
-                    default:
-                        break;
-                }
-                value += cd.getDefaultValue();
-                if (str) {
-                    value += "'";
-                }
-                if (MiscUtils.checkKeyword(cd.getDefaultValue()))
-                    value = cd.getDefaultValue();
-                if (cd.getDefaultValue().trim().toLowerCase().contentEquals("= null")
-                        || cd.getDefaultValue().trim().toLowerCase().contentEquals("=null"))
-                    value = cd.getDefaultValue();
-                sb.append(" DEFAULT ").append(value);
+            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue().getValue())) {
+                sb.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
             }
             if (!MiscUtils.isNull(cd.getCheck())) {
                 sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
@@ -833,10 +712,10 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static ColumnData columnDataFromProcedureParameter(Parameter parameter, DatabaseConnection dc) {
+    public static ColumnData columnDataFromProcedureParameter(Parameter parameter, DatabaseConnection dc, boolean loadDomainInfo) {
         ColumnData cd = new ColumnData(true, dc);
         cd.setColumnName(parameter.getName());
-        cd.setDomain(parameter.getDomain());
+        cd.setDomain(parameter.getDomain(), loadDomainInfo);
         cd.setColumnSubtype(parameter.getSubType());
         cd.setSQLType(parameter.getDataType());
         cd.setColumnSize(parameter.getSize());
@@ -851,10 +730,8 @@ public final class SQLUtils {
         cd.setColumnTable(parameter.getFieldName());
         cd.setDefaultValue(parameter.getDefaultValue(), true);
         cd.setDescriptionAsSingleComment(parameter.isDescriptionAsSingleComment());
-        MetaDataValues metaData = new MetaDataValues(true);
-        metaData.setDatabaseConnection(dc);
-        String[] dataTypes = metaData.getDataTypesArray();
-        int[] intDataTypes = metaData.getIntDataTypesArray();
+        String[] dataTypes = dc.getDataTypesArray();
+        int[] intDataTypes = dc.getIntDataTypesArray();
         for (int i = 0; i < dataTypes.length; i++) {
             if (dataTypes[i].equalsIgnoreCase(parameter.getSqlType()))
                 cd.setSQLType(intDataTypes[i]);
@@ -966,6 +843,71 @@ public final class SQLUtils {
         return sb.toString();
     }
 
+    public static String generateCreateDomain(ColumnData columnData, String name, boolean useDomainType) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE DOMAIN ").append(name).append(" AS ");
+        if (useDomainType)
+            sb.append(columnData.getFormattedDomainDataType());
+        else sb.append(columnData.getFormattedDataType());
+        sb.append("\n");
+        if (!MiscUtils.isNull(columnData.getDefaultValue().getValue())) {
+            sb.append(MiscUtils.formattedDefaultValue(columnData.getDefaultValue(), columnData.getSQLType()));
+        }
+        sb.append(columnData.isRequired() ? " NOT NULL" : "");
+        if (!MiscUtils.isNull(columnData.getCheck())) {
+            sb.append(" CHECK (").append(columnData.getCheck()).append(")");
+        }
+        if (columnData.getCollate() != null && !columnData.getCollate().trim().contentEquals("NONE"))
+            sb.append(" COLLATE ").append(columnData.getCollate());
+        sb.append(";");
+        if (!MiscUtils.isNull(columnData.getDescription())) {
+            sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS '")
+                    .append(columnData.getDescription()).append("';");
+        }
+        return sb.toString();
+    }
+
+    public static String generateCreateUser(DefaultDatabaseUser user) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE");
+        sb.append(" USER ").append(format(user.getName()));
+        if (!MiscUtils.isNull(user.getFirstName()))
+            sb.append("\nFIRSTNAME '").append(user.getFirstName()).append("'");
+        if (!MiscUtils.isNull(user.getMiddleName()))
+            sb.append("\nMIDDLENAME '").append(user.getMiddleName()).append("'");
+        if (!MiscUtils.isNull(user.getLastName()))
+            sb.append("\nLASTNAME '").append(user.getLastName()).append("'");
+        if (!MiscUtils.isNull(user.getPassword())) {
+            sb.append("\nPASSWORD '").append(user.getPassword()).append("'");
+        }
+        if (user.getActive()) {
+            sb.append("\nACTIVE");
+        } else {
+            sb.append("\nINACTIVE");
+        }
+        if (user.getAdministrator()) {
+            sb.append("\nGRANT ADMIN ROLE");
+        }
+        if (!user.getPlugin().equals(""))
+            sb.append("\nUSING PLUGIN ").append(user.getPlugin());
+        Map<String, String> tags = user.getTags();
+        if (tags.size() > 0) {
+            sb.append("\nTAGS (");
+            boolean first = true;
+            for (String tag : tags.keySet()) {
+                if (!first)
+                    sb.append(", ");
+                first = false;
+                sb.append(tag).append(" = '").append(tags.get(tag)).append("'");
+            }
+            sb.append(" )");
+        }
+        sb.append(";\n");
+        if (!MiscUtils.isNull(user.getComment()))
+            sb.append("COMMENT ON USER ").append(format(user.getName())).append(" is '").append(user.getComment()).append("'");
+        return sb.toString();
+    }
+
     public static String generateAlterDomain(ColumnData thisDomainData, ColumnData domainData) throws DataSourceException {
 
         StringBuilder sb = new StringBuilder();
@@ -975,14 +917,14 @@ public final class SQLUtils {
         if (!thisDomainData.getColumnName().contentEquals(domainData.getColumnName()))
             sb.append("TO ").append(domainData.getFormattedColumnName()).append("\n");
 
-        if (!MiscUtils.compareStrings(thisDomainData.getDefaultValue(), domainData.getDefaultValue())) {
+        if (thisDomainData.getDefaultValue() != domainData.getDefaultValue()) {
 
-            if (MiscUtils.isNull(domainData.getDefaultValue()))
+            if (MiscUtils.isNull(domainData.getDefaultValue().getValue()))
                 sb.append("DROP DEFAULT\n");
 
             else {
                 sb.append("SET DEFAULT ");
-                if (domainData.getDefaultValue().toUpperCase().trim().equals("NULL"))
+                if (domainData.getDefaultValue().getValue().toUpperCase().trim().equals("NULL"))
                     sb.append("NULL");
                 else
                     sb.append(MiscUtils.formattedSQLValue(domainData.getDefaultValue(), domainData.getSQLType()));
@@ -1087,7 +1029,7 @@ public final class SQLUtils {
 
                 if (addCheck == thisConstraints.size())
                     sb.append("\n\tADD ").append(generateDefinitionColumnConstraint(
-                            new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint), false))
+                                    new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint), false))
                             .append(COMMA);
             }
 
@@ -1118,8 +1060,8 @@ public final class SQLUtils {
         sb.append("ALTER SEQUENCE ").append(format(thisSequence.getName()));
         String noChangesCheckString = sb.toString();
 
-        if (thisSequence.getSequenceValue() != comparingSequence.getSequenceValue())
-            sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceValue());
+        if (thisSequence.getSequenceFirstValue() != comparingSequence.getSequenceFirstValue())
+            sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceFirstValue());
         if (thisSequence.getIncrement() != comparingSequence.getIncrement())
             sb.append("\n\tINCREMENT BY ").append(comparingSequence.getIncrement());
 
@@ -1168,6 +1110,73 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
         sb.append("ALTER TABLESPACE ").append(format(thisTablespace.getName()));
         sb.append(" SET FILE '").append(comparingFileName).append("';\n");
+        return sb.toString();
+    }
+
+    public static String generateCreateTablespace(String name, String file) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE TABLESPACE ").append(format(name));
+        sb.append(" FILE '").append(file).append("';\n");
+        return sb.toString();
+    }
+
+
+
+    public static String generateDefaultUpdateStatement(String name, String settings) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("UPDATE ").append(format(name.trim()));
+        sb.append(" SET ").append(settings.trim()).append(";\n");
+        return sb.toString();
+    }
+
+    public static String generateDefaultInsertStatement(String name, String fields, String values) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO ").append(format(name.trim()));
+        sb.append(" (").append(fields.trim()).append(")");
+        sb.append(" VALUES (").append(values.trim()).append(");\n");
+        return sb.toString();
+    }
+
+    public static String generateDefaultSelectStatement(String name, String fields) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("SELECT ").append(fields.trim());
+        sb.append(" FROM ").append(format(name.trim())).append(";\n");
+
+        return sb.toString();
+    }
+
+    public static String generateCreateTriggerStatement(
+            String name, String tableName, boolean active, String triggerType, int position,
+            String sourceCode, String engine, String entryPoint, String comment) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CREATE OR ALTER TRIGGER ").append(format(name));
+        if (!MiscUtils.isNull(tableName))
+            sb.append(" FOR ").append(format(tableName));
+
+        sb.append("\n").append(active ? "ACTIVE" : "INACTIVE");
+        sb.append(" ").append(triggerType);
+        sb.append(" POSITION ").append(position);
+        sb.append("\n");
+
+        if (!MiscUtils.isNull(entryPoint)) {
+
+            sb.append("EXTERNAL NAME '").append(entryPoint).append("'");
+            if (!MiscUtils.isNull(engine))
+                sb.append("\n").append("ENGINE ").append(engine);
+
+        } else if (!MiscUtils.isNull(sourceCode))
+            sb.append(sourceCode);
+
+        sb.append("^");
+        if (!MiscUtils.isNull(comment) && !comment.equals("")) {
+            comment = comment.replace("'", "''");
+            sb.append("COMMENT ON TRIGGER ").append(format(name)).append(" IS '").append(comment).append("'^");
+        }
+
         return sb.toString();
     }
 

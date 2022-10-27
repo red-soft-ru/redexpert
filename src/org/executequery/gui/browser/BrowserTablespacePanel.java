@@ -62,7 +62,7 @@ public class BrowserTablespacePanel extends AbstractFormObjectViewPanel {
         descPanel.setSQLText(tablespace.getRemarks());
         tabPane.add(Bundles.getCommon("description"), descPanel);
         SimpleSqlTextPanel sqlPanel = new SimpleSqlTextPanel();
-        sqlPanel.setSQLText(tablespace.getCreateFullSQLText());
+        sqlPanel.setSQLText(tablespace.getCreateSQLText());
         tabPane.add(Bundles.getCommon("SQL"), sqlPanel);
         add(tabPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
 

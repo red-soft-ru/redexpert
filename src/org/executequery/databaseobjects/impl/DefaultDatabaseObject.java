@@ -54,7 +54,7 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCreateFullSQLText() throws DataSourceException {
+    public String getCreateSQLText() throws DataSourceException {
         return null;
     }
 

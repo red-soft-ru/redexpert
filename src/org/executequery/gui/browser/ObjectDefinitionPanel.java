@@ -36,6 +36,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.databaseobjects.CreateViewPanel;
 import org.executequery.gui.databaseobjects.DefaultDatabaseObjectTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
@@ -43,6 +44,7 @@ import org.executequery.sql.SQLFormatter;
 import org.underworldlabs.Constants;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -110,6 +112,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
      */
     private JLabel noResultsLabel;
 
+    private SimpleCommentPanel simpleCommentPanel;
     private boolean hasResults;
 
     /**
@@ -150,43 +153,21 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
     private void jbInit() {
 
+        GridBagHelper gridBagHelper = new GridBagHelper().
+                anchorNorthWest().fillBoth().setInsets(5,5,5,5);
+
         dependenciesPanel = new DependenciesPanel();
         noResultsLabel = new JLabel("No information for this object is available.",
                 JLabel.CENTER);
 
-        JPanel descPanel = new JPanel(new GridBagLayout());
-
         tableNameField = new DisabledField();
         //schemaNameField = new DisabledField();
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(10, 5, 5, 5);
-        gbc.insets = ins;
-        gbc.anchor = GridBagConstraints.NORTHEAST;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        descPanel.add(new JLabel(Bundles.getCommon("name")), gbc);
-        gbc.insets.left = 5;
-        gbc.insets.right = 5;
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        descPanel.add(tableNameField, gbc);
-        gbc.insets.top = 0;
-        gbc.gridy++;
-        //descPanel.add(schemaNameField, gbc);
-        gbc.insets.right = 5;
-        gbc.insets.left = 5;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        //descPanel.add(new JLabel("Schema:"), gbc);
 
         // configure the table column descriptions panel
         descBottomPanel = new JPanel(new BorderLayout());
         descBottomPanel.setBorder(BorderFactory.createTitledBorder(Bundles.getCommon("columns")));
 
         tableDataPanel = new TableDataTab(true);
-
 
         metaDataPanel = new DatabaseObjectMetaDataPanel();
 
@@ -199,49 +180,46 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             }
         });
 
+        //sql panel
         JPanel sqlPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints sqlGbc = new GridBagConstraints();
-        Insets sqlIns = new Insets(10, 5, 5, 5);
-        sqlGbc.insets = sqlIns;
-        sqlGbc.anchor = GridBagConstraints.NORTHWEST;
-        sqlGbc.fill = GridBagConstraints.NONE;
-        sqlGbc.gridx = 0;
-        sqlGbc.gridy = 0;
-        sqlPanel.add(formatSqlButton, sqlGbc);
-        sqlGbc.gridy++;
-        sqlGbc.fill = GridBagConstraints.BOTH;
-        sqlGbc.weighty = 1;
-        sqlGbc.weightx = 1;
-        sqlPanel.add(sqlTextPanel, sqlGbc);
 
+        sqlPanel.add(formatSqlButton, gridBagHelper.setLabelDefault().get());
+        sqlPanel.add(sqlTextPanel, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
+        //tabbed panel
         tabPane = new JTabbedPane();
-        tabPane.add(Bundles.getCommon("description"), descBottomPanel);
+        tabPane.add(Bundles.getCommon("columns"), descBottomPanel);
         addPrivilegesTab(tabPane);
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
         tabPane.add(Bundles.getCommon("SQL"), sqlPanel);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
         tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
+        tabPane.add(Bundles.getCommon("comment-field-label"), null);
 
-        // add the tab pane
-        gbc.gridy = 2;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.insets.bottom = 5;
-        gbc.insets.top = 5;
-        gbc.insets.right = 5;
-        gbc.insets.left = 5;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        descPanel.add(tabPane, gbc);
+        //components arranging
+        JPanel descPanel = new JPanel(new GridBagLayout());
+
+        gridBagHelper = new GridBagHelper().
+                anchorNorthWest().fillBoth().setInsets(5,5,5,5);
+
+        gridBagHelper.addLabelFieldPair(descPanel,
+                new JLabel(Bundles.getCommon("name")), tableNameField,
+                null, true, true);
+//        gridBagHelper.addLabelFieldPair(descPanel,
+//                new JLabel("Schema:"), schemaNameField,
+//                null, true, true);
+        descPanel.add(tabPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().setMaxWeightY().get());
 
         tabPane.addChangeListener(this);
         //tableDescPanel = new SimpleTableDescriptionPanel();
 
-
-
         setHeader("Database Object", GUIUtilities.loadIcon(BrowserConstants.DATABASE_OBJECT_IMAGE));
         setContentPanel(descPanel);
         //cache = new HashMap();
+    }
+
+    public DatabaseConnection getSelectedConnection() {
+        return currentObjectView.getHost().getDatabaseConnection();
     }
 
     public String getLayoutName() {
@@ -415,6 +393,13 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         sqlTextPanel.getTextPane().setDatabaseConnection(object.getHost().getDatabaseConnection());
         sqlTextPanel.setSQLText(Constants.EMPTY);
 
+        simpleCommentPanel = new SimpleCommentPanel(currentObjectView);
+        simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> {
+            simpleCommentPanel.updateComment();
+            sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText());
+        });
+        tabPane.setComponentAt(6, simpleCommentPanel.getCommentPanel());
+
         // header values
         if (object.getType() == NamedObject.VIEW) {
             setHeaderText(bundleString("DatabaseView"));
@@ -449,7 +434,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
                 descBottomPanel.add(tableDescriptionPanel, BorderLayout.CENTER);
             }
 
-            sqlTextPanel.setSQLText(currentObjectView.getCreateFullSQLText());
+            sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText());
             sqlTextPanel.getTextPane().setEditable(false);
 
         } catch (DataSourceException e) {

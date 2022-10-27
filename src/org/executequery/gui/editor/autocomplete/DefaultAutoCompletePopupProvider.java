@@ -945,10 +945,15 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         }
     }
 
+    public void resetAutoCompleteListItems() {
+        if (!rebuildingList)
+            autoCompleteListItems = new ArrayList<>();
+    }
+
     private boolean rebuildingList;
     private org.underworldlabs.swing.util.SwingWorker worker;
 
-    private void scheduleListItemLoad() {
+    public void scheduleListItemLoad() {
 
         if (rebuildingList || !autoCompleteListItems.isEmpty()) {
 
@@ -958,12 +963,11 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         worker = new SwingWorker() {
 
             public Object construct() {
-
                 try {
 
                     debug("Rebuilding suggestions list...");
 
-                    rebuildingList = true;
+
                     rebuildListSelectionsItems();
 
                     return "done";
@@ -994,6 +998,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         };
 
         debug("Starting worker thread for suggestions list");
+        rebuildingList = true;
         worker.start();
     }
 
@@ -1023,5 +1028,4 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
         Log.debug(message, e);
     }
-
 }

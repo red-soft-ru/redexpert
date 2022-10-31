@@ -11,7 +11,9 @@ import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.swing.DefaultProgressDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -46,6 +48,7 @@ public class ComparerDBPanel extends JPanel {
     private JButton selectAllPropertiesButton;
     private LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
+    private DefaultProgressDialog progressDialog;
 
     private Map<Integer, JCheckBox> attributesCheckBoxMap;
     private Map<Integer, JCheckBox> propertiesCheckBoxMap;
@@ -259,29 +262,7 @@ public class ComparerDBPanel extends JPanel {
 
     }
 
-    // --- buttons handlers ---
-
-    private void compareDatabase() {
-
-        if (databaseConnectionList.size() < 2 ||
-                dbCompareComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
-            GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
-            return;
-        }
-        for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++) {
-            if (attributesCheckBoxMap.get(i).isSelected())
-                break;
-            if (i == NamedObject.SYSTEM_DOMAIN - 1) {
-                GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoAttributes"));
-                return;
-            }
-        }
-        if (!propertiesCheckBoxMap.get(0).isSelected() &&
-                !propertiesCheckBoxMap.get(1).isSelected() &&
-                !propertiesCheckBoxMap.get(2).isSelected()) {
-            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoProperties"));
-            return;
-        }
+    private void startComparing() {
 
         comparer = new Comparer(
                 databaseConnectionList.get(dbCompareComboBox.getSelectedIndex()),
@@ -294,11 +275,13 @@ public class ComparerDBPanel extends JPanel {
         comparer.clearLists();
 
         try {
+
             if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||
                     new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4) {
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
                 loggingOutputPanel.append(bundleString("RDBVersionBelow4"));
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -345,7 +328,7 @@ public class ComparerDBPanel extends JPanel {
 
         comparer.addToScript(settingScriptProps.toString());
 
-        if (propertiesCheckBoxMap.get(0).isSelected()) {
+        if (propertiesCheckBoxMap.get(0).isSelected() && !progressDialog.isCancel()) {
 
             if (isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = false;
@@ -353,6 +336,10 @@ public class ComparerDBPanel extends JPanel {
             }
 
             for (Integer type : scriptGenerationOrder) {
+
+                if (progressDialog.isCancel())
+                    break;
+
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
                     comparer.setLists("");
@@ -368,7 +355,7 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (propertiesCheckBoxMap.get(1).isSelected()) {
+        if (propertiesCheckBoxMap.get(1).isSelected() && !progressDialog.isCancel()) {
 
             if (isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = false;
@@ -376,6 +363,10 @@ public class ComparerDBPanel extends JPanel {
             }
 
             for (Integer type : scriptGenerationOrder) {
+
+                if (progressDialog.isCancel())
+                    break;
+
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
                     comparer.setLists("");
@@ -391,7 +382,7 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (propertiesCheckBoxMap.get(2).isSelected()) {
+        if (propertiesCheckBoxMap.get(2).isSelected() && !progressDialog.isCancel()) {
 
             if (!isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = true;
@@ -399,6 +390,10 @@ public class ComparerDBPanel extends JPanel {
             }
 
             for (Integer type : scriptGenerationOrder) {
+
+                if (progressDialog.isCancel())
+                    break;
+
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
                     comparer.setLists("");
@@ -424,6 +419,50 @@ public class ComparerDBPanel extends JPanel {
 
         for (int i = 0; i < comparer.getScript().size(); i++)
             sqlTextPanel.getTextPane().append(comparer.getScript(i));
+
+    }
+
+    // --- buttons handlers ---
+
+    private void compareDatabase() {
+
+        if (databaseConnectionList.size() < 2 ||
+                dbCompareComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
+            GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
+            return;
+        }
+        for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++) {
+            if (attributesCheckBoxMap.get(i).isSelected())
+                break;
+            if (i == NamedObject.SYSTEM_DOMAIN - 1) {
+                GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoAttributes"));
+                return;
+            }
+        }
+        if (!propertiesCheckBoxMap.get(0).isSelected() &&
+                !propertiesCheckBoxMap.get(1).isSelected() &&
+                !propertiesCheckBoxMap.get(2).isSelected()) {
+            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoProperties"));
+            return;
+        }
+
+        progressDialog = new DefaultProgressDialog(bundleString("Executing"));
+        SwingWorker worker = new SwingWorker() {
+            @Override
+            public Object construct() {
+                startComparing();
+                return null;
+            }
+
+            @Override
+            public void finished() {
+                if (progressDialog != null)
+                    progressDialog.dispose();
+            }
+        };
+
+        worker.start();
+        progressDialog.run();
 
     }
 

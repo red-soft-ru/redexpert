@@ -62,17 +62,12 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
         Statement statement = null;
 
-        if (!isMarkedForReload() && currentValue != -1) {
-
+        if (!isMarkedForReload() && currentValue != -1)
             return currentValue;
-        }
 
         try {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-
-            String _catalog = getCatalogName();
-            String _schema = getSchemaName();
 
             if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
 
@@ -86,10 +81,10 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
             return currentValue;
 
         } catch (SQLException e) {
-
             throw new DataSourceException(e);
 
         } finally {
+
             if (statement != null)
                 try {
                     if (!statement.isClosed())
@@ -106,17 +101,12 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
         Statement statement = null;
 
-        if (!isMarkedForReload() && firstValue != -1) {
-
+        if (!isMarkedForReload() && firstValue != -1)
             return firstValue;
-        }
 
         try {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-
-            String _catalog = getCatalogName();
-            String _schema = getSchemaName();
 
             if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
 
@@ -137,6 +127,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
             throw new DataSourceException(e);
 
         } finally {
+
             if (statement != null)
                 try {
                     if (!statement.isClosed())
@@ -144,6 +135,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
                 } catch (SQLException e) {
                     Log.error("Error close statement in method getSequenceFirstValue in class DefaultDatabaseSequence", e);
                 }
+
             setMarkedForReload(false);
         }
     }
@@ -152,17 +144,12 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
         Statement statement = null;
 
-        if (!isMarkedForReload() && increment != null) {
-
+        if (!isMarkedForReload() && increment != null)
             return increment;
-        }
 
         try {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-
-            String _catalog = getCatalogName();
-            String _schema = getSchemaName();
 
             if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
 
@@ -183,6 +170,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
             throw new DataSourceException(e);
 
         } finally {
+
             if (statement != null)
                 try {
                     if (!statement.isClosed())
@@ -190,6 +178,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
                 } catch (SQLException e) {
                     Log.error("Error close statement in method getIncrement in class DefaultDatabaseSequence", e);
                 }
+
             setMarkedForReload(false);
         }
     }

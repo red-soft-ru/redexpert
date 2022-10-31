@@ -580,9 +580,9 @@ public class QueryDispatcher {
             String noCommentsQuery = queryTokenizer.removeComments(procQuery);
             DerivedQuery derivedQuery = new DerivedQuery(noCommentsQuery);
             // check if its a procedure creation or execution
-            if (isCreateProcedureOrFunction(derivedQuery)) {
+            if (isBeginEndQuery(derivedQuery)) {
 
-                return executeProcedureOrFunction(sql, derivedQuery);
+                return executeCreateOrAlterObject(sql, derivedQuery);
             }
 
             List<DerivedQuery> queries = queryTokenizer.tokenize(sql);
@@ -1466,43 +1466,14 @@ public class QueryDispatcher {
         delegate.statementExecuted(sql);
     }
 
-    private Object executeProcedureOrFunction(String sql, DerivedQuery procQuery)
+    private Object executeCreateOrAlterObject(String sql, DerivedQuery procQuery)
             throws SQLException {
 
         logExecution(sql.trim());
 
         long start = System.currentTimeMillis();
-
-        REDDATABASESqlLexer lexer = new REDDATABASESqlLexer(CharStreams.fromString(sql));
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        REDDATABASESqlParser sqlparser = new REDDATABASESqlParser(tokens);
-        List<? extends ANTLRErrorListener> listeners = sqlparser.getErrorListeners();
-        for (int i = 0; i < listeners.size(); i++) {
-            if (listeners.get(i) instanceof ConsoleErrorListener)
-                sqlparser.removeErrorListener(listeners.get(i));
-        }
-        ParseTree tree = sqlparser.create_or_alter_procedure_stmt();
-        ParseTreeWalker walker = new ParseTreeWalker();
-        StringBuilder variables = new StringBuilder();
-        walker.walk(new REDDATABASESqlBaseListener() {
-            @Override
-            public void enterDeclare_block(REDDATABASESqlParser.Declare_blockContext ctx) {
-                List<REDDATABASESqlParser.Input_parameterContext> in_pars = ctx.input_parameter();
-                for (int i = 0; i < in_pars.size(); i++) {
-                    variables.append("<").append(in_pars.get(i).desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
-                }
-                List<REDDATABASESqlParser.Output_parameterContext> out_pars = ctx.output_parameter();
-                for (int i = 0; i < out_pars.size(); i++) {
-                    variables.append("<").append(out_pars.get(i).desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
-                }
-                List<REDDATABASESqlParser.Local_variableContext> vars = ctx.local_variable();
-                for (int i = 0; i < vars.size(); i++) {
-                    variables.append("<").append(vars.get(i).variable_name().getRuleContext().getText()).append(">");
-                }
-            }
-        }, tree);
-        PreparedStatement statement = prepareStatementWithParameters(sql, variables.toString());
-        SqlStatementResult result = querySender.execute(QueryTypes.CREATE_OBJECT, statement);
+        PreparedStatement statement = querySender.getPreparedStatement(sql);
+        SqlStatementResult result = querySender.execute(procQuery.getQueryType(), statement);
 
         if (result.getUpdateCount() == -1 || result.isException()) {
 
@@ -1735,14 +1706,13 @@ public class QueryDispatcher {
      * @param query - the query to be executed
      * @return true | false
      */
-    private boolean isCreateProcedureOrFunction(DerivedQuery query) {
-
-
+    private boolean isBeginEndQuery(DerivedQuery query) {
         if (isNotSingleStatementExecution(query.getQueryType())) {
-
-            return isCreateProcedure(query) || isCreateFunction(query);
+            return (isCreateProcedure(query))
+                    || isCreateFunction(query)
+                    || isCreatePackage(query)
+                    || isCreateTrigger(query);
         }
-
         return false;
     }
 
@@ -1755,7 +1725,7 @@ public class QueryDispatcher {
      */
     private boolean isCreateProcedure(DerivedQuery query) {
 
-        return query.getTypeObject() == NamedObject.PROCEDURE || query.getTypeObject() == NamedObject.PACKAGE;
+        return query.getTypeObject() == NamedObject.PROCEDURE;
     }
 
     /**
@@ -1769,15 +1739,23 @@ public class QueryDispatcher {
         return query.getTypeObject() == NamedObject.FUNCTION;
     }
 
+    private boolean isCreateTrigger(DerivedQuery query) {
+        return query.getTypeObject() == NamedObject.TRIGGER
+                || query.getTypeObject() == NamedObject.DDL_TRIGGER
+                || query.getTypeObject() == NamedObject.DATABASE_TRIGGER;
+    }
+
+    private boolean isCreatePackage(DerivedQuery query) {
+        return query.getTypeObject() == NamedObject.PACKAGE;
+    }
+
     private boolean isNotSingleStatementExecution(int typeQuery) {
 
 
         int[] nonSingleStatementExecutionTypes = {
                 QueryTypes.CREATE_OBJECT,
                 QueryTypes.ALTER_OBJECT,
-                QueryTypes.CREATE_OR_ALTER,
-                QueryTypes.UNKNOWN,
-                QueryTypes.EXECUTE
+                QueryTypes.CREATE_OR_ALTER
         };
 
         for (int i = 0; i < nonSingleStatementExecutionTypes.length; i++) {

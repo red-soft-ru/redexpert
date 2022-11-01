@@ -185,64 +185,15 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
     private void generateSQL() {
-
         sqlTextPane.setText(generateQuery());
-
     }
 
     protected String generateQuery() {
-        StringBuilder sb = new StringBuilder();
+
         columnData.setColumnName(nameField.getText());
-        sb.setLength(0);
-        if (editing) {
-            if (columnData.isChanged()) {
-                sb.append("ALTER DOMAIN ").append(MiscUtils.getFormattedObject(domain)).append("\n");
-                if (columnData.isNameChanged()) {
-                    sb.append("TO ").append(columnData.getFormattedColumnName()).append("\n");
-                }
-                if (columnData.isDefaultChanged()) {
-                    if (MiscUtils.isNull(columnData.getDefaultValue().getValue()))
-                        sb.append("DROP DEFAULT\n");
-                    else {
-                        sb.append("SET DEFAULT ");
-                        sb.append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
-                        sb.append("\n");
-
-                    }
-                }
-                if (columnData.isRequiredChanged()) {
-                    if (columnData.isRequired()) {
-                        sb.append("SET ");
-                    } else {
-                        sb.append("DROP ");
-                    }
-                    sb.append("NOT NULL\n");
-
-                }
-                if (columnData.isCheckChanged()) {
-                    sb.append("DROP CONSTRAINT\n");
-                    if (!MiscUtils.isNull(columnData.getCheck())) {
-                        sb.append("ADD CHECK (").append(columnData.getCheck()).append(")\n");
-                    }
-                }
-                if (columnData.isTypeChanged()) {
-                    sb.append("TYPE ").append(columnData.getFormattedDataType());
-                }
-                sb.append(";");
-                if (columnData.isDescriptionChanged()) {
-                    sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS ");
-                    if (!MiscUtils.isNull(columnData.getDescription())) {
-
-                        sb.append("'").append(columnData.getDescription()).append("'");
-                    } else {
-                        sb.append("NULL");
-                    }
-                    sb.append(";");
-                }
-            }
-            return sb.toString();
-        } else {
+        if (editing)
+            return SQLUtils.generateAlterDomain(columnData, domain);
+        else
             return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false);
-        }
     }
 }

@@ -20,6 +20,7 @@
 
 package org.executequery.databasemediators.spi;
 
+import biz.redsoft.TransactionParameterBuffer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.GUIUtilities;
@@ -117,6 +118,8 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
      * the isolation level for transaction
      */
     private int transactionIsolation;
+
+    private TransactionParameterBuffer tpb;
 
     boolean useDatabaseConnection;
 
@@ -288,7 +291,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             try {
 
                 if (isUseDatabaseConnection())
-                    conn = ConnectionManager.getTemporaryConnection(databaseConnection);
+                    conn = ConnectionManager.getTemporaryConnection(databaseConnection, tpb);
                 else throw new DataSourceException("Connection=null or closed");
                 if (keepAlive) {
 
@@ -1936,6 +1939,14 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
     public String bundleString(String key) {
         return Bundles.get(getClass(), key);
+    }
+
+    public TransactionParameterBuffer getTpb() {
+        return tpb;
+    }
+
+    public void setTpb(TransactionParameterBuffer tpb) {
+        this.tpb = tpb;
     }
 }
 

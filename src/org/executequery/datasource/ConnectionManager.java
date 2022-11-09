@@ -20,6 +20,7 @@
 
 package org.executequery.datasource;
 
+import biz.redsoft.TransactionParameterBuffer;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionBuilder;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -171,6 +172,10 @@ public final class ConnectionManager {
     }
 
     public static Connection getTemporaryConnection(DatabaseConnection databaseConnection) {
+        return getTemporaryConnection(databaseConnection, null);
+    }
+
+    public static Connection getTemporaryConnection(DatabaseConnection databaseConnection, TransactionParameterBuffer tpb) {
 
         if (databaseConnection == null) {
 
@@ -186,8 +191,13 @@ public final class ConnectionManager {
 
             ConnectionPool pool = connectionPools.get(databaseConnection);
             DataSource dataSource = getDataSource(databaseConnection);
+            Connection con;
             try {
-                return new PooledConnection(dataSource.getConnection(), databaseConnection);
+                if (dataSource instanceof SimpleDataSource)
+                    con = ((SimpleDataSource) dataSource).getConnection(tpb);
+                else con = dataSource.getConnection();
+
+                return new PooledConnection(con, databaseConnection);
             } catch (SQLException e) {
                 Log.error("Error get connection", e);
                 return pool.getConnection();

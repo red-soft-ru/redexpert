@@ -22,6 +22,7 @@ package org.executequery.datasource;
 
 import biz.redsoft.IFBCryptoPluginInit;
 import biz.redsoft.IFBDataSource;
+import biz.redsoft.TransactionParameterBuffer;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ApplicationContext;
 import org.executequery.EventMediator;
@@ -88,6 +89,10 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     }
 
     public Connection getConnection() throws SQLException {
+        return getConnection(null);
+    }
+
+    public Connection getConnection(TransactionParameterBuffer tpb) throws SQLException {
         while (MiscUtils.isNull(databaseConnection.getUnencryptedPassword())
                 && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
             LoginPasswordDialog lpd = new LoginPasswordDialog(Bundles.getCommon("title-enter-password"), Bundles.getCommon("message-enter-password"),
@@ -105,18 +110,22 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             }
         }
         try {
-            return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword());
+            return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword(), tpb);
         } catch (SQLException e) {
             if (e.getSQLState().contentEquals("28000")
                     && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
                 databaseConnection.setPassword("");
-                return getConnection();
+                return getConnection(tpb);
             }
             throw e;
         }
     }
 
     public Connection getConnection(String username, String password) throws SQLException {
+        return getConnection(username, password, null);
+    }
+
+    public Connection getConnection(String username, String password, TransactionParameterBuffer tpb) throws SQLException {
 
         Properties advancedProperties = buildAdvancedProperties();
 
@@ -136,7 +145,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
         if (driver != null) {
             if (dataSource != null)
-                return dataSource.getConnection();
+                return dataSource.getConnection(tpb);
 
             // If used jaybird
             if (databaseConnection.getJDBCDriver().getClassName().contains("FBDriver") &&
@@ -192,7 +201,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                     }
                     dataSource.setURL(url);
 
-                    return dataSource.getConnection();
+                    return dataSource.getConnection(tpb);
                 } catch (ClassNotFoundException e) {
                     // ...original jaybird
                     return driver.connect(url, advancedProperties);

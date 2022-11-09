@@ -42,6 +42,7 @@ import org.executequery.util.UserProperties;
 import org.underworldlabs.sqlParser.SqlParser;
 import org.underworldlabs.swing.DefaultTextField;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -313,13 +314,13 @@ public class QueryEditor extends DefaultTabView
 
 
 
-        txBox = new TransactionIsolationCombobox();
+        /*txBox = new TransactionIsolationCombobox();
         txBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 delegate.setTransactionIsolation(txBox.getSelectedLevel());
             }
-        });
+        });*/
 
         maxRowCountCheckBox = new JCheckBox(bundleString("MaxRows"));
         maxRowCountCheckBox.setToolTipText(bundleString("MaxRows.tool-tip"));
@@ -340,90 +341,25 @@ public class QueryEditor extends DefaultTabView
         maxRowCountField = new MaxRowCountField(this);
 
         toolsPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 0, 0);
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridy++;
-        gbc.gridx++;
-        gbc.weightx = 1.0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        toolsPanel.add(toolBar, gbc);
-        gbc.gridy++;
-        gbc.weightx = 0;
-        gbc.gridwidth = 1;
-        gbc.insets.top = 7;
-        gbc.insets.left = 5;
-        gbc.insets.right = 10;
-        toolsPanel.add(createLabel(Bundles.getCommon("connection"), 'C'), gbc);
-        gbc.gridx++;
-        gbc.weightx = 1.0;
-        gbc.insets.top = 2;
-        gbc.insets.bottom = 2;
-        gbc.insets.left = 0;
-        gbc.insets.right = 0;
-        toolsPanel.add(connectionsCombo, gbc);
-        gbc.gridx++;
-        gbc.weightx = 0;
-        gbc.gridwidth = 1;
-        gbc.insets.top = 7;
-        gbc.insets.left = 5;
-        gbc.insets.right = 10;
-        toolsPanel.add(createLabel(bundleString("TransactionIsolationLevel"), 'T'), gbc);
-        gbc.gridx++;
-        gbc.weightx = 1.0;
-        gbc.insets.top = 2;
-        gbc.insets.bottom = 2;
-        gbc.insets.left = 0;
-        gbc.insets.right = 0;
-        toolsPanel.add(txBox, gbc);
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
+        toolsPanel.add(toolBar, gbh.fillHorizontally().spanX().setMaxWeightX().get());
+        toolsPanel.add(createLabel(Bundles.getCommon("connection"), 'C'), gbh.nextRowFirstCol().setLabelDefault().get());
+        toolsPanel.add(connectionsCombo, gbh.nextCol().fillHorizontally().setWeightX(0.3).get());
+        toolsPanel.add(createLabel(bundleString("Filter"), 'l'), gbh.setLabelDefault().nextCol().get());
+        toolsPanel.add(createResultSetFilterTextField(), gbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        toolsPanel.add(maxRowCountCheckBox, gbh.setLabelDefault().nextCol().get());
+        toolsPanel.add(maxRowCountField, gbh.nextCol().fillHorizontally().setWeightX(0.2).get());
+        toolsPanel.add(stopOnErrorCheckBox, gbh.setLabelDefault().nextCol().get());
+        toolsPanel.add(new TransactionParametersPanel(getSelectedConnection()), gbh.nextRowFirstCol().fillHorizontally().spanX().get());
 
-        gbc.gridx++;
-        gbc.weightx = 0;
-        gbc.insets.left = 0;
-        gbc.insets.top = 7;
-        gbc.insets.right = 10;
-        gbc.insets.left = 10;
-        toolsPanel.add(createLabel(bundleString("Filter"), 'l'), gbc);
-        gbc.gridx++;
-        gbc.weightx = 0.8;
-        gbc.insets.top = 2;
-        gbc.insets.bottom = 2;
-        gbc.insets.right = 2;
-        gbc.insets.left = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        toolsPanel.add(createResultSetFilterTextField(), gbc);
-
-        gbc.gridx++;
-        gbc.weightx = 0;
-        gbc.insets.top = 5;
-        gbc.insets.left = 10;
-        toolsPanel.add(maxRowCountCheckBox, gbc);
-        gbc.gridx++;
-        gbc.insets.left = 0;
-        gbc.insets.top = 7;
-        gbc.insets.right = 10;
-        //.add(createLabel("Max Rows:", 'R'), gbc);
-        gbc.gridx++;
-        gbc.weightx = 0.3;
-        gbc.insets.top = 2;
-        gbc.insets.bottom = 2;
-        gbc.insets.right = 2;
-        gbc.fill = GridBagConstraints.BOTH;
-        toolsPanel.add(maxRowCountField, gbc);
-
-        gbc.gridx++;
-        gbc.weightx = 0;
-        gbc.insets.top = 5;
-        gbc.insets.left = 10;
-        toolsPanel.add(stopOnErrorCheckBox, gbc);
 
         splitPane.setBorder(BorderFactory.createEmptyBorder(0, 3, 3, 3));
 
         JPanel base = new JPanel(new BorderLayout());
         base.add(toolsPanel, BorderLayout.NORTH);
         base.add(splitPane, BorderLayout.CENTER);
-
+        GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 1;
         gbc.gridx = 1;
         gbc.weightx = 1.0;

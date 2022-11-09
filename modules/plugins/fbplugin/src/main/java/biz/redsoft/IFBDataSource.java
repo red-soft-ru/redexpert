@@ -16,7 +16,7 @@ public interface IFBDataSource {
 
     Connection getConnection() throws SQLException;
 
-    Connection getConnection(TransactionParameterBuffer tpb) throws SQLException;
+    Connection getConnection(ITPB tpb) throws SQLException;
 
     void close() throws ResourceException;
 
@@ -24,5 +24,5 @@ public interface IFBDataSource {
 
     void setNonStandardProperty(String key, String value);
 
-    void setTransactionParameters(Connection connection, TransactionParameterBuffer tpb) throws SQLException;
+    void setTransactionParameters(Connection connection, ITPB tpb) throws SQLException;
 }

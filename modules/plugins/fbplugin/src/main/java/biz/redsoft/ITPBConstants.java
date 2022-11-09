@@ -1,6 +1,6 @@
 package biz.redsoft;
 
-public interface TransactionParametersConstants {
+public interface ITPBConstants {
     int isc_tpb_version1 = 1;
     int isc_tpb_version3 = 3;
     int isc_tpb_consistency = 1;

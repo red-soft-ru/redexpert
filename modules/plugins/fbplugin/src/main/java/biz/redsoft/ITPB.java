@@ -3,7 +3,7 @@ package biz.redsoft;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public interface TransactionParameterBuffer {
+public interface ITPB {
 
     void initTPB();
 

@@ -1,6 +1,7 @@
 package org.executequery.gui.editor;
 
-import biz.redsoft.TransactionParameterBuffer;
+import biz.redsoft.IFBDatabaseConnection;
+import biz.redsoft.ITPB;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.underworldlabs.swing.NumberTextField;
@@ -14,7 +15,7 @@ import java.awt.event.ItemListener;
 import java.sql.Connection;
 
 public class TransactionParametersPanel extends JPanel {
-    TransactionParameterBuffer tpb;
+    ITPB tpb;
     private JCheckBox readOnlyBox;
     private JCheckBox waitCheckBox;
     private NumberTextField lockTimeOutField;
@@ -78,7 +79,9 @@ public class TransactionParametersPanel extends JPanel {
             Connection con = ConnectionManager.getTemporaryConnection(databaseConnection);
             try {
                 if (con.unwrap(Connection.class).getClass().getName().contains("FBConnection")) {
-                    tpb = (TransactionParameterBuffer) DynamicLibraryLoader.loadingObjectFromClassLoader(con, "CustomTransactionParameterBufferImpl");
+                    Connection fbConn = con.unwrap(Connection.class);
+                    IFBDatabaseConnection db = null;
+                    tpb = (ITPB) DynamicLibraryLoader.loadingObjectFromClassLoader(fbConn, "ITPBImpl");
                     tpb.initTPB();
                 }
                 con.close();

@@ -6,7 +6,7 @@ import org.firebirdsql.gds.impl.TransactionParameterBufferImpl;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class CustomTransactionParameterBufferImpl implements TransactionParameterBuffer {
+public class ITPBImpl implements ITPB {
     TransactionParameterBufferImpl tpb;
 
     @Override

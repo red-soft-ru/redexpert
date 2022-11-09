@@ -20,7 +20,7 @@
 
 package org.executequery.databasemediators.spi;
 
-import biz.redsoft.TransactionParameterBuffer;
+import biz.redsoft.ITPB;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.GUIUtilities;
@@ -119,7 +119,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
      */
     private int transactionIsolation;
 
-    private TransactionParameterBuffer tpb;
+    private ITPB tpb;
 
     boolean useDatabaseConnection;
 
@@ -1941,11 +1941,11 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
         return Bundles.get(getClass(), key);
     }
 
-    public TransactionParameterBuffer getTpb() {
+    public ITPB getTpb() {
         return tpb;
     }
 
-    public void setTpb(TransactionParameterBuffer tpb) {
+    public void setTpb(ITPB tpb) {
         this.tpb = tpb;
     }
 }

@@ -22,7 +22,7 @@ package org.executequery.datasource;
 
 import biz.redsoft.IFBCryptoPluginInit;
 import biz.redsoft.IFBDataSource;
-import biz.redsoft.TransactionParameterBuffer;
+import biz.redsoft.ITPB;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ApplicationContext;
 import org.executequery.EventMediator;
@@ -92,7 +92,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         return getConnection(null);
     }
 
-    public Connection getConnection(TransactionParameterBuffer tpb) throws SQLException {
+    public Connection getConnection(ITPB tpb) throws SQLException {
         while (MiscUtils.isNull(databaseConnection.getUnencryptedPassword())
                 && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
             LoginPasswordDialog lpd = new LoginPasswordDialog(Bundles.getCommon("title-enter-password"), Bundles.getCommon("message-enter-password"),
@@ -125,7 +125,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         return getConnection(username, password, null);
     }
 
-    public Connection getConnection(String username, String password, TransactionParameterBuffer tpb) throws SQLException {
+    public Connection getConnection(String username, String password, ITPB tpb) throws SQLException {
 
         Properties advancedProperties = buildAdvancedProperties();
 

@@ -20,7 +20,7 @@
 
 package org.executequery.datasource;
 
-import biz.redsoft.TransactionParameterBuffer;
+import biz.redsoft.ITPB;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionBuilder;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -175,7 +175,7 @@ public final class ConnectionManager {
         return getTemporaryConnection(databaseConnection, null);
     }
 
-    public static Connection getTemporaryConnection(DatabaseConnection databaseConnection, TransactionParameterBuffer tpb) {
+    public static Connection getTemporaryConnection(DatabaseConnection databaseConnection, ITPB tpb) {
 
         if (databaseConnection == null) {
 

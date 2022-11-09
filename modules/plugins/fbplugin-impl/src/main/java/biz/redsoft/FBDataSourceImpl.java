@@ -51,7 +51,7 @@ public class FBDataSourceImpl implements IFBDataSource {
     }
 
     @Override
-    public Connection getConnection(TransactionParameterBuffer tpb) throws SQLException {
+    public Connection getConnection(ITPB tpb) throws SQLException {
         Connection conn = getConnection();
         setTransactionParameters(conn, tpb);
         return conn;
@@ -74,11 +74,11 @@ public class FBDataSourceImpl implements IFBDataSource {
         fbDataSource.close();
     }
 
-    public void setTransactionParameters(Connection connection, biz.redsoft.TransactionParameterBuffer tpb) throws SQLException {
+    public void setTransactionParameters(Connection connection, biz.redsoft.ITPB tpb) throws SQLException {
         if (connection instanceof FBConnection) {
             org.firebirdsql.gds.TransactionParameterBuffer tpbx = new TransactionParameterBufferImpl();
             if (tpb != null && tpbx != null)
-                ((FBConnection) connection).setTransactionParameters(((CustomTransactionParameterBufferImpl) tpb).getTpb());
+                ((FBConnection) connection).setTransactionParameters(((ITPBImpl) tpb).getTpb());
         }
     }
 }

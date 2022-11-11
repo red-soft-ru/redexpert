@@ -1174,6 +1174,68 @@ public final class SQLUtils {
         return sb.toString();
     }
 
+    public static String generateAlterUser(DefaultDatabaseUser thisUser, DefaultDatabaseUser compareUser, boolean setComment) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER USER ").append(format(thisUser.getName()));
+        String noChangesCheckString = sb.toString();
+
+        if (!Objects.equals(thisUser.getFirstName(), compareUser.getFirstName()))
+            sb.append("\n\tFIRSTNAME '").append(compareUser.getFirstName()).append("'");
+
+        if (!Objects.equals(thisUser.getMiddleName(), compareUser.getMiddleName()))
+            sb.append("\n\tMIDDLENAME '").append(compareUser.getMiddleName()).append("'");
+
+        if (!Objects.equals(thisUser.getLastName(), compareUser.getLastName()))
+            sb.append("\n\tLASTNAME '").append(compareUser.getLastName()).append("'");
+
+        if (!Objects.equals(thisUser.getPassword(), compareUser.getPassword()))
+            if (!Objects.equals(compareUser.getPassword(), ""))
+                sb.append("\n\tPASSWORD '").append(compareUser.getPassword()).append("'");
+
+        if (thisUser.getActive() != compareUser.getActive())
+            sb.append(compareUser.getActive() ? "\n\tACTIVE" : "\n\tINACTIVE");
+
+        if (thisUser.getAdministrator() != compareUser.getAdministrator())
+            sb.append(compareUser.getAdministrator() ? "\n\tGRANT ADMIN ROLE" : "\n\tREVOKE ADMIN ROLE");
+
+        if (!Objects.equals(thisUser.getPlugin(), compareUser.getPlugin()))
+            if (!Objects.equals(compareUser.getPlugin(), "") && compareUser.getPlugin() != null)
+                sb.append("\nUSING PLUGIN ").append(compareUser.getPlugin());
+
+        Map<String, String> thisTags = thisUser.getTags();
+        Map<String, String> compareTags = compareUser.getTags();
+
+        if (!thisTags.equals(compareTags)) {
+            sb.append("\n\tTAGS (");
+
+            for (String tag : thisTags.keySet())
+                if (!compareTags.containsKey(tag))
+                    sb.append("DROP ").append(tag).append(", ");
+
+            for (String tag : compareTags.keySet())
+                sb.append(tag).append(" = '").append(compareTags.get(tag)).append("', ");
+
+            sb.deleteCharAt(sb.lastIndexOf(",")).append(" )");
+        }
+
+        if (noChangesCheckString.equals(sb.toString()))
+            sb = new StringBuilder();
+        else
+            sb.append(";\n");
+
+        if (setComment && !Objects.equals(thisUser.getComment(), compareUser.getComment())) {
+            sb.append("COMMENT ON USER ").append(format(thisUser.getName())).append(" IS ");
+            if (!Objects.equals(compareUser.getComment(), "") && compareUser.getComment() != null)
+                sb.append("'").append(compareUser.getComment()).append("'");
+            else
+                sb.append("NULL");
+        }
+
+        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */";
+    }
+
+
     public static String generateAlterTablespace(
             DefaultDatabaseTablespace thisTablespace, DefaultDatabaseTablespace comparingTablespace) {
 

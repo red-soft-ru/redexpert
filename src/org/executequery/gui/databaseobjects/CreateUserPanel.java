@@ -215,7 +215,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
                 user.setTag(tag, value);
         }
 
-        return editing ? SQLUtils.generateAlterUser(beginUser, user) : SQLUtils.generateCreateUser(user, true);
+        return editing ? SQLUtils.generateAlterUser(beginUser, user, true) : SQLUtils.generateCreateUser(user, true);
     }
 
     protected void generateSQL() {

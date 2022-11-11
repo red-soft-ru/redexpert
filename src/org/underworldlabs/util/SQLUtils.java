@@ -940,6 +940,7 @@ public final class SQLUtils {
                 sb.append("DROP DEFAULT\n");
 
             else {
+
                 sb.append("SET DEFAULT ");
                 if (domainData.getDefaultValue().getValue().toUpperCase().trim().equals("NULL"))
                     sb.append("NULL");
@@ -959,7 +960,7 @@ public final class SQLUtils {
             sb.append("NOT NULL\n");
 
         }
-        if (!MiscUtils.compareStrings(thisDomainData.getCheck(), domainData.getCheck())) {
+        if (!Objects.equals(thisDomainData.getCheck(), domainData.getCheck())) {
 
             sb.append("DROP CONSTRAINT\n");
             if (!MiscUtils.isNull(domainData.getCheck()))
@@ -967,13 +968,69 @@ public final class SQLUtils {
 
         }
 
-        if (!MiscUtils.compareStrings(thisDomainData.getDomainTypeName(), domainData.getDomainTypeName()))
+        if (!Objects.equals(thisDomainData.getDomainTypeName(), domainData.getDomainTypeName()))
             sb.append("TYPE ").append(domainData.getDomainTypeName());
 
         if (noChangesCheckString.equals(sb.toString()))
-            return "/* there are no changes */\n";
-        return sb.append(";\n").toString();
+            sb = new StringBuilder();
+        else
+            sb.append(";\n");
+
+        if (!Objects.equals(thisDomainData.getDescription(), domainData.getDescription())) {
+            sb.append("COMMENT ON DOMAIN ").append(thisDomainData.getFormattedColumnName()).append(" IS ");
+            if (!Objects.equals(domainData.getDescription(), "") && domainData.getDescription() != null)
+                sb.append("'").append(domainData.getDescription()).append("'");
+            else
+                sb.append("NULL");
+        }
+
+        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */";
     }
+
+    public static String generateAlterDomain(ColumnData columnData, String domainName) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER DOMAIN ").append(format(domainName)).append("\n");
+        String noChangesCheckString = sb.toString();
+
+        if (columnData.isNameChanged())
+            sb.append("TO ").append(columnData.getFormattedColumnName()).append("\n");
+
+        if (columnData.isDefaultChanged())
+            if (!MiscUtils.isNull(columnData.getDefaultValue().getValue()))
+                sb.append("SET DEFAULT ").append(MiscUtils.formattedSQLValue(
+                        columnData.getDefaultValue(), columnData.getSQLType())).append("\n");
+            else
+                sb.append("DROP DEFAULT\n");
+
+        if (columnData.isRequiredChanged())
+            sb.append(columnData.isRequired() ? "SET" : "DROP").append(" NOT NULL\n");
+
+        if (columnData.isCheckChanged()) {
+            sb.append("DROP CONSTRAINT\n");
+            if (!MiscUtils.isNull(columnData.getCheck()))
+                sb.append("ADD CHECK (").append(columnData.getCheck()).append(")\n");
+        }
+
+        if (columnData.isTypeChanged())
+            sb.append("TYPE ").append(columnData.getFormattedDataType());
+
+        if (noChangesCheckString.equals(sb.toString()))
+            sb = new StringBuilder();
+        else
+            sb.append(";\n");
+
+        if (columnData.isDescriptionChanged()) {
+            sb.append("COMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS ");
+            if (columnData.getDescription() != null)
+                sb.append("'").append(columnData.getDescription()).append("'");
+            else
+                sb.append("NULL");
+        }
+
+        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */";
+    }
+
 
     public static String generateAlterTable(
             DefaultDatabaseTable thisTable, DefaultDatabaseTable comparingTable,

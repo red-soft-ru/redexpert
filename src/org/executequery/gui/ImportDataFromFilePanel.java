@@ -45,8 +45,7 @@ import java.util.*;
  */
 
 public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
-        implements NamedView,
-        ConnectionListener {
+        implements NamedView, ConnectionListener {
 
     public static final String TITLE = bundledString("Title");
     public static final String FRAME_ICON = "ImportDelimited16.png";
@@ -203,9 +202,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 bundledString("StartImportButtonText"), "startImport");
 
         connectionComboChanged();
-
         componentsArranging();
-
     }
 
     private void componentsArranging() {
@@ -222,16 +219,12 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        JScrollPane outputPanelWithScrolls = new JScrollPane(outputPanel,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-
         FlatSplitPane splitPane = new FlatSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT, dataPreviewTextAreaWithScrolls, columnMappingTableWithScrolls);
         splitPane.setResizeWeight(0.5);
 
         FlatSplitPane bigSplitPane = new FlatSplitPane(
-                JSplitPane.VERTICAL_SPLIT, splitPane, outputPanelWithScrolls);
+                JSplitPane.VERTICAL_SPLIT, splitPane, outputPanel);
         splitPane.setResizeWeight(0.5);
 
         // ---------------------------------------------
@@ -337,7 +330,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     public void browse() {
 
         if (sourceCombo.getSelectedIndex() == 0) {
-
             GUIUtilities.displayWarningMessage(bundledString("SelectFileTypeMessage"));
             return;
         }
@@ -355,18 +347,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         int result = fileChooser.showDialog(
                 GUIUtilities.getInFocusDialogOrWindow(), bundledString("OpenFileDialogButton"));
-        if (result == JFileChooser.CANCEL_OPTION) {
-
+        if (result == JFileChooser.CANCEL_OPTION)
             return;
-        }
 
         File file = fileChooser.getSelectedFile();
         if (!file.exists()) {
-
             GUIUtilities.displayWarningMessage(
                     bundledString("FileDoesNotExistMessage") + "\n" + fileNameField.getText());
             return;
-
         }
 
         fileNameField.setText(file.getAbsolutePath());
@@ -377,7 +365,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         pathToFile = fileNameField.getText();
 
         if (pathToFile.isEmpty()) {
-
             GUIUtilities.displayWarningMessage(bundledString("NoFileSelectedMessage"));
             return;
         }
@@ -419,10 +406,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     public void fillMappingTable() {
 
-        if (!fillMappingTableAllowed(true)) {
-
+        if (!fillMappingTableAllowed(true))
             return;
-        }
 
         // ----------- erasing ColumnMappingTable -----------
 
@@ -433,10 +418,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         JComboBox sourceComboBox = new JComboBox();
         sourceComboBox.addItem(NOTHING_HEADER);
 
-        for (String tempHeader : headersOfSourceArray) {
-
+        for (String tempHeader : headersOfSourceArray)
             sourceComboBox.addItem(tempHeader);
-        }
 
         // ----------- pasting source comboBox in ColumnMappingTable -----------
 
@@ -448,12 +431,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         List<DatabaseColumn> dbHostTableColumns = dbHost.getColumns(
                 null, null, Objects.requireNonNull(tableCombo.getSelectedItem()).toString());
 
-        for (DatabaseColumn dbHostTableColumn : dbHostTableColumns) {
-
+        for (DatabaseColumn dbHostTableColumn : dbHostTableColumns)
             columnMappingTableModel.addRow(new Object[]{
                     dbHostTableColumn.getName(),
                     dbHostTableColumn.getTypeName()});
-        }
 
     }
 
@@ -488,7 +469,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             if (dataFromTableVector.get(i).get(2) != NOTHING_HEADER && dataFromTableVector.get(i).get(2) != null) {
 
                 targetColumnList.append(MiscUtils.getFormattedObject(dataFromTableVector.get(i).get(0).toString()));
-                sourceColumnList.append(MiscUtils.getFormattedObject(dataFromTableVector.get(i).get(2).toString()));
+                sourceColumnList.append(dataFromTableVector.get(i).get(2).toString());
 
                 targetColumnList.append(",");
                 sourceColumnList.append(",");
@@ -497,7 +478,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 valuesIndexes[i] = true;
 
             }
-
         }
 
         targetColumnList.deleteCharAt(targetColumnList.length() - 1);
@@ -521,7 +501,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         insertPattern.append(") VALUES (");
 
         while (valuesCount > 1) {
-
             insertPattern.append("?,");
             valuesCount--;
         }
@@ -557,21 +536,15 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 SwingWorker worker = new SwingWorker() {
                     @Override
                     public Object construct() {
-
                         insertCSV(sourceColumnList, valuesIndexes, insertStatement, executor);
-
                         return null;
                     }
 
+                    @Override
                     public void finished() {
-
-                        if (progressDialog != null) {
-
+                        if (progressDialog != null)
                             progressDialog.dispose();
-                        }
-
                     }
-
                 };
 
                 worker.start();
@@ -621,12 +594,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             Statement sourceFileStatement = readCSVFile();
 
-            if (sourceFileStatement == null) {
-
+            if (sourceFileStatement == null)
                 return;
-            }
 
-            String SQLSourceRequest = "SELECT " + sourceColumnList + " FROM " + MiscUtils.getFormattedObject(sourceFileName);
+            String SQLSourceRequest = "SELECT " + sourceColumnList.toString() + " FROM " + MiscUtils.getFormattedObject(sourceFileName);
             ResultSet sourceFileData = sourceFileStatement.executeQuery(SQLSourceRequest);
 
             String[] sourceFields = sourceColumnList.toString().split(",");
@@ -638,15 +609,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             while (sourceFileData.next()) {
 
-                if (progressDialog.isCancel()) {
-
+                if (progressDialog.isCancel())
                     break;
-                }
 
-                if (linesCount >= (int) lastImportSelector.getValue()) {
-
+                if (linesCount >= (int) lastImportSelector.getValue())
                     break;
-                }
 
                 if (linesCount >= (int) firstImportSelector.getValue()) {
 
@@ -703,10 +670,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
                                 param = LocalDateTime.parse(stringTimestamp, timestampFormat);
 
-                            } else {
-
+                            } else
                                 param = sourceFileData.getString(sourceFields[fieldIndex]);
-                            }
 
                             insertStatement.setObject(fieldIndex + 1, param);
                             fieldIndex++;
@@ -774,10 +739,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         tableCombo.removeAllItems();
         tableCombo.addItem(bundledString("SelectTable"));
-        for (String tableName : dbHost.getTableNames()) {
-
+        for (String tableName : dbHost.getTableNames())
             tableCombo.addItem(tableName);
-        }
 
         dbHost.close();
 
@@ -785,24 +748,18 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private void tableComboChanged() {
 
-        if (fillMappingTableAllowed(false)) {
-
+        if (fillMappingTableAllowed(false))
             fillMappingTable();
-        }
 
     }
 
     private void readDataPropsChanged() {
 
-        if (pathToFile != null) {
-
+        if (pathToFile != null)
             readFileForPreview();
-        }
 
-        if (fillMappingTableAllowed(false)) {
-
+        if (fillMappingTableAllowed(false))
             fillMappingTable();
-        }
 
     }
 
@@ -837,6 +794,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             for (int i = 0; i < PREVIEW_ROWS_COUNT; i++) {
 
+                if (readData[i] == null)
+                    continue;
+
                 dataPreviewTableModel.addRow(readData[i].split(
                         Objects.requireNonNull(delimiterCombo.getSelectedItem()).toString()));
             }
@@ -851,14 +811,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private String[] setSourceHeadersFromCSV() {
 
-        if (headersOfSourceArray == null) {
-
+        if (headersOfSourceArray == null)
             headersOfSourceArray = new ArrayList<>();
-
-        } else {
-
+        else
             headersOfSourceArray.clear();
-        }
 
         String[] readData = new String[PREVIEW_ROWS_COUNT];
 
@@ -879,19 +835,15 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
                         firstRowFromSource = tempRow;
 
-                        if (isFirstColumnNames.isSelected()) {
-
+                        if (isFirstColumnNames.isSelected())
                             tempRow = (scan.hasNextLine()) ? scan.nextLine() : "";
-                        }
 
                     }
 
                     readData[i] = tempRow;
 
-                } else {
-
+                } else
                     break;
-                }
 
             }
 
@@ -900,19 +852,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             String[] firstRowFromSourceArray = firstRowFromSource.split(
                     Objects.requireNonNull(delimiterCombo.getSelectedItem()).toString());
 
-            if (isFirstColumnNames.isSelected()) {
-
+            if (isFirstColumnNames.isSelected())
                 headersOfSourceArray.addAll(Arrays.asList(firstRowFromSourceArray));
-
-            } else {
-
-                for (int i = 0; i < firstRowFromSourceArray.length; i++) {
-
-                    String tempHeaderName = "COLUMN_" + (i + 1);
-
-                    headersOfSourceArray.add(tempHeaderName);
-                }
-            }
+            else
+                for (int i = 0; i < firstRowFromSourceArray.length; i++)
+                    headersOfSourceArray.add("COLUMN" + (i + 1));
 
         } catch (FileNotFoundException e) {
 
@@ -946,23 +890,12 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         try {
 
             Properties properties = new Properties();
-            int headersArraySize = headersOfSourceArray.size();
 
             // ----------- columns headers propriety -----------
 
             if (!isFirstColumnNames.isSelected()) {
-
-                StringBuilder headerPropriety = new StringBuilder();
-
-                for (int i = 0; i < headersArraySize - 1; i++) {
-
-                    headerPropriety.append(headersOfSourceArray.get(i)).append(",");
-                }
-                headerPropriety.append(headersOfSourceArray.get(headersArraySize - 1));
-
                 properties.setProperty("suppressHeaders", "true");
-                properties.setProperty("headerline", headerPropriety.toString());
-
+                properties.setProperty("defectiveHeaders", "true");
             }
 
             // ----------- separator propriety -----------
@@ -972,14 +905,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             // ----------- open source connection -----------
 
             String connectionUrl = "jdbc:relique:csv:";
-            if (UIUtils.isWindows()) {
-
+            if (UIUtils.isWindows())
                 connectionUrl += directoryOfFile.replace("\\", "/");
-
-            } else {
-
+            else
                 connectionUrl += directoryOfFile;
-            }
 
             connection = DriverManager.getConnection(connectionUrl, properties);
             statement = connection.createStatement();
@@ -995,7 +924,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             Log.error("ImportDataFromFilePanel: reading CSV file was stopped due to an error", e);
 
             return null;
-
         }
 
     }
@@ -1007,32 +935,20 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     public boolean fillMappingTableAllowed(boolean returnMessages) {
 
         if (headersOfSourceArray == null) {
-
-            if (returnMessages) {
-                GUIUtilities.displayWarningMessage(
-                        bundledString("ReadFileMessage"));
-            }
-
+            if (returnMessages)
+                GUIUtilities.displayWarningMessage(bundledString("ReadFileMessage"));
             return false;
         }
 
         if (tableCombo.getSelectedIndex() == 0) {
-
-            if (returnMessages) {
-                GUIUtilities.displayWarningMessage(
-                        bundledString("SelectTableMessage"));
-            }
-
+            if (returnMessages)
+                GUIUtilities.displayWarningMessage(bundledString("SelectTableMessage"));
             return false;
         }
 
         if ((delimiterCombo.getSelectedIndex() == 0) && (sourceCombo.getSelectedItem() == "csv")) {
-
-            if (returnMessages) {
-                GUIUtilities.displayWarningMessage(
-                        bundledString("SelectDelimiterMessage"));
-            }
-
+            if (returnMessages)
+                GUIUtilities.displayWarningMessage(bundledString("SelectDelimiterMessage"));
             return false;
         }
 

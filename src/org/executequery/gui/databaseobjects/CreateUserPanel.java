@@ -205,64 +205,17 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         user.setActive(activeBox.isSelected());
         user.setAdministrator(adminBox.isSelected());
         user.setTags(new HashMap<>());
+
         for (int i = 0; i < tagTable.getRowCount(); i++) {
+
             String tag = tagTable.getModel().getValueAt(i, 0).toString();
             String value = tagTable.getModel().getValueAt(i, 1).toString();
-            if (tag != null && !tag.isEmpty() && value != null && !value.isEmpty()) {
+
+            if (tag != null && !tag.isEmpty() && value != null && !value.isEmpty())
                 user.setTag(tag, value);
-            }
         }
-        StringBuilder sb = new StringBuilder();
-        if (editing) {
-            sb.append("ALTER");
-            sb.append(" USER ").append(MiscUtils.getFormattedObject(user.getName()));
-            if (!Objects.equals(user.getFirstName(), beginUser.getFirstName()))
-                sb.append("\nFIRSTNAME '").append(user.getFirstName()).append("'");
-            if (!Objects.equals(user.getMiddleName(), beginUser.getMiddleName()))
-                sb.append("\nMIDDLENAME '").append(user.getMiddleName()).append("'");
-            if (!Objects.equals(user.getLastName(), beginUser.getLastName()))
-                sb.append("\nLASTNAME '").append(user.getLastName()).append("'");
-            if (!MiscUtils.isNull(user.getPassword())) {
-                sb.append("\nPASSWORD '").append(user.getPassword()).append("'");
-            }
-            if (user.getActive() != beginUser.getActive()) {
-                if (user.getActive()) {
-                    sb.append("\nACTIVE");
-                } else {
-                    sb.append("\nINACTIVE");
-                }
-            }
-            if (user.getAdministrator() != beginUser.getAdministrator())
-                if (user.getAdministrator()) {
-                    sb.append("\nGRANT ADMIN ROLE");
-                } else {
-                    sb.append("\nREVOKE ADMIN ROLE");
-                }
-            if (!user.getPlugin().equals(""))
-                sb.append("\nUSING PLUGIN ").append(user.getPlugin());
-            Map<String, String> tags = user.getTags();
-            Map<String, String> tags1 = beginUser.getTags();
-            if (!tags.equals(tags1)) {
-                sb.append("\nTAGS (");
-                for (String tag : tags1.keySet()) {
-                    if (!tags.containsKey(tag)) {
-                        sb.append("DROP ").append(tag).append(" , ");
-                    }
-                }
-                boolean first = true;
-                for (String tag : tags.keySet()) {
-                    if (!first)
-                        sb.append(", ");
-                    first = false;
-                    sb.append(tag).append(" = '").append(tags.get(tag)).append("'");
-                }
-                sb.append(" )");
-            }
-            sb.append(";\n");
-            if (!Objects.equals(user.getComment(), beginUser.getComment()) && !(beginUser.getComment() == null && MiscUtils.isNull(user.getComment())))
-                sb.append("COMMENT ON USER ").append(MiscUtils.getFormattedObject(user.getName())).append(" is '").append(user.getComment()).append("'");
-        } else sb.append(SQLUtils.generateCreateUser(user, true));
-        return sb.toString();
+
+        return editing ? SQLUtils.generateAlterUser(beginUser, user) : SQLUtils.generateCreateUser(user, true);
     }
 
     protected void generateSQL() {

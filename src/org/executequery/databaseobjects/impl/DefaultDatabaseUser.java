@@ -3,6 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
@@ -216,12 +217,12 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     public String getCreateSQLText() throws DataSourceException {
-        return SQLUtils.generateCreateUser(this);
+        return SQLUtils.generateCreateUser(this, true);
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateSQLText();
+        return SQLUtils.generateCreateUser(this, Comparer.COMMENTS_NEED);
     }
 
     @Override
@@ -230,8 +231,8 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCreateSQLText().
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return databaseObject.getCompareCreateSQL().
                 replaceFirst("CREATE OR ", "").
                 replaceFirst("CREATE", "ALTER");
     }

@@ -22,6 +22,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.ProcedureParameter;
@@ -78,14 +79,15 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateProcedure(getName(), getEntryPoint(), getEngine(), getParameters(), getSourceCode(), getRemarks(), getHost().getDatabaseConnection(), false);
+        return SQLUtils.generateCreateProcedure(getName(), getEntryPoint(), getEngine(), getParameters(),
+                getSourceCode(), getRemarks(), getHost().getDatabaseConnection(), false, true);
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
         return SQLUtils.generateCreateProcedure(
                 getName(), getEntryPoint(), getEngine(), getParameters(), getSourceCode(),
-                getRemarks(), getHost().getDatabaseConnection(), true);
+                getRemarks(), getHost().getDatabaseConnection(), true, Comparer.COMMENTS_NEED);
     }
 
     @Override
@@ -94,8 +96,8 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     @Override
-    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCreateSQLText().
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return databaseObject.getCompareCreateSQL().
                 replaceFirst("CREATE OR ", "").
                 replaceFirst("CREATE", "ALTER");
     }

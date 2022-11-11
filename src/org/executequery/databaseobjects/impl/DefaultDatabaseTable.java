@@ -792,19 +792,26 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return sb.toString();
     }
 
+    @Override
     public String getCreateSQLText() throws DataSourceException {
 
         updateListCD();
         updateListCC();
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, false, false,
+                getName(), listCD, listCC, true, false, true, true,
                 null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateSQLText();
+
+        updateListCD();
+        updateListCC();
+
+        return SQLUtils.generateCreateTable(
+                getName(), listCD, listCC, true, false, false, Comparer.COMMENTS_NEED,
+                null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
     @Override
@@ -813,7 +820,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
-    public String getAlterSQL(AbstractDatabaseObject databaseObject) {
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultDatabaseTable comparingTable = (DefaultDatabaseTable) databaseObject;
         return SQLUtils.generateAlterTable(this, comparingTable, false, Comparer.TABLE_CONSTRAINTS_NEED);
     }
@@ -944,7 +951,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         updateListCC();
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, false, true,
+                getName(), listCD, listCC, true, false, true, true,
                 null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 

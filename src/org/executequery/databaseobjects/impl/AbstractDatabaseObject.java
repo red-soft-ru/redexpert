@@ -566,8 +566,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     public abstract String getCreateSQLText() throws DataSourceException;
     public abstract String getDropSQL() throws DataSourceException;
-    public abstract String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException;
     public abstract String getCompareCreateSQL() throws DataSourceException;
+    public abstract String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException;
     public abstract String getFillSQL() throws DataSourceException;
 
     public int getDatabaseMajorVersion() {

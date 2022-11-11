@@ -4,6 +4,8 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.executequery.gui.browser.ComparerDBPanel;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
@@ -133,7 +135,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return this.getCreateSQLText();
+        String comment = Comparer.COMMENTS_NEED ? getDescription() : null;
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), comment);
     }
 
     @Override
@@ -142,8 +145,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     @Override
-    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCreateSQLText().
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return databaseObject.getCompareCreateSQL().
                 replaceFirst("CREATE OR ", "").
                 replaceFirst("CREATE", "ALTER");
     }

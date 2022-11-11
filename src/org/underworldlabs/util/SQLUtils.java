@@ -22,8 +22,8 @@ public final class SQLUtils {
 
     public static String generateCreateTable(
             String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,
-            boolean existTable, boolean temporary, boolean constraints, String typeTemporary, String externalFile,
-            String adapter, String tablespace, String comment) {
+            boolean existTable, boolean temporary, boolean constraints, boolean setComment,
+            String typeTemporary, String externalFile, String adapter, String tablespace, String comment) {
 
         StringBuilder sb = new StringBuilder();
         StringBuilder sqlText = new StringBuilder();
@@ -90,7 +90,8 @@ public final class SQLUtils {
 
         if (constraints)
             for (ColumnConstraint columnConstraint : columnConstraintList)
-                sb.append(generateDefinitionColumnConstraint(columnConstraint, true).replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
+                sb.append(generateDefinitionColumnConstraint(columnConstraint, true)
+                        .replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
 
         sb.append(CreateTableSQLSyntax.B_CLOSE);
 
@@ -100,12 +101,14 @@ public final class SQLUtils {
         if (temporary)
             sb.append("\n").append(typeTemporary);
 
-        sb.append(";\n").append(description);
+        sb.append(";");
 
         if (autoincrementSQLText != null)
             sb.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, format(name))).append(NEW_LINE);
-        if (comment != null)
+        if (setComment && !MiscUtils.isNull(comment) && !comment.equals("")) {
+            sb.append(description);
             sb.append("COMMENT ON TABLE ").append(name).append(" IS '").append(comment).append("';\n");
+        }
 
         return sb.toString();
     }
@@ -415,17 +418,20 @@ public final class SQLUtils {
     }
 
     public static String generateCreateProcedure(
-            String name, String entryPoint, String engine, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters,
-            Vector<ColumnData> variables, String procedureBody, String comment, boolean setTerm) {
+            String name, String entryPoint, String engine, Vector<ColumnData> inputParameters,
+            Vector<ColumnData> outputParameters, Vector<ColumnData> variables, String procedureBody,
+            String comment, boolean setTerm, boolean setComment) {
 
         StringBuilder sb = new StringBuilder();
         sb.append(formattedParameters(variables, true));
         sb.append(procedureBody);
-        return generateCreateProcedure(name, entryPoint, engine, inputParameters, outputParameters, sb.toString(), comment, setTerm);
+        return generateCreateProcedure(name, entryPoint, engine, inputParameters,
+                outputParameters, sb.toString(), comment, setTerm, setComment);
     }
 
     public static String generateCreateProcedure(
-            String name, String entryPoint, String engine, List<ProcedureParameter> parameters, String fullProcedureBody, String comment, DatabaseConnection dc, boolean setTerm) {
+            String name, String entryPoint, String engine, List<ProcedureParameter> parameters,
+            String fullProcedureBody, String comment, DatabaseConnection dc, boolean setTerm, boolean setComment) {
 
         Vector<ColumnData> inputs = new Vector<>();
         Vector<ColumnData> outputs = new Vector<>();
@@ -438,12 +444,14 @@ public final class SQLUtils {
                 outputs.add(cd);
         }
 
-        return generateCreateProcedure(name, entryPoint, engine, inputs, outputs, fullProcedureBody, comment, setTerm);
+        return generateCreateProcedure(name, entryPoint, engine, inputs, outputs,
+                fullProcedureBody, comment, setTerm, setComment);
     }
 
     public static String generateCreateProcedure(
             String name, String entryPoint, String engine, Vector<ColumnData> inputParameters,
-            Vector<ColumnData> outputParameters, String fullProcedureBody, String comment, boolean setTerm) {
+            Vector<ColumnData> outputParameters, String fullProcedureBody,
+            String comment, boolean setTerm, boolean setComment) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -471,10 +479,11 @@ public final class SQLUtils {
             sb.append("#\nSET TERM ;#");
         sb.append("\n");
 
-        // add procedure description
-        sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^"));
-        sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
-        sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
+        if (setComment) {
+            sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^"));
+            sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
+            sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
+        }
 
         return sb.toString();
     }
@@ -536,18 +545,20 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateCreateFunction(String name, Vector<ColumnData> argumentList, Vector<ColumnData> variables, ColumnData returnType, String functionBody, String entryPoint, String engine, String comment) {
+    public static String generateCreateFunction(
+            String name, Vector<ColumnData> argumentList, Vector<ColumnData> variables, ColumnData returnType,
+            String functionBody, String entryPoint, String engine, String comment, boolean setComment) {
         StringBuilder sb = new StringBuilder();
         sb.append(formattedParameters(variables, true));
         sb.append(functionBody);
-        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, comment);
+        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, comment, setComment);
     }
 
 
 
     public static String generateCreateFunction(
             String name, List<FunctionArgument> argumentList, String fullFunctionBody,
-            String entryPoint, String engine, String comment, DatabaseConnection dc) {
+            String entryPoint, String engine, String comment, boolean setComment, DatabaseConnection dc) {
 
         Vector<ColumnData> inputs = new Vector<>();
         ColumnData returnType = null;
@@ -560,12 +571,12 @@ public final class SQLUtils {
                 returnType = columnDataFromProcedureParameter(parameter, dc, false);
         }
 
-        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, comment);
+        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, comment, setComment);
     }
 
     public static String generateCreateFunction(
             String name, Vector<ColumnData> inputArguments, ColumnData returnType,
-            String fullFunctionBody, String entryPoint, String engine, String comment) {
+            String fullFunctionBody, String entryPoint, String engine, String comment, boolean setComment) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -581,8 +592,10 @@ public final class SQLUtils {
         } else
             sb.append(generateSQLBody(fullFunctionBody));
 
-        sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^"));
-        sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
+        if (setComment) {
+            sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^"));
+            sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
+        }
 
         return sb.toString();
     }
@@ -843,31 +856,35 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateCreateDomain(ColumnData columnData, String name, boolean useDomainType) {
+    public static String generateCreateDomain(
+            ColumnData columnData, String name, boolean useDomainType, boolean setComment) {
+
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE DOMAIN ").append(name).append(" AS ");
+
         if (useDomainType)
             sb.append(columnData.getFormattedDomainDataType());
-        else sb.append(columnData.getFormattedDataType());
+        else
+            sb.append(columnData.getFormattedDataType());
+
         sb.append("\n");
-        if (!MiscUtils.isNull(columnData.getDefaultValue().getValue())) {
+        if (!MiscUtils.isNull(columnData.getDefaultValue().getValue()))
             sb.append(MiscUtils.formattedDefaultValue(columnData.getDefaultValue(), columnData.getSQLType()));
-        }
         sb.append(columnData.isRequired() ? " NOT NULL" : "");
-        if (!MiscUtils.isNull(columnData.getCheck())) {
+        if (!MiscUtils.isNull(columnData.getCheck()))
             sb.append(" CHECK (").append(columnData.getCheck()).append(")");
-        }
         if (columnData.getCollate() != null && !columnData.getCollate().trim().contentEquals("NONE"))
             sb.append(" COLLATE ").append(columnData.getCollate());
         sb.append(";");
-        if (!MiscUtils.isNull(columnData.getDescription())) {
+
+        if (setComment && !MiscUtils.isNull(columnData.getDescription()))
             sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS '")
                     .append(columnData.getDescription()).append("';");
-        }
+
         return sb.toString();
     }
 
-    public static String generateCreateUser(DefaultDatabaseUser user) {
+    public static String generateCreateUser(DefaultDatabaseUser user, boolean setComment) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE");
         sb.append(" USER ").append(format(user.getName()));
@@ -903,7 +920,7 @@ public final class SQLUtils {
             sb.append(" )");
         }
         sb.append(";\n");
-        if (!MiscUtils.isNull(user.getComment()))
+        if (setComment && !MiscUtils.isNull(user.getComment()))
             sb.append("COMMENT ON USER ").append(format(user.getName())).append(" is '").append(user.getComment()).append("'");
         return sb.toString();
     }

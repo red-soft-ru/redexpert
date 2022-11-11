@@ -198,7 +198,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
                     ((DefaultDatabaseDomain)(ConnectionsTreePanel
                             .getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain))).getDomainData(), columnData);
         } else {
-            return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false);
+            return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false, true);
         }
     }
 }

@@ -154,7 +154,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                 nameField.getText(), externalField.getText(), engineField.getText(),
                 inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 outputParametersPanel.getProcedureParameterModel().getTableVector(),
-                vars, sqlBodyText.getSQLText(), descriptionArea.getTextAreaComponent().getText(), false);
+                vars, sqlBodyText.getSQLText(), descriptionArea.getTextAreaComponent().getText(),
+                false, true);
     }
 
 

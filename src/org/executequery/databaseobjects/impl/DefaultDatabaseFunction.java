@@ -24,6 +24,7 @@ import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.FunctionArgument;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
@@ -111,7 +112,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
      */
 
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(), getEngine(), getRemarks(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(),
+                getEntryPoint(), getEngine(), getRemarks(), true, getHost().getDatabaseConnection());
     }
 
     @Override
@@ -217,7 +219,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return this.getCreateSQLText();
+        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(),
+                getEntryPoint(), getEngine(), getRemarks(), Comparer.COMMENTS_NEED, getHost().getDatabaseConnection());
     }
 
     @Override
@@ -226,8 +229,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     @Override
-    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCreateSQLText().
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return databaseObject.getCompareCreateSQL().
                 replaceFirst("CREATE OR ", "").
                 replaceFirst("CREATE", "ALTER");
     }

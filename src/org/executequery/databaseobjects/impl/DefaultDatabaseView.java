@@ -24,6 +24,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
@@ -50,27 +51,8 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
     }
 
     public String getCreateSQLText() throws DataSourceException {
-
-        String fields = null;
-
-        try {
-
-            List<DatabaseColumn> columns = getColumns();
-            if (columns != null) {
-                fields = "";
-
-                for (int i = 0; i < columns.size(); i++) {
-                    fields += MiscUtils.getFormattedObject(columns.get(i).getName());
-                    if (i != columns.size() - 1)
-                        fields += ", ";
-                }
-            }
-
-        } catch (Exception ignored) {
-        }
-
-        return getFormatter().format(SQLUtils.generateCreateView(getName(), fields, getSource(),
-                getRemarks(), getDatabaseMajorVersion(), false));
+        return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
+                getRemarks(), getDatabaseMajorVersion(), false);
     }
 
     public String getSelectSQLText() {
@@ -168,7 +150,9 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return this.getCreateSQLText();
+        String comment = Comparer.COMMENTS_NEED ? getRemarks() : null;
+        return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
+                comment, getDatabaseMajorVersion(), false);
     }
 
     @Override
@@ -177,8 +161,8 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
     }
 
     @Override
-    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCreateSQLText().
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return databaseObject.getCompareCreateSQL().
                 replaceFirst("CREATE OR ", "").
                 replaceFirst("CREATE", "ALTER");
     }
@@ -195,6 +179,28 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         } else {
             return VIEW;
         }
+    }
+
+    private String getCreateFields() {
+
+        String fields = null;
+
+        try {
+
+            List<DatabaseColumn> columns = getColumns();
+            if (columns != null) {
+                fields = "";
+
+                for (int i = 0; i < columns.size(); i++) {
+                    fields += MiscUtils.getFormattedObject(columns.get(i).getName());
+                    if (i != columns.size() - 1)
+                        fields += ", ";
+                }
+            }
+
+        } catch (Exception ignored) {}
+
+        return fields;
     }
 
     public String getMetaDataKey() {

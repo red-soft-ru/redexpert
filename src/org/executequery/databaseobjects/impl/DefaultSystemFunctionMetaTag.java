@@ -139,7 +139,7 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
     }
 
     @Override
-    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return null;
     }
 

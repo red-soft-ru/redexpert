@@ -184,7 +184,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     protected String generateQuery() {
         return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 variablesPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
-                externalField.getText(), engineField.getText(), descriptionArea.getTextAreaComponent().getText());
+                externalField.getText(), engineField.getText(), descriptionArea.getTextAreaComponent().getText(), true);
     }
 
     @Override

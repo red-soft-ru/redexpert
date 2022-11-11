@@ -18,6 +18,7 @@ import java.util.*;
 public class Comparer {
 
     public static boolean TABLE_CONSTRAINTS_NEED;
+    public static boolean COMMENTS_NEED;
 
     protected Role role;
     protected Udf udf;
@@ -142,7 +143,7 @@ public class Comparer {
 
         for (NamedObject obj : alterObjects.keySet()) {
             script.add("\n/* " + obj.getName() + " */");
-            script.add("\n" + ((AbstractDatabaseObject) obj).getAlterSQL((AbstractDatabaseObject) alterObjects.get(obj)));
+            script.add("\n" + ((AbstractDatabaseObject) obj).getCompareAlterSQL((AbstractDatabaseObject) alterObjects.get(obj)));
             lists += "\t" + obj.getName() + "\n";
         }
     }

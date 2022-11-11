@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
@@ -211,7 +212,18 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateSQLText();
+        String query = "";
+        String comment = Comparer.COMMENTS_NEED ? getRemarks() : null;
+        try {
+            query = SQLUtils.generateCreateSequence(getName(), getSequenceFirstValue(),
+                    getIncrement(), comment, getVersion(), false);
+
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            e.printStackTrace();
+        }
+
+        return query;
     }
 
     @Override
@@ -220,7 +232,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseSequence comparingSequence = (DefaultDatabaseSequence) databaseObject;
         return SQLUtils.generateAlterSequence(this, comparingSequence);
     }
@@ -228,19 +240,6 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     @Override
     public String getFillSQL() throws DataSourceException {
         return null;
-    }
-
-    public String getAlterSQLText() {
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("Alter sequence ");
-        sb.append(getName());
-        sb.append(" restart with ");
-        sb.append(getSequenceFirstValue());
-        sb.append(";");
-
-        return sb.toString();
     }
 
     @Override

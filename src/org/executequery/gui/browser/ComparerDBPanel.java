@@ -138,6 +138,7 @@ public class ComparerDBPanel extends JPanel {
         propertiesCheckBoxMap.put(2, new JCheckBox(bundleString("CheckDrop")));
 //        propertiesCheckBoxMap.put(3, new JCheckBox(bundleString("SafeTypeConversion")));
         propertiesCheckBoxMap.put(4, new JCheckBox(bundleString("IgnoreTablesConstraints")));
+        propertiesCheckBoxMap.put(5, new JCheckBox(bundleString(("IgnoreComments"))));
 
         // --- comboBoxes defining ---
 
@@ -268,6 +269,7 @@ public class ComparerDBPanel extends JPanel {
                 databaseConnectionList.get(dbCompareComboBox.getSelectedIndex()),
                 databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()));
         Comparer.TABLE_CONSTRAINTS_NEED = !propertiesCheckBoxMap.get(4).isSelected();
+        Comparer.COMMENTS_NEED = !propertiesCheckBoxMap.get(5).isSelected();
 
         loggingOutputPanel.clear();
         loggingOutputPanel.append(WELCOME_TEXT);
@@ -327,6 +329,8 @@ public class ComparerDBPanel extends JPanel {
         settingScriptProps.append("';\nSET AUTO DDL ON;\n");
 
         comparer.addToScript(settingScriptProps.toString());
+
+        // ----- comparing -----
 
         if (propertiesCheckBoxMap.get(0).isSelected() && !progressDialog.isCancel()) {
 

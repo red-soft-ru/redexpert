@@ -261,7 +261,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
             sb.append(";\n");
             if (!Objects.equals(user.getComment(), beginUser.getComment()) && !(beginUser.getComment() == null && MiscUtils.isNull(user.getComment())))
                 sb.append("COMMENT ON USER ").append(MiscUtils.getFormattedObject(user.getName())).append(" is '").append(user.getComment()).append("'");
-        } else sb.append(SQLUtils.generateCreateUser(user));
+        } else sb.append(SQLUtils.generateCreateUser(user, true));
         return sb.toString();
     }
 

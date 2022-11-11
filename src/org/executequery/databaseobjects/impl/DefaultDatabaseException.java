@@ -93,7 +93,7 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseException comparingException = (DefaultDatabaseException) databaseObject;
         return SQLUtils.generateAlterException(this, comparingException);
     }

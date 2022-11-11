@@ -4,6 +4,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
@@ -87,12 +88,12 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true);
+        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true, true);
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return this.getCreateSQLText();
+        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true, Comparer.COMMENTS_NEED);
     }
 
     @Override
@@ -101,7 +102,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseDomain comparingDomain = (DefaultDatabaseDomain) databaseObject;
         return SQLUtils.generateAlterDomain(getDomainData(), comparingDomain.getDomainData());
     }

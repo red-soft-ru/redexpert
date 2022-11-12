@@ -1034,7 +1034,7 @@ public final class SQLUtils {
 
     public static String generateAlterTable(
             DefaultDatabaseTable thisTable, DefaultDatabaseTable comparingTable,
-            boolean temporary, boolean constraints) {
+            boolean temporary, boolean[] constraints) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -1076,13 +1076,20 @@ public final class SQLUtils {
                                 comparingTable.getColumn(comparingColumn)), false))
                         .append(COMMA);
 
-        if (constraints) {
+        if (!Arrays.equals(constraints, new boolean[]{false, false, false, false})) {
 
             List<org.executequery.databaseobjects.impl.ColumnConstraint> thisConstraints = thisTable.getConstraints();
             List<org.executequery.databaseobjects.impl.ColumnConstraint> comparingConstraints = comparingTable.getConstraints();
 
             //check for DROP CONSTRAINT
             for (org.executequery.databaseobjects.impl.ColumnConstraint thisConstraint : thisConstraints) {
+
+                if ((thisConstraint.getType() == PRIMARY_KEY && !constraints[0]) ||
+                        (thisConstraint.getType() == FOREIGN_KEY && !constraints[1]) ||
+                        (thisConstraint.getType() == UNIQUE_KEY && !constraints[2]) ||
+                        (thisConstraint.getType() == CHECK_KEY && !constraints[3]))
+                    continue;
+
                 int dropCheck = 0;
                 for (org.executequery.databaseobjects.impl.ColumnConstraint comparingConstraint : comparingConstraints)
                     if (!Objects.equals(thisConstraint.getName(), comparingConstraint.getName()))
@@ -1095,6 +1102,13 @@ public final class SQLUtils {
 
             //check for ADD CONSTRAINT
             for (org.executequery.databaseobjects.impl.ColumnConstraint comparingConstraint : comparingConstraints) {
+
+                if ((comparingConstraint.getType() == PRIMARY_KEY && !constraints[0]) ||
+                        (comparingConstraint.getType() == FOREIGN_KEY && !constraints[1]) ||
+                        (comparingConstraint.getType() == UNIQUE_KEY && !constraints[2]) ||
+                        (comparingConstraint.getType() == CHECK_KEY && !constraints[3]))
+                    continue;
+
                 int addCheck = 0;
                 for (org.executequery.databaseobjects.impl.ColumnConstraint thisConstraint : thisConstraints)
                     if (!Objects.equals(thisConstraint.getName(), comparingConstraint.getName()))

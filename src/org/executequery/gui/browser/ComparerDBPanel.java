@@ -30,7 +30,6 @@ public class ComparerDBPanel extends JPanel {
 
     public static final String TITLE = bundleString("ComparerDB");
     public static final String FRAME_ICON = "ComparerDB_16.png";
-    private static final String WELCOME_TEXT = bundleString("WelcomeText");
 
     private Comparer comparer;
     private List<DatabaseConnection> databaseConnectionList;
@@ -137,7 +136,10 @@ public class ComparerDBPanel extends JPanel {
         propertiesCheckBoxMap.put(1, new JCheckBox(bundleString("CheckAlter")));
         propertiesCheckBoxMap.put(2, new JCheckBox(bundleString("CheckDrop")));
 //        propertiesCheckBoxMap.put(3, new JCheckBox(bundleString("SafeTypeConversion")));
-        propertiesCheckBoxMap.put(4, new JCheckBox(bundleString("IgnoreTablesConstraints")));
+        propertiesCheckBoxMap.put(40, new JCheckBox(bundleString("IgnorePK")));
+        propertiesCheckBoxMap.put(41, new JCheckBox(bundleString("IgnoreFK")));
+        propertiesCheckBoxMap.put(42, new JCheckBox(bundleString("IgnoreUK")));
+        propertiesCheckBoxMap.put(43, new JCheckBox(bundleString("IgnoreCK")));
         propertiesCheckBoxMap.put(5, new JCheckBox(bundleString(("IgnoreComments"))));
 
         // --- comboBoxes defining ---
@@ -151,7 +153,7 @@ public class ComparerDBPanel extends JPanel {
         // --- other components ---
 
         loggingOutputPanel = new LoggingOutputPanel();
-        loggingOutputPanel.append(WELCOME_TEXT);
+        loggingOutputPanel.append(bundleString("WelcomeText"));
 
         sqlTextPanel = new SimpleSqlTextPanel();
 
@@ -268,11 +270,15 @@ public class ComparerDBPanel extends JPanel {
         comparer = new Comparer(
                 databaseConnectionList.get(dbCompareComboBox.getSelectedIndex()),
                 databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()));
-        Comparer.TABLE_CONSTRAINTS_NEED = !propertiesCheckBoxMap.get(4).isSelected();
+        Comparer.TABLE_CONSTRAINTS_NEED = new boolean[] {
+                !propertiesCheckBoxMap.get(40).isSelected(),
+                !propertiesCheckBoxMap.get(41).isSelected(),
+                !propertiesCheckBoxMap.get(42).isSelected(),
+                !propertiesCheckBoxMap.get(43).isSelected()};
         Comparer.COMMENTS_NEED = !propertiesCheckBoxMap.get(5).isSelected();
 
         loggingOutputPanel.clear();
-        loggingOutputPanel.append(WELCOME_TEXT);
+        loggingOutputPanel.append(bundleString("WelcomeText"));
         sqlTextPanel.setSQLText("");
         comparer.clearLists();
 
@@ -413,7 +419,7 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (!propertiesCheckBoxMap.get(4).isSelected()) {
+        if (!Arrays.equals(Comparer.TABLE_CONSTRAINTS_NEED, new boolean[]{false, false, false, false})) {
             comparer.createConstraints();
             if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null) {
                 loggingOutputPanel.append("============= CONSTRAINTS defining  =============");

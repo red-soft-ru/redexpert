@@ -22,7 +22,7 @@ public final class SQLUtils {
 
     public static String generateCreateTable(
             String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,
-            boolean existTable, boolean temporary, boolean constraints, boolean setComment,
+            boolean existTable, boolean temporary, boolean constraints, boolean computed, boolean setComment,
             String typeTemporary, String externalFile, String adapter, String tablespace, String comment) {
 
         StringBuilder sb = new StringBuilder();
@@ -62,7 +62,7 @@ public final class SQLUtils {
 //            if (!MiscUtils.isNull(cd.getDescription()))
 //                descriptions.add(cd.getFormattedColumnName() + " is '" + cd.getDescription() + "'");
 
-            sqlText.append(generateDefinitionColumn(cd, true));
+            sqlText.append(generateDefinitionColumn(cd, computed, true));
             if (i != k - 1)
                 sqlText.append(COMMA);
         }
@@ -298,7 +298,7 @@ public final class SQLUtils {
     }
 
 
-    public static String generateDefinitionColumn(ColumnData cd, boolean startWithNewLine) {
+    public static String generateDefinitionColumn(ColumnData cd, boolean computedNeed, boolean startWithNewLine) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -331,7 +331,7 @@ public final class SQLUtils {
             if (cd.getCollate() != null && !cd.getCollate().equals(CreateTableSQLSyntax.NONE))
                 sb.append(" COLLATE ").append(cd.getCollate());
 
-        } else
+        } else if (computedNeed)
             sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
 
         return sb.toString();
@@ -555,7 +555,6 @@ public final class SQLUtils {
     }
 
 
-
     public static String generateCreateFunction(
             String name, List<FunctionArgument> argumentList, String fullFunctionBody,
             String entryPoint, String engine, String comment, boolean setComment, DatabaseConnection dc) {
@@ -600,7 +599,7 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateAlterDefinitionColumn(ColumnData thisCD, ColumnData comparingCD) {
+    public static String generateAlterDefinitionColumn(ColumnData thisCD, ColumnData comparingCD, boolean computedNeed) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -623,21 +622,24 @@ public final class SQLUtils {
                 sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
                         append(" RESTART WITH ").append(comparingCD.getAutoincrement().getStartValue());
 
-        } else if (!MiscUtils.isNull(thisCD.getComputedBy()) && !MiscUtils.isNull(comparingCD.getComputedBy())) {
+        } else if (computedNeed) {
 
-            if (!Objects.equals(thisCD.getComputedBy(), comparingCD.getComputedBy())) {
+            if (!MiscUtils.isNull(thisCD.getComputedBy()) && !MiscUtils.isNull(comparingCD.getComputedBy())) {
 
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()));
+                if (!Objects.equals(thisCD.getComputedBy(), comparingCD.getComputedBy())) {
 
-                if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
-                    sb.append(" TYPE ").append(comparingCD.getColumnType());
+                    sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()));
 
-                sb.append(" COMMUTED BY (").append(comparingCD.getComputedBy()).append(")");
+                    if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
+                        sb.append(" TYPE ").append(comparingCD.getColumnType());
+
+                    sb.append(" COMMUTED BY (").append(comparingCD.getComputedBy()).append(")");
+                }
+
+            } else {
+                sb.append("\n\tDROP ").append(format(thisCD.getColumnName()));
+                sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, true, false));
             }
-
-        } else {
-            sb.append("\n\tDROP ").append(format(thisCD.getColumnName()));
-            sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, false));
         }
 
         if (sb.toString().equals(""))
@@ -1034,7 +1036,7 @@ public final class SQLUtils {
 
     public static String generateAlterTable(
             DefaultDatabaseTable thisTable, DefaultDatabaseTable comparingTable,
-            boolean temporary, boolean[] constraints) {
+            boolean temporary, boolean[] constraints, boolean computed) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -1057,7 +1059,8 @@ public final class SQLUtils {
                 if (Objects.equals(thisColumn, comparingColumn)) {
                     sb.append(generateAlterDefinitionColumn(
                             new ColumnData(comparingTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn)),
-                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn))));
+                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn)),
+                            computed));
                     break;
 
                 } else dropCheck++;
@@ -1073,7 +1076,7 @@ public final class SQLUtils {
             if (!thisColumnsNames.contains(comparingColumn))
                 sb.append("\n\tADD ").append(generateDefinitionColumn(new ColumnData(
                                 comparingTable.getHost().getDatabaseConnection(),
-                                comparingTable.getColumn(comparingColumn)), false))
+                                comparingTable.getColumn(comparingColumn)), computed, false))
                         .append(COMMA);
 
         if (!Arrays.equals(constraints, new boolean[]{false, false, false, false})) {
@@ -1269,7 +1272,6 @@ public final class SQLUtils {
         sb.append(" FILE '").append(file).append("';\n");
         return sb.toString();
     }
-
 
 
     public static String generateDefaultUpdateStatement(String name, String settings) {

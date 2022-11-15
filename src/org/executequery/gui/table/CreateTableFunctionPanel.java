@@ -633,8 +633,9 @@ public abstract class CreateTableFunctionPanel extends JPanel
         if (!Objects.equals(commentField.getTextAreaComponent().getText(), ""))
             comment = commentField.getTextAreaComponent().getText().trim();
 
-        setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
-                false, temporary, true, true, "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
+        setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(),
+                consPanel.getKeys(), false, temporary, true, true, true,
+                "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
                 externalFile, adapter, tablespace, comment));
 
     }

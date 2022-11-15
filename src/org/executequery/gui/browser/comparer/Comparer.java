@@ -3,13 +3,15 @@ package org.executequery.gui.browser.comparer;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
+import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
-import org.executequery.databaseobjects.impl.DefaultTemporaryDatabaseTable;
+import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.text.MessageFormat;
@@ -21,6 +23,7 @@ public class Comparer {
 
     public static boolean[] TABLE_CONSTRAINTS_NEED;
     public static boolean COMMENTS_NEED;
+    public static boolean COMPUTED_FIELDS_NEED;
 
     protected Role role;
     protected Udf udf;
@@ -44,6 +47,9 @@ public class Comparer {
     private String constraintsList;
     private List<org.executequery.gui.browser.ColumnConstraint> constraints;
 
+    private String computedFieldsList;
+    private List<ColumnData> computedFields;
+
     protected ArrayList<String> createdObjects = new ArrayList<>();
     protected ArrayList<String> alteredObjects = new ArrayList<>();
     protected ArrayList<String> droppedObjects = new ArrayList<>();
@@ -52,6 +58,7 @@ public class Comparer {
 
         script = new ArrayList<>();
         constraints = new ArrayList<>();
+        computedFields = new ArrayList<>();
 
         compareConnection = new DefaultStatementExecutor(dbSlave, true);
         masterConnection = new DefaultStatementExecutor(dbMaster, true);
@@ -181,6 +188,22 @@ public class Comparer {
         }
     }
 
+    public void createComputedFields() {
+
+        if (computedFields.size() < 1)
+            return;
+
+        if (COMPUTED_FIELDS_NEED) {
+
+            script.add("\n/* ----- COMPUTED FIELDs defining ----- */\n");
+            for (ColumnData cd : computedFields) {
+                script.add("\n/* " + cd.getTableName() + "." + cd.getColumnName() + " */");
+                script.add("\nALTER TABLE " + cd.getTableName() + "\n\tADD " +
+                        SQLUtils.generateDefinitionColumn(cd, true, false) + ";\n");
+            }
+        }
+    }
+
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
         script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
         script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
@@ -201,9 +224,13 @@ public class Comparer {
 
                 createObjects.add(databaseObject);
 
-                if (!Arrays.equals(TABLE_CONSTRAINTS_NEED, new boolean[]{false, false, false, false}))
-                    if (databaseObject.getType() == NamedObject.TABLE || databaseObject.getType() == NamedObject.GLOBAL_TEMPORARY)
+                if (databaseObject.getType() == NamedObject.TABLE || databaseObject.getType() == NamedObject.GLOBAL_TEMPORARY) {
+
+                    if (!Arrays.equals(TABLE_CONSTRAINTS_NEED, new boolean[]{false, false, false, false}))
                         createListConstraints(databaseObject);
+                    if (COMPUTED_FIELDS_NEED)
+                        createListComputedFields(databaseObject);
+                }
             }
         }
 
@@ -255,9 +282,7 @@ public class Comparer {
         if (constraintsList == null)
             constraintsList = "";
 
-        for (ColumnConstraint cc : databaseObject.getType() == NamedObject.TABLE ?
-                ((DefaultDatabaseTable) databaseObject).getConstraints() :
-                ((DefaultTemporaryDatabaseTable) databaseObject).getConstraints()) {
+        for (ColumnConstraint cc : ((DefaultDatabaseTable) databaseObject).getConstraints()) {
 
             if ((cc.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
                     (cc.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
@@ -270,6 +295,25 @@ public class Comparer {
         }
     }
 
+    private void createListComputedFields(NamedObject databaseObject) {
+
+        if (computedFieldsList == null)
+            computedFieldsList = "";
+
+        List<ColumnData> listCD = new ArrayList<>();
+        DefaultDatabaseTable tempTable = (DefaultDatabaseTable) databaseObject;
+
+        for (int i = 0; i < tempTable.getColumnCount(); i++)
+            listCD.add(new ColumnData(tempTable.getHost().getDatabaseConnection(), tempTable.getColumns().get(i)));
+
+        for (ColumnData cd : listCD) {
+            if (!MiscUtils.isNull(cd.getComputedBy())) {
+                computedFieldsList += "\t" + tempTable.getName() + "." + cd.getColumnName() + "\n";
+                computedFields.add(cd);
+            }
+        }
+    }
+
     // ---
 
     public String getLists() {
@@ -278,6 +322,10 @@ public class Comparer {
 
     public String getConstraintsList() {
         return constraintsList;
+    }
+
+    public String getComputedFieldsList() {
+        return computedFieldsList;
     }
 
     public void setLists(String lists) {

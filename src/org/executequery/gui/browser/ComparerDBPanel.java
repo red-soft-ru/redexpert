@@ -141,6 +141,7 @@ public class ComparerDBPanel extends JPanel {
         propertiesCheckBoxMap.put(42, new JCheckBox(bundleString("IgnoreUK")));
         propertiesCheckBoxMap.put(43, new JCheckBox(bundleString("IgnoreCK")));
         propertiesCheckBoxMap.put(5, new JCheckBox(bundleString(("IgnoreComments"))));
+        propertiesCheckBoxMap.put(6, new JCheckBox(bundleString(("IgnoreComputed"))));
 
         // --- comboBoxes defining ---
 
@@ -276,6 +277,7 @@ public class ComparerDBPanel extends JPanel {
                 !propertiesCheckBoxMap.get(42).isSelected(),
                 !propertiesCheckBoxMap.get(43).isSelected()};
         Comparer.COMMENTS_NEED = !propertiesCheckBoxMap.get(5).isSelected();
+        Comparer.COMPUTED_FIELDS_NEED = !propertiesCheckBoxMap.get(6).isSelected();
 
         loggingOutputPanel.clear();
         loggingOutputPanel.append(bundleString("WelcomeText"));
@@ -424,6 +426,14 @@ public class ComparerDBPanel extends JPanel {
             if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null) {
                 loggingOutputPanel.append("============= CONSTRAINTS defining  =============");
                 loggingOutputPanel.append(comparer.getConstraintsList());
+            }
+        }
+
+        if (!propertiesCheckBoxMap.get(6).isSelected()) {
+            comparer.createComputedFields();
+            if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null) {
+                loggingOutputPanel.append("============= COMPUTED FIELDS defining  =============");
+                loggingOutputPanel.append(comparer.getComputedFieldsList());
             }
         }
 

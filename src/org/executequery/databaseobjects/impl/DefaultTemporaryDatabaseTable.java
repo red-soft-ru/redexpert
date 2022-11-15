@@ -74,7 +74,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
             listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, true, true, true,
+                getName(), listCD, listCC, true, true, true, true, true,
                 typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
@@ -120,8 +120,8 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
             listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, true, false, Comparer.COMMENTS_NEED,
-                typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
+                getName(), listCD, listCC, true, true, false, false,
+                Comparer.COMMENTS_NEED, typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
     @Override
@@ -132,7 +132,8 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultTemporaryDatabaseTable comparingTable = (DefaultTemporaryDatabaseTable) databaseObject;
-        return SQLUtils.generateAlterTable(this, comparingTable, true, Comparer.TABLE_CONSTRAINTS_NEED);
+        return SQLUtils.generateAlterTable(this, comparingTable, true,
+                Comparer.TABLE_CONSTRAINTS_NEED, Comparer.COMPUTED_FIELDS_NEED);
     }
 
     private String formatSqlText(String text) {

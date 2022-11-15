@@ -799,7 +799,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         updateListCC();
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, false, true, true,
+                getName(), listCD, listCC, true, false, true, true, true,
                 null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
@@ -810,8 +810,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         updateListCC();
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, false, false, Comparer.COMMENTS_NEED,
-                null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
+                getName(), listCD, listCC, true, false, false, false,
+                Comparer.COMMENTS_NEED, null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
     @Override
@@ -822,7 +822,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultDatabaseTable comparingTable = (DefaultDatabaseTable) databaseObject;
-        return SQLUtils.generateAlterTable(this, comparingTable, false, Comparer.TABLE_CONSTRAINTS_NEED);
+        return SQLUtils.generateAlterTable(this, comparingTable, false,
+                Comparer.TABLE_CONSTRAINTS_NEED, Comparer.COMPUTED_FIELDS_NEED);
     }
 
     public String getDropSQLText(boolean cascadeConstraints) {
@@ -951,7 +952,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         updateListCC();
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, false, true, true,
+                getName(), listCD, listCC, true, false, true, true, true,
                 null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 

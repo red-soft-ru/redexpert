@@ -135,7 +135,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        String comment = Comparer.COMMENTS_NEED ? getDescription() : null;
+        String comment = Comparer.isCommentsNeed() ? getDescription() : null;
         return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), comment);
     }
 

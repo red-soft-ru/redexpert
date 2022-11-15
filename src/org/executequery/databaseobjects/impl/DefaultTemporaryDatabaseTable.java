@@ -121,7 +121,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, true, false, false,
-                Comparer.COMMENTS_NEED, typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
+                Comparer.isCommentsNeed(), typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
     @Override
@@ -133,7 +133,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultTemporaryDatabaseTable comparingTable = (DefaultTemporaryDatabaseTable) databaseObject;
         return SQLUtils.generateAlterTable(this, comparingTable, true,
-                Comparer.TABLE_CONSTRAINTS_NEED, Comparer.COMPUTED_FIELDS_NEED);
+                Comparer.getTableConstraintsNeed(), Comparer.isComputedFieldsNeed());
     }
 
     private String formatSqlText(String text) {

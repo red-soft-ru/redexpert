@@ -202,7 +202,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
         String query = "";
-        String comment = Comparer.COMMENTS_NEED ? getRemarks() : null;
+        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
         try {
             query = SQLUtils.generateCreateSequence(getName(), getSequenceFirstValue(),
                     getIncrement(), comment, getVersion(), false);

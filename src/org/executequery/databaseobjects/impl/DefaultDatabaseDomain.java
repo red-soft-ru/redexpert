@@ -93,7 +93,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true, Comparer.COMMENTS_NEED);
+        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true, Comparer.isCommentsNeed());
     }
 
     @Override

@@ -31,6 +31,16 @@ public class ComparerDBPanel extends JPanel {
     public static final String TITLE = bundleString("ComparerDB");
     public static final String FRAME_ICON = "ComparerDB_16.png";
 
+    private static final int CHECK_CREATE = 0;
+    private static final int CHECK_ALTER = 1;
+    private static final int CHECK_DROP = 2;
+    private static final int IGNORE_COMMENTS = 3;
+    private static final int IGNORE_COMPUTED_FIELDS = 4;
+    private static final int IGNORE_PK = 50;
+    private static final int IGNORE_FK = IGNORE_PK + 1;
+    private static final int IGNORE_UK = IGNORE_FK + 1;
+    private static final int IGNORE_CK = IGNORE_UK + 1;
+
     private Comparer comparer;
     private List<DatabaseConnection> databaseConnectionList;
     private List<Integer> scriptGenerationOrder;
@@ -126,22 +136,22 @@ public class ComparerDBPanel extends JPanel {
         // --- attributes checkBox defining ---
 
         attributesCheckBoxMap = new HashMap<>();
-        for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++)
-            attributesCheckBoxMap.put(i, new JCheckBox(Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[i])));
+        for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++)
+            attributesCheckBoxMap.put(objectType,
+                    new JCheckBox(Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType])));
 
         // --- properties checkBox defining ---
 
         propertiesCheckBoxMap = new HashMap<>();
-        propertiesCheckBoxMap.put(0, new JCheckBox(bundleString("CheckCreate")));
-        propertiesCheckBoxMap.put(1, new JCheckBox(bundleString("CheckAlter")));
-        propertiesCheckBoxMap.put(2, new JCheckBox(bundleString("CheckDrop")));
-//        propertiesCheckBoxMap.put(3, new JCheckBox(bundleString("SafeTypeConversion")));
-        propertiesCheckBoxMap.put(40, new JCheckBox(bundleString("IgnorePK")));
-        propertiesCheckBoxMap.put(41, new JCheckBox(bundleString("IgnoreFK")));
-        propertiesCheckBoxMap.put(42, new JCheckBox(bundleString("IgnoreUK")));
-        propertiesCheckBoxMap.put(43, new JCheckBox(bundleString("IgnoreCK")));
-        propertiesCheckBoxMap.put(5, new JCheckBox(bundleString(("IgnoreComments"))));
-        propertiesCheckBoxMap.put(6, new JCheckBox(bundleString(("IgnoreComputed"))));
+        propertiesCheckBoxMap.put(CHECK_CREATE, new JCheckBox(bundleString("CheckCreate")));
+        propertiesCheckBoxMap.put(CHECK_ALTER, new JCheckBox(bundleString("CheckAlter")));
+        propertiesCheckBoxMap.put(CHECK_DROP, new JCheckBox(bundleString("CheckDrop")));
+        propertiesCheckBoxMap.put(IGNORE_COMMENTS, new JCheckBox(bundleString(("IgnoreComments"))));
+        propertiesCheckBoxMap.put(IGNORE_COMPUTED_FIELDS, new JCheckBox(bundleString(("IgnoreComputed"))));
+        propertiesCheckBoxMap.put(IGNORE_PK, new JCheckBox(bundleString("IgnorePK")));
+        propertiesCheckBoxMap.put(IGNORE_FK, new JCheckBox(bundleString("IgnoreFK")));
+        propertiesCheckBoxMap.put(IGNORE_UK, new JCheckBox(bundleString("IgnoreUK")));
+        propertiesCheckBoxMap.put(IGNORE_CK, new JCheckBox(bundleString("IgnoreCK")));
 
         // --- comboBoxes defining ---
 
@@ -266,18 +276,20 @@ public class ComparerDBPanel extends JPanel {
 
     }
 
-    private void startComparing() {
+    private void prepareComparer() {
 
         comparer = new Comparer(
                 databaseConnectionList.get(dbCompareComboBox.getSelectedIndex()),
-                databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()));
-        Comparer.TABLE_CONSTRAINTS_NEED = new boolean[] {
-                !propertiesCheckBoxMap.get(40).isSelected(),
-                !propertiesCheckBoxMap.get(41).isSelected(),
-                !propertiesCheckBoxMap.get(42).isSelected(),
-                !propertiesCheckBoxMap.get(43).isSelected()};
-        Comparer.COMMENTS_NEED = !propertiesCheckBoxMap.get(5).isSelected();
-        Comparer.COMPUTED_FIELDS_NEED = !propertiesCheckBoxMap.get(6).isSelected();
+                databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()),
+                new boolean[]{
+                        !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
+                },
+                !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
+                !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected()
+        );
 
         loggingOutputPanel.clear();
         loggingOutputPanel.append(bundleString("WelcomeText"));
@@ -296,51 +308,21 @@ public class ComparerDBPanel extends JPanel {
             e.printStackTrace();
         }
 
-        String charset = "";
-        String dialect = "";
-
-        String query = "select rdb$database.rdb$character_set_name\n"
-                + "from rdb$database\n";
-
-        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
-            while (rs.next())
-                charset = rs.getString(1).trim();
-
-        } catch (java.sql.SQLException e) {
-            e.printStackTrace();
-
-        } finally {
-            comparer.getMasterConnection().releaseResources();
-        }
-
-        query = "select mon$database.mon$sql_dialect\n"
-                + "from mon$database\n";
-
-        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
-            while (rs.next())
-                dialect = rs.getString(1).trim();
-
-        } catch (java.sql.SQLException e) {
-            e.printStackTrace();
-
-        } finally {
-            comparer.getMasterConnection().releaseResources();
-        }
-
         settingScriptProps = new StringBuilder();
         settingScriptProps.append("\n/* Setting properties */\n\n");
-        settingScriptProps.append("SET NAMES ").append(charset).append(";\n");
-        settingScriptProps.append("SET SQL DIALECT ").append(dialect).append(";\n");
+        settingScriptProps.append("SET NAMES ").append(getMasterDBCharset()).append(";\n");
+        settingScriptProps.append("SET SQL DIALECT ").append(getMasterDBDialect()).append(";\n");
         settingScriptProps.append("CONNECT '").append(comparer.getMasterConnection().getDatabaseConnection().getName());
         settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getDatabaseConnection().getUserName());
         settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword());
         settingScriptProps.append("';\nSET AUTO DDL ON;\n");
 
         comparer.addToScript(settingScriptProps.toString());
+    }
 
-        // ----- comparing -----
+    private void compare() {
 
-        if (propertiesCheckBoxMap.get(0).isSelected() && !progressDialog.isCancel()) {
+        if (propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() && !progressDialog.isCancel()) {
 
             if (isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = false;
@@ -367,7 +349,7 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (propertiesCheckBoxMap.get(1).isSelected() && !progressDialog.isCancel()) {
+        if (propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() && !progressDialog.isCancel()) {
 
             if (isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = false;
@@ -394,7 +376,7 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (propertiesCheckBoxMap.get(2).isSelected() && !progressDialog.isCancel()) {
+        if (propertiesCheckBoxMap.get(CHECK_DROP).isSelected() && !progressDialog.isCancel()) {
 
             if (!isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = true;
@@ -421,7 +403,7 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (!Arrays.equals(Comparer.TABLE_CONSTRAINTS_NEED, new boolean[]{false, false, false, false})) {
+        if (!Arrays.equals(Comparer.getTableConstraintsNeed(), new boolean[]{false, false, false, false}) && !progressDialog.isCancel()) {
             comparer.createConstraints();
             if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null) {
                 loggingOutputPanel.append("============= CONSTRAINTS defining  =============");
@@ -429,16 +411,13 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (!propertiesCheckBoxMap.get(6).isSelected()) {
+        if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !progressDialog.isCancel()) {
             comparer.createComputedFields();
             if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null) {
                 loggingOutputPanel.append("============= COMPUTED FIELDS defining  =============");
                 loggingOutputPanel.append(comparer.getComputedFieldsList());
             }
         }
-
-        for (int i = 0; i < comparer.getScript().size(); i++)
-            sqlTextPanel.getTextPane().append(comparer.getScript(i));
 
     }
 
@@ -451,6 +430,7 @@ public class ComparerDBPanel extends JPanel {
             GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
             return;
         }
+
         for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++) {
             if (attributesCheckBoxMap.get(i).isSelected())
                 break;
@@ -459,9 +439,10 @@ public class ComparerDBPanel extends JPanel {
                 return;
             }
         }
-        if (!propertiesCheckBoxMap.get(0).isSelected() &&
-                !propertiesCheckBoxMap.get(1).isSelected() &&
-                !propertiesCheckBoxMap.get(2).isSelected()) {
+
+        if (!propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() &&
+                !propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() &&
+                !propertiesCheckBoxMap.get(CHECK_DROP).isSelected()) {
             GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoProperties"));
             return;
         }
@@ -470,7 +451,8 @@ public class ComparerDBPanel extends JPanel {
         SwingWorker worker = new SwingWorker() {
             @Override
             public Object construct() {
-                startComparing();
+                prepareComparer();
+                compare();
                 return null;
             }
 
@@ -484,6 +466,8 @@ public class ComparerDBPanel extends JPanel {
         worker.start();
         progressDialog.run();
 
+        for (int i = 0; i < comparer.getScript().size(); i++)
+            sqlTextPanel.getTextPane().append(comparer.getScript(i));
     }
 
     private void saveScript() {
@@ -510,13 +494,11 @@ public class ComparerDBPanel extends JPanel {
             String name = file.getAbsoluteFile().toString();
 
             int dot = name.lastIndexOf(".");
-            dot = dot == -1 ? name.length() : dot;
+            dot = (dot == -1) ? name.length() : dot;
 
             String fileSavePath = name.substring(0, dot)
                     + fileSave.getFileFilter().getDescription().substring(fileSave.getFileFilter().getDescription().indexOf("(*") + 2,
                     fileSave.getFileFilter().getDescription().lastIndexOf(")"));
-
-            comparer.addToScript("русский текст");
 
             try (FileOutputStream path = new FileOutputStream(fileSavePath)) {
 
@@ -532,9 +514,7 @@ public class ComparerDBPanel extends JPanel {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
-
     }
 
     private void executeScript() {
@@ -596,6 +576,44 @@ public class ComparerDBPanel extends JPanel {
             return description + String.format(" (*%s)", extension);
         }
 
+    }
+
+    private String getMasterDBCharset() {
+
+        String charset = "";
+        String query = "select rdb$database.rdb$character_set_name from rdb$database";
+
+        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
+            while (rs.next())
+                charset = rs.getString(1).trim();
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+
+        } finally {
+            comparer.getMasterConnection().releaseResources();
+        }
+
+        return charset;
+    }
+
+    private String getMasterDBDialect() {
+
+        String dialect = "";
+        String query = "select mon$database.mon$sql_dialect from mon$database";
+
+        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
+            while (rs.next())
+                dialect = rs.getString(1).trim();
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+
+        } finally {
+            comparer.getMasterConnection().releaseResources();
+        }
+
+        return dialect;
     }
 
     public static String bundleString(String key) {

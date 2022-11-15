@@ -3,7 +3,6 @@ package org.executequery.gui.browser.comparer;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
-import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
@@ -21,9 +20,9 @@ import static org.executequery.databaseobjects.NamedObject.*;
 
 public class Comparer {
 
-    public static boolean[] TABLE_CONSTRAINTS_NEED;
-    public static boolean COMMENTS_NEED;
-    public static boolean COMPUTED_FIELDS_NEED;
+    private static boolean[] TABLE_CONSTRAINTS_NEED;
+    private static boolean COMMENTS_NEED;
+    private static boolean COMPUTED_FIELDS_NEED;
 
     protected Role role;
     protected Udf udf;
@@ -42,19 +41,20 @@ public class Comparer {
     protected StatementExecutor masterConnection;
 
     private String lists;
-    private ArrayList<String> script;
-
     private String constraintsList;
-    private List<org.executequery.gui.browser.ColumnConstraint> constraints;
-
     private String computedFieldsList;
-    private List<ColumnData> computedFields;
+
+    private final ArrayList<String> script;
+    private final List<org.executequery.gui.browser.ColumnConstraint> constraints;
+    private final List<ColumnData> computedFields;
+
 
     protected ArrayList<String> createdObjects = new ArrayList<>();
     protected ArrayList<String> alteredObjects = new ArrayList<>();
     protected ArrayList<String> droppedObjects = new ArrayList<>();
 
-    public Comparer(DatabaseConnection dbSlave, DatabaseConnection dbMaster) {
+    public Comparer(DatabaseConnection dbSlave, DatabaseConnection dbMaster,
+                    boolean[] constraintsNeed, boolean commentsNeed, boolean computedNeed) {
 
         script = new ArrayList<>();
         constraints = new ArrayList<>();
@@ -62,6 +62,10 @@ public class Comparer {
 
         compareConnection = new DefaultStatementExecutor(dbSlave, true);
         masterConnection = new DefaultStatementExecutor(dbMaster, true);
+
+        Comparer.TABLE_CONSTRAINTS_NEED = constraintsNeed;
+        Comparer.COMMENTS_NEED = commentsNeed;
+        Comparer.COMPUTED_FIELDS_NEED = computedNeed;
 
         procedure = new Procedure(this);
         domain = new Domain(this);
@@ -75,8 +79,6 @@ public class Comparer {
         generator = new Generator(this);
         udf = new Udf(this);
         role = new Role();
-
-        TABLE_CONSTRAINTS_NEED = new boolean[]{false,false,false,false};
 
         init();
     }
@@ -350,6 +352,18 @@ public class Comparer {
 
     public StatementExecutor getMasterConnection() {
         return masterConnection;
+    }
+
+    public static boolean[] getTableConstraintsNeed() {
+        return TABLE_CONSTRAINTS_NEED;
+    }
+
+    public static boolean isCommentsNeed() {
+        return COMMENTS_NEED;
+    }
+
+    public static boolean isComputedFieldsNeed() {
+        return COMPUTED_FIELDS_NEED;
     }
 
     public void clearLists() {

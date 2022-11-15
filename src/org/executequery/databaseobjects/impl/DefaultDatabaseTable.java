@@ -811,7 +811,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, false, false, false,
-                Comparer.COMMENTS_NEED, null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
+                Comparer.isCommentsNeed(), null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
     }
 
     @Override
@@ -823,7 +823,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultDatabaseTable comparingTable = (DefaultDatabaseTable) databaseObject;
         return SQLUtils.generateAlterTable(this, comparingTable, false,
-                Comparer.TABLE_CONSTRAINTS_NEED, Comparer.COMPUTED_FIELDS_NEED);
+                Comparer.getTableConstraintsNeed(), Comparer.isComputedFieldsNeed());
     }
 
     public String getDropSQLText(boolean cascadeConstraints) {

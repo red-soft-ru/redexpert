@@ -144,7 +144,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        String comment = Comparer.COMMENTS_NEED ? getRemarks() : null;
+        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
         return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
                 comment, getDatabaseMajorVersion(), false);
     }

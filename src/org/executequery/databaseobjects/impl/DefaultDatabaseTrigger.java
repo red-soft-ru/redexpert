@@ -392,7 +392,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        String comment = Comparer.COMMENTS_NEED ? getRemarks() : null;
+        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
         return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
                 getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), comment);
     }

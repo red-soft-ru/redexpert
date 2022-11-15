@@ -20,6 +20,9 @@ import static org.executequery.databaseobjects.NamedObject.*;
 
 public class Comparer {
 
+    /**
+     * [0] - PK; [1] - FK; [2] - UK; [3] - CK
+     */
     private static boolean[] TABLE_CONSTRAINTS_NEED;
     private static boolean COMMENTS_NEED;
     private static boolean COMPUTED_FIELDS_NEED;
@@ -101,6 +104,7 @@ public class Comparer {
 
         List<NamedObject> createObjects = createListObjects(type);
 
+
         if (createObjects.size() < 1)
             return;
 
@@ -167,20 +171,22 @@ public class Comparer {
         if (TABLE_CONSTRAINTS_NEED[0]) {
             script.add("\n/* ----- PRIMARY KEYs defining ----- */\n");
             for (org.executequery.gui.browser.ColumnConstraint obj : constraints)
-                if (obj.getType() == NamedObject.PRIMARY_KEY)
+                if (obj.getType() == NamedObject.PRIMARY_KEY) {
                     addConstraintToScript(obj);
-        }
-        if (TABLE_CONSTRAINTS_NEED[1]) {
-            script.add("\n/* ----- FOREIGN KEYs defining ----- */\n");
-            for (org.executequery.gui.browser.ColumnConstraint obj : constraints)
-                if (obj.getType() == NamedObject.FOREIGN_KEY)
-                    addConstraintToScript(obj);
+                }
         }
         if (TABLE_CONSTRAINTS_NEED[2]) {
             script.add("\n/* ----- UNIQUE KEYs defining ----- */\n");
             for (org.executequery.gui.browser.ColumnConstraint obj : constraints)
                 if (obj.getType() == NamedObject.UNIQUE_KEY)
                     addConstraintToScript(obj);
+        }
+        if (TABLE_CONSTRAINTS_NEED[1]) {
+            script.add("\n/* ----- FOREIGN KEYs defining ----- */\n");
+            for (org.executequery.gui.browser.ColumnConstraint obj : constraints)
+                if (obj.getType() == NamedObject.FOREIGN_KEY) {
+                    addConstraintToScript(obj);
+                }
         }
         if (TABLE_CONSTRAINTS_NEED[3]) {
             script.add("\n/* ----- CHECK KEYs defining ----- */\n");

@@ -94,22 +94,22 @@ public class ComparerDBPanel extends JPanel {
         isScriptGeneratorOrderReversed = false;
 
         scriptGenerationOrder.add(NamedObject.DOMAIN);
+        scriptGenerationOrder.add(NamedObject.TABLESPACE);
         scriptGenerationOrder.add(NamedObject.TABLE);
         scriptGenerationOrder.add(NamedObject.GLOBAL_TEMPORARY);
-        scriptGenerationOrder.add(NamedObject.TABLESPACE);
         scriptGenerationOrder.add(NamedObject.VIEW);
         scriptGenerationOrder.add(NamedObject.INDEX);
         scriptGenerationOrder.add(NamedObject.SEQUENCE);
         scriptGenerationOrder.add(NamedObject.EXCEPTION);
-        scriptGenerationOrder.add(NamedObject.PACKAGE);
         scriptGenerationOrder.add(NamedObject.ROLE);
         scriptGenerationOrder.add(NamedObject.USER);
-        scriptGenerationOrder.add(NamedObject.PROCEDURE);
         scriptGenerationOrder.add(NamedObject.FUNCTION);
+        scriptGenerationOrder.add(NamedObject.PROCEDURE);
         scriptGenerationOrder.add(NamedObject.UDF);
         scriptGenerationOrder.add(NamedObject.TRIGGER);
         scriptGenerationOrder.add(NamedObject.DDL_TRIGGER);
         scriptGenerationOrder.add(NamedObject.DATABASE_TRIGGER);
+        scriptGenerationOrder.add(NamedObject.PACKAGE);
 
         // --- buttons defining ---
 
@@ -142,7 +142,7 @@ public class ComparerDBPanel extends JPanel {
 
         // --- properties checkBox defining ---
 
-        propertiesCheckBoxMap = new HashMap<>();
+        propertiesCheckBoxMap = new LinkedHashMap<>();
         propertiesCheckBoxMap.put(CHECK_CREATE, new JCheckBox(bundleString("CheckCreate")));
         propertiesCheckBoxMap.put(CHECK_ALTER, new JCheckBox(bundleString("CheckAlter")));
         propertiesCheckBoxMap.put(CHECK_DROP, new JCheckBox(bundleString("CheckDrop")));
@@ -298,8 +298,18 @@ public class ComparerDBPanel extends JPanel {
 
         try {
 
-            if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||
+            if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 3 ||
+                    new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 3) {
+
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("USER")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("PACKAGE")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("FUNCTION")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
+                loggingOutputPanel.append(bundleString("RDBVersionBelow3"));
+
+            } else if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||
                     new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4) {
+
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
                 loggingOutputPanel.append(bundleString("RDBVersionBelow4"));
             }

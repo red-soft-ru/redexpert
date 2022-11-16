@@ -40,6 +40,7 @@ public class TransactionParametersPanel extends JPanel {
 
     public TransactionParametersPanel(DatabaseConnection databaseConnection) {
         setDatabaseConnection(databaseConnection);
+        init();
     }
 
     private void init() {
@@ -64,7 +65,7 @@ public class TransactionParametersPanel extends JPanel {
         noAutoUndoCheckBox = new JCheckBox("NO AUTO UNDO");
         ignoreLimboCheckBox = new JCheckBox("IGNORE LIMBO");
         reservingCheckBox = new JCheckBox("RESERVING");
-        transactionTablesTable = new TransactionTablesTable(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables());
+        //transactionTablesTable = new TransactionTablesTable(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables());
         reservingCheckBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -105,31 +106,16 @@ public class TransactionParametersPanel extends JPanel {
         return databaseConnection;
     }
 
-    private void changeDatabaseConnection() {
-        if (databaseConnection != null && databaseConnection.isConnected()) {
-            Connection con = ConnectionManager.getTemporaryConnection(databaseConnection);
-            try {
-                if (con.unwrap(Connection.class).getClass().getName().contains("FBConnection")) {
-                    Connection fbConn = con.unwrap(Connection.class);
-                    tpb = (ITPB) DynamicLibraryLoader.loadingObjectFromClassLoader(fbConn, "ITPBImpl");
-                    tpb.initTPB();
-                }
-                con.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            init();
-        }
-    }
+
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
-        changeDatabaseConnection();
+        transactionTablesTable = new TransactionTablesTable(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables());
     }
 
     private void checkEnabled() {
         recordVersionBox.setEnabled(levelCombobox.getSelectedLevel() == Connection.TRANSACTION_READ_COMMITTED);
-        //lockTimeOutLabel.setEnabled(waitCheckBox.isSelected());
+        lockTimeOutLabel.setEnabled(waitCheckBox.isSelected());
         lockTimeOutField.setEnabled(waitCheckBox.isSelected());
 
     }
@@ -139,42 +125,52 @@ public class TransactionParametersPanel extends JPanel {
     }
 
     public ITPB getTpb() {
-        tpb.initTPB();
-        if (readOnlyBox.isSelected())
-            tpb.addArgument(ITPBConstants.isc_tpb_read);
-        else {
-            tpb.addArgument(ITPBConstants.isc_tpb_write);
+        if (databaseConnection != null && databaseConnection.isConnected()) {
+            try {
+                tpb = (ITPB) DynamicLibraryLoader.loadingObjectFromClassLoaderWithCS(ConnectionManager.getClassLoaderForDatabaseConnection(databaseConnection), "ITPBImpl");
+                tpb.initTPB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        if (waitCheckBox.isSelected()) {
-            tpb.addArgument(ITPBConstants.isc_tpb_wait);
-            if (lockTimeOutField.getValue() > 0)
-                tpb.addArgument(ITPBConstants.isc_tpb_lock_timeout, lockTimeOutField.getValue());
-        } else tpb.addArgument(ITPBConstants.isc_tpb_nowait);
-        if (getTransactionIsolation() == Connection.TRANSACTION_REPEATABLE_READ) {
-            tpb.addArgument(ITPBConstants.isc_tpb_concurrency);
-        }
-        if (getTransactionIsolation() == Connection.TRANSACTION_SERIALIZABLE) {
-            tpb.addArgument(ITPBConstants.isc_tpb_consistency);
-        }
-        if (getTransactionIsolation() == Connection.TRANSACTION_READ_COMMITTED) {
-            tpb.addArgument(ITPBConstants.isc_tpb_read_committed);
-            if (recordVersionBox.isSelected())
-                tpb.addArgument(ITPBConstants.isc_tpb_rec_version);
-            else tpb.addArgument(ITPBConstants.isc_tpb_no_rec_version);
+        if (tpb != null) {
+            tpb.initTPB();
+            if (readOnlyBox.isSelected())
+                tpb.addArgument(ITPBConstants.isc_tpb_read);
+            else {
+                tpb.addArgument(ITPBConstants.isc_tpb_write);
+            }
+            if (waitCheckBox.isSelected()) {
+                tpb.addArgument(ITPBConstants.isc_tpb_wait);
+                if (lockTimeOutField.getValue() > 0)
+                    tpb.addArgument(ITPBConstants.isc_tpb_lock_timeout, lockTimeOutField.getValue());
+            } else tpb.addArgument(ITPBConstants.isc_tpb_nowait);
+            if (getTransactionIsolation() == Connection.TRANSACTION_REPEATABLE_READ) {
+                tpb.addArgument(ITPBConstants.isc_tpb_concurrency);
+            }
+            if (getTransactionIsolation() == Connection.TRANSACTION_SERIALIZABLE) {
+                tpb.addArgument(ITPBConstants.isc_tpb_consistency);
+            }
+            if (getTransactionIsolation() == Connection.TRANSACTION_READ_COMMITTED) {
+                tpb.addArgument(ITPBConstants.isc_tpb_read_committed);
+                if (recordVersionBox.isSelected())
+                    tpb.addArgument(ITPBConstants.isc_tpb_rec_version);
+                else tpb.addArgument(ITPBConstants.isc_tpb_no_rec_version);
 
-        }
-        if (noAutoUndoCheckBox.isSelected())
-            tpb.addArgument(ITPBConstants.isc_tpb_no_auto_undo);
-        if (ignoreLimboCheckBox.isSelected())
-            tpb.addArgument(ITPBConstants.isc_tpb_ignore_limbo);
-        if (reservingCheckBox.isSelected()) {
-            for (TransactionTablesTable.ReservingTable reservingTable : transactionTablesTable.getReservingTables()) {
-                if (reservingTable.isReadTable())
-                    tpb.addArgument(ITPBConstants.isc_tpb_lock_read, reservingTable.getName());
-                else tpb.addArgument(ITPBConstants.isc_tpb_lock_write, reservingTable.getName());
-                if (reservingTable.isSharedTable())
-                    tpb.addArgument(ITPBConstants.isc_tpb_shared);
-                else tpb.addArgument(ITPBConstants.isc_tpb_protected);
+            }
+            if (noAutoUndoCheckBox.isSelected())
+                tpb.addArgument(ITPBConstants.isc_tpb_no_auto_undo);
+            if (ignoreLimboCheckBox.isSelected())
+                tpb.addArgument(ITPBConstants.isc_tpb_ignore_limbo);
+            if (reservingCheckBox.isSelected()) {
+                for (TransactionTablesTable.ReservingTable reservingTable : transactionTablesTable.getReservingTables()) {
+                    if (reservingTable.isReadTable())
+                        tpb.addArgument(ITPBConstants.isc_tpb_lock_read, reservingTable.getName());
+                    else tpb.addArgument(ITPBConstants.isc_tpb_lock_write, reservingTable.getName());
+                    if (reservingTable.isSharedTable())
+                        tpb.addArgument(ITPBConstants.isc_tpb_shared);
+                    else tpb.addArgument(ITPBConstants.isc_tpb_protected);
+                }
             }
         }
         return tpb;

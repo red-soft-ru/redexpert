@@ -231,6 +231,15 @@ public final class ConnectionManager {
         return -1;
     }
 
+    public static ClassLoader getClassLoaderForDatabaseConnection(DatabaseConnection databaseConnection) {
+        DataSource dataSource = getDataSource(databaseConnection);
+        if (dataSource instanceof SimpleDataSource) {
+            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+            return simpleDataSource.getClassLoaderFromPlugin();
+        }
+        return null;
+    }
+
     public static String getURL(DatabaseConnection databaseConnection) {
         if (databaseConnection == null) {
 

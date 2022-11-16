@@ -87,7 +87,18 @@ public class DynamicLibraryLoader extends URLClassLoader {
                 + shortClassName, "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
     }
 
+    public static Object loadingObjectFromClassLoaderWithCS(ClassLoader classLoader, String shortClassName)
+            throws ClassNotFoundException {
+        return loadingObjectFromClassLoaderWithCS(classLoader, "biz.redsoft."
+                + shortClassName, "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
+    }
+
     public static Object loadingObjectFromClassLoader(Object unwrapObject, String className, String jarPath)
+            throws ClassNotFoundException {
+        return loadingObjectFromClassLoaderWithCS(unwrapObject.getClass().getClassLoader(), className, jarPath);
+    }
+
+    public static Object loadingObjectFromClassLoaderWithCS(ClassLoader classLoader, String className, String jarPath)
             throws ClassNotFoundException {
 
         URL[] urls;
@@ -95,7 +106,7 @@ public class DynamicLibraryLoader extends URLClassLoader {
         Object odb = null;
         try {
             urls = MiscUtils.loadURLs(jarPath);
-            ClassLoader cl = new URLClassLoader(urls, unwrapObject.getClass().getClassLoader());
+            ClassLoader cl = new URLClassLoader(urls, classLoader);
             clazzdb = cl.loadClass(className);
             odb = clazzdb.newInstance();
         } catch (Exception e) {
@@ -146,8 +157,8 @@ public class DynamicLibraryLoader extends URLClassLoader {
     }
 
     public static class Parameter {
-        private Class<?> type;
-        private Object parameter;
+        private final Class<?> type;
+        private final Object parameter;
 
         public Parameter(Class<?> type, Object parameter) {
             this.type = type;

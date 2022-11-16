@@ -68,6 +68,8 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     private final String url;
     private final DatabaseConnection databaseConnection;
 
+    private ClassLoader classLoaderFromPlugin;
+
     IFBCryptoPluginInit cryptoPlugin = null;
 
     public SimpleDataSource(DatabaseConnection databaseConnection) {
@@ -200,6 +202,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                         dataSource.setNonStandardProperty(entry.getKey().toString(), entry.getValue().toString());
                     }
                     dataSource.setURL(url);
+                    classLoaderFromPlugin = dataSource.getClass().getClassLoader();
 
                     return dataSource.getConnection(tpb);
                 } catch (ClassNotFoundException e) {
@@ -212,6 +215,10 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         }
 
         throw new DataSourceException("Error loading specified JDBC driver");
+    }
+
+    public ClassLoader getClassLoaderFromPlugin() {
+        return classLoaderFromPlugin;
     }
 
     public void setTPBtoConnection(Connection connection, ITPB tpb) throws SQLException {

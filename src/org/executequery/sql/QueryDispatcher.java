@@ -42,6 +42,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.editor.InputParametersDialog;
 import org.executequery.gui.editor.QueryEditorHistory;
+import org.executequery.gui.editor.TransactionParametersPanel;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
@@ -115,10 +116,7 @@ public class QueryDispatcher {
 
     private boolean waiting;
 
-    /**
-     * Isolation level for query transaction
-     */
-    private int transactionLevel;
+    private TransactionParametersPanel tpp;
 
     // ------------------------------------------------
     // static string outputs
@@ -137,8 +135,6 @@ public class QueryDispatcher {
     public QueryDispatcher(QueryDelegate runner) {
         try {
             this.delegate = runner;
-
-            transactionLevel = -1;
 
             querySender = new DefaultStatementExecutor(null, true);
 
@@ -261,7 +257,7 @@ public class QueryDispatcher {
             querySender.setDatabaseConnection(dc);
         }
 
-        querySender.setTransactionIsolation(transactionLevel);
+        querySender.setTpb(tpp.getTpb());
 
         statementCancelled = false;
 
@@ -317,7 +313,7 @@ public class QueryDispatcher {
             querySender.setDatabaseConnection(dc);
         }
 
-        querySender.setTransactionIsolation(transactionLevel);
+        querySender.setTpb(tpp.getTpb());
 
         statementCancelled = false;
 
@@ -373,7 +369,7 @@ public class QueryDispatcher {
             querySender.setDatabaseConnection(dc);
         }
 
-        querySender.setTransactionIsolation(transactionLevel);
+        querySender.setTpb(tpp.getTpb());
 
         try {
             Statement statement = querySender.getPreparedStatement(query);
@@ -1770,12 +1766,12 @@ public class QueryDispatcher {
         return false;
     }
 
-    public int getTransactionIsolation() {
-        return transactionLevel;
+    public TransactionParametersPanel getTpp() {
+        return tpp;
     }
 
-    public void setTransactionIsolation(int transactionLevel) {
-        this.transactionLevel = transactionLevel;
+    public void setTpp(TransactionParametersPanel tpp) {
+        this.tpp = tpp;
     }
 }
 

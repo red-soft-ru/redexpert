@@ -22,6 +22,7 @@ package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.QueryTypes;
+import org.executequery.gui.editor.TransactionParametersPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.QueryDelegate;
 import org.executequery.sql.QueryDispatcher;
@@ -270,13 +271,13 @@ public class ErdExecuteSQL extends ErdPrintableDialog
     }
 
     @Override
-    public int getTransactionIsolation() {
-        return queryAnalyser.getTransactionIsolation();
+    public void setTPP(TransactionParametersPanel tpp) {
+
     }
 
     @Override
-    public void setTransactionIsolation(int transactionLevel) {
-        queryAnalyser.setTransactionIsolation(transactionLevel);
+    public TransactionParametersPanel getTPP() {
+        return null;
     }
 
     public void setResultSet(ResultSet rs, String query) throws SQLException {

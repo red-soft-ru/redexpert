@@ -138,6 +138,9 @@ public class QueryEditor extends DefaultTabView
      */
     private JCheckBox stopOnErrorCheckBox;
 
+
+    private JCheckBox showTPPCheckBox;
+
     /**
      * the max row count returned field
      */
@@ -186,6 +189,8 @@ public class QueryEditor extends DefaultTabView
 
     DatabaseConnection oldConnection;
     private int number = -1;
+
+    private TransactionParametersPanel tpp;
 
     /**
      * Creates a new query editor with the specified text content
@@ -338,7 +343,17 @@ public class QueryEditor extends DefaultTabView
             }
         });
 
+        showTPPCheckBox = new JCheckBox(bundleString("ShowTPP"));
+        showTPPCheckBox.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                tpp.setVisible(showTPPCheckBox.isSelected());
+            }
+        });
+
         maxRowCountField = new MaxRowCountField(this);
+        tpp = new TransactionParametersPanel(getSelectedConnection());
+        delegate.setTPP(tpp);
 
         toolsPanel = new JPanel(new GridBagLayout());
         GridBagHelper gbh = new GridBagHelper();
@@ -351,7 +366,9 @@ public class QueryEditor extends DefaultTabView
         toolsPanel.add(maxRowCountCheckBox, gbh.setLabelDefault().nextCol().get());
         toolsPanel.add(maxRowCountField, gbh.nextCol().fillHorizontally().setWeightX(0.2).get());
         toolsPanel.add(stopOnErrorCheckBox, gbh.setLabelDefault().nextCol().get());
-        toolsPanel.add(new TransactionParametersPanel(getSelectedConnection()), gbh.nextRowFirstCol().fillHorizontally().spanX().get());
+        toolsPanel.add(showTPPCheckBox, gbh.setLabelDefault().nextCol().get());
+        toolsPanel.add(tpp, gbh.nextRowFirstCol().fillHorizontally().spanX().get());
+        tpp.setVisible(showTPPCheckBox.isSelected());
 
 
         splitPane.setBorder(BorderFactory.createEmptyBorder(0, 3, 3, 3));

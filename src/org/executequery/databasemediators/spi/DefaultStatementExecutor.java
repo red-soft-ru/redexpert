@@ -291,7 +291,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             try {
 
                 if (isUseDatabaseConnection())
-                    conn = ConnectionManager.getTemporaryConnection(databaseConnection, tpb);
+                    conn = ConnectionManager.getTemporaryConnection(databaseConnection);
                 else throw new DataSourceException("Connection=null or closed");
                 if (keepAlive) {
 
@@ -329,14 +329,15 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             statementResult.setMessage("Connection closed.");
             return false;
         }
-        connectionIsolationLevel = conn.getTransactionIsolation();
-        if (transactionIsolation != -1) {
+        if (tpb != null)
             try {
-                conn.setTransactionIsolation(transactionIsolation);
+                long idTra = ConnectionManager.getIDTransaction(databaseConnection, conn);
+                if (idTra == -1)
+                    ConnectionManager.setTPBtoConnection(databaseConnection, conn, tpb);
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog("Error transaction isolation", e);
+                GUIUtilities.displayExceptionErrorDialog("Error transaction parameters", e);
             }
-        }
+
         return true;
     }
 

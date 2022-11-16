@@ -36,4 +36,6 @@ public interface ITPB {
     byte[] toBytesWithType();
 
     int size();
+
+    Object getTpb();
 }

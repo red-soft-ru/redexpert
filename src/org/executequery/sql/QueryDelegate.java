@@ -20,6 +20,8 @@
 
 package org.executequery.sql;
 
+import org.executequery.gui.editor.TransactionParametersPanel;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -146,13 +148,9 @@ public interface QueryDelegate {
     /**
      * Get current isolation level for transaction.
      */
-    int getTransactionIsolation();
+    void setTPP(TransactionParametersPanel tpp);
 
-    /**
-     * Sets new transaction isolation level.
-     */
-    void setTransactionIsolation(int transactionLevel);
-
+    TransactionParametersPanel getTPP();
 }
 
 

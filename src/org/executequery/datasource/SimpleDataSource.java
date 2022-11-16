@@ -214,6 +214,23 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         throw new DataSourceException("Error loading specified JDBC driver");
     }
 
+    public void setTPBtoConnection(Connection connection, ITPB tpb) throws SQLException {
+        if (dataSource != null) {
+            if (connection instanceof PooledConnection)
+                connection = ((PooledConnection) connection).getRealConnection();
+            dataSource.setTransactionParameters(connection, tpb);
+        }
+    }
+
+    public long getIDTransaction(Connection connection) throws SQLException {
+        if (dataSource != null) {
+            if (connection instanceof PooledConnection)
+                connection = ((PooledConnection) connection).getRealConnection();
+            return dataSource.getIDTransaction(connection);
+        }
+        return -1;
+    }
+
     private Properties buildAdvancedProperties() {
 
         Properties advancedProperties = new Properties();

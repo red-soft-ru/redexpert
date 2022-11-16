@@ -1,8 +1,9 @@
 package biz.redsoft;
 
 
+import org.firebirdsql.gds.TransactionParameterBuffer;
 import org.firebirdsql.gds.impl.GDSType;
-import org.firebirdsql.gds.impl.TransactionParameterBufferImpl;
+import org.firebirdsql.gds.ng.FbTransaction;
 import org.firebirdsql.jca.FBSADataSource;
 import org.firebirdsql.jdbc.FBConnection;
 
@@ -76,10 +77,16 @@ public class FBDataSourceImpl implements IFBDataSource {
 
     public void setTransactionParameters(Connection connection, biz.redsoft.ITPB tpb) throws SQLException {
         if (connection instanceof FBConnection) {
-            org.firebirdsql.gds.TransactionParameterBuffer tpbx = new TransactionParameterBufferImpl();
-            if (tpb != null && tpbx != null)
-                ((FBConnection) connection).setTransactionParameters(((ITPBImpl) tpb).getTpb());
+            if (tpb != null)
+                ((FBConnection) connection).setTransactionParameters((TransactionParameterBuffer) tpb.getTpb());
         }
+    }
+
+    public long getIDTransaction(Connection con) throws SQLException {
+        FbTransaction transaction = ((FBConnection) con).getGDSHelper().getCurrentTransaction();
+        if (transaction != null)
+            return transaction.getTransactionId();
+        else return -1;
     }
 }
 

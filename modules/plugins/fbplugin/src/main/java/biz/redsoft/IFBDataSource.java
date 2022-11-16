@@ -25,4 +25,6 @@ public interface IFBDataSource {
     void setNonStandardProperty(String key, String value);
 
     void setTransactionParameters(Connection connection, ITPB tpb) throws SQLException;
+
+    long getIDTransaction(Connection con) throws SQLException;
 }

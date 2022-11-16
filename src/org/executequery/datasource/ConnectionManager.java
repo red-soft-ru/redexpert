@@ -206,6 +206,31 @@ public final class ConnectionManager {
 
     }
 
+    public static void setTPBtoConnection(DatabaseConnection databaseConnection, Connection connection, ITPB tpb) {
+        DataSource dataSource = getDataSource(databaseConnection);
+        if (dataSource instanceof SimpleDataSource) {
+            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+            try {
+                simpleDataSource.setTPBtoConnection(connection, tpb);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static long getIDTransaction(DatabaseConnection databaseConnection, Connection connection) {
+        DataSource dataSource = getDataSource(databaseConnection);
+        if (dataSource instanceof SimpleDataSource) {
+            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+            try {
+                return simpleDataSource.getIDTransaction(connection);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
+    }
+
     public static String getURL(DatabaseConnection databaseConnection) {
         if (databaseConnection == null) {
 

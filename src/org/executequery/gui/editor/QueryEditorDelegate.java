@@ -140,13 +140,13 @@ public class QueryEditorDelegate implements QueryDelegate {
     }
 
     @Override
-    public int getTransactionIsolation() {
-        return dispatcher.getTransactionIsolation();
+    public void setTPP(TransactionParametersPanel tpp) {
+        dispatcher.setTpp(tpp);
     }
 
     @Override
-    public void setTransactionIsolation(int transactionLevel) {
-        dispatcher.setTransactionIsolation(transactionLevel);
+    public TransactionParametersPanel getTPP() {
+        return dispatcher.getTpp();
     }
 
     public void executeQuery(DatabaseConnection selectedConnection,

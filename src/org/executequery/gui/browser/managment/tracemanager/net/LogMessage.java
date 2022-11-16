@@ -387,7 +387,7 @@ public class LogMessage {
             setTableCounters(textFromRuleContext(ctx.table_counters()));
             setStatementText(textFromRuleContext(ctx.query()));
         }
-        if (ctx != null && ctx.global_counters() == null) {
+        if (ctx != null && (ctx.global_counters() == null && ctx.plan() == null && ctx.params() == null && ctx.table_counters() == null)) {
             String query = textFromRuleContext(ctx);
             if (query != null) {
                 if (isFindOfRegex("param0 = .+\n", query)) {

@@ -59,3 +59,11 @@ src/org/underworldlabs/procedureParser/ProcedureParserParser.java
 src/org/underworldlabs/procedureParser/ProcedureParserVisitor.java
 /src/org/underworldlabs/sqlLexer/SqlLexer.java
 /src/org/underworldlabs/sqlLexer/SqlLexer.tokens
+/src/org/underworldlabs/traceparser/SessionInfo.tokens
+/src/org/underworldlabs/traceparser/SessionInfoBaseListener.java
+/src/org/underworldlabs/traceparser/SessionInfoBaseVisitor.java
+/src/org/underworldlabs/traceparser/SessionInfoLexer.java
+/src/org/underworldlabs/traceparser/SessionInfoLexer.tokens
+/src/org/underworldlabs/traceparser/SessionInfoListener.java
+/src/org/underworldlabs/traceparser/SessionInfoParser.java
+/src/org/underworldlabs/traceparser/SessionInfoVisitor.java

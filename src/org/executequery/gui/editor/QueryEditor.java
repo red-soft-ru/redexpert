@@ -271,17 +271,10 @@ public class QueryEditor extends DefaultTabView
                     QueryEditorHistory.changedConnectionEditor(idConnection, getSelectedConnection().getId(), scriptFile.getAbsolutePath());
                     oldConnection = getSelectedConnection();
                     editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
+                    tpp.setDatabaseConnection(getSelectedConnection());
                 }
             }
         });
-                /*(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (oldConnection != null)
-                    QueryEditorHistory.changedConnectionEditor(oldConnection.getId(), getSelectedConnection().getId(), scriptFile.getAbsolutePath());
-                oldConnection = getSelectedConnection();
-            }
-        });*/
         oldConnection = (DatabaseConnection) connectionsCombo.getSelectedItem();
         editorPanel = new QueryEditorTextPanel(this);
         editorPanel.addEditorPaneMouseListener(popup);

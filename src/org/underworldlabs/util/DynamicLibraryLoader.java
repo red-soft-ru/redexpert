@@ -95,19 +95,31 @@ public class DynamicLibraryLoader extends URLClassLoader {
 
     public static Object loadingObjectFromClassLoader(Object unwrapObject, String className, String jarPath)
             throws ClassNotFoundException {
-        return loadingObjectFromClassLoaderWithCS(unwrapObject.getClass().getClassLoader(), className, jarPath);
+        URL[] urls;
+        ClassLoader cl;
+        try {
+            urls = MiscUtils.loadURLs(jarPath);
+            cl = new URLClassLoader(urls, unwrapObject.getClass().getClassLoader());
+        } catch (Exception e) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Error loading class ");
+            sb.append(className);
+            sb.append(" from ");
+            sb.append(jarPath);
+            throw new ClassNotFoundException(sb.toString(), e.getCause());
+        }
+
+        return loadingObjectFromClassLoaderWithCS(cl, className, jarPath);
     }
 
     public static Object loadingObjectFromClassLoaderWithCS(ClassLoader classLoader, String className, String jarPath)
             throws ClassNotFoundException {
 
-        URL[] urls;
+
         Class clazzdb;
         Object odb = null;
         try {
-            urls = MiscUtils.loadURLs(jarPath);
-            ClassLoader cl = new URLClassLoader(urls, classLoader);
-            clazzdb = cl.loadClass(className);
+            clazzdb = classLoader.loadClass(className);
             odb = clazzdb.newInstance();
         } catch (Exception e) {
             StringBuilder sb = new StringBuilder();

@@ -1,66 +1,38 @@
 package org.executequery.gui.editor;
 
-import org.executequery.components.BottomButtonPanel;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.gui.BaseDialog;
+import org.executequery.gui.components.AbstractDialogPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-public class TransactionTablesTable extends JPanel {
+public class TransactionTablesTable extends AbstractDialogPanel {
     JTable table;
     TransactionTableModel model;
     private final List<NamedObject> tables;
-
-    private BaseDialog dialog;
-
-    private boolean canceled = false;
 
     public TransactionTablesTable(List<NamedObject> tables) {
         this.tables = tables;
         init();
     }
 
-    public BaseDialog getDialog() {
-        return dialog;
-    }
+    @Override
+    protected void ok() {
 
-    public void setDialog(BaseDialog dialog) {
-        this.dialog = dialog;
-    }
-
-    public void display() {
-        setCanceled(false);
     }
 
     private void init() {
         model = new TransactionTableModel(tables);
         table = new JTable(model);
-        ActionListener bottomButtonListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (Objects.equals(e.getActionCommand(), "ok")) {
-                    dialog.dispose();
-                }
-            }
-        };
-        BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(bottomButtonListener, "OK", "", "ok", true);
-        bottomButtonPanel.setHelpButtonVisible(false);
-
-
-        setLayout(new GridBagLayout());
+        mainPanel.setLayout(new GridBagLayout());
         GridBagHelper gbh = new GridBagHelper();
         gbh.setDefaultsStatic().defaults();
 
-        add(new JScrollPane(table), gbh.fillBoth().spanX().get());
-        add(bottomButtonPanel, gbh.nextRowFirstCol().fillHorizontally().get());
+        mainPanel.add(new JScrollPane(table), gbh.fillBoth().spanX().spanY().get());
     }
 
     public List<ReservingTable> getReservingTables() {
@@ -70,14 +42,6 @@ public class TransactionTablesTable extends JPanel {
                 result.add(rTable);
         }
         return result;
-    }
-
-    public boolean isCanceled() {
-        return canceled;
-    }
-
-    public void setCanceled(boolean canceled) {
-        this.canceled = canceled;
     }
 
     class ReservingTable {

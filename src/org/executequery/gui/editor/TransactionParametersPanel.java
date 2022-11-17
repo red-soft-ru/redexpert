@@ -75,7 +75,7 @@ public class TransactionParametersPanel extends JPanel {
                     transactionTablesTable.setDialog(dialog);
                     transactionTablesTable.display();
                     dialog.display();
-                    if (transactionTablesTable.isCanceled())
+                    if (!transactionTablesTable.isSuccess())
                         reservingCheckBox.setSelected(false);
                 }
             }
@@ -124,7 +124,7 @@ public class TransactionParametersPanel extends JPanel {
         return levelCombobox.getSelectedLevel();
     }
 
-    public ITPB getTpb() {
+    public ITPB getTpb(DatabaseConnection databaseConnection) {
         if (databaseConnection != null && databaseConnection.isConnected()) {
             try {
                 tpb = (ITPB) DynamicLibraryLoader.loadingObjectFromClassLoaderWithCS(ConnectionManager.getClassLoaderForDatabaseConnection(databaseConnection), "ITPBImpl");

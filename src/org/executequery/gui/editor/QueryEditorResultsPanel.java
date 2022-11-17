@@ -23,6 +23,7 @@ package org.executequery.gui.editor;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.UserPreferencesManager;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.resultset.RecordDataItem;
@@ -241,6 +242,18 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
     }
 
+    private void addTextOutputTab(DatabaseConnection databaseConnection) {
+        if (databaseConnection == null)
+            addTextOutputTab();
+        else {
+            if (indexOfTab(databaseConnection.getName()) == -1) {
+
+                insertTab(databaseConnection.getName(), outputTabIcon, new LoggingOutputPanel(), databaseConnection.getName(), 0);
+            }
+        }
+
+    }
+
     /**
      * Sets the user defined (preferences) table properties.
      */
@@ -359,7 +372,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      * @param maxRecords    - the maximum records to return
      * @param query         - the executed query of the result set
      */
-    public int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords, String query) throws SQLException {
+    public synchronized int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords, String query) throws SQLException {
 
         ResultSetTableModel model = new ResultSetTableModel(rset, maxRecords, query, false);
 
@@ -507,7 +520,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         int rowCount = model.getRowCount();
         if (rowCount == 0) {
             if (showRowNumber) {
-                setOutputMessage(SqlMessages.PLAIN_MESSAGE, SUCCESSFULL_NO_ROWS.trim(), true);
+                setOutputMessage(null, SqlMessages.PLAIN_MESSAGE, SUCCESSFULL_NO_ROWS.trim(), true);
                 resetEditorRowCount(rowCount);
                 queryEditor.setMetaDataButtonEnabled(false);
             }
@@ -515,7 +528,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         return rowCount;
     }
 
-    public void setResultText(int result, int type, String metaName) {
+    public void setResultText(DatabaseConnection dc, int result, int type, String metaName) {
 
         if (hasNoTabs()) {
 
@@ -587,7 +600,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         sb.append(rText);
 
-        setOutputMessage(SqlMessages.PLAIN_MESSAGE, sb.toString(), true);
+        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, sb.toString(), true);
         queryEditor.setLeftStatusText(SUCCESS);
     }
 
@@ -695,25 +708,32 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         }
     }
 
-    public void setOutputMessage(int type, String text) {
-        setOutputMessage(type, text, true);
+    public void setOutputMessage(DatabaseConnection dc, int type, String text) {
+        setOutputMessage(dc, type, text, true);
     }
 
-    public void setOutputMessage(int type, String text, boolean selectTab) {
+    public void setOutputMessage(DatabaseConnection dc, int type, String text, boolean selectTab) {
 
         if (hasNoTabs()) {
-
-            addTextOutputTab();
+            addTextOutputTab(dc);
         }
 
         if (selectTab) {
-
-            setSelectedIndex(0);
+            if (dc == null)
+                setSelectedIndex(0);
+            else {
+                if (indexOfTab(dc.getName()) < 0)
+                    addTextOutputTab(dc);
+                setSelectedIndex(indexOfTab(dc.getName()));
+            }
         }
 
         if (StringUtils.isNotBlank(text)) {
-
-            appendOutput(type, text);
+            if (dc == null)
+                appendOutput(type, text);
+            else {
+                appendOutput(dc, type, text);
+            }
         }
 
         if (queryEditor != null) {
@@ -728,6 +748,15 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
     protected void appendOutput(int type, String text) {
         outputTextPane.append(type, text);
+    }
+
+    protected void appendOutput(DatabaseConnection dc, int type, String text) {
+        int index = indexOfTab(dc.getName());
+        if (index < 0) {
+            addTextOutputTab(dc);
+            index = indexOfTab(dc.getName());
+        }
+        ((LoggingOutputPanel) getComponentAt(index)).append(type, text);
     }
 
     public void clearOutputPane() {
@@ -786,6 +815,12 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         addTextOutputTab();
         setSelectedIndex(indexOfTab(OUTPUT_TAB_TITLE));
+    }
+
+    public void preExecute(DatabaseConnection databaseConnection) {
+
+        addTextOutputTab(databaseConnection);
+        setSelectedIndex(indexOfTab(databaseConnection.getName()));
     }
 
     /**

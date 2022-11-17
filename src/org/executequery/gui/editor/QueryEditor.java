@@ -28,8 +28,10 @@ import org.executequery.components.SplitPaneFactory;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.*;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.FocusablePanel;
 import org.executequery.gui.SaveFunction;
+import org.executequery.gui.components.SelectConnectionsPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.gui.text.TextEditor;
@@ -58,9 +60,8 @@ import java.awt.event.ItemListener;
 import java.awt.print.Printable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * The Query Editor.
@@ -161,6 +162,8 @@ public class QueryEditor extends DefaultTabView
      */
     private QueryEditorDelegate delegate;
 
+    private Map<DatabaseConnection, QueryEditorDelegate> delegates;
+
     private final TokenizingFormatter formatter;
 
     private JPanel toolsPanel;
@@ -254,6 +257,7 @@ public class QueryEditor extends DefaultTabView
         resultsPanel = new QueryEditorResultsPanel(this);
 
         delegate = new QueryEditorDelegate(this);
+        delegates = new HashMap<>();
 
         popup = new QueryEditorPopupMenu(delegate);
 
@@ -816,9 +820,9 @@ public class QueryEditor extends DefaultTabView
         return resultsPanel.getResultSetTable();
     }
 
-    public void setResultText(int updateCount, int type, String metaName) {
+    public void setResultText(DatabaseConnection dc, int updateCount, int type, String metaName) {
 
-        resultsPanel.setResultText(updateCount, type, metaName);
+        resultsPanel.setResultText(dc, updateCount, type, metaName);
     }
 
     /**
@@ -1170,6 +1174,12 @@ public class QueryEditor extends DefaultTabView
         resultsPanel.preExecute();
     }
 
+    public void preExecute(DatabaseConnection dc) {
+
+        filterTextField.setText("");
+        resultsPanel.preExecute(dc);
+    }
+
     public String getWordToCursor() {
 
         return editorPanel.getWordToCursor();
@@ -1207,7 +1217,47 @@ public class QueryEditor extends DefaultTabView
         editorPanel.resetExecutingLine();
         boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
 
-        delegate.executeQuery(getSelectedConnection(), query, executeAsBlock);
+        delegate.executeQuery(getSelectedConnection(), query, executeAsBlock, false);
+    }
+
+    public void executeSQLQueryInAnyConnections(String query) {
+        showSelectConnectionsDialog();
+        if (selectConnectionsPanel.isSuccess()) {
+
+
+            if (query == null) {
+                query = editorPanel.getQueryAreaText();
+            }
+
+            editorPanel.resetExecutingLine();
+            boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
+
+            for (DatabaseConnection dc : selectConnectionsPanel.getSelectedConnections()) {
+                preExecute(dc);
+                delegates.get(dc).executeQuery(dc, query, executeAsBlock, true);
+            }
+        }
+    }
+
+    SelectConnectionsPanel selectConnectionsPanel;
+
+    private void showSelectConnectionsDialog() {
+
+        selectConnectionsPanel = new SelectConnectionsPanel();
+        BaseDialog dialog = new BaseDialog("", true);
+        dialog.setContentPane(selectConnectionsPanel);
+        selectConnectionsPanel.setDialog(dialog);
+        selectConnectionsPanel.display();
+        dialog.display();
+        List<DatabaseConnection> selectedConns = selectConnectionsPanel.getSelectedConnections();
+        for (DatabaseConnection dc : selectedConns) {
+            if (!delegates.containsKey(dc)) {
+                QueryEditorDelegate queryEditorDelegate = new QueryEditorDelegate(this);
+                delegates.put(dc, queryEditorDelegate);
+                queryEditorDelegate.setTPP(tpp);
+            }
+        }
+
     }
 
     public void executeSQLScript(String script) {
@@ -1221,7 +1271,7 @@ public class QueryEditor extends DefaultTabView
 
         editorPanel.resetExecutingLine();
 
-        delegate.executeScript(getSelectedConnection(), script);
+        delegate.executeScript(getSelectedConnection(), script, false);
     }
 
     public void printExecutedPlan(boolean explained) {
@@ -1241,7 +1291,7 @@ public class QueryEditor extends DefaultTabView
         String query = getQueryAtCursor().getQuery();
         if (StringUtils.isNotBlank(query)) {
             editorPanel.setExecutingQuery(query);
-            delegate.executeQuery(query);
+            delegate.executeQuery(query, false);
         }
     }
 
@@ -1356,13 +1406,22 @@ public class QueryEditor extends DefaultTabView
     }
 
     public void setOutputMessage(int type, String text) {
-        resultsPanel.setOutputMessage(type, text);
+        resultsPanel.setOutputMessage(null, type, text);
+    }
+
+    public void setOutputMessage(DatabaseConnection dc, int type, String text) {
+        resultsPanel.setOutputMessage(dc, type, text);
+    }
+
+    public void setOutputMessage(DatabaseConnection dc, int type, String text, boolean selectTab) {
+        resultsPanel.setOutputMessage(dc, type, text, selectTab);
     }
 
     public void setOutputMessage(int type, String text, boolean selectTab) {
-        resultsPanel.setOutputMessage(type, text, selectTab);
+        resultsPanel.setOutputMessage(null, type, text, selectTab);
         //revalidate();
     }
+
 
     /**
      * Sets the state for an open file.

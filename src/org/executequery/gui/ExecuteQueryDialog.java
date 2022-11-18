@@ -100,7 +100,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         this.stopOnError = stopOnError;
         queryTokenizer = new QueryTokenizer();
         querySender = new DefaultStatementExecutor(dc, keepAlive);
-        this.autocommit = true;
+        this.autocommit = autocommit;
         querySender.setCommitMode(autocommit);
         init();
         SwingWorker sw = new SwingWorker() {

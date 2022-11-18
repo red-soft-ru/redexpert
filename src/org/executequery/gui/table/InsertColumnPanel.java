@@ -361,7 +361,8 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         if (column.isDefaultValueChanged()) {
 
             sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
-                    " ALTER COLUMN " + columnData.getFormattedColumnName() + " SET DEFAULT " + columnData.getDefaultValue() + ";\n");
+                    " ALTER COLUMN " + columnData.getFormattedColumnName() + " SET " + MiscUtils.formattedDefaultValue(columnData.getDefaultValue(), columnData.getSQLType()
+            ) + ";\n");
         }
 
         if (column.isComputedChanged()) {

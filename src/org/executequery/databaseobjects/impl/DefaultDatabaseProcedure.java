@@ -108,10 +108,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "cr.rdb$character_set_name as character_set_name, \n" +
                     "co.rdb$collation_name, \n" +
                     "pp.rdb$parameter_number,\n" +
-                    "fs.rdb$character_length, \n" +
+                    "fs.rdb$character_length AS CHAR_LEN, \n" +
                     "pp.rdb$description,\n" +
                     "pp.rdb$default_source as default_source,\n" +
-                    "fs.rdb$field_precision, \n" +
+                    "fs.rdb$field_precision as FIELD_PRECISION, \n" +
                     "pp.rdb$parameter_mechanism as AM,\n" +
                     "pp.rdb$field_source as FS,\n" +
                     "fs.rdb$default_source as FS_DEFAULT_SOURCE, \n" +
@@ -149,10 +149,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "cr.rdb$character_set_name as character_set_name, \n" +
                     "co.rdb$collation_name, \n" +
                     "pp.rdb$parameter_number,\n" +
-                    "fs.rdb$character_length, \n" +
+                    "fs.rdb$character_length AS CHAR_LEN, \n" +
                     "pp.rdb$description,\n" +
                     "pp.rdb$default_source as default_source,\n" +
-                    "fs.rdb$field_precision, \n" +
+                    "fs.rdb$field_precision as FIELD_PRECISION, \n" +
                     "pp.rdb$parameter_mechanism as AM,\n" +
                     "pp.rdb$field_source as FS,\n" +
                     "fs.rdb$default_source as FS_DEFAULT_SOURCE, \n" +
@@ -188,10 +188,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "cr.rdb$character_set_name as character_set_name, \n" +
                     "co.rdb$collation_name, \n" +
                     "pp.rdb$parameter_number,\n" +
-                    "fs.rdb$character_length, \n" +
+                    "fs.rdb$character_length AS CHAR_LEN, \n" +
                     "pp.rdb$description,\n" +
                     "null as default_source,\n" +
-                    "fs.rdb$field_precision, \n" +
+                    "fs.rdb$field_precision as FIELD_PRECISION, \n" +
                     "null as AM,\n" +
                     "pp.rdb$field_source as FS,\n" +
                     "fs.rdb$default_source as FS_DEFAULT_SOURCE, \n" +
@@ -230,7 +230,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                             DatabaseTypeConverter.getDataTypeName(rs.getInt(7), rs.getInt(10), rs.getInt(9)),
                             rs.getInt(8),
                             1 - rs.getInt("null_flag"));
-
+                    if (rs.getInt("FIELD_PRECISION") != 0)
+                        pp.setSize(rs.getInt("FIELD_PRECISION"));
+                    if (rs.getInt("CHAR_LEN") != 0)
+                        pp.setSize(rs.getInt("CHAR_LEN"));
                     if (pp.getDataType() == Types.LONGVARBINARY ||
                             pp.getDataType() == Types.LONGVARCHAR ||
                             pp.getDataType() == Types.BLOB) {

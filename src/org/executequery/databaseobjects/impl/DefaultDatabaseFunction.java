@@ -138,10 +138,10 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "cr.rdb$character_set_name as character_set_name,\n" +
                 "co.rdb$collation_name,\n" +
                 "fa.rdb$argument_position,\n" +
-                "fs.rdb$character_length,\n" +
+                "fs.rdb$character_length AS CHAR_LEN,\n" +
                 "fa.rdb$description,\n" +
                 "fa.rdb$default_source as DEFAULT_SOURCE,\n" +
-                "fs.rdb$field_precision,\n" +
+                "fs.rdb$field_precision as FIELD_PRECISION,\n" +
                 "fa.rdb$argument_mechanism as AM,\n" +
                 "fa.rdb$field_source as FS,\n" +
                 "fs.rdb$default_source,\n" +
@@ -197,6 +197,10 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                     if (domain != null && !domain.startsWith("RDB$"))
                         fp.setDomain(domain.trim());
                     fp.setNullable(rs.getInt("null_flag"));
+                    if (rs.getInt("FIELD_PRECISION") != 0)
+                        fp.setSize(rs.getInt("FIELD_PRECISION"));
+                    if (rs.getInt("CHAR_LEN") != 0)
+                        fp.setSize(rs.getInt("CHAR_LEN"));
                     if (fp.getDataType() == Types.LONGVARBINARY ||
                             fp.getDataType() == Types.LONGVARCHAR ||
                             fp.getDataType() == Types.BLOB) {

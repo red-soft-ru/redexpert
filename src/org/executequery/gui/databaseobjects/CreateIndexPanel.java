@@ -10,12 +10,14 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -100,6 +102,14 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             for (NamedObject ts : tss)
                 if (ts.getName().equalsIgnoreCase(databaseIndex.getTablespace().trim()))
                     tablespaceBox.setSelectedItem(ts);
+        JPanel fieldsPanel = new JPanel(new GridBagLayout());
+        TableModel model = new DefaultDatabaseIndex.IndexColumnsModel(databaseIndex.getIndexColumns());
+        JTable table = new JTable(model);
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
+        fieldsPanel.add(
+                new JScrollPane(table), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        tabbedPane.addTab(Bundles.get(DefaultDatabaseIndex.IndexColumnsModel.class, "StatisticSelectivity"), fieldsPanel);
         changed = false;
         addCreateSqlTab(databaseIndex);
     }

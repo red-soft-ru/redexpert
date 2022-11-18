@@ -124,6 +124,8 @@ public final class QueryTypes {
 
     public static final int RECREATE_OBJECT = 50;
 
+    public static final int SET_STATISTICS = 51;
+
     private QueryTypes() {
     }
 

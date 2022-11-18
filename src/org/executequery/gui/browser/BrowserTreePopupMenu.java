@@ -58,6 +58,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private final JMenuItem selectAllChildren;
 
     private final JMenuItem recompileAll;
+    private final JMenuItem reselectivityAllIndicies;
+    private final JMenuItem reselectivityIndex;
 
 
     private final JMenuItem dataBaseInformation;
@@ -120,6 +122,12 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         recompileAll = createMenuItem(bundleString("recompileAll"), "recompileAll", listener);
         recompileAll.setVisible(false);
         add(recompileAll);
+        reselectivityAllIndicies = createMenuItem(bundleString("reselectivityAll"), "reselectivityAll", listener);
+        reselectivityAllIndicies.setVisible(false);
+        add(reselectivityAllIndicies);
+        reselectivityIndex = createMenuItem(bundleString("reselectivity"), "reselectivity", listener);
+        reselectivityIndex.setVisible(false);
+        add(reselectivityIndex);
         //addSeparator();
 
         createActiveInactiveMenu(listener);
@@ -227,6 +235,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                         createObject.setText(bundleString("create", bundleString(getMetaTagFromNode(node))));
                     }
                     boolean recompileEnabled = false;
+                    boolean reselectivityAll = false;
                     if (node.getType() == NamedObject.META_TAG) {
                         int nodeType = ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getSubType();
                         boolean selectAllChildrenEnabled =
@@ -240,6 +249,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                                 || nodeType == NamedObject.FUNCTION
                                 || nodeType == NamedObject.PACKAGE
                                 || nodeType >= NamedObject.TRIGGER && nodeType <= NamedObject.DATABASE_TRIGGER;
+                        reselectivityAll = nodeType == NamedObject.INDEX;
                     }
 
 
@@ -263,6 +273,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                             selectAll.setText(bundleString("selectAll", parentName));
                         } else selectAll.setText(bundleString("selectAll", parentName));
                     }
+                    reselectivityIndex.setVisible(node.getType() == NamedObject.INDEX);
+                    reselectivityAll = node.getType() == NamedObject.INDEX || reselectivityAll;
+                    reselectivityAllIndicies.setVisible(reselectivityAll);
                     recompileEnabled = node.getType() == NamedObject.PROCEDURE
                             || node.getType() == NamedObject.FUNCTION
                             || node.getType() == NamedObject.PACKAGE

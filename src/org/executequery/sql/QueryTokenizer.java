@@ -78,8 +78,10 @@ public class QueryTokenizer {
 
         QueryTokenized fquery = firstQuery(query, delimiter, startQueryIndex, lowQuery);
         if (fquery.query != null) {
-            String noCommentsQuery = removeAllCommentsFromQuery(fquery.query.getOriginalQuery());
-            fquery.query.setQueryWithoutComments(noCommentsQuery.trim());
+            String noCommentsQuery = removeAllCommentsFromQuery(fquery.query.getOriginalQuery()).trim();
+            if (noCommentsQuery.isEmpty())
+                fquery.query.setDerivedQuery("");
+            fquery.query.setQueryWithoutComments(noCommentsQuery);
         }
         return fquery;
     }
@@ -354,7 +356,7 @@ public class QueryTokenizer {
         }
         Collections.reverse(tokenList);
         for (org.antlr.v4.runtime.Token token : tokenList) {
-            sb.delete(token.getStartIndex(), token.getStopIndex());
+            sb.delete(token.getStartIndex(), token.getStopIndex() + 1);
         }
         return sb.toString();
     }

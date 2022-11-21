@@ -165,12 +165,15 @@ public class SqlScriptRunner {
                     statement = querySender.getPreparedStatement(derivedQuery);
                     start = System.currentTimeMillis();
                     sqlStatementResult = querySender.execute(query.getQueryType(), statement);
-                    if (sqlStatementResult.isException())
+                    if (sqlStatementResult.isException()) {
                         if (sqlStatementResult.getSqlException() != null)
                             throw sqlStatementResult.getSqlException();
+                        if (sqlStatementResult.getOtherException() != null)
+                            throw sqlStatementResult.getOtherException();
+                    }
                     result += sqlStatementResult.getUpdateCount();
 
-                } catch (SQLException e) {
+                } catch (Throwable e) {
 
                     executionController.errorMessage("Error executing statement:");
                     executionController.actionMessage(derivedQuery);
@@ -213,7 +216,7 @@ public class SqlScriptRunner {
 
             sqlStatementResult.setOtherException(e);
 
-        } catch (org.underworldlabs.util.InterruptedException e) {
+        } catch (Throwable e) {
 
             sqlStatementResult.setOtherException(e);
 

@@ -125,8 +125,15 @@ public class QueryTokenizer {
                 Pattern p = Pattern.compile("Set(\\s+)term(\\s+)", Pattern.CASE_INSENSITIVE);
 
                 Matcher m = p.matcher(substring);
-
-                if (m.find()) {
+                boolean setTerm = m.find();
+                while (setTerm) {
+                    if (notInAnyToken(m.end()))
+                        break;
+                    else {
+                        setTerm = m.find(m.end());
+                    }
+                }
+                if (setTerm) {
                     queryDelimiter = substring.substring(m.end()).trim();
                     if (queryDelimiter.isEmpty())
                         throw new RuntimeException("Delimiter cannot be empty:\n" +
@@ -197,8 +204,15 @@ public class QueryTokenizer {
                 Pattern p = Pattern.compile("Set(\\s+)term(\\s+)", Pattern.CASE_INSENSITIVE);
 
                 Matcher m = p.matcher(substring);
-
-                if (m.find()) {
+                boolean setTerm = m.find();
+                while (setTerm) {
+                    if (notInAnyToken(m.end() + startIndexQuery))
+                        break;
+                    else {
+                        setTerm = m.find(m.end());
+                    }
+                }
+                if (setTerm) {
                     delimiter = substring.substring(m.end()).trim();
                     if (delimiter.isEmpty())
                         throw new RuntimeException("Delimiter cannot be empty:\n" +
@@ -207,7 +221,7 @@ public class QueryTokenizer {
                     return new QueryTokenized(null, query.substring(lastIndex), lowQuery.substring(lastIndex), startIndexQuery + lastIndex, delimiter);
                 }
                 lastIndex = index + delimiter.length();/*1;*/
-                return new QueryTokenized(new DerivedQuery(substring), query.substring(lastIndex),lowQuery.substring(lastIndex), startIndexQuery+lastIndex, delimiter);
+                return new QueryTokenized(new DerivedQuery(substring), query.substring(lastIndex), lowQuery.substring(lastIndex), startIndexQuery + lastIndex, delimiter);
             } else {
                 cycleContinue = true;
                 index = query.indexOf(delimiter, index + 1);

@@ -128,6 +128,9 @@ public class QueryTokenizer {
 
                 if (m.find()) {
                     queryDelimiter = substring.substring(m.end()).trim();
+                    if (queryDelimiter.isEmpty())
+                        throw new RuntimeException("Delimiter cannot be empty:\n" +
+                                substring);
                     lastIndex = index + (substring.length() - m.end());
                     continue;
                 }
@@ -197,8 +200,11 @@ public class QueryTokenizer {
 
                 if (m.find()) {
                     delimiter = substring.substring(m.end()).trim();
+                    if (delimiter.isEmpty())
+                        throw new RuntimeException("Delimiter cannot be empty:\n" +
+                                substring);
                     lastIndex = index + (substring.length() - m.end());
-                    return new QueryTokenized(null, query.substring(lastIndex),lowQuery.substring(lastIndex),startIndexQuery+lastIndex, delimiter);
+                    return new QueryTokenized(null, query.substring(lastIndex), lowQuery.substring(lastIndex), startIndexQuery + lastIndex, delimiter);
                 }
                 lastIndex = index + delimiter.length();/*1;*/
                 return new QueryTokenized(new DerivedQuery(substring), query.substring(lastIndex),lowQuery.substring(lastIndex), startIndexQuery+lastIndex, delimiter);

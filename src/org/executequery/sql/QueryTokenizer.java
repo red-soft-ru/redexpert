@@ -127,18 +127,20 @@ public class QueryTokenizer {
                 Matcher m = p.matcher(substring);
                 boolean setTerm = m.find();
                 while (setTerm) {
-                    if (notInAnyToken(m.end()))
+                    if (notInAnyToken(m.end() - 1))
                         break;
                     else {
                         setTerm = m.find(m.end());
                     }
                 }
                 if (setTerm) {
+                    String oldDelimiter = queryDelimiter;
                     queryDelimiter = substring.substring(m.end()).trim();
+                    queryDelimiter = removeAllCommentsFromQuery(queryDelimiter).trim();
                     if (queryDelimiter.isEmpty())
                         throw new RuntimeException("Delimiter cannot be empty:\n" +
                                 substring);
-                    lastIndex = index + (substring.length() - m.end());
+                    lastIndex = index + (oldDelimiter.length());
                     continue;
                 }
 
@@ -206,18 +208,20 @@ public class QueryTokenizer {
                 Matcher m = p.matcher(substring);
                 boolean setTerm = m.find();
                 while (setTerm) {
-                    if (notInAnyToken(m.end() + startIndexQuery))
+                    if (notInAnyToken(m.end() - 1 + startIndexQuery))
                         break;
                     else {
                         setTerm = m.find(m.end());
                     }
                 }
                 if (setTerm) {
+                    String oldDelimiter = delimiter;
                     delimiter = substring.substring(m.end()).trim();
+                    delimiter = removeAllCommentsFromQuery(delimiter).trim();
                     if (delimiter.isEmpty())
                         throw new RuntimeException("Delimiter cannot be empty:\n" +
                                 substring);
-                    lastIndex = index + (substring.length() - m.end());
+                    lastIndex = index + (oldDelimiter.length());
                     return new QueryTokenized(null, query.substring(lastIndex), lowQuery.substring(lastIndex), startIndexQuery + lastIndex, delimiter);
                 }
                 lastIndex = index + delimiter.length();/*1;*/

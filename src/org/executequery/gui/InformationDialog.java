@@ -48,7 +48,7 @@ public class InformationDialog extends ActionDialog {
 
             if (valueType == RESOURCE_PATH_VALUE) {
                 if (charSet == null)
-                text = FileUtils.loadResource(value);
+                    text = FileUtils.loadResource(value);
                 else
                     text = FileUtils.loadResource(value, charSet);
 
@@ -58,7 +58,10 @@ public class InformationDialog extends ActionDialog {
             }
 
             JTextArea textArea = new JTextArea(text);
-            textArea.setFont(new Font("monospaced", Font.PLAIN, 11));
+            textArea.setFont(new Font("Arial", Font.PLAIN, 12));
+            textArea.setTabSize(2);
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
             textArea.setEditable(false);
 
             JPanel panel = new JPanel(new GridBagLayout());

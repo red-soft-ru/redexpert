@@ -297,17 +297,22 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         registerFindAction();
         registerReplaceAction();
         registerCommentAction();
-        ConnectionsTreePanel.getPanelFromBrowser().getTree().getModel().addTreeModelListener(new TreeModelAdapter() {
+        ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        if (treePanel != null) {
+            SchemaTree tree = treePanel.getTree();
+            if (tree != null)
+                tree.getModel().addTreeModelListener(new TreeModelAdapter() {
 
-            @Override
-            public void treeStructureChanged(TreeModelEvent e) {
-                if (databaseConnection != null) {
-                    setDbobjects(databaseConnection.getListObjectsDB());
-                    autoCompletePopup.resetAutoCompleteListItems();
-                    autoCompletePopup.scheduleListItemLoad();
-                }
-            }
-        });
+                    @Override
+                    public void treeStructureChanged(TreeModelEvent e) {
+                        if (databaseConnection != null) {
+                            setDbobjects(databaseConnection.getListObjectsDB());
+                            autoCompletePopup.resetAutoCompleteListItems();
+                            autoCompletePopup.scheduleListItemLoad();
+                        }
+                    }
+                });
+        }
     }
 
     protected void registerCommentAction() {

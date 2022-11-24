@@ -169,14 +169,6 @@ connection_info end_line
  (table_counters end_line+)?
 ;
 
-session_info:
-'Session ID:' SPACE id end_line
-'name:' SPACE name_session end_line
-'user:' SPACE username? end_line
-'date:' SPACE datetime end_line
-'flags:' flags
-  ;
-
 
 //types
 type_trace_event
@@ -307,14 +299,6 @@ oldest_snapshot
 :any_name
 ;
 
-flags:
-SPACE any_name(', ' any_name)*
-;
-
-datetime
-:DATE SPACE TIME
-;
-
 next_transaction
 :any_name
 ;
@@ -330,7 +314,7 @@ procedure_info
 ;
 
 procedure_name:
-('Procedure'|'Function') SPACE any_name;
+(PROCEDURE_OR_FUNCTION) SPACE any_name;
 
 trigger_info:
 (~('\n'))+
@@ -352,8 +336,8 @@ declare_context_variables
 ;
 
 privileges_change_info
-:'Executed by' SPACE executor SPACE 'as' SPACE grantor ', operation:' SPACE privilege end_line
- object SPACE 'for' SPACE username end_line
+:'Executed by' SPACE executor SPACE AS SPACE grantor ', operation:' SPACE privilege end_line
+ object SPACE FOR SPACE username end_line
  attachment ', ' transaction
 ;
 
@@ -378,6 +362,10 @@ object
 ;
 
 privilege
+:PRIVILEGE
+;
+
+PRIVILEGE
 : ('ADD'|'DELETE') SPACE 'PRIVILEGE' SPACE ((
 'ALL' | 'INSERT' | 'UPDATE' | 'DELETE' | 'SELECT'
 | 'EXECUTE' | 'REFERENCE' | 'CREATE' | 'ALTER' | 'ALTER ANY'
@@ -387,7 +375,7 @@ privilege
 plan
 :'Select Expression' end_line
  ( '->' (~('\n'))+ end_line)+
- |('PLAN' (~('\n'))+ end_line)+
+ |(PLAN (~('\n'))+ end_line)+
 ;
 
 params
@@ -413,12 +401,11 @@ transaction_info
 ;
 
 level_isolation
-:'CONSISTENCY' | 'CONCURRENCY' | 'READ_COMMITTED | REC_VERSION' |
- 'READ_COMMITTED | NO_REC_VERSION'
+:LEVEL_ISOLATION
 ;
 
 mode_of_block
-:'WAIT' (SPACE time_wait)? |'NOWAIT'
+:WAIT (SPACE time_wait)? |NOWAIT
 ;
 
 time_wait
@@ -426,7 +413,7 @@ time_wait
 ;
 
 mode_of_access
-:'READ_ONLY' | 'READ_WRITE'
+:MODE_OF_ACCES
 ;
 
 memory_size_rule:
@@ -443,7 +430,7 @@ disk_cache:
 cache;
 
 cache:
-size_cache SPACE 'bytes'
+size_cache SPACE BYTES
 ;
 
 size_cache
@@ -451,11 +438,11 @@ size_cache
 ;
 
 global_counters
-:time_execution SPACE 'ms' (', ')? (reads SPACE 'read(s)')? (', ')? (writes SPACE 'write(s)')? (', ')? (fetches SPACE 'fetch(es)')? (', ')? (marks SPACE 'mark(s)')?
+:time_execution SPACE MS (', ')? (reads SPACE 'read(s)')? (', ')? (writes SPACE 'write(s)')? (', ')? (fetches SPACE 'fetch(es)')? (', ')? (marks SPACE 'mark(s)')?
 ;
 
 id_statement
-:'Statement' SPACE id ':'
+:STATEMENT SPACE id ':'
 ;
 
 sended_data
@@ -490,9 +477,9 @@ marks
 :id
 ;
 
-table_counters : 'Table' (SPACE 'Natural')? (SPACE 'Index')? (SPACE 'Update')?
- (SPACE 'Insert')? (SPACE 'Delete')? (SPACE 'Backout')? (SPACE 'Purge')? (SPACE 'Expunge')?
- (SPACE 'Lock')? (SPACE 'Wait')? (SPACE 'Conflict')? (SPACE 'BVersion')? (SPACE 'Fragment')? (SPACE 'Refetch')? end_line
+table_counters : Table (SPACE Natural)? (SPACE Index)? (SPACE Update)?
+ (SPACE Insert)? (SPACE Delete)? (SPACE Backout)? (SPACE Purge)? (SPACE Expunge)?
+ (SPACE Lock)? (SPACE Wait)? (SPACE Conflict)? (SPACE BVersion)? (SPACE Fragment)? (SPACE Refetch)? end_line
  ('*')+ end_line
  (any_name SPACE id (SPACE id)* SPACE? end_line)+;
 
@@ -509,7 +496,7 @@ client_process_info
 ;
 
 id_service
-:'Service' SPACE id
+:Service SPACE id
 ;
 
 client_process
@@ -586,19 +573,19 @@ CARETS
 ;
 
 param
-:'param' id ' = '
+:PARAM id ' = '
 ;
 
 id_transaction
-:'TRA_' id
+:TRA_ id
 ;
 
 id_connection
-:'ATT_' id
+:ATT_ id
 ;
 
 id_session
-:'SESSION_' id
+:SESSION_ id
 ;
 
 client_address
@@ -640,16 +627,180 @@ id
 ;
 
 any_name
-:(LETTER|DIGIT|'_'|'$'|'@'|'.'|IP_SEG)+
+:(LETTER|DIGIT|'_'|'$'|'@'|'.'|lexem)+
 ;
+
+path
+:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|'='|'?'|'-'|'('|')'|lexem)+
+;
+
+//LEXEMS
+PLAN
+:'PLAN'
+;
+
+PROCEDURE_OR_FUNCTION
+:'Procedure'|'Function'
+;
+
+AS
+:'as'
+;
+
+FOR
+:'for'
+;
+
+LEVEL_ISOLATION
+:'CONSISTENCY' | 'CONCURRENCY' | 'READ_COMMITTED | REC_VERSION' |
+ 'READ_COMMITTED | NO_REC_VERSION'
+;
+
+WAIT
+:'WAIT'
+;
+
+NOWAIT
+:'NOWAIT'
+;
+
+MODE_OF_ACCES
+:'READ_ONLY' | 'READ_WRITE'
+;
+
+BYTES
+:'bytes'
+;
+
+MS
+:'ms'
+;
+
+STATEMENT
+:'Statement'
+;
+
+Table
+:'Table'
+;
+Natural
+:'Natural'
+;
+
+Index
+:'Index'
+;
+
+Update:
+'Update'
+;
+Insert
+:'Insert'
+;
+
+Delete
+:'Delete'
+;
+
+Backout
+:'Backout'
+;
+
+Purge
+:'Purge'
+;
+
+Expunge
+:'Expunge'
+;
+
+Lock:
+'Lock'
+;
+
+Wait
+:'Wait'
+;
+
+Conflict
+:'Conflict'
+;
+
+BVersion
+:'BVersion'
+;
+
+Fragment
+:'Fragment'
+;
+
+Refetch
+:'Refetch'
+;
+
+Service
+:'Service'
+;
+
+PARAM
+:'param'
+;
+
+TRA_
+:'TRA_'
+;
+
+ATT_
+:'ATT_'
+;
+
+SESSION_
+:'SESSION_'
+;
+
+lexem
+:IP_SEG
+|PLAN
+|PROCEDURE_OR_FUNCTION
+|AS
+|FOR
+|LEVEL_ISOLATION
+|WAIT
+|NOWAIT
+|MODE_OF_ACCES
+|BYTES
+|MS
+|STATEMENT
+|Table
+|Natural
+|Index
+|Update
+|Insert
+|Delete
+|Backout
+|Purge
+|Expunge
+|Lock
+|Wait
+|Conflict
+|BVersion
+|Fragment
+|Refetch
+|Service
+|PARAM
+|TRA_
+|ATT_
+|SESSION_
+;
+
+
+
 
 MINUSES
 :('-')+
 ;
 
-path
-:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|'='|'?'|'-'|'('|')'|IP_SEG|'as')+
-;
+
 
 
 

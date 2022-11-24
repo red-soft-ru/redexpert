@@ -529,13 +529,13 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         sb.append("CREATE OR ALTER ").append(metaTag).append(" ");
-        sb.append(format(name));
+        sb.append(format(name)).append(" ");
 
         if (inputParameters != null && inputParameters.size() > 0 &&
                 (inputParameters.size() == 1 &&
                         !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
 
-            sb.append(" (");
+            sb.append("(");
             sb.append(formattedParameters(inputParameters, false));
             sb.append(")\n");
         }

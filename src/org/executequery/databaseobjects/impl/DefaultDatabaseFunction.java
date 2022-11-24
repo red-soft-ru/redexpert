@@ -113,7 +113,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
     public String getCreateSQLText() {
         return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(),
-                getEntryPoint(), getEngine(), getRemarks(), true, getHost().getDatabaseConnection());
+                getEntryPoint(), getEngine(), getRemarks(), false, true, getHost().getDatabaseConnection());
     }
 
     @Override
@@ -219,8 +219,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(),
-                getEntryPoint(), getEngine(), getRemarks(), Comparer.isCommentsNeed(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(),
+                getEngine(), getRemarks(), true, Comparer.isCommentsNeed(), getHost().getDatabaseConnection());
     }
 
     @Override

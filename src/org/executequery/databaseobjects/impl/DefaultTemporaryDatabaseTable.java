@@ -126,7 +126,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("GLOBAL TEMPORARY TABLE", getName());
+        return SQLUtils.generateDefaultDropRequest("TABLE", getName());
     }
 
     @Override

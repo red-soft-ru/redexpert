@@ -62,16 +62,15 @@ public final class SQLUtils {
 //            if (!MiscUtils.isNull(cd.getDescription()))
 //                descriptions.add(cd.getFormattedColumnName() + " is '" + cd.getDescription() + "'");
 
-            sqlText.append(generateDefinitionColumn(cd, computed, true));
-            if (i != k - 1)
-                sqlText.append(COMMA);
+            sqlText.append(generateDefinitionColumn(cd, computed, true, true));
         }
+        sqlText.deleteCharAt(sqlText.lastIndexOf(COMMA));
 
         if (primary_flag)
             primary.append(primaryText);
 
         primary.append(")");
-        String description = generateCommentForColumns(name, columnDataList, "COLUMN", "^");
+        String description = generateCommentForColumns(name, columnDataList, "COLUMN", ";");
 
         sb.append(format(name));
 
@@ -153,7 +152,7 @@ public final class SQLUtils {
         sb.append("^\n").append("SET TERM ; ^").append("\n");
 
         if (description != null && !description.isEmpty())
-            sb.append(generateComment(name, "PACKAGE", description, "^"));
+            sb.append(generateComment(name, "PACKAGE", description, ";"));
 
         return sb.toString();
     }
@@ -298,7 +297,7 @@ public final class SQLUtils {
     }
 
 
-    public static String generateDefinitionColumn(ColumnData cd, boolean computedNeed, boolean startWithNewLine) {
+    public static String generateDefinitionColumn(ColumnData cd, boolean computedNeed, boolean startWithNewLine, boolean setComma) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -306,6 +305,8 @@ public final class SQLUtils {
             sb.append(NEW_LINE_2);
         sb.append(cd.getColumnName() == null ?
                 CreateTableSQLSyntax.EMPTY : cd.getFormattedColumnName()).append(SPACE);
+
+        String checkValid = sb.toString();
 
         if (MiscUtils.isNull(cd.getComputedBy())) {
 
@@ -334,7 +335,7 @@ public final class SQLUtils {
         } else if (computedNeed)
             sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
 
-        return sb.toString();
+        return (!sb.toString().equals(checkValid)) ? sb.append(setComma ? COMMA : "").toString() : "";
 
     }
 
@@ -456,7 +457,7 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         if (setTerm)
-            sb.append("SET TERM #;\n");
+            sb.append("SET TERM ^;\n");
 
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE]));
 
@@ -476,7 +477,7 @@ public final class SQLUtils {
             sb.append(generateSQLBody(fullProcedureBody));
 
         if (setTerm)
-            sb.append("#\nSET TERM ;#");
+            sb.append("^\nSET TERM ;^");
         sb.append("\n");
 
         if (setComment) {
@@ -530,7 +531,10 @@ public final class SQLUtils {
         sb.append("CREATE OR ALTER ").append(metaTag).append(" ");
         sb.append(format(name));
 
-        if (inputParameters != null && inputParameters.size() > 0 && (inputParameters.size() == 1 && !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
+        if (inputParameters != null && inputParameters.size() > 0 &&
+                (inputParameters.size() == 1 &&
+                        !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
+
             sb.append(" (");
             sb.append(formattedParameters(inputParameters, false));
             sb.append(")\n");
@@ -541,23 +545,23 @@ public final class SQLUtils {
 
     public static String generateSQLBody(String sqlBody) {
         StringBuilder sb = new StringBuilder();
-        sb.append("\nAS\n").append(sqlBody).append(";\n");
+        sb.append("\nAS\n").append(sqlBody).append("^\n");
         return sb.toString();
     }
 
     public static String generateCreateFunction(
             String name, Vector<ColumnData> argumentList, Vector<ColumnData> variables, ColumnData returnType,
-            String functionBody, String entryPoint, String engine, String comment, boolean setComment) {
+            String functionBody, String entryPoint, String engine, String comment, boolean setTerm, boolean setComment) {
         StringBuilder sb = new StringBuilder();
         sb.append(formattedParameters(variables, true));
         sb.append(functionBody);
-        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, comment, setComment);
+        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, comment, setTerm, setComment);
     }
 
 
     public static String generateCreateFunction(
             String name, List<FunctionArgument> argumentList, String fullFunctionBody,
-            String entryPoint, String engine, String comment, boolean setComment, DatabaseConnection dc) {
+            String entryPoint, String engine, String comment, boolean setTerm, boolean setComment, DatabaseConnection dc) {
 
         Vector<ColumnData> inputs = new Vector<>();
         ColumnData returnType = null;
@@ -570,17 +574,20 @@ public final class SQLUtils {
                 returnType = columnDataFromProcedureParameter(parameter, dc, false);
         }
 
-        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, comment, setComment);
+        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, comment, setTerm, setComment);
     }
 
     public static String generateCreateFunction(
             String name, Vector<ColumnData> inputArguments, ColumnData returnType,
-            String fullFunctionBody, String entryPoint, String engine, String comment, boolean setComment) {
+            String fullFunctionBody, String entryPoint, String engine, String comment, boolean setTerm, boolean setComment) {
 
         StringBuilder sb = new StringBuilder();
 
+        if (setTerm)
+            sb.append("SET TERM ^;\n");
+
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION]));
-        sb.append("RETURNS ");
+        sb.append(" RETURNS ");
 
         if (returnType != null)
             sb.append(returnType.getFormattedDataType());
@@ -596,6 +603,9 @@ public final class SQLUtils {
             sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
         }
 
+        if (setTerm)
+            sb.append("SET TERM ;^\n");
+
         return sb.toString();
     }
 
@@ -608,9 +618,9 @@ public final class SQLUtils {
             if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
                 sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
                         append(" TYPE ").append(comparingCD.getColumnType());
-            if (!Objects.equals(thisCD.getDefaultValue(), comparingCD.getDefaultValue()))
+            if (!Objects.equals(thisCD.getDefaultValue().getValue(), comparingCD.getDefaultValue().getValue()))
                 sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
-                        append(" SET DEFAULT ").append(comparingCD.getDefaultValue());
+                        append(" SET DEFAULT ").append(comparingCD.getDefaultValue().getValue());
             if (thisCD.isRequired() && !comparingCD.isRequired())
                 sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
                         append(" DROP NOT NULL");
@@ -638,7 +648,7 @@ public final class SQLUtils {
 
             } else {
                 sb.append("\n\tDROP ").append(format(thisCD.getColumnName()));
-                sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, true, false));
+                sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, true, false, false));
             }
         }
 
@@ -936,7 +946,7 @@ public final class SQLUtils {
         if (!thisDomainData.getColumnName().contentEquals(domainData.getColumnName()))
             sb.append("TO ").append(domainData.getFormattedColumnName()).append("\n");
 
-        if (thisDomainData.getDefaultValue() != domainData.getDefaultValue()) {
+        if (!Objects.equals(thisDomainData.getDefaultValue().getValue(), domainData.getDefaultValue().getValue())) {
 
             if (MiscUtils.isNull(domainData.getDefaultValue().getValue()))
                 sb.append("DROP DEFAULT\n");
@@ -986,7 +996,7 @@ public final class SQLUtils {
                 sb.append("NULL");
         }
 
-        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */";
+        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */\n";
     }
 
     public static String generateAlterDomain(ColumnData columnData, String domainName) {
@@ -1030,7 +1040,7 @@ public final class SQLUtils {
                 sb.append("NULL");
         }
 
-        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */";
+        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */\n";
     }
 
 
@@ -1076,7 +1086,7 @@ public final class SQLUtils {
             if (!thisColumnsNames.contains(comparingColumn))
                 sb.append("\n\tADD ").append(generateDefinitionColumn(new ColumnData(
                                 comparingTable.getHost().getDatabaseConnection(),
-                                comparingTable.getColumn(comparingColumn)), computed, false))
+                                comparingTable.getColumn(comparingColumn)), computed, false, false))
                         .append(COMMA);
 
         if (!Arrays.equals(constraints, new boolean[]{false, false, false, false})) {
@@ -1249,7 +1259,7 @@ public final class SQLUtils {
                 sb.append("NULL");
         }
 
-        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */";
+        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */\n";
     }
 
 
@@ -1329,6 +1339,46 @@ public final class SQLUtils {
             sb.append("COMMENT ON TRIGGER ").append(format(name)).append(" IS '").append(comment).append("'^");
         }
 
+        return sb.toString();
+    }
+
+    public static String generateCreateDefaultStub(int type, String name, String triggerTableName) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("SET TERM ^;\n");
+        sb.append("CREATE OR ALTER ");
+
+        switch (type) {
+
+            case (FUNCTION):
+                sb.append("FUNCTION ").append(format(name));
+                sb.append("\n\tRETURNS INTEGER AS BEGIN return 0; END^\n");
+                break;
+
+            case (PROCEDURE):
+                sb.append("PROCEDURE ").append(format(name));
+                sb.append("\n\tAS BEGIN END^\n");
+                break;
+
+            case (TRIGGER):
+                sb.append("TRIGGER ").append(format(name));
+                sb.append("\n\tFOR ").append(format(triggerTableName)).append(" BEFORE INSERT");
+                sb.append("\n\tAS BEGIN END^\n");
+                break;
+
+            case (DDL_TRIGGER):
+                sb.append("TRIGGER ").append(format(name));
+                sb.append("\n\tBEFORE CREATE|ALTER|DROP TABLE");
+                sb.append("\n\tAS BEGIN END^\n");
+                break;
+
+            case (DATABASE_TRIGGER):
+                sb.append("TRIGGER ").append(format(name));
+                sb.append(" ON CONNECT").append("\n\tAS BEGIN END^\n");
+                break;
+        }
+
+        sb.append("SET TERM ;^\n");
         return sb.toString();
     }
 

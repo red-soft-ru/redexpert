@@ -312,7 +312,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             columnData.getAutoincrement().setStartValue(autoIncrementPanel.getStartValue());
             columnData.setColumnName(nameField.getText());
             sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()));
-            sb.append("\n\tADD ").append(SQLUtils.generateDefinitionColumn(columnData, true, false));
+            sb.append("\n\tADD ").append(SQLUtils.generateDefinitionColumn(columnData, true, false, false));
         }
 
         if (columnData.getDescription() != null && !Objects.equals(columnData.getDescription(), ""))

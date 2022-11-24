@@ -1,6 +1,8 @@
 package org.executequery.gui.browser.comparer;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
@@ -11,11 +13,15 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
+import java.sql.ResultSet;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.executequery.databaseobjects.NamedObject.*;
 
@@ -103,9 +109,9 @@ public class Comparer {
 
     public void createObjects(int type) {
 
-        List<NamedObject> createObjects = createListObjects(type);
+        List<NamedObject> createObjects = sortObjectsByDependency(createListObjects(type));
 
-        if (createObjects.size() < 1)
+        if (createObjects == null)
             return;
 
         String header = MessageFormat.format(
@@ -123,9 +129,9 @@ public class Comparer {
 
     public void dropObjects(int type) {
 
-        List<NamedObject> dropObjects = dropListObjects(type);
+        List<NamedObject> dropObjects = sortObjectsByDependency(dropListObjects(type));
 
-        if (dropObjects.size() < 1)
+        if (dropObjects == null)
             return;
 
         String header = MessageFormat.format(
@@ -335,6 +341,61 @@ public class Comparer {
                 computedFields.add(cd);
             }
         }
+    }
+
+    private List<NamedObject> sortObjectsByDependency(List<NamedObject> objectsList) {
+
+        if (objectsList.size() < 1)
+            return null;
+
+        String templateQuery =
+                "SELECT RDB$DEPENDENT_NAME FROM RDB$DEPENDENCIES WHERE RDB$DEPENDED_ON_NAME = '%s';";
+        DefaultStatementExecutor executor =
+                new DefaultStatementExecutor(compareConnection.getDatabaseConnection(), true);
+
+        ListIterator<NamedObject> keyIterator = objectsList.listIterator();
+        ListIterator<NamedObject> valueIterator = objectsList.listIterator();
+        Map<String, NamedObject> objectMap = objectsList.stream().collect(
+                Collectors.toMap(key -> keyIterator.next().getName(), value -> valueIterator.next()));
+
+        try {
+
+            for (String objectName : objectMap.keySet()) {
+                NamedObject tempObject = objectMap.get(objectName);
+
+                String query = String.format(templateQuery, MiscUtils.getFormattedObject(objectName));
+
+                executor.releaseResources();
+                SqlStatementResult statementResult =
+                        executor.execute(QueryTypes.SELECT, query);
+                ResultSet resultSet = statementResult.getResultSet();
+
+                if (resultSet == null)
+                    continue;
+
+                while (resultSet.next()) {
+                    String dependentObjectName = resultSet.getString(1).trim();
+
+                    if (objectMap.containsKey(dependentObjectName)) {
+                        NamedObject dependentObject = objectMap.get(dependentObjectName);
+
+                        if (objectsList.indexOf(tempObject) > objectsList.indexOf(dependentObject)) {
+                            objectsList.remove(tempObject);
+                            objectsList.add(objectsList.indexOf(dependentObject), tempObject);
+                        }
+                    }
+                }
+            }
+
+            executor.closeConnection();
+
+        } catch (java.lang.Exception e) {
+            GUIUtilities.displayExceptionErrorDialog(
+                    "Error while comparing objects dependencies:\n" + e.getMessage(), e);
+            Log.error(e);
+        }
+
+        return objectsList;
     }
 
     private void addStubsToScript(int type, List<NamedObject> stubsList) {

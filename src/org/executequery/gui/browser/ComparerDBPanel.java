@@ -40,6 +40,7 @@ public class ComparerDBPanel extends JPanel {
     private static final int IGNORE_FK = IGNORE_PK + 1;
     private static final int IGNORE_UK = IGNORE_FK + 1;
     private static final int IGNORE_CK = IGNORE_UK + 1;
+    private static final int STUBS = -100;
 
     private Comparer comparer;
     private List<DatabaseConnection> databaseConnectionList;
@@ -90,7 +91,7 @@ public class ComparerDBPanel extends JPanel {
 
         // --- script generation order defining ---
 
-        scriptGenerationOrder = new ArrayList<>();
+        scriptGenerationOrder = new LinkedList<>();
         isScriptGeneratorOrderReversed = false;
 
         scriptGenerationOrder.add(NamedObject.DOMAIN);
@@ -103,6 +104,7 @@ public class ComparerDBPanel extends JPanel {
         scriptGenerationOrder.add(NamedObject.EXCEPTION);
         scriptGenerationOrder.add(NamedObject.ROLE);
         scriptGenerationOrder.add(NamedObject.USER);
+        scriptGenerationOrder.add(STUBS);
         scriptGenerationOrder.add(NamedObject.FUNCTION);
         scriptGenerationOrder.add(NamedObject.PROCEDURE);
         scriptGenerationOrder.add(NamedObject.UDF);
@@ -344,6 +346,16 @@ public class ComparerDBPanel extends JPanel {
                 if (progressDialog.isCancel())
                     break;
 
+                if (type == STUBS) {
+                    comparer.createStubs(attributesCheckBoxMap.get(NamedObject.FUNCTION).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected());
+
+                    continue;
+                }
+
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
                     comparer.setLists("");
@@ -371,6 +383,9 @@ public class ComparerDBPanel extends JPanel {
                 if (progressDialog.isCancel())
                     break;
 
+                if (type == STUBS)
+                    continue;
+
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
                     comparer.setLists("");
@@ -397,6 +412,9 @@ public class ComparerDBPanel extends JPanel {
 
                 if (progressDialog.isCancel())
                     break;
+
+                if (type == STUBS)
+                    continue;
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 

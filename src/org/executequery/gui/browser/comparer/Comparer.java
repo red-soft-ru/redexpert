@@ -7,6 +7,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
@@ -103,7 +104,6 @@ public class Comparer {
     public void createObjects(int type) {
 
         List<NamedObject> createObjects = createListObjects(type);
-
 
         if (createObjects.size() < 1)
             return;
@@ -207,9 +207,24 @@ public class Comparer {
             for (ColumnData cd : computedFields) {
                 script.add("\n/* " + cd.getTableName() + "." + cd.getColumnName() + " */");
                 script.add("\nALTER TABLE " + cd.getTableName() + "\n\tADD " +
-                        SQLUtils.generateDefinitionColumn(cd, true, false) + ";\n");
+                        SQLUtils.generateDefinitionColumn(cd, true, false, false) + ";\n");
             }
         }
+    }
+
+    public void createStubs(
+            boolean functions, boolean procedures, boolean triggers, boolean ddlTriggers, boolean dbTriggers) {
+
+        if (functions)
+            addStubsToScript(FUNCTION, createListObjects(FUNCTION));
+        if (procedures)
+            addStubsToScript(PROCEDURE, createListObjects(PROCEDURE));
+        if (triggers)
+            addStubsToScript(TRIGGER, createListObjects(TRIGGER));
+        if (ddlTriggers)
+            addStubsToScript(DDL_TRIGGER, createListObjects(DDL_TRIGGER));
+        if (dbTriggers)
+            addStubsToScript(DATABASE_TRIGGER, createListObjects(DATABASE_TRIGGER));
     }
 
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
@@ -320,6 +335,28 @@ public class Comparer {
                 computedFields.add(cd);
             }
         }
+    }
+
+    private void addStubsToScript(int type, List<NamedObject> stubsList) {
+
+        if (stubsList.size() < 1)
+            return;
+
+        String header = MessageFormat.format(
+                "\n/* ----- Creating {0} stubs ----- */\n",
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+        script.add(header);
+
+        for (NamedObject obj : stubsList) {
+            script.add("\n/* " + obj.getName() + " */");
+
+            String tableName = "";
+            if (type == TRIGGER)
+                tableName = ((DefaultDatabaseTrigger) obj).getTriggerTableName();
+
+            script.add("\n" + SQLUtils.generateCreateDefaultStub(type, obj.getName(), tableName));
+        }
+
     }
 
     // ---

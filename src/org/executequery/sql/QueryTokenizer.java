@@ -127,7 +127,7 @@ public class QueryTokenizer {
                 Matcher m = p.matcher(substring);
                 boolean setTerm = m.find();
                 while (setTerm) {
-                    if (notInAnyToken(m.end() - 1))
+                    if (notInAnyToken(m.end() + lastIndex - 1))
                         break;
                     else {
                         setTerm = m.find(m.end());
@@ -162,10 +162,12 @@ public class QueryTokenizer {
 
 
     private boolean notInAnyToken(int index) {
-
-        return !(withinMultiLineComment(index, index))
-                && !(withinSingleLineComment(index, index))
-                && !(withinQuotedString(index, index));
+        boolean single = !(withinSingleLineComment(index, index));
+        boolean multi = !(withinMultiLineComment(index, index));
+        boolean quote = !(withinQuotedString(index, index));
+        return single
+                && multi
+                && quote;
     }
 
     private final Matcher declareBlockMatcher;

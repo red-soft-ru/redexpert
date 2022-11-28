@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
@@ -72,7 +73,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
             if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
 
                 statement = dmd.getConnection().createStatement();
-                ResultSet rs = statement.executeQuery("select gen_id(" + getName() + ", 0) from rdb$database");
+                ResultSet rs = statement.executeQuery("SELECT GEN_ID(" + MiscUtils.getFormattedObject(getName()) + ", 0) FROM RDB$DATABASE");
 
                 if (rs.next())
                     currentValue = rs.getLong(1);

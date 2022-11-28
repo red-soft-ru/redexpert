@@ -76,6 +76,8 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     JTabbedPane tabbedPane;
 
+    boolean autocommit;
+
     public static void setClipboard(String str) {
         StringSelection ss = new StringSelection(str);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
@@ -98,6 +100,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         this.stopOnError = stopOnError;
         queryTokenizer = new QueryTokenizer();
         querySender = new DefaultStatementExecutor(dc, keepAlive);
+        this.autocommit = autocommit;
         querySender.setCommitMode(autocommit);
         init();
         SwingWorker sw = new SwingWorker() {
@@ -173,7 +176,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         tcm.getColumn(model.NAME_OPERATION).setPreferredWidth(200);
         tcm.getColumn(model.STATUS).setPreferredWidth(200);
         tcm.getColumn(model.COPY).setPreferredWidth(50);
-
+        queryPane.setRows(5);
 
         listActionsLabel.setText(bundleString("listActions"));
 
@@ -195,7 +198,10 @@ public class ExecuteQueryDialog extends BaseDialog {
             }
         });
 
+
         commitButton.setText(bundleString("commit"));
+        if (autocommit)
+            commitButton.setText(Bundles.getCommon("ok.button"));
         commitButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 commitButtonActionPerformed(evt);
@@ -229,7 +235,8 @@ public class ExecuteQueryDialog extends BaseDialog {
         mainPanel.add(copyQueryButton, gbh.nextRowFirstCol().setLabelDefault().anchorSouthWest().get());
         mainPanel.add(copyErrorButton, gbh.nextCol().setLabelDefault().anchorSouthWest().get());
         mainPanel.add(commitButton, gbh.nextCol().setLabelDefault().anchorSouthEast().get());
-        mainPanel.add(rollbackButton, gbh.nextCol().setLabelDefault().anchorSouthEast().get());
+        if (!autocommit)
+            mainPanel.add(rollbackButton, gbh.nextCol().setLabelDefault().anchorSouthEast().get());
         addDisplayComponent(mainPanel);
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -491,7 +498,6 @@ public class ExecuteQueryDialog extends BaseDialog {
         setOutputMessage(
                 SqlMessages.ACTION_MESSAGE_PREFORMAT, query);
     }
-
     void setOutputMessage(int type, String text) {
         errorPane.clear();
         errorPane.append(type, text);

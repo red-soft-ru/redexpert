@@ -6,8 +6,8 @@ import org.firebirdsql.gds.ng.InfoProcessor;
 
 import java.sql.SQLException;
 
-import static org.firebirdsql.gds.VaxEncoding.iscVaxInteger;
 import static org.firebirdsql.gds.VaxEncoding.iscVaxInteger2;
+import static org.firebirdsql.gds.VaxEncoding.iscVaxLong;
 
 /**
  * Created by vasiliy on 12.01.17.
@@ -22,7 +22,7 @@ public class FBPerformanceInfoProcessorImpl implements InfoProcessor<FBPerforman
             throw new SQLException("Response buffer for database information request is empty");
         }
         FBPerformanceInfoImpl out = new FBPerformanceInfoImpl();
-        int value;
+        long value;
         int len;
         int i = 0;
         while (info[i] != ISCConstants.isc_info_end) {
@@ -30,56 +30,56 @@ public class FBPerformanceInfoProcessorImpl implements InfoProcessor<FBPerforman
                 case ISCConstants.isc_info_reads:
                     len = iscVaxInteger2(info, i);
                     i += 2;
-                    value = iscVaxInteger(info, i, len);
+                    value = iscVaxLong(info, i, len);
                     i += len;
                     out.setPerfReads(value);
                     break;
                 case ISCConstants.isc_info_writes:
                     len = iscVaxInteger2(info, i);
                     i += 2;
-                    value = iscVaxInteger(info, i, len);
+                    value = iscVaxLong(info, i, len);
                     i += len;
                     out.setPerfWrites(value);
                     break;
                 case ISCConstants.isc_info_fetches:
                     len = iscVaxInteger2(info, i);
                     i += 2;
-                    value = iscVaxInteger(info, i, len);
+                    value = iscVaxLong(info, i, len);
                     i += len;
                     out.setPerfFetches(value);
                     break;
                 case ISCConstants.isc_info_marks:
                     len = iscVaxInteger2(info, i);
                     i += 2;
-                    value = iscVaxInteger(info, i, len);
+                    value = iscVaxLong(info, i, len);
                     i += len;
                     out.setPerfMarks(value);
                     break;
                 case ISCConstants.isc_info_page_size:
                     len = iscVaxInteger2(info, i);
                     i += 2;
-                    value = iscVaxInteger(info, i, len);
+                    value = iscVaxLong(info, i, len);
                     i += len;
                     out.setPerfPageSize(value);
                     break;
                 case ISCConstants.isc_info_num_buffers:
                     len = iscVaxInteger2(info, i);
                     i += 2;
-                    value = iscVaxInteger(info, i, len);
+                    value = iscVaxLong(info, i, len);
                     i += len;
                     out.setPerfBuffers(value);
                     break;
                 case ISCConstants.isc_info_current_memory:
                     len = iscVaxInteger2(info, i);
                     i += 2;
-                    value = iscVaxInteger(info, i, len);
+                    value = iscVaxLong(info, i, len);
                     i += len;
                     out.setPerfCurrentMemory(value);
                     break;
                 case ISCConstants.isc_info_max_memory:
                     len = iscVaxInteger2(info, i);
                     i += 2;
-                    value = iscVaxInteger(info, i, len);
+                    value = iscVaxLong(info, i, len);
                     i += len;
                     out.setPerfMaxMemory(value);
                     break;

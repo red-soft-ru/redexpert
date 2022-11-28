@@ -5,6 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
     <properties>
         <antlr.version>4.7</antlr.version>
+        <jaybird3.version>3.0.35</jaybird3.version>
+        <jaybird4.version>4.0.23</jaybird4.version>
     </properties>
     <groupId>org.executequery</groupId>
     <artifactId>RedExpert-parent</artifactId>

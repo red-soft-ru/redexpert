@@ -1097,7 +1097,9 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             if (databaseObjectNode.getType() != NamedObject.META_TAG)
                 databaseObjectNode = (DatabaseObjectNode) databaseObjectNode.getParent();
         if (databaseObjectNode != null) {
-            if (GUIUtilities.displayConfirmDialog(bundledString("recompile-message", Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType()]))) == JOptionPane.YES_OPTION) {
+            if (GUIUtilities.displayConfirmDialog(bundledString("recompile-message",
+                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType()])))
+                    == JOptionPane.YES_OPTION) {
                 AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode);
                 ard.display();
                 if (ard.success) {
@@ -1105,6 +1107,34 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     eqd.display();
                 }
             }
+        }
+    }
+
+    public void reselectivity(ActionEvent e) {
+        DatabaseConnection dc = currentSelection;
+        DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        if (databaseObjectNode.getDatabaseObject() instanceof DefaultDatabaseIndex) {
+            String query = "SET STATISTICS INDEX " + MiscUtils.getFormattedObject(databaseObjectNode.getName()) + ";";
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), query, dc, true, ";", false, false);
+            eqd.display();
+            databaseObjectNode.getDatabaseObject().reset();
+        }
+    }
+
+    public void reselectivityAll(ActionEvent e) {
+        DatabaseConnection dc = currentSelection;
+        DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        if (databaseObjectNode != null)
+            if (databaseObjectNode.getType() != NamedObject.META_TAG)
+                databaseObjectNode = (DatabaseObjectNode) databaseObjectNode.getParent();
+        if (databaseObjectNode != null && GUIUtilities.displayConfirmDialog(bundledString("recompute-message")) == JOptionPane.YES_OPTION) {
+            StringBuilder sb = new StringBuilder();
+            for (DatabaseObjectNode node : databaseObjectNode.getChildObjects()) {
+                sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName())).append(";\n");
+                node.getDatabaseObject().reset();
+            }
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), sb.toString(), dc, true, ";", true, false);
+            eqd.display();
         }
     }
 }

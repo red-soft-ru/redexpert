@@ -126,8 +126,18 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     }
 
     protected String generateQuery() {
-        return SQLUtils.generateCreateSequence(getFormattedName(), startValueText.getLongValue(), incrementText.getLongValue(),
-                description.getTextAreaComponent().getText(), getDatabaseVersion(), editing);
+
+        String query = "";
+        try {
+            query = SQLUtils.generateCreateSequence(nameField.getText(), Long.parseLong(startValueText.getStringValue()),
+                    Long.parseLong(incrementText.getStringValue()), description.getTextAreaComponent().getText(), getVersion(), editing);
+
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            e.printStackTrace();
+        }
+
+        return query;
     }
 
     private void createGenerator() throws SQLException {

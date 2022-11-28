@@ -937,7 +937,9 @@ public abstract class TableDefinitionPanel extends JPanel
                     return cd.getComputedBy();
 
                 case DEFAULT_COLUMN:
-                    return cd.getDefaultValue();
+                    if (cd.getDefaultValue() == null)
+                        return null;
+                    return cd.getDefaultValue().getValue();
 
                 case AUTOINCREMENT_COLUMN:
                     return cd.isAutoincrement();

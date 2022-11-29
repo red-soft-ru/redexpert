@@ -307,6 +307,7 @@ public class ComparerDBPanel extends JPanel {
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("PACKAGE")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("FUNCTION")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("DDL_TRIGGER")).setSelected(false);
                 loggingOutputPanel.append(bundleString("RDBVersionBelow3"));
 
             } else if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||

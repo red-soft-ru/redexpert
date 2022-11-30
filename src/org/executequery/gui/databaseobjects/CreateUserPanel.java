@@ -7,23 +7,23 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.browser.ConnectionPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.managment.WindowAddUser;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 public class CreateUserPanel extends AbstractCreateObjectPanel {
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.USER);
@@ -46,6 +46,8 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
     private JButton deleteTag;
     private SimpleSqlTextPanel sqlTextPanel;
     private SimpleSqlTextPanel descriptionPanel;
+
+    private JCheckBox showPassword;
 
     public CreateUserPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseUser databaseObject) {
         super(dc, dialog, databaseObject);
@@ -78,6 +80,17 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
             @Override
             public void keyReleased(KeyEvent e) {
 
+            }
+        });
+        showPassword = new JCheckBox(Bundles.get(ConnectionPanel.class, "ShowPassword"));
+
+        showPassword.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    passTextField.setEchoChar((char) 0);
+                } else {
+                    passTextField.setEchoChar('•');
+                }
             }
         });
 
@@ -134,6 +147,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         //gbh.addLabelFieldPair(mainPanel, bundleString("UserName"), nameTextField, null, true, false);
 
         gbh.addLabelFieldPair(mainPanel, bundleString("Password"), passTextField, null, true, false);
+        mainPanel.add(showPassword, gbh.nextRowFirstCol().nextCol().get());
 
         //gbh.addLabelFieldPair(mainPanel, bundleString("ConfirmPassword"), confirmField, null, true, false);
         gbh.addLabelFieldPair(mainPanel, bundleString("FirstName"), firstNameField, null, true, false);

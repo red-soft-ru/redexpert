@@ -144,17 +144,14 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
 
         gbh.insertEmptyRow(mainPanel, 10);
 
-        //gbh.addLabelFieldPair(mainPanel, bundleString("UserName"), nameTextField, null, true, false);
 
         gbh.addLabelFieldPair(mainPanel, bundleString("Password"), passTextField, null, true, false);
         mainPanel.add(showPassword, gbh.nextRowFirstCol().nextCol().get());
 
-        //gbh.addLabelFieldPair(mainPanel, bundleString("ConfirmPassword"), confirmField, null, true, false);
+
         gbh.addLabelFieldPair(mainPanel, bundleString("FirstName"), firstNameField, null, true, false);
         gbh.addLabelFieldPair(mainPanel, bundleString("MiddleName"), middleNameField, null, true, false);
         gbh.addLabelFieldPair(mainPanel, bundleString("LastName"), lastNameField, null, true, false);
-        //gbh.addLabelFieldPair(mainPanel, userIDLabel, userIDField, null, true, false);
-        //gbh.addLabelFieldPair(mainPanel, groupIDLabel, groupIDField, null, true, false);
         gbh.addLabelFieldPair(mainPanel, pluginLabel, pluginField, null, true, false);
         mainPanel.add(activeBox, gbh.nextRowFirstCol().setLabelDefault().get());
         mainPanel.add(adminBox, gbh.nextCol().get());
@@ -195,8 +192,6 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         firstNameField.setText(beginUser.getFirstName());
         middleNameField.setText(beginUser.getMiddleName());
         lastNameField.setText(beginUser.getLastName());
-        //groupIDField.setText(Integer.toString(user.getGroupId()));
-        //userIDField.setText(Integer.toString(user.getUserId()));
         descriptionPanel.setSQLText(beginUser.getComment());
         activeBox.setSelected(beginUser.getActive());
         pluginField.setSelectedItem(beginUser.getPlugin());

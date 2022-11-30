@@ -44,7 +44,6 @@ import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
-import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.SortableHeaderRenderer;
 import org.underworldlabs.swing.table.TableSorter;
@@ -54,6 +53,8 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -538,11 +539,7 @@ public class TableDataTab extends JPanel
                             int extent = scrollBar.getModel().getExtent();
                             int maximum = scrollBar.getModel().getMaximum();
                             if (extent + e.getValue() == maximum) {
-                                if (!tableModel.isResultSetClose()) {
-                                    tableModel.fetchMoreData();
-                                    if (displayRowCount)
-                                        rowCountField.setText(String.valueOf(tableModel.getRowCount()));
-                                }
+                                fetchMoreData();
                             }
                         }
                     }
@@ -557,6 +554,18 @@ public class TableDataTab extends JPanel
                 add(rowCountPanel, rowCountPanelConstraints);
                 rowCountField.setText(String.valueOf(sorter.getRowCount()));
             }
+            table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    if (table.getSelectedRow() >= table.getRowCount() - 1) {
+                        int row = table.getSelectedRow();
+                        int col = table.getSelectedColumn();
+                        fetchMoreData();
+                        table.setRowSelectionInterval(row, row);
+                        table.setColumnSelectionInterval(col, col);
+                    }
+                }
+            });
 
         } catch (DataSourceException e) {
 
@@ -579,6 +588,14 @@ public class TableDataTab extends JPanel
         repaint();
 
         return "done";
+    }
+
+    private void fetchMoreData() {
+        if (!tableModel.isResultSetClose()) {
+            tableModel.fetchMoreData();
+            if (displayRowCount)
+                rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+        }
     }
 
     public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {

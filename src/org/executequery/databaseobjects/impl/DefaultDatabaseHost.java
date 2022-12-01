@@ -221,8 +221,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     public DatabaseMetaData getDatabaseMetaData() throws DataSourceException {
 
         if (!isConnected()) {
-
-            throw new DataSourceException("Connection closed.", true);
+            if (!getDatabaseConnection().isConnected()) {
+                Log.info("Connection lost");
+                return null;
+            } else throw new DataSourceException("Connection closed.", true);
         }
 
         try {
@@ -668,8 +670,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         List<DatabaseColumn> columns = new ArrayList<DatabaseColumn>();
 
         try {
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
+            String _catalog = null;//getCatalogNameForQueries(catalog);
+            String _schema = null;//getSchemaNameForQueries(schema);
             DatabaseMetaData dmd = getDatabaseMetaData();
 
             boolean isFirebirdConnection = false;
@@ -803,13 +805,11 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             return columns;
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
 
-            if (Log.isDebugEnabled()) {
-
-                Log.error("Error retrieving column data for table " + table
-                        + " using connection " + getDatabaseConnection(), e);
-            }
+            Log.error("Error retrieving column data for table " + table
+                    + " using connection " + getDatabaseConnection(), e);
+            e.printStackTrace();
 
             return columns;
 

@@ -403,8 +403,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         try {
 
             DatabaseHost databaseHost = getHost();
-            String _catalog = databaseHost.getCatalogNameForQueries(getCatalogName());
-            String _schema = databaseHost.getSchemaNameForQueries(getSchemaName());
+            String _catalog = null; /*databaseHost.getCatalogNameForQueries(getCatalogName());*/
+            String _schema = null;/*databaseHost.getSchemaNameForQueries(getSchemaName());*/
 
             DatabaseMetaData dmd = databaseHost.getDatabaseMetaData();
             return dmd.getColumns(_catalog, _schema, getName(), null);

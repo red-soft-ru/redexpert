@@ -59,6 +59,14 @@ public class LoginPasswordDialog extends BaseDialog {
             }
         });
         storePassword = new JCheckBox(Bundles.get(ConnectionPanel.class, "StorePassword"));
+        storePassword.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    storePassword.setSelected(!storePassword.isSelected());
+                }
+            }
+        });
         showPassword = new JCheckBox(Bundles.get(ConnectionPanel.class, "ShowPassword"));
 
         showPassword.addItemListener(new ItemListener() {
@@ -70,7 +78,27 @@ public class LoginPasswordDialog extends BaseDialog {
                 }
             }
         });
+        showPassword.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    showPassword.setSelected(!showPassword.isSelected());
+                }
+            }
+        });
         LinkButton linkButton = new LinkButton(bundledString("register"));
+        linkButton.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    try {
+                        Desktop.getDesktop().browse(new URL(urlOfRegistration).toURI());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
         linkButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -90,12 +118,28 @@ public class LoginPasswordDialog extends BaseDialog {
                 finished();
             }
         });
+        okButton.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                    finished();
+            }
+        });
         JButton cancelButton = new JButton(Bundles.getCommon("cancel.button"));
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 setClosedDialog(true);
                 finished();
+            }
+        });
+        cancelButton.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    setClosedDialog(true);
+                    finished();
+                }
             }
         });
 

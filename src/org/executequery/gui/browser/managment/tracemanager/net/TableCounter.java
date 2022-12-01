@@ -15,24 +15,28 @@ public class TableCounter {
         setHeader(header);
         setBody(body);
         counters = new Object[LogConstants.TABLE_COUNTERS.length];
-        for (int i = 0; i < LogConstants.TABLE_COUNTERS.length; i++) {
-            if (i == 0) {
-                int tableLength = header.indexOf(LogConstants.NATURAL);
-                tableLength = tableLength - (COL_WIDTH - LogConstants.NATURAL.length());
-                counters[0] = (body.substring(0, tableLength).trim());
-            } else {
-                String col = LogConstants.TABLE_COUNTERS[i];
-                int position = header.indexOf(col) + col.length() - COL_WIDTH;
-                if (position > 0 && position < body.length()) {
-                    String value = body.substring(position, position + COL_WIDTH).trim();
-                    try {
-                        if (!MiscUtils.isNull(value))
-                            counters[i] = Long.parseLong(value);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+        try {
+            for (int i = 0; i < LogConstants.TABLE_COUNTERS.length; i++) {
+                if (i == 0) {
+                    int tableLength = header.indexOf(LogConstants.NATURAL);
+                    tableLength = tableLength - (COL_WIDTH - LogConstants.NATURAL.length());
+                    counters[0] = (body.substring(0, tableLength).trim());
+                } else {
+                    String col = LogConstants.TABLE_COUNTERS[i];
+                    int position = header.indexOf(col) + col.length() - COL_WIDTH;
+                    if (position > 0 && position < body.length()) {
+                        String value = body.substring(position, position + COL_WIDTH).trim();
+                        try {
+                            if (!MiscUtils.isNull(value))
+                                counters[i] = Long.parseLong(value);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

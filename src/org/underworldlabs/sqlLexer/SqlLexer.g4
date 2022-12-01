@@ -352,6 +352,8 @@ KEYWORD
   | K_LIST
   | K_LN
   | K_LOCAL
+  | K_LOCALTIME
+  | K_LOCALTIMESTAMP
   | K_LOCK
   | K_LOG
   | K_LOG10
@@ -923,6 +925,8 @@ fragment K_LINGER : L I N G E R ;
 fragment K_LIST : L I S T ;
 fragment K_LN : L N ;
 fragment K_LOCAL : L O C A L ;
+fragment K_LOCALTIME : L O C A L T I M E ;
+fragment K_LOCALTIMESTAMP : L O C A L T I M E S T A M P;
 fragment K_LOCK : L O C K ;
 fragment K_LOG : L O G ;
 fragment K_LOG10 : L O G '10' ;

@@ -250,7 +250,7 @@ public final class SQLUtils {
         sb.append("\n");
 
         // add procedure description
-        sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^"));
+        sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false));
 
         sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
 
@@ -263,17 +263,20 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
         for (ColumnData cd : cols) {
             String name = format(relationName) + "." + cd.getFormattedColumnName();
-            sb.append(generateComment(name, metaTag, cd.getDescription(), delimiter));
+            sb.append(generateComment(name, metaTag, cd.getDescription(), delimiter, true));
         }
         return sb.toString();
     }
 
-    public static String generateComment(String name, String metaTag, String comment, String delimiter) {
+    public static String generateComment(String name, String metaTag, String comment, String delimiter, boolean nameAlreadyFormatted) {
         StringBuilder sb = new StringBuilder();
         if (comment != null && !comment.isEmpty()) {
             sb.append("\n");
             sb.append("COMMENT ON ").append(metaTag).append(" ");
-            sb.append(format(name));
+            if (nameAlreadyFormatted)
+                sb.append(name);
+            else
+                sb.append(format(name));
             sb.append(" IS ");
             if (!comment.equals("NULL"))
                 sb.append("'").append(comment).append("'");
@@ -336,7 +339,7 @@ public final class SQLUtils {
             sb.append(" ENGINE ").append(engine);
         } else sb.append(generateSQLBody(fullFunctionBody));
         sb.append("\n");
-        sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^"));
+        sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false));
 
         sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
         return sb.toString();
@@ -793,7 +796,7 @@ public final class SQLUtils {
         }
 
         if (description != null && !description.trim().equals(""))
-            sb.append(generateComment(name, "SEQUENCE", description.trim(), ";"));
+            sb.append(generateComment(name, "SEQUENCE", description.trim(), ";", false));
 
         return sb.toString();
     }
@@ -815,7 +818,7 @@ public final class SQLUtils {
         sb.append("\nAS \n").append(selectStatement.trim()).append(";\n");
 
         if (description != null && !description.trim().equals(""))
-            sb.append(generateComment(name, "VIEW", description.trim(), ";"));
+            sb.append(generateComment(name, "VIEW", description.trim(), ";", false));
 
         return sb.toString();
     }

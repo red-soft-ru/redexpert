@@ -1,5 +1,6 @@
 package biz.redsoft;
 
+import org.firebirdsql.gds.DatabaseParameterBuffer;
 import org.firebirdsql.gds.impl.GDSFactory;
 import org.firebirdsql.gds.ng.FbConnectionProperties;
 import org.firebirdsql.gds.ng.FbDatabase;
@@ -68,7 +69,8 @@ public class FBCreateDatabaseImpl implements IFBCreateDatabase {
             connectionInfo.setPassword(password);
             connectionInfo.setDatabaseName(databaseName);
             connectionInfo.setEncoding(encoding);
-            connectionInfo.getExtraDatabaseParameters().addArgument(4, pageSize);
+            connectionInfo.getExtraDatabaseParameters().addArgument(DatabaseParameterBuffer.SET_DB_CHARSET, encoding);
+            connectionInfo.getExtraDatabaseParameters().addArgument(DatabaseParameterBuffer.PAGE_SIZE, pageSize);
             if (jdbcProperties != null) {
                 for (String key : jdbcProperties.stringPropertyNames()) {
                     connectionInfo.setNonStandardProperty(key, jdbcProperties.getProperty(key));

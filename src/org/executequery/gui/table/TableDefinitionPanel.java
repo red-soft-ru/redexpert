@@ -512,6 +512,7 @@ public abstract class TableDefinitionPanel extends JPanel
             }
             java.util.Collections.sort(charsets);
             charsets.add(0, CreateTableSQLSyntax.NONE);
+            charsets.add(0, "");
 
         } catch (Exception e) {
             e.printStackTrace();

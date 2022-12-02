@@ -69,6 +69,10 @@ public interface DatabaseConnection extends Serializable {
 
     void setCharset(String charset);
 
+    String getDBCharset();
+
+    void setDBCharset(String charset);
+
     String getRole();
 
     void setRole(String role);

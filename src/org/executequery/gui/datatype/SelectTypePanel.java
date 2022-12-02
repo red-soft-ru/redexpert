@@ -341,6 +341,7 @@ public class SelectTypePanel extends JPanel {
             }
             java.util.Collections.sort(charsets);
             charsets.add(0, CreateTableSQLSyntax.NONE);
+            charsets.add(0, "");
 
         } catch (Exception e) {
             Log.error("Error getting charsets for SelectTypePanel:", e);

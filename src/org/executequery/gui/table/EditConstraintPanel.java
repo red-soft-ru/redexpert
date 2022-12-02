@@ -391,6 +391,10 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
                 sender.releaseResources();
             }
         }
+
+        SimpleSqlTextPanel ddlPanel = new SimpleSqlTextPanel();
+        ddlPanel.setSQLText(generateQuery().replaceAll("\n\tDROP CONSTRAINT .+,", ""));
+        tabbedPane.add(ddlPanel, bundleStaticString("createSQL"));
     }
 
     protected String generateQuery() {

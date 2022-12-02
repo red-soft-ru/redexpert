@@ -189,8 +189,9 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
         String query = "";
         try {
-            query = SQLUtils.generateCreateSequence(getName(), getSequenceFirstValue(), getIncrement(),
-                    getRemarks(), getVersion(), false);
+            long firstValue = (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue();
+            query = SQLUtils.generateCreateSequence(getName(), firstValue,
+                    getIncrement(), getRemarks(), getVersion(), false);
 
         } catch (SQLException e) {
             GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);

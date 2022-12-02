@@ -24,7 +24,6 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusListener, KeyListener {
     public static final String TITLE = getCreateTitle(NamedObject.VIEW);
@@ -55,12 +54,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
 
     protected void init() {
         formatSqlButton = WidgetFactory.createButton(Bundles.getCommon("FormatSQL"));
-        formatSqlButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                formatSql();
-            }
-        });
+        formatSqlButton.addActionListener(e -> formatSql());
 
         sqlTextPanel = new SimpleSqlTextPanel();
         sqlTextPanel.getTextPane().setDatabaseConnection(connection);
@@ -145,9 +139,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     }
 
     @Override
-    public void setParameters(Object[] params) {
-
-    }
+    public void setParameters(Object[] params) {}
 
     @Override
     public void focusGained(FocusEvent focusEvent) {
@@ -184,80 +176,27 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             query = SQLUtils.generateCreateView(nameField.getText(), fields, selectStatement,
                     descriptionTextArea.getTextAreaComponent().getText(), getDatabaseVersion(), editing);
 
-
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
             e.printStackTrace();
         }
 
         return query;
-
     }
 
     private void changeName() {
 
-        if (Pattern.compile("VIEW \"\"").matcher(sqlTextPanel.getSQLText()).find()) {
-
-            sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
-                    replaceAll("VIEW \"\"", "VIEW " + format(nameField.getText().trim())));
-
-        } else if (Pattern.compile("VIEW \".*\"").matcher(sqlTextPanel.getSQLText()).find()) {
-
-            sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
-                    replaceAll("VIEW \".*\"", "VIEW " + format(nameField.getText().trim())));
-
-        } else if (Pattern.compile("VIEW \\w*\\b").matcher(sqlTextPanel.getSQLText()).find()) {
-
-            sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
-                    replaceAll("VIEW \\w*\\b", "VIEW " + format(nameField.getText().trim())));
-
-        } else {
-
-            sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
-                    replaceAll("VIEW ", "VIEW " + format(nameField.getText().trim())));
-        }
-
+        String sqlText = sqlTextPanel.getSQLText().trim()
+                .replaceAll("VIEW ((\".*\")|(\\w*\\b)|)", "VIEW " + format(nameField.getText().trim()));
+        sqlTextPanel.setSQLText(sqlText);
     }
 
     private void changeComment() {
 
-        if (sqlTextPanel.getSQLText().contains("COMMENT ON VIEW")) {
-
-            if (Pattern.compile("VIEW \"\"").matcher(sqlTextPanel.getSQLText()).find()) {
-
-                sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
-                        replaceAll("\nCOMMENT ON VIEW \"\" IS '.*';",
-                                SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
-                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false)));
-
-            } else if (Pattern.compile("VIEW \".*\"").matcher(sqlTextPanel.getSQLText()).find()) {
-
-                sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
-                        replaceAll("\nCOMMENT ON VIEW \".*\" IS '.*';",
-                                SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
-                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false)));
-
-            } else if (Pattern.compile("VIEW \\w*\\b").matcher(sqlTextPanel.getSQLText()).find()) {
-
-                sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
-                        replaceAll("\nCOMMENT ON VIEW \\w*\\b IS '.*';",
-                                SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
-                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false)));
-
-            } else {
-
-                sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
-                        replaceAll("\nCOMMENT ON VIEW  IS '.*';",
-                                SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
-                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false)));
-            }
-
-        } else {
-
-            sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim() + "\n" + SQLUtils.generateComment(
-                    nameField.getText().trim(), "VIEW", descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false));
-        }
-
+        String sqlText = sqlTextPanel.getSQLText().trim().replaceAll("\nCOMMENT ON VIEW \"?.*\"? IS '.*';", "") +
+                SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
+                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false);
+        sqlTextPanel.setSQLText(sqlText);
     }
 
     @Override
@@ -266,14 +205,10 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     }
 
     @Override
-    public void focusLost(FocusEvent focusEvent) {
-
-    }
+    public void focusLost(FocusEvent focusEvent) {}
 
     @Override
-    public void keyTyped(KeyEvent e) {
-
-    }
+    public void keyTyped(KeyEvent e) {}
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -282,7 +217,6 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             notChangedText = textPane.getText();
             released = false;
         }
-
     }
 
     @Override
@@ -300,8 +234,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
         }
     }
 
-    protected void reset() {
-    }
+    protected void reset() {}
 
     private static String format(String object) {
         return MiscUtils.getFormattedObject(object);

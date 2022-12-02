@@ -4,10 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseView;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.WidgetFactory;
@@ -26,7 +23,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -232,34 +228,34 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
                 sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
                         replaceAll("\nCOMMENT ON VIEW \"\" IS '.*';",
                                 SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
-                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";")));
+                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false)));
 
             } else if (Pattern.compile("VIEW \".*\"").matcher(sqlTextPanel.getSQLText()).find()) {
 
                 sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
                         replaceAll("\nCOMMENT ON VIEW \".*\" IS '.*';",
                                 SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
-                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";")));
+                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false)));
 
             } else if (Pattern.compile("VIEW \\w*\\b").matcher(sqlTextPanel.getSQLText()).find()) {
 
                 sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
                         replaceAll("\nCOMMENT ON VIEW \\w*\\b IS '.*';",
                                 SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
-                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";")));
+                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false)));
 
             } else {
 
                 sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim().
                         replaceAll("\nCOMMENT ON VIEW  IS '.*';",
                                 SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
-                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";")));
+                                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false)));
             }
 
         } else {
 
             sqlTextPanel.setSQLText(sqlTextPanel.getSQLText().trim() + "\n" + SQLUtils.generateComment(
-                    nameField.getText().trim(), "VIEW", descriptionTextArea.getTextAreaComponent().getText().trim(), ";"));
+                    nameField.getText().trim(), "VIEW", descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false));
         }
 
     }

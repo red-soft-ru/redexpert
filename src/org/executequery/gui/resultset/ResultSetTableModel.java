@@ -323,6 +323,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 } else
                     GUIUtilities.displayExceptionErrorDialog("Error loading data", e);
                 fireTableDataChanged();
+            } finally {
+                fetchAll = false;
             }
     }
 

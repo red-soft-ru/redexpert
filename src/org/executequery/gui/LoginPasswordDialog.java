@@ -16,6 +16,7 @@ public class LoginPasswordDialog extends BaseDialog {
     private JTextField username;
     private JPasswordField password;
     private JCheckBox storePassword;
+    private JCheckBox showPassword;
     private final String message;
     private final String user;
     private boolean closedDialog = false;
@@ -38,13 +39,7 @@ public class LoginPasswordDialog extends BaseDialog {
         JTextPane pane = new JTextPane();
         pane.setEditable(false);
         pane.setText(message);
-
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic();
-        gbh.defaults();
-        mainPanel.add(pane, gbh.spanX().get());
         username = new JTextField();
-        gbh.addLabelFieldPair(mainPanel, bundledString("username"), username, null);
         if (user != null) {
             username.setText(user);
         }
@@ -56,7 +51,6 @@ public class LoginPasswordDialog extends BaseDialog {
             }
         });
         password = new JPasswordField();
-        gbh.addLabelFieldPair(mainPanel, bundledString("password"), password, null);
         password.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -64,10 +58,47 @@ public class LoginPasswordDialog extends BaseDialog {
                     finished();
             }
         });
-        storePassword= new JCheckBox(Bundles.get(ConnectionPanel.class,"StorePassword"));
-        mainPanel.add(storePassword, gbh.nextRow().get());
+        storePassword = new JCheckBox(Bundles.get(ConnectionPanel.class, "StorePassword"));
+        storePassword.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    storePassword.setSelected(!storePassword.isSelected());
+                }
+            }
+        });
+        showPassword = new JCheckBox(Bundles.get(ConnectionPanel.class, "ShowPassword"));
+
+        showPassword.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    password.setEchoChar((char) 0);
+                } else {
+                    password.setEchoChar('•');
+                }
+            }
+        });
+        showPassword.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    showPassword.setSelected(!showPassword.isSelected());
+                }
+            }
+        });
         LinkButton linkButton = new LinkButton(bundledString("register"));
-        mainPanel.add(linkButton, gbh.nextRowFirstCol().setLabelDefault().get());
+        linkButton.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    try {
+                        Desktop.getDesktop().browse(new URL(urlOfRegistration).toURI());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
         linkButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -79,17 +110,22 @@ public class LoginPasswordDialog extends BaseDialog {
             }
         });
         linkButton.setVisible(urlOfRegistration != null);
-        storePassword.setVisible(urlOfRegistration==null);
+        storePassword.setVisible(urlOfRegistration == null);
         JButton okButton = new JButton(bundledString("login"));
-        mainPanel.add(okButton, gbh.nextCol().get());
         okButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 finished();
             }
         });
+        okButton.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                    finished();
+            }
+        });
         JButton cancelButton = new JButton(Bundles.getCommon("cancel.button"));
-        mainPanel.add(cancelButton, gbh.nextCol().get());
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -97,6 +133,35 @@ public class LoginPasswordDialog extends BaseDialog {
                 finished();
             }
         });
+        cancelButton.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    setClosedDialog(true);
+                    finished();
+                }
+            }
+        });
+
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic();
+        gbh.defaults();
+        mainPanel.add(pane, gbh.spanX().get());
+        gbh.addLabelFieldPair(mainPanel, bundledString("username"), username, null);
+
+        gbh.addLabelFieldPair(mainPanel, bundledString("password"), password, null);
+
+        mainPanel.add(password, gbh.nextCol().fillHorizontally().spanX().get());
+
+        mainPanel.add(showPassword, gbh.nextRow().setLabelDefault().get());
+        mainPanel.add(storePassword, gbh.nextCol().get());
+
+
+        mainPanel.add(linkButton, gbh.nextRowFirstCol().get());
+
+        mainPanel.add(okButton, gbh.nextCol().anchorEast().get());
+        mainPanel.add(cancelButton, gbh.nextCol().anchorNorthWest().fillHorizontally().setMaxWeightX().get());
+
         setResizable(false);
         addDisplayComponent(mainPanel);
         mainPanel.addAncestorListener(new AncestorListener() {

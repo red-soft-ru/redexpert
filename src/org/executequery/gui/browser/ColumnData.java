@@ -760,7 +760,7 @@ public class ColumnData implements Serializable {
                 }
                 sb.append(")");
             }
-            if (getCharset() != null && !getCharset().equals(CreateTableSQLSyntax.NONE)) {
+            if (!MiscUtils.isNull(getCharset()) && dc != null && !getCharset().equalsIgnoreCase(dc.getDBCharset())) {
                 sb.append(" CHARACTER SET ").append(getCharset());
             }
         }

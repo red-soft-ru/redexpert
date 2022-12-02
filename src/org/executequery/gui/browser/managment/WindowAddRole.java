@@ -2,11 +2,9 @@ package org.executequery.gui.browser.managment;
 
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.UserManagerPanel;
-import org.executequery.gui.databaseobjects.CreateViewPanel;
 import org.executequery.localization.Bundles;
 
 import javax.swing.*;
@@ -45,6 +43,7 @@ public class WindowAddRole extends JPanel {
             }
         });
         bottomButtonPanel.setOkButtonText("OK");
+        bottomButtonPanel.setHelpButtonVisible(false);
 
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEtchedBorder());

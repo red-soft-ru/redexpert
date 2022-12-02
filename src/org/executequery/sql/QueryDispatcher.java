@@ -1075,7 +1075,7 @@ public class QueryDispatcher {
                             @SuppressWarnings("rawtypes")
                             Map results = (Map) result.getOtherResult();
 
-                            if (results == null) {
+                            if (results == null && result.getUpdateCount() < 0) {
 
                                 //printExecutionPlan(before, after);
 
@@ -1099,12 +1099,13 @@ public class QueryDispatcher {
                                 }
 
                                 String SPACE = " = ";
-                                for (Iterator<?> it = results.keySet().iterator(); it.hasNext(); ) {
+                                if (results != null)
+                                    for (Iterator<?> it = results.keySet().iterator(); it.hasNext(); ) {
 
-                                    String key = it.next().toString();
-                                    setOutputMessage(SqlMessages.PLAIN_MESSAGE,
-                                            key + SPACE + results.get(key));
-                                }
+                                        String key = it.next().toString();
+                                        setOutputMessage(SqlMessages.PLAIN_MESSAGE,
+                                                key + SPACE + results.get(key));
+                                    }
 
                             }
 

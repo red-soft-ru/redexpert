@@ -56,6 +56,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     private static final String ENCRYPTION_KEY = "yb7UD9jH";
 
+    String dBCharset;
+
     /**
      * the unique id for this connection
      */
@@ -799,6 +801,14 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
             intDataTypesArray = metaData.getIntDataTypesArray();
         }
         return intDataTypesArray;
+    }
+
+    public String getDBCharset() {
+        return dBCharset;
+    }
+
+    public void setDBCharset(String dBCharset) {
+        this.dBCharset = dBCharset;
     }
 
     private static final long serialVersionUID = 950081216942320441L;

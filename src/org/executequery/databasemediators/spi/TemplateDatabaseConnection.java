@@ -174,6 +174,8 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
   String[] dataTypesArray;
   int[] intDataTypesArray;
 
+  String dBCharset;
+
   @Override
   public boolean isNamesToUpperCase() {
     return namesToUpperCase;
@@ -756,6 +758,13 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
     }
   }
 
+  public String getDBCharset() {
+    return dBCharset;
+  }
+
+  public void setDBCharset(String dBCharset) {
+    this.dBCharset = dBCharset;
+  }
 
   private static final long serialVersionUID = 950081216942320441L;
 

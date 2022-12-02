@@ -102,9 +102,10 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
 
         // ----- components arranging -----
 
-        gridBagHelper.addLabelFieldPair(centralPanel,
-                bundleString("start-value"), startValueText,
-                null, true, true);
+        if (getDatabaseVersion() >= 3)
+            gridBagHelper.addLabelFieldPair(centralPanel,
+                    bundleString("start-value"), startValueText,
+                    null, true, true);
 
         if (editing)
             gridBagHelper.addLabelFieldPair(centralPanel,
@@ -150,7 +151,8 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     protected void reset() {
         nameField.setText(generator.getName().trim());
         nameField.setEnabled(false);
-        startValueText.setLongValue(generator.getSequenceFirstValue());
+        if (getDatabaseVersion() >= 3)
+            startValueText.setLongValue(generator.getSequenceFirstValue());
         currentValueText.setLongValue(generator.getSequenceCurrentValue());
         if (getDatabaseVersion() >= 3)
             incrementText.setValue(generator.getIncrement());

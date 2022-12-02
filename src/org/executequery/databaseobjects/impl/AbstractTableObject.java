@@ -629,7 +629,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         try {
             if (rs.next())
                 setRemarks(rs.getString(1));
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

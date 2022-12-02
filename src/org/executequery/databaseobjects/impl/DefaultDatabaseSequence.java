@@ -210,7 +210,8 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         String query = "";
         String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
         try {
-            query = SQLUtils.generateCreateSequence(getName(), getSequenceFirstValue(),
+            long firstValue = (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue();
+            query = SQLUtils.generateCreateSequence(getName(), firstValue,
                     getIncrement(), comment, getVersion(), false);
 
         } catch (SQLException e) {

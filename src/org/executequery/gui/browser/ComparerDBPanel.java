@@ -155,6 +155,10 @@ public class ComparerDBPanel extends JPanel {
         propertiesCheckBoxMap.put(IGNORE_UK, new JCheckBox(bundleString("IgnoreUK")));
         propertiesCheckBoxMap.put(IGNORE_CK, new JCheckBox(bundleString("IgnoreCK")));
 
+        propertiesCheckBoxMap.get(CHECK_CREATE).setSelected(true);
+        propertiesCheckBoxMap.get(CHECK_ALTER).setSelected(true);
+        propertiesCheckBoxMap.get(CHECK_DROP).setSelected(true);
+
         // --- comboBoxes defining ---
 
         dbCompareComboBox = new JComboBox();

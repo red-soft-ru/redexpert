@@ -152,17 +152,21 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
 
-            if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
+            if (getVersion() >= 3) {
+                if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
 
-                statement = dmd.getConnection().createStatement();
-                ResultSet rs = statement.executeQuery("select r.rdb$generator_increment\n" +
-                        "from rdb$generators r\n" +
-                        "where\n" +
-                        "trim(r.rdb$generator_name)='" + getName() + "'");
+                    statement = dmd.getConnection().createStatement();
+                    ResultSet rs = statement.executeQuery("select r.rdb$generator_increment\n" +
+                            "from rdb$generators r\n" +
+                            "where\n" +
+                            "trim(r.rdb$generator_name)='" + getName() + "'");
 
-                if (rs.next())
-                    increment = rs.getInt(1);
-            }
+                    if (rs.next())
+                        increment = rs.getInt(1);
+                }
+
+            } else
+                increment = 1;
 
             return increment;
 

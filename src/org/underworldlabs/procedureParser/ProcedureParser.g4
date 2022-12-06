@@ -139,7 +139,7 @@ body:
  : BOOLEAN array_size?
     | (SMALLINT | INTEGER | BIGINT | INT128) array_size?
     | (FLOAT | DOUBLE_PRECISION) array_size?
-    | (DATE | TIME | TIMESTAMP) array_size?
+    | (DATE | TIME | TIMESTAMP| TIME_WITH_TIMEZONE | TIMESTAMP_WITH_TIMEZONE) array_size?
     | (DECIMAL | NUMERIC | DECFLOAT) ('(' type_size (',' scale)?')')? array_size?
     | (CHAR | CHARACTER | VARYING_CHARACTER | VARCHAR) ('('type_size')')?
     (spases_or_comment CHARACTER_SET spases_or_comment charset_name)? array_size?

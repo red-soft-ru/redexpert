@@ -25,7 +25,7 @@ public final class SQLUtils {
     public static String generateCreateTable(
             String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,
             boolean existTable, boolean temporary, String typeTemporary, String externalFile,
-            String adapter, String tablespace, String comment) {
+            String adapter, String sqlSecurity, String tablespace, String comment) {
 
         StringBuilder sqlText = new StringBuilder();
         StringBuilder sqlBuffer = new StringBuilder();
@@ -95,6 +95,12 @@ public final class SQLUtils {
 
         if (tablespace != null)
             sqlBuffer.append("\nTABLESPACE ").append(format(tablespace));
+
+
+        if (!MiscUtils.isNull(sqlSecurity)) {
+            sqlBuffer.append("\n" + SQL_SECURITY).append(sqlSecurity);
+        }
+
 
         if (temporary)
             sqlBuffer.append("\n").append(typeTemporary);
@@ -213,14 +219,14 @@ public final class SQLUtils {
         return sqlBuffer.toString();
     }
 
-    public static String generateCreateProcedure(String name, String entryPoint, String engine, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters, Vector<ColumnData> variables, String procedureBody, String comment) {
+    public static String generateCreateProcedure(String name, String entryPoint, String engine, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters, Vector<ColumnData> variables, String sqlSecurity, String authid, String procedureBody, String comment) {
         StringBuilder sb = new StringBuilder();
         sb.append(formattedParameters(variables, true));
         sb.append(procedureBody);
-        return generateCreateProcedure(name, entryPoint, engine, inputParameters, outputParameters, sb.toString(), comment);
+        return generateCreateProcedure(name, entryPoint, engine, inputParameters, outputParameters, sqlSecurity, authid, sb.toString(), comment);
     }
 
-    public static String generateCreateProcedure(String name, String entryPoint, String engine, List<ProcedureParameter> parameters, String fullProcedureBody, String comment, DatabaseConnection dc) {
+    public static String generateCreateProcedure(String name, String entryPoint, String engine, List<ProcedureParameter> parameters, String sqlSecurity, String authid, String fullProcedureBody, String comment, DatabaseConnection dc) {
         Vector<ColumnData> inputs = new Vector<>();
         Vector<ColumnData> outputs = new Vector<>();
         for (ProcedureParameter parameter : parameters) {
@@ -230,18 +236,20 @@ public final class SQLUtils {
             else
                 outputs.add(cd);
         }
-        return generateCreateProcedure(name, entryPoint, engine, inputs, outputs, fullProcedureBody, comment);
+        return generateCreateProcedure(name, entryPoint, engine, inputs, outputs, sqlSecurity, authid, fullProcedureBody, comment);
     }
 
-    public static String generateCreateProcedure(String name, String entryPoint, String engine, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters, String fullProcedureBody, String comment) {
+    public static String generateCreateProcedure(String name, String entryPoint, String engine, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters, String sqlSecurity, String authid, String fullProcedureBody, String comment) {
         StringBuilder sb = new StringBuilder();
-        sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE]));
+        sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE], authid));
         String output = formattedParameters(outputParameters, false);
         if (!MiscUtils.isNull(output.trim())) {
             sb.append("RETURNS (\n");
             sb.append(output);
             sb.append(")");
         }
+        if (!MiscUtils.isNull(sqlSecurity))
+            sb.append("\n" + SQL_SECURITY).append(sqlSecurity);
         if (!MiscUtils.isNull(entryPoint)) {
             sb.append("\nEXTERNAL NAME '");
             sb.append(entryPoint).append("'");
@@ -288,10 +296,13 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateCreateProcedureOrFunctionHeader(String name, Vector<ColumnData> inputParameters, String metaTag) {
+    public static String generateCreateProcedureOrFunctionHeader(String name, Vector<ColumnData> inputParameters, String metaTag, String authid) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE OR ALTER ").append(metaTag).append(" ");
         sb.append(format(name));
+        if (!MiscUtils.isNull(authid)) {
+            sb.append("\nAUTHID ").append(authid).append("\n");
+        }
         if (inputParameters != null && inputParameters.size() > 0 && (inputParameters.size() == 1 && !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
             sb.append(" (\n");
             sb.append(formattedParameters(inputParameters, false));
@@ -308,14 +319,14 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateCreateFunction(String name, Vector<ColumnData> argumentList, Vector<ColumnData> variables, ColumnData returnType, String functionBody, String entryPoint, String engine, String comment) {
+    public static String generateCreateFunction(String name, Vector<ColumnData> argumentList, Vector<ColumnData> variables, ColumnData returnType, String functionBody, String entryPoint, String engine, String sqlSecurity, String comment) {
         StringBuilder sb = new StringBuilder();
         sb.append(formattedParameters(variables, true));
         sb.append(functionBody);
-        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, comment);
+        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, sqlSecurity, comment);
     }
 
-    public static String generateCreateFunction(String name, List<FunctionArgument> argumentList, String fullFunctionBody, String entryPoint, String engine, String comment, DatabaseConnection dc) {
+    public static String generateCreateFunction(String name, List<FunctionArgument> argumentList, String fullFunctionBody, String entryPoint, String engine, String sqlSecurity, String comment, DatabaseConnection dc) {
         Vector<ColumnData> inputs = new Vector<>();
         ColumnData returnType = null;
         for (FunctionArgument parameter : argumentList) {
@@ -324,15 +335,19 @@ public final class SQLUtils {
                 inputs.add(cd);
             } else returnType = columnDataFromProcedureParameter(parameter, dc, false);
         }
-        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, comment);
+        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, sqlSecurity, comment);
     }
 
-    public static String generateCreateFunction(String name, Vector<ColumnData> inputArguments, ColumnData returnType, String fullFunctionBody, String entryPoint, String engine, String comment) {
+    public static String generateCreateFunction(String name, Vector<ColumnData> inputArguments, ColumnData returnType, String fullFunctionBody, String entryPoint, String engine, String sqlSecurity, String comment) {
         StringBuilder sb = new StringBuilder();
-        sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION]));
+        sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION], null));
         sb.append("RETURNS ");
         if (returnType != null)
             sb.append(returnType.getFormattedDataType());
+
+        if (!MiscUtils.isNull(sqlSecurity))
+            sb.append("\n" + SQL_SECURITY).append(sqlSecurity);
+
         if (!MiscUtils.isNull(entryPoint)) {
             sb.append("\nEXTERNAL NAME '");
             sb.append(entryPoint).append("'");
@@ -850,7 +865,7 @@ public final class SQLUtils {
 
     public static String generateCreateTriggerStatement(String name, String tableName, boolean active,
                                                         String triggerType, int position, String sourceCode,
-                                                        String engine, String entryPoint, String comment) {
+                                                        String engine, String entryPoint, String sqlSecurity, String comment) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE OR ALTER TRIGGER ").append(format(name));
         if (!MiscUtils.isNull(tableName))
@@ -860,6 +875,9 @@ public final class SQLUtils {
         sb.append(" ").append(triggerType);
         sb.append(" POSITION ").append(position);
         sb.append("\n");
+        if (!MiscUtils.isNull(sqlSecurity)) {
+            sb.append("\n" + SQL_SECURITY).append(sqlSecurity).append("\n");
+        }
         if (!MiscUtils.isNull(entryPoint)) {
             sb.append("EXTERNAL NAME '").append(entryPoint).append("'");
             if (!MiscUtils.isNull(engine)) {

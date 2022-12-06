@@ -55,6 +55,8 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
     protected String entryPoint;
     protected String engine;
+    protected String sqlSecurity;
+    protected String authid;
 
 
     public DefaultDatabaseExecutable() {
@@ -253,6 +255,23 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         this.engine = engine;
     }
 
+    public String getSqlSecurity() {
+        checkOnReload(sqlSecurity);
+        return sqlSecurity;
+    }
+
+    public void setSqlSecurity(String sqlSecurity) {
+        this.sqlSecurity = sqlSecurity;
+    }
+
+    public String getAuthid() {
+        checkOnReload(authid);
+        return authid;
+    }
+
+    public void setAuthid(String authid) {
+        this.authid = authid;
+    }
 }
 
 

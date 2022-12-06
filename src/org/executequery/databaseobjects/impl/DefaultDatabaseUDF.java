@@ -19,7 +19,8 @@ import java.util.Set;
  * Created by vasiliy on 13.02.17.
  */
 
-public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
+public class
+DefaultDatabaseUDF extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
     public static final String[] mechanisms = {"BY VALUE", "BY REFERENCE", "BY DESCRIPTOR", "BY BLOB DESCRIPTOR"};
     public static final int BY_VALUE = 0;

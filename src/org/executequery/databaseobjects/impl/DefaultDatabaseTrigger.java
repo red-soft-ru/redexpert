@@ -384,15 +384,18 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
-                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getRemarks());
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), getRemarks());
     }
 
     protected String queryForInfo() {
         String externalTriggerInfo = "t.RDB$ENGINE_NAME as ENGINE,\n" +
-                "t.RDB$ENTRYPOINT as ENTRY_POINT\n";
-        if (getDatabaseMajorVersion() < 3)
+                "t.RDB$ENTRYPOINT as ENTRY_POINT,\n";
+        String sqlSecurity = "IIF(t.rdb$sql_security is null,null,IIF(t.rdb$sql_security,'DEFINER','INVOKER')) as SQL_SECURITY\n";
+        if (getDatabaseMajorVersion() < 3) {
             externalTriggerInfo = "null as ENGINE,\n" +
-                    "null as ENTRY_POINT\n";
+                    "null as ENTRY_POINT,\n";
+            sqlSecurity = "null as SQL_SECURITY";
+        }
         return "select 0,\n" +
                 "t.rdb$trigger_source as SOURCE_CODE,\n" +
                 "t.rdb$relation_name as TABLE_NAME,\n" +
@@ -401,6 +404,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
                 "t.rdb$trigger_inactive,\n" +
                 "t.rdb$description as DESCRIPTION,\n" +
                 externalTriggerInfo +
+                sqlSecurity +
                 "from rdb$triggers t\n" +
                 "where t.rdb$trigger_name = '" + getName().trim() + "'";
     }
@@ -419,6 +423,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
             setRemarks(getFromResultSet(rs, "DESCRIPTION"));
             setEngine(getFromResultSet(rs, "ENGINE"));
             setEntryPoint(getFromResultSet(rs, "ENTRY_POINT"));
+            setSqlSecurity(getFromResultSet(rs, "SQL_SECURITY"));
         }
     }
 

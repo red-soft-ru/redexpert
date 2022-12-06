@@ -119,7 +119,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
      */
 
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(), getEngine(), getRemarks(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(), getEngine(), getSqlSecurity(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -155,7 +155,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "fnc.rdb$deterministic_flag,\n" +
                 "fnc.rdb$engine_name as ENGINE,\n" +
                 "fnc.rdb$entrypoint as ENTRY_POINT,\n" +
-                "fnc.rdb$sql_security as SQL_SECURITY\n" +
+                "IIF(fnc.rdb$sql_security is null,null,IIF(fnc.rdb$sql_security,'DEFINER','INVOKER')) as SQL_SECURITY\n" +
                 "from rdb$functions fnc\n" +
                 "left join rdb$function_arguments fa on fa.rdb$function_name = fnc.rdb$function_name\n" +
                 "and (fa.rdb$package_name is null)\n" +
@@ -218,6 +218,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                     entryPoint = getFromResultSet(rs, "ENTRY_POINT");
                     engine = getFromResultSet(rs, "ENGINE");
                     setRemarks(getFromResultSet(rs, "DESCRIPTION"));
+                    setSqlSecurity(getFromResultSet(rs, "SQL_SECURITY"));
                     first = false;
                 }
             }

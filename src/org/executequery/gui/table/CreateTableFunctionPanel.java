@@ -103,6 +103,10 @@ public abstract class CreateTableFunctionPanel extends JPanel
     protected JButton browseExternalTableFileButton;    //button for open selectFileDialog
     protected JCheckBox isAdapterNeeded;    //checking for using ADAPTER table
 
+
+    protected JLabel securitySQLLabel;
+    private JComboBox securitySQLSelection;
+
     /**
      * The table column definition panel
      */
@@ -274,6 +278,18 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 bundledString("TableName"), nameField,
                 null, true, true);
 
+        /*ReflectiveAction action = new ReflectiveAction(this);
+        securitySQLLabel = new JLabel();
+        securitySQLLabel.setText("SQL SECURITY");
+        String[] typeSecurity = {"", "DEFINER", "INVOKER"};
+        securitySQLSelection = ActionUtilities.createComboBox(action, typeSecurity, "sqlSecurityChanged");
+        gridBagHelper.addLabelFieldPair(mainPanel, securitySQLLabel, securitySQLSelection, null, true, true);
+
+        int databaseversion = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(
+                (DatabaseConnection) connectionsCombo.getSelectedItem()).getDatabaseMetaData().getDatabaseMajorVersion();
+        securitySQLLabel.setVisible(databaseversion > 2);
+        securitySQLSelection.setVisible(databaseversion > 2);*/
+
         gridBagHelper.addLabelFieldPair(mainPanel,
                 Bundles.get(TableDefinitionPanel.class, "Tablespace"), tablespacesCombo,
                 null, true, true);
@@ -379,6 +395,11 @@ public abstract class CreateTableFunctionPanel extends JPanel
         }
 
     }
+
+    public void sqlSecurityChanged(ActionEvent e) {
+        setSQLText();
+    }
+
 
     public void browseExternalTableFile() {
 
@@ -635,7 +656,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
         setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
                 false, temporary, "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
-                externalFile, adapter, tablespace, comment));
+                externalFile, adapter, null, tablespace, comment));
 
     }
 

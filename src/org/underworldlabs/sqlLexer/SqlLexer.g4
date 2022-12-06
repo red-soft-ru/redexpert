@@ -7,10 +7,12 @@ lexer  grammar SqlLexer;
  | K_CHARACTER
  | K_DATE
  | K_DECIMAL
+ | K_DECFLOAT
  | K_DOUBLE
  | K_FLOAT
  | K_INTEGER
  | K_INT
+ | K_INT128
  | K_NATIONAL
  | K_NCHAR
  | K_NUMERIC

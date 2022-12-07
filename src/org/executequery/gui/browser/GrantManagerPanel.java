@@ -14,6 +14,7 @@ import org.executequery.components.table.RoleTableModel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -21,13 +22,10 @@ import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
-import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.DynamicLibraryLoader;
 
 import javax.swing.*;
 import java.awt.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -359,38 +357,39 @@ public class GrantManagerPanel extends JPanel implements TabView {
     }
 
     void get_roles() {
-        String query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES order by 1";
-        get_user_list(query);
+        List<String> metatags = new ArrayList<>();
+        metatags.add(NamedObject.META_TYPES[NamedObject.ROLE]);
+        metatags.add(NamedObject.META_TYPES[NamedObject.SYSTEM_ROLE]);
+        get_user_list(metatags);
     }
 
     void get_views_for_userlist() {
-        String query = "Select RDB$RELATION_NAME from RDB$RELATIONS" +
-                " WHERE RDB$RELATION_TYPE = 1 order by 1";
-        get_user_list(query);
+        List<String> metatags = new ArrayList<>();
+        metatags.add(NamedObject.META_TYPES[NamedObject.VIEW]);
+        get_user_list(metatags);
     }
 
-    void get_user_list(String query) {
-        try {
-            ResultSet result = querySender.execute(QueryTypes.SELECT, query, -1).getResultSet();
-            while (result.next()) {
-                String role = result.getString(1);
-                userlistModel.addElement(role);
+    void get_user_list(List<String> metatags) {
+        for (String metatag : metatags) {
+            List<String> names = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dbc).getDatabaseObjectNamesForMetaTag(metatag);
+            for (String name : names) {
+                userlistModel.addElement(name);
             }
-            result.close();
-            querySender.releaseResources();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
         }
     }
 
     void get_triggers_for_userlist() {
-        String query = "Select RDB$TRIGGER_NAME from RDB$TRIGGERS order by 1";
-        get_user_list(query);
+        List<String> metatags = new ArrayList<>();
+        metatags.add(NamedObject.META_TYPES[NamedObject.TRIGGER]);
+        metatags.add(NamedObject.META_TYPES[NamedObject.DATABASE_TRIGGER]);
+        metatags.add(NamedObject.META_TYPES[NamedObject.DDL_TRIGGER]);
+        get_user_list(metatags);
     }
 
     void get_procedures_for_userlist() {
-        String query = "Select RDB$PROCEDURE_NAME from RDB$PROCEDURES order by 1";
-        get_user_list(query);
+        List<String> metatags = new ArrayList<>();
+        metatags.add(NamedObject.META_TYPES[NamedObject.PROCEDURE]);
+        get_user_list(metatags);
     }
 
     private String grant;
@@ -1107,35 +1106,25 @@ public class GrantManagerPanel extends JPanel implements TabView {
             Log.error("error get connection for getting users in grant manager:", e);
         }
 
-        URL[] urls = new URL[0];
-        Class clazzdb = null;
-        Object odb = null;
+        IFBUserManager userManager = null;
         try {
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBUserManagerImpl");
-            odb = clazzdb.newInstance();
+            userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(connection, "FBUserManagerImpl");
         } catch (ClassNotFoundException e) {
             Log.error("Error get users in Grant Manager:", e);
-        } catch (IllegalAccessException e) {
-            Log.error("Error get users in Grant Manager:", e);
-        } catch (InstantiationException e) {
-            Log.error("Error get users in Grant Manager:", e);
-        } catch (MalformedURLException e) {
-            Log.error("Error get users in Grant Manager:", e);
         }
-        IFBUserManager userManager = (IFBUserManager) odb;
-        userManager = getUserManager(userManager, listConnections.get(databaseBox.getSelectedIndex()));
-        Map<String, IFBUser> users;
-        try {
-            users = userManager.getUsers();
-            for (IFBUser u : users.values()) {
-                userlistModel.addElement(u.getUserName());
+        if (userManager != null) {
+            userManager = getUserManager(userManager, listConnections.get(databaseBox.getSelectedIndex()));
+            Map<String, IFBUser> users;
+            try {
+                users = userManager.getUsers();
+                for (IFBUser u : users.values()) {
+                    userlistModel.addElement(u.getUserName());
+                }
+                userlistModel.addElement("PUBLIC");
+            } catch (Exception e) {
+                System.out.println(e);
+                GUIUtilities.displayErrorMessage(e.toString());
             }
-            userlistModel.addElement("PUBLIC");
-        } catch (Exception e) {
-            System.out.println(e);
-            GUIUtilities.displayErrorMessage(e.toString());
         }
     }
 
@@ -1339,15 +1328,13 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
         gbh.addLabelFieldPair(this, Bundles.getCommon("connection"), databaseBox, null);
 
-        add(cancelButton, gbh.nextRowFirstCol().setLabelDefault().get());
-        add(jProgressBar1, gbh.nextColWidth().fillHorizontally().spanX().get());
-
         gbh.addLabelFieldPair(this, bundleString("PrivelegesFor"), recipientsOfPrivilegesBox, null, true, false);
 
-        add(splitPane, gbh.nextCol().fillBoth().spanX().spanY().get());
+        add(splitPane, gbh.nextCol().fillBoth().spanX().setMaxWeightY().setHeight(2).get());
 
-        add(recipientsOfPrivilegesScroll, gbh.nextRowFirstCol().setWidth(2).fillBoth().setMaxWeightY().setMaxWeightX().spanY().get());
-
+        add(recipientsOfPrivilegesScroll, gbh.nextRowFirstCol().setWidth(2).setHeight(1).fillBoth().setMaxWeightY().setMaxWeightX().get());
+        add(cancelButton, gbh.nextRowFirstCol().setLabelDefault().get());
+        add(jProgressBar1, gbh.nextColWidth().fillHorizontally().spanX().get());
         gbh.defaults();
         rightPanel.setLayout(new GridBagLayout());
 
@@ -1407,9 +1394,9 @@ public class GrantManagerPanel extends JPanel implements TabView {
         systemCheck.setEnabled(enable);
         recipientsOfPrivilegesBox.setEnabled(enable);
         userList.setEnabled(enable);
-        cancelButton.setVisible(!enable);
+        //cancelButton.setVisible(!enable);
         cancelButton.setEnabled(!enable);
-        jProgressBar1.setVisible(!enable);
+        jProgressBar1.setEnabled(!enable);
         if (enable)
             jProgressBar1.setValue(0);
     }

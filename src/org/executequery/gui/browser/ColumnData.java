@@ -29,7 +29,6 @@ import org.executequery.databaseobjects.T;
 import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.table.Autoincrement;
-import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
 
@@ -288,7 +287,7 @@ public class ColumnData implements Serializable {
         keyType = null;
         dc = databaseConnection;
         ai = new Autoincrement();
-        setCharset(CreateTableSQLSyntax.NONE);
+        setCharset("");
         executor = new DefaultStatementExecutor(dc, true);
         tables = new ArrayList<>();
         columns = new ArrayList<>();

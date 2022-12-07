@@ -145,7 +145,7 @@ public final class SQLUtils {
             if (!MiscUtils.isNull(cd.getCheck()))
                 sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
 
-            if (cd.getCollate() != null && !cd.getCollate().equals(CreateTableSQLSyntax.NONE))
+            if (!MiscUtils.isNull(cd.getCollate()) && !cd.getCollate().equals(CreateTableSQLSyntax.NONE))
                 sb.append(" COLLATE ").append(cd.getCollate());
 
         } else

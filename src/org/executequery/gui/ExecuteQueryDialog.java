@@ -176,6 +176,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         tcm.getColumn(model.NAME_OPERATION).setPreferredWidth(200);
         tcm.getColumn(model.STATUS).setPreferredWidth(200);
         tcm.getColumn(model.COPY).setPreferredWidth(50);
+        tableScroll.setPreferredSize(new Dimension(475, 200));
         queryPane.setRows(5);
 
         listActionsLabel.setText(bundleString("listActions"));
@@ -222,16 +223,25 @@ public class ExecuteQueryDialog extends BaseDialog {
 
         tabbedPane.addTab(bundleString("Single"), errorPane);
         tabbedPane.addTab(bundleString("FullLog"), logPane);
+        tabbedPane.setPreferredSize(new Dimension(475, 200));
 
         mainPanel.setLayout(new GridBagLayout());
         GridBagHelper gbh = new GridBagHelper();
         gbh.setDefaultsStatic().defaults();
+        JSplitPane tableSQL = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        tableSQL.setTopComponent(tableScroll);
+        tableSQL.setBottomComponent(queryScroll);
+        tableSQL.setDividerLocation(0.5);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setTopComponent(tableSQL);
+        splitPane.setBottomComponent(tabbedPane);
+        tableSQL.setDividerLocation(0.6);
         mainPanel.add(listActionsLabel, gbh.setLabelDefault().get());
-        mainPanel.add(tableScroll, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
+        /*mainPanel.add(tableScroll, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
         mainPanel.add(operatorLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         mainPanel.add(queryScroll, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
-        mainPanel.add(errorLabel, gbh.nextRowFirstCol().setLabelDefault().get());
-        mainPanel.add(tabbedPane, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
+        mainPanel.add(errorLabel, gbh.nextRowFirstCol().setLabelDefault().get());*/
+        mainPanel.add(splitPane, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
         mainPanel.add(copyQueryButton, gbh.nextRowFirstCol().setLabelDefault().anchorSouthWest().get());
         mainPanel.add(copyErrorButton, gbh.nextCol().setLabelDefault().anchorSouthWest().get());
         mainPanel.add(commitButton, gbh.nextCol().setLabelDefault().anchorSouthEast().get());

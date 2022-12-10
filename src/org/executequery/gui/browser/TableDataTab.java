@@ -412,13 +412,24 @@ public class TableDataTab extends JPanel
             } catch (DataSourceException e) {
                 if ((e.getCause() instanceof SQLException)) {
                     SQLException sqlException = (SQLException) e.getCause();
+
                     if (sqlException.getSQLState().contentEquals("28000"))
                         GUIUtilities.displayExceptionErrorDialog("Data access error", e);
-                    else rebuildDataFromMetadata(columnDataList);
-                } else rebuildDataFromMetadata(columnDataList);
+                    else {
+                        GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                        rebuildDataFromMetadata(columnDataList);
+                    }
+
+                } else {
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    rebuildDataFromMetadata(columnDataList);
+                }
+
             } catch (Exception e) {
+                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
                 rebuildDataFromMetadata(columnDataList);
             }
+
             createResultSetTable();
             List<String> nonEditableCols = new ArrayList<>();
             //nonEditableCols.addAll(primaryKeyColumns);

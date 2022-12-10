@@ -22,100 +22,79 @@ import static org.executequery.gui.browser.ColumnConstraint.RULES;
 import static org.executequery.gui.table.CreateTableSQLSyntax.*;
 
 public final class SQLUtils {
-    public static String generateCreateTable(
+
+    public static String generateCreateTable (
             String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,
             boolean existTable, boolean temporary, String typeTemporary, String externalFile,
             String adapter, String sqlSecurity, String tablespace, String comment) {
 
+        StringBuilder sb = new StringBuilder();
         StringBuilder sqlText = new StringBuilder();
-        StringBuilder sqlBuffer = new StringBuilder();
-        //List<String> descriptions = new ArrayList<>();
-        if (temporary)
-            sqlBuffer.append(CreateTableSQLSyntax.CREATE_GLOBAL_TEMPORARY_TABLE);
-        else
-            sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
-        StringBuilder primaryText = new StringBuilder();
-        StringBuilder primary = new StringBuilder(50);
-        primary.setLength(0);
+
+        sb.append(temporary ?
+                CreateTableSQLSyntax.CREATE_GLOBAL_TEMPORARY_TABLE :
+                CreateTableSQLSyntax.CREATE_TABLE);
+        sb.append(format(name));
+
+        if (externalFile != null)
+            sb.append(NEW_LINE).append("EXTERNAL FILE '").append(externalFile.trim()).append("'");
+        if (adapter != null)
+            sb.append(SPACE).append(" ADAPTER '").append(adapter.trim()).append("'");
+        sb.append(SPACE).append(B_OPEN);
+
+        StringBuilder primary = new StringBuilder();
         primary.append(",\nCONSTRAINT ");
-        String primaryName = "PK_" + name;
-        primary.append(MiscUtils.getFormattedObject(primaryName));
+        primary.append(MiscUtils.getFormattedObject("PK_" + name));
         primary.append(" PRIMARY KEY (");
+
         boolean primary_flag = false;
         String autoincrementSQLText = "";
+        StringBuilder primaryText = new StringBuilder();
+
         for (int i = 0, k = columnDataList.size(); i < k; i++) {
+
             ColumnData cd = columnDataList.get(i);
             autoincrementSQLText += cd.getAutoincrement().getSqlAutoincrement();
+
             if (cd.isPrimaryKey()) {
-                if (primary_flag)
-                    primaryText.append(", ");
-                else primaryText.append(" ");
+                primaryText.append(primary_flag ? ", " : " ");
                 primaryText.append(cd.getFormattedColumnName());
                 primary_flag = true;
             }
 
-//            if (!MiscUtils.isNull(cd.getDescription())) {
-//                descriptions.add(cd.getFormattedColumnName() + " is '" + cd.getDescription() + "'");
-//            }
-
             sqlText.append(generateDefinitionColumn(cd, true));
-            if (i != k - 1) {
+            if (i != k - 1)
                 sqlText.append(COMMA);
-            }
-
         }
-
-        if (primary_flag)
-            primary.append(primaryText);
-
-        primary.append(")");
-        String description = generateCommentForColumns(name, columnDataList, "COLUMN", "^");
-
-        sqlBuffer.append(format(name));
-
-        if (externalFile != null)
-            sqlBuffer.append(NEW_LINE).append("EXTERNAL FILE '").append(externalFile.trim()).append("'");
-
-        if (adapter != null)
-            sqlBuffer.append(SPACE).append(" ADAPTER '").append(adapter.trim()).append("'");
-
-        sqlBuffer.append(SPACE).append(B_OPEN);
-        sqlBuffer.append(sqlText.toString().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
+        primary.append(primaryText).append(B_CLOSE);
+        sb.append(sqlText.toString().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
 
         if (primary_flag && !existTable)
-            sqlBuffer.append(primary);
+            sb.append(primary);
         columnConstraintList = removeDuplicatesConstraints(columnConstraintList);
 
-        for (ColumnConstraint columnConstraint : columnConstraintList) {
-            sqlBuffer.append(generateDefinitionColumnConstraint(columnConstraint).replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
+        for (ColumnConstraint columnConstraint : columnConstraintList)
+            sb.append(generateDefinitionColumnConstraint(columnConstraint)
+                    .replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
 
-        }
-
-        sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
+        sb.append(CreateTableSQLSyntax.B_CLOSE);
 
         if (tablespace != null)
-            sqlBuffer.append("\nTABLESPACE ").append(format(tablespace));
-
-
-        if (!MiscUtils.isNull(sqlSecurity)) {
-            sqlBuffer.append("\n" + SQL_SECURITY).append(sqlSecurity);
-        }
-
-
+            sb.append("\nTABLESPACE ").append(format(tablespace));
+        if (!MiscUtils.isNull(sqlSecurity))
+            sb.append("\n" + SQL_SECURITY).append(sqlSecurity);
         if (temporary)
-            sqlBuffer.append("\n").append(typeTemporary);
+            sb.append("\n").append(typeTemporary);
 
-        sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
-        sqlBuffer.append("\n").append(description);
-
-        sqlBuffer.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, format(name))).append(NEW_LINE);
+        sb.append(CreateTableSQLSyntax.SEMI_COLON);
+        sb.append("\n").append(generateCommentForColumns(name, columnDataList, "COLUMN", "^"));
+        sb.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, format(name))).append(NEW_LINE);
 
         if (comment != null)
-            sqlBuffer.append("COMMENT ON TABLE ").append(name).append(" IS '").append(comment).append("';\n");
+            sb.append("COMMENT ON TABLE ").append(name).append(" IS '").append(comment).append("';\n");
 
-        return sqlBuffer.toString();
+        return sb.toString();
     }
-
 
     public static String generateDefinitionColumn(ColumnData cd, boolean startWithNewLine) {
 
@@ -152,71 +131,59 @@ public final class SQLUtils {
             sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
 
         return sb.toString();
-
     }
 
     public static String generateDefinitionColumnConstraint(ColumnConstraint cc) {
-        StringBuilder sqlBuffer = new StringBuilder();
+
+        StringBuilder sb = new StringBuilder();
         String nameConstraint = null;
-        boolean hasName;
+        boolean hasName = false;
 
         if (!MiscUtils.isNull(cc.getName())) {
-
             nameConstraint = cc.getName();
             hasName = true;
-
-        } else {
-
-            hasName = false;
         }
 
         if (hasName) {
-
-            sqlBuffer.append(COMMA).append(NEW_LINE_2).append(CreateTableSQLSyntax.CONSTRAINT);
-            sqlBuffer.append(format(nameConstraint)).append(SPACE);
+            sb.append(COMMA).append(NEW_LINE_2).append(CreateTableSQLSyntax.CONSTRAINT);
+            sb.append(format(nameConstraint)).append(SPACE);
 
             if (cc.getType() != -1) {
+
                 if (cc.getType() == CHECK_KEY) {
-                    sqlBuffer.append(cc.getCheck());
+                    sb.append(cc.getCheck());
+
                 } else {
+                    String formatted = (cc.getCountCols() > 1) ? cc.getColumn() : format(cc.getColumn());
+
                     if (cc.getType() == UNIQUE_KEY) {
-                        sqlBuffer.append(ColumnConstraint.UNIQUE).append(SPACE).append(B_OPEN);
-                        String formatted;
-                        if (cc.getCountCols() > 1)
-                            formatted = cc.getColumn();
-                        else formatted = format(cc.getColumn());
-                        sqlBuffer.append(formatted).append(B_CLOSE);
+                        sb.append(ColumnConstraint.UNIQUE).append(SPACE).append(B_OPEN);
+                        sb.append(formatted).append(B_CLOSE);
+
                     } else {
-                        sqlBuffer.append(cc.getTypeName()).append(KEY).append(B_OPEN);
-                        String formatted;
-                        if (cc.getCountCols() > 1)
-                            formatted = cc.getColumn();
-                        else formatted = format(cc.getColumn());
-                        sqlBuffer.append(formatted);
-                        sqlBuffer.append(B_CLOSE);
+                        sb.append(cc.getTypeName()).append(KEY).append(B_OPEN);
+                        sb.append(formatted).append(B_CLOSE);
 
                         if (cc.getType() == FOREIGN_KEY) {
-                            sqlBuffer.append(REFERENCES);
-                            sqlBuffer.append(format(cc.getRefTable())).append(SPACE).append(B_OPEN);
-                            if (cc.getCountCols() > 1)
-                                formatted = cc.getRefColumn();
-                            else formatted = format(cc.getRefColumn());
-                            sqlBuffer.append(formatted).append(B_CLOSE);
-                            if (cc.getUpdateRule() != null && !Objects.equals(cc.getUpdateRule(), RULES[RESTRICT]))
-                                sqlBuffer.append(" ON UPDATE ").append(cc.getUpdateRule());
-                            if (cc.getDeleteRule() != null && !Objects.equals(cc.getDeleteRule(), RULES[RESTRICT]))
-                                sqlBuffer.append(" ON DELETE ").append(cc.getDeleteRule());
-                        }
+                            sb.append(REFERENCES).append(format(cc.getRefTable()));
+                            sb.append(SPACE).append(B_OPEN);
 
+                            formatted = (cc.getCountCols() > 1) ? cc.getRefColumn() : format(cc.getRefColumn());
+                            sb.append(formatted).append(B_CLOSE);
+
+                            if (cc.getUpdateRule() != null && !Objects.equals(cc.getUpdateRule(), RULES[RESTRICT]))
+                                sb.append(" ON UPDATE ").append(cc.getUpdateRule());
+                            if (cc.getDeleteRule() != null && !Objects.equals(cc.getDeleteRule(), RULES[RESTRICT]))
+                                sb.append(" ON DELETE ").append(cc.getDeleteRule());
+                        }
                     }
                     if (!MiscUtils.isNull(cc.getTablespace()))
-                        sqlBuffer.append(" TABLESPACE ").append(format(cc.getTablespace()));
+                        sb.append(" TABLESPACE ").append(format(cc.getTablespace()));
                 }
-
             }
-
         }
-        return sqlBuffer.toString();
+
+        return sb.toString();
     }
 
     public static String generateCreateProcedure(String name, String entryPoint, String engine, Vector<ColumnData> inputParameters, Vector<ColumnData> outputParameters, Vector<ColumnData> variables, String sqlSecurity, String authid, String procedureBody, String comment) {

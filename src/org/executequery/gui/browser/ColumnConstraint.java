@@ -58,11 +58,17 @@ public class ColumnConstraint implements Serializable {
     /** The column name of this constraint */
     private String column;
 
+    /** The columns display list of this constraint */
+    private String columnDisplayList;
+
     /** The referenced table of this constraint */
     private String refTable;
 
     /** The referenced column of this constraint */
     private String refColumn;
+
+    /** The referenced column display list of this constraint */
+    private String refColumnDisplayList;
 
 
     /**
@@ -118,6 +124,8 @@ public class ColumnConstraint implements Serializable {
             refTable = EMPTY;
             column = EMPTY;
             refColumn = EMPTY;
+            columnDisplayList = EMPTY;
+            refColumnDisplayList = EMPTY;
             setUpdateRule(RULES[RESTRICT]);
             setDeleteRule(RULES[RESTRICT]);
         }
@@ -132,6 +140,8 @@ public class ColumnConstraint implements Serializable {
             refTable = EMPTY;
             column = EMPTY;
             refColumn = EMPTY;
+            columnDisplayList = EMPTY;
+            refColumnDisplayList = EMPTY;
         }
         this.column = cc.getColumnName();
         this.name = cc.getName();
@@ -140,6 +150,8 @@ public class ColumnConstraint implements Serializable {
         this.check = cc.getCheck();
         this.refTable = cc.getReferencedTable();
         this.refColumn = cc.getReferencedColumn();
+        this.columnDisplayList = cc.getColumnDisplayList();
+        this.refColumnDisplayList = cc.getReferenceColumnDisplayList();
         setUpdateRule(cc.getUpdateRule());
         setDeleteRule(cc.getDeleteRule());
     }
@@ -311,6 +323,15 @@ public class ColumnConstraint implements Serializable {
     public void setTablespace(String tablespace) {
         this.tablespace = tablespace;
     }
+
+    public String getColumnDisplayList() {
+        return columnDisplayList;
+    }
+
+    public String getRefColumnDisplayList() {
+        return refColumnDisplayList;
+    }
+
 }
 
 

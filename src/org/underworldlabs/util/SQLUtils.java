@@ -15,6 +15,7 @@ import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.executequery.databaseobjects.NamedObject.*;
 import static org.executequery.gui.browser.ColumnConstraint.RESTRICT;
@@ -74,7 +75,7 @@ public final class SQLUtils {
         columnConstraintList = removeDuplicatesConstraints(columnConstraintList);
 
         for (ColumnConstraint columnConstraint : columnConstraintList)
-            sb.append(generateDefinitionColumnConstraint(columnConstraint)
+            sb.append(generateDefinitionColumnConstraint(columnConstraint, existTable)
                     .replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
 
         sb.append(CreateTableSQLSyntax.B_CLOSE);
@@ -133,7 +134,7 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateDefinitionColumnConstraint(ColumnConstraint cc) {
+    public static String generateDefinitionColumnConstraint(ColumnConstraint cc, boolean editing) {
 
         StringBuilder sb = new StringBuilder();
         String nameConstraint = null;
@@ -154,7 +155,13 @@ public final class SQLUtils {
                     sb.append(cc.getCheck());
 
                 } else {
+
                     String formatted = (cc.getCountCols() > 1) ? cc.getColumn() : format(cc.getColumn());
+                    if (editing) {
+                        List<String> columnList = Arrays.asList(cc.getColumnDisplayList().split(", "));
+                        columnList.replaceAll(SQLUtils::format);
+                        formatted = String.join(", ", columnList);
+                    }
 
                     if (cc.getType() == UNIQUE_KEY) {
                         sb.append(ColumnConstraint.UNIQUE).append(SPACE).append(B_OPEN);
@@ -169,6 +176,12 @@ public final class SQLUtils {
                             sb.append(SPACE).append(B_OPEN);
 
                             formatted = (cc.getCountCols() > 1) ? cc.getRefColumn() : format(cc.getRefColumn());
+                            if (editing) {
+                                List<String> columnList = Arrays.asList(cc.getRefColumnDisplayList().split(", "));
+                                columnList.replaceAll(SQLUtils::format);
+                                formatted = String.join(", ", columnList);
+                            }
+
                             sb.append(formatted).append(B_CLOSE);
 
                             if (cc.getUpdateRule() != null && !Objects.equals(cc.getUpdateRule(), RULES[RESTRICT]))

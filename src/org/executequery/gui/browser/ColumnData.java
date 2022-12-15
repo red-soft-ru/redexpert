@@ -568,7 +568,7 @@ public class ColumnData implements Serializable {
     }
 
     public void setDefaultValue(String defaultValue) {
-        this.defaultValue.setValue(defaultValue);
+        this.defaultValue.value = defaultValue;
     }
 
     public String getDomain() {
@@ -971,10 +971,7 @@ public class ColumnData implements Serializable {
             if (defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
                 defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
                 this.defaultValue.setUseQuotes(true);
-                if (defaultValue.isEmpty())
-                    this.defaultValue.setEmptyString(true);
             }
-
         }
         return defaultValue;
     }
@@ -1110,8 +1107,6 @@ public class ColumnData implements Serializable {
         String value;
         boolean useQuotes = false;
 
-        boolean emptyString = false;
-
         public String getOriginOperator() {
             return originOperator;
         }
@@ -1134,14 +1129,6 @@ public class ColumnData implements Serializable {
 
         public void setUseQuotes(boolean useQuotes) {
             this.useQuotes = useQuotes;
-        }
-
-        public boolean isEmptyString() {
-            return emptyString;
-        }
-
-        public void setEmptyString(boolean emptyString) {
-            this.emptyString = emptyString;
         }
     }
 }

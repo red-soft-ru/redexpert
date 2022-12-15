@@ -118,7 +118,7 @@ public final class SQLUtils {
                     sb.append(" (START WITH ").append(cd.getAutoincrement().getStartValue()).append(")");
             }
 
-            if (!MiscUtils.isNull(cd.getDefaultValue().getValue()) || cd.getDefaultValue().isEmptyString())
+            if (!MiscUtils.isNull(cd.getDefaultValue().getValue()))
                 sb.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
 
             sb.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
@@ -233,7 +233,7 @@ public final class SQLUtils {
         if (!MiscUtils.isNull(entryPoint)) {
             sb.append("\nEXTERNAL NAME '");
             sb.append(entryPoint).append("'");
-            sb.append(" ENGINE ").append(engine).append("^");
+            sb.append(" ENGINE ").append(engine);
         } else sb.append(generateSQLBody(fullProcedureBody));
         sb.append("\n");
 
@@ -394,7 +394,7 @@ public final class SQLUtils {
                     sb.append(cd.getFormattedDomain());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
-            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && (!MiscUtils.isNull(cd.getDefaultValue().getValue()) || cd.getDefaultValue().isEmptyString())) {
+            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue().getValue())) {
                 sb.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
             }
             if (!MiscUtils.isNull(cd.getCheck())) {

@@ -690,8 +690,6 @@ public final class MiscUtils {
                 || value.getValue().trim().contentEquals("= null"))
                 && !value.isUseQuotes())
             return value.getValue();
-        if (value.isEmptyString())
-            return "''";
         if (value.isUseQuotes())
             return "'" + value.getValue() + "'";
         else return formattedSQLValue(value.getValue(), type);

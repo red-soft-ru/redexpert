@@ -968,7 +968,7 @@ public class ColumnData implements Serializable {
                 defaultValue = defaultValue.substring(1).trim();
                 this.defaultValue.setOriginOperator("=");
             }
-            if (defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
+            if (defaultValue.startsWith("'") && defaultValue.endsWith("'") && defaultValue.length() > 2) {
                 defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
                 this.defaultValue.setUseQuotes(true);
             }

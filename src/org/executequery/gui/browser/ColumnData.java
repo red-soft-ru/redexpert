@@ -1126,8 +1126,6 @@ public class ColumnData implements Serializable {
 
         public void setValue(String value) {
             this.value = value;
-            if (!MiscUtils.isNull(value))
-                setEmptyString(false);
         }
 
         public boolean isUseQuotes() {

@@ -198,8 +198,6 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
         loadPanel();
     }
 
-    protected void reset() {}
-
     private void loadPanel() {
 
         if (typePanel != null)
@@ -398,6 +396,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
         tabbedPane.add(ddlPanel, bundleStaticString("createSQL"));
     }
 
+    @Override
     protected String generateQuery() {
 
         org.executequery.gui.browser.ColumnConstraint cc = new org.executequery.gui.browser.ColumnConstraint();
@@ -504,7 +503,6 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
         table = (DatabaseTable) params[0];
     }
 
-
     @Override
     public void keyTyped(KeyEvent keyEvent) {
         generate_name = false;
@@ -515,6 +513,9 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
 
     @Override
     public void keyReleased(KeyEvent keyEvent) {}
+
+    @Override
+    protected void reset() {}
 
     private String generateName() {
 

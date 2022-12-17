@@ -81,6 +81,9 @@ public abstract class TableDefinitionPanel extends JPanel
     /** The cell editor for the column subtype */
     protected NumberCellEditor subtypeEditor;
 
+    /** The cell editor for the collate cell */
+    protected static StringCellEditor collateEditor;
+
 //    /** The cell editor for the datatype column */
 //    protected ComboBoxCellEditor comboCell;
 
@@ -134,7 +137,9 @@ public abstract class TableDefinitionPanel extends JPanel
 
     public static final int DEFAULT_COLUMN = AUTOINCREMENT_COLUMN + 1;
 
-    public static final int ENCODING_COLUMN = DEFAULT_COLUMN + 1;
+    public static final int COLLATE_COLUMN = DEFAULT_COLUMN + 1;
+
+    public static final int ENCODING_COLUMN = COLLATE_COLUMN + 1;
 
     public static final String SUBSTITUTE_NAME = "<TABLE_NAME>";
 
@@ -210,6 +215,7 @@ public abstract class TableDefinitionPanel extends JPanel
         tcm.getColumn(COMPUTED_BY_COLUMN).setPreferredWidth(200);
         tcm.getColumn(DEFAULT_COLUMN).setPreferredWidth(200);
         tcm.getColumn(AUTOINCREMENT_COLUMN).setPreferredWidth(70);
+        tcm.getColumn(COLLATE_COLUMN).setPreferredWidth(200);
         tcm.getColumn(ENCODING_COLUMN).setPreferredWidth(200);
 
         tcm.getColumn(PK_COLUMN).setCellRenderer(new KeyCellRenderer());
@@ -274,7 +280,7 @@ public abstract class TableDefinitionPanel extends JPanel
             DefaultCellEditor stEditor = new DefaultCellEditor(subtypeEditor) {
                 @Override
                 public Object getCellEditorValue() {
-                return subtypeEditor.getStringValue();
+                    return subtypeEditor.getStringValue();
               }
             };
 
@@ -283,6 +289,14 @@ public abstract class TableDefinitionPanel extends JPanel
                 @Override
                 public Object getCellEditorValue() {
                     return sizeEditor.getStringValue();
+                }
+            };
+
+            collateEditor = new StringCellEditor();
+            DefaultCellEditor collateStrEditor = new DefaultCellEditor(collateEditor) {
+                @Override
+                public Object getCellEditorValue() {
+                    return collateEditor.getValue();
                 }
             };
 
@@ -297,6 +311,7 @@ public abstract class TableDefinitionPanel extends JPanel
             tcm.getColumn(DOMAIN_COLUMN).setCellEditor(domainCell);
             dataTypeCell = new ComboBoxCellEditor();
             tcm.getColumn(TYPE_COLUMN).setCellEditor(dataTypeCell);
+            tcm.getColumn(COLLATE_COLUMN).setCellEditor(collateStrEditor);
             tcm.getColumn(ENCODING_COLUMN).setCellEditor(charsetCellEditor);
 
             // create the key listener to notify changes
@@ -315,6 +330,7 @@ public abstract class TableDefinitionPanel extends JPanel
                     else if (object == subtypeEditor)       value = subtypeEditor.getEditorValue();
                     else if (object == dataTypeCell)        value = (String) dataTypeCell.getCellEditorValue();
                     else if (object == domainCell)          value = (String) domainCell.getCellEditorValue();
+                    else if (object == collateEditor)       value = collateEditor.getValue();
 
                     else if (object == charsetCellEditor.getComponent())
                         value = String.valueOf(charsetCellEditor.getCellEditorValue());
@@ -334,6 +350,7 @@ public abstract class TableDefinitionPanel extends JPanel
             subtypeEditor.addKeyListener(valueKeyListener);
             domainCell.addKeyListener(valueKeyListener);
             charsetEditor.addKeyListener(valueKeyListener);
+            collateEditor.addKeyListener(valueKeyListener);
 
             _model.addTableModelListener(this);
         }
@@ -816,7 +833,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
         protected String[] header = Bundles.get(TableDefinitionPanel.class, new String[] {
                 "PK", "Name", "Datatype", "Domain", "Size", "Scale", "Subtype", "Required", "Check",
-                "Description", "ComputedBy", "Autoincrement", "DefaultValue", "Encoding"});
+                "Description", "ComputedBy", "Autoincrement", "DefaultValue", "Collate", "Encoding"});
 
         public CreateTableModel() {
             tableVector = new Vector<>();
@@ -932,6 +949,9 @@ public abstract class TableDefinitionPanel extends JPanel
 
                 case AUTOINCREMENT_COLUMN:
                     return cd.isAutoincrement();
+
+                case COLLATE_COLUMN:
+                    return cd.getCollate();
 
                 case ENCODING_COLUMN:
                     return cd.getCharset();
@@ -1112,8 +1132,12 @@ public abstract class TableDefinitionPanel extends JPanel
 
                 case DEFAULT_COLUMN:
                     cd.setDefaultValue((String) value);
+
                 case AUTOINCREMENT_COLUMN:
                     break;
+
+                case COLLATE_COLUMN:
+                    cd.setCollate((String) value);
 
                 case ENCODING_COLUMN:
                     cd.setCharset((String) value);
@@ -1163,19 +1187,26 @@ public abstract class TableDefinitionPanel extends JPanel
         }
 
         public boolean isCellEditable(int row, int col) {
+
             if (editing) {
                 switch (col) {
+
                     case PK_COLUMN:
                     case AUTOINCREMENT_COLUMN:
                         return false;
+
                     case SIZE_COLUMN:
                         return isEditSize(row);
+
                     case SCALE_COLUMN:
                         return isEditScale(row);
+
                     case SUBTYPE_COLUMN:
                         return isEditSubtype(row);
+
                     case ENCODING_COLUMN:
                         return isEditEncoding(row);
+
                     default:
                         return true;
                 }

@@ -564,7 +564,10 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
                 break;
             case QueryTypes.CREATE_OBJECT:
             case QueryTypes.CREATE_OR_ALTER:
-                rText = metaName + " Created";
+                rText = metaName + " created";
+                break;
+            case QueryTypes.RECREATE_OBJECT:
+                rText = metaName + " recreated";
                 break;
             case QueryTypes.ALTER_OBJECT:
                 rText = metaName + " altered";

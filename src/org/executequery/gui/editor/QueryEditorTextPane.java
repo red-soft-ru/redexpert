@@ -546,7 +546,6 @@ public class QueryEditorTextPane extends SQLTextArea
     public void insertTextAtOffset(int offset, String text) {
         try {
             fireTextUpdateStarting();
-            loadDummyDocument();
 
             try {
                 // clear the contents of we have any
@@ -560,8 +559,6 @@ public class QueryEditorTextPane extends SQLTextArea
 
             } catch (BadLocationException e) {
             }
-
-            setDocument(document);
 
         } finally {
 

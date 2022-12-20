@@ -126,6 +126,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     protected JComboBox authidCombo;
 
 
+
     /**
      * <p> Constructs a new instance.
      */
@@ -399,6 +400,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
             //authidCombo.setVisible(false);
             topGbh.addLabelFieldPair(topPanel, sqlSecurityLabel, sqlSecurityCombo, null);
         }
+        topPanel.add(ddlPanel, topGbh.nextRowFirstCol().setLabelDefault().get());
 
         //centralGbh.previousRow().previousRow().addLabelFieldPair(topPanel, sqlSecurityLabel, authidCombo, null);
         centralPanel.add(useExternalBox, centralGbh.setLabelDefault().setWidth(2).get());

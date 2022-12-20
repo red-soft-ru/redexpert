@@ -140,7 +140,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         String sql_security = "null";
         if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
             sql_security = "IIF(p.rdb$sql_security is null,null,IIF(p.rdb$sql_security,'DEFINER','INVOKER'))";
-        return "select 0,\n" +
+        String sql = "select 0,\n" +
                 "p.rdb$package_header_source,\n" +
                 "p.rdb$package_body_source,\n" +
                 "p.rdb$valid_body_flag,\n" +
@@ -148,9 +148,10 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
                 "p.rdb$owner_name,\n" +
                 "p.rdb$system_flag,\n" +
                 "p.rdb$description as DESCRIPTION,\n" +
-                sql_security + " as SQL_SECURITY,\n" +
+                sql_security + " as SQL_SECURITY\n" +
                 "from rdb$packages p\n" +
                 "where p.rdb$package_name='" + getName().trim() + "'";
+        return sql;
     }
 
     @Override

@@ -15,7 +15,6 @@ import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.executequery.databaseobjects.NamedObject.*;
 import static org.executequery.gui.browser.ColumnConstraint.RESTRICT;
@@ -299,32 +298,35 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateCreateFunction(String name, Vector<ColumnData> argumentList, Vector<ColumnData> variables, ColumnData returnType, String functionBody, String entryPoint, String engine, String sqlSecurity, String comment) {
+    public static String generateCreateFunction(String name, Vector<ColumnData> argumentList, Vector<ColumnData> variables, ColumnData returnType, String functionBody, String entryPoint, String engine, String sqlSecurity, String comment, boolean deterministic) {
         StringBuilder sb = new StringBuilder();
         sb.append(formattedParameters(variables, true));
         sb.append(functionBody);
-        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, sqlSecurity, comment);
+        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, sqlSecurity, comment, deterministic);
     }
 
-    public static String generateCreateFunction(String name, List<FunctionArgument> argumentList, String fullFunctionBody, String entryPoint, String engine, String sqlSecurity, String comment, DatabaseConnection dc) {
+    public static String generateCreateFunction(String name, List<FunctionArgument> argumentList, String fullFunctionBody, String entryPoint, String engine, String sqlSecurity, String comment, boolean deterministic, DatabaseConnection dc) {
         Vector<ColumnData> inputs = new Vector<>();
         ColumnData returnType = null;
         for (FunctionArgument parameter : argumentList) {
             if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
                 ColumnData cd = columnDataFromProcedureParameter(parameter, dc, false);
                 inputs.add(cd);
-            } else returnType = columnDataFromProcedureParameter(parameter, dc, false);
+            } else
+                returnType = columnDataFromProcedureParameter(parameter, dc, false);
         }
-        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, sqlSecurity, comment);
+        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, sqlSecurity, comment, deterministic);
     }
 
-    public static String generateCreateFunction(String name, Vector<ColumnData> inputArguments, ColumnData returnType, String fullFunctionBody, String entryPoint, String engine, String sqlSecurity, String comment) {
+    public static String generateCreateFunction(String name, Vector<ColumnData> inputArguments, ColumnData returnType, String fullFunctionBody, String entryPoint, String engine, String sqlSecurity, String comment, boolean deterministic) {
         StringBuilder sb = new StringBuilder();
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION], null));
         sb.append("RETURNS ");
         if (returnType != null)
             sb.append(returnType.getFormattedDataType());
-
+        if (deterministic) {
+            sb.append(" DETERMINISTIC");
+        }
         if (!MiscUtils.isNull(sqlSecurity))
             sb.append("\n" + SQL_SECURITY).append(sqlSecurity);
 

@@ -26,7 +26,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.LineNumber;
 import org.executequery.gui.UndoableComponent;
 import org.executequery.gui.text.SQLTextArea;
-import org.executequery.gui.text.SimpleTextUndoManager;
 import org.executequery.repository.EditorSQLShortcut;
 import org.executequery.repository.EditorSQLShortcuts;
 import org.executequery.repository.KeywordRepository;
@@ -77,9 +76,6 @@ public class QueryEditorTextPane extends SQLTextArea
      * To display line numbers
      */
     private LineNumber lineBorder;
-
-    /** The text pane's undo manager */
-    protected SimpleTextUndoManager undoManager;
 
     private Map<String, EditorSQLShortcut> editorShortcuts;
 
@@ -432,7 +428,6 @@ public class QueryEditorTextPane extends SQLTextArea
         addCaretListener(this);
 
         // undo functionality
-        undoManager = new SimpleTextUndoManager(this);        
         undoManager.setLimit(userProperties().getIntProperty("editor.undo.count"));
 
         if (document!=null)
@@ -1175,13 +1170,6 @@ public class QueryEditorTextPane extends SQLTextArea
         }
     }
 
-    /**
-     * Returns true if an undo operation would be
-     * successful now, false otherwise.
-     */
-    public boolean canUndo() {
-        return undoManager.canUndo();
-    }
 
     /**
      * Executes the undo action.

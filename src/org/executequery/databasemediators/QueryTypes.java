@@ -129,6 +129,78 @@ public final class QueryTypes {
     private QueryTypes() {
     }
 
+    public static String getResultText(int result, int type, String metaName, String objectName) {
+        String row = " row ";
+        if (result > 1 || result == 0) {
+
+            row = " rows ";
+        }
+
+        String rText = null;
+        switch (type) {
+            case QueryTypes.INSERT:
+                rText = row + "created.";
+                break;
+            case QueryTypes.UPDATE:
+                rText = row + "updated.";
+                break;
+            case QueryTypes.DELETE:
+                rText = row + "deleted.";
+                break;
+            case QueryTypes.GRANT:
+                rText = "Grant succeeded.";
+                break;
+            case QueryTypes.COMMIT:
+                rText = "Commit complete.";
+                break;
+            case QueryTypes.ROLLBACK:
+                rText = "Rollback complete.";
+                break;
+            case QueryTypes.SELECT_INTO:
+                rText = "Statement executed successfully.";
+                break;
+            case QueryTypes.REVOKE:
+                rText = "Revoke succeeded.";
+                break;
+            case QueryTypes.DROP_OBJECT:
+                rText = metaName + " " + objectName + " dropped.";
+                break;
+            case QueryTypes.COMMENT:
+                rText = "Description added";
+                break;
+            case QueryTypes.CREATE_OBJECT:
+            case QueryTypes.CREATE_OR_ALTER:
+                rText = metaName + " " + objectName + " created";
+                break;
+            case QueryTypes.RECREATE_OBJECT:
+                rText = metaName + " " + objectName + " recreated";
+                break;
+            case QueryTypes.ALTER_OBJECT:
+                rText = metaName + " " + objectName + " altered";
+                break;
+            case QueryTypes.UNKNOWN:
+            case QueryTypes.EXECUTE:
+                if (result > -1) {
+                    rText = result + row + "affected.\nStatement executed successfully.";
+                } else {
+                    rText = "Statement executed successfully.";
+                }
+                break;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        if ((result > -1 && type >= QueryTypes.ALL_UPDATES) && type != QueryTypes.UNKNOWN) {
+
+            sb.append(result);
+        }
+
+        sb.append(rText);
+
+        return sb.toString();
+
+    }
+
+
 }
 
 

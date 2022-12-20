@@ -524,73 +524,8 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         setSelectedIndex(0);
 
-        String row = " row ";
-        if (result > 1 || result == 0) {
 
-            row = " rows ";
-        }
-
-        String rText = null;
-        switch (type) {
-            case QueryTypes.INSERT:
-                rText = row + "created.";
-                break;
-            case QueryTypes.UPDATE:
-                rText = row + "updated.";
-                break;
-            case QueryTypes.DELETE:
-                rText = row + "deleted.";
-                break;
-            case QueryTypes.GRANT:
-                rText = "Grant succeeded.";
-                break;
-            case QueryTypes.COMMIT:
-                rText = "Commit complete.";
-                break;
-            case QueryTypes.ROLLBACK:
-                rText = "Rollback complete.";
-                break;
-            case QueryTypes.SELECT_INTO:
-                rText = "Statement executed successfully.";
-                break;
-            case QueryTypes.REVOKE:
-                rText = "Revoke succeeded.";
-                break;
-            case QueryTypes.DROP_OBJECT:
-                rText = metaName + " dropped.";
-                break;
-            case QueryTypes.COMMENT:
-                rText = "Description created.";
-                break;
-            case QueryTypes.CREATE_OBJECT:
-            case QueryTypes.CREATE_OR_ALTER:
-                rText = metaName + " created";
-                break;
-            case QueryTypes.RECREATE_OBJECT:
-                rText = metaName + " recreated";
-                break;
-            case QueryTypes.ALTER_OBJECT:
-                rText = metaName + " altered";
-                break;
-            case QueryTypes.UNKNOWN:
-            case QueryTypes.EXECUTE:
-                if (result > -1) {
-                    rText = result + row + "affected.\nStatement executed successfully.";
-                } else {
-                    rText = "Statement executed successfully.";
-                }
-                break;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        if ((result > -1 && type >= QueryTypes.ALL_UPDATES) && type != QueryTypes.UNKNOWN) {
-
-            sb.append(result);
-        }
-
-        sb.append(rText);
-
-        setOutputMessage(SqlMessages.PLAIN_MESSAGE, sb.toString(), true);
+        setOutputMessage(SqlMessages.PLAIN_MESSAGE, QueryTypes.getResultText(result, type, metaName, ""), true);
         queryEditor.setLeftStatusText(SUCCESS);
     }
 

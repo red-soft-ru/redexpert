@@ -18,6 +18,7 @@ import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.RTextArea;
+import org.fife.ui.rtextarea.RUndoManager;
 import org.fife.ui.rtextarea.RecordableTextAction;
 import org.underworldlabs.sqlLexer.CustomTokenMakerFactory;
 import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
@@ -53,6 +54,8 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
     boolean autocompleteOnlyHotKey = true;
 
     private boolean doCaretUpdate;
+
+    protected RUndoManager undoManager;
 
     /**
      * The current font width for painting
@@ -157,9 +160,9 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
                     Token.WHITESPACE, 0);
             lastToken.setNextToken(t);
             lastToken = t;
-        if (cursor>=tokenList.getOffset()) {
+        if (cursor >= tokenList.getOffset()) {
             while (!tokenList.containsPosition(cursor)) {
-                tokenList = (TokenImpl)tokenList.getNextToken();
+                tokenList = (TokenImpl) tokenList.getNextToken();
             }
         }
         // Be careful to check temp for null here.  It is possible that no
@@ -168,10 +171,16 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         return tokenList;
     }
 
+    @Override
+    protected RUndoManager createUndoManager() {
+        undoManager = new RUndoManager(this);
+        return undoManager;
+    }
+
     private void createStyle(int type, Color fcolor,
-                             Color bcolor,String fontname,int style,int fontSize,boolean underline) {
+                             Color bcolor, String fontname, int style, int fontSize, boolean underline) {
         SyntaxScheme syntaxScheme = getSyntaxScheme();
-        if(syntaxScheme!=null) {
+        if (syntaxScheme != null) {
             syntaxScheme.getStyle(type).foreground = fcolor;
             syntaxScheme.getStyle(type).background = bcolor;
             syntaxScheme.getStyle(type).underline = underline;

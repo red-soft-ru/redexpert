@@ -334,6 +334,12 @@ public class GrantManagerPanel extends JPanel implements TabView {
                 case 4:
                     get_procedures_for_userlist();
                     break;
+                case 5:
+                    get_functions_for_userlist();
+                    break;
+                case 6:
+                    get_packages_for_userlist();
+                    break;
                 default:
                     break;
             }
@@ -389,6 +395,18 @@ public class GrantManagerPanel extends JPanel implements TabView {
     void get_procedures_for_userlist() {
         List<String> metatags = new ArrayList<>();
         metatags.add(NamedObject.META_TYPES[NamedObject.PROCEDURE]);
+        get_user_list(metatags);
+    }
+
+    void get_functions_for_userlist() {
+        List<String> metatags = new ArrayList<>();
+        metatags.add(NamedObject.META_TYPES[NamedObject.FUNCTION]);
+        get_user_list(metatags);
+    }
+
+    void get_packages_for_userlist() {
+        List<String> metatags = new ArrayList<>();
+        metatags.add(NamedObject.META_TYPES[NamedObject.PACKAGE]);
         get_user_list(metatags);
     }
 
@@ -1244,8 +1262,8 @@ public class GrantManagerPanel extends JPanel implements TabView {
         refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.png", true));
         refreshButton.addActionListener(evt -> refreshButtonActionPerformed(evt));
 
-
-        recipientsOfPrivilegesBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"Users", "Roles", "Views", "Triggers", "Procedures"})));
+        String[] recipients = new String[]{"Users", "Roles", "Views", "Triggers", "Procedures", "Functions", "Packages"};
+        recipientsOfPrivilegesBox.setModel(new DefaultComboBoxModel<>(bundleStrings(recipients)));
         recipientsOfPrivilegesBox.addActionListener(evt -> userBoxActionPerformed(evt));
 
         userList.addListSelectionListener(evt -> userListValueChanged());

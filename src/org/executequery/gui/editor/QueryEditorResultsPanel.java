@@ -36,6 +36,7 @@ import org.underworldlabs.swing.plaf.TabRollOverListener;
 import org.underworldlabs.swing.plaf.TabRolloverEvent;
 import org.underworldlabs.swing.plaf.TabSelectionListener;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -382,6 +383,11 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
                 resultSetTableColumnResizingManager.suspend(table);
 
                 panel.setResultSet(model, showRowNumber);
+                double thisWidth = getParent().getParent().getPreferredSize().getWidth();
+                int colWidth = SystemProperties.getIntProperty("user", "results.table.column.width");
+                if (thisWidth / table.getColumnCount() < colWidth)
+                    table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                else table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
                 resultSetTableColumnResizingManager.setColumnWidthsForTable(table);
 
             } finally {
@@ -389,6 +395,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
                 resultSetTableColumnResizingManager.reinstate(table);
             }
             addResultSetPanel(query, rowCount, panel);
+
         }
 
         return rowCount;

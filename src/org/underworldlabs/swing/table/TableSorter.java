@@ -23,6 +23,7 @@ package org.underworldlabs.swing.table;
 import org.executequery.event.DefaultSortingEvent;
 import org.executequery.event.SortingEvent;
 import org.executequery.event.SortingListener;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
@@ -33,6 +34,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.*;
 
@@ -207,8 +209,8 @@ public class TableSorter extends AbstractTableModel {
     }
 
     private Directive getDirective(int column) {
-        for (int i = 0, n = sortingColumns.size(); i < n; i++) {
-            Directive directive = (Directive) sortingColumns.get(i);
+        for (Object sortingColumn : sortingColumns) {
+            Directive directive = (Directive) sortingColumn;
             if (directive.column == column) {
                 return directive;
             }
@@ -420,9 +422,9 @@ public class TableSorter extends AbstractTableModel {
             int row1 = modelIndex;
             int row2 = ((Row) o).modelIndex;
 
-            for (Iterator it = sortingColumns.iterator(); it.hasNext(); ) {
+            for (Object sortingColumn : sortingColumns) {
 
-                Directive directive = (Directive) it.next();
+                Directive directive = (Directive) sortingColumn;
 
                 int column = directive.column;
 
@@ -522,24 +524,21 @@ public class TableSorter extends AbstractTableModel {
 
             long n1 = -1;
             try {
-                Date d1 = (Date) o1;
+                Date d1 = java.sql.Timestamp.valueOf((LocalDateTime) o1);
                 n1 = d1.getTime();
             } catch (ClassCastException e) {
+                Log.error(e.getMessage());
             }
 
             long n2 = -1;
             try {
-                Date d2 = (Date) o2;
+                Date d2 = java.sql.Timestamp.valueOf((LocalDateTime) o2);
                 n2 = d2.getTime();
             } catch (ClassCastException e) {
+                Log.error(e.getMessage());
             }
 
-            if (n1 < n2)
-                return -1;
-            else if (n1 > n2)
-                return 1;
-            else
-                return 0;
+            return Long.compare(n1, n2);
         }
 
         private int compareAsString(Object o1, Object o2) {
@@ -565,10 +564,8 @@ public class TableSorter extends AbstractTableModel {
 
         private int compareAsBoolean(Object o1, Object o2) {
 
-            Boolean bool1 = (Boolean) o1;
-            boolean b1 = bool1.booleanValue();
-            Boolean bool2 = (Boolean) o2;
-            boolean b2 = bool2.booleanValue();
+            boolean b1 = (Boolean) o1;
+            boolean b2 = (Boolean) o2;
 
             if (b1 == b2)
                 return 0;

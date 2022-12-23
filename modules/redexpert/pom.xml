@@ -228,9 +228,7 @@
                                 <resource>
                                     <directory>${pom.basedir}/../../lib</directory>
                                     <includes>
-                                        <include>**/fbplugin.jar</include>
                                         <include>**/fbclient.jar</include>
-                                        <include>**/liquibase-3.5.6-SNAPSHOT.jar</include>
                                     </includes>
                                 </resource>
                             </resources>

@@ -25,6 +25,7 @@ import org.executequery.event.SortingEvent;
 import org.executequery.event.SortingListener;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -34,7 +35,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.List;
 import java.util.*;
 
@@ -522,23 +523,26 @@ public class TableSorter extends AbstractTableModel {
 
         private int compareAsDate(Object o1, Object o2) {
 
-            long n1 = -1;
-            try {
-                Date d1 = java.sql.Timestamp.valueOf((LocalDateTime) o1);
-                n1 = d1.getTime();
-            } catch (ClassCastException e) {
-                Log.error(e.getMessage());
-            }
+            if (o1 == null)
+                return (o2 == null) ? 0 : 1;
+            if (o2 == null)
+                return -1;
 
-            long n2 = -1;
-            try {
-                Date d2 = java.sql.Timestamp.valueOf((LocalDateTime) o2);
-                n2 = d2.getTime();
-            } catch (ClassCastException e) {
-                Log.error(e.getMessage());
-            }
+            if (o1 instanceof LocalDateTime)
+                return ((LocalDateTime) o1).compareTo((LocalDateTime) o2);
 
-            return Long.compare(n1, n2);
+            else if (o1 instanceof LocalDate)
+                return ((LocalDate) o1).compareTo((LocalDate) o2);
+
+            else if (o1 instanceof LocalTime)
+                return ((LocalTime) o1).compareTo((LocalTime) o2);
+
+            else if (o1 instanceof OffsetDateTime)
+                return ((OffsetDateTime) o1).compareTo((OffsetDateTime) o2);
+
+            else /*if (o1 instanceof OffsetTime)*/
+                return ((OffsetTime) o1).compareTo((OffsetTime) o2);
+
         }
 
         private int compareAsString(Object o1, Object o2) {

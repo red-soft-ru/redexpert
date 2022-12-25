@@ -257,8 +257,15 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             if (value < 0)
                 value *= -1;
 
-            long max = maxTime.getLocalTime().atDate(LocalDate.of(1970, 1, 1)).toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli();
-            long min = minTime.getLocalTime().atDate(LocalDate.of(1970, 1, 1)).toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli();
+            long max = maxTime.getLocalTime().atDate(LocalDate.of(1970, 1, 1))
+                    .toInstant(ZoneId.of(ZoneId.systemDefault().getId())
+                            .getRules().getOffset(Instant.now()))
+                    .toEpochMilli();
+            long min = minTime.getLocalTime().atDate(LocalDate.of(1970, 1, 1))
+                    .toInstant(ZoneId.of(ZoneId.systemDefault().getId())
+                            .getRules().getOffset(Instant.now()))
+                    .toEpochMilli();
+
             if (min > max)
                 throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;

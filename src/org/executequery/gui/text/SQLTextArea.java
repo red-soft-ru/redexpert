@@ -22,6 +22,7 @@ import org.fife.ui.rtextarea.RUndoManager;
 import org.fife.ui.rtextarea.RecordableTextAction;
 import org.underworldlabs.sqlLexer.CustomTokenMakerFactory;
 import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -173,7 +174,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
 
     @Override
     protected RUndoManager createUndoManager() {
-        undoManager = new RUndoManager(this);
+        undoManager = new SQLTextUndoManager(this);
         return undoManager;
     }
 
@@ -258,6 +259,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
     public SQLTextArea() {
         super();
         document = new SQLSyntaxDocument(null, tokenMakerFactory, "antlr/sql");
+        document.setTextComponent(this);
         setDocument(document);
         setSyntaxEditingStyle("antlr/sql");
         initialiseStyles();
@@ -818,4 +820,34 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
 
         }
     }
+
+    class SQLTextUndoManager extends RUndoManager {
+
+        /**
+         * Constructor.
+         *
+         * @param textArea The parent text area.
+         */
+        public SQLTextUndoManager(RTextArea textArea) {
+            super(textArea);
+        }
+
+        @Override
+        public void updateActions() {
+            SwingWorker sw = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    superUpdateActions();
+                    return null;
+                }
+            };
+            sw.start();
+        }
+
+        private void superUpdateActions() {
+            super.updateActions();
+        }
+    }
+
+
 }

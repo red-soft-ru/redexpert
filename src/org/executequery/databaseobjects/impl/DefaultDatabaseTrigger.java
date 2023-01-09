@@ -394,9 +394,9 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
         if (getDatabaseMajorVersion() < 3) {
             externalTriggerInfo = "null as ENGINE,\n" +
                     "null as ENTRY_POINT,\n";
-            sqlSecurity = "null as SQL_SECURITY";
+            sqlSecurity = "null as SQL_SECURITY\n";
         }
-        return "select 0,\n" +
+        String query = "select 0,\n" +
                 "t.rdb$trigger_source as SOURCE_CODE,\n" +
                 "t.rdb$relation_name as TABLE_NAME,\n" +
                 "t.rdb$trigger_sequence,\n" +
@@ -407,6 +407,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
                 sqlSecurity +
                 "from rdb$triggers t\n" +
                 "where t.rdb$trigger_name = '" + getName().trim() + "'";
+        return query;
     }
 
     @Override

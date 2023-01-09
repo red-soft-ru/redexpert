@@ -34,19 +34,6 @@ public class Comparer {
     private static boolean COMMENTS_NEED;
     private static boolean COMPUTED_FIELDS_NEED;
 
-    protected Role role;
-    protected Udf udf;
-    protected Generator generator;
-    protected Exception exception;
-    protected Trigger trigger;
-    protected Table table;
-    protected View view;
-    protected Index index;
-    protected Constraint constraint;
-    protected Domain domain;
-    protected Procedure procedure;
-    protected Dependencies dependencies;
-
     protected StatementExecutor compareConnection;
     protected StatementExecutor masterConnection;
 
@@ -77,34 +64,6 @@ public class Comparer {
         Comparer.COMMENTS_NEED = commentsNeed;
         Comparer.COMPUTED_FIELDS_NEED = computedNeed;
 
-        procedure = new Procedure(this);
-        domain = new Domain(this);
-        dependencies = new Dependencies(this);
-        constraint = new Constraint(this);
-        index = new Index(this);
-        view = new View(this);
-        table = new Table(this);
-        trigger = new Trigger(this);
-        exception = new Exception(this);
-        generator = new Generator(this);
-        udf = new Udf(this);
-        role = new Role();
-
-        init();
-    }
-
-    void init() {
-        procedure.init();
-        domain.init();
-        dependencies.init();
-        constraint.init();
-        index.init();
-        view.init();
-        table.init();
-        trigger.init();
-        exception.init();
-        generator.init();
-        udf.init();
     }
 
     public void createObjects(int type) {

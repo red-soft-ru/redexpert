@@ -703,7 +703,6 @@ public class QueryEditor extends DefaultTabView
         statusBar.stopProgressBar();
         setStopButtonEnabled(false);
         statusBar.setExecutionTime(message);
-        resetPanels();
     }
 
     /**

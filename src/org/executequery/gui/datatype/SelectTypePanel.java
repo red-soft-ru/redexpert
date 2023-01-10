@@ -356,6 +356,7 @@ public class SelectTypePanel extends JPanel {
         DefaultStatementExecutor sender = new DefaultStatementExecutor();
         sender.setDatabaseConnection(cd.getDatabaseConnection());
         List<String> collates = new ArrayList<>();
+        collates.add("");
         collates.add(CreateTableSQLSyntax.NONE);
         String query = "SELECT RDB$COLLATION_NAME\n" +
                 "FROM RDB$COLLATIONS CO LEFT JOIN RDB$CHARACTER_SETS CS ON CO.RDB$CHARACTER_SET_ID = CS.RDB$CHARACTER_SET_ID\n" +

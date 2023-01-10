@@ -53,6 +53,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     protected boolean edited = false;
     protected String firstQuery;
 
+    protected GridBagHelper topGbh;
+
     public static AbstractCreateObjectPanel getEditPanelFromType(int type, DatabaseConnection dc, Object databaseObject, Object[] params) {
         switch (type) {
             case NamedObject.DOMAIN:
@@ -164,10 +166,10 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         } else connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
         this.setLayout(new BorderLayout());
         topPanel = new JPanel(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic().defaults();
-        gbh.addLabelFieldPair(topPanel, Bundles.getCommon("connection"), connectionsCombo, null);
-        gbh.addLabelFieldPair(topPanel, Bundles.getCommon("name"), nameField, null);
+        topGbh = new GridBagHelper();
+        topGbh.setDefaultsStatic().defaults();
+        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("connection"), connectionsCombo, null);
+        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("name"), nameField, null);
         centralPanel = new JPanel();
 
         BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(parent != null && parent.isDialog());
@@ -192,6 +194,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         JPanel panel = new JPanel(new GridBagLayout());
         if (parent != null)
             panel.setBorder(BorderFactory.createEtchedBorder());
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic();
         gbh.fullDefaults();
         panel.add(topPanel, gbh.setMaxWeightX().fillHorizontally().get());
         panel.add(centralPanel, gbh.nextRowFirstCol().get());

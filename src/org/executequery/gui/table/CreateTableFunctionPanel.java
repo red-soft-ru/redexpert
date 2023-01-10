@@ -103,6 +103,10 @@ public abstract class CreateTableFunctionPanel extends JPanel
     protected JButton browseExternalTableFileButton;    //button for open selectFileDialog
     protected JCheckBox isAdapterNeeded;    //checking for using ADAPTER table
 
+
+    protected JLabel securitySQLLabel;
+    private JComboBox securitySQLSelection;
+
     /**
      * The table column definition panel
      */
@@ -274,6 +278,18 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 bundledString("TableName"), nameField,
                 null, true, true);
 
+        /*ReflectiveAction action = new ReflectiveAction(this);
+        securitySQLLabel = new JLabel();
+        securitySQLLabel.setText("SQL SECURITY");
+        String[] typeSecurity = {"", "DEFINER", "INVOKER"};
+        securitySQLSelection = ActionUtilities.createComboBox(action, typeSecurity, "sqlSecurityChanged");
+        gridBagHelper.addLabelFieldPair(mainPanel, securitySQLLabel, securitySQLSelection, null, true, true);
+
+        int databaseversion = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(
+                (DatabaseConnection) connectionsCombo.getSelectedItem()).getDatabaseMetaData().getDatabaseMajorVersion();
+        securitySQLLabel.setVisible(databaseversion > 2);
+        securitySQLSelection.setVisible(databaseversion > 2);*/
+
         gridBagHelper.addLabelFieldPair(mainPanel,
                 Bundles.get(TableDefinitionPanel.class, "Tablespace"), tablespacesCombo,
                 null, true, true);
@@ -380,6 +396,11 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
     }
 
+    public void sqlSecurityChanged(ActionEvent e) {
+        setSQLText();
+    }
+
+
     public void browseExternalTableFile() {
 
         FileChooserDialog fileChooser = new FileChooserDialog();
@@ -413,44 +434,13 @@ public abstract class CreateTableFunctionPanel extends JPanel
     }
 
     String[] getDomains() {
-        DefaultStatementExecutor executor = new DefaultStatementExecutor(getSelectedConnection(), true);
-        List<String> domains = new ArrayList<>();
-        try {
-            String query = "select " +
-                    "RDB$FIELD_NAME FROM RDB$FIELDS " +
-                    "where RDB$FIELD_NAME not like 'RDB$%'\n" +
-                    "and RDB$FIELD_NAME not like 'MON$%'\n" +
-                    "order by RDB$FIELD_NAME";
-            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
-                domains.add(rs.getString(1).trim());
-            }
-            executor.releaseResources();
-            return domains.toArray(new String[domains.size()]);
-        } catch (Exception e) {
-            Log.error("Error loading domains:" + e.getMessage());
-            return null;
-        }
+        java.util.List<String> domains = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.DOMAIN]);
+        return domains.toArray(new String[domains.size()]);
     }
 
     String[] getGenerators() {
-        DefaultStatementExecutor executor = new DefaultStatementExecutor(getSelectedConnection(), true);
-        List<String> domains = new ArrayList<>();
-        try {
-            String query = "select " +
-                    "RDB$GENERATOR_NAME FROM RDB$GENERATORS " +
-                    "where RDB$SYSTEM_FLAG = 0 " +
-                    "order by 1";
-            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
-                domains.add(rs.getString(1).trim());
-            }
-            executor.releaseResources();
-            return domains.toArray(new String[domains.size()]);
-        } catch (Exception e) {
-            Log.error("Error loading generators:" + e.getMessage());
-            return null;
-        }
+        java.util.List<String> generators = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.SEQUENCE]);
+        return generators.toArray(new String[generators.size()]);
     }
 
     /**
@@ -633,10 +623,10 @@ public abstract class CreateTableFunctionPanel extends JPanel
         if (!Objects.equals(commentField.getTextAreaComponent().getText(), ""))
             comment = commentField.getTextAreaComponent().getText().trim();
 
-        setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(),
-                consPanel.getKeys(), false, temporary, true, true, true,
-                "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
-                externalFile, adapter, tablespace, comment));
+        setSQLText(SQLUtils.generateCreateTable(
+                nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
+                false, temporary, true, true, true, "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
+                externalFile, adapter, null, tablespace, comment));
 
     }
 

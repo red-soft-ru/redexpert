@@ -177,11 +177,11 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
             domainData.setDomainCheck(domainCheck);
             domainData.setDomainDefault(domainData.processedDefaultValue(domainData.getDomainDefault()));
             if (MiscUtils.isNull(domainCharset)) {
-                domainCharset = CreateTableSQLSyntax.NONE;
+                domainCharset = "";
             } else domainCharset = domainCharset.trim();
             domainData.setDomainCharset(domainCharset);
             if (MiscUtils.isNull(domainCollate)) {
-                domainCollate = CreateTableSQLSyntax.NONE;
+                domainCollate = "";
             } else domainCollate = domainCollate.trim();
             domainData.setDomainCollate(domainCollate);
             domainData.setDomainTypeName(DatabaseTypeConverter.getDataTypeName(rs.getInt(TYPE), rs.getInt(SUB_TYPE), rs.getInt(SCALE)));

@@ -83,7 +83,6 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
         DefaultStatementExecutor querySender = new DefaultStatementExecutor();
         querySender.setDatabaseConnection(getHost().getDatabaseConnection());
-
         int type = -1;
         try {
 
@@ -121,7 +120,8 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, true, false, false,
-                Comparer.isCommentsNeed(), typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
+                Comparer.isCommentsNeed(), typeTemporary, getExternalFile(),
+                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
     }
 
     @Override

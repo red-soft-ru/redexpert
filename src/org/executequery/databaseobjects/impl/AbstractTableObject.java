@@ -24,6 +24,8 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
 
     protected DatabaseObject dependObject;
 
+    protected String sqlSecurity;
+
     protected List<TableDataChange> tableDataChanges() {
 
         if (tableDataChanges == null) {
@@ -659,4 +661,11 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         this.dependObject = dependObject;
     }
 
+    public String getSqlSecurity() {
+        return sqlSecurity;
+    }
+
+    public void setSqlSecurity(String sqlSecurity) {
+        this.sqlSecurity = sqlSecurity;
+    }
 }

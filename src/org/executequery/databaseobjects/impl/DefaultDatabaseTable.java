@@ -29,6 +29,7 @@ import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.log.Log;
+import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -554,6 +555,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return result;
     }
 
+    @Override
     public void cancelChanges() {
 
         if (tableDataChangeExecutor != null) {
@@ -563,6 +565,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         tableDataChangeExecutor = null;
     }
 
+    @Override
     public int applyTableDefinitionChanges() throws DataSourceException {
 
         Statement stmnt = null;
@@ -613,6 +616,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         }
     }
 
+    @Override
     public boolean hasTableDefinitionChanges() {
 
         return StringUtils.isNotBlank(getModifiedSQLText());
@@ -874,6 +878,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return primaryKeys;
     }
 
+    @Override
     public List<ColumnConstraint> getForeignKeys() {
 
         List<ColumnConstraint> foreignKeys = new ArrayList<>();
@@ -907,6 +912,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return uniqueKeys;
     }
 
+    @Override
     public String getAlterSQLTextForUniqueKeys() {
 
     /*StatementGenerator statementGenerator = null;
@@ -915,6 +921,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return null;
     }
 
+    @Override
     public String getAlterSQLTextForForeignKeys() {
 
     /*StatementGenerator statementGenerator = null;
@@ -922,6 +929,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return null;
     }
 
+    @Override
     public String getAlterSQLTextForPrimaryKeys() {
 
     /*StatementGenerator statementGenerator = null;
@@ -952,21 +960,21 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         updateListCC();
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, false, true, true, true,
-                null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
+                getName(), listCD, listCC, true, false, true, true, true, null,
+                getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
     }
 
     private void updateListCD() {
         listCD = new ArrayList<>();
         for (int i = 0; i < getColumnCount(); i++)
             listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
-    }
+        }
 
     private void updateListCC() {
         listCC = new ArrayList<>();
         for (int i = 0; i < getConstraints().size(); i++)
             listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
-    }
+        }
 
     /**
      * Returns the CREATE TABLE statement for this database table.
@@ -1078,10 +1086,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return modifiedSQLText;
     }
 
+    @Override
     public void setModifiedSQLText(String modifiedSQLText) {
         this.modifiedSQLText = modifiedSQLText;
     }
 
+    @Override
     public String getInsertSQLText() {
 
         String fields = "";
@@ -1117,6 +1127,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     }
 
+    @Override
     public String getUpdateSQLText() {
 
         String settings = "";
@@ -1146,6 +1157,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     }
 
+    @Override
     public String getSelectSQLText() {
 
         String fields = "";
@@ -1190,6 +1202,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return sb.toString();
     }
 
+    @Override
     public DatabaseSource getDatabaseSource() {
 
         if (getParent() != null) {
@@ -1200,6 +1213,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return null;
     }
 
+    @Override
     public String getParentNameForStatement() {
 
         if (getParent() != null && getParent().getParent() != null) {
@@ -1216,6 +1230,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return true;
     }
 
+    @Override
     public String prepareStatement(List<String> columns, List<RecordDataItem> changes) {
 
         StringBuilder sb = new StringBuilder();
@@ -1286,6 +1301,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return sb.toString();
     }
 
+    @Override
     public String prepareStatementAdding(List<String> columns, List<RecordDataItem> changes) {
 
         StringBuilder sb = new StringBuilder();
@@ -1340,6 +1356,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return sb.toString();
     }
 
+    @Override
     public String prepareStatementDeletingWithPK() {
 
         StringBuilder sb = new StringBuilder();
@@ -1361,25 +1378,44 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return sb.toString();
     }
 
+    @Override
     public List<String> getPrimaryKeyColumnNames() {
-
         return namesFromConstraints(getPrimaryKeys());
     }
 
+    @Override
     public List<String> getForeignKeyColumnNames() {
-
         return namesFromConstraints(getForeignKeys());
     }
 
     private List<String> namesFromConstraints(List<ColumnConstraint> constraints) {
 
         List<String> names = new ArrayList<>();
-        for (ColumnConstraint constraint : constraints) {
-
+        for (ColumnConstraint constraint : constraints)
             names.add(constraint.getColumnName());
-        }
 
         return names;
+    }
+
+    @Override
+    protected String queryForInfo() {
+
+        String query = "select r.rdb$description\n" +
+                "from rdb$relations r\n" +
+                "where r.rdb$relation_name = '" + getName() + "'";
+
+        return query;
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) {
+
+        try {
+            if (rs.next())
+                setRemarks(rs.getString(1));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

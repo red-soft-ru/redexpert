@@ -120,6 +120,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
     protected JTextField engineField;
 
+    protected JLabel sqlSecurityLabel;
+
+    protected JComboBox sqlSecurityCombo;
+    protected JComboBox authidCombo;
+
+
+
     /**
      * <p> Constructs a new instance.
      */
@@ -147,6 +154,12 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
             engineField.setText(executable.getEngine());
             externalField.setText(executable.getEntryPoint());
 
+        }
+        if (!MiscUtils.isNull(executable.getAuthid())) {
+            authidCombo.setSelectedItem(executable.getAuthid());
+        }
+        if (!MiscUtils.isNull(executable.getSqlSecurity())) {
+            sqlSecurityCombo.setSelectedItem(executable.getSqlSecurity());
         }
         useExternalBox.setVisible(false);
         emptyExternalPanel.setVisible(false);
@@ -375,6 +388,21 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         centralGbh = new GridBagHelper();
         centralGbh.setDefaultsStatic();
         centralGbh.defaults();
+        sqlSecurityLabel = new JLabel();
+        authidCombo = new JComboBox(new String[]{"", "OWNER", "CALLER"});
+        sqlSecurityCombo = new JComboBox(new String[]{"", "DEFINER", "INVOKER"});
+        if (getDatabaseVersion() <= 2) {
+            sqlSecurityLabel.setText("AUTHID");
+            //sqlSecurityCombo.setVisible(false);
+            topGbh.addLabelFieldPair(topPanel, sqlSecurityLabel, authidCombo, null);
+        } else {
+            sqlSecurityLabel.setText("SQL SECURITY");
+            //authidCombo.setVisible(false);
+            topGbh.addLabelFieldPair(topPanel, sqlSecurityLabel, sqlSecurityCombo, null);
+        }
+        topPanel.add(ddlPanel, topGbh.nextRowFirstCol().setLabelDefault().get());
+
+        //centralGbh.previousRow().previousRow().addLabelFieldPair(topPanel, sqlSecurityLabel, authidCombo, null);
         centralPanel.add(useExternalBox, centralGbh.setLabelDefault().setWidth(2).get());
         centralPanel.add(emptyExternalPanel, centralGbh.nextCol().setWidth(1).fillHorizontally().setMaxWeightX().spanX().get());
         centralGbh.addLabelFieldPair(centralPanel, bundleStaticString("EntryPoint"), externalField, null);

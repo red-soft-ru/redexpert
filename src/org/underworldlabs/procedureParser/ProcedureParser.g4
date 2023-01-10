@@ -136,10 +136,11 @@ body:
   | K_TYPE spases_or_comment K_OF spases_or_comment K_COLUMN spases_or_comment table_name'.'column_name
 ;
  datatypeSQL
- : (SMALLINT | INTEGER | BIGINT) array_size?
+ : BOOLEAN array_size?
+    | (SMALLINT | INTEGER | BIGINT | INT128) array_size?
     | (FLOAT | DOUBLE_PRECISION) array_size?
-    | (DATE | TIME | TIMESTAMP) array_size?
-    | (DECIMAL | NUMERIC) ('(' type_size (',' scale)?')')? array_size?
+    | (DATE | TIME | TIMESTAMP| TIME_WITH_TIMEZONE | TIMESTAMP_WITH_TIMEZONE) array_size?
+    | (DECIMAL | NUMERIC | DECFLOAT) ('(' type_size (',' scale)?')')? array_size?
     | (CHAR | CHARACTER | VARYING_CHARACTER | VARCHAR) ('('type_size')')?
     (spases_or_comment CHARACTER_SET spases_or_comment charset_name)? array_size?
     | (NCHAR | NATIONAL_CHARACTER | NATIONAL_CHAR) (VARYING)? ('(' int_number ')')? array_size?
@@ -744,15 +745,18 @@ keyword
  ;
 
  //datatypes
+ BOOLEAN : B O O L E A N;
  BIGINT : B I G I N T;
  BLOB : B L O B;
  CHAR : C H A R;
  CHARACTER : C H A R A C T E R;
  DATE : D A T E;
  DECIMAL : D E C I M A L;
+ DECFLOAT : D E C F L O A T;
  DOUBLE_PRECISION : D O U B L E ' ' P R E C I S I O N;
  FLOAT : F L O A T;
  INT : I N T;
+ INT128 : I N T '1' '2' '8' ;
  INTEGER : I N T E G E R;
  NATIONAL_CHARACTER : N A T I O N A L ' ' C H A R A C T E R;
  NATIONAL_CHAR : N A T I O N A L ' ' CHAR;
@@ -763,7 +767,9 @@ keyword
  NUMERIC :  N U M E R I C;
  SMALLINT : S M A L L I N T;
  TIME : T I M E;
+ TIME_WITH_TIMEZONE : T I M E ' ' W I T H ' ' T I M E Z O N E;
  TIMESTAMP : T I M E S T A M P;
+ TIMESTAMP_WITH_TIMEZONE : T I M E S T A M P ' ' W I T H ' ' T I M E Z O N E;
  VARYING_CHARACTER : V A R Y I N G ' ' CHARACTER;
  VARCHAR : V A R C H A R;
  VARYING : V A R Y I N G;

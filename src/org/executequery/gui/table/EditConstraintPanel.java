@@ -1,5 +1,6 @@
 package org.executequery.gui.table;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
@@ -196,8 +197,6 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
 
         loadPanel();
     }
-
-    protected void reset() {}
 
     private void loadPanel() {
 
@@ -397,6 +396,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
         tabbedPane.add(ddlPanel, bundleStaticString("createSQL"));
     }
 
+    @Override
     protected String generateQuery() {
 
         org.executequery.gui.browser.ColumnConstraint cc = new org.executequery.gui.browser.ColumnConstraint();
@@ -448,7 +448,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
         if (editing)
             sb.append("\n\tDROP CONSTRAINT ").append(getFormattedName()).append(",");
         sb.append("\n\tADD ");
-        sb.append(SQLUtils.generateDefinitionColumnConstraint(cc, true).trim().substring(1).trim()).append(";");
+        sb.append(SQLUtils.generateDefinitionColumnConstraint(cc, false).trim().substring(1).trim()).append(";");
 
         return sb.toString();
     }
@@ -503,7 +503,6 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
         table = (DatabaseTable) params[0];
     }
 
-
     @Override
     public void keyTyped(KeyEvent keyEvent) {
         generate_name = false;
@@ -514,6 +513,9 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
 
     @Override
     public void keyReleased(KeyEvent keyEvent) {}
+
+    @Override
+    protected void reset() {}
 
     private String generateName() {
 
@@ -541,9 +543,11 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
         try {
             String query = "Select rdb$constraint_name from rdb$relation_constraints where rdb$constraint_name STARTING WITH '" + name + "' order by 1";
             ResultSet rs = sender.getResultSet(query).getResultSet();
-            while (rs.next())
-                number = rs.getString("rdb$constraint_name").trim().replace(name, "").trim();
-            number = "" + (Integer.parseInt(number) + 1);
+            while (rs.next()) {
+                String tempNumber = rs.getString("rdb$constraint_name").trim().replace(name, "").trim();
+                number = NumberUtils.isNumber(tempNumber) ? tempNumber : number;
+            }
+            number = String.valueOf(Integer.parseInt(number) + 1);
 
         } catch (SQLException e) {
             e.printStackTrace();

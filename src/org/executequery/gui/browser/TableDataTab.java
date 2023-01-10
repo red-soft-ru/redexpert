@@ -412,13 +412,24 @@ public class TableDataTab extends JPanel
             } catch (DataSourceException e) {
                 if ((e.getCause() instanceof SQLException)) {
                     SQLException sqlException = (SQLException) e.getCause();
+
                     if (sqlException.getSQLState().contentEquals("28000"))
                         GUIUtilities.displayExceptionErrorDialog("Data access error", e);
-                    else rebuildDataFromMetadata(columnDataList);
-                } else rebuildDataFromMetadata(columnDataList);
+                    else {
+                        GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                        rebuildDataFromMetadata(columnDataList);
+                    }
+
+                } else {
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    rebuildDataFromMetadata(columnDataList);
+                }
+
             } catch (Exception e) {
+                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
                 rebuildDataFromMetadata(columnDataList);
             }
+
             createResultSetTable();
             List<String> nonEditableCols = new ArrayList<>();
             //nonEditableCols.addAll(primaryKeyColumns);
@@ -435,11 +446,11 @@ public class TableDataTab extends JPanel
             sorter.addSortingListener(new SortingListener() {
                 @Override
                 public void presorting(SortingEvent e) {
-                            tableModel.setFetchAll(true);
-                            tableModel.fetchMoreData();
-                            if (displayRowCount) {
-                                rowCountField.setText(String.valueOf(tableModel.getRowCount()));
-                            }
+                    tableModel.setFetchAll(true);
+                    tableModel.fetchMoreData();
+                    if (displayRowCount) {
+                        rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+                    }
                 }
 
                 @Override
@@ -525,7 +536,10 @@ public class TableDataTab extends JPanel
                         Vector items = itemsForeign(key);
                         DefaultTableModel defaultTableModel = tableForeign(key);
                         //table.setComboboxColumn(tableModel.getColumnIndex(key.getColumnName()), items);
-                        table.setComboboxTable(tableModel.getColumnIndex(key.getColumnName()), defaultTableModel, items);
+
+                        int columnIndex = tableModel.getColumnIndex(key.getColumnName());
+                        if (columnIndex > -1)
+                            table.setComboboxTable(columnIndex, defaultTableModel, items);
                     }
 
 
@@ -1223,34 +1237,37 @@ public class TableDataTab extends JPanel
             if (e.getType() == TableModelEvent.DELETE) {
                 List<RecordDataItem> rowDataForRow = ((ResultSetTableModel) e.getSource()).getDeletedRow();
                 asDatabaseTableObject().removeTableDataChange(rowDataForRow);
+
             } else if (row >= 0) {
+                if (tableModel.getRowCount() > 0) {
 
-                List<RecordDataItem> rowDataForRow = tableModel.getRowDataForRow(row);
-                for (RecordDataItem recordDataItem : rowDataForRow) {
+                    List<RecordDataItem> rowDataForRow = tableModel.getRowDataForRow(row);
+                    for (RecordDataItem recordDataItem : rowDataForRow) {
 
-                    if (recordDataItem.isDeleted()) {
-                        Log.debug("Deleting detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+                        if (recordDataItem.isDeleted()) {
+                            Log.debug("Deleting detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
 
-                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
-                        return;
+                            asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
+                            return;
+                        }
+
+                        if (recordDataItem.isNew()) {
+
+                            Log.debug("Adding detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+
+                            asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
+                            return;
+                        }
+
+                        if (recordDataItem.isChanged()) {
+
+                            Log.debug("Change detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+
+                            asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
+                            return;
+                        }
+
                     }
-
-                    if (recordDataItem.isNew()) {
-
-                        Log.debug("Adding detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
-
-                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
-                        return;
-                    }
-
-                    if (recordDataItem.isChanged()) {
-
-                        Log.debug("Change detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
-
-                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
-                        return;
-                    }
-
                 }
             }
         }

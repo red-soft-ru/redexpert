@@ -242,6 +242,23 @@ public class QueryDispatcher {
     public void executeSQLQuery(DatabaseConnection dc,
                                 final String query,
                                 final boolean executeAsBlock) {
+        String checkUpdatesToLog = "Checking for updates from the release hub is ";
+        if (query.toLowerCase().trim().startsWith("releasehub on")) {
+            SystemProperties.setProperty("user", "releasehub",
+                    "true");
+            checkUpdatesToLog += "enabled";
+            Log.info(checkUpdatesToLog);
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
+            return;
+        }
+        if (query.toLowerCase().trim().startsWith("releasehub off")) {
+            SystemProperties.setProperty("user", "releasehub",
+                    "false");
+            checkUpdatesToLog += "disabled";
+            Log.info(checkUpdatesToLog);
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
+            return;
+        }
 
         if (!ConnectionManager.hasConnections()) {
 

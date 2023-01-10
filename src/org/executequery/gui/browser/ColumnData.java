@@ -30,7 +30,6 @@ import org.executequery.databaseobjects.T;
 import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.table.Autoincrement;
-import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
@@ -293,7 +292,7 @@ public class ColumnData implements Serializable {
         keyType = null;
         dc = databaseConnection;
         ai = new Autoincrement();
-        setCharset(CreateTableSQLSyntax.NONE);
+        setCharset("");
         executor = new DefaultStatementExecutor(dc, true);
         tables = new ArrayList<>();
         columns = new ArrayList<>();
@@ -973,7 +972,7 @@ public class ColumnData implements Serializable {
                 defaultValue = defaultValue.substring(1).trim();
                 this.defaultValue.setOriginOperator("=");
             }
-            if (defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
+            if (defaultValue.startsWith("'") && defaultValue.endsWith("'") && defaultValue.length() > 2) {
                 defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
                 this.defaultValue.setUseQuotes(true);
             }

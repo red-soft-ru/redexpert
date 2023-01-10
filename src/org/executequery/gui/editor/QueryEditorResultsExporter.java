@@ -670,8 +670,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
     private boolean isDataTime(RecordDataItem valueAt) {
         int type = valueAt.getDataType();
-        return (type == Types.TIME ||
-                type == Types.TIMESTAMP);
+      return (type == Types.DATE || type == Types.TIME || type == Types.TIMESTAMP);
     }
 
     private String valueAsString(Object value) {
@@ -867,6 +866,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                             clearText = null;
                         } else {
 
+                          if (valueAsString(value).isEmpty())
+                            rowLines.append("NULL");
+                          else
                             rowLines.append(valueAsString(value));
                         }
                     } else {

@@ -1,6 +1,8 @@
 package org.executequery.gui;
 
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlMessages;
@@ -73,6 +75,8 @@ public class AnaliseRecompileDialog extends BaseDialog {
 
             if (childs != null) {
                 progressBar.setMaximum(childs.size());
+                if (((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType() == NamedObject.PACKAGE)
+                    sb.append("set term ; ^");
                 for (int i = 0; i < childs.size(); i++) {
                     progressBar.setValue(i);
                     AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) childs.get(i).getDatabaseObject();

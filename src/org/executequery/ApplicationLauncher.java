@@ -45,6 +45,7 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.*;
 
@@ -405,7 +406,9 @@ public class ApplicationLauncher {
 
         return new SplashPanel(
                 progressBarColour(),
-                "/org/executequery/images/SplashImage.png",
+                (LocalDate.now().getDayOfYear() >= 349 || LocalDate.now().getDayOfYear() <= 15) ?
+                        "/org/executequery/images/SnowSplashImage.gif" :
+                        "/org/executequery/images/SplashImage.png",
                 versionString(),
                 versionTextColour(),
                 210, 220);

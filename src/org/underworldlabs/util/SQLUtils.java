@@ -135,7 +135,8 @@ public final class SQLUtils {
 
     }
 
-    public static String generateDefinitionColumnConstraint(ColumnConstraint cc, boolean editing, boolean startWithNewLine) {
+    public static String generateDefinitionColumnConstraint(
+            ColumnConstraint cc, boolean editing, boolean startWithNewLine) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -353,7 +354,8 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
         sb.append(formattedParameters(variables, true));
         sb.append(functionBody);
-        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint, engine, sqlSecurity comment, setTerm, setComment, deterministic);
+        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint,
+                engine, sqlSecurity, comment, setTerm, setComment, deterministic);
     }
 
 
@@ -377,7 +379,8 @@ public final class SQLUtils {
 
     public static String generateCreateFunction(
             String name, Vector<ColumnData> inputArguments, ColumnData returnType,
-            String fullFunctionBody, String entryPoint, String engine, String sqlSecurity, String comment, boolean deterministic, boolean setTerm, boolean setComment) {
+            String fullFunctionBody, String entryPoint, String engine, String sqlSecurity,
+            String comment, boolean deterministic, boolean setTerm, boolean setComment) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -935,7 +938,7 @@ public final class SQLUtils {
 
                 if (addCheck == thisConstraints.size())
                     sb.append("\n\tADD ").append(generateDefinitionColumnConstraint(
-                                    new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint), false))
+                                    new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint), false, false))
                             .append(COMMA);
             }
 

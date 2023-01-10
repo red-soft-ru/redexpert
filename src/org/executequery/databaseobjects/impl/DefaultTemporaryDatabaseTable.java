@@ -75,7 +75,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, true, true, true, true,
-                typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
+                typeTemporary, getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
     }
 
     @Override

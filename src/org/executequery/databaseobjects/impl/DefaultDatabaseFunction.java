@@ -239,7 +239,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
         return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(),
-                getEngine(), getRemarks(), true, Comparer.isCommentsNeed(), getHost().getDatabaseConnection());
+                getEngine(), getSqlSecurity(), getRemarks(), true, Comparer.isCommentsNeed(),
+                isDeterministic(), getHost().getDatabaseConnection());
     }
 
     @Override

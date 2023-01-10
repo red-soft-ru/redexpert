@@ -86,7 +86,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
         return SQLUtils.generateCreateProcedure(
-                getName(), getEntryPoint(), getEngine(), getParameters(), getSourceCode(),
+                getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(), getSourceCode(),
                 getRemarks(), getHost().getDatabaseConnection(), true, Comparer.isCommentsNeed());
     }
     @Override

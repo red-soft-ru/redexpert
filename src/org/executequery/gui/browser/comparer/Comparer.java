@@ -195,7 +195,7 @@ public class Comparer {
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
         script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
         script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
-                SQLUtils.generateDefinitionColumnConstraint(obj, false) + ";\n");
+                SQLUtils.generateDefinitionColumnConstraint(obj, false, false) + ";\n");
     }
 
     private List<NamedObject> createListObjects(int type) {

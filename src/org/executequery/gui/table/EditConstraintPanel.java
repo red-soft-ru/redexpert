@@ -448,7 +448,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
         if (editing)
             sb.append("\n\tDROP CONSTRAINT ").append(getFormattedName()).append(",");
         sb.append("\n\tADD ");
-        sb.append(SQLUtils.generateDefinitionColumnConstraint(cc, false).trim().substring(1).trim()).append(";");
+        sb.append(SQLUtils.generateDefinitionColumnConstraint(cc, false, true).trim().substring(1).trim()).append(";");
 
         return sb.toString();
     }

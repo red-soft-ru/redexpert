@@ -114,22 +114,20 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
     @Override
     public String getDescription() {
-
         StringBuilder sb = new StringBuilder();
-        sb.append("TABLE COLUMN: ");
-        sb.append(getName().trim()).append("[").append(getTypeName()).append("]");
+        sb.append(getName().trim()).append(" [").append(getTypeName()).append("]");
 
         if (isPrimaryKey()) {
 
-            sb.append(" PRIMARY KEY");
+            sb.append(" PK");
 
         } else if (isForeignKey()) {
 
-            sb.append(" FOREIGN KEY");
+            sb.append(" FK");
 
         } else if (isUnique()) {
 
-            sb.append(" UNIQUE");
+            sb.append(" UQ");
         }
 
         return sb.toString();

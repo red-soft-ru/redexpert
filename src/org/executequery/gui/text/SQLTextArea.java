@@ -821,6 +821,14 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         }
     }
 
+    public boolean isAutocompleteOnlyHotKey() {
+        return autocompleteOnlyHotKey;
+    }
+
+    public void setAutocompleteOnlyHotKey(boolean autocompleteOnlyHotKey) {
+        this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
+    }
+
     class SQLTextUndoManager extends RUndoManager {
 
         /**

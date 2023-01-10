@@ -133,16 +133,15 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
 
     }
 
-    Token getTokenForPosition(int cursor)
-    {
+    public Token getTokenForPosition(int cursor) {
         TokenImpl tokenList = null;
         TokenImpl lastToken = null;
         Element map = getDocument().getDefaultRootElement();
         int line = map.getElementIndex(cursor);
         Token token = getTokenListForLine(line);
-        TokenImpl t = (TokenImpl)getTokenListForLine(line);
+        TokenImpl t = (TokenImpl) getTokenListForLine(line);
         t = cloneTokenList(t);
-        if (tokenList==null) {
+        if (tokenList == null) {
             tokenList = t;
             lastToken = tokenList;
         }

@@ -332,9 +332,9 @@ public final class SQLUtils {
                 (inputParameters.size() == 1 &&
                         !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
 
-            sb.append("(");
+            sb.append("(\n");
             sb.append(formattedParameters(inputParameters, false));
-            sb.append(")\n");
+            sb.append(") ");
         }
 
         return sb.toString();
@@ -1342,44 +1342,104 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateCreateDefaultStub(int type, String name, String triggerTableName) {
+    public static String generateCreateDefaultStub(NamedObject object) {
 
         StringBuilder sb = new StringBuilder();
         sb.append("SET TERM ^;\n");
-        sb.append("CREATE OR ALTER ");
 
-        switch (type) {
+        switch (object.getType()) {
 
             case (FUNCTION):
-                sb.append("FUNCTION ").append(format(name));
-                sb.append("\n\tRETURNS INTEGER AS BEGIN return 0; END^\n");
+                sb.append(generateCreateFunctionStub((DefaultDatabaseFunction) object));
                 break;
 
             case (PROCEDURE):
-                sb.append("PROCEDURE ").append(format(name));
-                sb.append("\n\tAS BEGIN END^\n");
+                sb.append(generateCreateProcedureStub((DefaultDatabaseProcedure) object));
                 break;
 
             case (TRIGGER):
-                sb.append("TRIGGER ").append(format(name));
-                sb.append("\n\tFOR ").append(format(triggerTableName)).append(" BEFORE INSERT");
-                sb.append("\n\tAS BEGIN END^\n");
-                break;
-
             case (DDL_TRIGGER):
-                sb.append("TRIGGER ").append(format(name));
-                sb.append("\n\tBEFORE CREATE|ALTER|DROP TABLE");
-                sb.append("\n\tAS BEGIN END^\n");
-                break;
-
             case (DATABASE_TRIGGER):
-                sb.append("TRIGGER ").append(format(name));
-                sb.append(" ON CONNECT").append("\n\tAS BEGIN END^\n");
+                sb.append(generateCreateTriggerStub((DefaultDatabaseTrigger) object));
                 break;
         }
 
         sb.append("SET TERM ;^\n");
         return sb.toString();
+    }
+
+    public static String generateCreateFunctionStub(DefaultDatabaseFunction obj) {
+
+        StringBuilder sb = new StringBuilder();
+
+        Vector<ColumnData> inputParams = new Vector<>();
+        ColumnData returnType = null;
+
+        for (FunctionArgument param : obj.getFunctionArguments()) {
+
+            if (param.getType() == DatabaseMetaData.procedureColumnIn) {
+                ColumnData cd = columnDataFromProcedureParameter(
+                        param, obj.getHost().getDatabaseConnection(), false);
+                inputParams.add(cd);
+
+            } else
+                returnType = columnDataFromProcedureParameter(
+                        param, obj.getHost().getDatabaseConnection(), false);
+        }
+
+        sb.append(generateCreateProcedureOrFunctionHeader(
+                obj.getName(), inputParams, NamedObject.META_TYPES[FUNCTION], null));
+
+        sb.append("RETURNS ");
+        if (returnType != null)
+            sb.append(returnType.getFormattedDataType());
+
+        return sb.append("\nAS BEGIN return null; END^\n").toString();
+    }
+
+    public static String generateCreateProcedureStub(DefaultDatabaseProcedure obj) {
+
+        StringBuilder sb = new StringBuilder();
+
+        Vector<ColumnData> inputParams = new Vector<>();
+        Vector<ColumnData> outputParams = new Vector<>();
+
+        for (ProcedureParameter param : obj.getParameters()) {
+            ColumnData cd = columnDataFromProcedureParameter(
+                    param, obj.getHost().getDatabaseConnection(), false);
+
+            if (param.getType() == DatabaseMetaData.procedureColumnIn)
+                inputParams.add(cd);
+            else
+                outputParams.add(cd);
+        }
+
+        sb.append(generateCreateProcedureOrFunctionHeader(
+                obj.getName(), inputParams, NamedObject.META_TYPES[PROCEDURE], null));
+
+        String formattedOutputParams = formattedParameters(outputParams, false);
+        if (!MiscUtils.isNull(formattedOutputParams.trim()))
+            sb.append(String.format("RETURNS (\n%s)", formattedOutputParams));
+
+        return sb.append("\nAS BEGIN END^\n").toString();
+    }
+
+    public static String generateCreateTriggerStub(DefaultDatabaseTrigger obj) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE OR ALTER TRIGGER ").append(format(obj.getName()));
+
+        if (obj.getType() == TRIGGER) {
+            sb.append("\n\tFOR ").append(format(obj.getTriggerTableName()));
+            sb.append(" BEFORE INSERT");
+
+        } else if (obj.getType() == DDL_TRIGGER)
+            sb.append("\n\tBEFORE CREATE|ALTER|DROP TABLE");
+
+        else
+            sb.append(" ON CONNECT");
+
+        return sb.append("\nAS BEGIN END^\n").toString();
     }
 
     private static String format(String object) {

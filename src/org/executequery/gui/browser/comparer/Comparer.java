@@ -371,12 +371,7 @@ public class Comparer {
 
         for (NamedObject obj : stubsList) {
             script.add("\n/* " + obj.getName() + " */");
-
-            String tableName = "";
-            if (type == TRIGGER)
-                tableName = ((DefaultDatabaseTrigger) obj).getTriggerTableName();
-
-            script.add("\n" + SQLUtils.generateCreateDefaultStub(type, obj.getName(), tableName));
+            script.add("\n" + SQLUtils.generateCreateDefaultStub(obj));
         }
 
     }

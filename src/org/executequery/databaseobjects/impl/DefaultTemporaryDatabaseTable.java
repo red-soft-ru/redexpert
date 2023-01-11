@@ -9,6 +9,7 @@ import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
@@ -117,6 +118,11 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         List<org.executequery.gui.browser.ColumnConstraint> listCC = new ArrayList<>();
         for (int i = 0; i < getConstraints().size(); i++)
             listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
+
+        if (Comparer.isComputedFieldsNeed())
+            for (ColumnData cd : listCD)
+                if(!MiscUtils.isNull(cd.getComputedBy()))
+                    cd.setComputedBy(null);
 
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, true, false, false,

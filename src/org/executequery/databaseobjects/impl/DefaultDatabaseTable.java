@@ -813,6 +813,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         updateListCD();
         updateListCC();
 
+        if (Comparer.isComputedFieldsNeed())
+            for (ColumnData cd : listCD)
+                if(!MiscUtils.isNull(cd.getComputedBy()))
+                    cd.setComputedBy(null);
+
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, false, false, false,
                 Comparer.isCommentsNeed(), null, getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());

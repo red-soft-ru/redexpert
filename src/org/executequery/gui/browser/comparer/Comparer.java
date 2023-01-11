@@ -171,8 +171,10 @@ public class Comparer {
             script.add("\n/* ----- COMPUTED FIELDs defining ----- */\n");
             for (ColumnData cd : computedFields) {
                 script.add("\n/* " + cd.getTableName() + "." + cd.getColumnName() + " */");
-                script.add("\nALTER TABLE " + cd.getTableName() + "\n\tADD " +
-                        SQLUtils.generateDefinitionColumn(cd, true, false, false) + ";\n");
+                script.add("\nALTER TABLE " + cd.getTableName());
+                script.add("\n\tDROP " + MiscUtils.getFormattedObject(cd.getColumnName()) + ",");
+                script.add("\n\tADD " + SQLUtils.generateDefinitionColumn(
+                        cd, true, false, false) + ";\n");
             }
         }
     }

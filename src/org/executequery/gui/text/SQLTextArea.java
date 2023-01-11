@@ -400,7 +400,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
             @Override
             public void caretUpdate(CaretEvent e) {
 
-                if (changed && !autocompleteOnlyHotKey)
+                if ((changed && !autocompleteOnlyHotKey) || autoCompletePopup.isShow())
                     autoCompletePopupAction.actionPerformed(null);
                 changed = false;
             }

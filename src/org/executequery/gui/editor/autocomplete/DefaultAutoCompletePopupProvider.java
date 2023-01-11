@@ -152,6 +152,10 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         return autoCompletePopup;
     }
 
+    public boolean isShow() {
+        return autoCompletePopup != null && autoCompletePopup.isVisible();
+    }
+
     private JTextComponent queryEditorTextComponent() {
 
         return sqlTextPane;

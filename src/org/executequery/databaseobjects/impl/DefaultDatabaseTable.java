@@ -969,17 +969,17 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
     }
 
-    private void updateListCD() {
+    protected void updateListCD() {
         listCD = new ArrayList<>();
         for (int i = 0; i < getColumnCount(); i++)
             listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
-        }
+    }
 
-    private void updateListCC() {
+    protected void updateListCC() {
         listCC = new ArrayList<>();
         for (int i = 0; i < getConstraints().size(); i++)
             listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
-        }
+    }
 
     /**
      * Returns the CREATE TABLE statement for this database table.

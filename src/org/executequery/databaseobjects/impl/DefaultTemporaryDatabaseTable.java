@@ -36,88 +36,19 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     @Override
     public String getCreateSQLText() throws DataSourceException {
 
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor();
-        querySender.setDatabaseConnection(getHost().getDatabaseConnection());
-
-        int type = -1;
-        try {
-
-            SqlStatementResult result = querySender.getResultSet("Select RDB$RELATION_TYPE FROM RDB$RELATIONS R \n" +
-                    "WHERE R.RDB$RELATION_NAME = '" + getName() + "'");
-
-            if (result.isException())
-                throw result.getSqlException();
-
-            ResultSet resultSet = result.getResultSet();
-            resultSet.next();
-            type = resultSet.getInt(1);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-        } finally {
-            querySender.releaseResources();
-        }
-
-        String typeTemporary = "";
-        if (type == 4)
-            typeTemporary += " ON COMMIT PRESERVE ROWS";
-        else if (type == 5)
-
-            typeTemporary += " ON COMMIT DELETE ROWS";
-
-        List<ColumnData> listCD = new ArrayList<>();
-        for (int i = 0; i < getColumnCount(); i++)
-            listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
-
-        List<org.executequery.gui.browser.ColumnConstraint> listCC = new ArrayList<>();
-        for (int i = 0; i < getConstraints().size(); i++)
-            listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
+        updateListCD();
+        updateListCC();
 
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, true, true, true, true,
-                typeTemporary, getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+                getTypeTemporary(), getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
 
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor();
-        querySender.setDatabaseConnection(getHost().getDatabaseConnection());
-        int type = -1;
-        try {
-
-            SqlStatementResult result = querySender.getResultSet("Select RDB$RELATION_TYPE FROM RDB$RELATIONS R \n" +
-                    "WHERE R.RDB$RELATION_NAME = '" + getName() + "'");
-
-            if (result.isException())
-                throw result.getSqlException();
-
-            ResultSet resultSet = result.getResultSet();
-            resultSet.next();
-            type = resultSet.getInt(1);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-        } finally {
-            querySender.releaseResources();
-        }
-
-        String typeTemporary = "";
-        if (type == 4)
-            typeTemporary += " ON COMMIT PRESERVE ROWS";
-        else if (type == 5)
-
-            typeTemporary += " ON COMMIT DELETE ROWS";
-
-        List<ColumnData> listCD = new ArrayList<>();
-        for (int i = 0; i < getColumnCount(); i++)
-            listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
-
-        List<org.executequery.gui.browser.ColumnConstraint> listCC = new ArrayList<>();
-        for (int i = 0; i < getConstraints().size(); i++)
-            listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
+        updateListCD();
+        updateListCC();
 
         if (Comparer.isComputedFieldsNeed())
             for (ColumnData cd : listCD)
@@ -126,7 +57,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, true, false, false,
-                Comparer.isCommentsNeed(), typeTemporary, getExternalFile(),
+                Comparer.isCommentsNeed(), getTypeTemporary(), getExternalFile(),
                 getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
     }
 
@@ -144,6 +75,39 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     private String formatSqlText(String text) {
         return new SQLFormatter(text).format();
+    }
+
+    private String getTypeTemporary() {
+
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor();
+        querySender.setDatabaseConnection(getHost().getDatabaseConnection());
+        int type = -1;
+
+        try {
+            String statement = "SELECT RDB$RELATION_TYPE FROM RDB$RELATIONS R WHERE R.RDB$RELATION_NAME = '%s'";
+            SqlStatementResult result = querySender.getResultSet(String.format(statement, getName()));
+
+            if (result.isException())
+                throw result.getSqlException();
+
+            ResultSet resultSet = result.getResultSet();
+            resultSet.next();
+            type = resultSet.getInt(1);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        } finally {
+            querySender.releaseResources();
+        }
+
+        String typeTemporary = "";
+        if (type == 4)
+            typeTemporary = " ON COMMIT PRESERVE ROWS";
+        else if (type == 5)
+            typeTemporary = " ON COMMIT DELETE ROWS";
+
+        return typeTemporary;
     }
 
     @Override

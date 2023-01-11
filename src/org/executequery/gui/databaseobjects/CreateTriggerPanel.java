@@ -516,8 +516,10 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             engine = null;
             external = null;
         }
-        String query = SQLUtils.generateCreateTriggerStatement(nameField.getText(), table, activeBox.isSelected(), triggerType.toString(),
-                (int) positionField.getValue(), sqlBodyText.getSQLText(), engine, external, (String) sqlSecurityCombo.getSelectedItem(), descriptionText.getTextAreaComponent().getText());
+
+        String query = SQLUtils.generateCreateTriggerStatement(nameField.getText(), table, activeBox.isSelected(),
+                triggerType.toString(), (int) positionField.getValue(), sqlBodyText.getSQLText(), engine, external,
+                (String) sqlSecurityCombo.getSelectedItem(), descriptionText.getTextAreaComponent().getText(), false);
         return query;
     }
 

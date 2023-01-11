@@ -41,7 +41,7 @@ public final class SQLUtils {
 
         StringBuilder primary = new StringBuilder();
         primary.append(",\nCONSTRAINT ");
-        primary.append(MiscUtils.getFormattedObject("PK_" + name));
+        primary.append(format("PK_" + name));
         primary.append(" PRIMARY KEY (");
 
         boolean primary_flag = false;
@@ -83,13 +83,13 @@ public final class SQLUtils {
         if (temporary)
             sb.append("\n").append(typeTemporary);
 
-        sb.append(CreateTableSQLSyntax.SEMI_COLON);
+        sb.append(";\n");
 
         if (autoincrementSQLText != null)
             sb.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, format(name))).append(NEW_LINE);
 
         if (setComment && !MiscUtils.isNull(comment) && !comment.equals("")) {
-            sb.append("\n").append(generateCommentForColumns(name, columnDataList, "COLUMN", "^"));
+            sb.append(generateCommentForColumns(name, columnDataList, "COLUMN", "^"));
             sb.append("COMMENT ON TABLE ").append(name).append(" IS '").append(comment).append("';\n");
         }
 
@@ -693,7 +693,8 @@ public final class SQLUtils {
         sb.append(columnData.isRequired() ? " NOT NULL" : "");
         if (!MiscUtils.isNull(columnData.getCheck()))
             sb.append(" CHECK (").append(columnData.getCheck()).append(")");
-        if (columnData.getCollate() != null && !columnData.getCollate().trim().contentEquals("NONE"))
+        if (columnData.getCollate() != null && !columnData.getCollate().trim().contentEquals("NONE")
+                && !columnData.getCollate().trim().contentEquals(""))
             sb.append(" COLLATE ").append(columnData.getCollate());
         sb.append(";");
 
@@ -999,7 +1000,7 @@ public final class SQLUtils {
     public static String generateAlterIndex(
             DefaultDatabaseIndex thisIndex, DefaultDatabaseIndex comparingIndex) {
 
-        if (thisIndex.isActive() ^ comparingIndex.isActive())
+        if (thisIndex.isActive() == comparingIndex.isActive())
             return "/* there are no changes */\n";
 
         StringBuilder sb = new StringBuilder();
@@ -1167,8 +1168,11 @@ public final class SQLUtils {
 
     public static String generateCreateTriggerStatement(
             String name, String tableName, boolean active, String triggerType, int position,
-            String sourceCode, String engine, String entryPoint, String sqlSecurity, String comment) {
+            String sourceCode, String engine, String entryPoint, String sqlSecurity, String comment, boolean setTerm) {
         StringBuilder sb = new StringBuilder();
+
+        if (setTerm)
+            sb.append("SET TERM ^;\n");
 
         sb.append("CREATE OR ALTER TRIGGER ").append(format(name));
         if (!MiscUtils.isNull(tableName))
@@ -1190,11 +1194,15 @@ public final class SQLUtils {
         } else if (!MiscUtils.isNull(sourceCode))
             sb.append(sourceCode);
 
-        sb.append("^");
+        sb.append("^\n");
+
         if (!MiscUtils.isNull(comment) && !comment.equals("")) {
             comment = comment.replace("'", "''");
             sb.append("COMMENT ON TRIGGER ").append(format(name)).append(" IS '").append(comment).append("'^");
         }
+
+        if (setTerm)
+            sb.append("SET TERM ;^\n");
 
         return sb.toString();
     }

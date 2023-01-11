@@ -387,14 +387,14 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
-                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), getRemarks());
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), getRemarks(), false);
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
         String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
         return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
-                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), comment);
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), comment, true);
     }
 
     @Override
@@ -404,9 +404,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
 
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCompareCreateSQL().
-                replaceFirst("CREATE OR ", "").
-                replaceFirst("CREATE", "ALTER");
+        return databaseObject.getCompareCreateSQL();
     }
 
     @Override

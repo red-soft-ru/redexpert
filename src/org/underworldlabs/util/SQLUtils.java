@@ -939,7 +939,7 @@ public final class SQLUtils {
 
                 if (addCheck == thisConstraints.size())
                     sb.append("\n\tADD ").append(generateDefinitionColumnConstraint(
-                                    new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint), false, false))
+                                    new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint), true, false))
                             .append(COMMA);
             }
 
@@ -1318,7 +1318,7 @@ public final class SQLUtils {
 
         if (databaseColumns != null) {
             for (int i = 0, n = databaseColumns.size(); i < n; i++) {
-                sb.append(databaseColumns.get(i).getName());
+                sb.append(format(databaseColumns.get(i).getName()));
                 if (i < n - 1)
                     sb.append(", ");
             }
@@ -1326,7 +1326,7 @@ public final class SQLUtils {
 
         if (databaseIndexColumns != null) {
             for (int i = 0, n = databaseIndexColumns.size(); i < n; i++) {
-                sb.append(databaseIndexColumns.get(i).getFieldName());
+                sb.append(format(databaseIndexColumns.get(i).getFieldName()));
                 if (i < n - 1)
                     sb.append(", ");
             }

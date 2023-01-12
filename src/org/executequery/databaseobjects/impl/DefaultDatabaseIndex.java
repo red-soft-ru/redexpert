@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
@@ -15,10 +16,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by vasiliy on 15.02.17.
@@ -266,17 +264,25 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateIndex(getName(), getType(), getNamePrefix(), getTableName(), null, getIndexColumns());
+        return SQLUtils.generateCreateIndex(getName(), getType(), getNamePrefix(), getTableName(),
+                null, getIndexColumns());
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return this.getCreateSQLText();
+        return (!MiscUtils.isNull(this.getConstraint_type())) ?
+                "/* Will be created with constraint defining */\n" :
+                getCreateSQLText();
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropRequest("INDEX", getName());
+    }
+
+    public String getComparedDropSQL() throws DataSourceException {
+        return (!MiscUtils.isNull(this.getConstraint_type())) ?
+                "/* Will be removed with constraint */\n" : getDropSQL();
     }
 
     @Override

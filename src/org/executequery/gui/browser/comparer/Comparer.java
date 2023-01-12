@@ -6,10 +6,7 @@ import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
-import org.executequery.databaseobjects.impl.ColumnConstraint;
-import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
-import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
@@ -100,7 +97,9 @@ public class Comparer {
 
         for (NamedObject obj : dropObjects) {
             script.add("\n/* " + obj.getName() + " */");
-            script.add("\n" + ((AbstractDatabaseObject) obj).getDropSQL());
+            script.add("\n" + ((type != INDEX) ?
+                    ((AbstractDatabaseObject) obj).getDropSQL() :
+                    ((DefaultDatabaseIndex) obj).getComparedDropSQL()));
             lists += "\t" + obj.getName() + "\n";
         }
 
@@ -197,7 +196,7 @@ public class Comparer {
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
         script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
         script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
-                SQLUtils.generateDefinitionColumnConstraint(obj, false, false) + ";\n");
+                SQLUtils.generateDefinitionColumnConstraint(obj, true, false) + ";\n");
     }
 
     private List<NamedObject> createListObjects(int type) {

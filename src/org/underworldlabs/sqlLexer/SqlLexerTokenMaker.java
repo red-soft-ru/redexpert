@@ -58,7 +58,7 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
         {
             if (dbobjects != null) {
                 String x = token.getText();
-                if (x.length() > 0 && x.charAt(0) > 'A' && x.charAt(0) < 'z')
+                if (x.length() > 0 && x.charAt(0) >= 'A' && x.charAt(0) <= 'z')
                     x = x.toUpperCase();
                 if (x.startsWith("\"") && x.endsWith("\"") && x.length() > 1)
                     x = x.substring(1, x.length() - 1);

@@ -55,7 +55,7 @@ grammar ProcedureParser;
 ;
 
 declare_block_without_params
-:local_variable*
+:spases_or_comment? local_variable*
 full_body
 ;
 

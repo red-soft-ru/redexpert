@@ -143,39 +143,15 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
 
     public Token getTokenForPosition(int cursor) {
         TokenImpl tokenList = null;
-        TokenImpl lastToken = null;
         Element map = getDocument().getDefaultRootElement();
         int line = map.getElementIndex(cursor);
-        Token token = getTokenListForLine(line);
         TokenImpl t = (TokenImpl) getTokenListForLine(line);
-        t = cloneTokenList(t);
-        if (tokenList == null) {
-            tokenList = t;
-            lastToken = tokenList;
-        }
-        else {
-            lastToken.setNextToken(t);
-        }
-        while (lastToken.getNextToken()!=null &&
-                lastToken.getNextToken().isPaintable()) {
-            lastToken = (TokenImpl)lastToken.getNextToken();
-        }
-
-            // Document offset MUST be correct to prevent exceptions
-            // in getTokenListFor()
-            int docOffs = map.getElement(line).getEndOffset()-1;
-            t = new TokenImpl(new char[] { '\n' }, 0,0, docOffs,
-                    Token.WHITESPACE, 0);
-            lastToken.setNextToken(t);
-            lastToken = t;
+        tokenList = cloneTokenList(t);
         if (cursor >= tokenList.getOffset()) {
-            while (!tokenList.containsPosition(cursor)) {
+            while (!tokenList.containsPosition(cursor) && tokenList.getNextToken() != null) {
                 tokenList = (TokenImpl) tokenList.getNextToken();
             }
         }
-        // Be careful to check temp for null here.  It is possible that no
-        // token contains endOffs, if endOffs is at the end of a line
-
         return tokenList;
     }
 

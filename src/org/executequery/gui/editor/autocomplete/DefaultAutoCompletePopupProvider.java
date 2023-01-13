@@ -609,7 +609,6 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         List<QueryTable> tables = derivedQuery.tableForWord(wordAtCursor);
         List<AutoCompleteListItem> itemsStartingWith = itemsStartingWith(tables, wordAtCursor);
         if (itemsStartingWith.isEmpty()) {
-            //noProposals = true;
             noProposalsAvailable(itemsStartingWith);
         }
 

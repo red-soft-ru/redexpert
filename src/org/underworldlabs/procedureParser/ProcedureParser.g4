@@ -60,12 +60,12 @@ full_body
 ;
 
 full_body
-:K_BEGIN body K_END
+:spases_or_comment? K_BEGIN body K_END spases_or_comment?
 ;
 
 body:
-  (.|COMMENT)*
-  |.* K_BEGIN body K_END.*
+  ~(K_END)*
+  | ~(K_BEGIN)* K_BEGIN body K_END ~(K_END)*
   ;
 
  local_variable
@@ -1472,6 +1472,7 @@ spases_or_comment
 |SPACES+ COMMENT
 |COMMENT SPACES+
 |SPACES+
+|COMMENT
 ;
 
 comment:

@@ -421,48 +421,63 @@ public final class SQLUtils {
 
         StringBuilder sb = new StringBuilder();
 
-        if (MiscUtils.isNull(thisCD.getComputedBy()) && MiscUtils.isNull(comparingCD.getComputedBy())) {
+        if (MiscUtils.isNull(thisCD.getComputedBy()) == MiscUtils.isNull(comparingCD.getComputedBy())) {
+            if (thisCD.isAutoincrement() == comparingCD.isAutoincrement()) {
 
-            if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
-                        append(" TYPE ").append(comparingCD.getColumnType());
-            if (!Objects.equals(thisCD.getDefaultValue().getValue(), comparingCD.getDefaultValue().getValue()))
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
-                        append(" SET DEFAULT ").append(comparingCD.getDefaultValue().getValue());
-            if (thisCD.isRequired() && !comparingCD.isRequired())
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
-                        append(" DROP NOT NULL");
-            else if (!thisCD.isRequired() && comparingCD.isRequired())
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
-                        append(" SET NOT NULL");
+                if (MiscUtils.isNull(thisCD.getComputedBy())) {
+                    if (!comparingCD.isAutoincrement()) {
 
-            if (thisCD.isAutoincrement() && comparingCD.isAutoincrement())
-                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName())).
-                        append(" RESTART WITH ").append(comparingCD.getAutoincrement().getStartValue());
+                        if (MiscUtils.isNull(comparingCD.getDomain()) || comparingCD.getDomain().startsWith("RDB$")) {
+                            if (!MiscUtils.isNull(thisCD.getDomain()) || !Objects.equals(thisCD.getFormattedDataType(), comparingCD.getFormattedDataType()))
+                                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()))
+                                        .append(" TYPE ").append(comparingCD.getFormattedDataType()).append(COMMA);
 
-        } else if (computedNeed) {
+                        } else if (MiscUtils.isNull(thisCD.getDomain()) || !Objects.equals(thisCD.getDomain(), comparingCD.getDomain()))
+                            sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()))
+                                    .append(" TYPE ").append(comparingCD.getDomain()).append(COMMA);
 
-            if (!MiscUtils.isNull(thisCD.getComputedBy()) && !MiscUtils.isNull(comparingCD.getComputedBy())) {
+                        if (!MiscUtils.isNull(thisCD.getDefaultValue().getValue()) && MiscUtils.isNull(comparingCD.getDefaultValue().getValue()))
+                            sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()))
+                                    .append(" DROP DEFAULT").append(COMMA);
 
-                if (!Objects.equals(thisCD.getComputedBy(), comparingCD.getComputedBy())) {
+                        else if (!Objects.equals(thisCD.getDefaultValue().getValue(), comparingCD.getDefaultValue().getValue()))
+                            sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()))
+                                    .append(" SET DEFAULT ").append(comparingCD.getDefaultValue().getValue()).append(COMMA);
+
+                        if (thisCD.isRequired() && !comparingCD.isRequired())
+                            sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()))
+                                    .append(" DROP NOT NULL").append(COMMA);
+
+                        else if (!thisCD.isRequired() && comparingCD.isRequired())
+                            sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()))
+                                    .append(" SET NOT NULL").append(COMMA);
+
+                    } else if (!Objects.equals(thisCD.getAutoincrement().getStartValue(), comparingCD.getAutoincrement().getStartValue()))
+                        sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()))
+                                .append(" RESTART WITH ").append(comparingCD.getAutoincrement().getStartValue()).append(COMMA);
+
+                } else if (computedNeed && !Objects.equals(thisCD.getComputedBy(), comparingCD.getComputedBy())) {
 
                     sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()));
 
                     if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
-                        sb.append(" TYPE ").append(comparingCD.getColumnType());
+                        sb.append(" TYPE ").append((MiscUtils.isNull(comparingCD.getDomain())) ?
+                                comparingCD.getFormattedDataType() : comparingCD.getDomain()).append(COMMA);
 
-                    sb.append(" COMMUTED BY (").append(comparingCD.getComputedBy()).append(")");
+                    sb.append(" COMMUTED BY (").append(comparingCD.getComputedBy()).append(")").append(COMMA);
                 }
 
             } else {
-                sb.append("\n\tDROP ").append(format(thisCD.getColumnName()));
-                sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, true, false, false));
+                sb.append("\n\tDROP ").append(format(thisCD.getColumnName())).append(COMMA);
+                sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, computedNeed, false, true));
             }
+
+        } else {
+            sb.append("\n\tDROP ").append(format(thisCD.getColumnName())).append(COMMA);
+            sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, computedNeed, false, true));
         }
 
-        if (sb.toString().equals(""))
-            return "";
-        return sb.append(COMMA).toString();
+        return sb.toString();
     }
 
     public static String formattedParameters(Vector<ColumnData> tableVector, boolean variable) {

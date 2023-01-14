@@ -282,7 +282,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     public String getComparedDropSQL() throws DataSourceException {
         return (!MiscUtils.isNull(this.getConstraint_type())) ?
-                "/* Will be removed with constraint */\n" : getDropSQL();
+                "/* Remove with table constraint */\n" : getDropSQL();
     }
 
     @Override

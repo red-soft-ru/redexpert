@@ -346,6 +346,10 @@ public class ComparerDBPanel extends JPanel {
                 Collections.reverse(scriptGenerationOrder);
             }
 
+            comparer.dropConstraints(
+                    attributesCheckBoxMap.get(NamedObject.TABLE).isSelected(),
+                    attributesCheckBoxMap.get(NamedObject.GLOBAL_TEMPORARY).isSelected());
+
             for (Integer type : scriptGenerationOrder) {
 
                 if (progressDialog.isCancel())

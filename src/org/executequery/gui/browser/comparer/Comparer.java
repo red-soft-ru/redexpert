@@ -39,7 +39,8 @@ public class Comparer {
     private String computedFieldsList;
 
     private final ArrayList<String> script;
-    private final List<org.executequery.gui.browser.ColumnConstraint> constraints;
+    private final List<org.executequery.gui.browser.ColumnConstraint> constraintsToCreate;
+    private final List<org.executequery.gui.browser.ColumnConstraint> constraintsToDrop;
     private final List<ColumnData> computedFields;
 
 
@@ -51,7 +52,8 @@ public class Comparer {
                     boolean[] constraintsNeed, boolean commentsNeed, boolean computedNeed) {
 
         script = new ArrayList<>();
-        constraints = new ArrayList<>();
+        constraintsToCreate = new ArrayList<>();
+        constraintsToDrop = new ArrayList<>();
         computedFields = new ArrayList<>();
 
         compareConnection = new DefaultStatementExecutor(dbSlave, true);
@@ -129,35 +131,64 @@ public class Comparer {
 
     public void createConstraints() {
 
-        if (constraints.size() < 1)
+        if (constraintsToCreate.isEmpty())
             return;
 
         if (TABLE_CONSTRAINTS_NEED[0]) {
             script.add("\n/* ----- PRIMARY KEYs defining ----- */\n");
-            for (org.executequery.gui.browser.ColumnConstraint obj : constraints)
+            for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
                 if (obj.getType() == NamedObject.PRIMARY_KEY) {
                     addConstraintToScript(obj);
                 }
         }
         if (TABLE_CONSTRAINTS_NEED[2]) {
             script.add("\n/* ----- UNIQUE KEYs defining ----- */\n");
-            for (org.executequery.gui.browser.ColumnConstraint obj : constraints)
+            for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
                 if (obj.getType() == NamedObject.UNIQUE_KEY)
                     addConstraintToScript(obj);
         }
         if (TABLE_CONSTRAINTS_NEED[1]) {
             script.add("\n/* ----- FOREIGN KEYs defining ----- */\n");
-            for (org.executequery.gui.browser.ColumnConstraint obj : constraints)
+            for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
                 if (obj.getType() == NamedObject.FOREIGN_KEY) {
                     addConstraintToScript(obj);
                 }
         }
         if (TABLE_CONSTRAINTS_NEED[3]) {
             script.add("\n/* ----- CHECK KEYs defining ----- */\n");
-            for (org.executequery.gui.browser.ColumnConstraint obj : constraints)
+            for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
                 if (obj.getType() == NamedObject.CHECK_KEY)
                     addConstraintToScript(obj);
         }
+    }
+
+    public void dropConstraints(boolean table, boolean globalTemporary) {
+
+        if (table) dropListConstraints(TABLE);
+        if (globalTemporary) dropListConstraints(GLOBAL_TEMPORARY);
+
+        if (constraintsToDrop.isEmpty())
+            return;
+
+        script.add("\n/* ----- CHECK KEYs removing ----- */\n");
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToDrop)
+            if (obj.getType() == CHECK_KEY)
+                dropConstraintToScript(obj);
+
+        script.add("\n/* ----- FOREIGN KEYs removing ----- */\n");
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToDrop)
+            if (obj.getType() == FOREIGN_KEY)
+                dropConstraintToScript(obj);
+
+        script.add("\n/* ----- UNIQUE KEYs removing ----- */\n");
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToDrop)
+            if (obj.getType() == UNIQUE_KEY)
+                dropConstraintToScript(obj);
+
+        script.add("\n/* ----- PRIMARY KEYs removing ----- */\n");
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToDrop)
+            if (obj.getType() == PRIMARY_KEY)
+                dropConstraintToScript(obj);
     }
 
     public void createComputedFields() {
@@ -197,6 +228,11 @@ public class Comparer {
         script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
         script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
                 SQLUtils.generateDefinitionColumnConstraint(obj, true, false) + ";\n");
+    }
+
+    private void dropConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
+        script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
+        script.add("\nALTER TABLE " + obj.getTable() + "\n\tDROP CONSTRAINT " + obj.getName() + ";\n");
     }
 
     private List<NamedObject> createListObjects(int type) {
@@ -239,6 +275,10 @@ public class Comparer {
                     compareConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
 
                 dropObjects.add(databaseObject);
+
+                if (databaseObject.getType() == NamedObject.TABLE || databaseObject.getType() == NamedObject.GLOBAL_TEMPORARY)
+                    for (ColumnConstraint cc : ((DefaultDatabaseTable) databaseObject).getConstraints())
+                        constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
             }
         }
 
@@ -280,8 +320,28 @@ public class Comparer {
                 continue;
 
             constraintsList += "\t" + databaseObject.getName() + "." + cc.getName() + "\n";
-            constraints.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+            constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
         }
+    }
+
+    private void dropListConstraints(int type) {
+
+        if (type != TABLE && type != GLOBAL_TEMPORARY)
+            return;
+
+        List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+
+        for (NamedObject databaseObject : masterConnectionObjectsList) {
+            if (ConnectionsTreePanel.getNamedObjectFromHost(
+                    compareConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
+
+                for (ColumnConstraint cc : ((DefaultDatabaseTable) databaseObject).getConstraints())
+                    constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+            }
+        }
+
     }
 
     private void createListComputedFields(NamedObject databaseObject) {

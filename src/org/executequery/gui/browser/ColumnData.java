@@ -28,6 +28,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.T;
 import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
@@ -657,6 +658,19 @@ public class ColumnData implements Serializable {
         DefaultDatabaseDomain defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.DOMAIN, domain);
         if (defaultDatabaseDomain == null)
             defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.SYSTEM_DOMAIN, domain);
+        if (defaultDatabaseDomain == null) {
+            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(dc);
+            for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
+                if (metaTagNode.getMetaDataKey().equals(NamedObject.META_TYPES[NamedObject.DOMAIN]) ||
+                        metaTagNode.getMetaDataKey().equals(NamedObject.META_TYPES[NamedObject.SYSTEM_DOMAIN])) {
+                    ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+                }
+            }
+            defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.DOMAIN, domain);
+            if (defaultDatabaseDomain == null)
+                defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.SYSTEM_DOMAIN, domain);
+        }
+
         boolean find = defaultDatabaseDomain != null;
         if (find) {
             domainType = defaultDatabaseDomain.getDomainData().domainType;

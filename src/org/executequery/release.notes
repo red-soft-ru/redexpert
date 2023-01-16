@@ -1,4 +1,50 @@
 --- RedExpert  - RELEASE NOTES -
+Major changes - v2023.01
+----------------------------------------
+Added:
+1.	Recompilation all triggers, procedures, functions and packages
+2.	Association of *.fdb files with RedExpert
+3.	Recalculation of index selectivity
+4.	Support for external triggers
+5.	SQL SECURITY support for procedures, functions and triggers
+6.	"Switch data display" button and key combination [ALT + NUM_ADD] in data tab
+7.	Exit confirmation dialog
+8.	Specifies explicitly how a table field is sorted (COLLATE) when creating a table
+9.	“DDL to create” tab in "Edit constraint" panel
+10.	Ability to view password during user creation and authorization at reddatabase.ru
+11.	Ability to replace "\n" with another symbol when exporting to file with separators
+12.	Ability to work with functions and packages in privilege manager
+13.	Support for triggers on views
+
+Fixed:
+1.	Trace recognition
+2.	Parsing SQL script with queries that have complex nested constructions
+3.	Incorrect default value generation for procedures and functions
+4.	Impossibility to create a new connection through the menu in the Russian localization
+5.	Generating of primary keys when creating a table, if their names must be escaped
+6.	Quotation mark when exporting into CSV
+7.	Error when interacting with table constraints that have invalid default names
+8.	Error when generating SQL script for adding table constraints when only one constraint was inserted into script instead of multiple ones
+9.	Red Expert hangs after a data access error in the “Data” tab of the “Table” menu.
+10.	Adding comments to database elements like “User” or “Domain” while editing them
+11.	Generating SQL script when adding a new column to a table
+12.	Export to a spreadsheet. Now export to Excel 2007 is possible
+13.	Automatic generation of table name on creation
+14.	Updating auto-complete cache after metadata changes
+15.	Incorrect displaying of procedure parameter sizes
+16.	Script execution error output if there is no connection
+17.	Executing non selective procedures in the query editor
+18.	Wrong message about authentication error
+19.	Invalid connection status in the toolbar
+20.	Loading data in a table when moving the cursor to the last table row
+21.	Updated keyword list for syntax highlighting
+22.	Creating a database with default charset
+23.	Flickering interface in privilege manager
+24.	Invalid representation of “DATE” type when exporting to SQL
+25.	Undo/redo (Ctrl+Z/Ctrl+Y) in the query editor
+26.	Nonoptimal space usage by result set in query editor
+27.	Application hangs when opening objects
+
 Major changes - v2022.09
 ----------------------------------------
 Added:

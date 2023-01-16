@@ -5,8 +5,10 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabasePackage;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SQLTextArea;
+import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
+import org.underworldlabs.util.MiscUtils;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -18,6 +20,7 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
     private static final String replacing_name = "<name_package>";
     private SimpleSqlTextPanel headerPanel;
     private SimpleSqlTextPanel bodyPanel;
+    private SimpleCommentPanel simpleCommentPanel;
     private SimpleTextArea descriptionPanel;
     private DefaultDatabasePackage databasePackage;
 
@@ -37,6 +40,12 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
         addPrivilegesTab(tabbedPane);
         addDependenciesTab(databasePackage);
         addCreateSqlTab(databasePackage);
+
+        simpleCommentPanel = new SimpleCommentPanel(databasePackage);
+        simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> {
+            simpleCommentPanel.updateComment();
+        });
+        tabbedPane.setComponentAt(2, simpleCommentPanel.getCommentPanel());
     }
 
     protected String generateQuery() {
@@ -53,7 +62,9 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
         nameField.setText(databasePackage.getName().trim());
         headerPanel.setSQLText(replaceName(databasePackage.getHeaderSource()));
         bodyPanel.setSQLText(replaceName(databasePackage.getBodySource()));
-        descriptionPanel.getTextAreaComponent().setText(databasePackage.getDescription());
+        descriptionPanel.getTextAreaComponent().setText(databasePackage.getRemarks());
+        if (simpleCommentPanel != null)
+            simpleCommentPanel.updateComment();
     }
 
     @Override

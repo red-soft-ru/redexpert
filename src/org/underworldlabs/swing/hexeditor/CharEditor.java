@@ -38,8 +38,8 @@ public class CharEditor extends TextGrid implements BinaryEditor {
     protected LocalTextGridCursor localTextGridCursor;
     protected LocalDocumentObserver localDocumentObserver;
 
-    private Color charColor;
-    private Color selectedColor;
+    private final Color charColor;
+    private final Color selectedColor;
 
     /**
      * Construct the editor with a document.
@@ -176,9 +176,9 @@ public class CharEditor extends TextGrid implements BinaryEditor {
     private class LocalTextGridModel implements TextGridModel {
         private int lastRowIndex = 0;
         private String lastRowText = null;
-        private LinkedList listeners;
-        private Color whiteColor = SystemProperties.getColourProperty("user", "editor.text.background.colour");
-        private Color alternateColor = SystemProperties.getColourProperty("user", "editor.text.background.alternate.color");
+        private final LinkedList listeners;
+        private final Color whiteColor = SystemProperties.getColourProperty("user", "editor.text.background.colour");
+        private final Color alternateColor = SystemProperties.getColourProperty("user", "editor.text.background.alternate.color");
 
         public LocalTextGridModel() {
             listeners = new LinkedList();
@@ -239,7 +239,7 @@ public class CharEditor extends TextGrid implements BinaryEditor {
                 bytesRead = document.read(document.createOffset(row * bytesPerRow), b);
             } catch (Exception ignore) {
             }
-            if (charset == null || charset.equals(CreateTableSQLSyntax.NONE)) {
+            if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE)) {
                 result.append(new String(b));
             } else try {
                 result.append(new String(b, charset));
@@ -272,8 +272,8 @@ public class CharEditor extends TextGrid implements BinaryEditor {
     ////////////////////////////////
     // GRID CURSOR
     private class LocalTextGridCursor extends TextGridCursor {
-        private Color insertColor = Color.BLACK;
-        private Color greySelectionColor = new Color(225, 225, 225);
+        private final Color insertColor = Color.BLACK;
+        private final Color greySelectionColor = new Color(225, 225, 225);
 
         public void moveTo(int row, int column) {
             try {
@@ -385,7 +385,7 @@ public class CharEditor extends TextGrid implements BinaryEditor {
                     keyChar != KeyEvent.VK_DELETE &&
                     keyChar != KeyEvent.VK_BACK_SPACE) {
                 int byteValue;
-                if (charset == null || charset.equals(CreateTableSQLSyntax.NONE))
+                if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
                     byteValue = Character.toString(keyChar).getBytes()[0];
                 else try {
                     byte[] mas = Character.toString(keyChar).getBytes(charset);

@@ -37,7 +37,10 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.CreateTableFunctionPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.UpperFilter;
+import org.underworldlabs.util.SQLUtils;
 
+import javax.swing.text.PlainDocument;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -89,6 +92,14 @@ public class CreateTablePanel extends CreateTableFunctionPanel
     public CreateTablePanel(DatabaseConnection dc, ActionContainer parent, boolean temporary) {
         this(parent, temporary);
         connectionsCombo.setSelectedItem(dc);
+        if (getSelectedConnection() != null && getSelectedConnection().isNamesToUpperCase()) {
+            PlainDocument doc = (PlainDocument) nameField.getDocument();
+            doc.setDocumentFilter(new UpperFilter());
+        }
+        String typeObject = NamedObject.META_TYPES[NamedObject.TABLE];
+        if (temporary)
+            typeObject = NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY];
+        nameField.setText(SQLUtils.generateNameForDBObject(typeObject, getSelectedConnection()));
     }
 
     /**
@@ -98,7 +109,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
 
         addButtonsPanel(new BottomButtonPanel(
                 this, bundleString("Create"), "create-table", parent.isDialog()));
-        setPreferredSize(new Dimension(750, 600));
+        setPreferredSize(new Dimension(750, 480));
         EventMediator.registerListener(this);
     }
 
@@ -214,8 +225,8 @@ public class CreateTablePanel extends CreateTableFunctionPanel
         try {
             if (!checkFullType())
                 return;
-            String requests = getSQLText();
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundleString("title"), requests, getSelectedConnection(), true, "^");
+            String querys = getSQLText();
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundleString("title"), querys, getSelectedConnection(), true, "^");
             eqd.display();
             boolean commit = eqd.getCommit();
             if (commit) {

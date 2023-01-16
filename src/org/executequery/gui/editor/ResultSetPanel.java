@@ -30,6 +30,8 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -242,6 +244,12 @@ public class ResultSetPanel extends JPanel {
         } else {
             rowNumberHeader.setTable(table);
         }
+        table.addPropertyChangeListener("rowHeight", new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                rowNumberHeader.setTable(table);
+            }
+        });
         scroller.setRowHeaderView(rowNumberHeader);
     }
 

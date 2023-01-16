@@ -67,7 +67,7 @@ public interface DatabaseExecutable extends DatabaseObject {
 
     boolean supportSchemaInFunctionOrProcedureCalls() throws DataSourceException;
 
-    String getProcedureSourceCode();
+    String getSourceCode();
 }
 
 

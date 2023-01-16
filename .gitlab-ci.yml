@@ -122,6 +122,7 @@ build:linux:
     - yum -y update
     - yum install -y java-1.8.0-openjdk-devel qt-devel gtk3-devel wget libcurl-devel
     - yum group install -y "Development Tools"
+    - yum install -y ca-certificates
     - cd /opt
     - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
     - tar xzf apache-maven-3.5.4-bin.tar.gz

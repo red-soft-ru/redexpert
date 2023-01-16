@@ -26,6 +26,7 @@ import org.executequery.gui.StandardTable;
 import org.underworldlabs.swing.DateCellEditor;
 import org.underworldlabs.swing.DateTimeCellEditor;
 import org.underworldlabs.swing.TimeCellEditor;
+import org.underworldlabs.swing.table.ValidatedNumberCellEditor;
 import org.underworldlabs.swing.table.MultiLineStringCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.swing.table.TableSorter;
@@ -52,6 +53,12 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     private DefaultCellEditor defaultCellEditor;
 
+    private DefaultCellEditor bigintCellEditor;
+
+    private DefaultCellEditor integerCellEditor;
+
+    private DefaultCellEditor smallintCellEditor;
+
     private DefaultCellEditor multiLineCellEditor;
 
     private DateCellEditor dateEditor;
@@ -67,6 +74,8 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     private ResultSetTableCellRenderer cellRenderer;
 
+    private boolean isAutoResizeable;
+
     private final TableColumn dummyColumn = new TableColumn();
 
     public DefaultTableModel myTableModel = new DefaultTableModel();
@@ -76,6 +85,8 @@ public class ResultSetTable extends JTable implements StandardTable {
         super();
         setDefaultOptions();
 
+        // ---
+
         final StringCellEditor stringCellEditor = new StringCellEditor();
         stringCellEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
         defaultCellEditor = new DefaultCellEditor(stringCellEditor) {
@@ -84,6 +95,38 @@ public class ResultSetTable extends JTable implements StandardTable {
             }
         };
 
+        // ---
+
+        final ValidatedNumberCellEditor bigintEditor = new ValidatedNumberCellEditor(Types.BIGINT);
+        bigintEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+        bigintCellEditor = new DefaultCellEditor(bigintEditor) {
+            public Object getCellEditorValue() {
+                return bigintEditor.getValue();
+            }
+        };
+
+        // ---
+
+        final ValidatedNumberCellEditor integerEditor = new ValidatedNumberCellEditor(Types.INTEGER);
+        integerEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+        integerCellEditor = new DefaultCellEditor(integerEditor) {
+            public Object getCellEditorValue() {
+                return integerEditor.getValue();
+            }
+        };
+
+        // ---
+
+        final ValidatedNumberCellEditor smallintEditor = new ValidatedNumberCellEditor(Types.SMALLINT);
+        smallintEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+        smallintCellEditor = new DefaultCellEditor(smallintEditor) {
+            public Object getCellEditorValue() {
+                return smallintEditor.getValue();
+            }
+        };
+
+        // ---
+
         final MultiLineStringCellEditor multiLineStringCellEditor = new MultiLineStringCellEditor();
         multiLineStringCellEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
         multiLineCellEditor = new DefaultCellEditor(multiLineStringCellEditor) {
@@ -91,9 +134,14 @@ public class ResultSetTable extends JTable implements StandardTable {
                 return multiLineStringCellEditor.getValue();
             }
         };
+
+        // ---
+
         dateEditor = new DateCellEditor();
         dateTimeCellEditor = new DateTimeCellEditor();
         timeCellEditor = new TimeCellEditor();
+
+        isAutoResizeable = false;
 
     }
 
@@ -101,6 +149,8 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         super(model);
         setDefaultOptions();
+
+        isAutoResizeable = false;
     }
 
     public void setModel(TableModel model) {
@@ -619,6 +669,12 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.VARCHAR:
             case Types.NVARCHAR:
                 return multiLineCellEditor;
+            case Types.BIGINT:
+                return bigintCellEditor;
+            case Types.INTEGER:
+                return integerCellEditor;
+            case Types.SMALLINT:
+                return smallintCellEditor;
             case Types.DATE:
                 return dateEditor;
             case Types.TIMESTAMP:
@@ -755,6 +811,11 @@ public class ResultSetTable extends JTable implements StandardTable {
     public void stopEditing() {
         if (isEditing())
             getCellEditor().stopCellEditing();
+    }
+
+    public void switchAutoResizeMode() {
+        isAutoResizeable = !isAutoResizeable;
+        setAutoResizeMode(isAutoResizeable ? JTable.AUTO_RESIZE_ALL_COLUMNS : JTable.AUTO_RESIZE_OFF);
     }
 
 }

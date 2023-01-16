@@ -432,6 +432,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
             }
             java.util.Collections.sort(charsets);
             charsets.add(0, CreateTableSQLSyntax.NONE);
+            charsets.add(0, "");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -440,7 +441,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
         dc = databaseConnection;
-        tableEditorModel.setElements(new ColumnData(dc).getTables());
+        tableEditorModel.setElements(new ColumnData(dc).getTableNames());
         for (ColumnData cd : tableVector) {
             cd.setDatabaseConnection(dc);
         }
@@ -629,7 +630,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         }
 
 
-        ColumnData cd = SQLUtils.columnDataFromProcedureParameter(parameter, dc);
+        ColumnData cd = SQLUtils.columnDataFromProcedureParameter(parameter, dc, true);
         addRow(cd);
         table.setEditingRow(tableVector.size() - 1);
         _model.fireTableRowsUpdated(tableVector.size() - 1, tableVector.size() - 1);
@@ -901,7 +902,9 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     return cd.getDescription();
 
                 case DEFAULT_COLUMN:
-                    return cd.getDefaultValue();
+                    if (cd.getDefaultValue() != null)
+                        return cd.getDefaultValue().getValue();
+                    else return null;
 
                 case ENCODING_COLUMN:
                     return cd.getCharset();
@@ -1035,7 +1038,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     cd.setCharset((String) value);
                     break;
                 case REQUIRED_COLUMN:
-                    cd.setColumnRequired((Boolean) value ? 0 : 1);
+                    cd.setNotNull((Boolean) value);
                     break;
             }
 

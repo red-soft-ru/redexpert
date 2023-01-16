@@ -15,7 +15,6 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Vector;
 
@@ -65,9 +64,9 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         cstringLengthField = new NumberTextField();
         cstringLengthField.setValue(0);
         parametersPanel = new UDFDefinitionPanel();
-        parametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        parametersPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         returnsType = new ColumnData(connection);
-        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), returnsType, false);
+        selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(), connection.getIntDataTypesArray(), returnsType, false);
 
         parameterBox.addActionListener(actionEvent -> {
             parameterBoxChanged();
@@ -161,7 +160,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 else
                     sb.append(param.getFormattedDataType()).append(" ");
                 if (!MiscUtils.isNull(param.getMechanism()) &&
-                        param.getColumnRequired() == 1 &&
+                        !param.isNotNull() &&
                         !param.getMechanism().contains("BY VALUE") &&
                         !param.getMechanism().contains("BY REFERENCE") &&
                         !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
@@ -267,12 +266,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
     protected void reset() {
         if (editedUDF == null)
             return;
-
-        try {
-            editedUDF.loadParameters();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        editedUDF.getEntryPoint();
         nameField.setText(editedUDF.getName());
         nameField.setEnabled(false);
         freeItBox.setSelected(editedUDF.getFreeIt());
@@ -326,7 +320,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                     parameter.getFieldSubType(), parameter.getFieldScale()));
             cd.setMechanism(parameter.getStringMechanism());
             cd.setCstring(parameter.isCString());
-            cd.setColumnRequired(parameter.isNotNull() ? 0 : 1);
+            cd.setNotNull(parameter.isNotNull());
             parametersPanel.addRow(cd);
         }
     }

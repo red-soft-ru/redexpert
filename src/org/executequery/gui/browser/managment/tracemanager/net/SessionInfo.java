@@ -4,9 +4,9 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.underworldlabs.traceparser.RedTraceBaseListener;
-import org.underworldlabs.traceparser.RedTraceLexer;
-import org.underworldlabs.traceparser.RedTraceParser;
+import org.underworldlabs.traceparser.SessionInfoBaseListener;
+import org.underworldlabs.traceparser.SessionInfoLexer;
+import org.underworldlabs.traceparser.SessionInfoParser;
 
 import java.util.List;
 
@@ -24,14 +24,14 @@ public class SessionInfo {
 
     private void init(String body) {
         this.setBody(body);
-        RedTraceParser parser = buildParser(body);
+        SessionInfoParser parser = buildParser(body);
         try {
             ParseTree tree = parser.session_info();
             ParseTreeWalker walker = new ParseTreeWalker();
-            walker.walk(new RedTraceBaseListener() {
+            walker.walk(new SessionInfoBaseListener() {
 
                 @Override
-                public void enterSession_info(RedTraceParser.Session_infoContext ctx) {
+                public void enterSession_info(SessionInfoParser.Session_infoContext ctx) {
                     setId(textFromRuleContext(ctx.id()));
                     setName(textFromRuleContext(ctx.name_session()));
                     setUser(textFromRuleContext(ctx.username()));
@@ -92,15 +92,15 @@ public class SessionInfo {
         this.body = body;
     }
 
-    private RedTraceParser buildParser(String str) {
-        RedTraceLexer lexer = new RedTraceLexer(CharStreams.fromString(str));
+    private SessionInfoParser buildParser(String str) {
+        SessionInfoLexer lexer = new SessionInfoLexer(CharStreams.fromString(str));
         List<? extends ANTLRErrorListener> listeners = lexer.getErrorListeners();
         for (int i = 0; i < listeners.size(); i++) {
             if (listeners.get(i) instanceof ConsoleErrorListener)
                 lexer.removeErrorListener(listeners.get(i));
         }
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        RedTraceParser parser = new RedTraceParser(tokens);
+        SessionInfoParser parser = new SessionInfoParser(tokens);
         listeners = parser.getErrorListeners();
         for (int i = 0; i < listeners.size(); i++) {
             if (listeners.get(i) instanceof ConsoleErrorListener)

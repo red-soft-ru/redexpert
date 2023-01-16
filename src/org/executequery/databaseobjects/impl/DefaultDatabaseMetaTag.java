@@ -517,7 +517,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 if (!MiscUtils.isNull(entryPoint))
                     udf.setEntryPoint(entryPoint.trim());
                 udf.setReturnArg(rs.getInt(5));
-                udf.setDescription(rs.getString("description"));
+        udf.setRemarks(rs.getString("description"));
                 return udf;
     }
 

@@ -3,7 +3,6 @@ package org.executequery.gui.databaseobjects;
 import org.executequery.GUIUtilities;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
@@ -23,14 +22,12 @@ import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.UpperFilter;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
 import javax.swing.text.PlainDocument;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -50,12 +47,13 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     protected ActionContainer parent;
     protected JTextField nameField;
     protected DefaultStatementExecutor sender;
-    protected MetaDataValues metaData;
     private ConnectionsTreePanel treePanel;
     private TreePath currentPath;
     private boolean commit;
     protected boolean edited = false;
     protected String firstQuery;
+
+    protected GridBagHelper topGbh;
 
     public static AbstractCreateObjectPanel getEditPanelFromType(int type, DatabaseConnection dc, Object databaseObject, Object[] params) {
         switch (type) {
@@ -162,18 +160,16 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
             }
             connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
             sender.setDatabaseConnection(connection);
-            metaData.setDatabaseConnection(connection);
         });
         if (connection != null) {
             connectionsCombo.setSelectedItem(connection);
         } else connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
         this.setLayout(new BorderLayout());
-        metaData = new MetaDataValues(connection, true);
         topPanel = new JPanel(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic().defaults();
-        gbh.addLabelFieldPair(topPanel, Bundles.getCommon("connection"), connectionsCombo, null);
-        gbh.addLabelFieldPair(topPanel, Bundles.getCommon("name"), nameField, null);
+        topGbh = new GridBagHelper();
+        topGbh.setDefaultsStatic().defaults();
+        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("connection"), connectionsCombo, null);
+        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("name"), nameField, null);
         centralPanel = new JPanel();
 
         BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(parent != null && parent.isDialog());
@@ -198,6 +194,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         JPanel panel = new JPanel(new GridBagLayout());
         if (parent != null)
             panel.setBorder(BorderFactory.createEtchedBorder());
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic();
         gbh.fullDefaults();
         panel.add(topPanel, gbh.setMaxWeightX().fillHorizontally().get());
         panel.add(centralPanel, gbh.nextRowFirstCol().get());
@@ -368,16 +366,6 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         return getEditTitle();
     }
 
-    class UpperFilter extends DocumentFilter {
-        public void insertString(FilterBypass fb, int offset, String string,
-                                 AttributeSet attr) throws BadLocationException {
-            super.insertString(fb, offset, string.toUpperCase(), attr);
-        }
 
-        public void replace(FilterBypass fb, int offset, int length, String text,
-                            AttributeSet attrs) throws BadLocationException {
-            super.replace(fb, offset, length, text.toUpperCase(), attrs);
-        }
-    }
 
 }

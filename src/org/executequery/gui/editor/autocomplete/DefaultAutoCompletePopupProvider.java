@@ -15,6 +15,7 @@ import org.executequery.repository.spi.KeywordRepositoryImpl;
 import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.QueryTable;
 import org.executequery.util.UserProperties;
+import org.fife.ui.rsyntaxtextarea.Token;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
@@ -149,6 +150,10 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         }
 
         return autoCompletePopup;
+    }
+
+    public boolean isShow() {
+        return autoCompletePopup != null && autoCompletePopup.isVisible();
     }
 
     private JTextComponent queryEditorTextComponent() {
@@ -591,6 +596,15 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
     private void captureAndResetListValues() {
         noProposals = false;
         int dot = sqlTextPane.getCaretPosition();
+        int tok_dot = dot;
+        if (tok_dot > 0)
+            tok_dot = tok_dot - 1;
+        Token token = sqlTextPane.getTokenForPosition(tok_dot);
+        if (token != null && token.getType() == Token.LITERAL_STRING_DOUBLE_QUOTE) {
+            noProposals = true;
+            popupMenu().hidePopup();
+            return;
+        }
         String wordAtCursor = getWordEndingAt(dot);
         trace("Capturing and resetting list values for word [ " + wordAtCursor + " ]");
         DerivedQuery derivedQuery = new DerivedQuery(getQueryAt(sqlTextPane.getCaretPosition()).getQuery());
@@ -945,10 +959,15 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         }
     }
 
+    public void resetAutoCompleteListItems() {
+        if (!rebuildingList)
+            autoCompleteListItems = new ArrayList<>();
+    }
+
     private boolean rebuildingList;
     private org.underworldlabs.swing.util.SwingWorker worker;
 
-    private void scheduleListItemLoad() {
+    public void scheduleListItemLoad() {
 
         if (rebuildingList || !autoCompleteListItems.isEmpty()) {
 
@@ -958,12 +977,11 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         worker = new SwingWorker() {
 
             public Object construct() {
-
                 try {
 
                     debug("Rebuilding suggestions list...");
 
-                    rebuildingList = true;
+
                     rebuildListSelectionsItems();
 
                     return "done";
@@ -994,6 +1012,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         };
 
         debug("Starting worker thread for suggestions list");
+        rebuildingList = true;
         worker.start();
     }
 
@@ -1023,5 +1042,4 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
         Log.debug(message, e);
     }
-
 }

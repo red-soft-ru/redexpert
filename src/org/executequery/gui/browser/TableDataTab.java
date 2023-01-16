@@ -53,16 +53,15 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -413,13 +412,24 @@ public class TableDataTab extends JPanel
             } catch (DataSourceException e) {
                 if ((e.getCause() instanceof SQLException)) {
                     SQLException sqlException = (SQLException) e.getCause();
+
                     if (sqlException.getSQLState().contentEquals("28000"))
                         GUIUtilities.displayExceptionErrorDialog("Data access error", e);
-                    else rebuildDataFromMetadata(columnDataList);
-                } else rebuildDataFromMetadata(columnDataList);
+                    else {
+                        GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                        rebuildDataFromMetadata(columnDataList);
+                    }
+
+                } else {
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    rebuildDataFromMetadata(columnDataList);
+                }
+
             } catch (Exception e) {
+                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
                 rebuildDataFromMetadata(columnDataList);
             }
+
             createResultSetTable();
             List<String> nonEditableCols = new ArrayList<>();
             //nonEditableCols.addAll(primaryKeyColumns);
@@ -436,11 +446,11 @@ public class TableDataTab extends JPanel
             sorter.addSortingListener(new SortingListener() {
                 @Override
                 public void presorting(SortingEvent e) {
-                            tableModel.setFetchAll(true);
-                            tableModel.fetchMoreData();
-                            if (displayRowCount) {
-                                rowCountField.setText(String.valueOf(tableModel.getRowCount()));
-                            }
+                    tableModel.setFetchAll(true);
+                    tableModel.fetchMoreData();
+                    if (displayRowCount) {
+                        rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+                    }
                 }
 
                 @Override
@@ -526,7 +536,10 @@ public class TableDataTab extends JPanel
                         Vector items = itemsForeign(key);
                         DefaultTableModel defaultTableModel = tableForeign(key);
                         //table.setComboboxColumn(tableModel.getColumnIndex(key.getColumnName()), items);
-                        table.setComboboxTable(tableModel.getColumnIndex(key.getColumnName()), defaultTableModel, items);
+
+                        int columnIndex = tableModel.getColumnIndex(key.getColumnName());
+                        if (columnIndex > -1)
+                            table.setComboboxTable(columnIndex, defaultTableModel, items);
                     }
 
 
@@ -540,11 +553,7 @@ public class TableDataTab extends JPanel
                             int extent = scrollBar.getModel().getExtent();
                             int maximum = scrollBar.getModel().getMaximum();
                             if (extent + e.getValue() == maximum) {
-                                if (!tableModel.isResultSetClose()) {
-                                    tableModel.fetchMoreData();
-                                    if (displayRowCount)
-                                        rowCountField.setText(String.valueOf(tableModel.getRowCount()));
-                                }
+                                fetchMoreData();
                             }
                         }
                     }
@@ -559,6 +568,18 @@ public class TableDataTab extends JPanel
                 add(rowCountPanel, rowCountPanelConstraints);
                 rowCountField.setText(String.valueOf(sorter.getRowCount()));
             }
+            table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    if (table.getSelectedRow() >= table.getRowCount() - 1) {
+                        int row = table.getSelectedRow();
+                        int col = table.getSelectedColumn();
+                        fetchMoreData();
+                        table.setRowSelectionInterval(row, row);
+                        table.setColumnSelectionInterval(col, col);
+                    }
+                }
+            });
 
         } catch (DataSourceException e) {
 
@@ -581,6 +602,14 @@ public class TableDataTab extends JPanel
         repaint();
 
         return "done";
+    }
+
+    private void fetchMoreData() {
+        if (!tableModel.isResultSetClose()) {
+            tableModel.fetchMoreData();
+            if (displayRowCount)
+                rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+        }
     }
 
     public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
@@ -1095,6 +1124,19 @@ public class TableDataTab extends JPanel
             }
         });
         bar.add(refreshButton);
+
+        RolloverButton switchAutoresizeModeButton = new RolloverButton();
+        switchAutoresizeModeButton.setIcon(GUIUtilities.loadIcon("Zoom16.png"));
+        switchAutoresizeModeButton.setToolTipText(bundleString("SwitchTableAutoresizeMode"));
+        switchAutoresizeModeButton.setMnemonic(KeyEvent.VK_ADD);
+        switchAutoresizeModeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                table.switchAutoResizeMode();
+            }
+        });
+        bar.add(switchAutoresizeModeButton);
+
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingPanel.add(bar, gbc3);
@@ -1195,34 +1237,37 @@ public class TableDataTab extends JPanel
             if (e.getType() == TableModelEvent.DELETE) {
                 List<RecordDataItem> rowDataForRow = ((ResultSetTableModel) e.getSource()).getDeletedRow();
                 asDatabaseTableObject().removeTableDataChange(rowDataForRow);
+
             } else if (row >= 0) {
+                if (tableModel.getRowCount() > 0) {
 
-                List<RecordDataItem> rowDataForRow = tableModel.getRowDataForRow(row);
-                for (RecordDataItem recordDataItem : rowDataForRow) {
+                    List<RecordDataItem> rowDataForRow = tableModel.getRowDataForRow(row);
+                    for (RecordDataItem recordDataItem : rowDataForRow) {
 
-                    if (recordDataItem.isDeleted()) {
-                        Log.debug("Deleting detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+                        if (recordDataItem.isDeleted()) {
+                            Log.debug("Deleting detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
 
-                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
-                        return;
+                            asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
+                            return;
+                        }
+
+                        if (recordDataItem.isNew()) {
+
+                            Log.debug("Adding detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+
+                            asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
+                            return;
+                        }
+
+                        if (recordDataItem.isChanged()) {
+
+                            Log.debug("Change detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+
+                            asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
+                            return;
+                        }
+
                     }
-
-                    if (recordDataItem.isNew()) {
-
-                        Log.debug("Adding detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
-
-                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
-                        return;
-                    }
-
-                    if (recordDataItem.isChanged()) {
-
-                        Log.debug("Change detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
-
-                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
-                        return;
-                    }
-
                 }
             }
         }

@@ -24,7 +24,6 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
-import org.executequery.log.Log;
 import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
@@ -46,7 +45,6 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
     }
 
     public DefaultDatabaseView(DatabaseHost host) {
-
         super(host, "VIEW");
     }
 
@@ -67,11 +65,10 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
                 }
             }
 
-        } catch (Exception ignored) { }
+        } catch (Exception ignored) {}
 
-        return getFormatter().format(SQLUtils.generateCreateView(getName(), fields, getSource(),
-                getRemarks(), getDatabaseMajorVersion(), false));
-
+        return SQLUtils.generateCreateView(getName(), fields, getSource(),
+                getRemarks(), getDatabaseMajorVersion(), false);
     }
 
     public String getSelectSQLText() {
@@ -91,7 +88,6 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
             }
 
         } catch (DataSourceException e) {
-
             fields = "*";
             e.printStackTrace();
         }
@@ -114,7 +110,6 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
                 values += ":" + toCamelCase(columns.get(i).getName());
 
                 if (i < n - 1) {
-
                     fields += ", ";
                     values += ", ";
                 }
@@ -122,14 +117,12 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
             }
 
         } catch (DataSourceException e) {
-
             fields = "_fields_";
             values = "_values_";
             e.printStackTrace();
         }
 
         return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
-
     }
 
     public String getUpdateSQLText() {
@@ -150,7 +143,6 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
             }
 
         } catch (DataSourceException e) {
-
             settings = "_oldValue_ = _newValue_";
             e.printStackTrace();
         }
@@ -169,16 +161,11 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
     @Override
     public boolean hasSQLDefinition() {
-
         return true;
     }
 
     public int getType() {
-        if (isSystem()) {
-            return SYSTEM_VIEW;
-        } else {
-            return VIEW;
-        }
+        return isSystem() ? SYSTEM_VIEW : VIEW;
     }
 
     public String getMetaDataKey() {

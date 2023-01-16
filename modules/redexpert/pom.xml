@@ -112,13 +112,19 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>3.12</version>
+            <version>5.2.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.3</version>
         </dependency>
 
         <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
-            <version>2.0.2</version>
+            <version>1.4.01</version>
         </dependency>
 
         <dependency>
@@ -222,9 +228,7 @@
                                 <resource>
                                     <directory>${pom.basedir}/../../lib</directory>
                                     <includes>
-                                        <include>**/fbplugin.jar</include>
                                         <include>**/fbclient.jar</include>
-                                        <include>**/liquibase-3.5.6-SNAPSHOT.jar</include>
                                     </includes>
                                 </resource>
                             </resources>

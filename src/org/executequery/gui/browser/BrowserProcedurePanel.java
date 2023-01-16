@@ -248,7 +248,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         try {
             procNameField.setText(executeable.getName());
             model.setValues(executeable.getParametersArray());
-            String sourceCode = executeable.getProcedureSourceCode();
+            String sourceCode = executeable.getSourceCode();
             sourceTextPane.setDatabaseConnection(executeable.getHost().getDatabaseConnection());
             sourceTextPane.setText(sourceCode);
 

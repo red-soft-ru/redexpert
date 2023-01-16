@@ -102,6 +102,25 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
         return null;
     }
 
+    @Override
+    public DatabaseConnection findBySourceName(String sourceName) {
+        List<DatabaseConnection> _connections = connections();
+        synchronized (_connections) {
+
+            for (DatabaseConnection connection : _connections) {
+
+                if (connection.getSourceName().equals(sourceName)) {
+
+                    return connection;
+                }
+
+            }
+
+        }
+
+        return null;
+    }
+
     public boolean nameExists(DatabaseConnection exclude, String name) {
 
         DatabaseConnection connection = findByName(name);

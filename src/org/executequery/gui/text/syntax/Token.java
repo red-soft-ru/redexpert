@@ -81,7 +81,7 @@ public class Token {
             return (startIndex <= startOffset) && (endIndex >= endOffset);
         }
 
-        return (startIndex <= startOffset) && (endIndex > endOffset);
+        return (startIndex <= startOffset) && (endIndex >= endOffset);
     }
 
     public boolean contains(int index) {

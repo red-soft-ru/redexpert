@@ -23,7 +23,6 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.underworldlabs.util.MiscUtils;
 
 import java.util.ArrayList;
@@ -115,22 +114,20 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
     @Override
     public String getDescription() {
-
         StringBuilder sb = new StringBuilder();
-        sb.append("TABLE COLUMN: ");
-        sb.append(getName().trim()).append("[").append(getTypeName()).append("]");
+        sb.append(getName().trim()).append(" [").append(getTypeName()).append("]");
 
         if (isPrimaryKey()) {
 
-            sb.append(" PRIMARY KEY");
+            sb.append(" PK");
 
         } else if (isForeignKey()) {
 
-            sb.append(" FOREIGN KEY");
+            sb.append(" FK");
 
         } else if (isUnique()) {
 
-            sb.append(" UNIQUE");
+            sb.append(" UQ");
         }
 
         return sb.toString();
@@ -318,8 +315,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
                 || (copy.getColumnSize() != getColumnSize())
                 || (copy.getColumnScale() != getColumnScale());
         if (!changed) {
-            if (!((MiscUtils.isNull(copy.getCharset()) || copy.getCharset().contentEquals(CreateTableSQLSyntax.NONE))
-                    && (MiscUtils.isNull(getCharset()) || getCharset().contentEquals(CreateTableSQLSyntax.NONE))))
+            if (!((MiscUtils.isNull(copy.getCharset()))
+                    && (MiscUtils.isNull(getCharset()))))
                 changed = !Objects.equals(copy.getCharset(), getCharset());
         }
 

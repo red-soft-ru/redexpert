@@ -43,7 +43,7 @@ public class AutoIncrementPanel extends JPanel {
     JComboBox comboGenerators;
     JScrollPane triggerScroll;
     SQLTextArea triggerSQLPane;
-    Autoincrement ai;
+    Autoincrement autoincrement;
     String tableName;
     ActionContainer parent;
     DatabaseConnection connection;
@@ -51,7 +51,7 @@ public class AutoIncrementPanel extends JPanel {
 
     public AutoIncrementPanel(DatabaseConnection dc, ActionContainer parent, Autoincrement inc, String table_name, String[] generators) {
         this.parent = parent;
-        ai = inc;
+        autoincrement = inc;
         tableName = table_name;
         connection = dc;
         this.generators = generators;
@@ -121,22 +121,22 @@ public class AutoIncrementPanel extends JPanel {
             @Override
             public void keyReleased(KeyEvent keyEvent) {
                 if (keyEvent.getSource() == createGeneratorName)
-                    ai.setGeneratorName(createGeneratorName.getText());
+                    autoincrement.setGeneratorName(createGeneratorName.getText());
             }
         });
 
         comboGenerators.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ai.setGeneratorName((String) comboGenerators.getSelectedItem());
+                autoincrement.setGeneratorName((String) comboGenerators.getSelectedItem());
             }
         });
 
         systemGeneratorBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ai.setSystemGenerator(systemGeneratorBox.isSelected());
-                if (ai.isSystemGenerator()) {
+                autoincrement.setSystemGenerator(systemGeneratorBox.isSelected());
+                if (autoincrement.isSystemGenerator()) {
                     systemGeneratorPanel.setVisible(true);
                     createGeneratorPanel.setVisible(false);
                     useGeneratorPanel.setVisible(false);
@@ -152,8 +152,8 @@ public class AutoIncrementPanel extends JPanel {
         createGeneratorBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ai.setCreateGenerator(createGeneratorBox.isSelected());
-                if (ai.isCreateGenerator()) {
+                autoincrement.setCreateGenerator(createGeneratorBox.isSelected());
+                if (autoincrement.isCreateGenerator()) {
                     systemGeneratorPanel.setVisible(false);
                     createGeneratorPanel.setVisible(true);
                     useGeneratorPanel.setVisible(false);
@@ -161,8 +161,8 @@ public class AutoIncrementPanel extends JPanel {
                     systemGeneratorBox.setSelected(false);
                     useGeneratorBox.setSelected(false);
                     useIdentityBox.setSelected(false);
-                    createGeneratorName.setText("SEQ_" + tableName + "_" + ai.getFieldName());
-                    ai.setGeneratorName(createGeneratorName.getText());
+                    createGeneratorName.setText("SEQ_" + tableName + "_" + autoincrement.getFieldName());
+                    autoincrement.setGeneratorName(createGeneratorName.getText());
                 } else {
                     createGeneratorPanel.setVisible(false);
                 }
@@ -172,8 +172,8 @@ public class AutoIncrementPanel extends JPanel {
         useIdentityBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ai.setIdentity(useIdentityBox.isSelected());
-                if (ai.isIdentity()) {
+                autoincrement.setIdentity(useIdentityBox.isSelected());
+                if (autoincrement.isIdentity()) {
                     systemGeneratorPanel.setVisible(false);
                     createGeneratorPanel.setVisible(false);
                     useGeneratorPanel.setVisible(false);
@@ -190,8 +190,8 @@ public class AutoIncrementPanel extends JPanel {
         useGeneratorBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ai.setUseGenerator(useGeneratorBox.isSelected());
-                if (ai.isUseGenerator()) {
+                autoincrement.setUseGenerator(useGeneratorBox.isSelected());
+                if (autoincrement.isUseGenerator()) {
                     systemGeneratorPanel.setVisible(false);
                     createGeneratorPanel.setVisible(false);
                     useGeneratorPanel.setVisible(true);
@@ -199,8 +199,8 @@ public class AutoIncrementPanel extends JPanel {
                     createGeneratorBox.setSelected(false);
                     systemGeneratorBox.setSelected(false);
                     useIdentityBox.setSelected(false);
-                    ai.setCreateGenerator(false);
-                    ai.setGeneratorName((String) comboGenerators.getSelectedItem());
+                    autoincrement.setCreateGenerator(false);
+                    autoincrement.setGeneratorName((String) comboGenerators.getSelectedItem());
                 } else {
                     useGeneratorPanel.setVisible(false);
                 }
@@ -224,15 +224,15 @@ public class AutoIncrementPanel extends JPanel {
         createTriggerBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ai.setCreateTrigger(createTriggerBox.isSelected());
-                triggerScroll.setVisible(ai.isCreateTrigger());
-                if (ai.isCreateTrigger()) {
+                autoincrement.setCreateTrigger(createTriggerBox.isSelected());
+                triggerScroll.setVisible(autoincrement.isCreateTrigger());
+                if (autoincrement.isCreateTrigger()) {
                     String sql = "CREATE TRIGGER " + MiscUtils.getFormattedObject(tableName + "_BI") + " FOR " + MiscUtils.getFormattedObject(tableName) + "\n" +
                             "ACTIVE BEFORE INSERT POSITION 0\n" +
                             "AS\n" +
                             "BEGIN\n" +
-                            "IF (NEW." + MiscUtils.getFormattedObject(ai.getFieldName()) + " IS NULL) THEN\n" +
-                            "NEW." + MiscUtils.getFormattedObject(ai.getFieldName()) + " = GEN_ID(" + MiscUtils.getFormattedObject(ai.getGeneratorName()) + ",1);\n" +
+                            "IF (NEW." + MiscUtils.getFormattedObject(autoincrement.getFieldName()) + " IS NULL) THEN\n" +
+                            "NEW." + MiscUtils.getFormattedObject(autoincrement.getFieldName()) + " = GEN_ID(" + MiscUtils.getFormattedObject(autoincrement.getGeneratorName()) + ",1);\n" +
                             "END";
                     triggerSQLPane.setText(sql);
                 }
@@ -385,21 +385,27 @@ public class AutoIncrementPanel extends JPanel {
 
     public void generateAI() {
         String sql = "";
-        if (ai.isIdentity())
-            ai.setStartValue(identityStartValue.getValue());
-        if (ai.isCreateGenerator()) {
-            sql += "\nCREATE SEQUENCE " + MiscUtils.getFormattedObject(ai.getGeneratorName()) + "^";
-            ai.setStartValue(createStartValue.getValue());
-            if (ai.getStartValue() != 0) {
-                sql += "\nALTER SEQUENCE " + MiscUtils.getFormattedObject(ai.getGeneratorName()) + " RESTART WITH " + ai.getStartValue() + "^";
-            }
+        getStartValue();
+        if (autoincrement.isCreateGenerator()) {
+            sql += "\nCREATE SEQUENCE " + MiscUtils.getFormattedObject(autoincrement.getGeneratorName()) + "^";
+            if (autoincrement.getStartValue() != 0)
+                sql += "\nALTER SEQUENCE " + MiscUtils.getFormattedObject(autoincrement.getGeneratorName()) +
+                        " RESTART WITH " + autoincrement.getStartValue() + "^";
         }
-        if (ai.isCreateTrigger()) {
+        if (autoincrement.isCreateTrigger()) {
             sql += "\n" + triggerSQLPane.getText() + ";";
         }
-        ai.setSqlAutoincrement(sql);
+        autoincrement.setSqlAutoincrement(sql);
         if (parent != null)
             parent.finished();
+    }
+
+    public int getStartValue() {
+        if (autoincrement.isIdentity())
+            autoincrement.setStartValue(identityStartValue.getValue());
+        else if (autoincrement.isCreateGenerator())
+            autoincrement.setStartValue(createStartValue.getValue());
+        return autoincrement.getStartValue();
     }
 
     private String bundleString(String key) {

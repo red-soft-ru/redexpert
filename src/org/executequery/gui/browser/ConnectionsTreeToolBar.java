@@ -146,8 +146,10 @@ class ConnectionsTreeToolBar extends PanelToolBar {
                 if (enableConnected) {
                     if (databaseConnected) {
                         connectButton.setIcon(connectedIcon);
+                        connectButton.setToolTipText(Bundles.getCommon("disconnect.button"));
                     } else {
                         connectButton.setIcon(disconnectedIcon);
+                        connectButton.setToolTipText(Bundles.getCommon("connect.button"));
                     }
                 }
             }

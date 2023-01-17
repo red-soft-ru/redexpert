@@ -428,9 +428,18 @@ public final class SQLUtils {
                     if (!comparingCD.isAutoincrement()) {
 
                         if (MiscUtils.isNull(comparingCD.getDomain()) || comparingCD.getDomain().startsWith("RDB$")) {
-                            if (!MiscUtils.isNull(thisCD.getDomain()) || !Objects.equals(thisCD.getFormattedDataType(), comparingCD.getFormattedDataType()))
-                                sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()))
-                                        .append(" TYPE ").append(comparingCD.getFormattedDataType()).append(COMMA);
+                            if ((!MiscUtils.isNull(thisCD.getDomain()) && !thisCD.getDomain().startsWith("RDB$")) ||
+                                    !Objects.equals(thisCD.getFormattedDataType(), comparingCD.getFormattedDataType())) {
+
+                                if (thisCD.getFormattedDataType().contains("BLOB") || comparingCD.getFormattedDataType().contains("BLOB")) {
+                                    sb.append("\n\tDROP ").append(format(thisCD.getColumnName())).append(COMMA);
+                                    sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, computedNeed, false, true));
+                                    return sb.toString();
+
+                                } else
+                                    sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()))
+                                            .append(" TYPE ").append(comparingCD.getFormattedDataType()).append(COMMA);
+                            }
 
                         } else if (MiscUtils.isNull(thisCD.getDomain()) || !Objects.equals(thisCD.getDomain(), comparingCD.getDomain()))
                             sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()))
@@ -464,7 +473,7 @@ public final class SQLUtils {
                         sb.append(" TYPE ").append((MiscUtils.isNull(comparingCD.getDomain())) ?
                                 comparingCD.getFormattedDataType() : comparingCD.getDomain()).append(COMMA);
 
-                    sb.append(" COMMUTED BY (").append(comparingCD.getComputedBy()).append(")").append(COMMA);
+                    sb.append(" COMPUTED BY (").append(comparingCD.getComputedBy()).append(")").append(COMMA);
                 }
 
             } else {

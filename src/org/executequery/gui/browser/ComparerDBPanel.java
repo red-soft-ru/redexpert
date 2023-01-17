@@ -339,16 +339,18 @@ public class ComparerDBPanel extends JPanel {
 
     private void compare() {
 
+        comparer.dropConstraints(
+                attributesCheckBoxMap.get(NamedObject.TABLE).isSelected(),
+                attributesCheckBoxMap.get(NamedObject.GLOBAL_TEMPORARY).isSelected(),
+                propertiesCheckBoxMap.get(CHECK_DROP).isSelected(),
+                propertiesCheckBoxMap.get(CHECK_ALTER).isSelected());
+
         if (propertiesCheckBoxMap.get(CHECK_DROP).isSelected() && !progressDialog.isCancel()) {
 
             if (!isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = true;
                 Collections.reverse(scriptGenerationOrder);
             }
-
-            comparer.dropConstraints(
-                    attributesCheckBoxMap.get(NamedObject.TABLE).isSelected(),
-                    attributesCheckBoxMap.get(NamedObject.GLOBAL_TEMPORARY).isSelected());
 
             for (Integer type : scriptGenerationOrder) {
 
@@ -410,22 +412,6 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (!Arrays.equals(Comparer.getTableConstraintsNeed(), new boolean[]{false, false, false, false}) && !progressDialog.isCancel()) {
-            comparer.createConstraints();
-            if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null) {
-                loggingOutputPanel.append("============= CONSTRAINTS defining  =============");
-                loggingOutputPanel.append(comparer.getConstraintsList());
-            }
-        }
-
-        if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !progressDialog.isCancel()) {
-            comparer.createComputedFields();
-            if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null) {
-                loggingOutputPanel.append("============= COMPUTED FIELDS defining  =============");
-                loggingOutputPanel.append(comparer.getComputedFieldsList());
-            }
-        }
-
         if (propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() && !progressDialog.isCancel()) {
 
             if (isScriptGeneratorOrderReversed) {
@@ -453,6 +439,22 @@ public class ComparerDBPanel extends JPanel {
                     }
 
                 }
+            }
+        }
+
+        if (!Arrays.equals(Comparer.getTableConstraintsNeed(), new boolean[]{false, false, false, false}) && !progressDialog.isCancel()) {
+            comparer.createConstraints();
+            if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null) {
+                loggingOutputPanel.append("============= CONSTRAINTS defining  =============");
+                loggingOutputPanel.append(comparer.getConstraintsList());
+            }
+        }
+
+        if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !progressDialog.isCancel()) {
+            comparer.createComputedFields();
+            if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null) {
+                loggingOutputPanel.append("============= COMPUTED FIELDS defining  =============");
+                loggingOutputPanel.append(comparer.getComputedFieldsList());
             }
         }
 

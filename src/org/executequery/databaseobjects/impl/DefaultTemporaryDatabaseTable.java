@@ -70,7 +70,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultTemporaryDatabaseTable comparingTable = (DefaultTemporaryDatabaseTable) databaseObject;
         return SQLUtils.generateAlterTable(this, comparingTable, true,
-                Comparer.getTableConstraintsNeed(), Comparer.isComputedFieldsNeed());
+                new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed());
     }
 
     private String formatSqlText(String text) {

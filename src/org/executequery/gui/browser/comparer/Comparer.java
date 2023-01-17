@@ -162,10 +162,18 @@ public class Comparer {
         }
     }
 
-    public void dropConstraints(boolean table, boolean globalTemporary) {
+    public void dropConstraints(boolean table, boolean globalTemporary, boolean isDrop, boolean isAlter) {
 
-        if (table) dropListConstraints(TABLE);
-        if (globalTemporary) dropListConstraints(GLOBAL_TEMPORARY);
+        constraintsToDrop.clear();
+
+        if (isDrop) {
+            if (table) dropListConstraints(TABLE);
+            if (globalTemporary) dropListConstraints(GLOBAL_TEMPORARY);
+        }
+        if (isAlter) {
+            if (table) alterListConstraints(TABLE);
+            if (globalTemporary) alterListConstraints(GLOBAL_TEMPORARY);
+        }
 
         if (constraintsToDrop.isEmpty())
             return;
@@ -189,6 +197,7 @@ public class Comparer {
         for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToDrop)
             if (obj.getType() == PRIMARY_KEY)
                 dropConstraintToScript(obj);
+
     }
 
     public void createComputedFields() {
@@ -339,6 +348,45 @@ public class Comparer {
 
                 for (ColumnConstraint cc : ((DefaultDatabaseTable) databaseObject).getConstraints())
                     constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+            }
+        }
+
+    }
+
+    private void alterListConstraints(int type) {
+
+        if (type != TABLE && type != GLOBAL_TEMPORARY)
+            return;
+
+        List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+        List<NamedObject> compareConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+
+        for (NamedObject compareObject : compareConnectionObjectsList) {
+            for (NamedObject masterObject : masterConnectionObjectsList) {
+                if (Objects.equals(masterObject.getName(), compareObject.getName())) {
+
+                    for (ColumnConstraint cc : ((DefaultDatabaseTable) masterObject).getConstraints()) {
+                        constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+                        if ((cc.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
+                                (cc.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
+                                (cc.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
+                                (cc.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
+                            constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+                    }
+
+                    for (ColumnConstraint cc : ((DefaultDatabaseTable) compareObject).getConstraints()) {
+                        if ((cc.getType() == PRIMARY_KEY && TABLE_CONSTRAINTS_NEED[0]) ||
+                                (cc.getType() == FOREIGN_KEY && TABLE_CONSTRAINTS_NEED[1]) ||
+                                (cc.getType() == UNIQUE_KEY && TABLE_CONSTRAINTS_NEED[2]) ||
+                                (cc.getType() == CHECK_KEY && TABLE_CONSTRAINTS_NEED[3]))
+                            constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+                    }
+
+                }
             }
         }
 

@@ -345,36 +345,6 @@ public class ComparerDBPanel extends JPanel {
                 propertiesCheckBoxMap.get(CHECK_DROP).isSelected(),
                 propertiesCheckBoxMap.get(CHECK_ALTER).isSelected());
 
-        if (propertiesCheckBoxMap.get(CHECK_DROP).isSelected() && !progressDialog.isCancel()) {
-
-            if (!isScriptGeneratorOrderReversed) {
-                isScriptGeneratorOrderReversed = true;
-                Collections.reverse(scriptGenerationOrder);
-            }
-
-            for (Integer type : scriptGenerationOrder) {
-
-                if (progressDialog.isCancel())
-                    break;
-
-                if (type == STUBS)
-                    continue;
-
-                if (attributesCheckBoxMap.get(type).isSelected()) {
-
-                    comparer.setLists("");
-                    comparer.dropObjects(type);
-
-                    if (!Objects.equals(comparer.getLists(), "")) {
-                        loggingOutputPanel.append(MessageFormat.format("============= {0} to DROP  =============",
-                                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                        loggingOutputPanel.append(comparer.getLists());
-                    }
-
-                }
-            }
-        }
-
         if (propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() && !progressDialog.isCancel()) {
 
             if (isScriptGeneratorOrderReversed) {
@@ -434,6 +404,36 @@ public class ComparerDBPanel extends JPanel {
 
                     if (!Objects.equals(comparer.getLists(), "")) {
                         loggingOutputPanel.append(MessageFormat.format("============= {0} to ALTER  =============",
+                                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                        loggingOutputPanel.append(comparer.getLists());
+                    }
+
+                }
+            }
+        }
+
+        if (propertiesCheckBoxMap.get(CHECK_DROP).isSelected() && !progressDialog.isCancel()) {
+
+            if (!isScriptGeneratorOrderReversed) {
+                isScriptGeneratorOrderReversed = true;
+                Collections.reverse(scriptGenerationOrder);
+            }
+
+            for (Integer type : scriptGenerationOrder) {
+
+                if (progressDialog.isCancel())
+                    break;
+
+                if (type == STUBS)
+                    continue;
+
+                if (attributesCheckBoxMap.get(type).isSelected()) {
+
+                    comparer.setLists("");
+                    comparer.dropObjects(type);
+
+                    if (!Objects.equals(comparer.getLists(), "")) {
+                        loggingOutputPanel.append(MessageFormat.format("============= {0} to DROP  =============",
                                 Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                         loggingOutputPanel.append(comparer.getLists());
                     }

@@ -123,9 +123,11 @@ public class Comparer {
         script.add(header);
 
         for (NamedObject obj : alterObjects.keySet()) {
-            script.add("\n/* " + obj.getName() + " */");
-            script.add("\n" + ((AbstractDatabaseObject) obj).getCompareAlterSQL((AbstractDatabaseObject) alterObjects.get(obj)));
-            lists += "\t" + obj.getName() + "\n";
+            String sqlScript = ((AbstractDatabaseObject) obj).getCompareAlterSQL((AbstractDatabaseObject) alterObjects.get(obj));
+            if (!sqlScript.contains("there are no changes")) {
+                script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                lists += "\t" + obj.getName() + "\n";
+            }
         }
     }
 
@@ -134,32 +136,28 @@ public class Comparer {
         if (constraintsToCreate.isEmpty())
             return;
 
-        if (TABLE_CONSTRAINTS_NEED[0]) {
-            script.add("\n/* ----- PRIMARY KEYs defining ----- */\n");
-            for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
-                if (obj.getType() == NamedObject.PRIMARY_KEY) {
-                    addConstraintToScript(obj);
-                }
-        }
-        if (TABLE_CONSTRAINTS_NEED[2]) {
-            script.add("\n/* ----- UNIQUE KEYs defining ----- */\n");
-            for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
-                if (obj.getType() == NamedObject.UNIQUE_KEY)
-                    addConstraintToScript(obj);
-        }
-        if (TABLE_CONSTRAINTS_NEED[1]) {
-            script.add("\n/* ----- FOREIGN KEYs defining ----- */\n");
-            for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
-                if (obj.getType() == NamedObject.FOREIGN_KEY) {
-                    addConstraintToScript(obj);
-                }
-        }
-        if (TABLE_CONSTRAINTS_NEED[3]) {
-            script.add("\n/* ----- CHECK KEYs defining ----- */\n");
-            for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
-                if (obj.getType() == NamedObject.CHECK_KEY)
-                    addConstraintToScript(obj);
-        }
+        script.add("\n/* ----- PRIMARY KEYs defining ----- */\n");
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
+            if (obj.getType() == NamedObject.PRIMARY_KEY) {
+                addConstraintToScript(obj);
+            }
+
+        script.add("\n/* ----- UNIQUE KEYs defining ----- */\n");
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
+            if (obj.getType() == NamedObject.UNIQUE_KEY)
+                addConstraintToScript(obj);
+
+        script.add("\n/* ----- FOREIGN KEYs defining ----- */\n");
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
+            if (obj.getType() == NamedObject.FOREIGN_KEY) {
+                addConstraintToScript(obj);
+            }
+
+        script.add("\n/* ----- CHECK KEYs defining ----- */\n");
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate)
+            if (obj.getType() == NamedObject.CHECK_KEY)
+                addConstraintToScript(obj);
+
     }
 
     public void dropConstraints(boolean table, boolean globalTemporary, boolean isDrop, boolean isAlter) {
@@ -369,23 +367,26 @@ public class Comparer {
             for (NamedObject masterObject : masterConnectionObjectsList) {
                 if (Objects.equals(masterObject.getName(), compareObject.getName())) {
 
-                    for (ColumnConstraint cc : ((DefaultDatabaseTable) masterObject).getConstraints()) {
-                        constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
-                        if ((cc.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
-                                (cc.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
-                                (cc.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
-                                (cc.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
-                            constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
-                    }
+                    if (!((AbstractDatabaseObject) masterObject).getCompareAlterSQL((AbstractDatabaseObject) compareObject).contains("there are no changes")) {
 
-                    for (ColumnConstraint cc : ((DefaultDatabaseTable) compareObject).getConstraints()) {
-                        if ((cc.getType() == PRIMARY_KEY && TABLE_CONSTRAINTS_NEED[0]) ||
-                                (cc.getType() == FOREIGN_KEY && TABLE_CONSTRAINTS_NEED[1]) ||
-                                (cc.getType() == UNIQUE_KEY && TABLE_CONSTRAINTS_NEED[2]) ||
-                                (cc.getType() == CHECK_KEY && TABLE_CONSTRAINTS_NEED[3]))
-                            constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
-                    }
+                        for (ColumnConstraint cc : ((DefaultDatabaseTable) masterObject).getConstraints()) {
+                            constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+                            if ((cc.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
+                                    (cc.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
+                                    (cc.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
+                                    (cc.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
+                                constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+                        }
 
+                        for (ColumnConstraint cc : ((DefaultDatabaseTable) compareObject).getConstraints()) {
+                            if ((cc.getType() == PRIMARY_KEY && TABLE_CONSTRAINTS_NEED[0]) ||
+                                    (cc.getType() == FOREIGN_KEY && TABLE_CONSTRAINTS_NEED[1]) ||
+                                    (cc.getType() == UNIQUE_KEY && TABLE_CONSTRAINTS_NEED[2]) ||
+                                    (cc.getType() == CHECK_KEY && TABLE_CONSTRAINTS_NEED[3]))
+                                constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+                        }
+
+                    }
                 }
             }
         }

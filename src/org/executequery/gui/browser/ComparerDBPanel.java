@@ -442,7 +442,7 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (!Arrays.equals(Comparer.getTableConstraintsNeed(), new boolean[]{false, false, false, false}) && !progressDialog.isCancel()) {
+        if (!progressDialog.isCancel()) {
             comparer.createConstraints();
             if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null) {
                 loggingOutputPanel.append("============= CONSTRAINTS defining  =============");

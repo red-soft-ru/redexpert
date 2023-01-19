@@ -98,11 +98,15 @@ public class Comparer {
         script.add(header);
 
         for (NamedObject obj : dropObjects) {
-            script.add("\n/* " + obj.getName() + " */");
-            script.add("\n" + ((type != INDEX) ?
+
+            String sqlScript = ((type != INDEX) ?
                     ((AbstractDatabaseObject) obj).getDropSQL() :
-                    ((DefaultDatabaseIndex) obj).getComparedDropSQL()));
-            lists += "\t" + obj.getName() + "\n";
+                    ((DefaultDatabaseIndex) obj).getComparedDropSQL());
+
+            if (!sqlScript.contains("Remove with table constraint")) {
+                script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                lists += "\t" + obj.getName() + "\n";
+            }
         }
 
     }

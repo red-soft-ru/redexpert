@@ -1060,6 +1060,12 @@ SELECT * FROM employees WHERE (surname = ?)
 \anonsubsubsection{Изменение индексов}
 На боковой панели \textit{Подключения} щелкните правой кнопкой мыши по имени индекса и выберите пункт всплывающего меню \textit{Редактировать <имя индекса>} или откройте двойным кликом по нужному индексу. Откроется диалоговое окно \textit{Alter Index}. Алгоритм редактирования индекса полностью аналогичен его \hyperref[sec:crind]{созданию}.
 
+\begin{figure}[H]
+	\caption{Диалоговое окно подтверждения или отката DDL операций}\label{ris:01}
+	\centering
+	\includegraphics[width = 0.48\linewidth]{img/create_index2.png}
+\end{figure}
+
 \anonsubsubsection{Удаление индексов}
 На боковой панели \textit{Подключения} щелкните правой кнопкой мыши по имени индекса и выберите пункт всплывающего меню \textit{Удалить <имя индекса>}. Откроется  диалоговое окно для подтверждения или отката операции удаления индекса (см. \hyperref[ris:01]{рис.~\ref{ris:01}}). Для подтверждения операции нажмите кнопку «Подтвердить».
 
@@ -1073,19 +1079,13 @@ SELECT * FROM employees WHERE (surname = ?)
 		\centering
 		\includegraphics[width = 0.75\linewidth]{img/selectivity.png}
 	\end{figure}	
-	\item Нажмите кнопку \textit{Да}. Появится новое диалоговое окно со списком SQL-запросов выполняющих пересчет статистики у всех индексов  
+	\item Нажмите кнопку \textit{Да}. После этого вы увидите список \ttt{SQL-запросов}, выполняющих пересчет статистики у всех индексов.  
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width = 0.75\linewidth]{img/selectivity2.png}
 	\end{figure}	
 	\item Нажмите кнопку \textit{ОК}.
 \end{enumerate}
-
-\begin{figure}[H]
-	\caption{Диалоговое окно подтверждения или отката DDL операций}\label{ris:01}
-	\centering
-	\includegraphics[width = 0.48\linewidth]{img/create_index2.png}
-\end{figure}
 
 \anonsubsection{ПРОЦЕДУРЫ}
 
@@ -1726,17 +1726,14 @@ SELECT * FROM employees WHERE (surname = ?)
 \newpage
 \section{Перекомпиляция объектов}\label{sec:recompile_objects}
 \begin{enumerate}[leftmargin=20pt]
-	\item Перекомпиляция доступна для процедур, пакетов, функций и триггеров. Здесь показан пример с процедурами. Для остальных объектов алгоритм действий аналогичный
-	\item Нажмите правой кнопкой мыши на узел с процедурами(триггерами, функциями и пакетами) \begin{tikzpicture}
-		\pgftext{\includegraphics[width=100pt]{img/recompile.png}} at (0pt,0pt)
-	\end{tikzpicture} И выберите в контекстном меню пункт  \textit{Перекомпилировать все Процедуры}.
-	\item Подтвердите действие в открывшемся диалоговом окне и откроется диалоговое окно со списком sql запросов пересоздания каждой процедуры
+	\item Перекомпиляция доступна для процедур, пакетов, функций и триггеров. Здесь показан пример с процедурами. Для остальных объектов алгоритм действий аналогичный.
+	\item Нажмите правой кнопкой мыши на узел с процедурами (триггерами, функциями и пакетами). В контекстном меню выберите пункт \textit{Перекомпилировать все Процедуры}.
+	\item Подтвердите действие в открывшемся диалоговом окне. После этого вы увидите список \ttt{SQL-запросов} пересоздания каждой процедуры.
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width = 0.7\linewidth]{img/recompile2.png}
 	\end{figure}
 	\item Нажмите кнопку \textit{ОК}. 
-	
 \end{enumerate}
 \newpage
 \section{Выполнение хранимых объектов}\label{sec:execute_proc}

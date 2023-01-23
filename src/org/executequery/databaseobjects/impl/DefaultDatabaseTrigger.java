@@ -404,7 +404,8 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
 
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCompareCreateSQL();
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
     }
 
     @Override

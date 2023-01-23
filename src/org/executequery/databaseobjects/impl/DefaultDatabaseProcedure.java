@@ -96,9 +96,8 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return databaseObject.getCompareCreateSQL().
-                replaceFirst("CREATE OR ", "").
-                replaceFirst("CREATE", "ALTER");
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
     }
 
     @Override

@@ -593,13 +593,14 @@ public class QueryEditor extends DefaultTabView
         popup.setCommitMode(isAutoCommit());
         resultsPanel.setTableProperties();
 
+        editorPanel.getQueryArea().setAutocompleteOnlyHotKey(SystemProperties.getBooleanProperty("user", "editor.autocomplete.only.hotkey"));
+
         if (isAutoCompleteOn()) {
 
             //queryEditorAutoCompletePopupProvider = new QueryEditorAutoCompletePopupProvider(this);
             //editorPanel.registerAutoCompletePopup(queryEditorAutoCompletePopupProvider);
 
         } else {
-
             editorPanel.getQueryArea().deregisterAutoCompletePopup();
         }
 

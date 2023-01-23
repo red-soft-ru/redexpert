@@ -70,6 +70,13 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 bundledString("TabSize"),
                 stringUserProperty(key)));
 
+        key = "editor.autocomplete.only.hotkey";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("Auto-completeOnlyHotKey"),
+                Boolean.valueOf(SystemProperties.getBooleanProperty("user", key))));
+
         key = "editor.autocomplete.keywords.on";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

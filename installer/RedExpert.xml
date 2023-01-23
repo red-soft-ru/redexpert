@@ -229,6 +229,7 @@ Name=${project.shortName}
 GenericName=${project.shortName}
 Comment=${project.shortName}
 Exec=${installdir}/bin/${execute_file}
+Icon=${installdir}/red_expert.png
 Terminal=false
 Type=Application
 Categories=Application;Utility;TextEditor;

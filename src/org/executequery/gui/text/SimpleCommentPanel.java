@@ -87,6 +87,8 @@ public class SimpleCommentPanel {
                 metaTag = "PROCEDURE";
             else if (currentDatabaseObject.getType() == NamedObject.FUNCTION)
                 metaTag = "FUNCTION";
+            else if (currentDatabaseObject.getType() == NamedObject.PACKAGE)
+                metaTag = "PACKAGE";
 
             executor.setCommitMode(false);
             executor.setKeepAlive(true);

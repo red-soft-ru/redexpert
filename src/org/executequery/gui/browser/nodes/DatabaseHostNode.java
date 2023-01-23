@@ -189,7 +189,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
                 DatabaseObjectNode metaTagNode = new DatabaseObjectNode(metaTag);
                 allChildren.add(metaTagNode);
                 if (!metaTag.getMetaDataKey().contains("SYSTEM") || SystemProperties.getBooleanProperty("user", "browser.show.system.objects"))
-                    visibleChildren.add(new DatabaseObjectNode(metaTag));
+                    visibleChildren.add(metaTagNode);
             }
 
             return visibleChildren;

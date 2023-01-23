@@ -133,16 +133,15 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
 
     }
 
-    Token getTokenForPosition(int cursor)
-    {
+    public Token getTokenForPosition(int cursor) {
         TokenImpl tokenList = null;
         TokenImpl lastToken = null;
         Element map = getDocument().getDefaultRootElement();
         int line = map.getElementIndex(cursor);
         Token token = getTokenListForLine(line);
-        TokenImpl t = (TokenImpl)getTokenListForLine(line);
+        TokenImpl t = (TokenImpl) getTokenListForLine(line);
         t = cloneTokenList(t);
-        if (tokenList==null) {
+        if (tokenList == null) {
             tokenList = t;
             lastToken = tokenList;
         }
@@ -318,8 +317,10 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
                     public void treeStructureChanged(TreeModelEvent e) {
                         if (databaseConnection != null) {
                             setDbobjects(databaseConnection.getListObjectsDB());
-                            autoCompletePopup.resetAutoCompleteListItems();
-                            autoCompletePopup.scheduleListItemLoad();
+                            if (autoCompletePopup != null) {
+                                autoCompletePopup.resetAutoCompleteListItems();
+                                autoCompletePopup.scheduleListItemLoad();
+                            }
                         }
                     }
                 });
@@ -366,6 +367,9 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
                 REPLACE_ACTION_KEY);
     }
 
+    DocumentListener autoCompletePopupDocumentListener;
+    CaretListener autoCompletePopupCaretListener;
+
     private void registerAutoCompletePopup() {
 
 
@@ -375,7 +379,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         getInputMap().put((KeyStroke)
                         autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
                 AUTO_COMPLETE_POPUP_ACTION_KEY);
-        getDocument().addDocumentListener(new DocumentListener() {
+        autoCompletePopupDocumentListener = new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
 
@@ -390,15 +394,18 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
             public void changedUpdate(DocumentEvent e) {
                 changed = true;
             }
-        });
-        addCaretListener(new CaretListener() {
+        };
+        getDocument().addDocumentListener(autoCompletePopupDocumentListener);
+        autoCompletePopupCaretListener = new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent e) {
-                if (changed && !autocompleteOnlyHotKey)
+
+                if ((changed && !autocompleteOnlyHotKey) || autoCompletePopup.isShow())
                     autoCompletePopupAction.actionPerformed(null);
                 changed = false;
             }
-        });
+        };
+        addCaretListener(autoCompletePopupCaretListener);
 
     }
 
@@ -411,6 +418,14 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
             getActionMap().remove(AUTO_COMPLETE_POPUP_ACTION_KEY);
             getInputMap().remove((KeyStroke)
                     autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY));
+            if (autoCompletePopupCaretListener != null) {
+                removeCaretListener(autoCompletePopupCaretListener);
+                autoCompletePopupCaretListener = null;
+            }
+            if (autoCompletePopupDocumentListener != null) {
+                getDocument().removeDocumentListener(autoCompletePopupDocumentListener);
+                autoCompletePopupDocumentListener = null;
+            }
 
             autoCompletePopup = null;
         }
@@ -819,6 +834,14 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
             }
 
         }
+    }
+
+    public boolean isAutocompleteOnlyHotKey() {
+        return autocompleteOnlyHotKey;
+    }
+
+    public void setAutocompleteOnlyHotKey(boolean autocompleteOnlyHotKey) {
+        this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
     }
 
     class SQLTextUndoManager extends RUndoManager {

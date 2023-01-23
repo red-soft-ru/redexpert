@@ -9,7 +9,7 @@
   <parent>
     <groupId>org.executequery</groupId>
     <artifactId>RedExpert-parent</artifactId>
-    <version>2022.09</version>
+    <version>2023.01-RC.0</version>
     <relativePath>../../../pom.xml</relativePath>
   </parent>
 
@@ -100,6 +100,14 @@
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
                   <artifactId>jaybird-jdk18</artifactId>
+                  <version>${jaybird5.version}</version>
+                  <type>jar</type>
+                  <outputDirectory>../../../lib</outputDirectory>
+                  <destFileName>jaybird-5.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>ru.red-soft.jdbc</groupId>
+                  <artifactId>jaybird-jdk18</artifactId>
                   <type>jar</type>
                   <outputDirectory>../../../lib</outputDirectory>
                   <destFileName>jaybird-4.jar</destFileName>
@@ -111,6 +119,14 @@
                   <type>jar</type>
                   <outputDirectory>../../../lib</outputDirectory>
                   <destFileName>jaybird-cryptoapi-3.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>ru.red-soft.jdbc</groupId>
+                  <artifactId>jaybird-cryptoapi-jdk18</artifactId>
+                  <version>${jaybird5.version}</version>
+                  <type>jar</type>
+                  <outputDirectory>../../../lib</outputDirectory>
+                  <destFileName>jaybird-cryptoapi-5.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
@@ -147,6 +163,14 @@
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
                   <artifactId>jaybird-jdk18</artifactId>
+                  <version>${jaybird5.version}</version>
+                  <type>jar</type>
+                  <outputDirectory>../../redexpert/target/lib</outputDirectory>
+                  <destFileName>jaybird-5.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>ru.red-soft.jdbc</groupId>
+                  <artifactId>jaybird-jdk18</artifactId>
                   <type>jar</type>
                   <outputDirectory>../../redexpert/target/lib</outputDirectory>
                   <destFileName>jaybird-4.jar</destFileName>
@@ -158,6 +182,14 @@
                   <type>jar</type>
                   <outputDirectory>../../redexpert/target/lib</outputDirectory>
                   <destFileName>jaybird-cryptoapi-3.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>ru.red-soft.jdbc</groupId>
+                  <artifactId>jaybird-cryptoapi-jdk18</artifactId>
+                  <version>${jaybird5.version}</version>
+                  <type>jar</type>
+                  <outputDirectory>../../redexpert/target/lib</outputDirectory>
+                  <destFileName>jaybird-cryptoapi-5.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>

@@ -473,17 +473,18 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return META_TYPES[getType()];
     }
 
-    /**
-     * Override to clear the columns.
-     */
-    public void reset() {
-        super.reset();
-        modifiedSQLText = null;
-        clearColumns();
-        clearIndexes();
-        clearDataChanges();
-        clearConstraints();
-    }
+  /**
+   * Override to clear the columns.
+   */
+  public void reset() {
+    super.reset();
+    modifiedSQLText = null;
+    clearColumns();
+    clearIndexes();
+    clearDataChanges();
+    clearConstraints();
+    clearTriggers();
+  }
 
     public void clearDefinitionChanges() {
         modifiedSQLText = null;
@@ -492,31 +493,38 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
 
-    private void clearColumns() {
-        if (columns != null) {
-            columns.clear();
-        }
-        columns = null;
+  public void clearColumns() {
+    if (columns != null) {
+      columns.clear();
     }
+    columns = null;
+  }
 
-    private void clearConstraints() {
-        if (constraints != null) {
-            constraints.clear();
-        }
-        constraints = null;
+  public void clearConstraints() {
+    if (constraints != null) {
+      constraints.clear();
     }
+    constraints = null;
+  }
 
-    private void clearIndexes() {
-        if (indexes != null) {
-            indexes.clear();
-        }
-        indexes = null;
+  public void clearIndexes() {
+    if (indexes != null) {
+      indexes.clear();
     }
+    indexes = null;
+  }
 
-    /**
-     * Reverts any changes made to this table and associated elements.
-     */
-    public void revert() {
+  public void clearTriggers() {
+    if (triggers != null) {
+      triggers.clear();
+    }
+    triggers = null;
+  }
+
+  /**
+   * Reverts any changes made to this table and associated elements.
+   */
+  public void revert() {
 
         List<DatabaseColumn> newColumns = new ArrayList<>();
         for (DatabaseColumn i : columns) {

@@ -223,7 +223,7 @@ public final class SQLUtils {
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE], authid));
         String output = formattedParameters(outputParameters, false);
         if (!MiscUtils.isNull(output.trim())) {
-            sb.append("RETURNS (\n");
+            sb.append("\nRETURNS (\n");
             sb.append(output);
             sb.append(")");
         }
@@ -287,14 +287,13 @@ public final class SQLUtils {
             sb.append(formattedParameters(inputParameters, false));
             sb.append(")");
         }
-        sb.append("\n");
         return sb.toString();
 
     }
 
     public static String generateSQLBody(String sqlBody) {
         StringBuilder sb = new StringBuilder();
-        sb.append("\nAS\n").append(sqlBody).append("^\n");
+        sb.append("\nAS\n").append(sqlBody).append("^");
         return sb.toString();
     }
 
@@ -321,7 +320,7 @@ public final class SQLUtils {
     public static String generateCreateFunction(String name, Vector<ColumnData> inputArguments, ColumnData returnType, String fullFunctionBody, String entryPoint, String engine, String sqlSecurity, String comment, boolean deterministic) {
         StringBuilder sb = new StringBuilder();
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION], null));
-        sb.append("RETURNS ");
+        sb.append("\nRETURNS ");
         if (returnType != null)
             sb.append(returnType.getFormattedDataType());
         if (deterministic) {

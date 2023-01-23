@@ -15,8 +15,7 @@
         <name>Jaybird 4 Driver</name>
         <description>Jaybird 4 Driver</description>
         <type>16</type>
-        <path>
-            ./lib/jaybird-4.jar;./lib/jaybird-cryptoapi-4.jar;./lib/fbclient-4.jar;../lib/jaybird-4.jar;../lib/jaybird-cryptoapi-4.jar;../lib/fbclient-4.jar
+        <path>./lib/jaybird-4.jar;./lib/jaybird-cryptoapi-4.jar;./lib/fbclient-4.jar;../lib/jaybird-4.jar;../lib/jaybird-cryptoapi-4.jar;../lib/fbclient-4.jar
         </path>
         <classname>org.firebirdsql.jdbc.FBDriver</classname>
         <url>jdbc:firebirdsql://[host]:[port]/[source]</url>

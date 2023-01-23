@@ -493,6 +493,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     clearIndexes();
     clearDataChanges();
     clearConstraints();
+    clearTriggers();
   }
 
   public void clearDefinitionChanges() {
@@ -502,25 +503,32 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   }
 
 
-  private void clearColumns() {
+  public void clearColumns() {
     if (columns != null) {
       columns.clear();
     }
     columns = null;
   }
 
-  private void clearConstraints() {
+  public void clearConstraints() {
     if (constraints != null) {
       constraints.clear();
     }
     constraints = null;
   }
 
-  private void clearIndexes() {
+  public void clearIndexes() {
     if (indexes != null) {
       indexes.clear();
     }
     indexes = null;
+  }
+
+  public void clearTriggers() {
+    if (triggers != null) {
+      triggers.clear();
+    }
+    triggers = null;
   }
 
   /**

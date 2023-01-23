@@ -32,6 +32,16 @@
         <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
     </databasedrivers>
     <databasedrivers>
+        <id>5555555</id>
+        <name>Jaybird 5 Driver</name>
+        <description>Jaybird 5 Driver</description>
+        <type>16</type>
+        <path>./lib/jaybird-5.jar;../lib/jaybird-5.jar;./lib/jaybird-cryptoapi-5.jar;../lib/jaybird-cryptoapi-5.jar
+        </path>
+        <classname>org.firebirdsql.jdbc.FBDriver</classname>
+        <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
+    </databasedrivers>
+    <databasedrivers>
         <id>9999999999999</id>
         <name>ODBC Driver</name>
         <description>Sun ODBC Driver</description>

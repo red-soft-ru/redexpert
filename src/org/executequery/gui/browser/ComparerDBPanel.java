@@ -298,7 +298,6 @@ public class ComparerDBPanel extends JPanel {
         );
 
         loggingOutputPanel.clear();
-        loggingOutputPanel.append(bundleString("WelcomeText"));
         sqlTextPanel.setSQLText("");
         comparer.clearLists();
 

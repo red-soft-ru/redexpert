@@ -91,8 +91,6 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
 
     private boolean siteAvailable() {
         RemoteHttpClient remoteHttpClient = remoteHttpClient();
-        remoteHttpClient.setHttp("http");
-        remoteHttpClient.setHttpPort(80);
         return remoteHttpClient.hostReachable(ADDRESS);
     }
 

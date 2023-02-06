@@ -325,6 +325,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
                     }
                 });
         }
+        setEditorPreferences();
     }
 
     protected void registerCommentAction() {

@@ -295,6 +295,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         dialog.display();
                         try {
                             table.reset();
+                            loadTriggers();
                             setValues(table);
 
                         } catch (DataSourceException ex) {

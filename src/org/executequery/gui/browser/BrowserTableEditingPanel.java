@@ -295,7 +295,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         dialog.display();
                         try {
                             table.reset();
-                            loadTriggers();
                             setValues(table);
 
                         } catch (DataSourceException ex) {
@@ -894,7 +893,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     }
 
-    private void loadTriggers() {
+    private synchronized void loadTriggers() {
         try {
             // reset the data
             tttm.setTriggersData(table.getTriggers());

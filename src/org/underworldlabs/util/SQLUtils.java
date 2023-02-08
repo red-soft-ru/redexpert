@@ -1466,10 +1466,15 @@ public final class SQLUtils {
         return sb.append("\nAS BEGIN END^\n").toString();
     }
 
-    public static String generateCreateCollation(String name, String charset, String baseCollation, String attributes, boolean padSpace, boolean caseSensitive, boolean accentSensitive, boolean isExternal) {
+    public static String generateCreateCollation(
+            String name, String charset, String baseCollation, String attributes, boolean padSpace,
+            boolean caseSensitive, boolean accentSensitive, boolean isExternal) {
+
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE COLLATION ").append(name).append("\n");
-        sb.append("FOR ").append(charset);
+
+        sb.append("CREATE COLLATION ").append(name);
+        sb.append("\nFOR ").append(charset);
+
         if (!MiscUtils.isNull(baseCollation)) {
             sb.append("\nFROM ");
             if (isExternal)
@@ -1478,22 +1483,15 @@ public final class SQLUtils {
             if (isExternal)
                 sb.append("')");
         }
-        sb.append("\n");
-        if (padSpace)
-            sb.append("PAD SPACE");
-        else sb.append("NO PAD");
-        sb.append("\n");
-        if (caseSensitive)
-            sb.append("CASE SENSITIVE");
-        else sb.append("CASE INSENSITIVE");
-        sb.append("\n");
-        if (accentSensitive)
-            sb.append("ACCENT SENSITIVE");
-        else sb.append("ACCENT INSENSITIVE");
+
+        sb.append("\n").append(padSpace ? "PAD SPACE" : "NO PAD");
+        sb.append("\nCASE ").append(caseSensitive ? "SENSITIVE" : "INSENSITIVE");
+        sb.append("\nACCENT ").append(accentSensitive ? "SENSITIVE" : "INSENSITIVE");
+
         if (!MiscUtils.isNull(attributes))
             sb.append("\n'").append(attributes).append("'");
-        sb.append(";");
-        return sb.toString();
+
+        return sb.append(";\n").toString();
     }
 
     private static String format(String object) {

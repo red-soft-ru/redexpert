@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
@@ -169,7 +170,34 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
         this.attributes = attributes;
     }
 
+    @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateCollation(getName(), getCharacterSet(), getBaseCollate(), getAttributes(), isPadSpace(), isCaseSensitive(), isAccentSensitive(), isExternal());
+        return SQLUtils.generateCreateCollation(getName(), getCharacterSet(), getBaseCollate(),
+                getAttributes(), isPadSpace(), isCaseSensitive(), isAccentSensitive(), isExternal());
     }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropRequest("COLLATION", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return getCreateSQLText();
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        DefaultDatabaseCollation comparingCollation = (DefaultDatabaseCollation) databaseObject;
+        return getDropSQL() + "\n" +
+                SQLUtils.generateCreateCollation(comparingCollation.getName(), comparingCollation.getCharacterSet(),
+                comparingCollation.getBaseCollate(), comparingCollation.getAttributes(), comparingCollation.isPadSpace(),
+                comparingCollation.isCaseSensitive(), comparingCollation.isAccentSensitive(), isExternal());
+    }
+
+    @Override
+    public String getFillSQL() throws DataSourceException {
+        return null;
+    }
+
 }

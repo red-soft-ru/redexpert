@@ -94,6 +94,7 @@ public class ComparerDBPanel extends JPanel {
         scriptGenerationOrder = new LinkedList<>();
         isScriptGeneratorOrderReversed = false;
 
+        scriptGenerationOrder.add(NamedObject.COLLATION);
         scriptGenerationOrder.add(NamedObject.DOMAIN);
         scriptGenerationOrder.add(NamedObject.TABLESPACE);
         scriptGenerationOrder.add(NamedObject.TABLE);

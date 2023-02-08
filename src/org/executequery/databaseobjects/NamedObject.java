@@ -49,7 +49,8 @@ public interface NamedObject extends Named, java.io.Serializable {
     int ROLE = USER + 1;
     int INDEX = ROLE + 1;
     int TABLESPACE = INDEX + 1;
-    int SYSTEM_DOMAIN = TABLESPACE + 1;
+    int COLLATION = TABLESPACE + 1;
+    int SYSTEM_DOMAIN = COLLATION + 1;
     int SYSTEM_TABLE = SYSTEM_DOMAIN + 1;
     int SYSTEM_VIEW = SYSTEM_TABLE + 1;
     int SYSTEM_FUNCTION = SYSTEM_VIEW + 1;
@@ -115,6 +116,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "ROLE",
             "INDEX",
             "TABLESPACE",
+            "COLLATION",
             "SYSTEM DOMAIN",
             "SYSTEM TABLE",
             "SYSTEM VIEW",
@@ -149,6 +151,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "ROLE",
             "INDEX",
             "TABLESPACE",
+            "COLLATION",
             "SYSTEM_DOMAIN",
             "SYSTEM_TABLE",
             "SYSTEM_VIEW",

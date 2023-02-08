@@ -893,7 +893,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     }
 
-    private void loadTriggers() {
+    private synchronized void loadTriggers() {
         try {
             // reset the data
             tttm.setTriggersData(table.getTriggers());

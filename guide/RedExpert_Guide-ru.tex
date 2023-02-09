@@ -2601,6 +2601,19 @@ ER-диаграмма визуализирует табличные связи, 
 	& Пароль пользователя для авторизации на прокси-сервере (если требуется)\\\hline  
 \end{longtable} 
 
+\anonsubsection{Портативизация настроек}
+
+Чтобы хранить \ttt{Red Expert} и его настройки в одной папке выполните следующие действия:
+\begin{enumerate}
+	\item Закройте программу;
+	\item Откройте файл \ttt{...\textbackslash каталог c \ttt{Red Expert}\textbackslash config\textbackslash redexpert\_config.ini};
+	\item Для параметра \ttt{eq.user.home.dir} укажите значение \ttt{../.redexpert} и сохраните изменения;
+	\item В адресной строке проводника введите путь \ttt{\%homepath\%};
+	\item Переместите папку \ttt{.redexpert} в корень каталога, в который установлен \ttt{Red Expert};
+	\item Запустите \ttt{Red Expert}.
+	
+\end{enumerate}
+	
 \anonsubsection{Местоположение и язык}
 
 Выберите подходящий язык для кнопок, диалогов и сообщений (в том числе об ошибках) из списка.

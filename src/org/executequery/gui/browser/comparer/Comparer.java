@@ -5,8 +5,12 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
+import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.*;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
+import org.executequery.databaseobjects.impl.ColumnConstraint;
+import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
@@ -367,34 +371,165 @@ public class Comparer {
                 getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
                 getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
 
+        List<ColumnConstraint> droppedConstraints = new ArrayList<>();
+
         for (NamedObject compareObject : compareConnectionObjectsList) {
             for (NamedObject masterObject : masterConnectionObjectsList) {
                 if (Objects.equals(masterObject.getName(), compareObject.getName())) {
 
                     if (!((AbstractDatabaseObject) masterObject).getCompareAlterSQL((AbstractDatabaseObject) compareObject).contains("there are no changes")) {
 
-                        for (ColumnConstraint cc : ((DefaultDatabaseTable) masterObject).getConstraints()) {
-                            constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
-                            if ((cc.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
-                                    (cc.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
-                                    (cc.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
-                                    (cc.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
-                                constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+                        List<ColumnConstraint> masterConstraints = ((DefaultDatabaseTable) masterObject).getConstraints();
+                        List<ColumnConstraint> compareConstraints = ((DefaultDatabaseTable) compareObject).getConstraints();
+
+                        //check for DROP excess CONSTRAINT
+                        for (ColumnConstraint masterCC : masterConstraints) {
+
+                            if ((masterCC.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
+                                    (masterCC.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
+                                    (masterCC.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
+                                    (masterCC.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
+                                continue;
+
+                            int dropCheck = 0;
+                            for (ColumnConstraint comparingCC : compareConstraints)
+                                if (!Objects.equals(masterCC.getName(), comparingCC.getName()))
+                                    dropCheck++;
+                                else break;
+
+                            if (dropCheck == compareConstraints.size()) {
+                                constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                                droppedConstraints.add(masterCC);
+                            }
                         }
 
-                        for (ColumnConstraint cc : ((DefaultDatabaseTable) compareObject).getConstraints()) {
-                            if ((cc.getType() == PRIMARY_KEY && TABLE_CONSTRAINTS_NEED[0]) ||
-                                    (cc.getType() == FOREIGN_KEY && TABLE_CONSTRAINTS_NEED[1]) ||
-                                    (cc.getType() == UNIQUE_KEY && TABLE_CONSTRAINTS_NEED[2]) ||
-                                    (cc.getType() == CHECK_KEY && TABLE_CONSTRAINTS_NEED[3]))
-                                constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+                        //check for ADD new CONSTRAINT
+                        for (ColumnConstraint comparingCC : compareConstraints) {
+
+                            if ((comparingCC.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
+                                    (comparingCC.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
+                                    (comparingCC.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
+                                    (comparingCC.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
+                                continue;
+
+                            int addCheck = 0;
+                            for (ColumnConstraint masterCC : masterConstraints)
+                                if (!Objects.equals(masterCC.getName(), comparingCC.getName()))
+                                    addCheck++;
+                                else break;
+
+                            if (addCheck == masterConstraints.size())
+                                constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, comparingCC));
                         }
+
+                        //check for temporary DROP CONSTRAINT
+                        for (ColumnConstraint masterCC : masterConstraints) {
+
+                            if (droppedConstraints.contains(masterCC))
+                                continue;
+
+                            // --- if constraint will be changed ---
+
+                            for (ColumnConstraint comparingCC : compareConstraints) {
+                                if (masterCC.getName().equals(comparingCC.getName())) {
+                                    if (!masterCC.getColumnDisplayList().equals(comparingCC.getColumnDisplayList())) {
+                                        constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                                        constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, comparingCC));
+                                        droppedConstraints.add(masterCC);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // ---
+
+                            if (droppedConstraints.contains(masterCC))
+                                continue;
+
+                            // --- if constraint column will be changed or removed ---
+
+                            List<String> masterConstraintColumns = new ArrayList<>();
+                            Collections.addAll(masterConstraintColumns, masterCC.getColumnDisplayList().split(","));
+
+                            List<DatabaseColumn> masterColumns = ((DefaultDatabaseTable) masterObject).getColumns();
+                            List<DatabaseColumn> compareColumns = ((DefaultDatabaseTable) compareObject).getColumns();
+
+                            for (DatabaseColumn masterC : masterColumns) {
+
+                                if (!masterConstraintColumns.contains(masterC.getName()))
+                                    continue;
+
+                                int dropCheck = 0;
+
+                                for (DatabaseColumn comparingC : compareColumns) {
+
+                                    if (masterC.getName().equals(comparingC.getName())) {
+                                        if (!SQLUtils.generateAlterDefinitionColumn(
+                                                new ColumnData(((DefaultDatabaseTable) masterObject).getHost().getDatabaseConnection(), masterC),
+                                                new ColumnData(((DefaultDatabaseTable) compareObject).getHost().getDatabaseConnection(), comparingC),
+                                                isComputedFieldsNeed()).equals("")) {
+
+                                            constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                                            constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                                            droppedConstraints.add(masterCC);
+                                            break;
+                                        }
+
+                                    } else dropCheck++;
+                                }
+
+                                if (dropCheck == compareColumns.size()) {
+                                    constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                                    droppedConstraints.add(masterCC);
+                                }
+                            }
+                        }
+
+                        // ---
 
                     }
                 }
             }
         }
 
+        //check for temporary DROP dependent CONSTRAINT
+
+        if (droppedConstraints.isEmpty())
+            return;
+
+        for (NamedObject masterObject : masterConnectionObjectsList) {
+            for (ColumnConstraint masterCC : ((DefaultDatabaseTable) masterObject).getConstraints()) {
+
+                if (droppedConstraints.contains(masterCC))
+                    continue;
+
+                if (masterCC.isForeignKey()) {
+
+                    List<String> droppedConstraintsColumns = new ArrayList<>();
+                    for (ColumnConstraint cc : droppedConstraints) {
+                        if (cc.isPrimaryKey() || cc.isUniqueKey()) {
+                            List<String> columns = Arrays.stream(
+                                    cc.getColumnDisplayList().split(",")).collect(Collectors.toList());
+                            columns.forEach(i -> cc.getTableName().concat("." + i));
+                            droppedConstraintsColumns.addAll(columns);
+                        }
+                    }
+
+                    List<String> referenceColumns = Arrays.stream(
+                            masterCC.getReferenceColumnDisplayList().split(",")).collect(Collectors.toList());
+                    referenceColumns.forEach(i -> masterCC.getTableName().concat("." + i));
+
+                    for (String column : referenceColumns) {
+                        if (droppedConstraintsColumns.contains(column)) {
+                            constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                            constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                            droppedConstraints.add(masterCC);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void createListComputedFields(NamedObject databaseObject) {

@@ -1,4 +1,11 @@
 --- RedExpert  - RELEASE NOTES -
+Major changes - v2023.02
+----------------------------------------
+Fixed:
+1. Bug in developer feedback module (request for new features, bug reports, comments)
+2. Clearing a list of triggers on a "Triggers" tab in a table after opening one of them
+3. Restoring to default settings for query editor colors
+
 Major changes - v2023.01
 ----------------------------------------
 Added:

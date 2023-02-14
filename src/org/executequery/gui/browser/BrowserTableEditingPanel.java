@@ -26,9 +26,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
-import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
-import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
-import org.executequery.databaseobjects.impl.TransactionAgnosticResultSet;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
@@ -49,6 +47,7 @@ import org.executequery.gui.text.TextEditor;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
+import org.executequery.toolbars.AbstractToolBarForTable;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -894,7 +893,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     }
 
-    private void loadTriggers() {
+    private synchronized void loadTriggers() {
         try {
             // reset the data
             tttm.setTriggersData(table.getTriggers());
@@ -977,6 +976,14 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 @Override
                 public Object construct() {
                     loadIndexes();
+                    return null;
+                }
+            };
+            sw.start();
+            sw = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    loadTriggers();
                     return null;
                 }
             };
@@ -1435,59 +1442,46 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     private void createButtonsEditingIndexesPanel() {
-        buttonsEditingIndexesPanel = new JPanel(new GridBagLayout());
-        PanelToolBar bar = new PanelToolBar();
-        RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
-        addRolloverButton.setToolTipText("Insert Index");
-        addRolloverButton.addActionListener(new ActionListener() {
+        buttonsEditingIndexesPanel = new AbstractToolBarForTable("Create Index", "Delete Index", "Refresh") {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            public void insert(ActionEvent e) {
                 insertAfter();
             }
-        });
-        bar.add(addRolloverButton);
-        RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
-        deleteRolloverButton.setToolTipText("Delete Index");
-        deleteRolloverButton.addActionListener(new ActionListener() {
+
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            public void delete(ActionEvent e) {
                 deleteRow();
             }
-        });
-        bar.add(deleteRolloverButton);
-        GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
-                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
-        buttonsEditingIndexesPanel.add(bar, gbc3);
+
+            @Override
+            public void refresh(ActionEvent e) {
+                if (table instanceof DefaultDatabaseTable)
+                    ((DefaultDatabaseTable) table).clearIndexes();
+                loadIndexes();
+            }
+        };
+
     }
 
     private void createButtonsEditingTriggersPanel() {
-        buttonsEditingTriggersPanel = new JPanel(new GridBagLayout());
-        PanelToolBar bar = new PanelToolBar();
-        RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
-        addRolloverButton.setToolTipText("Create Trigger");
-        addRolloverButton.addActionListener(new ActionListener() {
+        buttonsEditingTriggersPanel = new AbstractToolBarForTable("Create Trigger", "Delete Trigger", "Refresh") {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            public void insert(ActionEvent e) {
                 insertAfter();
             }
-        });
-        bar.add(addRolloverButton);
-        RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
-        deleteRolloverButton.setToolTipText("Delete Trigger");
-        deleteRolloverButton.addActionListener(new ActionListener() {
+
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            public void delete(ActionEvent e) {
                 deleteRow();
             }
-        });
-        bar.add(deleteRolloverButton);
-        GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
-                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
-        buttonsEditingTriggersPanel.add(bar, gbc3);
+
+            @Override
+            public void refresh(ActionEvent e) {
+                if (table instanceof DefaultDatabaseTable)
+                    ((DefaultDatabaseTable) table).clearTriggers();
+                loadTriggers();
+            }
+        };
     }
 
 

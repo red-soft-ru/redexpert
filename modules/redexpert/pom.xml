@@ -14,7 +14,7 @@
         <groupId>org.executequery</groupId>
         <artifactId>RedExpert-parent</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>2022.09</version>
+        <version>2023.01</version>
     </parent>
 
     <dependencies>
@@ -199,6 +199,7 @@
                     <include>**/*.license</include>
                     <include>**/*.html</include>
                     <include>**/*.notes</include>
+                    <include>**/*.profile</include>
                 </includes>
                 <excludes>
                     <exclude>**/eq.system.properties</exclude>

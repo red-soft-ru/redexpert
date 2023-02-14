@@ -60,7 +60,7 @@ full_body
 ;
 
 full_body
-:spases_or_comment? K_BEGIN body K_END spases_or_comment?
+:spases_or_comment* K_BEGIN .*
 ;
 
 body:

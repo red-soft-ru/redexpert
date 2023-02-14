@@ -88,12 +88,12 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         this.table = table;
         this.row = row;
         readOnly = table == null;
-        charset = CreateTableSQLSyntax.NONE;
+        charset = "";
         if (recordDataItem instanceof ClobRecordDataItem)
             charset = ((ClobRecordDataItem) recordDataItem).getCharset();
         if (charset == null)
-            charset = CreateTableSQLSyntax.NONE;
-        if (!charset.equals(CreateTableSQLSyntax.NONE))
+            charset = "";
+        if (!MiscUtils.isNull(charset))
             charset = MiscUtils.getJavaCharsetFromSqlCharset(charset);
         try {
 
@@ -224,7 +224,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         boolean isValidText = true;
 
         if (data != null) {
-            if (charset.equals(CreateTableSQLSyntax.NONE))
+            if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
                 dataAsText = new String(data);
             else try {
                 dataAsText = new String(data, charset);
@@ -236,7 +236,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
             int defaultEndPoint = 256;
             int endPoint = Math.min(charArray.length, defaultEndPoint);
-            if (charset.equals(CreateTableSQLSyntax.NONE))
+            if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
                 for (int i = 0; i < endPoint; i++) {
 
                     if (!CharUtils.isAscii(charArray[i])) {
@@ -363,7 +363,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
             int selectedIndex = tabbedPane.getSelectedIndex();
             if (selectedIndex == 0)
                 if (!textArea.getText().equals(CANNOT_DISPLAY_BINARY_DATA_AS_TEXT)) {
-                    if (charset.equals(CreateTableSQLSyntax.NONE))
+                    if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
                         binaryStringTextArea.setData(textArea.getText().getBytes());
                     else try {
                         binaryStringTextArea.setData(textArea.getText().getBytes(charset));
@@ -420,7 +420,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         }
         if (selectedIndex == 2) {
             if (!textArea.getText().equals(CANNOT_DISPLAY_BINARY_DATA_AS_TEXT)) {
-                if (charset.equals(CreateTableSQLSyntax.NONE))
+                if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
                     binaryStringTextArea.setData(textArea.getText().getBytes());
                 else try {
                     binaryStringTextArea.setData(textArea.getText().getBytes(charset));

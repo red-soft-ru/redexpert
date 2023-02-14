@@ -85,7 +85,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     public String getCreateSQLText() {
 
-        return SQLUtils.generateCreateProcedure(getName(), getEntryPoint(), getEngine(), getParameters(), getSourceCode(), getRemarks(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateProcedure(getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(), getSourceCode(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -108,10 +108,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "cr.rdb$character_set_name as character_set_name, \n" +
                     "co.rdb$collation_name, \n" +
                     "pp.rdb$parameter_number,\n" +
-                    "fs.rdb$character_length, \n" +
+                    "fs.rdb$character_length AS CHAR_LEN, \n" +
                     "pp.rdb$description,\n" +
                     "pp.rdb$default_source as default_source,\n" +
-                    "fs.rdb$field_precision, \n" +
+                    "fs.rdb$field_precision as FIELD_PRECISION, \n" +
                     "pp.rdb$parameter_mechanism as AM,\n" +
                     "pp.rdb$field_source as FS,\n" +
                     "fs.rdb$default_source as FS_DEFAULT_SOURCE, \n" +
@@ -122,7 +122,8 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "cr.rdb$default_collate_name, \n" +
                     "prc.rdb$engine_name as ENGINE,\n" +
                     "prc.rdb$entrypoint as ENTRY_POINT,\n" +
-                    "prc.rdb$sql_security as SQL_SECURITY\n" +
+                    "IIF(prc.rdb$sql_security is null,null,IIF(prc.rdb$sql_security,'DEFINER','INVOKER')) as SQL_SECURITY,\n" +
+                    "null as AUTHID\n" +
                     "from rdb$procedures prc\n" +
                     "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                     "and (pp.rdb$package_name is null)\n" +
@@ -149,10 +150,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "cr.rdb$character_set_name as character_set_name, \n" +
                     "co.rdb$collation_name, \n" +
                     "pp.rdb$parameter_number,\n" +
-                    "fs.rdb$character_length, \n" +
+                    "fs.rdb$character_length AS CHAR_LEN, \n" +
                     "pp.rdb$description,\n" +
                     "pp.rdb$default_source as default_source,\n" +
-                    "fs.rdb$field_precision, \n" +
+                    "fs.rdb$field_precision as FIELD_PRECISION, \n" +
                     "pp.rdb$parameter_mechanism as AM,\n" +
                     "pp.rdb$field_source as FS,\n" +
                     "fs.rdb$default_source as FS_DEFAULT_SOURCE, \n" +
@@ -163,7 +164,8 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "cr.rdb$default_collate_name, \n" +
                     "prc.rdb$language as ENGINE,\n" +
                     "prc.rdb$external_name as ENTRY_POINT,\n" +
-                    "null as SQL_SECURITY\n" +
+                    "null as SQL_SECURITY,\n" +
+                    "IIF(prc.rdb$procedure_context=1,'CALLER','OWNER') as AUTHID\n" +
                     "from rdb$procedures prc\n" +
                     "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                     "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
@@ -188,10 +190,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "cr.rdb$character_set_name as character_set_name, \n" +
                     "co.rdb$collation_name, \n" +
                     "pp.rdb$parameter_number,\n" +
-                    "fs.rdb$character_length, \n" +
+                    "fs.rdb$character_length AS CHAR_LEN, \n" +
                     "pp.rdb$description,\n" +
                     "null as default_source,\n" +
-                    "fs.rdb$field_precision, \n" +
+                    "fs.rdb$field_precision as FIELD_PRECISION, \n" +
                     "null as AM,\n" +
                     "pp.rdb$field_source as FS,\n" +
                     "fs.rdb$default_source as FS_DEFAULT_SOURCE, \n" +
@@ -202,7 +204,8 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "cr.rdb$default_collate_name, \n" +
                     "null as ENGINE,\n" +
                     "null as ENTRY_POINT,\n" +
-                    "null as SQL_SECURITY\n" +
+                    "null as SQL_SECURITY,\n" +
+                    "null as AUTHID\n" +
                     "from rdb$procedures prc\n" +
                     "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                     "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
@@ -230,7 +233,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                             DatabaseTypeConverter.getDataTypeName(rs.getInt(7), rs.getInt(10), rs.getInt(9)),
                             rs.getInt(8),
                             1 - rs.getInt("null_flag"));
-
+                    if (rs.getInt("FIELD_PRECISION") != 0)
+                        pp.setSize(rs.getInt("FIELD_PRECISION"));
+                    if (rs.getInt("CHAR_LEN") != 0)
+                        pp.setSize(rs.getInt("CHAR_LEN"));
                     if (pp.getDataType() == Types.LONGVARBINARY ||
                             pp.getDataType() == Types.LONGVARCHAR ||
                             pp.getDataType() == Types.BLOB) {
@@ -268,6 +274,8 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     entryPoint = getFromResultSet(rs, "ENTRY_POINT");
                     engine = getFromResultSet(rs, "ENGINE");
                     setRemarks(getFromResultSet(rs, "DESCRIPTION"));
+                    setSqlSecurity(getFromResultSet(rs, "SQL_SECURITY"));
+                    setAuthid(getFromResultSet(rs, "AUTHID"));
                     first = false;
                 }
             }

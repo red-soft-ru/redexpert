@@ -24,6 +24,7 @@ public class FunctionArgument extends Parameter {
         this.size = precision == 0 ? size : precision;
         this.position = position;
         this.typeOf = (typeOf == 1);
+        this.typeOfFrom = ColumnData.TYPE_OF_FROM_DOMAIN;
         if (relationName != null)
             this.relationName = relationName.trim();
         if (fieldName != null)

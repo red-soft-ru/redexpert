@@ -61,7 +61,7 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
             boolean isValidText = true;
 
             if (data != null) {
-                if (charset == null || Objects.equals(charset, CreateTableSQLSyntax.NONE))
+                if (MiscUtils.isNull(charset) || Objects.equals(charset, CreateTableSQLSyntax.NONE))
                     dataAsText = new String(data);
                 else try {
                     String encode = MiscUtils.getJavaCharsetFromSqlCharset(charset);

@@ -148,7 +148,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         Vector<ColumnData> vars = new Vector<>();
         vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
         vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
-        return SQLUtils.generateCreateProcedure(nameField.getText(), externalField.getText(), engineField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(), outputParametersPanel.getProcedureParameterModel().getTableVector(), vars, sqlBodyText.getSQLText(), descriptionArea.getTextAreaComponent().getText());
+        return SQLUtils.generateCreateProcedure(nameField.getText(), externalField.getText(), engineField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(), outputParametersPanel.getProcedureParameterModel().getTableVector(), vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(), sqlBodyText.getSQLText(), descriptionArea.getTextAreaComponent().getText());
     }
 
 

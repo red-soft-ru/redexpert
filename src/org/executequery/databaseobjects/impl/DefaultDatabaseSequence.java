@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
@@ -72,7 +73,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
             if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
 
                 statement = dmd.getConnection().createStatement();
-                ResultSet rs = statement.executeQuery("select gen_id(" + getName() + ", 0) from rdb$database");
+                ResultSet rs = statement.executeQuery("SELECT GEN_ID(" + MiscUtils.getFormattedObject(getName()) + ", 0) FROM RDB$DATABASE");
 
                 if (rs.next())
                     currentValue = rs.getLong(1);
@@ -151,17 +152,21 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
 
-            if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
+            if (getVersion() >= 3) {
+                if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
 
-                statement = dmd.getConnection().createStatement();
-                ResultSet rs = statement.executeQuery("select r.rdb$generator_increment\n" +
-                        "from rdb$generators r\n" +
-                        "where\n" +
-                        "trim(r.rdb$generator_name)='" + getName() + "'");
+                    statement = dmd.getConnection().createStatement();
+                    ResultSet rs = statement.executeQuery("select r.rdb$generator_increment\n" +
+                            "from rdb$generators r\n" +
+                            "where\n" +
+                            "trim(r.rdb$generator_name)='" + getName() + "'");
 
-                if (rs.next())
-                    increment = rs.getInt(1);
-            }
+                    if (rs.next())
+                        increment = rs.getInt(1);
+                }
+
+            } else
+                increment = 1;
 
             return increment;
 
@@ -188,8 +193,9 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
         String query = "";
         try {
-            query = SQLUtils.generateCreateSequence(getName(), getSequenceFirstValue(), getIncrement(),
-                    getRemarks(), getVersion(), false);
+            long firstValue = (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue();
+            query = SQLUtils.generateCreateSequence(getName(), firstValue,
+                    getIncrement(), getRemarks(), getVersion(), false);
 
         } catch (SQLException e) {
             GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);

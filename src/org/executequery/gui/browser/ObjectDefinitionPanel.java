@@ -27,6 +27,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
+import org.executequery.databaseobjects.impl.TransactionAgnosticResultSet;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
@@ -54,6 +55,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.print.Printable;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -455,6 +458,24 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             return null;
 
         return (tabPane.getSelectedIndex() == 0) ? tableDescriptionTable : null;
+    }
+
+    public boolean commitResultSet() {
+        try {
+            if (tableDataPanel.resultSet != null) {
+                if (tableDataPanel.resultSet instanceof TransactionAgnosticResultSet) {
+                    Connection con = ((TransactionAgnosticResultSet) tableDataPanel.resultSet).getConnection();
+                    if (con != null && !con.isClosed()) {
+                        con.commit();
+                        con.close();
+                    }
+                }
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 
 }

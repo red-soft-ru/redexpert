@@ -42,6 +42,7 @@ import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.CharLimitedTextField;
 import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.actions.ReflectiveAction;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -97,22 +98,22 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private JButton browse;
 
     // The text to specify the path to the file
-    private JLabel filePath;
+    private JLabel filePathLabel;
 
     // custom name table
     private JTextField customNameTable;
 
     // The text to specify the custom separator
-    private JLabel custom;
+    private JLabel customLabel;
 
     // The text to specify the separator
-    private JLabel delimiter;
+    private JLabel delimiterLabel;
 
     // The text to specify the name of table
-    private JLabel tableName;
+    private JLabel tableNameLabel;
 
     // The text to specify the SQL export
-    private JLabel exportSQL;
+    private JLabel exportSQLLabel;
 
     // the SQL Query export combo
     private JComboBox queryComboSQL;
@@ -121,6 +122,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private final String tableNameForExport;
 
     private final List<DatabaseColumn> databaseColumns;
+
+    private JCheckBox replaceNCheckBox;
+    private JTextField replaceNTextField;
 
     public QueryEditorResultsExporter(TableModel model, String tableNameForExport) {
         this(model, tableNameForExport, null);
@@ -165,7 +169,8 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         columnHeadersCheck = new JCheckBox(bundleString("IncludeColumnNamesAsFirstRow"));
         applyQuotesCheck = new JCheckBox(bundleString("UseDoubleQuotesForChar/varchar/longvarcharColumns"), true);
-
+        replaceNCheckBox = new JCheckBox(bundleString("ReplaceN"));
+        replaceNTextField = new JTextField();
         // the button panel
         JPanel btnPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -183,93 +188,27 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         // the base panel
         JPanel base = new JPanel(new GridBagLayout());
-        gbc.insets = new Insets(10, 5, 10, 5);
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        base.add(new JLabel(bundleString("SelectTheExportTypeDelimiterAndFilePathBelow")), gbc);
-        gbc.gridy++;
-        gbc.insets.top = 0;
-        gbc.insets.bottom = 0;
-        base.add(columnHeadersCheck, gbc);
-        gbc.gridy++;
-
-        gbc.insets.bottom = 10;
-        base.add(applyQuotesCheck, gbc);
-        gbc.gridy++;
-
-        gbc.gridwidth = 1;
-        gbc.insets.bottom = 0;
-        gbc.insets.top = labelInsetsTop;
-        base.add(new JLabel(bundleString("FileFormat")), gbc);
-        gbc.gridx = 1;
-        gbc.insets.top = fieldInsetsTop;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        base.add(typeCombo, gbc);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        gbc.insets.bottom = 0;
-        gbc.insets.top = labelInsetsTop;
-        delimiter = new JLabel(bundleString("Delimiter"));
-        exportSQL = new JLabel(bundleString("SQLExport"));
-        base.add(delimiter, gbc);
-        base.add(exportSQL, gbc);
-        gbc.gridx = 1;
-        gbc.insets.top = fieldInsetsTop;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        base.add(delimCombo, gbc);
-        base.add(queryComboSQL, gbc);
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.insets.top = labelInsetsTop;
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.NONE;
-        custom = new JLabel(bundleString("Custom"));
-        base.add(custom, gbc);
-        tableName = new JLabel(bundleString("TableName"));
-        base.add(tableName, gbc);
-
-        gbc.gridx = 1;
-        gbc.insets.top = fieldInsetsTop;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        base.add(customDelimiterField, gbc);
-        base.add(customNameTable, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        gbc.insets.top = labelInsetsTop;
-        gbc.fill = GridBagConstraints.NONE;
-        filePath = new JLabel(bundleString("FilePath"));
-        base.add(filePath, gbc);
-
-        gbc.insets.top = fieldInsetsTop;
-        gbc.weightx = 1.0;
-        gbc.gridx = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        base.add(fileNameField, gbc);
-        gbc.weightx = 0;
-        gbc.gridx = 2;
-        gbc.insets.left = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        base.add(browse, gbc);
-
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.insets.top = 0;
-        gbc.insets.bottom = 0;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        base.add(btnPanel, gbc);
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
+        base.add(new JLabel(bundleString("SelectTheExportTypeDelimiterAndFilePathBelow")), gbh.setLabelDefault().setWidth(2).get());
+        base.add(columnHeadersCheck, gbh.nextRowFirstCol().setLabelDefault().setWidth(2).get());
+        base.add(applyQuotesCheck, gbh.nextRowFirstCol().setLabelDefault().setWidth(2).setInsets(0, 0, 0, 10).get());
+        gbh.setInsets(0, 0, 0, 5);
+        gbh.addLabelFieldPair(base, (bundleString("FileFormat")), typeCombo, null);
+        delimiterLabel = new JLabel(bundleString("Delimiter"));
+        gbh.addLabelFieldPair(base, delimiterLabel, delimCombo, null);
+        exportSQLLabel = new JLabel(bundleString("SQLExport"));
+        gbh.addLabelFieldPair(base, exportSQLLabel, queryComboSQL, null);
+        customLabel = new JLabel(bundleString("Custom"));
+        gbh.addLabelFieldPair(base, customLabel, customDelimiterField, null);
+        gbh.addLabelFieldPair(base, replaceNCheckBox, replaceNTextField, null);
+        tableNameLabel = new JLabel(bundleString("TableName"));
+        gbh.addLabelFieldPair(base, tableNameLabel, customNameTable, null);
+        filePathLabel = new JLabel(bundleString("FilePath"));
+        base.add(filePathLabel, gbh.nextRowFirstCol().setLabelDefault().get());
+        base.add(fileNameField, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        base.add(browse, gbh.nextCol().setLabelDefault().get());
+        base.add(btnPanel, gbh.nextRowFirstCol().fillHorizontally().spanX().setMaxWeightY().get());
 
         Dimension baseDim = new Dimension(650, 280);
         base.setPreferredSize(baseDim);
@@ -286,8 +225,8 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         customDelimiterField.setEnabled(false);
         customNameTable.setVisible(false);
-        tableName.setVisible(false);
-        exportSQL.setVisible(false);
+        tableNameLabel.setVisible(false);
+        exportSQLLabel.setVisible(false);
         queryComboSQL.setVisible(false);
     }
 
@@ -321,23 +260,25 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         delimCombo.setEnabled(index == 0);
         columnHeadersCheck.setEnabled(index < 2);
         applyQuotesCheck.setEnabled(index < 3);
-        custom.setVisible(index == 0);
+        customLabel.setVisible(index == 0);
         customDelimiterField.setVisible(index == 0);
-        tableName.setVisible(index == 3);
+        tableNameLabel.setVisible(index == 3);
         customNameTable.setVisible(index == 3);
         customNameTable.setText(tableNameForExport);
-        exportSQL.setVisible(index >= 3);
-        delimiter.setVisible(index == 0);
+        exportSQLLabel.setVisible(index >= 3);
+        delimiterLabel.setVisible(index == 0);
         if (index == 3 && indexSQL == 1) {
             fileNameField.setVisible(false);
             browse.setVisible(false);
-            filePath.setVisible(false);
+            filePathLabel.setVisible(false);
         } else {
             fileNameField.setVisible(true);
             browse.setVisible(true);
-            filePath.setVisible(true);
+            filePathLabel.setVisible(true);
         }
         delimCombo.setVisible(index == 0);
+        replaceNCheckBox.setVisible(index == 0);
+        replaceNTextField.setVisible(index == 0);
         queryComboSQL.setVisible(index >= 3);
     }
 
@@ -356,11 +297,11 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         if (index == 3 && indexSQL == 1) {
             fileNameField.setVisible(false);
             browse.setVisible(false);
-            filePath.setVisible(false);
+            filePathLabel.setVisible(false);
         } else {
             fileNameField.setVisible(true);
             browse.setVisible(true);
-            filePath.setVisible(true);
+            filePathLabel.setVisible(true);
         }
     }
 
@@ -664,18 +605,29 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                     Object value = model.getValueAt(i, j);
                     if (value instanceof RecordDataItem) {
                         if (applyQuotes && isCDATA((RecordDataItem) value)) {
-
-                            rowLines.append("\"").append(valueAsString(value)).append("\"");
+                            String valueasstr = valueAsString(value);
+                            if (replaceNCheckBox.isSelected())
+                                valueasstr = valueasstr.replaceAll("\n", replaceNTextField.getText());
+                            rowLines.append("\"").append(valueasstr).append("\"");
 
                         } else {
-
-                            rowLines.append(valueAsString(value));
+                            String valueasstr = valueAsString(value);
+                            if (replaceNCheckBox.isSelected())
+                                valueasstr = valueasstr.replaceAll("\n", replaceNTextField.getText());
+                            rowLines.append(valueasstr);
                         }
                     } else {
-                        if (model.getColumnClass(j) == String.class && applyQuotes && !valueAsString(value).isEmpty())
-                            rowLines.append("\"").append(valueAsString(value)).append("\"");
-                        else
-                            rowLines.append(valueAsString(value));
+                        if (model.getColumnClass(j) == String.class && applyQuotes && !valueAsString(value).isEmpty()) {
+                            String valueasstr = valueAsString(value);
+                            if (replaceNCheckBox.isSelected())
+                                valueasstr = valueasstr.replaceAll("\n", replaceNTextField.getText());
+                            rowLines.append("\"").append(valueasstr).append("\"");
+                        } else {
+                            String valueasstr = valueAsString(value);
+                            if (replaceNCheckBox.isSelected())
+                                valueasstr = valueasstr.replaceAll("\n", replaceNTextField.getText());
+                            rowLines.append(valueasstr);
+                        }
                     }
 
                     if (j != columnCount - 1) {
@@ -718,8 +670,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
     private boolean isDataTime(RecordDataItem valueAt) {
         int type = valueAt.getDataType();
-        return (type == Types.TIME ||
-                type == Types.TIMESTAMP);
+      return (type == Types.DATE || type == Types.TIME || type == Types.TIMESTAMP);
     }
 
     private String valueAsString(Object value) {
@@ -915,6 +866,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                             clearText = null;
                         } else {
 
+                          if (valueAsString(value).isEmpty())
+                            rowLines.append("NULL");
+                          else
                             rowLines.append(valueAsString(value));
                         }
                     } else {

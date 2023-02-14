@@ -1,9 +1,12 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.event.TableModelListener;
@@ -369,6 +372,24 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     public void setTablespace(String tablespace) {
         this.tablespace = tablespace;
+    }
+
+    public boolean setStatistics() {
+        boolean res = true;
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        String query = "SET STATISTICS INDEX " + MiscUtils.getFormattedObject(getName());
+        try {
+            SqlStatementResult result = querySender.execute(QueryTypes.SET_STATISTICS, query);
+            if (result.isException()) {
+                res = false;
+                result.getSqlException().printStackTrace();
+            } else Log.info("Executing:\"" + query + "\"");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            querySender.releaseResources();
+        }
+        return res;
     }
 
     public void reset() {

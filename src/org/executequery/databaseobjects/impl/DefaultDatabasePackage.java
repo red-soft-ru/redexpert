@@ -1,9 +1,8 @@
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.underworldlabs.util.MiscUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,8 +18,6 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     private boolean validBodyFlag;
     private String securityClass;
     private String ownerName;
-    private boolean sqlSecurity;
-    private String description;
 
     public DefaultDatabasePackage() {
     }
@@ -107,23 +104,6 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         this.ownerName = ownerName;
     }
 
-    public boolean isSqlSecurity() {
-        return sqlSecurity;
-    }
-
-    public void setSqlSecurity(boolean sqlSecurity) {
-        this.sqlSecurity = sqlSecurity;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public String getDescription() {
-        return this.description;
-    }
-
     @Override
     public String getCreateSQLText() {
         StringBuilder sb = new StringBuilder();
@@ -141,7 +121,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         sb.append("set term ; ^");
         sb.append("\n");
         sb.append("\n");
-        if (this.description != null && !this.description.isEmpty()) {
+        if (!MiscUtils.isNull(getRemarks())) {
             sb.append("comment on package");
             sb.append(" ");
             sb.append(getName());
@@ -149,7 +129,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
             sb.append("is");
             sb.append("\n");
             sb.append("'");
-            sb.append(getDescription());
+            sb.append(getRemarks());
             sb.append("';");
         }
 
@@ -159,19 +139,19 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     protected String queryForInfo() {
         String sql_security = "null";
         if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
-            sql_security = "p.rdb$sql_security\n";
-        return "select 0,\n" +
+            sql_security = "IIF(p.rdb$sql_security is null,null,IIF(p.rdb$sql_security,'DEFINER','INVOKER'))";
+        String sql = "select 0,\n" +
                 "p.rdb$package_header_source,\n" +
                 "p.rdb$package_body_source,\n" +
                 "p.rdb$valid_body_flag,\n" +
                 "p.rdb$security_class,\n" +
                 "p.rdb$owner_name,\n" +
                 "p.rdb$system_flag,\n" +
-                "p.rdb$description,\n" +
-                sql_security +
-                "\n" +
+                "p.rdb$description as DESCRIPTION,\n" +
+                sql_security + " as SQL_SECURITY\n" +
                 "from rdb$packages p\n" +
                 "where p.rdb$package_name='" + getName().trim() + "'";
+        return sql;
     }
 
     @Override
@@ -183,23 +163,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
             setSecurityClass(rs.getString(5));
             setOwnerName(rs.getString(6));
             setSystemFlag(rs.getBoolean(7));
-            setDescription(rs.getString(8));
-            setSqlSecurity(rs.getBoolean(9));
-        }
-    }
-
-    protected void getObjectInfo() {
-        super.getObjectInfo();
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        try {
-            String query = queryForInfo();
-            ResultSet rs = querySender.getResultSet(query).getResultSet();
-            setInfoFromResultSet(rs);
-        } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
-        } finally {
-            querySender.releaseResources();
-            setMarkedForReload(false);
+            setRemarks(getFromResultSet(rs, "DESCRIPTION"));
+            setSqlSecurity(getFromResultSet(rs, "SQL_SECURITY"));
         }
     }
 }

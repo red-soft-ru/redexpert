@@ -18,9 +18,11 @@ import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.RTextArea;
+import org.fife.ui.rtextarea.RUndoManager;
 import org.fife.ui.rtextarea.RecordableTextAction;
 import org.underworldlabs.sqlLexer.CustomTokenMakerFactory;
 import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -53,6 +55,8 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
     boolean autocompleteOnlyHotKey = true;
 
     private boolean doCaretUpdate;
+
+    protected RUndoManager undoManager;
 
     /**
      * The current font width for painting
@@ -129,16 +133,15 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
 
     }
 
-    Token getTokenForPosition(int cursor)
-    {
+    public Token getTokenForPosition(int cursor) {
         TokenImpl tokenList = null;
         TokenImpl lastToken = null;
         Element map = getDocument().getDefaultRootElement();
         int line = map.getElementIndex(cursor);
         Token token = getTokenListForLine(line);
-        TokenImpl t = (TokenImpl)getTokenListForLine(line);
+        TokenImpl t = (TokenImpl) getTokenListForLine(line);
         t = cloneTokenList(t);
-        if (tokenList==null) {
+        if (tokenList == null) {
             tokenList = t;
             lastToken = tokenList;
         }
@@ -157,9 +160,9 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
                     Token.WHITESPACE, 0);
             lastToken.setNextToken(t);
             lastToken = t;
-        if (cursor>=tokenList.getOffset()) {
+        if (cursor >= tokenList.getOffset()) {
             while (!tokenList.containsPosition(cursor)) {
-                tokenList = (TokenImpl)tokenList.getNextToken();
+                tokenList = (TokenImpl) tokenList.getNextToken();
             }
         }
         // Be careful to check temp for null here.  It is possible that no
@@ -168,10 +171,16 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         return tokenList;
     }
 
+    @Override
+    protected RUndoManager createUndoManager() {
+        undoManager = new SQLTextUndoManager(this);
+        return undoManager;
+    }
+
     private void createStyle(int type, Color fcolor,
-                             Color bcolor,String fontname,int style,int fontSize,boolean underline) {
+                             Color bcolor, String fontname, int style, int fontSize, boolean underline) {
         SyntaxScheme syntaxScheme = getSyntaxScheme();
-        if(syntaxScheme!=null) {
+        if (syntaxScheme != null) {
             syntaxScheme.getStyle(type).foreground = fcolor;
             syntaxScheme.getStyle(type).background = bcolor;
             syntaxScheme.getStyle(type).underline = underline;
@@ -249,6 +258,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
     public SQLTextArea() {
         super();
         document = new SQLSyntaxDocument(null, tokenMakerFactory, "antlr/sql");
+        document.setTextComponent(this);
         setDocument(document);
         setSyntaxEditingStyle("antlr/sql");
         initialiseStyles();
@@ -307,12 +317,15 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
                     public void treeStructureChanged(TreeModelEvent e) {
                         if (databaseConnection != null) {
                             setDbobjects(databaseConnection.getListObjectsDB());
-                            autoCompletePopup.resetAutoCompleteListItems();
-                            autoCompletePopup.scheduleListItemLoad();
+                            if (autoCompletePopup != null) {
+                                autoCompletePopup.resetAutoCompleteListItems();
+                                autoCompletePopup.scheduleListItemLoad();
+                            }
                         }
                     }
                 });
         }
+        setEditorPreferences();
     }
 
     protected void registerCommentAction() {
@@ -355,6 +368,9 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
                 REPLACE_ACTION_KEY);
     }
 
+    DocumentListener autoCompletePopupDocumentListener;
+    CaretListener autoCompletePopupCaretListener;
+
     private void registerAutoCompletePopup() {
 
 
@@ -364,7 +380,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         getInputMap().put((KeyStroke)
                         autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
                 AUTO_COMPLETE_POPUP_ACTION_KEY);
-        getDocument().addDocumentListener(new DocumentListener() {
+        autoCompletePopupDocumentListener = new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
 
@@ -379,15 +395,18 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
             public void changedUpdate(DocumentEvent e) {
                 changed = true;
             }
-        });
-        addCaretListener(new CaretListener() {
+        };
+        getDocument().addDocumentListener(autoCompletePopupDocumentListener);
+        autoCompletePopupCaretListener = new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent e) {
-                if (changed && !autocompleteOnlyHotKey)
+
+                if ((changed && !autocompleteOnlyHotKey) || autoCompletePopup.isShow())
                     autoCompletePopupAction.actionPerformed(null);
                 changed = false;
             }
-        });
+        };
+        addCaretListener(autoCompletePopupCaretListener);
 
     }
 
@@ -400,6 +419,14 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
             getActionMap().remove(AUTO_COMPLETE_POPUP_ACTION_KEY);
             getInputMap().remove((KeyStroke)
                     autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY));
+            if (autoCompletePopupCaretListener != null) {
+                removeCaretListener(autoCompletePopupCaretListener);
+                autoCompletePopupCaretListener = null;
+            }
+            if (autoCompletePopupDocumentListener != null) {
+                getDocument().removeDocumentListener(autoCompletePopupDocumentListener);
+                autoCompletePopupDocumentListener = null;
+            }
 
             autoCompletePopup = null;
         }
@@ -809,4 +836,42 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
 
         }
     }
+
+    public boolean isAutocompleteOnlyHotKey() {
+        return autocompleteOnlyHotKey;
+    }
+
+    public void setAutocompleteOnlyHotKey(boolean autocompleteOnlyHotKey) {
+        this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
+    }
+
+    class SQLTextUndoManager extends RUndoManager {
+
+        /**
+         * Constructor.
+         *
+         * @param textArea The parent text area.
+         */
+        public SQLTextUndoManager(RTextArea textArea) {
+            super(textArea);
+        }
+
+        @Override
+        public void updateActions() {
+            SwingWorker sw = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    superUpdateActions();
+                    return null;
+                }
+            };
+            sw.start();
+        }
+
+        private void superUpdateActions() {
+            super.updateActions();
+        }
+    }
+
+
 }

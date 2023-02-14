@@ -78,8 +78,10 @@ public class QueryTokenizer {
 
         QueryTokenized fquery = firstQuery(query, delimiter, startQueryIndex, lowQuery);
         if (fquery.query != null) {
-            String noCommentsQuery = removeAllCommentsFromQuery(fquery.query.getOriginalQuery());
-            fquery.query.setQueryWithoutComments(noCommentsQuery.trim());
+            String noCommentsQuery = removeAllCommentsFromQuery(fquery.query.getOriginalQuery()).trim();
+            if (noCommentsQuery.isEmpty())
+                fquery.query.setDerivedQuery("");
+            fquery.query.setQueryWithoutComments(noCommentsQuery);
         }
         return fquery;
     }
@@ -123,10 +125,22 @@ public class QueryTokenizer {
                 Pattern p = Pattern.compile("Set(\\s+)term(\\s+)", Pattern.CASE_INSENSITIVE);
 
                 Matcher m = p.matcher(substring);
-
-                if (m.find()) {
+                boolean setTerm = m.find();
+                while (setTerm) {
+                    if (notInAnyToken(m.end() + lastIndex - 1))
+                        break;
+                    else {
+                        setTerm = m.find(m.end());
+                    }
+                }
+                if (setTerm) {
+                    String oldDelimiter = queryDelimiter;
                     queryDelimiter = substring.substring(m.end()).trim();
-                    lastIndex = index + (substring.length() - m.end());
+                    queryDelimiter = removeAllCommentsFromQuery(queryDelimiter).trim();
+                    if (queryDelimiter.isEmpty())
+                        throw new RuntimeException("Delimiter cannot be empty:\n" +
+                                substring);
+                    lastIndex = index + (oldDelimiter.length());
                     continue;
                 }
 
@@ -148,10 +162,12 @@ public class QueryTokenizer {
 
 
     private boolean notInAnyToken(int index) {
-
-        return !(withinMultiLineComment(index, index))
-                && !(withinSingleLineComment(index, index))
-                && !(withinQuotedString(index, index));
+        boolean single = !(withinSingleLineComment(index, index));
+        boolean multi = !(withinMultiLineComment(index, index));
+        boolean quote = !(withinQuotedString(index, index));
+        return single
+                && multi
+                && quote;
     }
 
     private final Matcher declareBlockMatcher;
@@ -192,14 +208,26 @@ public class QueryTokenizer {
                 Pattern p = Pattern.compile("Set(\\s+)term(\\s+)", Pattern.CASE_INSENSITIVE);
 
                 Matcher m = p.matcher(substring);
-
-                if (m.find()) {
+                boolean setTerm = m.find();
+                while (setTerm) {
+                    if (notInAnyToken(m.end() - 1 + startIndexQuery))
+                        break;
+                    else {
+                        setTerm = m.find(m.end());
+                    }
+                }
+                if (setTerm) {
+                    String oldDelimiter = delimiter;
                     delimiter = substring.substring(m.end()).trim();
-                    lastIndex = index + (substring.length() - m.end());
-                    return new QueryTokenized(null, query.substring(lastIndex),lowQuery.substring(lastIndex),startIndexQuery+lastIndex, delimiter);
+                    delimiter = removeAllCommentsFromQuery(delimiter).trim();
+                    if (delimiter.isEmpty())
+                        throw new RuntimeException("Delimiter cannot be empty:\n" +
+                                substring);
+                    lastIndex = index + (oldDelimiter.length());
+                    return new QueryTokenized(null, query.substring(lastIndex), lowQuery.substring(lastIndex), startIndexQuery + lastIndex, delimiter);
                 }
                 lastIndex = index + delimiter.length();/*1;*/
-                return new QueryTokenized(new DerivedQuery(substring), query.substring(lastIndex),lowQuery.substring(lastIndex), startIndexQuery+lastIndex, delimiter);
+                return new QueryTokenized(new DerivedQuery(substring), query.substring(lastIndex), lowQuery.substring(lastIndex), startIndexQuery + lastIndex, delimiter);
             } else {
                 cycleContinue = true;
                 index = query.indexOf(delimiter, index + 1);
@@ -354,7 +382,7 @@ public class QueryTokenizer {
         }
         Collections.reverse(tokenList);
         for (org.antlr.v4.runtime.Token token : tokenList) {
-            sb.delete(token.getStartIndex(), token.getStopIndex());
+            sb.delete(token.getStartIndex(), token.getStopIndex() + 1);
         }
         return sb.toString();
     }

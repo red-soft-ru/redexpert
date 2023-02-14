@@ -14,15 +14,13 @@ import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class SimpleCommentPanel {
 
     /**
      * current database object
      */
-    private DatabaseObject currentDatabaseObject;
+    private final DatabaseObject currentDatabaseObject;
     /**
      * comment main panel
      */
@@ -89,13 +87,15 @@ public class SimpleCommentPanel {
                 metaTag = "PROCEDURE";
             else if (currentDatabaseObject.getType() == NamedObject.FUNCTION)
                 metaTag = "FUNCTION";
+            else if (currentDatabaseObject.getType() == NamedObject.PACKAGE)
+                metaTag = "PACKAGE";
 
             executor.setCommitMode(false);
             executor.setKeepAlive(true);
             executor.setDatabaseConnection(getSelectedConnection());
 
             String request = SQLUtils.generateComment(currentDatabaseObject.getName(), metaTag,
-                    comment, ";");
+                    comment, ";", false);
 
             Log.info("Query created: " + request);
 

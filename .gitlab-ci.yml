@@ -25,6 +25,7 @@ prepare:
   tags:
     - docker
     - builder
+    - x86_64
   stage: prepare
   image: registry.red-soft.biz:5000/utils/red-release-manager/client:master
   script:
@@ -69,6 +70,7 @@ sources:
   tags:
     - docker
     - builder
+    - x86_64
   stage: sources
   image: maven:3-jdk-8-alpine
   before_script:
@@ -93,6 +95,7 @@ build_docs:
   tags:
     - docker
     - builder
+    - x86_64
   image: registry.red-soft.biz:5000/docker-images/texlive-alpine/texlive2018-alpine:20190305
   before_script:
     - tar xf dist-src/RedExpert-$VERSION-src.tar.gz
@@ -114,6 +117,7 @@ build:linux:
   tags:
     - docker
     - builder
+    - x86_64
   variables:
     M2_HOME: /opt/apache-maven-3.5.4/
     QMAKE: qmake-qt4
@@ -122,6 +126,7 @@ build:linux:
     - yum -y update
     - yum install -y java-1.8.0-openjdk-devel qt-devel gtk3-devel wget libcurl-devel
     - yum group install -y "Development Tools"
+    - yum install -y ca-certificates
     - cd /opt
     - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
     - tar xzf apache-maven-3.5.4-bin.tar.gz
@@ -206,6 +211,7 @@ repackage:
   tags:
     - docker
     - builder
+    - x86_64
   stage: repackage
   image: alpine:3.8
   before_script:
@@ -221,6 +227,7 @@ deploy:
   tags:
     - docker
     - builder
+    - x86_64
   stage: deploy
   image: registry.red-soft.biz:5000/utils/red-release-manager/client:master
   script:

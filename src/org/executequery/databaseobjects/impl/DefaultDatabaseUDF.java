@@ -19,7 +19,8 @@ import java.util.Set;
  * Created by vasiliy on 13.02.17.
  */
 
-public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
+public class
+DefaultDatabaseUDF extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
     public static final String[] mechanisms = {"BY VALUE", "BY REFERENCE", "BY DESCRIPTOR", "BY BLOB DESCRIPTOR"};
     public static final int BY_VALUE = 0;
@@ -360,7 +361,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 "fa.rdb$field_sub_type,\n" +
                 "c.rdb$bytes_per_character,\n" +
                 "c.rdb$character_set_name as character_set_name,\n" +
-                "fa.rdb$field_precision\n";
+                "fa.rdb$field_precision as FIELD_PRECISION\n";
         if (getDatabaseMajorVersion() >= 3)
             sqlQuery += ",fa.rdb$null_flag as null_flag\n";
         sqlQuery += "from rdb$functions f\n" +

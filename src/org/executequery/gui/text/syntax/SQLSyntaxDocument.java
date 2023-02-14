@@ -20,16 +20,12 @@
 
 package org.executequery.gui.text.syntax;
 
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.executequery.Constants;
 import org.executequery.gui.editor.QueryEditorSettings;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
-import org.underworldlabs.sqlLexer.SqlLexer;
 
 import javax.swing.text.*;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -44,7 +40,7 @@ public class SQLSyntaxDocument extends RSyntaxDocument
     /**
      * The document root element
      */
-    private Element rootElement;
+    private final Element rootElement;
 
     /**
      * The text component owner of this document
@@ -56,20 +52,20 @@ public class SQLSyntaxDocument extends RSyntaxDocument
      */
     private boolean tabsToSpaces;
 
-    /**
-     * tracks brace positions
-     */
-    private Vector<Token> braceTokens;
+             /**
+              * tracks brace positions
+              */
+             private final Vector<Token> braceTokens;
 
     /**
      * the current text insert mode
      */
     private int insertMode;
 
-    /**
-     * tracks string literal entries (quotes)
-     */
-    private List<Token> stringTokens;
+             /**
+              * tracks string literal entries (quotes)
+              */
+             private final List<Token> stringTokens;
 
     /* syntax matchers */
     private TokenMatcher[] matchers;
@@ -208,10 +204,10 @@ public class SQLSyntaxDocument extends RSyntaxDocument
         return false;
     }
 
-    /**
-     * temp string buffer for insertion text
-     */
-    private StringBuffer buffer = new StringBuffer();
+             /**
+              * temp string buffer for insertion text
+              */
+             private final StringBuffer buffer = new StringBuffer();
 
 
 
@@ -244,10 +240,10 @@ public class SQLSyntaxDocument extends RSyntaxDocument
 
     }
 
-    /**
-     * Mulit-line comment tokens from the last scan
-     */
-    private List<Token> multiLineComments = new ArrayList<Token>();
+             /**
+              * Mulit-line comment tokens from the last scan
+              */
+             private final List<Token> multiLineComments = new ArrayList<Token>();
 
     /*
      *  Override to apply syntax highlighting after
@@ -256,66 +252,6 @@ public class SQLSyntaxDocument extends RSyntaxDocument
     public void insertString(int offset, String text, AttributeSet attrs)
             throws BadLocationException {
 
-        //Log.debug("insert");
-
-       /* int length = text.length();
-
-        // check overwrite mode
-        if (insertMode == SqlMessages.OVERWRITE_MODE &&
-                length == 1 && offset != getLength()) {
-            remove(offset, 1);
-        }
-
-        if (length == 1) {
-
-            char firstChar = text.charAt(0);
-
-            /* check if we convert tabs to spaces
-            if ((firstChar == Constants.TAB_CHAR) && tabsToSpaces) {
-
-                text = QueryEditorSettings.getTabs();
-                length = text.length();
-            }
-
-            /* auto-indent the next line
-            else if (firstChar == Constants.NEW_LINE_CHAR) {
-
-                int index = rootElement.getElementIndex(offset);
-                Element line = rootElement.getElement(index);
-
-                char SPACE = ' ';
-                buffer.append(text);
-
-                int start = line.getStartOffset();
-                int end = line.getEndOffset();
-
-                String _text = getText(start, end - start);
-                char[] chars = _text.toCharArray();
-
-                for (int i = 0; i < chars.length; i++) {
-
-                    if ((Character.isWhitespace(chars[i]))
-                            && (chars[i] != Constants.NEW_LINE_CHAR)) {
-                        buffer.append(SPACE);
-                    } else {
-                        break;
-                    }
-
-                }
-                text = buffer.toString();
-                length = text.length();
-            }
-
-        }
-
-        resetBracePosition();
-
-        /* call super method and default to normal style */
-        //super.insertString(offset, text, styles[WORD]);
-
-        //processChangedLines();
-        //updateBraces(offset + 1);
-        //buffer.setLength(0);
         super.insertString(offset,text,attrs);
     }
 
@@ -431,82 +367,9 @@ public class SQLSyntaxDocument extends RSyntaxDocument
      */
 
 
-    private void scanLines(int offset, int length,
-                           String content, int documentLength, List<Token> tokens) {
-
-        // The lines affected by the latest document update
-        int startLine = rootElement.getElementIndex(offset);
-        int endLine = rootElement.getElementIndex(offset + length);
-
-        boolean applyStyle = true;
-        int tokenCount = tokens.size();
-
-        for (int i = startLine; i <= endLine; i++) {
-            Element element = rootElement.getElement(i);
-            int startOffset = element.getStartOffset();
-            int endOffset = element.getEndOffset() - 1;
-
-            if (endOffset < 0) {
-                endOffset = 0;
-            }
-
-            applyStyle = true;
-            for (int j = 0; j < tokenCount; j++) {
-                Token token = tokens.get(j);
-                if (token.contains(startOffset, endOffset)) {
-                    applyStyle = false;
-                    break;
-                }
-            }
-
-            if (applyStyle) {
-                String textSnippet = content.substring(startOffset, endOffset);
-                /*applySyntaxColours(textSnippet,
-                        startOffset,
-                        endOffset,
-                        documentLength);*/
-            }
-        }
-    }
-
-    public String getNameDBObjectFromPosition(int position, String text) {
-
-        /*TokenMatcher tokenMatcher = matchers[TokenTypes.DBOBJECTS_MATCH];
-        Matcher matcher = tokenMatcher.getMatcher();
-
-        int start = 0;
-        int end = 0;
-
-        boolean applyStyle = true;
-        matcher.reset(text);
-
-        // the string token count for when we are not
-        // processing string tokens
-        int stringTokenCount = stringTokens.size();
-
-        int length = text.length();
-        int matcherStart = 0;
-        while (matcher.find(matcherStart)) {
-            start = matcher.start();
-            end = matcher.end();
-
-            if (position >= start && position <= end) {
-                return text.substring(start, end);
-            }
-
-            // if this is a string mather add to the cache
-            // compare against string cache to apply
 
 
-            matcherStart = end + 1;
-            if (matcherStart > length) {
-                break;
-            }
 
-        }
-        matcher.reset(Constants.EMPTY);*/
-        return null;
-    }
 
     public void setSQLKeywords(TreeSet<String> keywords) {
         this.keywords=keywords;

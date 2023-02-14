@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.FunctionArgument;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
@@ -46,6 +47,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
      * function arguments
      */
     private ArrayList<FunctionArgument> arguments;
+
+    private boolean deterministic;
 
     /**
      * function sql
@@ -119,7 +122,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
      */
 
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(), getEngine(), getRemarks(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(), getEngine(), getSqlSecurity(), getRemarks(), isDeterministic(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -132,16 +135,16 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "fs.rdb$field_type,\n" +
                 "fs.rdb$field_length,\n" +
                 "fs.rdb$field_scale,\n" +
-                "fs.rdb$field_sub_type,\n" +
+                "fs.rdb$field_sub_type as field_subtype,\n" +
                 "fs.rdb$segment_length as segment_length,\n" +
                 "fs.rdb$dimensions,\n" +
                 "cr.rdb$character_set_name as character_set_name,\n" +
                 "co.rdb$collation_name,\n" +
                 "fa.rdb$argument_position,\n" +
-                "fs.rdb$character_length,\n" +
-                "fa.rdb$description,\n" +
+                "fs.rdb$character_length AS CHAR_LEN,\n" +
+                "fa.rdb$description as argument_description,\n" +
                 "fa.rdb$default_source as DEFAULT_SOURCE,\n" +
-                "fs.rdb$field_precision,\n" +
+                "fs.rdb$field_precision as FIELD_PRECISION,\n" +
                 "fa.rdb$argument_mechanism as AM,\n" +
                 "fa.rdb$field_source as FS,\n" +
                 "fs.rdb$default_source,\n" +
@@ -151,11 +154,11 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "co2.rdb$collation_name,\n" +
                 "cr.rdb$default_collate_name,\n" +
                 "fnc.rdb$return_argument as RETURN_ARGUMENT,\n" +
-                "fa.rdb$argument_position,\n" +
-                "fnc.rdb$deterministic_flag,\n" +
+                "fa.rdb$argument_position as argument_position,\n" +
+                "fnc.rdb$deterministic_flag as DETERMINISTIC_FLAG,\n" +
                 "fnc.rdb$engine_name as ENGINE,\n" +
                 "fnc.rdb$entrypoint as ENTRY_POINT,\n" +
-                "fnc.rdb$sql_security as SQL_SECURITY\n" +
+                "IIF(fnc.rdb$sql_security is null,null,IIF(fnc.rdb$sql_security,'DEFINER','INVOKER')) as SQL_SECURITY\n" +
                 "from rdb$functions fnc\n" +
                 "left join rdb$function_arguments fa on fa.rdb$function_name = fnc.rdb$function_name\n" +
                 "and (fa.rdb$package_name is null)\n" +
@@ -169,6 +172,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         return sql;
     }
 
+
     @Override
     protected void setInfoFromResultSet(ResultSet rs) {
 
@@ -177,18 +181,19 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
             arguments = new ArrayList<>();
             while (rs.next()) {
                 String parameterName = rs.getString(4);
-                if (parameterName != null) {
-                    FunctionArgument fp = new FunctionArgument(parameterName.trim(),
-                            DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(6), rs.getInt(9)),
-                            rs.getInt(7),
-                            rs.getInt(18),
-                            rs.getInt(8),
-                            rs.getInt(9),
-                            rs.getInt(14),
-                            rs.getInt("AM"),
-                            rs.getString("RN"),
-                            rs.getString("FN")
-                    );
+                if (parameterName != null)
+                    parameterName = parameterName.trim();
+                FunctionArgument fp = new FunctionArgument(parameterName,
+                        DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(6), rs.getInt(9)),
+                        rs.getInt(7),
+                        rs.getInt(18),
+                        rs.getInt(8),
+                        rs.getInt("field_subtype"),
+                        rs.getInt(14),
+                        rs.getInt("AM"),
+                        rs.getString("RN"),
+                        rs.getString("FN")
+                );
                     int return_arg = rs.getInt("RETURN_ARGUMENT");
                     if (return_arg == fp.getPosition())
                         fp.setType(DatabaseMetaData.procedureColumnReturn);
@@ -196,24 +201,30 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                     String domain = rs.getString("FS");
                     if (domain != null && !domain.startsWith("RDB$"))
                         fp.setDomain(domain.trim());
-                    fp.setNullable(rs.getInt("null_flag"));
+                fp.setNullable(rs.getInt("null_flag") == 1 ? 0 : 1);
+                    if (rs.getInt("FIELD_PRECISION") != 0)
+                        fp.setSize(rs.getInt("FIELD_PRECISION"));
+                    if (rs.getInt("CHAR_LEN") != 0)
+                        fp.setSize(rs.getInt("CHAR_LEN"));
                     if (fp.getDataType() == Types.LONGVARBINARY ||
                             fp.getDataType() == Types.LONGVARCHAR ||
                             fp.getDataType() == Types.BLOB) {
                         fp.setSize(rs.getInt("segment_length"));
                     }
                     String characterSet = rs.getString("character_set_name");
-                    if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
-                        fp.setEncoding(characterSet.trim());
+                if (!MiscUtils.isNull(characterSet))
+                    fp.setEncoding(characterSet.trim());
                     fp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(6), fp.getSubType(), fp.getScale()));
-                    fp.setDefaultValue(rs.getString("DEFAULT_SOURCE"));
-                    arguments.add(fp);
-                }
+                fp.setDefaultValue(rs.getString("DEFAULT_SOURCE"));
+                fp.setDescription(rs.getString("argument_description"));
+                arguments.add(fp);
                 if (first) {
                     sourceCode = getFromResultSet(rs, "SOURCE_CODE");
                     entryPoint = getFromResultSet(rs, "ENTRY_POINT");
                     engine = getFromResultSet(rs, "ENGINE");
                     setRemarks(getFromResultSet(rs, "DESCRIPTION"));
+                    setSqlSecurity(getFromResultSet(rs, "SQL_SECURITY"));
+                    setDeterministic(rs.getInt("DETERMINISTIC_FLAG") == 1);
                     first = false;
                 }
             }
@@ -221,6 +232,14 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
             e.printStackTrace();
         }
 
+    }
+
+    public boolean isDeterministic() {
+        return deterministic;
+    }
+
+    public void setDeterministic(boolean deterministic) {
+        this.deterministic = deterministic;
     }
 }
 

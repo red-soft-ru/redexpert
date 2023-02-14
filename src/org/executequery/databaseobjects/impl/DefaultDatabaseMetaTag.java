@@ -259,6 +259,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 return getIndicesResultSet();
             case TABLESPACE:
                 return getTablespacesResultSet();
+            case COLLATION:
+                return getCollationsResultSet();
             case SYSTEM_DOMAIN:
                 return getSystemDomainResultSet();
             case SYSTEM_TRIGGER:
@@ -343,7 +345,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         case TABLESPACE:
                             namedObject = getTablespace(rs);
                             break;
-
+                        case COLLATION:
+                            namedObject = getCollation(rs);
+                            break;
                     }
                     if (namedObject != null) {
                         if (type >= SYSTEM_DOMAIN)
@@ -483,6 +487,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private AbstractDatabaseObject getTablespace(ResultSet rs) throws SQLException {
 
         return new DefaultDatabaseTablespace(this, rs.getObject(1).toString());
+
+    }
+
+    private AbstractDatabaseObject getCollation(ResultSet rs) throws SQLException {
+
+        return new DefaultDatabaseCollation(this, rs.getObject(1).toString());
 
     }
 
@@ -687,6 +697,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getTablespacesResultSet() throws SQLException {
         String query = "SELECT RDB$TABLESPACE_NAME FROM RDB$TABLESPACES ORDER BY 1";
+        return getResultSetFromQuery(query);
+    }
+
+    private ResultSet getCollationsResultSet() throws SQLException {
+        String query = "SELECT RDB$COLLATION_NAME FROM RDB$COLLATIONS WHERE RDB$SYSTEM_FLAG=0 OR RDB$SYSTEM_FLAG IS NULL ORDER BY 1";
         return getResultSetFromQuery(query);
     }
 

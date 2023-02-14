@@ -21,8 +21,11 @@
 package org.executequery.actions.filecommands;
 
 import org.executequery.Application;
+import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.BaseCommand;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 /**
@@ -34,6 +37,8 @@ public class ExitCommand implements BaseCommand {
 
     public void execute(ActionEvent e) {
 
+        if (GUIUtilities.displayConfirmDialog(Bundles.getCommon("exit-confirmation")) != JOptionPane.YES_OPTION)
+            return;
         Application.getInstance().exitProgram();
     }
 

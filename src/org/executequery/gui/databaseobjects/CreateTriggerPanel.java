@@ -91,6 +91,8 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     protected JTextField engineField;
 
+    protected JComboBox sqlSecurityCombo;
+
     /**
      * The constructor
      */
@@ -178,6 +180,9 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             }
         });
 
+        sqlSecurityCombo = new JComboBox(new String[]{"", "DEFINER", "INVOKER"});
+        if (getDatabaseVersion() > 2)
+            topGbh.addLabelFieldPair(topPanel, "SQL SECURITY", sqlSecurityCombo, null);
 
         centralPanel.setLayout(new GridBagLayout());
         GridBagHelper centralGbh = new GridBagHelper();
@@ -399,6 +404,9 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             externalField.setText(trigger.getEntryPoint());
 
         }
+        if (!MiscUtils.isNull(trigger.getSqlSecurity())) {
+            sqlSecurityCombo.setSelectedItem(trigger.getSqlSecurity());
+        }
         useExternalBox.setVisible(false);
         emptyExternalPanel.setVisible(false);
     }
@@ -502,8 +510,14 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 }
             }
         }
+        String engine = engineField.getText();
+        String external = externalField.getText();
+        if (!useExternalBox.isSelected()) {
+            engine = null;
+            external = null;
+        }
         String query = SQLUtils.generateCreateTriggerStatement(nameField.getText(), table, activeBox.isSelected(), triggerType.toString(),
-                (int) positionField.getValue(), sqlBodyText.getSQLText(), engineField.getText(), externalField.getText(), descriptionText.getTextAreaComponent().getText());
+                (int) positionField.getValue(), sqlBodyText.getSQLText(), engine, external, (String) sqlSecurityCombo.getSelectedItem(), descriptionText.getTextAreaComponent().getText());
         return query;
     }
 

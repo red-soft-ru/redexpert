@@ -69,7 +69,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         {
             listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
         }
-        return formatSqlText(SQLUtils.generateCreateTable(getName(), listCD, listCC, true, true, typeTemporary, getExternalFile(), getAdapter(), getTablespace(), getRemarks()));
+        return formatSqlText(SQLUtils.generateCreateTable(getName(), listCD, listCC, true, true, typeTemporary, getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks()));
     }
 
     private String formatSqlText(String text) {

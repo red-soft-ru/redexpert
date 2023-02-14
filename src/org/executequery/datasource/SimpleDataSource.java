@@ -117,6 +117,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             if (e.getSQLState().contentEquals("28000")
                     && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
                 databaseConnection.setPassword("");
+                dataSource = null;
                 return getConnection(tpb);
             }
             throw e;

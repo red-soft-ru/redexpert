@@ -100,6 +100,8 @@ public class BrowserViewPanel extends FormObjectViewContainer
         ConnectionHistory.remove(currentView);
         if (currentView instanceof BrowserTableEditingPanel)
             return ((BrowserTableEditingPanel) currentView).commitResultSet();
+        if (currentView instanceof ObjectDefinitionPanel)
+            return ((ObjectDefinitionPanel) currentView).commitResultSet();
 
         return true;
     }

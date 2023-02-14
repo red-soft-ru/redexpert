@@ -35,6 +35,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     private ColumnData returnType;
     private DefaultDatabaseFunction function;
 
+    protected JCheckBox deterministicBox;
+
     /**
      * <p> Constructs a new instance.
      *
@@ -86,25 +88,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         return res;
     }
 
-    public static String getQueryFunctionArguments(String function) {
-        return "select cast(PP.RDB$FUNCTION_NAME as varchar(63)) as PROCEDURE_NAME,\n" +
-                "cast(PP.RDB$ARGUMENT_NAME as varchar(63)) as COLUMN_NAME,\n" +
-                "PP.RDB$FIELD_TYPE as COLUMN_TYPE,\n" +
-                "F.RDB$FIELD_TYPE as FIELD_TYPE,\n" +
-                "F.RDB$FIELD_SUB_TYPE as FIELD_SUB_TYPE,\n" +
-                "F.RDB$FIELD_PRECISION as FIELD_PRECISION,\n" +
-                "F.RDB$FIELD_SCALE as FIELD_SCALE,\n" +
-                "F.RDB$FIELD_LENGTH as FIELD_LENGTH,\n" +
-                "F.RDB$NULL_FLAG as NULL_FLAG,\n" +
-                "PP.RDB$DESCRIPTION as REMARKS,\n" +
-                "F.RDB$CHARACTER_LENGTH AS CHAR_LEN,\n" +
-                "PP.RDB$ARGUMENT_POSITION AS PARAMETER_NUMBER,\n" +
-                "F.RDB$CHARACTER_SET_ID\n" +
-                "from RDB$FUNCTION_ARGUMENTS PP,RDB$FIELDS F\n" +
-                "where PP.RDB$FUNCTION_NAME = '" + function + "' AND PP.RDB$FIELD_SOURCE = F.RDB$FIELD_NAME\n" +
-                " order by PP.RDB$FUNCTION_NAME, PP.RDB$FIELD_TYPE desc, PP.RDB$ARGUMENT_POSITION";
-    }
-
     @Override
     protected void loadParameters() {
         {
@@ -116,53 +99,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                     inputParametersPanel.deleteEmptyRow();
                 for (FunctionArgument pp :
                         parameters) {
-
-                    ResultSet resultSet = sender.getResultSet("select\n" +
-                            "f.rdb$field_sub_type as field_subtype,\n" +
-                            "f.rdb$segment_length as segment_length,\n" +
-                            "pp.rdb$field_source as field_source,\n" +
-                            "pp.rdb$null_flag as null_flag,\n" +
-                            "cs.rdb$character_set_name as character_set,\n" +
-                            "pp.rdb$description as description,\n" +
-                            "pp.rdb$argument_mechanism as mechanism,\n" +
-                            "pp.rdb$field_name as field_name,\n" +
-                            "pp.rdb$relation_name as relation_name \n" +
-                            "from rdb$function_arguments pp,\n" +
-                            "rdb$fields f\n" +
-                            "left join rdb$character_sets cs on cs.rdb$character_set_id = f.rdb$character_set_id\n" +
-                            "where pp.rdb$argument_name = '" + pp.getName() + "'\n" +
-                            "and pp.rdb$function_name = '" + this.procedure + "'\n" +
-                            "and  pp.rdb$field_source = f.rdb$field_name").getResultSet();
-                    try {
-                        if (resultSet.next()) {
-                            pp.setSubType(resultSet.getInt(1));
-                            /*int size = resultSet.getInt(2);
-                            if (size != 0)
-                                pp.setSize(size);*/
-                            pp.setNullable(resultSet.getInt(4) == 1 ? 0 : 1);
-                            String domain = resultSet.getString(3);
-                            if (!domain.contains("RDB$"))
-                                pp.setDomain(domain.trim());
-                            String characterSet = resultSet.getString(5);
-                            if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
-                                pp.setEncoding(characterSet.trim());
-                            pp.setDescription(resultSet.getString(6));
-                            if (resultSet.getInt(7) == 1) {
-                                pp.setTypeOf(true);
-                                pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
-                                String fieldName = resultSet.getString(8);
-                                String relationName = resultSet.getString(9);
-                                if (fieldName != null && !fieldName.isEmpty()
-                                        && relationName != null && !relationName.isEmpty()) {
-                                    pp.setFieldName(fieldName.trim());
-                                    pp.setRelationName(relationName.trim());
-                                    pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
-                                }
-                            }
-                        }
-                    } finally {
-                        releaseResources(resultSet);
-                    }
                     if (pp.getType() == DatabaseMetaData.functionColumnIn)
                         inputParametersPanel.addRow(pp);
                 }
@@ -184,7 +120,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     protected String generateQuery() {
         return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 variablesPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
-                externalField.getText(), engineField.getText(), descriptionArea.getTextAreaComponent().getText());
+                externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(), descriptionArea.getTextAreaComponent().getText(), deterministicBox.isSelected());
     }
 
     @Override
@@ -192,10 +128,17 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         ddlTextPanel.setSQLText(generateQuery());
     }
 
+    protected void init() {
+        super.init();
+        deterministicBox = new JCheckBox(bundleStaticString("deterministic"));
+        topPanel.add(deterministicBox, topGbh.nextRowFirstCol().setLabelDefault().get());
+    }
 
     @Override
     protected void initEdited() {
         super.initEditing();
+        if (function != null)
+            deterministicBox.setSelected(function.isDeterministic());
     }
 
     @Override

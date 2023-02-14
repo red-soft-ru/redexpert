@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionBuilder;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
@@ -43,6 +44,7 @@ import javax.sql.DataSource;
 import javax.swing.tree.TreeNode;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -94,6 +96,20 @@ public final class ConnectionManager {
         DatabaseObjectNode hostNode = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection);
         ((DefaultDatabaseHost) hostNode.getDatabaseObject()).resetCountFinishedMetaTags();
         loadTree(hostNode, connectionBuilder);
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(databaseConnection);
+        try {
+            ResultSet rs = querySender.getResultSet("select rdb$character_set_name from rdb$database").getResultSet();
+            if (rs.next()) {
+                if (rs.getString(1) != null) {
+                    databaseConnection.setDBCharset(rs.getString(1).trim());
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            querySender.releaseResources();
+        }
         DatabaseHost host = (DatabaseHost) hostNode.getDatabaseObject();
         try {
             while (host.countFinishedMetaTags() < hostNode.getChildCount()) {

@@ -5,11 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
     <properties>
         <antlr.version>4.7</antlr.version>
+        <jaybird3.version>3.0.35</jaybird3.version>
+        <jaybird4.version>4.0.26</jaybird4.version>
+        <jaybird5.version>5.0.3</jaybird5.version>
     </properties>
     <groupId>org.executequery</groupId>
     <artifactId>RedExpert-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2022.09</version>
+    <version>2023.01</version>
     <modules>
         <module>modules/plugins/fbplugin</module>
         <module>modules/plugins/fbplugin-impl</module>

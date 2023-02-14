@@ -493,6 +493,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     clearIndexes();
     clearDataChanges();
     clearConstraints();
+    clearTriggers();
   }
 
   public void clearDefinitionChanges() {
@@ -502,25 +503,32 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   }
 
 
-  private void clearColumns() {
+  public void clearColumns() {
     if (columns != null) {
       columns.clear();
     }
     columns = null;
   }
 
-  private void clearConstraints() {
+  public void clearConstraints() {
     if (constraints != null) {
       constraints.clear();
     }
     constraints = null;
   }
 
-  private void clearIndexes() {
+  public void clearIndexes() {
     if (indexes != null) {
       indexes.clear();
     }
     indexes = null;
+  }
+
+  public void clearTriggers() {
+    if (triggers != null) {
+      triggers.clear();
+    }
+    triggers = null;
   }
 
   /**
@@ -951,7 +959,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
     }
 
-    return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, null, getExternalFile(), getAdapter(), getTablespace(), getRemarks());
+    return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, null, getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
 
     }
 
@@ -1375,9 +1383,27 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   }
 
+  @Override
+  protected String queryForInfo() {
 
+    String query = "select r.rdb$description\n" +
+            "from rdb$relations r\n" +
+            "where r.rdb$relation_name = '" + getName() + "'";
 
+    return query;
+  }
 
+  @Override
+  protected void setInfoFromResultSet(ResultSet rs) {
+
+    try {
+      if (rs.next())
+        setRemarks(rs.getString(1));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+  }
 
   public String getTablespace() {
     if (!loadedInfoAboutTablespace)

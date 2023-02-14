@@ -571,14 +571,14 @@
             description="Create a new database table index"
             execute-class="org.executequery.actions.databasecommands.CreateIndexCommand"/>
 
-    <action id="create-table-command"
+    <!--action id="create-table-command"
             name="Create Table"
             mnemonic="T"
             accel-editable="true"
             small-icon="/org/executequery/icons/NewTable16.png"
             large-icon="/org/executequery/icons/NewTable24.png"
             description="Create a new database table"
-            execute-class="org.executequery.actions.databasecommands.CreateTableCommand"/>
+            execute-class="org.executequery.actions.databasecommands.CreateTableCommand"/-->
 
     <action id="create-sequence-command"
             name="Create Sequence"

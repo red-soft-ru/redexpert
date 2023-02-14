@@ -18,9 +18,11 @@ import org.executequery.gui.ExecuteProcedurePanel;
 import org.executequery.gui.FocusComponentPanel;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
+import org.executequery.gui.databaseobjects.AbstractCreateExternalObjectPanel;
 import org.executequery.gui.table.CreateTableSQLSyntax;
-import org.executequery.gui.text.*;
+import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.gui.text.TextEditor;
+import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.procedureParser.ProcedureParserBaseListener;
@@ -47,7 +49,7 @@ import java.util.Vector;
 /**
  * @author vasiliy
  */
-public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectPanel
+public abstract class CreateProcedureFunctionPanel extends AbstractCreateExternalObjectPanel
         implements FocusComponentPanel,
         ItemListener,
         TextEditorContainer {
@@ -100,11 +102,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
      */
     private JPanel containerPanel;
 
-    private SimpleCommentPanel simpleCommentPanel;
-
-    protected JPanel descriptionPanel;
-    protected SimpleTextArea descriptionArea;
-
     private JPanel ddlPanel;
     protected SimpleSqlTextPanel ddlTextPanel;
 
@@ -113,17 +110,9 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
      */
     protected JPanel mainPanel;
 
-    protected JCheckBox useExternalBox;
-    protected JPanel emptyExternalPanel;
-
-    protected JTextField externalField;
-
-    protected JTextField engineField;
-
     protected JLabel sqlSecurityLabel;
 
-    protected JComboBox sqlSecurityCombo;
-    protected JComboBox authidCombo;
+
 
 
 
@@ -140,6 +129,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     }
 
     protected void initEditing() {
+        initEditedExternal();
         JButton executeButton = new JButton(Bundles.getCommon("execute"));
         executeButton.addActionListener(new ActionListener() {
             @Override
@@ -161,46 +151,12 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         if (!MiscUtils.isNull(executable.getSqlSecurity())) {
             sqlSecurityCombo.setSelectedItem(executable.getSqlSecurity());
         }
-        useExternalBox.setVisible(false);
-        emptyExternalPanel.setVisible(false);
-        centralPanel.add(executeButton, centralGbh.nextRowFirstCol().setLabelDefault().get());
-        centralPanel.add(new JPanel(), centralGbh.nextCol().fillBoth().spanX().spanY().get());
+        topPanel.add(executeButton, topGbh.setLabelDefault().get());
         addPrivilegesTab(tabbedPane);
         addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
-//        addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
-
-        simpleCommentPanel = new SimpleCommentPanel((DatabaseObject)
-                ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
-        simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> {
-            simpleCommentPanel.updateComment();
-            descriptionArea.getTextAreaComponent().setText(((DatabaseObject)
-                    ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure)).getRemarks());
-            generateScript();
-        });
-        tabbedPane.setComponentAt(1, simpleCommentPanel.getCommentPanel());
-
+        simpleCommentPanel.setDatabaseObject((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
+        generateScript();
         reset();
-    }
-
-    private boolean containsType(String type, String[] array) {
-        for (String arrayType :
-                array) {
-            if (arrayType.toUpperCase().contains(type.toUpperCase()))
-                return true;
-        }
-        return false;
-    }
-
-    private void loadDescription() {
-        try {
-            ResultSet resultSet = sender.getResultSet(queryGetDescription()).getResultSet();
-            if (resultSet.next())
-                descriptionArea.getTextAreaComponent().setText(resultSet.getString(1));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            sender.releaseResources();
-        }
     }
 
     private void loadVariables() {
@@ -327,8 +283,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         }
     }
 
-    protected abstract String queryGetDescription();
-
     protected abstract String getFullSourceBody();
 
     protected abstract void loadParameters();
@@ -336,9 +290,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     GridBagHelper centralGbh;
 
     protected void init() {
-
-        //initialise the schema label
-
+        initExternal();
         parametersTabs = new JTabbedPane();
         // create the column definition panel
         // and add this to the tabbed pane
@@ -366,47 +318,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
 
         containerPanel = new JPanel(new GridBagLayout());
-
-        descriptionPanel = new JPanel(new GridBagLayout());
-
         ddlPanel = new JPanel(new GridBagLayout());
-
-        externalField = new JTextField();
-        engineField = new JTextField();
-
-        useExternalBox = new JCheckBox(bundleStaticString("useExternal"));
-        emptyExternalPanel = new JPanel();
-        useExternalBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                checkExternal();
-            }
-        });
 
 
         centralPanel.setLayout(new GridBagLayout());
         centralGbh = new GridBagHelper();
         centralGbh.setDefaultsStatic();
         centralGbh.defaults();
-        sqlSecurityLabel = new JLabel();
-        authidCombo = new JComboBox(new String[]{"", "OWNER", "CALLER"});
-        sqlSecurityCombo = new JComboBox(new String[]{"", "DEFINER", "INVOKER"});
-        if (getDatabaseVersion() <= 2) {
-            sqlSecurityLabel.setText("AUTHID");
-            //sqlSecurityCombo.setVisible(false);
-            topGbh.addLabelFieldPair(topPanel, sqlSecurityLabel, authidCombo, null);
-        } else {
-            sqlSecurityLabel.setText("SQL SECURITY");
-            //authidCombo.setVisible(false);
-            topGbh.addLabelFieldPair(topPanel, sqlSecurityLabel, sqlSecurityCombo, null);
-        }
+
         topPanel.add(ddlPanel, topGbh.nextRowFirstCol().setLabelDefault().get());
 
         //centralGbh.previousRow().previousRow().addLabelFieldPair(topPanel, sqlSecurityLabel, authidCombo, null);
-        centralPanel.add(useExternalBox, centralGbh.setLabelDefault().setWidth(2).get());
-        centralPanel.add(emptyExternalPanel, centralGbh.nextCol().setWidth(1).fillHorizontally().setMaxWeightX().spanX().get());
-        centralGbh.addLabelFieldPair(centralPanel, bundleStaticString("EntryPoint"), externalField, null);
-        centralGbh.addLabelFieldPair(centralPanel, bundleStaticString("Engine"), engineField, null);
         JPanel topPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
                 1, 1, 1, 1,
@@ -434,24 +356,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                         GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
                         0, 0));
 
-        descriptionArea = new SimpleTextArea();
 
-        GridBagConstraints gbc1 = new GridBagConstraints();
-        gbc1.gridx = 0;
-        gbc1.gridy = 0;
-        gbc1.weightx = 1;
-        gbc1.weighty = 1;
-        gbc1.fill = GridBagConstraints.BOTH;
-        gbc1.insets.right = 5;
-        gbc1.insets.left = 5;
-        gbc1.insets.top = 5;
-        gbc1.insets.bottom = 5;
 
-        descriptionPanel.add(descriptionArea, gbc1);
+
 
         tabbedPane.insertTab(bundleString("Edit"), null, containerPanel, null, 0);
 
-        tabbedPane.insertTab(Bundles.getCommon("comment-field-label"), null, descriptionPanel, null, 1);
+        addCommentTab(null);
 
         ddlTextPanel = new SimpleSqlTextPanel();
         ddlTextPanel.getTextPane().setDatabaseConnection(connection);
@@ -490,22 +401,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         variablesPanel.setDomains(getDomains());
         variablesPanel.setDatabaseConnection(connection);
         //metaData
-
+        topGbh.nextRowFirstCol();
         checkExternal();
     }
 
     protected void checkExternal() {
+        super.checkExternal();
         boolean selected = useExternalBox.isSelected();
         sqlBodyText.getParent().setVisible(!selected);
         if (!selected) {
-            ((JSplitPane3) sqlBodyText.getParent().getParent()).setDividerLocation(0.3);
+            ((JSplitPane3) sqlBodyText.getParent().getParent()).setDividerLocation(0.4);
         }
-        int ind = centralPanel.getComponentZOrder(externalField) - 1;
-        externalField.setVisible(selected);
-        centralPanel.getComponent(ind).setVisible(selected);
-        ind = centralPanel.getComponentZOrder(engineField) - 1;
-        engineField.setVisible(selected);
-        centralPanel.getComponent(ind).setVisible(selected);
     }
 
     protected abstract String getEmptySqlBody();
@@ -609,10 +515,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         nameField.selectAll();
     }
 
-    public void setSQLTextCaretPosition(int position) {
-        outSqlText.setCaretPosition(position);
-    }
-
     protected void addButtonsPanel(JPanel buttonsPanel) {
         add(buttonsPanel, BorderLayout.SOUTH);
     }
@@ -623,11 +525,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         variablesPanel.fireEditingStopped();
     }
 
-    public void setColumnDataArray(ColumnData[] cda) {
-        inputParametersPanel.setColumnDataArray(cda, null);
-        outputParametersPanel.setColumnDataArray(cda, null);
-        variablesPanel.setColumnDataArray(cda, null);
-    }
 
     /**
      * Indicates that a [long-running] process has begun or ended
@@ -644,24 +541,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     // -----------------------------------------------
 
 
-    public List<String> getColumnNamesVector(String tableName) {
-        try {
-            return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getColumnNames(tableName);
-        } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the column names for the " +
-                            "selected table.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e);
-            return new Vector<>(0);
-        }
-    }
-
-    public void resetSQLText() {
-        inputParametersPanel.resetSQLText();
-        outputParametersPanel.resetSQLText();
-        variablesPanel.resetSQLText();
-    }
-
     public String getSQLText() {
         if (tabbedPane.getSelectedComponent() != ddlPanel)
             generateScript();
@@ -672,59 +551,14 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         return nameField.getText();
     }
 
-    // -----------------------------------------------
-
-
-    // constraints panel only
-    public void updateCellEditor(int col, int row, String value) {
-    }
-
-    public void columnValuesChanging(int col, int row, String value) {
-    }
 
     public void stateChanged(ChangeEvent e) {
 
     }
 
-    /*
-    private void tableTabs_changed() {
 
-        if (parametersTabs.getSelectedIndex() == 1) {
-            tools.enableButtons(false);
 
-            //          if (table.isEditing())
-            //            table.removeEditor();
 
-        }
-        else {
-            tools.enableButtons(true);
-        }
-
-    }
-    */
-
-    public ColumnData[] getTableColumnDataAndConstraints() {
-
-        ColumnData[] cda = inputParametersPanel.getTableColumnData();
-
-        for (ColumnData aCda : cda) {
-
-            // reset the keys
-            aCda.setPrimaryKey(false);
-            aCda.setForeignKey(false);
-            aCda.resetConstraints();
-        }
-
-        return cda;
-
-    }
-
-    public void columnValuesChanging() {
-    }
-
-//    public ColumnData[] getTableColumnData() {
-//        return inputParametersPanel.getTableColumnData();
-//    }
 
 
     // -----------------------------------------------
@@ -797,6 +631,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         nameField.setEnabled(false);
         loadParameters();
         loadVariables();
-        loadDescription();
+        simpleCommentPanel.resetComment();
     }
 }

@@ -6,7 +6,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabasePackage;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.gui.text.SimpleTextArea;
+import org.underworldlabs.util.MiscUtils;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -18,7 +18,6 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
     private static final String replacing_name = "<name_package>";
     private SimpleSqlTextPanel headerPanel;
     private SimpleSqlTextPanel bodyPanel;
-    private SimpleTextArea descriptionPanel;
     private DefaultDatabasePackage databasePackage;
 
     public CreatePackagePanel(DatabaseConnection dc, ActionContainer dialog) {
@@ -45,7 +44,8 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
         StringBuilder sb = new StringBuilder();
         sb.append(header).append("^\n");
         sb.append(body).append("^\n");
-        sb.append("COMMENT ON PACKAGE " + getFormattedName() + " IS '" + descriptionPanel.getTextAreaComponent().getText() + "'");
+        if (!MiscUtils.isNull(simpleCommentPanel.getComment()))
+            sb.append("COMMENT ON PACKAGE " + getFormattedName() + " IS '" + simpleCommentPanel.getComment() + "'");
         return sb.toString();
     }
 
@@ -53,7 +53,7 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
         nameField.setText(databasePackage.getName().trim());
         headerPanel.setSQLText(replaceName(databasePackage.getHeaderSource()));
         bodyPanel.setSQLText(replaceName(databasePackage.getBodySource()));
-        descriptionPanel.getTextAreaComponent().setText(databasePackage.getDescription());
+        simpleCommentPanel.setDatabaseObject(databasePackage);
     }
 
     @Override
@@ -103,10 +103,9 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
         headerPanel.getTextPane().addKeyListener(this);
         bodyPanel = new SimpleSqlTextPanel();
         bodyPanel.getTextPane().addKeyListener(this);
-        descriptionPanel = new SimpleTextArea();
         tabbedPane.add(bundleString("Header"), headerPanel);
         tabbedPane.add(bundleString("Body"), bodyPanel);
-        tabbedPane.add(bundleString("Description"), descriptionPanel);
+        addCommentTab(null);
         String headerText = "create or alter package " + replacing_name + "\n" +
                 "as\n" +
                 "begin\n" +
@@ -124,8 +123,9 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
 
     boolean released = true;
 
+
     @Override
-    public void keyTyped(KeyEvent keyEvent) {
+    public void keyTyped(KeyEvent e) {
 
     }
 
@@ -147,4 +147,5 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
             textPane.setText(notChangedText);
         released = true;
     }
+
 }

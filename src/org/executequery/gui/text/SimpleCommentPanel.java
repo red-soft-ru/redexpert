@@ -20,7 +20,7 @@ public class SimpleCommentPanel {
     /**
      * current database object
      */
-    private final DatabaseObject currentDatabaseObject;
+    private DatabaseObject currentDatabaseObject;
     /**
      * comment main panel
      */
@@ -41,7 +41,7 @@ public class SimpleCommentPanel {
     public SimpleCommentPanel(DatabaseObject object) {
         currentDatabaseObject = object;
         init();
-        removeComment();
+        resetComment();
     }
 
     private void init() {
@@ -50,10 +50,13 @@ public class SimpleCommentPanel {
 
         updateCommentButton = new RolloverButton();
         updateCommentButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        updateCommentButton.addActionListener(e -> updateComment());
+        updateCommentButton.setEnabled(currentDatabaseObject != null);
+
 
         rollbackCommentButton = new RolloverButton();
         rollbackCommentButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
-        rollbackCommentButton.addActionListener(e -> removeComment());
+        rollbackCommentButton.addActionListener(e -> resetComment());
 
         GridBagHelper gridBagHelper = new GridBagHelper();
         commentPanel = new JPanel(new GridBagLayout());
@@ -67,63 +70,58 @@ public class SimpleCommentPanel {
 
     }
 
+
     private void saveComment() {
+        if (currentDatabaseObject != null) {
+            DefaultStatementExecutor executor = new DefaultStatementExecutor();
 
-        DefaultStatementExecutor executor = new DefaultStatementExecutor();
+            String comment = commentField.getTextAreaComponent().getText().trim();
+            if (comment.equals(""))
+                comment = "NULL";
 
-        String comment = commentField.getTextAreaComponent().getText().trim();
-        if (comment.equals(""))
-            comment = "NULL";
+            try {
+                String metaTag = NamedObject.META_TYPES[currentDatabaseObject.getType()];
 
-        try {
 
-            String metaTag = "";
+                executor.setCommitMode(false);
+                executor.setKeepAlive(true);
+                executor.setDatabaseConnection(getSelectedConnection());
 
-            if (currentDatabaseObject.getType() == NamedObject.VIEW)
-                metaTag = "VIEW";
-            else if (currentDatabaseObject.getType() == NamedObject.TABLE)
-                metaTag = "TABLE";
-            else if (currentDatabaseObject.getType() == NamedObject.PROCEDURE)
-                metaTag = "PROCEDURE";
-            else if (currentDatabaseObject.getType() == NamedObject.FUNCTION)
-                metaTag = "FUNCTION";
+                String request = SQLUtils.generateComment(currentDatabaseObject.getName(), metaTag,
+                        comment, ";", false);
 
-            executor.setCommitMode(false);
-            executor.setKeepAlive(true);
-            executor.setDatabaseConnection(getSelectedConnection());
+                Log.info("Query created: " + request);
 
-            String request = SQLUtils.generateComment(currentDatabaseObject.getName(), metaTag,
-                    comment, ";", false);
+                SqlStatementResult result = executor.execute(QueryTypes.COMMENT, request);
+                executor.getConnection().commit();
 
-            Log.info("Query created: " + request);
+                if (result.isException()) {
+                    Log.error(result.getErrorMessage());
+                    GUIUtilities.displayWarningMessage("Error updating comment on table\n" + result.getErrorMessage());
+                } else
+                    Log.info("Changes saved");
 
-            SqlStatementResult result = executor.execute(QueryTypes.COMMENT, request);
-            executor.getConnection().commit();
+                currentDatabaseObject.reset();
+                currentDatabaseObject.setRemarks(null);
 
-            if (result.isException()) {
-                Log.error(result.getErrorMessage());
-                GUIUtilities.displayWarningMessage("Error updating comment on table\n" + result.getErrorMessage());
+
+            } catch (Exception e) {
+
+                GUIUtilities.displayExceptionErrorDialog("Error updating comment on table", e);
+                Log.error("Error updating comment on table", e);
+
+            } finally {
+
+                executor.releaseResources();
             }
-            else
-                Log.info("Changes saved");
-
-            currentDatabaseObject.reset();
-            currentDatabaseObject.setRemarks(null);
-
-        } catch (Exception e) {
-
-            GUIUtilities.displayExceptionErrorDialog("Error updating comment on table", e);
-            Log.error("Error updating comment on table", e);
-
-        } finally {
-
-            executor.releaseResources();
-        }
+        } else Log.error("databaseObject is null");
 
     }
 
-    private void removeComment() {
-        commentField.getTextAreaComponent().setText(currentDatabaseObject.getRemarks());
+    public void resetComment() {
+        if (currentDatabaseObject != null)
+            setComment(currentDatabaseObject.getRemarks());
+        else setComment("");
     }
 
     private DatabaseConnection getSelectedConnection() {
@@ -142,4 +140,20 @@ public class SimpleCommentPanel {
         saveComment();
     }
 
+    public SimpleTextArea getCommentField() {
+        return commentField;
+    }
+
+    public void setDatabaseObject(DatabaseObject databaseObject) {
+        this.currentDatabaseObject = databaseObject;
+        updateCommentButton.setEnabled(currentDatabaseObject != null);
+    }
+
+    public String getComment() {
+        return getCommentField().getTextAreaComponent().getText();
+    }
+
+    public void setComment(String comment) {
+        getCommentField().getTextAreaComponent().setText(comment);
+    }
 }

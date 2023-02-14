@@ -8,22 +8,18 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-public class CreateTriggerPanel extends AbstractCreateObjectPanel {
+public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
 
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.TRIGGER);
 
@@ -62,7 +58,6 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     private SimpleSqlTextPanel sqlBodyText;
 
     //components for table trigger
-    private SimpleTextArea descriptionText;
     private JPanel databaseTriggerPanel;
     private JComboBox actionCombo;
     private JLabel actionLabel;
@@ -84,14 +79,6 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
      * The table combo selection
      */
     private JComboBox tablesCombo;
-
-    protected JCheckBox useExternalBox;
-    protected JPanel emptyExternalPanel;
-    protected JTextField externalField;
-
-    protected JTextField engineField;
-
-    protected JComboBox sqlSecurityCombo;
 
     /**
      * The constructor
@@ -115,6 +102,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     protected void init() {
+        initExternal();
         if (getDatabaseVersion() > 2) {
             if (this.triggerType == NamedObject.TRIGGER)
                 typeTriggerCombo = new JComboBox(new String[]{TRIGGER});
@@ -133,7 +121,6 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 typeTriggerCombo = new JComboBox(new String[]{TRIGGER, DB_TRIGGER});
         }
         positionLabel = new JLabel(bundleString("position"));
-        descriptionText = new SimpleTextArea();
         SpinnerModel model = new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1);
         positionField = new JSpinner(model);
         positionField.setValue(0);
@@ -168,62 +155,24 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
         anyDdlBox.addActionListener(actionEvent -> changeAnyDdlBox());
 
-        externalField = new JTextField();
-        engineField = new JTextField();
-
-        useExternalBox = new JCheckBox(bundleStaticString("useExternal"));
-        emptyExternalPanel = new JPanel();
-        useExternalBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                checkExternal();
-            }
-        });
-
-        sqlSecurityCombo = new JComboBox(new String[]{"", "DEFINER", "INVOKER"});
-        if (getDatabaseVersion() > 2)
-            topGbh.addLabelFieldPair(topPanel, "SQL SECURITY", sqlSecurityCombo, null);
-
-        centralPanel.setLayout(new GridBagLayout());
-        GridBagHelper centralGbh = new GridBagHelper();
-        centralGbh.setDefaultsStatic();
-        centralGbh.defaults();
-        centralPanel.add(useExternalBox, centralGbh.setLabelDefault().setWidth(2).get());
-        centralPanel.add(emptyExternalPanel, centralGbh.nextCol().setWidth(1).fillHorizontally().setMaxWeightX().spanX().get());
-        centralGbh.addLabelFieldPair(centralPanel, bundleStaticString("EntryPoint"), externalField, null);
-        centralGbh.addLabelFieldPair(centralPanel, bundleStaticString("Engine"), engineField, null);
-        JPanel commonPanel = new JPanel(new GridBagLayout());
-        commonPanel.add(typeTriggerCombo, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        commonPanel.add(positionLabel, new GridBagConstraints(1, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        commonPanel.add(positionField, new GridBagConstraints(2, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        commonPanel.add(activeBox, new GridBagConstraints(3, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(commonPanel, centralGbh.nextRowFirstCol().fillHorizontally().spanX().get());
-        JPanel topPanel = new JPanel(new GridBagLayout());
+        centralPanel.setVisible(false);
+        topPanel.add(activeBox, topGbh.nextRowFirstCol().setLabelDefault().get());
+        topPanel.add(typeTriggerCombo, topGbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        topGbh.addLabelFieldPair(topPanel, positionLabel, positionField, null, false);
+        JPanel topXPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
                 1, 1, 1, 1,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0);
-        topPanel.add(databaseTriggerPanel, gbcTop);
+        topXPanel.add(databaseTriggerPanel, gbcTop);
         gbcTop.gridy++;
         gbcTop.fill = GridBagConstraints.BOTH;
-        topPanel.add(ddlTableTriggerPanel, gbcTop);
+        topXPanel.add(ddlTableTriggerPanel, gbcTop);
 
-        centralPanel.add(topPanel, centralGbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        topPanel.add(topXPanel, topGbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
         tabbedPane.add(bundleStaticString("SQL"), sqlBodyText);
-        tabbedPane.add(bundleStaticString("description"), descriptionText);
+        addCommentTab(null);
 
         GridBagConstraints gbc = new GridBagConstraints();
         databaseTriggerPanel.setLayout(new GridBagLayout());
@@ -348,19 +297,14 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             if (tabbedPane.getComponentZOrder(sqlBodyText) >= 0)
                 tabbedPane.remove(sqlBodyText);
         }
-        int ind = centralPanel.getComponentZOrder(externalField) - 1;
-        externalField.setVisible(selected);
-        centralPanel.getComponent(ind).setVisible(selected);
-        ind = centralPanel.getComponentZOrder(engineField) - 1;
-        engineField.setVisible(selected);
-        centralPanel.getComponent(ind).setVisible(selected);
+        super.checkExternal();
     }
 
     protected void reset() {
         typeTriggerCombo.setEnabled(false);
         nameField.setText(trigger.getName());
         nameField.setEnabled(false);
-        descriptionText.getTextAreaComponent().setText(trigger.getRemarks());
+        simpleCommentPanel.setDatabaseObject(trigger);
         activeBox.setSelected(trigger.isTriggerActive());
         positionField.setValue(trigger.getTriggerSequence());
         sqlBodyText.setSQLText(trigger.getTriggerSourceCode());
@@ -408,7 +352,6 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             sqlSecurityCombo.setSelectedItem(trigger.getSqlSecurity());
         }
         useExternalBox.setVisible(false);
-        emptyExternalPanel.setVisible(false);
     }
 
     @Override
@@ -517,7 +460,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             external = null;
         }
         String query = SQLUtils.generateCreateTriggerStatement(nameField.getText(), table, activeBox.isSelected(), triggerType.toString(),
-                (int) positionField.getValue(), sqlBodyText.getSQLText(), engine, external, (String) sqlSecurityCombo.getSelectedItem(), descriptionText.getTextAreaComponent().getText());
+                (int) positionField.getValue(), sqlBodyText.getSQLText(), engine, external, (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment());
         return query;
     }
 

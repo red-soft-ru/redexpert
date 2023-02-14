@@ -244,7 +244,7 @@ public class QueryDispatcher {
                     "true");
             checkUpdatesToLog += "enabled";
             Log.info(checkUpdatesToLog);
-            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog, anyConnections);
             return;
         }
         if (query.toLowerCase().trim().startsWith("releasehub off")) {
@@ -252,7 +252,7 @@ public class QueryDispatcher {
                     "false");
             checkUpdatesToLog += "disabled";
             Log.info(checkUpdatesToLog);
-            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog, anyConnections);
             return;
         }
 
@@ -1131,7 +1131,7 @@ public class QueryDispatcher {
 
                 } catch (SQLException e) {
 
-                    processException(e);
+                    processException(e, anyConnections);
                     return "SQLException";
 
                 } catch (InterruptedException e) {
@@ -1142,9 +1142,9 @@ public class QueryDispatcher {
 
                 } catch (OutOfMemoryError e) {
 
-                    setOutputMessage(SqlMessages.ERROR_MESSAGE,
+                    setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE,
                             "Resources exhausted while executing query.\n" +
-                                    "The query result set was too large to return.", true);
+                                    "The query result set was too large to return.", true, anyConnections);
 
                     setStatusMessage(ERROR_EXECUTING);
 
@@ -1156,7 +1156,7 @@ public class QueryDispatcher {
                         e.printStackTrace();
 
 
-                        processException(e);
+                        processException(e, anyConnections);
                     }
 
                 } finally {
@@ -1174,7 +1174,7 @@ public class QueryDispatcher {
 
             long timeTaken = end - start;
             totalDuration += timeTaken;
-            logExecutionTime(timeTaken);
+            logExecutionTime(timeTaken, anyConnections);
             DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
 
             for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
@@ -1192,9 +1192,9 @@ public class QueryDispatcher {
 
         } catch (OutOfMemoryError e) {
 
-            setOutputMessage(SqlMessages.ERROR_MESSAGE,
+            setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE,
                     "Resources exhausted while executing query.\n" +
-                            "The query result set was too large to return.", true);
+                            "The query result set was too large to return.", true, anyConnections);
 
             setStatusMessage(ERROR_EXECUTING);
 
@@ -1207,7 +1207,7 @@ public class QueryDispatcher {
                     e.printStackTrace();
                 }
 
-                processException(e);
+                processException(e, anyConnections);
             }
 
         } finally {
@@ -1306,7 +1306,7 @@ public class QueryDispatcher {
         return statement;
     }
 
-    private void printExecutionPlan(IFBPerformanceInfo before, IFBPerformanceInfo after) {
+    private void printExecutionPlan(IFBPerformanceInfo before, IFBPerformanceInfo after, boolean anyConnections) {
         // Trying to get execution plan of firebird statement
         DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
         DefaultDriverLoader driverLoader = new DefaultDriverLoader();
@@ -1354,13 +1354,13 @@ public class QueryDispatcher {
             if (before != null && after != null) {
                 IFBPerformanceInfo resultPerfomanceInfo = after.processInfo(before, after);
 
-                setOutputMessage(SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo());
+                setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo(), anyConnections);
             }
         }
 
     }
 
-    private void printPlan(ResultSet rs) {
+    private void printPlan(ResultSet rs, boolean anyConnections) {
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
             DefaultDriverLoader driverLoader = new DefaultDriverLoader();
@@ -1369,7 +1369,7 @@ public class QueryDispatcher {
             Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
             if (driver.getClass().getName().contains("FBDriver")) {
-                ResultSet realRS = ((PooledResultSet)rs).getResultSet();
+                ResultSet realRS = ((PooledResultSet) rs).getResultSet();
 
                 ResultSet resultSet = null;
                 try {
@@ -1399,7 +1399,7 @@ public class QueryDispatcher {
                 IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
                 try {
 
-                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(resultSet));
+                    setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(resultSet), anyConnections);
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -1411,7 +1411,7 @@ public class QueryDispatcher {
         }
     }
 
-    private void printPlan(Statement st, boolean explained) {
+    private void printPlan(Statement st, boolean explained, boolean anyConnections) {
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
             DefaultDriverLoader driverLoader = new DefaultDriverLoader();
@@ -1453,7 +1453,7 @@ public class QueryDispatcher {
                     if (explained)
                         plan = db.getLastExplainExecutedPlan(statement);
                     else plan = db.getLastExecutedPlan(statement);
-                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, plan, true);
+                    setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, plan, true, anyConnections);
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -1470,9 +1470,9 @@ public class QueryDispatcher {
         return MiscUtils.formatDuration(totalDuration);
     }
 
-    private void setResult(int updateCount, int type, String metaName) {
+    private void setResult(DatabaseConnection dc, int updateCount, int type, String metaName) {
 
-        delegate.setResult(updateCount, type, metaName);
+        delegate.setResult(dc, updateCount, type, metaName);
     }
 
     private void statementExecuted(String sql) {
@@ -1480,10 +1480,10 @@ public class QueryDispatcher {
         delegate.statementExecuted(sql);
     }
 
-    private Object executeCreateOrAlterObject(String sql, DerivedQuery procQuery)
+    private Object executeCreateOrAlterObject(String sql, DerivedQuery procQuery, boolean anyConnection)
             throws SQLException {
 
-        logExecution(sql.trim());
+        logExecution(sql.trim(), anyConnection);
 
         long start = System.currentTimeMillis();
         PreparedStatement statement = querySender.getPreparedStatement(sql);
@@ -1491,11 +1491,11 @@ public class QueryDispatcher {
 
         if (result.getUpdateCount() == -1 || result.isException()) {
 
-            setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
+            setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), anyConnection);
             setStatusMessage(ERROR_EXECUTING);
 
         } else {
-            setResultText(result.getUpdateCount(), procQuery.getQueryType(), procQuery.getMetaName());
+            setResultText(querySender.getDatabaseConnection(), result.getUpdateCount(), procQuery.getQueryType(), procQuery.getMetaName(), anyConnection);
             DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
 
             for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
@@ -1507,9 +1507,9 @@ public class QueryDispatcher {
 
         long end = System.currentTimeMillis();
 
-        outputWarnings(result.getSqlWarning());
+        outputWarnings(result.getSqlWarning(), anyConnection);
 
-        logExecutionTime(start, end);
+        logExecutionTime(start, end, anyConnection);
 
         statementExecuted(sql);
 
@@ -1523,9 +1523,9 @@ public class QueryDispatcher {
      * @param start the start time in millis
      * @param end   the end time in millis
      */
-    private void logExecutionTime(long start, long end) {
+    private void logExecutionTime(long start, long end, boolean anyConnections) {
 
-        logExecutionTime(end - start);
+        logExecutionTime(end - start, anyConnections);
     }
 
     /**
@@ -1534,9 +1534,9 @@ public class QueryDispatcher {
      *
      * @param time the time in millis
      */
-    private void logExecutionTime(long time) {
-        setOutputMessage(SqlMessages.PLAIN_MESSAGE,
-                "Execution time: " + formatDuration(time), false);
+    private void logExecutionTime(long time, boolean anyConnections) {
+        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE,
+                "Execution time: " + formatDuration(time), false, anyConnections);
     }
 
     /**
@@ -1544,35 +1544,35 @@ public class QueryDispatcher {
      *
      * @param query - the executed query
      */
-    private void logExecution(String query) {
+    private void logExecution(String query, boolean anyConnections) {
 
         Log.info(EXECUTING + query);
 
         if (verboseLogging) {
 
-            setOutputMessage(
-                    SqlMessages.ACTION_MESSAGE, EXECUTING);
-            setOutputMessage(
-                    SqlMessages.ACTION_MESSAGE_PREFORMAT, query);
+            setOutputMessage(querySender.getDatabaseConnection(),
+                    SqlMessages.ACTION_MESSAGE, EXECUTING, anyConnections);
+            setOutputMessage(querySender.getDatabaseConnection(),
+                    SqlMessages.ACTION_MESSAGE_PREFORMAT, query, anyConnections);
 
         } else {
 
             int queryLength = query.length();
             int subIndex = queryLength < 50 ? (queryLength + 1) : 50;
 
-            setOutputMessage(
-                    SqlMessages.ACTION_MESSAGE, EXECUTING);
-            setOutputMessage(
+            setOutputMessage(querySender.getDatabaseConnection(),
+                    SqlMessages.ACTION_MESSAGE, EXECUTING, anyConnections);
+            setOutputMessage(querySender.getDatabaseConnection(),
                     SqlMessages.ACTION_MESSAGE_PREFORMAT,
-                    query.substring(0, subIndex - 1).trim() + SUBSTRING);
+                    query.substring(0, subIndex - 1).trim() + SUBSTRING, anyConnections);
         }
 
     }
 
-    private void processException(Throwable e) {
+    private void processException(Throwable e, boolean anyConnections) {
 
         if (e != null) {
-            setOutputMessage(SqlMessages.ERROR_MESSAGE, e.getMessage());
+            setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, e.getMessage(), anyConnections);
 
             if (e instanceof SQLException) {
 
@@ -1581,7 +1581,8 @@ public class QueryDispatcher {
 
                 if (sqlExc != null) {
 
-                    setOutputMessage(SqlMessages.ERROR_MESSAGE, sqlExc.getMessage());
+                    setOutputMessage(querySender.getDatabaseConnection(),
+                            SqlMessages.ERROR_MESSAGE, sqlExc.getMessage(), anyConnections);
                 }
 
             } else {
@@ -1592,10 +1593,12 @@ public class QueryDispatcher {
 
     }
 
-    private void setResultText(final int result, final int type, String metaName) {
+    private void setResultText(DatabaseConnection dc, final int result, final int type, String metaName, boolean anyConnections) {
         ThreadUtils.invokeAndWait(new Runnable() {
             public void run() {
-                delegate.setResult(result, type, metaName);
+                if (!anyConnections)
+                    delegate.setResult(null, result, type, metaName);
+                else delegate.setResult(dc, result, type, metaName);
             }
         });
     }
@@ -1608,15 +1611,18 @@ public class QueryDispatcher {
         });
     }
 
-    private void setOutputMessage(final int type, final String text) {
+    private void setOutputMessage(DatabaseConnection databaseConnection, final int type, final String text, boolean useDatabaseConnection) {
 
-        setOutputMessage(type, text, false);
+        setOutputMessage(databaseConnection, type, text, false, useDatabaseConnection);
     }
 
-    private void setOutputMessage(final int type, final String text, final boolean selectTab) {
+    private void setOutputMessage(DatabaseConnection databaseConnection, final int type, final String text, final boolean selectTab, boolean useDatabaseConnection) {
         ThreadUtils.invokeAndWait(new Runnable() {
             public void run() {
-                delegate.setOutputMessage(type, text, selectTab);
+                DatabaseConnection dc = null;
+                if (useDatabaseConnection)
+                    dc = databaseConnection;
+                delegate.setOutputMessage(dc, type, text, selectTab);
                 if (text != null) {
                     logOutput(text);
                 }
@@ -1624,7 +1630,7 @@ public class QueryDispatcher {
         });
     }
 
-    private void setResultSet(final ResultSet rs, final String query) {
+    private void setResultSet(final ResultSet rs, final String query, boolean anyConnections) {
 /*
         ThreadUtils.invokeAndWait(new Runnable() {
             public void run() {
@@ -1639,7 +1645,7 @@ public class QueryDispatcher {
         try {
             delegate.setResultSet(rs, query);
         } catch (SQLException e) {
-            processException(e);
+            processException(e, anyConnections);
         }
 
     }
@@ -1669,7 +1675,7 @@ public class QueryDispatcher {
      *
      * @param warning - the warning to be printed
      */
-    private void outputWarnings(SQLWarning warning) {
+    private void outputWarnings(SQLWarning warning, boolean anyConnections) {
 
         if (warning == null) {
             return;
@@ -1677,8 +1683,8 @@ public class QueryDispatcher {
 
         String dash = " - ";
         // print the first warning
-        setOutputMessage(SqlMessages.WARNING_MESSAGE,
-                warning.getErrorCode() + dash + warning.getMessage());
+        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.WARNING_MESSAGE,
+                warning.getErrorCode() + dash + warning.getMessage(), anyConnections);
 
         // retrieve subsequent warnings
         SQLWarning _warning = null;
@@ -1694,8 +1700,8 @@ public class QueryDispatcher {
             }
 
             _errorCode = errorCode;
-            setOutputMessage(SqlMessages.WARNING_MESSAGE,
-                    _errorCode + dash + _warning.getMessage());
+            setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.WARNING_MESSAGE,
+                    _errorCode + dash + _warning.getMessage(), anyConnections);
             warning = _warning;
         }
 
@@ -1784,12 +1790,12 @@ public class QueryDispatcher {
         return false;
     }
 
-    public int getTransactionIsolation() {
-        return transactionLevel;
+    public TransactionParametersPanel getTpp() {
+        return tpp;
     }
 
-    public void setTransactionIsolation(int transactionLevel) {
-        this.transactionLevel = transactionLevel;
+    public void setTpp(TransactionParametersPanel tpp) {
+        this.tpp = tpp;
     }
 }
 

@@ -243,6 +243,18 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
     }
 
+    private void addTextOutputTab(DatabaseConnection databaseConnection) {
+        if (databaseConnection == null)
+            addTextOutputTab();
+        else {
+            if (indexOfTab(databaseConnection.getName()) == -1) {
+
+                insertTab(databaseConnection.getName(), outputTabIcon, new LoggingOutputPanel(), databaseConnection.getName(), 0);
+            }
+        }
+
+    }
+
     /**
      * Sets the user defined (preferences) table properties.
      */
@@ -533,7 +545,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         setSelectedIndex(0);
 
 
-        setOutputMessage(SqlMessages.PLAIN_MESSAGE, QueryTypes.getResultText(result, type, metaName, ""), true);
+        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, QueryTypes.getResultText(result, type, metaName, ""), true);
         queryEditor.setLeftStatusText(SUCCESS);
     }
 

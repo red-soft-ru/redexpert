@@ -163,7 +163,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     @Override
     public void createObject() {
         generateSQL();
-        displayExecuteQueryDialog(sqlPanel.getSQLText(), ";");
+        displayExecuteQueryDialog(sqlPanel.getSQLText(), "^");
     }
 
     @Override
@@ -315,9 +315,9 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         }
 
         if (columnData.getDescription() != null && !Objects.equals(columnData.getDescription(), ""))
-            sb.append(";\nCOMMENT ON COLUMN").append(MiscUtils.getFormattedObject(columnData.getTableName()))
+            sb.append("^\nCOMMENT ON COLUMN").append(MiscUtils.getFormattedObject(columnData.getTableName()))
                     .append(".").append(columnData.getFormattedColumnName())
-                    .append(" IS '").append(columnData.getDescription()).append("';\n");
+                    .append(" IS '").append(columnData.getDescription()).append("'^\n");
 
         return sb.toString();
     }

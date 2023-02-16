@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.FunctionArgument;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.Parameter;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.impl.DefaultDatabaseJob;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
@@ -14,6 +15,8 @@ import org.executequery.gui.table.TableDefinitionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.executequery.databaseobjects.NamedObject.*;
@@ -902,6 +905,35 @@ public final class SQLUtils {
         if (!MiscUtils.isNull(attributes))
             sb.append("\n'").append(attributes).append("'");
         sb.append(";");
+        return sb.toString();
+    }
+
+    public static String generateCreateJob(String name, String cronSchedule, boolean active,
+                                           LocalDateTime startDate,LocalDateTime endDate,int jobType,String source) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE JOB ").append(format(name)).append("\n");
+        sb.append("'").append(cronSchedule).append("'").append("\n");
+        if(active)
+            sb.append("ACTIVE");
+        else sb.append("INACTIVE");
+        sb.append("\n");
+        sb.append("START DATE ");
+        if(startDate!=null)
+            sb.append("'").append(startDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+        else sb.append("NULL");
+        sb.append("\n");
+        sb.append("END DATE ");
+        if(endDate!=null)
+            sb.append("'").append(endDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+        else sb.append("NULL");
+        sb.append("\n");
+        if(jobType== DefaultDatabaseJob.BASH_TYPE)
+            sb.append("COMMAND '");
+        else sb.append("AS\n");
+        sb.append(source);
+        if(jobType== DefaultDatabaseJob.BASH_TYPE)
+            sb.append("'");
+        sb.append("^");
         return sb.toString();
     }
 

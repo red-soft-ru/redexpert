@@ -86,4 +86,9 @@ public class EQDateTimePicker extends JPanel {
     public void setVisibleTimeZone(boolean flag) {
         timePicker.setVisibleTimeZone(flag);
     }
+
+    public boolean isNull()
+    {
+        return timePicker.isNull();
+    }
 }

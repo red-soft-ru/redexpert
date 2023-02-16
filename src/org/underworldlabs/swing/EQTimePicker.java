@@ -146,6 +146,9 @@ public class EQTimePicker extends JPanel {
         plusminusCombox.setVisible(flag);
     }
 
+    public boolean isNull()
+    {return nullBox.isSelected();}
+
     public void clear() {
         setTime(OffsetTime.now());
     }

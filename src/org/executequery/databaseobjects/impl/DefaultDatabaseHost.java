@@ -1407,7 +1407,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                             return false;
                     }
             }
-            if (type == NamedObject.TABLESPACE)
+            if (type == NamedObject.TABLESPACE||type == NamedObject.JOB)
                 return getDatabaseProductName().toUpperCase().contains("REDDATABASE") && db.getMajorVersion() >= 4;
             return type != NamedObject.TABLE_COLUMN && type != NamedObject.CONSTRAINT;
         }

@@ -465,7 +465,7 @@ public final class SQLUtils {
                         sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()))
                                 .append(" RESTART WITH ").append(comparingCD.getAutoincrement().getStartValue()).append(COMMA);
 
-                } else if (computedNeed && !Objects.equals(thisCD.getComputedBy(), comparingCD.getComputedBy())) {
+                } else if (computedNeed && !Objects.equals(thisCD.getComputedBy().trim(), comparingCD.getComputedBy().trim())) {
 
                     sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName()));
 
@@ -901,7 +901,7 @@ public final class SQLUtils {
             for (String comparingColumn : comparingColumnsNames) {
                 if (Objects.equals(thisColumn, comparingColumn)) {
                     sb.append(generateAlterDefinitionColumn(
-                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn)),
+                            new ColumnData(thisTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn)),
                             new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn)),
                             computed));
                     break;

@@ -73,7 +73,7 @@ public class Comparer {
 
         List<NamedObject> createObjects = sortObjectsByDependency(createListObjects(type));
 
-        if (createObjects == null)
+        if (createObjects == null || createObjects.isEmpty())
             return;
 
         String header = MessageFormat.format(
@@ -82,9 +82,14 @@ public class Comparer {
         script.add(header);
 
         for (NamedObject obj : createObjects) {
-            script.add("\n/* " + obj.getName() + " */");
-            script.add("\n" + ((AbstractDatabaseObject) obj).getCompareCreateSQL());
-            lists += "\t" + obj.getName() + "\n";
+
+            String sqlScript = ((AbstractDatabaseObject) obj).getCompareCreateSQL();
+
+            if (!sqlScript.contains("Will be created with constraint defining")) {
+                script.add("\n/* " + obj.getName() + " */");
+                script.add("\n" + sqlScript);
+                lists += "\t" + obj.getName() + "\n";
+            }
         }
 
     }
@@ -93,13 +98,16 @@ public class Comparer {
 
         List<NamedObject> dropObjects = sortObjectsByDependency(dropListObjects(type));
 
-        if (dropObjects == null)
+        if (dropObjects == null || dropObjects.isEmpty())
             return;
 
         String header = MessageFormat.format(
                 "\n/* ----- Dropping {0} ----- */\n",
                 Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
         script.add(header);
+
+        int headerIndex = script.size() - 1;
+        boolean isHeaderNeeded = false;
 
         for (NamedObject obj : dropObjects) {
 
@@ -110,16 +118,19 @@ public class Comparer {
             if (!sqlScript.contains("Remove with table constraint")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
                 lists += "\t" + obj.getName() + "\n";
+                isHeaderNeeded = true;
             }
         }
 
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
     }
 
     public void alterObjects(int type) {
 
         Map<NamedObject, NamedObject> alterObjects = alterListObjects(type);
 
-        if (alterObjects.size() < 1)
+        if (alterObjects.isEmpty())
             return;
 
         if (Objects.equals(Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), "ROLE"))
@@ -130,13 +141,20 @@ public class Comparer {
                 Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
         script.add(header);
 
+        int headerIndex = script.size() - 1;
+        boolean isHeaderNeeded = false;
+
         for (NamedObject obj : alterObjects.keySet()) {
             String sqlScript = ((AbstractDatabaseObject) obj).getCompareAlterSQL((AbstractDatabaseObject) alterObjects.get(obj));
             if (!sqlScript.contains("there are no changes")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
                 lists += "\t" + obj.getName() + "\n";
+                isHeaderNeeded = true;
             }
         }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
     }
 
     public void createConstraints() {
@@ -208,7 +226,7 @@ public class Comparer {
 
     public void createComputedFields() {
 
-        if (computedFields.size() < 1)
+        if (computedFields.isEmpty())
             return;
 
         if (COMPUTED_FIELDS_NEED) {
@@ -431,8 +449,8 @@ public class Comparer {
                             // --- if constraint will be changed ---
 
                             for (ColumnConstraint comparingCC : compareConstraints) {
-                                if (masterCC.getName().equals(comparingCC.getName())) {
-                                    if (!masterCC.getColumnDisplayList().equals(comparingCC.getColumnDisplayList())) {
+                                if (Objects.equals(masterCC.getName(), comparingCC.getName())) {
+                                    if (!Objects.equals(masterCC.getColumnDisplayList(), comparingCC.getColumnDisplayList())) {
                                         constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
                                         constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, comparingCC));
                                         droppedConstraints.add(masterCC);
@@ -449,7 +467,8 @@ public class Comparer {
                             // --- if constraint column will be changed or removed ---
 
                             List<String> masterConstraintColumns = new ArrayList<>();
-                            Collections.addAll(masterConstraintColumns, masterCC.getColumnDisplayList().split(","));
+                            if (masterCC.getColumnDisplayList() != null)
+                                Collections.addAll(masterConstraintColumns, masterCC.getColumnDisplayList().split(","));
 
                             List<DatabaseColumn> masterColumns = ((DefaultDatabaseTable) masterObject).getColumns();
                             List<DatabaseColumn> compareColumns = ((DefaultDatabaseTable) compareObject).getColumns();
@@ -463,7 +482,7 @@ public class Comparer {
 
                                 for (DatabaseColumn comparingC : compareColumns) {
 
-                                    if (masterC.getName().equals(comparingC.getName())) {
+                                    if (!Objects.equals(masterC.getName(), comparingC.getName())) {
                                         if (!SQLUtils.generateAlterDefinitionColumn(
                                                 new ColumnData(((DefaultDatabaseTable) masterObject).getHost().getDatabaseConnection(), masterC),
                                                 new ColumnData(((DefaultDatabaseTable) compareObject).getHost().getDatabaseConnection(), comparingC),
@@ -508,10 +527,12 @@ public class Comparer {
                     List<String> droppedConstraintsColumns = new ArrayList<>();
                     for (ColumnConstraint cc : droppedConstraints) {
                         if (cc.isPrimaryKey() || cc.isUniqueKey()) {
-                            List<String> columns = Arrays.stream(
-                                    cc.getColumnDisplayList().split(",")).collect(Collectors.toList());
-                            columns.forEach(i -> cc.getTableName().concat("." + i));
-                            droppedConstraintsColumns.addAll(columns);
+                            if (cc.getColumnDisplayList() != null) {
+                                List<String> columns = Arrays.stream(
+                                        cc.getColumnDisplayList().split(",")).collect(Collectors.toList());
+                                columns.forEach(i -> cc.getTableName().concat("." + i));
+                                droppedConstraintsColumns.addAll(columns);
+                            }
                         }
                     }
 

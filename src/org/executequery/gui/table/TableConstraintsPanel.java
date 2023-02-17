@@ -73,6 +73,14 @@ public abstract class TableConstraintsPanel extends JPanel
      */
     protected ComboBoxCellEditor keysCombo;
 
+    public static final int X = 0;
+    public static final int TYPE = X + 1;
+    public static final int NAME = TYPE + 1;
+    public static final int TABLE_COLUMN = NAME + 1;
+    public static final int REFERENCE_TABLE = TABLE_COLUMN + 1;
+    public static final int REFERENCE_COLUMN = REFERENCE_TABLE + 1;
+    public static final int UPDATE_RULE = REFERENCE_COLUMN + 1;
+    public static final int DELETE_RULE = UPDATE_RULE + 1;
 
 
     public TableConstraintsPanel() {
@@ -181,8 +189,8 @@ public abstract class TableConstraintsPanel extends JPanel
 
         if (keysEmpty || fillCombos) {
             try {
-                table.getColumnModel().getColumn(1).setCellEditor(keysCombo);
-                table.getColumnModel().getColumn(3).setCellEditor(
+                table.getColumnModel().getColumn(TYPE).setCellEditor(keysCombo);
+                table.getColumnModel().getColumn(TABLE_COLUMN).setCellEditor(
                         new ComboBoxCellEditor(getTableColumnData()));
             } catch (ArrayIndexOutOfBoundsException e) { // TODO: what is this - test
                 Log.error("Error method setData in class TableConstraintsPanel:", e);
@@ -221,7 +229,7 @@ public abstract class TableConstraintsPanel extends JPanel
             table.setEditingRow(row);
         }
 
-        table.setEditingColumn(1);
+        table.setEditingColumn(TYPE);
         columnValuesChanged();
     }
 
@@ -235,18 +243,18 @@ public abstract class TableConstraintsPanel extends JPanel
      */
     protected void setColumnProperties() {
         TableColumnModel tcm = table.getColumnModel();
-        tcm.getColumn(0).setPreferredWidth(25);
+        tcm.getColumn(X).setPreferredWidth(25);
         //tcm.getColumn(0).setMinWidth(25);
-        tcm.getColumn(0).setMaxWidth(25);
-        tcm.getColumn(2).setPreferredWidth(125);
-        tcm.getColumn(1).setPreferredWidth(75);
-        tcm.getColumn(3).setPreferredWidth(110);
-        tcm.getColumn(4).setPreferredWidth(120);
-        tcm.getColumn(5).setPreferredWidth(120);
+        tcm.getColumn(X).setMaxWidth(25);
+        tcm.getColumn(NAME).setPreferredWidth(125);
+        tcm.getColumn(TYPE).setPreferredWidth(75);
+        tcm.getColumn(TABLE_COLUMN).setPreferredWidth(110);
+        tcm.getColumn(REFERENCE_TABLE).setPreferredWidth(120);
+        tcm.getColumn(REFERENCE_COLUMN).setPreferredWidth(120);
 
-        tcm.getColumn(0).setCellRenderer(new ConstraintCellRenderer());
-        tcm.getColumn(2).setCellEditor(strEditor);
-        tcm.getColumn(1).setCellEditor(keysCombo);
+        tcm.getColumn(X).setCellRenderer(new ConstraintCellRenderer());
+        tcm.getColumn(NAME).setCellEditor(strEditor);
+        tcm.getColumn(TYPE).setCellEditor(keysCombo);
     }
 
     public boolean tableHasFocus(JTable _table) {
@@ -334,32 +342,32 @@ public abstract class TableConstraintsPanel extends JPanel
             boolean canHaveReference = (cc.getType() == FOREIGN_KEY);
 
             switch (col) {
-                case 0:
+                case X:
                     return cc;
-                case 1:
+                case TYPE:
                     return cc.getTypeName();
-                case 2:
+                case NAME:
                     if (cc.isGeneratedName())
                         return "";
                     return cc.getName();
-                case 3:
+                case TABLE_COLUMN:
                     return cc.getColumn();
-                case 4:
+                case REFERENCE_TABLE:
                     if (!canHaveReference) {
                         return null;
                     }
                     return cc.getRefTable();
-                case 5:
+                case REFERENCE_COLUMN:
                     if (!canHaveReference) {
                         return null;
                     }
                     return cc.getRefColumn();
-                case 6:
+                case UPDATE_RULE:
                     if (!canHaveReference) {
                         return null;
                     }
                     return cc.getUpdateRule();
-                case 7:
+                case DELETE_RULE:
                     if (!canHaveReference) {
                         return null;
                     }
@@ -378,9 +386,9 @@ public abstract class TableConstraintsPanel extends JPanel
             ColumnConstraint cc = (ColumnConstraint) keys.elementAt(row);
 
             switch (col) {
-                case 0:
+                case X:
                     return;
-                case 1:
+                case TYPE:
                     String colType = (String) value;
                     if (colType == ColumnConstraint.PRIMARY) {
                         cc.setType(PRIMARY_KEY);
@@ -400,15 +408,15 @@ public abstract class TableConstraintsPanel extends JPanel
                     cc.setRefTable(Constants.EMPTY);
                     cc.setRefColumn(Constants.EMPTY);
                     break;
-                case 2:
+                case NAME:
                     cc.setName((String) value);
                     columnValuesChanged(col, row, cc.getName());
                     break;
-                case 3:
+                case TABLE_COLUMN:
                     cc.setColumn(value != null ? value.toString() : "");
                     columnValuesChanged(col, row, null);
                     break;
-                case 4:
+                case REFERENCE_TABLE:
                     String tbl = (String) value;
                     cc.setRefColumn(Constants.EMPTY);
                     cc.setRefTable(tbl);
@@ -417,15 +425,15 @@ public abstract class TableConstraintsPanel extends JPanel
                         columnValuesChanged(col, row, null);
                     }
                     break;
-                case 5:
+                case REFERENCE_COLUMN:
                     cc.setRefColumn((String) value);
                     columnValuesChanged(col, row, null);
                     break;
-                case 6:
+                case UPDATE_RULE:
                     cc.setUpdateRule((String) value);
                     columnValuesChanged(col, row, null);
                     break;
-                case 7:
+                case DELETE_RULE:
                     cc.setDeleteRule((String) value);
                     columnValuesChanged(col, row, null);
                     break;
@@ -444,52 +452,33 @@ public abstract class TableConstraintsPanel extends JPanel
             // check if its a new table create
             if (getMode() == CREATE_TABLE_MODE) {
                 switch (col) {
-                    case 0:
+                    case X:
                         return false;
-                    case 1:
-                    case 2:
-                    case 3:
+                    case TYPE:
+                    case NAME:
+                    case TABLE_COLUMN:
                         return true;
-                    case 4:
-                    case 5:
-                    case 6:
-                    case 7:
+                    case REFERENCE_TABLE:
+                    case REFERENCE_COLUMN:
+                    case UPDATE_RULE:
+                    case DELETE_RULE:
                         return (cc.getType() != UNIQUE_KEY &&
                                 cc.getType() != PRIMARY_KEY);
                 }
             } else {
-                if (col == 2) {
+                if (col == NAME) {
                     return true;
                 }
 
                 if (cc.isNewConstraint()) {
 
-                    return col <= 3 || (cc.getType() != UNIQUE_KEY &&
+                    return col <= TABLE_COLUMN || (cc.getType() != UNIQUE_KEY &&
                             cc.getType() != PRIMARY_KEY);
 
                 }
 
             }
             return false;
-            /*
-            if (cc.isNewConstraint()) {
-                
-                if ((cc.getType() == cc.UNIQUE_KEY ||
-                        cc.getType() == cc.PRIMARY_KEY) && col > 3) {
-                    return false;
-                } 
-                else {
-                    return true;
-                }
-
-            }
-            else if (col == 1) {
-                return true;
-            }            
-            else {
-                return false;
-            }
-            */
         }
 
         public void deleteRow(int row) {

@@ -8,13 +8,11 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.procedure.UDFDefinitionPanel;
-import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import java.awt.*;
 import java.sql.Types;
 import java.util.Vector;
 
@@ -25,7 +23,6 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.UDF);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.UDF);
-    SimpleTextArea descriptionPanel;
     JTextField nameModuleField;
     JTextField entryPointField;
     NumberTextField parameterNumberField;
@@ -50,7 +47,6 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void init() {
-        descriptionPanel = new SimpleTextArea();
         nameModuleField = new JTextField();
         entryPointField = new JTextField();
         mechanismModel = new DynamicComboBoxModel();
@@ -77,60 +73,16 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         });
 
         tabbedPane.insertTab(bundleString("InputParameters"), null, parametersPanel, null, 0);
-        tabbedPane.add(bundleString("Description"), descriptionPanel);
-        centralPanel.setLayout(new GridBagLayout());
-        centralPanel.add(new JLabel(bundleString("ModuleName")), new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(nameModuleField, new GridBagConstraints(1, 0,
-                5, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(new JLabel(bundleString("EntryPoint")), new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(entryPointField, new GridBagConstraints(1, 1,
-                5, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(new JLabel(bundleString("Mechanism")), new GridBagConstraints(0, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(mechanismBox, new GridBagConstraints(1, 2,
-                5, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(parameterBox, new GridBagConstraints(0, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(new JLabel(bundleString("Position")), new GridBagConstraints(1, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(parameterNumberField, new GridBagConstraints(2, 3,
-                1, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(cstringBox, new GridBagConstraints(3, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(new JLabel(bundleString("MaxCountCharacters")), new GridBagConstraints(4, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(cstringLengthField, new GridBagConstraints(5, 3,
-                1, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(freeItBox, new GridBagConstraints(0, 4,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        addCommentTab(null);
+        centralPanel.setVisible(false);
+        topGbh.addLabelFieldPair(topPanel, bundleString("ModuleName"), nameModuleField, null, true, false);
+        topGbh.addLabelFieldPair(topPanel, bundleString("EntryPoint"), entryPointField, null, false, true);
+        topGbh.addLabelFieldPair(topPanel, bundleString("Mechanism"), mechanismBox, null, true, false);
+        topPanel.add(parameterBox, topGbh.nextCol().setLabelDefault().get());
+        topGbh.addLabelFieldPair(topPanel, bundleString("Position"), parameterNumberField, null, false, true);
+        topPanel.add(freeItBox, topGbh.nextRowFirstCol().setLabelDefault().setWidth(2).get());
+        topPanel.add(cstringBox, topGbh.nextCol().setLabelDefault().get());
+        topGbh.addLabelFieldPair(topPanel, bundleString("MaxCountCharacters"), cstringLengthField, null, false, true);
         parameterBoxChanged();
         cstringBoxChanged();
 
@@ -193,7 +145,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             sb.append("FREE_IT\n");
         sb.append("ENTRY_POINT '").append(entryPointField.getText()).append("'\n");
         sb.append("MODULE_NAME '").append(nameModuleField.getText()).append("';\n");
-        String text = descriptionPanel.getTextAreaComponent().getText();
+        String text = simpleCommentPanel.getComment();
         if (!MiscUtils.isNull(text) && !text.trim().isEmpty()) {
             sb.append("COMMENT ON EXTERNAL FUNCTION ").append(getFormattedName()).append(" IS '");
             text = text.replace("'", "''");
@@ -272,7 +224,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         freeItBox.setSelected(editedUDF.getFreeIt());
         nameModuleField.setText(editedUDF.getModuleName());
         entryPointField.setText(editedUDF.getEntryPoint());
-        descriptionPanel.getTextAreaComponent().setText(editedUDF.getDescription());
+        simpleCommentPanel.setDatabaseObject(editedUDF);
 
         int returnArg = editedUDF.getReturnArg();
 

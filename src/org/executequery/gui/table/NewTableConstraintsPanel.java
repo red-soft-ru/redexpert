@@ -24,6 +24,8 @@ import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 
+import java.util.Vector;
+
 /**
  * @author Takis Diakoumis
  */
@@ -33,12 +35,12 @@ public class NewTableConstraintsPanel extends TableConstraintsPanel
     /**
      * The table creator object - parent to this
      */
-    private TableConstraintFunction creator;
+    private final TableConstraintFunction creator;
 
     /**
      * The buffer off all SQL generated
      */
-    private StringBuffer sqlBuffer;
+    private final StringBuffer sqlBuffer;
 
     public NewTableConstraintsPanel(TableConstraintFunction creator) {
         super();
@@ -59,33 +61,33 @@ public class NewTableConstraintsPanel extends TableConstraintsPanel
 
         switch (col) {
 
-            case 0:
-            case 1:
-                setCellEditor(3, new ComboBoxCellEditor(
+            case X:
+            case TYPE:
+                setCellEditor(TABLE_COLUMN, new ComboBoxCellEditor(
                         creator.getTableColumnDataVector()));
 
                 if (cc.getType() != -1 && cc.getTypeName() == ColumnConstraint.FOREIGN) {
-                    setCellEditor(4, new ComboBoxCellEditor(
-                            creator.getSchemaTables(value)));
-                    setCellEditor(6, new ComboBoxCellEditor(
+                    setCellEditor(REFERENCE_TABLE, new ComboBoxCellEditor(
+                            new Vector<>(creator.getTables())));
+                    setCellEditor(UPDATE_RULE, new ComboBoxCellEditor(
                             ColumnConstraint.RULES
                     ));
-                    setCellEditor(7, new ComboBoxCellEditor(
+                    setCellEditor(DELETE_RULE, new ComboBoxCellEditor(
                             ColumnConstraint.RULES
                     ));
                 }
                 break;
 
-            case 2:
+            case NAME:
                 return;
-            case 3:
+            case TABLE_COLUMN:
                 break;
 
-            case 4:
+            case REFERENCE_TABLE:
 
                 try {
-                    setCellEditor(5, new ComboBoxCellEditor(
-                            creator.getColumnNamesVector(value, null)));
+                    setCellEditor(REFERENCE_COLUMN, new ComboBoxCellEditor(
+                            new Vector<>(creator.getColumns(cc.getRefTable()))));
                 } catch (NullPointerException nullExc) {
                 } // i forget why
                 break;

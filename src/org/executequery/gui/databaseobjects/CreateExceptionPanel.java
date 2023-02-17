@@ -11,7 +11,6 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.EXCEPTION);
     public static final String ALTER_TITLE = getEditTitle(NamedObject.EXCEPTION);
     private SimpleTextArea textExceptionPanel;
-    private SimpleTextArea descriptionPanel;
     private DefaultDatabaseException exception;
 
     public CreateExceptionPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseException exception) {
@@ -53,11 +52,10 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
     }
 
     protected void init() {
-        descriptionPanel = new SimpleTextArea();
+        centralPanel.setVisible(false);
         textExceptionPanel = new SimpleTextArea();
         tabbedPane.add(bundleStaticString("text"), textExceptionPanel);
-        tabbedPane.add(bundleStaticString("description"), descriptionPanel);
-
+        addCommentTab(null);
     }
 
     protected void initEdited() {
@@ -71,7 +69,7 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
 
     protected String generateQuery() {
         String query = "CREATE OR ALTER EXCEPTION " + getFormattedName() + " '" + textExceptionPanel.getTextAreaComponent().getText() + "'^";
-        query += "COMMENT ON EXCEPTION " + getFormattedName() + " IS '" + descriptionPanel.getTextAreaComponent().getText() + "'";
+        query += "COMMENT ON EXCEPTION " + getFormattedName() + " IS '" + simpleCommentPanel.getComment() + "'";
         return query;
     }
 
@@ -79,7 +77,7 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
         nameField.setText(exception.getName().trim());
         nameField.setEnabled(false);
         textExceptionPanel.getTextAreaComponent().setText(exception.getExceptionText());
-        descriptionPanel.getTextAreaComponent().setText(exception.getRemarks());
+        simpleCommentPanel.setDatabaseObject(exception);
     }
 
 }

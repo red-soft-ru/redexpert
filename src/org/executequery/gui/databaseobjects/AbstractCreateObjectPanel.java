@@ -53,6 +53,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     protected boolean edited = false;
     protected String firstQuery;
 
+    protected SimpleCommentPanel simpleCommentPanel;
+
     protected GridBagHelper topGbh;
 
     public static AbstractCreateObjectPanel getEditPanelFromType(int type, DatabaseConnection dc, Object databaseObject, Object[] params) {
@@ -168,8 +170,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         topPanel = new JPanel(new GridBagLayout());
         topGbh = new GridBagHelper();
         topGbh.setDefaultsStatic().defaults();
-        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("connection"), connectionsCombo, null);
-        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("name"), nameField, null);
+        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("connection"), connectionsCombo, null, true, false);
+        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("name"), nameField, null, false);
         centralPanel = new JPanel();
 
         BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(parent != null && parent.isDialog());
@@ -347,8 +349,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     }
 
     protected void addCommentTab(DatabaseObject databaseObject) {
-        SimpleCommentPanel commentPanel = new SimpleCommentPanel(databaseObject);
-        tabbedPane.add(Bundles.getCommon("comment-field-label"), commentPanel.getCommentPanel());
+        simpleCommentPanel = new SimpleCommentPanel(databaseObject);
+        tabbedPane.add(Bundles.getCommon("comment-field-label"), simpleCommentPanel.getCommentPanel());
     }
 
     @Override
@@ -366,6 +368,11 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         return getEditTitle();
     }
 
+    protected void addLabelFieldPairToToolBar(JToolBar toolBar, String label, Component component) {
+        toolBar.add(new JLabel(label));
+        toolBar.addSeparator();
+        toolBar.add(component);
+    }
 
 
 }

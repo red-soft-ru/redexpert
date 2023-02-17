@@ -4,9 +4,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabasePackage;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.event.DocumentEvent;
@@ -18,8 +16,6 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     public static final String ALTER_TITLE = getEditTitle(NamedObject.PACKAGE);
     private SimpleSqlTextPanel headerPanel;
     private SimpleSqlTextPanel bodyPanel;
-    private SimpleCommentPanel simpleCommentPanel;
-    private SimpleTextArea descriptionPanel;
     private DefaultDatabasePackage databasePackage;
 
     public CreatePackagePanel(DatabaseConnection dc, ActionContainer dialog) {
@@ -36,10 +32,6 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
         addPrivilegesTab(tabbedPane);
         addDependenciesTab(databasePackage);
         addCreateSqlTab(databasePackage);
-
-        simpleCommentPanel = new SimpleCommentPanel(databasePackage);
-        simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> simpleCommentPanel.updateComment());
-        tabbedPane.setComponentAt(2, simpleCommentPanel.getCommentPanel());
     }
 
     protected String generateQuery() {
@@ -47,14 +39,13 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
         sb.append(headerPanel.getSQLText()).append("^\n");
         sb.append(bodyPanel.getSQLText()).append("^\n");
         sb.append(SQLUtils.generateComment(getFormattedName(), "PACKAGE",
-                descriptionPanel.getTextAreaComponent().getText(), "^", true));
+                simpleCommentPanel.getComment(), "^", true));
         return sb.toString();
     }
 
     protected void reset() {
         nameField.setText(databasePackage.getName().trim());
-        if (simpleCommentPanel != null)
-            simpleCommentPanel.updateComment();
+        simpleCommentPanel.setDatabaseObject(databasePackage);
     }
 
     @Override
@@ -89,7 +80,6 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     protected void init() {
         headerPanel = new SimpleSqlTextPanel();
         bodyPanel = new SimpleSqlTextPanel();
-        descriptionPanel = new SimpleTextArea();
         nameField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -107,7 +97,7 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
 
         tabbedPane.add(bundleString("Header"), headerPanel);
         tabbedPane.add(bundleString("Body"), bodyPanel);
-        tabbedPane.add(bundleString("Description"), descriptionPanel);
+        addCommentTab(null);
 
         String sqlTemplate = getFormattedName() + "\nAS" + "\nBEGIN" + "\n\nEND";
         headerPanel.setSQLText("CREATE OR ALTER PACKAGE " + sqlTemplate);

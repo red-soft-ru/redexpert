@@ -934,7 +934,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         simpleCommentPanel = new SimpleCommentPanel(table);
         simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> {
-            simpleCommentPanel.updateComment();
             createSqlText.setSQLText(createTableStatementFormatted());
         });
         tabPane.setComponentAt(10, simpleCommentPanel.getCommentPanel());
@@ -1263,16 +1262,12 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         return tableNameField.getText();
     }
 
-    public Vector<String> getHostedSchemasVector() {
-        return controller.getHostedSchemas();
+    public List<String> getTables() {
+        return controller.getTables(null);
     }
 
-    public Vector<String> getSchemaTables(String schemaName) {
-        return controller.getTables(schemaName);
-    }
-
-    public Vector<String> getColumnNamesVector(String tableName, String schemaName) {
-        return controller.getColumnNamesVector(tableName, schemaName);
+    public List<String> getColumns(String tableName) {
+        return controller.getColumnNamesVector(tableName, null);
     }
 
     public void insertBefore() {

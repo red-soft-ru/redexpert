@@ -110,17 +110,6 @@ public final class ConnectionManager {
         } finally {
             querySender.releaseResources();
         }
-        DatabaseHost host = (DatabaseHost) hostNode.getDatabaseObject();
-        try {
-            while (host.countFinishedMetaTags() < hostNode.getChildCount()) {
-
-                Thread.sleep(100);
-            }
-
-        } catch (InterruptedException e) {
-            if (Log.isDebugEnabled())
-                e.printStackTrace();
-        }
         if (connectionBuilder != null && connectionBuilder.isCancelled())
             databaseConnection.setConnected(false);
         if (databaseConnection.isConnected()) {

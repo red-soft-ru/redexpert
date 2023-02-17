@@ -282,7 +282,7 @@ public class QueryDispatcher {
 
         statementCancelled = false;
 
-        worker = new ThreadWorker() {
+        worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
 
             public Object construct() {
 
@@ -338,7 +338,7 @@ public class QueryDispatcher {
 
         statementCancelled = false;
 
-        worker = new ThreadWorker() {
+        worker = new ThreadWorker("ExecutingScriptInQueryDispatcher") {
 
             public Object construct() {
 

@@ -974,7 +974,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
             return;
         }
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("rebuildAutocomplete") {
 
             public Object construct() {
                 try {

@@ -533,7 +533,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
                 progressDialog = new DefaultProgressDialog(bundledString("ExecutingProgressDialog"));
 
-                SwingWorker worker = new SwingWorker() {
+                SwingWorker worker = new SwingWorker("ImportCSV") {
                     @Override
                     public Object construct() {
                         insertCSV(sourceColumnList, valuesIndexes, insertStatement, executor);

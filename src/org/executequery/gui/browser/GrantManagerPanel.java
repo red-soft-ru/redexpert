@@ -543,7 +543,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
             querySender.setCommitMode(false);
             querySender.setAutoddl(false);
             dbc = listConnections.get(databaseBox.getSelectedIndex());
-            con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
+            con = ConnectionManager.getTemporaryConnection(listConnections.get(databaseBox.getSelectedIndex()));
             load_userList();
         }
     }
@@ -1001,7 +1001,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
     void execute_thread() {
         if (enableElements) {
             setEnableElements(false);
-            SwingWorker sw = new SwingWorker() {
+            SwingWorker sw = new SwingWorker("GrantManagerExecuteThread") {
                 @Override
                 public Object construct() {
                     runToThread();

@@ -686,7 +686,7 @@ public class TableSorter extends AbstractTableModel {
             if (e.getClickCount() >= 2 && resizeColumn != -1) {
 
                 final int selectedColumn = resizeColumn;
-                SwingWorker worker = new SwingWorker() {
+                SwingWorker worker = new SwingWorker("resizeColumn") {
                     public Object construct() {
                         resizeColumn(selectedColumn);
                         return "done";
@@ -712,7 +712,7 @@ public class TableSorter extends AbstractTableModel {
                     status = status + (e.isShiftDown() ? -1 : 1);
                     status = (status + 4) % 3 - 1; // signed mod, returning {-1, 0, 1}
 
-                    SwingWorker worker = new SwingWorker() {
+                    SwingWorker worker = new SwingWorker("postSortingInTableSorter") {
                         public Object construct() {
                             setSortingStatus(column, status);
                             for (SortingListener listener : sortingListeners) {

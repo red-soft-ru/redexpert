@@ -188,7 +188,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SwingWorker worker = new SwingWorker() {
+                SwingWorker worker = new SwingWorker("TestDataGenerator") {
                     @Override
                     public Object construct() {
                         stop = false;

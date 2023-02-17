@@ -226,7 +226,7 @@ public class GUIUtils {
      * @param runnable - the runnable to be executed
      */
     public static void startWorker(final Runnable runnable) {
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("GUIUtilsThread") {
             public Object construct() {
                 try {
 

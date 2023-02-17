@@ -398,7 +398,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
      */
     protected Connection getConnection() throws DataSourceException {
         if (conn == null) {
-            conn = ConnectionManager.getConnection(parent.getDatabaseConnection());
+            conn = ConnectionManager.getTemporaryConnection(parent.getDatabaseConnection());
             try {
                 autoCommit = conn.getAutoCommit();
             } catch (SQLException e) {

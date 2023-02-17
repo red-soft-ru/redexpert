@@ -134,7 +134,7 @@ public final class ConnectionManager {
             while (nodes.hasMoreElements()) {
                 DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
                 if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
-                    SwingWorker sw = new SwingWorker() {
+                    SwingWorker sw = new SwingWorker("loading "+node.getMetaDataKey()) {
                         @Override
                         public Object construct() {
                             loadTree(node, connectionBuilder);

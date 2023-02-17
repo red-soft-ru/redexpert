@@ -154,7 +154,7 @@ public class FileSearch {
     }
 
     public void doSearch() {
-        worker = new SwingWorker() {
+        worker = new SwingWorker(FileSearch.class.getSimpleName()) {
             public Object construct() {
                 clearResults();
                 int extLength = searchExtension.length();

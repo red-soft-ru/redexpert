@@ -928,7 +928,7 @@ public class UserManagerPanel extends JPanel {
                         jTabbedPane1.addTab(bundleString("Roles"), rolesPanel);
                         jTabbedPane1.addTab(bundleString("Membership"), membershipPanel);
                     }
-                    con = ConnectionManager.getConnection(getSelectedDatabaseConnection());
+                    con = ConnectionManager.getTemporaryConnection(getSelectedDatabaseConnection());
                     initUserManager();
                     userManager.setDatabase(getSelectedDatabaseConnection().getSourceName());
                     userManager.setHost(getSelectedDatabaseConnection().getHost());

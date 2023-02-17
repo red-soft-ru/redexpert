@@ -759,50 +759,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             }
             releaseResources(rs, connection);
 
-            int columnCount = columns.size();
-            if (columnCount > 0) {
-
-                // check for primary keys
-                rs = dmd.getPrimaryKeys(_catalog, _schema, table);
-                while (rs.next()) {
-
-                    String pkColumn = rs.getString(4);
-
-                    // find the pk column in the previous list
-                    for (int i = 0; i < columnCount; i++) {
-
-                        DatabaseColumn column = columns.get(i);
-                        String columnName = column.getName();
-
-                        if (columnName.equalsIgnoreCase(pkColumn)) {
-                            ((DefaultDatabaseColumn) column).setPrimaryKey(true);
-                            break;
-                        }
-
-                    }
-
-                }
-                releaseResources(rs, connection);
-
-                // check for foreign keys
-                rs = dmd.getImportedKeys(_catalog, _schema, table);
-                while (rs.next()) {
-                    String fkColumn = rs.getString(8);
-
-                    // find the fk column in the previous list
-                    for (int i = 0; i < columnCount; i++) {
-                        DatabaseColumn column = columns.get(i);
-                        String columnName = column.getName();
-                        if (columnName.equalsIgnoreCase(fkColumn)) {
-                            ((DefaultDatabaseColumn) column).setForeignKey(true);
-                            break;
-                        }
-                    }
-
-                }
-
-            }
-
             return columns;
 
         } catch (Exception e) {

@@ -11,7 +11,7 @@ import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
-import org.underworldlabs.swing.DefaultProgressDialog;
+import org.underworldlabs.swing.BackgroundProgressDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 
@@ -23,8 +23,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.text.MessageFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class ComparerDBPanel extends JPanel {
 
@@ -42,6 +42,8 @@ public class ComparerDBPanel extends JPanel {
     private static final int IGNORE_CK = IGNORE_UK + 1;
     private static final int STUBS = -100;
 
+    private static boolean isComparing = false;
+
     private Comparer comparer;
     private List<DatabaseConnection> databaseConnectionList;
     private List<Integer> scriptGenerationOrder;
@@ -58,7 +60,7 @@ public class ComparerDBPanel extends JPanel {
     private JButton selectAllPropertiesButton;
     private LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
-    private DefaultProgressDialog progressDialog;
+    private static BackgroundProgressDialog progressDialog;
 
     private Map<Integer, JCheckBox> attributesCheckBoxMap;
     private Map<Integer, JCheckBox> propertiesCheckBoxMap;
@@ -345,7 +347,7 @@ public class ComparerDBPanel extends JPanel {
                 propertiesCheckBoxMap.get(CHECK_DROP).isSelected(),
                 propertiesCheckBoxMap.get(CHECK_ALTER).isSelected());
 
-        if (propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() && !progressDialog.isCancel()) {
+        if (propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() && !isCanceled()) {
 
             if (isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = false;
@@ -354,7 +356,7 @@ public class ComparerDBPanel extends JPanel {
 
             for (Integer type : scriptGenerationOrder) {
 
-                if (progressDialog.isCancel())
+                if (isCanceled())
                     break;
 
                 if (type == STUBS) {
@@ -382,7 +384,7 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() && !progressDialog.isCancel()) {
+        if (propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() && !isCanceled()) {
 
             if (isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = false;
@@ -391,7 +393,7 @@ public class ComparerDBPanel extends JPanel {
 
             for (Integer type : scriptGenerationOrder) {
 
-                if (progressDialog.isCancel())
+                if (isCanceled())
                     break;
 
                 if (type == STUBS)
@@ -412,7 +414,7 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (propertiesCheckBoxMap.get(CHECK_DROP).isSelected() && !progressDialog.isCancel()) {
+        if (propertiesCheckBoxMap.get(CHECK_DROP).isSelected() && !isCanceled()) {
 
             if (!isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = true;
@@ -421,7 +423,7 @@ public class ComparerDBPanel extends JPanel {
 
             for (Integer type : scriptGenerationOrder) {
 
-                if (progressDialog.isCancel())
+                if (isCanceled())
                     break;
 
                 if (type == STUBS)
@@ -442,7 +444,7 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (!progressDialog.isCancel()) {
+        if (!isCanceled()) {
             comparer.createConstraints();
             if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null) {
                 loggingOutputPanel.append("============= CONSTRAINTS defining  =============");
@@ -450,7 +452,7 @@ public class ComparerDBPanel extends JPanel {
             }
         }
 
-        if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !progressDialog.isCancel()) {
+        if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !isCanceled()) {
             comparer.createComputedFields();
             if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null) {
                 loggingOutputPanel.append("============= COMPUTED FIELDS defining  =============");
@@ -463,6 +465,13 @@ public class ComparerDBPanel extends JPanel {
     // --- buttons handlers ---
 
     private void compareDatabase() {
+
+        if (isComparing) {
+            isComparing = false;
+            compareButton.setEnabled(false);
+            compareButton.setText(bundleString("Canceling"));
+            return;
+        }
 
         if (databaseConnectionList.size() < 2 ||
                 dbCompareComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
@@ -486,27 +495,48 @@ public class ComparerDBPanel extends JPanel {
             return;
         }
 
-        progressDialog = new DefaultProgressDialog(bundleString("Executing"));
+        progressDialog = new BackgroundProgressDialog(bundleString("Executing"));
         SwingWorker worker = new SwingWorker("DBComparerProcess") {
             @Override
             public Object construct() {
+
+                compareButton.setText(Bundles.get("common.cancel.button"));
+                isComparing = true;
+
                 prepareComparer();
                 compare();
+
                 return null;
             }
 
             @Override
             public void finished() {
+
                 if (progressDialog != null)
                     progressDialog.dispose();
+
+                showScriptAndMessage();
             }
         };
 
         worker.start();
         progressDialog.run();
 
+        if (isCanceled()) {
+            compareButton.setText(bundleString("Canceling"));
+            compareButton.setEnabled(false);
+        }
+    }
+
+    private void showScriptAndMessage() {
+
         for (int i = 0; i < comparer.getScript().size(); i++)
             sqlTextPanel.getTextPane().append(comparer.getScript(i));
+
+        isComparing = false;
+        compareButton.setEnabled(true);
+        compareButton.setText(bundleString("CompareButton"));
+        GUIUtilities.displayInformationMessage(bundleString("ComparingEnds"));
     }
 
     private void saveScript() {
@@ -653,6 +683,10 @@ public class ComparerDBPanel extends JPanel {
         }
 
         return dialect;
+    }
+
+    public static boolean isCanceled() {
+        return progressDialog.isCancel() || !isComparing;
     }
 
     public static String bundleString(String key) {

@@ -9,6 +9,7 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -58,11 +59,11 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     private SimpleSqlTextPanel sqlBodyText;
 
     //components for table trigger
-    private JPanel databaseTriggerPanel;
+    private List<Component> databaseTriggerComponents;
     private JComboBox actionCombo;
     private JLabel actionLabel;
     private JLabel labelTable;
-    private JPanel tableTriggerPanel;
+    private List<Component> tableTriggerComponents;
     private JLabel beforeAfterlabel;
 
     //components for ddl trigger
@@ -71,7 +72,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     private JCheckBox deleteBox;
     private JCheckBox updateBox;
     private JPanel ddlTriggerPanel;
-    private JPanel ddlTableTriggerPanel;
+    private List<Component> ddlTableTriggerComponents;
     private List<JCheckBox> ddlCheckBoxes;
     private JScrollPane scrolDDL;
     private JCheckBox anyDdlBox;
@@ -126,10 +127,10 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         positionField.setValue(0);
         activeBox = new JCheckBox(bundleStaticString("active"));
         activeBox.setSelected(true);
-        databaseTriggerPanel = new JPanel();
+        databaseTriggerComponents = new ArrayList<>();
         actionCombo = new JComboBox(new String[]{"CONNECT", "DISCONNECT", "TRANSACTION START", "TRANSACTION COMMIT", "TRANSACTION ROLLBACK"});
         actionLabel = new JLabel(bundleString("event"));
-        tableTriggerPanel = new JPanel();
+        tableTriggerComponents = new ArrayList<>();
         typeTableTriggerCombo = new JComboBox(new String[]{"BEFORE", "AFTER"});
         insertBox = new JCheckBox("INSERT");
         updateBox = new JCheckBox("UPDATE");
@@ -142,7 +143,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         scrolDDL = new JScrollPane(ddlTriggerPanel);
         scrolDDL.setMinimumSize(new Dimension(100, 200));
         setPreferredSize(new Dimension(800, 800));
-        ddlTableTriggerPanel = new JPanel(new GridBagLayout());
+        ddlTableTriggerComponents = new ArrayList<>();
         ddlCheckBoxes = new ArrayList<>();
         anyDdlBox = new JCheckBox("ANY DDL STATEMENT");
         sqlBodyText.setSQLText("AS\n" +
@@ -158,83 +159,38 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         centralPanel.setVisible(false);
         topPanel.add(activeBox, topGbh.nextRowFirstCol().setLabelDefault().get());
         topPanel.add(typeTriggerCombo, topGbh.nextCol().fillHorizontally().setMaxWeightX().get());
-        topGbh.addLabelFieldPair(topPanel, positionLabel, positionField, null, false);
-        JPanel topXPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
-                1, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0);
-        topXPanel.add(databaseTriggerPanel, gbcTop);
-        gbcTop.gridy++;
-        gbcTop.fill = GridBagConstraints.BOTH;
-        topXPanel.add(ddlTableTriggerPanel, gbcTop);
-
-        topPanel.add(topXPanel, topGbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        topGbh.addLabelFieldPair(topPanel, positionLabel, positionField, null, false,true);
 
         tabbedPane.add(bundleStaticString("SQL"), sqlBodyText);
         addCommentTab(null);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        databaseTriggerPanel.setLayout(new GridBagLayout());
-        tableTriggerPanel.setLayout(new GridBagLayout());
+        GridBagHelper gbh = new GridBagHelper();
         ddlTriggerPanel.setLayout(new GridBagLayout());
-        ddlTableTriggerPanel.setLayout(new GridBagLayout());
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 0;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.anchor = GridBagConstraints.NORTHEAST;
-        databaseTriggerPanel.add(actionLabel, gbc);
-        tableTriggerPanel.add(labelTable, gbc);
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        ddlTableTriggerPanel.add(beforeAfterlabel, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        ddlTableTriggerPanel.add(typeTableTriggerCombo, new GridBagConstraints(1, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        gbc.gridx++;
-        gbc.weightx = 1;
-        databaseTriggerPanel.add(actionCombo, gbc);
-        tableTriggerPanel.add(tablesCombo, gbc);
-        gbc.gridx++;
-        gbc.weightx = 0.1;
-        tableTriggerPanel.add(insertBox, gbc);
-        gbc.gridx++;
-        tableTriggerPanel.add(updateBox, gbc);
-        gbc.gridx++;
-        tableTriggerPanel.add(deleteBox, gbc);
+        databaseTriggerComponents.add(actionLabel);
+        databaseTriggerComponents.add(actionCombo);
+        topGbh.addLabelFieldPair(topPanel,actionLabel,actionCombo,null,true,false);
+        tableTriggerComponents.add(labelTable);
+        tableTriggerComponents.add(tablesCombo);
+        topGbh.addLabelFieldPair(topPanel,labelTable,tablesCombo,null,true,false);
+        ddlTableTriggerComponents.add(beforeAfterlabel);
+        ddlTableTriggerComponents.add(typeTableTriggerCombo);
+        topGbh.addLabelFieldPair(topPanel,beforeAfterlabel,typeTableTriggerCombo,null,triggerType==NamedObject.DDL_TRIGGER,false);
 
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.weightx = 1;
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.weightx = 1;
-        ddlTableTriggerPanel.add(tableTriggerPanel, gbc);
-        gbc.gridy++;
-        gbc.fill = GridBagConstraints.BOTH;
-        ddlTableTriggerPanel.add(scrolDDL, new GridBagConstraints(0, 1,
-                2, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0));
-//        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.weightx = 1;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 3;
-        ddlTriggerPanel.add(anyDdlBox, gbc);
+        tableTriggerComponents.add(insertBox);
+        tableTriggerComponents.add(updateBox);
+        tableTriggerComponents.add(deleteBox);
+        topPanel.add(insertBox,topGbh.setLabelDefault().nextCol().get());
+        topPanel.add(updateBox,topGbh.setLabelDefault().nextCol().get());
+        topPanel.add(deleteBox,topGbh.setLabelDefault().nextCol().get());
+
+        ddlTableTriggerComponents.addAll(tableTriggerComponents);
+        ddlTableTriggerComponents.add(scrolDDL);
+        topPanel.add(scrolDDL,topGbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        gbh.defaults();
+        ddlTriggerPanel.add(anyDdlBox, gbh.setLabelDefault().get());
         JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-        gbc.gridy++;
-        ddlTriggerPanel.add(separator, gbc);
-        gbc.gridwidth = 1;
+        ddlTriggerPanel.add(separator, gbh.nextRowFirstCol().fillHorizontally().spanX().get());
+        gbh.setWidth(1);
         int[] addingY = {2, 2, 2};
         for (int i = 0; i < meta_types.length; i++) {
             for (int g = 0; g < 3; g++) {
@@ -251,14 +207,14 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
                         break;
                 }
                 JCheckBox checkBox = new JCheckBox(operator + " " + meta_types[i]);
-                gbc.gridx = g;
-                gbc.gridy = i + addingY[g];
+                gbh.setX(g);
+                gbh.setY(i + addingY[g]);
                 if (!checkBox.getText().toUpperCase().contains("ALTER COLLATION")
                         && !checkBox.getText().contains("CREATE CHARACTER SET")
                         && !checkBox.getText().contains("DROP CHARACTER SET")
                         && !checkBox.getText().contains("ALTER PACKAGE BODY")
                 ) {
-                    ddlTriggerPanel.add(checkBox, gbc);
+                    ddlTriggerPanel.add(checkBox, gbh.get());
                     ddlCheckBoxes.add(checkBox);
                 } else {
                     addingY[g]--;
@@ -311,7 +267,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         if (trigger.getIntTriggerType() == DefaultDatabaseTrigger.DATABASE_TRIGGER) {
             int type = ((int) trigger.getLongTriggerType()) - 8192;
             actionCombo.setSelectedIndex(type);
-            actionCombo.setEnabled(false);
+            //actionCombo.setEnabled(false);
         } else {
             if (trigger.getStringTriggerType().startsWith("BEFORE"))
                 typeTableTriggerCombo.setSelectedIndex(0);
@@ -324,20 +280,20 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
                 for (int i = 0; i < tablesCombo.getItemCount(); i++) {
                     if (((String) tablesCombo.getModel().getElementAt(i)).trim().equalsIgnoreCase(trigger.getTriggerTableName().trim())) {
                         tablesCombo.setSelectedIndex(i);
-                        tablesCombo.setEnabled(false);
+                        //tablesCombo.setEnabled(false);
                         break;
                     }
                 }
             } else {
-                typeTableTriggerCombo.setEnabled(false);
-                anyDdlBox.setEnabled(false);
+                //typeTableTriggerCombo.setEnabled(false);
+                //anyDdlBox.setEnabled(false);
                 if (trigger.getStringTriggerType().trim().contains(anyDdlBox.getText())) {
                     anyDdlBox.setSelected(true);
                     changeAnyDdlBox();
                 } else {
                     for (JCheckBox checkBox : ddlCheckBoxes) {
                         checkBox.setSelected(trigger.getStringTriggerType().contains(checkBox.getText()));
-                        checkBox.setEnabled(false);
+                        //checkBox.setEnabled(false);
                     }
                 }
             }
@@ -351,7 +307,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         if (!MiscUtils.isNull(trigger.getSqlSecurity())) {
             sqlSecurityCombo.setSelectedItem(trigger.getSqlSecurity());
         }
-        useExternalBox.setVisible(false);
+        //useExternalBox.setVisible(false);
     }
 
     @Override
@@ -390,10 +346,16 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     }
 
     private void changeTypeTrigger() {
-        databaseTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DB_TRIGGER);
-        ddlTableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER||typeTriggerCombo.getSelectedItem() == TRIGGER);
-        tableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == TRIGGER);
+        visibleComponents(databaseTriggerComponents,typeTriggerCombo.getSelectedItem() == DB_TRIGGER);
+        visibleComponents(ddlTableTriggerComponents,typeTriggerCombo.getSelectedItem() == DDL_TRIGGER||typeTriggerCombo.getSelectedItem() == TRIGGER);
+        visibleComponents(tableTriggerComponents,typeTriggerCombo.getSelectedItem() == TRIGGER);
         scrolDDL.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER);
+    }
+
+    private void visibleComponents(List<Component> components,boolean flag)
+    {
+        for (Component component:components)
+            component.setVisible(flag);
     }
 
     Object[] getTables() {

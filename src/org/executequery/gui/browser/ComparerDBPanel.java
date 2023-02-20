@@ -487,7 +487,7 @@ public class ComparerDBPanel extends JPanel {
         }
 
         progressDialog = new DefaultProgressDialog(bundleString("Executing"));
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("DBComparerProcess") {
             @Override
             public Object construct() {
                 prepareComparer();

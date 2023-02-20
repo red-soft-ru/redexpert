@@ -43,7 +43,7 @@ public class DefaultConnectionListener implements ConnectionListener {
     public void connected(ConnectionEvent connectionEvent) {
 
         updateStatusBarDataSourceCounter();
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("loadingTreeForSearch") {
             @Override
             public Object construct() {
                 searchInCols = SystemProperties.getBooleanProperty("user", "browser.search.in.columns");

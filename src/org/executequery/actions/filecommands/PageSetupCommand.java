@@ -36,7 +36,7 @@ public class PageSetupCommand implements BaseCommand {
 
     public void execute(ActionEvent e) {
 
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("ShowPrintDialog") {
             public Object construct() {
 
                 return showDialog();

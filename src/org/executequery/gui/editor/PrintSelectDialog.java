@@ -190,7 +190,7 @@ public class PrintSelectDialog extends JPanel {
 
         if (commandType == PRINT) {
 
-            worker = new SwingWorker() {
+            worker = new SwingWorker(PrintSelectDialog.class.getSimpleName()) {
                 public Object construct() {
                     Object obj = null;
 

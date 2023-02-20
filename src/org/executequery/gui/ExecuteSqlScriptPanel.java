@@ -428,7 +428,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
                 enableButtons(false, true, false, false);
 
-                swingWorker = new ThreadWorker() {
+                swingWorker = new ThreadWorker("ExecuteSQLScript") {
                     public Object construct() {
 
                         executing = true;

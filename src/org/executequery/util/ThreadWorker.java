@@ -29,6 +29,15 @@ import org.underworldlabs.swing.util.SwingWorker;
  */
 public abstract class ThreadWorker extends SwingWorker {
 
+    /**
+     * Start a thread that will call the <code>construct</code> method
+     * and then exit.
+     *
+     * @param name
+     */
+    public ThreadWorker(String name) {
+        super(name);
+    }
 }
 
 

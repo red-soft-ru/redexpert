@@ -40,7 +40,7 @@ public class DependPanel extends TreePanel {
     public void pathExpanded(TreePath path) {
         Object object = path.getLastPathComponent();
         final DatabaseObjectNode node = (DatabaseObjectNode) object;
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("expandDependenciesFor "+node.getName()) {
             public Object construct() {
                 GUIUtilities.showWaitCursor();
                 doNodeExpansion(node);

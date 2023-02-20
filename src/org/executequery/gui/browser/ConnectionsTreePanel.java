@@ -1518,7 +1518,7 @@ public class ConnectionsTreePanel extends TreePanel
       c.setInProcess(true);
 
 
-      worker = new SwingWorker() {
+      worker = new SwingWorker("loadingNode "+node.getName()) {
         public Object construct() {
 
           try {
@@ -1558,7 +1558,7 @@ public class ConnectionsTreePanel extends TreePanel
     }
 
     final DatabaseObjectNode node = (DatabaseObjectNode) object;
-    worker = new SwingWorker() {
+    worker = new SwingWorker("nodeExpansion "+node.getName()) {
       public Object construct() {
         GUIUtilities.showWaitCursor();
         doNodeExpansion(node);

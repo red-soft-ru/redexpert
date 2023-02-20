@@ -159,7 +159,7 @@ public class MetaDataValues implements ConnectionListener {
                     openConnectionAndAddToCache();
                 }
 
-                connection = ConnectionManager.getConnection(databaseConnection);
+                connection = ConnectionManager.getTemporaryConnection(databaseConnection);
                 if (connection == null) {
 
                     if (Log.isDebugEnabled()) {
@@ -188,7 +188,7 @@ public class MetaDataValues implements ConnectionListener {
     }
 
     private void openConnectionAndAddToCache() {
-        connection = ConnectionManager.getConnection(databaseConnection);
+        connection = ConnectionManager.getTemporaryConnection(databaseConnection);
         connections.put(databaseConnection, connection);
     }
 

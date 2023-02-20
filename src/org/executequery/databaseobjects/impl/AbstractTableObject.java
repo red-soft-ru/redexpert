@@ -246,6 +246,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
                             if (i.getName().equalsIgnoreCase(pkColumn)) {
 
                                 DatabaseTableColumn column = (DatabaseTableColumn) i;
+                                column.setPrimaryKey(true);
                                 TableColumnConstraint constraint = new TableColumnConstraint(column, ColumnConstraint.PRIMARY_KEY);
 
                                 constraint.setName(rs.getString(6));
@@ -276,6 +277,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
                                 if (i.getName().equalsIgnoreCase(fkColumn)) {
                                     DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
                                     DatabaseTableColumn column = (DatabaseTableColumn) i;
+                                    column.setForeignKey(true);
                                     List<String> row = new ArrayList<>();
                                     for (int g = 1; g <= rs.getMetaData().getColumnCount(); g++)
                                         row.add(rs.getString(g));

@@ -774,7 +774,7 @@ public final class MiscUtils {
     public static String getFormattedObject(String obj) {
         if (obj != null) {
             obj = obj.trim();
-            if (isLatinOrDigitOrSpecSymbolRDB(obj) && checkAllUpperCase(obj) && !checkKeyword(obj))
+            if (isLatinOrDigitOrSpecSymbolRDB(obj) && checkAllUpperCase(obj) && !checkKeyword(obj) || obj.startsWith("\"") && obj.endsWith("\""))
                 return obj;
             else return MiscUtils.wordInQuotes(obj);
         }

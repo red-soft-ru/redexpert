@@ -41,7 +41,7 @@ public class AnaliseRecompileDialog extends BaseDialog {
         panel.add(logPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
         setPreferredSize(new Dimension(500, 500));
         setContentPane(panel);
-        SwingWorker sw = new SwingWorker() {
+        SwingWorker sw = new SwingWorker("loadingDataForRecompile") {
             @Override
             public Object construct() {
                 executeAnalise();

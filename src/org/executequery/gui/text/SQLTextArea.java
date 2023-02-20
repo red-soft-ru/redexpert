@@ -858,7 +858,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
 
         @Override
         public void updateActions() {
-            SwingWorker sw = new SwingWorker() {
+            SwingWorker sw = new SwingWorker("updateActionsUndoManger") {
                 @Override
                 public Object construct() {
                     superUpdateActions();

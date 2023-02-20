@@ -266,7 +266,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
             return;
         }
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("sendFeedback") {
 
             public Object construct() {
 

@@ -1386,7 +1386,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   @Override
   protected String queryForInfo() {
 
-    String query = "select r.rdb$description\n" +
+    String query = "select r.rdb$description as DESCRIPTION\n" +
             "from rdb$relations r\n" +
             "where r.rdb$relation_name = '" + getName() + "'";
 
@@ -1395,10 +1395,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   @Override
   protected void setInfoFromResultSet(ResultSet rs) {
-
     try {
       if (rs.next())
-        setRemarks(rs.getString(1));
+        setRemarks(getFromResultSet(rs,"DESCRIPTION"));
     } catch (Exception e) {
       e.printStackTrace();
     }

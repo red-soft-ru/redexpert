@@ -196,7 +196,12 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
 
     protected List<DatabaseColumn> columns;
 
-    public synchronized List<DatabaseColumn> getColumns() throws DataSourceException {
+    public List<DatabaseColumn> getColumns()
+    {
+        return getColumns(false);
+    }
+
+    public synchronized List<DatabaseColumn> getColumns(boolean keepAlive) throws DataSourceException {
 
         if (!isMarkedForReload() && columns != null) {
 
@@ -218,9 +223,8 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
 
                 List<DatabaseColumn> _columns = null;
                 if (typeTree == TreePanel.DEFAULT)
-                    _columns = host.getColumns(getCatalogName(),
-                            getSchemaName(),
-                            getName());
+                    _columns = host.getColumns(
+                            getName(),keepAlive);
                 if (typeTree == TreePanel.DEPENDED_ON)
                     _columns = getDependedColumns();
                 if (typeTree == TreePanel.DEPENDENT)
@@ -348,7 +352,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
 
     public List<NamedObject> getObjects() throws DataSourceException {
 
-        List<DatabaseColumn> _columns = getColumns();
+        List<DatabaseColumn> _columns = getColumns(true);
         if (_columns == null) {
 
             return null;

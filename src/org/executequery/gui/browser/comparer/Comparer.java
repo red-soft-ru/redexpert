@@ -2,7 +2,6 @@ package org.executequery.gui.browser.comparer;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -15,10 +14,10 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.MessageFormat;
 import java.util.*;
@@ -629,7 +628,7 @@ public class Comparer {
             return null;
 
         String templateQuery =
-                "SELECT RDB$DEPENDENT_NAME FROM RDB$DEPENDENCIES WHERE RDB$DEPENDED_ON_NAME = '%s';";
+                "SELECT RDB$DEPENDENT_NAME FROM RDB$DEPENDENCIES WHERE RDB$DEPENDED_ON_NAME = ?;";
         DefaultStatementExecutor executor =
                 new DefaultStatementExecutor(compareConnection.getDatabaseConnection(), true);
 
@@ -640,15 +639,15 @@ public class Comparer {
 
         try {
 
+            PreparedStatement insertStatement = executor.getPreparedStatement(templateQuery);
+
             for (String objectName : objectMap.keySet()) {
                 NamedObject tempObject = objectMap.get(objectName);
 
-                String query = String.format(templateQuery, MiscUtils.getFormattedObject(objectName));
+                insertStatement.setString(1, MiscUtils.getFormattedObject(objectName));
+                insertStatement.executeQuery();
 
-                executor.releaseResources();
-                SqlStatementResult statementResult =
-                        executor.execute(QueryTypes.SELECT, query);
-                ResultSet resultSet = statementResult.getResultSet();
+                ResultSet resultSet = insertStatement.executeQuery();
 
                 if (resultSet == null)
                     continue;
@@ -668,6 +667,8 @@ public class Comparer {
             }
 
             executor.closeConnection();
+            insertStatement.close();
+            executor.releaseResources();
 
         } catch (java.lang.Exception e) {
             GUIUtilities.displayExceptionErrorDialog(

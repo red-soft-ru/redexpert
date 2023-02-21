@@ -237,6 +237,9 @@ test:windows:
       - ARCH: x86_64
       - ARCH: x86
   before_script:
+   - $TEST_DIR = New-TempDirectory -Prefix 'test_re_'
+   - cd $TEST_DIR
+   - unzip -q ${CI_PROJECT_DIR}\dist-src\RedExpert-$env:VERSION-src.zip
    - cd $DIST\bin
    - |
       if ($env:ARCH -eq "x86_64")
@@ -248,7 +251,7 @@ test:windows:
         start-process .\RedExpert.exe
       }
   script:
-   - cd ${CI_PROJECT_DIR}\RedExpert-$VERSION\ci
+   - cd $TEST_DIR\RedExpert-$env:VERSION-src\ci
    - powershell -ExecutionPolicy ByPass -file test.ps1
   dependencies: ["build:windows"]
   needs: ["build:windows"]

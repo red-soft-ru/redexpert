@@ -65,10 +65,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         this(dc, dialog, null, null);
     }
 
-    @Override
-    protected String queryGetDescription() {
-        return "SELECT RDB$DESCRIPTION FROM RDB$FUNCTIONS WHERE RDB$FUNCTION_NAME = '" + procedure + "'";
-    }
 
     @Override
     protected String getFullSourceBody() {
@@ -120,7 +116,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     protected String generateQuery() {
         return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 variablesPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
-                externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(), descriptionArea.getTextAreaComponent().getText(), deterministicBox.isSelected(), false, true);
+                externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment(), deterministicBox.isSelected(), false, true);
     }
 
     @Override
@@ -132,7 +128,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     protected void init() {
         super.init();
         deterministicBox = new JCheckBox(bundleStaticString("deterministic"));
-        topPanel.add(deterministicBox, topGbh.nextRowFirstCol().setLabelDefault().get());
+        topPanel.add(deterministicBox, topGbh.setLabelDefault().get());
+        topGbh.nextCol();
     }
 
     @Override

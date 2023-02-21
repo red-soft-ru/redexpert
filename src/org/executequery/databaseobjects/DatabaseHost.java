@@ -114,8 +114,10 @@ public interface DatabaseHost extends NamedObject {
      * @param table   the database object name
      * @return the columns
      */
-    List<DatabaseColumn> getColumns(String catalog, String schema, String table)
+    List<DatabaseColumn> getColumns( String table,boolean keepAlive)
             throws DataSourceException;
+
+    List<DatabaseColumn> getColumns( String table);
 
     /**
      * Returns the exported keys columns of the specified database object.

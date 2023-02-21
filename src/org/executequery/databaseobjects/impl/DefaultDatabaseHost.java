@@ -25,9 +25,11 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
+import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -654,6 +656,16 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     }
 
+
+    private PooledStatement statementForColumns;
+
+    public void releaseStatementForColumns()
+    {
+        if(querySender!=null)
+            querySender.releaseResources();
+        releaseResources(statementForColumns);
+    }
+
     /**
      * Returns the columns of the specified database object.
      *
@@ -662,7 +674,18 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * @param table   the database object name
      * @return the columns
      */
-    public synchronized List<DatabaseColumn> getColumns(String catalog, String schema, String table)
+
+    DefaultStatementExecutor querySender;
+
+    public synchronized List<DatabaseColumn> getColumns( String table)
+    {
+        for (NamedObject namedObject : getTables()) {
+            if (namedObject.getName().contentEquals(table))
+                return ((AbstractTableObject)namedObject).getColumns();
+        }
+        return null;
+    }
+    public synchronized List<DatabaseColumn> getColumns( String table,boolean keepAlive)
             throws DataSourceException {
 
         ResultSet rs = null;
@@ -670,20 +693,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         List<DatabaseColumn> columns = new ArrayList<DatabaseColumn>();
 
         try {
-            String _catalog = null;//getCatalogNameForQueries(catalog);
-            String _schema = null;//getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
-
-            boolean isFirebirdConnection = false;
-            Connection connection = dmd.getConnection();
-            if (connection.unwrap(Connection.class).getClass().getName().contains("FBConnection"))
-                isFirebirdConnection = true;
-
-            // retrieve the base column info
-
-            Statement statement = null;
-
-            if (isFirebirdConnection) {
+                if(querySender==null)
+                    querySender=new DefaultStatementExecutor();
+                if(querySender.getDatabaseConnection()!=getDatabaseConnection())
+                    querySender.setDatabaseConnection(getDatabaseConnection());
                 String identity = null;
                 if (getDatabaseMetaData().getDatabaseMajorVersion() >= 3) {
                     identity = "    RF.RDB$IDENTITY_TYPE AS IDENTITY\n";
@@ -721,43 +734,18 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         "    LEFT JOIN RDB$COLLATIONS CO ON F.RDB$CHARACTER_SET_ID = CO.RDB$CHARACTER_SET_ID AND F.RDB$COLLATION_ID = CO.RDB$COLLATION_ID\n" +
                         "WHERE\n" +
                         "    RF.RDB$RELATION_NAME = " +
-                        "'" +
-                        table +
-                        "'" +
-                        "and\n" +
+                        "? and\n" +
                         "    RF.RDB$FIELD_SOURCE = F.RDB$FIELD_NAME\n" +
                         "order by\n" +
                         "    RF.RDB$RELATION_NAME, RF.RDB$FIELD_POSITION";
 
-                statement = connection.createStatement();
-                rs = statement.executeQuery(firebirdSql);
-            } else {
-                rs = dmd.getColumns(_catalog, _schema, table, null);
-            }
-
-            if (isFirebirdConnection) {
-                columns = createColumns(rs, table);
-            } else {
-
-                while (rs.next()) {
-
-                    DefaultDatabaseColumn column = new DefaultDatabaseColumn();
-
-                    column.setCatalogName(catalog);
-                    column.setSchemaName(schema);
-                    column.setName(rs.getString(4));
-                    column.setTypeInt(rs.getInt(5));
-                    column.setTypeName(rs.getString(6));
-                    column.setColumnSize(rs.getInt(7));
-                    column.setColumnScale(rs.getInt(9));
-                    column.setRequired(rs.getInt(11) == DatabaseMetaData.columnNoNulls);
-                    column.setRemarks(rs.getString(12));
-                    column.setDefaultValue(rs.getString(13));
-
-                    columns.add(column);
+                if(statementForColumns==null||statementForColumns.isClosed()) {
+                    statementForColumns = (PooledStatement) querySender.getPreparedStatement(firebirdSql);
                 }
-            }
-            releaseResources(rs, connection);
+                statementForColumns.setString(1,table);
+                rs = querySender.getResultSet(-1,statementForColumns).getResultSet();
+                columns = createColumns(rs, table);
+            //releaseResources(rs);
 
             return columns;
 
@@ -769,11 +757,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             return columns;
 
-//            throw new DataSourceException(e);
-
-        } finally {
-
-            releaseResources(rs, connection);
+        }
+        finally {
+            if(!keepAlive)
+                releaseStatementForColumns();
         }
 
     }
@@ -903,97 +890,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             }
             columns.add(column);
         }
-
-        releaseResources(rs, connection);
-
-        Statement statement = null;
-
-       /* for (Iterator it = columns.iterator(); it.hasNext();) {
-            DefaultDatabaseColumn column = (DefaultDatabaseColumn)it.next();
-            String computedSource = null;
-
-            statement = connection.createStatement();
-            try {
-                String sql = "select " +
-                        " RRF.RDB$FIELD_SOURCE" +
-                        " from RDB$FIELDS RF, " +
-                        "rdb$relation_fields RRF\n" +
-                        "where\n" +
-                        "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
-                        "    and\n" +
-                        "    RRF.rdb$relation_name = '" + table + "'\n" +
-                        "    and\n" +
-                        "    RF.rdb$field_name = RRF.rdb$field_source";
-                ResultSet sourceRS = statement.executeQuery(sql);
-                if (sourceRS.next()) {
-                    computedSource = sourceRS.getString(1);
-                }
-
-                releaseResources(sourceRS, connection);
-
-                if (computedSource != null && !computedSource.isEmpty()) {
-                    column.setDomain(computedSource);
-                }
-
-                computedSource = null;
-
-                // TODO check for RDB 3.0
-//                if (isGen.compareToIgnoreCase("YES") == 0) {
-//                    column.setGenerated(true);
-//                        Statement statement = dmd.getConnection().createStatement();
-                    /*ResultSet
-                    statement = connection.createStatement();
-                    sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, " +
-                            " RRF.RDB$FIELD_NAME" +
-                            " from RDB$FIELDS RF, " +
-                            "rdb$relation_fields RRF\n" +
-                            "where\n" +
-                            "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
-                            "    and\n" +
-                            "    RRF.rdb$relation_name = '" + table + "'\n" +
-                            "    and\n" +
-                            "    RF.rdb$field_name = RRF.rdb$field_source");
-                    if (sourceRS.next()) {
-                        computedSource = sourceRS.getString(1);
-                    }
-                releaseResources(sourceRS, connection);
-                    if (computedSource != null && !computedSource.isEmpty()) {
-//                            column.setTypeName(computedSource);
-                        column.setGenerated(true);
-                        column.setComputedSource(computedSource);
-                    }
-//                }
-            } finally {
-                if (!statement.isClosed())
-                    statement.close();
-            }
-
-            // if column is blob, get segment size
-            if (column.getTypeInt() == Types.LONGVARBINARY ||
-                    column.getTypeInt() == Types.LONGVARCHAR ||
-                    column.getTypeInt() == Types.BLOB) {
-                Statement st = connection.createStatement();
-                try {
-                    ResultSet sourceRS = st.executeQuery("select\n" +
-                            "f.rdb$field_sub_type as field_subtype,\n" +
-                            "f.rdb$segment_length as segment_length\n" +
-                            "from rdb$relation_fields rf,\n" +
-                            "rdb$fields f\n" +
-                            "where rf.rdb$relation_name = '" + table + "'\n" +
-                            "and rf.rdb$field_name = '" + column.getName() + "'\n" +
-                            "and rf.rdb$field_source = f.rdb$field_name");
-                    if (sourceRS.next()) {
-                        column.setColumnSubtype(sourceRS.getInt(1));
-                        column.setColumnSize(sourceRS.getInt(2));
-                        releaseResources(sourceRS, connection);
-                    }
-
-                } finally {
-                    releaseResources(st);
-                }
-            }
-
-        }*/
 
         return columns;
     }

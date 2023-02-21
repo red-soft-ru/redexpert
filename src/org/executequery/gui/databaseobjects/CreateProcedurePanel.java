@@ -33,7 +33,6 @@ import java.net.URLClassLoader;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -73,16 +72,6 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     }
 
     @Override
-    public String queryGetDescription() {
-        return "select\n" +
-                "p.rdb$description \n" +
-                "from rdb$procedures p\n" +
-                "where p.rdb$procedure_name = '" +
-                this.procedure +
-                "'";
-    }
-
-    @Override
     protected String getFullSourceBody() {
         DatabaseHost host = null;
         String fullProcedureBody = null;
@@ -91,9 +80,6 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                     (DatabaseConnection) connectionsCombo.getSelectedItem();
             host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
             DatabaseMetaData dmd = host.getDatabaseMetaData();
-            List<ProcedureParameter> parameters = new ArrayList<>();
-
-
             PooledDatabaseMetaData poolMetaData = (PooledDatabaseMetaData) dmd;
             DatabaseMetaData dMetaData = poolMetaData.getInner();
             URL[] urls;
@@ -155,7 +141,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                 inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 outputParametersPanel.getProcedureParameterModel().getTableVector(),
                 vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
-                sqlBodyText.getSQLText(), descriptionArea.getTextAreaComponent().getText(), false, true);
+                sqlBodyText.getSQLText(), simpleCommentPanel.getComment(), false, true);
     }
 
 

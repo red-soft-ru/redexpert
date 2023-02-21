@@ -30,6 +30,8 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public class DefaultDatabaseView extends AbstractTableObject implements DatabaseView {
@@ -41,8 +43,34 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         setCatalogName(object.getCatalogName());
         setSchemaName(object.getSchemaName());
         setName(object.getName());
-        setRemarks(object.getRemarks());
-        setSource(object.getSource());
+    }
+
+    private static final String DESCRIPTION = "DESCRIPTION";
+    private static final String SOURCE = "SOURCE";
+
+    protected String queryForInfo() {
+
+        String query = "select r.rdb$description as "+DESCRIPTION+",\n" +
+                "r.rdb$view_source as "+SOURCE+"\n"+
+                "from rdb$relations r\n" +
+                "where r.rdb$relation_name = '" + getName() + "'";
+
+        return query;
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) {
+       try {
+           if(rs.next())
+           {
+                setRemarks(getFromResultSet(rs,DESCRIPTION));
+                setSource(getFromResultSet(rs,SOURCE));
+           }
+       } catch (Exception e)
+       {
+           e.printStackTrace();
+       }
+
     }
 
     public DefaultDatabaseView(DatabaseHost host) {

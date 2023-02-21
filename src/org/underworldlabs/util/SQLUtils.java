@@ -1207,7 +1207,7 @@ public final class SQLUtils {
         sb.append(" POSITION ").append(position);
         sb.append("\n");
         if (!MiscUtils.isNull(sqlSecurity)) {
-            sb.append("\n" + SQL_SECURITY).append(sqlSecurity).append("\n");
+            sb.append(SQL_SECURITY).append(sqlSecurity).append("\n");
         }
         if (!MiscUtils.isNull(entryPoint)) {
 

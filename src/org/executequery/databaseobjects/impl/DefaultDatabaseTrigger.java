@@ -134,9 +134,9 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     final int DDL_TRIGGER_CREATE_MAPPING = 45;
     final int DDL_TRIGGER_ALTER_MAPPING = 46;
     final int DDL_TRIGGER_DROP_MAPPING = 47;
-    public static final int DATABASE_TRIGGER = 1;
-    public static final int TABLE_TRIGGER = 0;
-    public static final int DDL_TRIGGER = 2;
+    public static final int DATABASE_TRIGGER = NamedObject.DATABASE_TRIGGER;
+    public static final int TABLE_TRIGGER = NamedObject.TRIGGER;
+    public static final int DDL_TRIGGER = NamedObject.DDL_TRIGGER;
 
 
     /**

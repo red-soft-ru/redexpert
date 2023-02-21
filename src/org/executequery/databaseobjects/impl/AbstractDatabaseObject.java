@@ -176,9 +176,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         try {
             DatabaseHost host = getHost();
             if (host != null) {
-                columns = host.getColumns(getCatalogName(),
-                        getSchemaName(),
-                        getName());
+                columns = host.getColumns(
+                        getName(),false);
 
                 if (columns != null) {
                     for (DatabaseColumn i : columns) {
@@ -617,6 +616,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     @Override
     public String getSource() {
+        checkOnReload(source);
         return source;
     }
 

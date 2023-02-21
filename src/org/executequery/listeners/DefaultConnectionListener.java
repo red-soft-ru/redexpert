@@ -23,6 +23,7 @@ package org.executequery.listeners;
 import org.executequery.GUIUtilities;
 import org.executequery.components.StatusBarPanel;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
@@ -46,7 +47,6 @@ public class DefaultConnectionListener implements ConnectionListener {
         SwingWorker worker = new SwingWorker("loadingTreeForSearch") {
             @Override
             public Object construct() {
-                searchInCols = SystemProperties.getBooleanProperty("user", "browser.search.in.columns");
                 ConnectionsTreePanel panel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
                 DatabaseObjectNode hostNode = panel.getHostNode(connectionEvent.getDatabaseConnection());
                 try {
@@ -55,6 +55,9 @@ public class DefaultConnectionListener implements ConnectionListener {
                     if (e.wasConnectionClosed())
                         Log.info("Connection was closed");
                     else e.printStackTrace();
+                }
+                finally {
+                    ((DefaultDatabaseHost)hostNode.getDatabaseObject()).releaseStatementForColumns();
                 }
                 return null;
             }
@@ -84,10 +87,7 @@ public class DefaultConnectionListener implements ConnectionListener {
         Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-            if (!searchInCols) {
-                if (node.getType() != NamedObject.SYSTEM_TABLE && node.getType() != NamedObject.TABLE && node.getType() != NamedObject.VIEW)
-                    populate(node);
-            } else populate(node);
+            populate(node);
         }
     }
 

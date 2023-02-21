@@ -54,7 +54,7 @@ public abstract class AbstractNamedObject implements NamedObject,
      */
     private NamedObject parent;
 
-    private boolean keepAlive;
+    private final boolean keepAlive;
 
     private boolean isSystem;
 

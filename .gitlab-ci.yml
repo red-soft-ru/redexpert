@@ -253,8 +253,8 @@ test:windows:
   script:
    - cd $TEST_DIR\RedExpert-$env:VERSION-src\ci
    - powershell -ExecutionPolicy ByPass -file test.ps1
-  dependencies: ["build:windows"]
-  needs: ["build:windows"]
+  dependencies: ["prepare", "sources", "build:windows"]
+  needs: ["prepare", "sources", "build:windows"]
   
 
 repackage:

@@ -29,7 +29,6 @@ import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.log.Log;
-import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -43,10 +42,6 @@ import java.util.*;
  * @author Takis Diakoumis
  */
 public class DefaultDatabaseTable extends AbstractTableObject implements DatabaseTable {
-
-    /**
-     * the table columns
-     */
 
     /**
      * the table columns exported
@@ -73,6 +68,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     private String externalFile;
 
     private String tablespace;
+
+    protected List<ColumnData> listCD;
+    protected List<org.executequery.gui.browser.ColumnConstraint> listCC;
 
     public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
 
@@ -784,7 +782,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         updateListCD();
         updateListCC();
 
-        return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, true, true, true, null, getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+        return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, true,
+                true, true, null, getExternalFile(),
+                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
     }
 
     @Override
@@ -793,10 +793,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         updateListCD();
         updateListCC();
 
-        if (Comparer.isComputedFieldsNeed()) for (ColumnData cd : listCD)
-            if (!MiscUtils.isNull(cd.getComputedBy())) cd.setComputedBy(null);
+        if (Comparer.isComputedFieldsNeed())
+            listCD.stream().filter(cd -> !MiscUtils.isNull(cd.getComputedBy())).forEach(cd -> cd.setComputedBy(null));
 
-        return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, false, false, Comparer.isCommentsNeed(), null, getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+        return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, false,
+                false, Comparer.isCommentsNeed(), null, getExternalFile(),
+                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
     }
 
     @Override
@@ -807,7 +809,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultDatabaseTable comparingTable = (DefaultDatabaseTable) databaseObject;
-        return SQLUtils.generateAlterTable(this, comparingTable, false, new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed());
+        return SQLUtils.generateAlterTable(this, comparingTable, false,
+                new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed());
     }
 
     public String getDropSQLText(boolean cascadeConstraints) {

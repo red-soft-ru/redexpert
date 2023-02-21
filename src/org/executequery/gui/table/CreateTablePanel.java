@@ -317,13 +317,14 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         }
 
         String comment = null;
-        if (!Objects.equals(commentField.getTextAreaComponent().getText(), ""))
-            comment = commentField.getTextAreaComponent().getText().trim();
+        if (!Objects.equals(simpleCommentPanel.getComment(), ""))
+            comment = simpleCommentPanel.getComment().trim();
 
         return SQLUtils.generateCreateTable(
                 nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
-                false, temporary, true, true, true, "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
-                externalFile, adapter, null, tablespace, comment);
+                false, this instanceof CreateGlobalTemporaryTable, true, true, true,
+                "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
+                externalFile, adapter, (String) sqlSecurityCombo.getSelectedItem(), tablespace, comment);
     }
 
     private void externalTablePropsChanged() {

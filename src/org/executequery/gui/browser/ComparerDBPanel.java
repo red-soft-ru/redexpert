@@ -9,6 +9,7 @@ import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.BackgroundProgressDialog;
@@ -497,15 +498,19 @@ public class ComparerDBPanel extends JPanel {
 
         progressDialog = new BackgroundProgressDialog(bundleString("Executing"));
         SwingWorker worker = new SwingWorker("DBComparerProcess") {
+
             @Override
             public Object construct() {
 
                 compareButton.setText(Bundles.get("common.cancel.button"));
                 isComparing = true;
 
+                long startTime = System.currentTimeMillis();
+
                 prepareComparer();
                 compare();
 
+                Log.info(String.format("Comparing has been finished. Time elapsed: %d ms", System.currentTimeMillis() - startTime));
                 return null;
             }
 
@@ -522,7 +527,7 @@ public class ComparerDBPanel extends JPanel {
         worker.start();
         progressDialog.run();
 
-        if (isCanceled()) {
+        if (progressDialog.isCancel()) {
             compareButton.setText(bundleString("Canceling"));
             compareButton.setEnabled(false);
         }

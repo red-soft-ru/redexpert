@@ -251,7 +251,7 @@ test:windows:
         start-process .\RedExpert.exe
       }
   script:
-   - cd $TEST_DIR\RedExpert-$env:VERSION-src\ci
+   - cd $TEST_DIR\RedExpert-$env:VERSION\ci
    - powershell -ExecutionPolicy ByPass -file test.ps1
   dependencies: ["prepare", "sources", "build:windows"]
   needs: ["prepare", "sources", "build:windows"]

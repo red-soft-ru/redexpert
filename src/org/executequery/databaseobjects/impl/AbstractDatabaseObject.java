@@ -606,19 +606,23 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     protected void getObjectInfo() {
-        if(querySender==null)
-         querySender= new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        if(querySender==null&&someExecute)
+         querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        DefaultStatementExecutor executor;
+        if(someExecute)
+            executor=querySender;
+        else executor=new DefaultStatementExecutor(getHost().getDatabaseConnection());
         try {
             if(statementForLoadInfo==null||statementForLoadInfo.isClosed())
-                statementForLoadInfo=(PooledStatement) querySender.getPreparedStatement(queryForInfo());
+                statementForLoadInfo=(PooledStatement) executor.getPreparedStatement(queryForInfo());
             statementForLoadInfo.setString(1,getName());
-            ResultSet rs = querySender.getResultSet(-1,statementForLoadInfo).getResultSet();
+            ResultSet rs = executor.getResultSet(-1,statementForLoadInfo).getResultSet();
             setInfoFromResultSet(rs);
         } catch (SQLException e) {
             GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e);
         } finally {
             if(!someExecute)
-                querySender.releaseResources();
+                executor.releaseResources();
             setMarkedForReload(false);
         }
     }

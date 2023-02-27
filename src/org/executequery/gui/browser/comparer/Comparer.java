@@ -10,6 +10,7 @@ import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
+import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
@@ -82,9 +83,24 @@ public class Comparer {
         int headerIndex = script.size() - 1;
         boolean isHeaderNeeded = false;
 
-        for (NamedObject obj : createObjects) {
+        DefaultStatementExecutor querySender = null;
+        PooledStatement statement = null;
 
-            String sqlScript = ((AbstractDatabaseObject) obj).getCompareCreateSQL();
+        boolean isFirst = true;
+        for (NamedObject obj : createObjects) {
+            AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) obj;
+
+            if(!isFirst) {
+                databaseObject.setStatementForLoadInfo(statement);
+                databaseObject.setQuerySender(querySender);
+                databaseObject.setSomeExecute(true);
+            }
+
+            String sqlScript = databaseObject.getCompareCreateSQL();
+            querySender = databaseObject.getQuerySender();
+            statement = databaseObject.getStatementForLoadInfo();
+            databaseObject.setSomeExecute(true);
+            isFirst = false;
 
             if (!sqlScript.contains("Will be created with constraint defining")) {
                 script.add("\n/* " + obj.getName() + " */");
@@ -96,7 +112,6 @@ public class Comparer {
 
         if (!isHeaderNeeded)
             script.remove(headerIndex);
-
     }
 
     public void dropObjects(int type) {

@@ -1,7 +1,6 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.browser.comparer.Comparer;
@@ -230,8 +229,15 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+
         DefaultDatabaseSequence comparingSequence = (DefaultDatabaseSequence) databaseObject;
-        return SQLUtils.generateAlterSequence(this, comparingSequence);
+        int version = 0;
+        try {
+            version = getVersion();
+        } catch (SQLException ignored) {
+        }
+
+        return SQLUtils.generateAlterSequence(this, comparingSequence, version);
     }
 
     @Override
@@ -249,7 +255,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
                 "rdb$generator_name=?";
     }
 
-    int getVersion() throws SQLException {
+    public int getVersion() throws SQLException {
         return getHost().getDatabaseMetaData().getDatabaseMajorVersion();
     }
 

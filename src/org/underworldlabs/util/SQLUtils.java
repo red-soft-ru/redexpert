@@ -988,16 +988,21 @@ public final class SQLUtils {
     }
 
     public static String generateAlterSequence(
-            DefaultDatabaseSequence thisSequence, DefaultDatabaseSequence comparingSequence) {
+            DefaultDatabaseSequence thisSequence, DefaultDatabaseSequence comparingSequence, int version) {
 
         StringBuilder sb = new StringBuilder();
         sb.append("ALTER SEQUENCE ").append(format(thisSequence.getName()));
         String noChangesCheckString = sb.toString();
 
-        if (thisSequence.getSequenceFirstValue() != comparingSequence.getSequenceFirstValue())
-            sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceFirstValue());
-        if (thisSequence.getIncrement() != comparingSequence.getIncrement())
-            sb.append("\n\tINCREMENT BY ").append(comparingSequence.getIncrement());
+        if (version > 2) {
+            if (thisSequence.getSequenceFirstValue() != comparingSequence.getSequenceFirstValue())
+                sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceFirstValue());
+            if (thisSequence.getIncrement() != comparingSequence.getIncrement())
+                sb.append("\n\tINCREMENT BY ").append(comparingSequence.getIncrement());
+        } else {
+            if (thisSequence.getSequenceCurrentValue() != comparingSequence.getSequenceCurrentValue())
+                sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceCurrentValue());
+        }
 
         if (noChangesCheckString.equals(sb.toString()))
             return "/* there are no changes */\n";

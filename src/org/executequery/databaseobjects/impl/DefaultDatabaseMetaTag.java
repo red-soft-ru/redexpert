@@ -25,6 +25,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledResultSet;
+import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -187,6 +188,32 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         setMarkedForReload(false);
 
         return children;
+    }
+
+    public void loadFullInfoForObjects()
+    {
+        List<NamedObject> objects = getObjects();
+        boolean first=true;
+        DefaultStatementExecutor querySender=null;
+        PooledStatement statement=null;
+        for(NamedObject object:objects)
+        {
+            AbstractDatabaseObject abstractDatabaseObject = (AbstractDatabaseObject) object;
+            if(!first)
+            {
+                abstractDatabaseObject.setQuerySender(querySender);
+                abstractDatabaseObject.setStatementForLoadInfo(statement);
+                abstractDatabaseObject.setSomeExecute(true);
+            }
+            abstractDatabaseObject.getRemarks();
+
+                querySender=abstractDatabaseObject.getQuerySender();
+                statement=abstractDatabaseObject.getStatementForLoadInfo();
+                first=false;
+
+        }
+        if (querySender!=null)
+            querySender.releaseResources();
     }
 
     private void addAsParentToObjects(List<NamedObject> children) {

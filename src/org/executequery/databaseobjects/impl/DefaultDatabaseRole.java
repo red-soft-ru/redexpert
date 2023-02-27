@@ -18,12 +18,22 @@ public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
 
     @Override
     protected String queryForInfo() {
-        return null;
+
+            String query = "select r.rdb$description as DESCRIPTION\n" +
+                    "from rdb$roles r\n" +
+                    "where r.rdb$role_name = ?'";
+
+            return query;
     }
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-
+        try {
+            if (rs.next())
+                setRemarks(getFromResultSet(rs,"DESCRIPTION"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

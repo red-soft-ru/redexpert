@@ -76,11 +76,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
 
     this(object.getHost(), metaDataKey);
-
-    setCatalogName(object.getCatalogName());
-    setSchemaName(object.getSchemaName());
     setName(object.getName());
-    setRemarks(object.getRemarks());
     if (object instanceof DefaultDatabaseObject) {
         DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
         setTypeTree(ddo.getTypeTree());
@@ -642,11 +638,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   public DefaultDatabaseTable(DatabaseObject object) {
 
     this(object.getHost());
-
-    setCatalogName(object.getCatalogName());
-    setSchemaName(object.getSchemaName());
     setName(object.getName());
-    setRemarks(object.getRemarks());
     if (object instanceof DefaultDatabaseObject) {
       DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
       setTypeTree(ddo.getTypeTree());
@@ -1388,7 +1380,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     String query = "select r.rdb$description as DESCRIPTION\n" +
             "from rdb$relations r\n" +
-            "where r.rdb$relation_name = '" + getName() + "'";
+            "where r.rdb$relation_name = ?";
 
     return query;
   }

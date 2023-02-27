@@ -406,7 +406,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
                 externalTriggerInfo +
                 sqlSecurity +
                 "from rdb$triggers t\n" +
-                "where t.rdb$trigger_name = '" + getName().trim() + "'";
+                "where t.rdb$trigger_name = ?";
         return query;
     }
 

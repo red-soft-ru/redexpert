@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
+import org.executequery.datasource.PooledStatement;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.Log;
 
@@ -592,16 +593,32 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     protected abstract String queryForInfo();
 
     protected abstract void setInfoFromResultSet(ResultSet rs) throws SQLException;
+    protected DefaultStatementExecutor querySender;
+    protected PooledStatement statementForLoadInfo;
+    protected boolean someExecute=false;
+
+    public boolean isSomeExecute() {
+        return someExecute;
+    }
+
+    public void setSomeExecute(boolean someExecute) {
+        this.someExecute = someExecute;
+    }
 
     protected void getObjectInfo() {
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        if(querySender==null)
+         querySender= new DefaultStatementExecutor(getHost().getDatabaseConnection());
         try {
-            ResultSet rs = querySender.getResultSet(queryForInfo()).getResultSet();
+            if(statementForLoadInfo==null||statementForLoadInfo.isClosed())
+                statementForLoadInfo=(PooledStatement) querySender.getPreparedStatement(queryForInfo());
+            statementForLoadInfo.setString(1,getName());
+            ResultSet rs = querySender.getResultSet(-1,statementForLoadInfo).getResultSet();
             setInfoFromResultSet(rs);
         } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
+            GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e);
         } finally {
-            querySender.releaseResources();
+            if(!someExecute)
+                querySender.releaseResources();
             setMarkedForReload(false);
         }
     }
@@ -636,6 +653,22 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             res = "";
         else res = res.trim();
         return res;
+    }
+
+    public DefaultStatementExecutor getQuerySender() {
+        return querySender;
+    }
+
+    public void setQuerySender(DefaultStatementExecutor querySender) {
+        this.querySender = querySender;
+    }
+
+    public PooledStatement getStatementForLoadInfo() {
+        return statementForLoadInfo;
+    }
+
+    public void setStatementForLoadInfo(PooledStatement statementForLoadInfo) {
+        this.statementForLoadInfo = statementForLoadInfo;
     }
 }
 

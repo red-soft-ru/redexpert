@@ -1,10 +1,13 @@
 package org.executequery.gui;
 
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
+import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.sql.SqlMessages;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -72,21 +75,36 @@ public class AnaliseRecompileDialog extends BaseDialog {
         if (databaseObjectNode != null) {
 
             List<DatabaseObjectNode> childs = databaseObjectNode.getChildObjects();
-
+            DefaultDatabaseMetaTag metaTag = (DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject();
+            long start = System.currentTimeMillis();
             if (childs != null) {
                 progressBar.setMaximum(childs.size());
-                if (((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType() == NamedObject.PACKAGE)
+                if (metaTag.getSubType() == NamedObject.PACKAGE)
                     sb.append("set term ; ^");
+                DefaultStatementExecutor querySender = null;
+                PooledStatement statement = null;
                 for (int i = 0; i < childs.size(); i++) {
                     progressBar.setValue(i);
                     AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) childs.get(i).getDatabaseObject();
                     addOutputMessage(SqlMessages.PLAIN_MESSAGE, bundleString("generateScript", databaseObject.getName()));
+                    if(i>0)
+                    {
+                        databaseObject.setStatementForLoadInfo(statement);
+                        databaseObject.setQuerySender(querySender);
+                        databaseObject.setSomeExecute(true);
+                    }
                     String s = databaseObject.getCreateSQLText();
+                    querySender=databaseObject.getQuerySender();
+                    statement=databaseObject.getStatementForLoadInfo();
                     sb.append(s);
                     if (!sb.toString().trim().endsWith("^"))
                         sb.append("^");
                 }
+                if(querySender!=null)
+                    querySender.releaseResources();
+
             }
+            Log.info("Analise time = "+(System.currentTimeMillis()-start));
         }
 
     }

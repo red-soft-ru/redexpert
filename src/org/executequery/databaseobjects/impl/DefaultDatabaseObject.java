@@ -80,11 +80,6 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
 
     }
 
-    @Override
-    protected void getObjectInfo() {
-
-    }
-
     public int getTypeTree() {
         return typeTree;
     }

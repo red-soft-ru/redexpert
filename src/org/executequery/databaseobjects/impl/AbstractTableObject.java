@@ -612,23 +612,9 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
 
         String query = "select r.rdb$description\n" +
                 "from rdb$relations r\n" +
-                "where r.rdb$relation_name = '" + getName() + "'";
+                "where r.rdb$relation_name = ?";
 
         return query;
-    }
-
-    @Override
-    protected void getObjectInfo() {
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        try {
-            ResultSet rs = querySender.getResultSet(queryForInfo()).getResultSet();
-            setInfoFromResultSet(rs);
-        } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
-        } finally {
-            querySender.releaseResources();
-            setMarkedForReload(false);
-        }
     }
 
     @Override

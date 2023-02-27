@@ -136,9 +136,9 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
                 .append("LEFT JOIN RDB$COLLATIONS CO ON ((F.RDB$COLLATION_ID = CO.RDB$COLLATION_ID) AND")
                 .append("(F.RDB$CHARACTER_SET_ID = CO.RDB$CHARACTER_SET_ID))\n")
                 .append("WHERE\n")
-                .append("TRIM(F.RDB$FIELD_NAME) = '").append(getName()).append("'");
-
-        return sb.toString();
+                .append("TRIM(F.RDB$FIELD_NAME) = ?");
+        String query = sb.toString();
+        return query;
     }
 
     @Override
@@ -197,8 +197,8 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
                 column.setColumnSize(rs.getInt(CHAR_LENGTH));
             column.setColumnScale(Math.abs(rs.getInt(SCALE)));
             column.setRequired(rs.getInt(NULL_FLAG) == DatabaseMetaData.columnNoNulls);
-            column.setRemarks(rs.getString(DESCRIPTION));
-            setRemarks(rs.getString(DESCRIPTION));
+            column.setRemarks(getFromResultSet(rs,DESCRIPTION));
+            setRemarks(getFromResultSet(rs,DESCRIPTION));
             column.setDefaultValue(COMPUTED_BY);
 
             sqlType = rs.getInt(TYPE);

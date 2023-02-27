@@ -53,7 +53,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         String query = "select r.rdb$description as "+DESCRIPTION+",\n" +
                 "r.rdb$view_source as "+SOURCE+"\n"+
                 "from rdb$relations r\n" +
-                "where r.rdb$relation_name = '" + getName() + "'";
+                "where r.rdb$relation_name = ?";
 
         return query;
     }

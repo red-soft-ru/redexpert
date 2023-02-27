@@ -44,7 +44,7 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
         String query = MessageFormat.format("select rdb$tablespace_id as {" + ID + "},rdb$security_class as {" + SECURITY_CLASS + "}," +
                 "rdb$system_flag as {" + SYSTEM + "},rdb$description as {" + DESCRIPTION + "},rdb$owner_name as {" + OWNER + "}," +
                 "rdb$file_name as {" + FILE_NAME + "}, rdb$offline as {" + OFFLINE + "},rdb$read_only as {" + READ_ONLY + "}" +
-                " from rdb$tablespaces where rdb$tablespace_name = ''" + getName() + "''", COLUMNS);
+                " from rdb$tablespaces where rdb$tablespace_name = ?", COLUMNS);
         return query;
     }
 
@@ -88,41 +88,12 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
         return "SELECT RDB$INDEX_NAME, RDB$INDEX_INACTIVE FROM RDB$INDICES WHERE RDB$TABLESPACE_NAME='" + getName() + "' ORDER BY 1";
     }
 
-    private void loadIndexes() {
-        indexes = new ArrayList<>();
-        try {
-            ResultSet rs = querySender.getResultSet(getIndexesQuery()).getResultSet();
-            while (rs.next()) {
-                tables.add(rs.getString(1));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            querySender.releaseResources();
-        }
-    }
 
     public String getTablesQuery() {
         return "SELECT RDB$RELATION_NAME FROM RDB$RELATIONS WHERE RDB$TABLESPACE_NAME='" + getName() + "' ORDER BY 1";
     }
 
-    private void loadTables() {
-        tables = new ArrayList<>();
 
-        try {
-            ResultSet rs = querySender.getResultSet(getTablesQuery()).getResultSet();
-            while (rs.next()) {
-                tables.add(rs.getString(1));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            querySender.releaseResources();
-        }
-
-    }
 
 
     public List<String> getTables() {

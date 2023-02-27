@@ -316,7 +316,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
                 "C.RDB$CONSTRAINT_TYPE" +
                 tablespace_query +
                 "\nFROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
-                "where I.RDB$INDEX_NAME='" + getName().trim() + "'";
+                "where I.RDB$INDEX_NAME=?";
         return query;
 
     }

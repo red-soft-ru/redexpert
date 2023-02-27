@@ -161,7 +161,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id\n" +
                 "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id))\n" +
                 "left join rdb$collations co2 on ((fa.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                "where fnc.rdb$function_name = '" + getName() + "'\n" +
+                "where fnc.rdb$function_name = ?\n" +
                 "and (fnc.rdb$package_name is null)\n" +
                 "order by fa.rdb$argument_position";
         return sql;

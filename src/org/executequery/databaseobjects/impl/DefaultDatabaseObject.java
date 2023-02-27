@@ -97,16 +97,23 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
 
     @Override
     protected String queryForInfo() {
-        return null;
+
+        String query = "select r.rdb$description as DESCRIPTION\n" +
+                "from rdb$relations r\n" +
+                "where r.rdb$relation_name = ?";
+
+        return query;
     }
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) {
 
-    }
-
-    @Override
-    protected void getObjectInfo() {
+        try {
+            if (rs.next())
+                setRemarks(getFromResultSet(rs,"DESCRIPTION"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

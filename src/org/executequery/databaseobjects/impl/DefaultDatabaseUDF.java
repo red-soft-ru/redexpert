@@ -351,7 +351,7 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
         sqlQuery += "from rdb$functions f\n" +
                 "left join rdb$function_arguments fa on f.rdb$function_name = fa.rdb$function_name\n" +
                 "left join rdb$character_sets c on fa.rdb$character_set_id = c.rdb$character_set_id\n" +
-                "where (f.rdb$function_name = '" + getName() + "')\n" +
+                "where (f.rdb$function_name = ?)\n" +
                 "order by fa.rdb$argument_position";
         return sqlQuery;
     }

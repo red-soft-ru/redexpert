@@ -191,6 +191,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
+
         String query = "";
         try {
             long firstValue = (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue();
@@ -238,30 +239,14 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         return null;
     }
 
-    @Override
-    protected void getObjectInfo() {
-        super.getObjectInfo();
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        try {
-            String query = queryForInfo();
-            ResultSet rs = querySender.getResultSet(query).getResultSet();
-            setInfoFromResultSet(rs);
-        } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
-        } finally {
-            querySender.releaseResources();
-            setMarkedForReload(false);
-        }
-    }
-
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         if (rs.next())
-            setRemarks(rs.getString(1));
+            setRemarks(getFromResultSet(rs,"DESCRIPTION"));
     }
 
     protected String queryForInfo() {
-        return "select rdb$description from rdb$generators where \n" +
-                "     rdb$generator_name='" + getName().trim() + "'";
+        return "select rdb$description as DESCRIPTION from rdb$generators where \n" +
+                "rdb$generator_name=?";
     }
 
     int getVersion() throws SQLException {

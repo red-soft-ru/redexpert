@@ -70,7 +70,7 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
                 "co.RDB$SPECIFIC_ATTRIBUTES as " + ATTRIBUTES + ",\n" +
                 "co.RDB$DESCRIPTION as " + DESCRIPTION + "\n" +
                 "from RDB$COLLATIONS co left join RDB$CHARACTER_SETS ch on co.RDB$CHARACTER_SET_ID=ch.RDB$CHARACTER_SET_ID \n" +
-                "where co.RDB$COLLATION_NAME='" + getName() + "'";
+                "where co.RDB$COLLATION_NAME=?";
         return query;
     }
 

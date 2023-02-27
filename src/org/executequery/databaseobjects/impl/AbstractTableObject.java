@@ -607,27 +607,9 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         }
     }
 
-    @Override
-    protected String queryForInfo() {
 
-        String query = "select r.rdb$description\n" +
-                "from rdb$relations r\n" +
-                "where r.rdb$relation_name = ?";
 
-        return query;
-    }
 
-    @Override
-    protected void setInfoFromResultSet(ResultSet rs) {
-
-        try {
-            if (rs.next())
-                setRemarks(rs.getString(1));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
 
     private List<DatabaseColumn> databaseColumnListWithSize(int size) {
 

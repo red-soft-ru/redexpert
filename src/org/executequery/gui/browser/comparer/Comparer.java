@@ -164,8 +164,40 @@ public class Comparer {
         int headerIndex = script.size() - 1;
         boolean isHeaderNeeded = false;
 
+        DefaultStatementExecutor masterQuerySender = null;
+        PooledStatement masterStatement = null;
+
+        DefaultStatementExecutor compareQuerySender = null;
+        PooledStatement compareStatement = null;
+
+        boolean isFirst = true;
         for (NamedObject obj : alterObjects.keySet()) {
-            String sqlScript = ((AbstractDatabaseObject) obj).getCompareAlterSQL((AbstractDatabaseObject) alterObjects.get(obj));
+
+            AbstractDatabaseObject masterObject = (AbstractDatabaseObject) obj;
+            AbstractDatabaseObject compareObject = (AbstractDatabaseObject) alterObjects.get(obj);
+
+            if(!isFirst) {
+
+                masterObject.setStatementForLoadInfo(masterStatement);
+                masterObject.setQuerySender(masterQuerySender);
+                masterObject.setSomeExecute(true);
+
+                compareObject.setStatementForLoadInfo(compareStatement);
+                compareObject.setQuerySender(compareQuerySender);
+                compareObject.setSomeExecute(true);
+            }
+
+            String sqlScript = masterObject.getCompareAlterSQL(compareObject);
+            isFirst = false;
+
+            masterQuerySender = masterObject.getQuerySender();
+            masterStatement = masterObject.getStatementForLoadInfo();
+            masterObject.setSomeExecute(true);
+
+            compareQuerySender = compareObject.getQuerySender();
+            compareStatement = compareObject.getStatementForLoadInfo();
+            compareObject.setSomeExecute(true);
+
             if (!sqlScript.contains("there are no changes")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
                 lists += "\t" + obj.getName() + "\n";

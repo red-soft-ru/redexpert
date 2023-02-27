@@ -31,6 +31,7 @@ import org.executequery.log.Log;
 import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.TokenizingFormatter;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
@@ -649,69 +650,13 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
   }
 
-  private boolean loadedInfoAboutExternalFile = false;
-  private boolean loadedInfoAboutTablespace = false;
 
-  private void loadInfoAboutExternalFile() {
-    DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-    try {
-      //querySender.setDatabaseConnection(getHost().getDatabaseConnection());
-      String adapter = ", RDB$ADAPTER";
-      if (!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
-        adapter = "";
-      PreparedStatement statement = querySender.getPreparedStatement("select rdb$external_file" + adapter + " from rdb$relations where rdb$relation_name = ?");
-      statement.setString(1, getName());
-      ResultSet rs = querySender.getResultSet(-1, statement).getResultSet();
-      if (rs.next()) {
-        setExternalFile(rs.getString(1));
-        if (!adapter.isEmpty())
-          setAdapter(rs.getString(2));
-      }
-    } catch (SQLException throwables) {
-      throwables.printStackTrace();
-    } finally {
-      querySender.releaseResources();
-      loadedInfoAboutExternalFile = true;
-    }
-  }
-
-  private void loadInfoAboutTablespace() {
-    DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-    try {
-      if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase") && getHost().getDatabaseMajorVersion() >= 4) {
-        PreparedStatement statement = querySender.getPreparedStatement("select rdb$tablespace_name from rdb$relations where rdb$relation_name = ?");
-        statement.setString(1, getName());
-        ResultSet rs = querySender.getResultSet(-1, statement).getResultSet();
-        if (rs.next()) {
-          setTablespace(rs.getString(1));
-        }
-
-      }
-    } catch (SQLException throwables) {
-      throwables.printStackTrace();
-    } finally {
-      querySender.releaseResources();
-      loadedInfoAboutTablespace = true;
-    }
-  }
-
-  @Override
-  public String getExternalFile() {
-    if (!loadedInfoAboutExternalFile)
-      loadInfoAboutExternalFile();
-    return externalFile;
-  }
+  protected static final String DESCRIPTION = "DESCRIPTION";
 
   public void setExternalFile(String externalFile) {
     this.externalFile = externalFile;
   }
-
-  @Override
-  public String getAdapter() {
-    if (!loadedInfoAboutExternalFile)
-      loadInfoAboutExternalFile();
-    return adapter;
-  }
+  protected static final String SQL_SECURITY = "SQL_SECURITY";
 
   public void setAdapter(String adapter) {
     this.adapter = adapter;
@@ -1374,13 +1319,47 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     return names;
 
   }
+  protected static final String EXTERNAL_FILE = "EXTERNAL_FILE";
+  protected static final String ADAPTER = "ADAPTER";
+  protected static final String TABLESPACE = "TABLESPACE";
+
+  @Override
+  public String getExternalFile() {
+    checkOnReload(externalFile);
+    return externalFile;
+  }
+
+  @Override
+  public String getAdapter() {
+    checkOnReload(adapter);
+    return adapter;
+  }
 
   @Override
   protected String queryForInfo() {
+    String prefix = "RDB$";
+    SelectBuilder sb = new SelectBuilder();
+    Table rels = new Table();
+    rels.setName("RDB$RELATIONS").setAlias("R");
+    sb.setTable(rels);
 
-    String query = "select r.rdb$description as DESCRIPTION\n" +
-            "from rdb$relations r\n" +
-            "where r.rdb$relation_name = ?";
+    Field sqlSecurity = new Field();
+    sqlSecurity.setTable(rels).setName(prefix + SQL_SECURITY).setAlias(SQL_SECURITY);
+    sqlSecurity.setStatement(Function.createFunction().setName("IIF")
+            .appendArgument(sqlSecurity.getFieldTable() + " IS NULL").appendArgument("NULL").appendArgument(Function.createFunction().setName("IIF")
+                    .appendArgument(sqlSecurity.getFieldTable()).appendArgument("'DEFINER'").appendArgument("'INVOKER'").getStatement()).getStatement());
+    sqlSecurity.setNull(getDatabaseMajorVersion() < 3);
+    sb.appendField(sqlSecurity);
+
+    sb.appendField(Field.createField().setTable(rels).setName(prefix + EXTERNAL_FILE).setAlias(EXTERNAL_FILE));
+    sb.appendField(Field.createField().setTable(rels).setName(prefix + ADAPTER).setAlias(ADAPTER).setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")));
+    sb.appendField(Field.createField().setTable(rels).setName(prefix + TABLESPACE + "_NAME").setAlias(TABLESPACE).
+            setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")
+                    || getDatabaseMajorVersion() < 4));
+    sb.appendField(Field.createField().setTable(rels).setName(prefix + DESCRIPTION).setAlias(DESCRIPTION));
+
+    sb.appendCondition(Condition.createCondition().setLeftField(Field.createField().setTable(rels).setName(prefix + "RELATION_NAME")).setOperator("=").setRightStatement("?"));
+    String query = sb.getSQLQuery();
 
     return query;
   }
@@ -1388,8 +1367,13 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   @Override
   protected void setInfoFromResultSet(ResultSet rs) {
     try {
-      if (rs.next())
-        setRemarks(getFromResultSet(rs,"DESCRIPTION"));
+      if (rs.next()) {
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+        setExternalFile(getFromResultSet(rs, EXTERNAL_FILE));
+        setAdapter(getFromResultSet(rs, ADAPTER));
+        setTablespace(getFromResultSet(rs, TABLESPACE));
+      }
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -1397,8 +1381,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   }
 
   public String getTablespace() {
-    if (!loadedInfoAboutTablespace)
-      loadInfoAboutTablespace();
+    checkOnReload(tablespace);
     return tablespace;
   }
 

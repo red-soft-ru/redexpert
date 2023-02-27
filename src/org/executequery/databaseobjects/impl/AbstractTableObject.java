@@ -1,6 +1,5 @@
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.tree.TreePanel;
@@ -636,6 +635,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
     }
 
     public String getSqlSecurity() {
+        checkOnReload(sqlSecurity);
         return sqlSecurity;
     }
 

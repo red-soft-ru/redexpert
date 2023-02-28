@@ -5,7 +5,7 @@ import java.util.List;
 
 public class SelectBuilder {
 
-    Table table;
+    List<Table> tables;
     List<Field> fields;
     List<LeftJoin> joins;
 
@@ -13,12 +13,12 @@ public class SelectBuilder {
 
     String ordering;
 
-    public Table getTable() {
-        return table;
+    public List<Table> getTables() {
+        return tables;
     }
 
-    public SelectBuilder setTable(Table table) {
-        this.table = table;
+    public SelectBuilder setTables(List<Table> tables) {
+        this.tables = tables;
         return this;
     }
 
@@ -76,6 +76,13 @@ public class SelectBuilder {
         return this;
     }
 
+    public SelectBuilder appendTable(Table table) {
+        if (tables == null)
+            tables = new ArrayList<>();
+        tables.add(table);
+        return this;
+    }
+
     public String getSQLQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("select ");
@@ -95,21 +102,45 @@ public class SelectBuilder {
             sb.append("\n");
         }
         sb.append("FROM ");
-        if (joins != null) {
+        if (tables != null) {
             boolean first = true;
-            for (LeftJoin join : joins) {
-                if (first)
-                    sb.append(join.leftField.table.getName()).append(" ").append(join.leftField.table.getAlias());
+            for (Table table : tables) {
+                if (!first)
+                    sb.append(", ");
                 first = false;
-                sb.append(" LEFT JOIN ").append(join.rightField.table.getName()).append(" ").append(join.rightField.table.getAlias());
-                sb.append(" ON ").append(join.leftField.getFieldTable());
-                sb.append(" = ").append(join.rightField.getFieldTable());
-                sb.append("\n");
+                sb.append(table.getName()).append(" ").append(table.getAlias());
             }
         }
-        if (table != null) {
-            sb.append(table.getName()).append(" ").append(table.getAlias()).append("\n");
+        if (joins != null) {
+            boolean first = true;
+            List<Table> usedTables = new ArrayList<>();
+            for (LeftJoin join : joins) {
+                if (first) {
+                    if (tables != null)
+                        sb.append(",\n");
+                }
+                first = false;
+                if (!usedTables.contains(join.getLeftTable())) {
+                    if (!usedTables.isEmpty())
+                        sb.append(",\n");
+                    sb.append(join.getLeftTable().getName()).append(" ").append(join.getLeftTable().getAlias());
+                    usedTables.add(join.getLeftTable());
+                }
+                sb.append(" LEFT JOIN ").append(join.getRightTable().getName()).append(" ").append(join.getRightTable().getAlias());
+                usedTables.add(join.getRightTable());
+                boolean firstField = true;
+                for (Field leftField : join.getMapField().keySet()) {
+                    Field rightField = join.getMapField().get(leftField);
+                    if (!firstField) {
+                        sb.append(" AND ");
+                    } else sb.append(" ON ");
+                    firstField = false;
+                    sb.append(leftField.getFieldTable());
+                    sb.append(" = ").append(rightField.getFieldTable());
+                }
+            }
         }
+        sb.append("\n");
         if (conditions != null) {
             sb.append("WHERE ");
             boolean first = true;

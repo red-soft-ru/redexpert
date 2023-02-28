@@ -1,6 +1,11 @@
 package org.executequery.sql.sqlbuilder;
 
 public class Table {
+
+    public static Table createTable() {
+        return new Table();
+    }
+
     private String name;
     private String alias;
 

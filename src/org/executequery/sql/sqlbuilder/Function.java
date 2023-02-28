@@ -44,6 +44,7 @@ public class Function {
             for (String arg : arguments) {
                 if (!first)
                     sb.append(", ");
+                first = false;
                 sb.append(arg);
             }
 

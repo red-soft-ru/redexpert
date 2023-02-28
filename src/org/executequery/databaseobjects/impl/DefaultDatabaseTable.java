@@ -1341,7 +1341,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     SelectBuilder sb = new SelectBuilder();
     Table rels = new Table();
     rels.setName("RDB$RELATIONS").setAlias("R");
-    sb.setTable(rels);
+    sb.appendTable(rels);
 
     Field sqlSecurity = new Field();
     sqlSecurity.setTable(rels).setName(prefix + SQL_SECURITY).setAlias(SQL_SECURITY);

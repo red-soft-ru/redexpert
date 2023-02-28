@@ -1,23 +1,37 @@
 package org.executequery.sql.sqlbuilder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class LeftJoin {
-    Field leftField;
+    Table leftTable;
 
-    Field rightField;
+    Table rightTable;
+    Map<Field, Field> mapField;
 
-    public Field getLeftField() {
-        return leftField;
+    public static LeftJoin createLeftJoin() {
+        return new LeftJoin();
     }
 
-    public void setLeftField(Field leftField) {
-        this.leftField = leftField;
+    public LeftJoin appendFields(Field leftField, Field rightField) {
+        if (mapField == null) {
+            mapField = new HashMap<>();
+            leftTable = leftField.getTable();
+            rightTable = rightField.getTable();
+        }
+        mapField.put(leftField, rightField);
+        return this;
     }
 
-    public Field getRightField() {
-        return rightField;
+    public Table getLeftTable() {
+        return leftTable;
     }
 
-    public void setRightField(Field rightField) {
-        this.rightField = rightField;
+    public Table getRightTable() {
+        return rightTable;
+    }
+
+    public Map<Field, Field> getMapField() {
+        return mapField;
     }
 }

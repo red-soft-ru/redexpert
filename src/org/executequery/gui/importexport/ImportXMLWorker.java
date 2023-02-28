@@ -152,7 +152,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
         setIndeterminateProgress(true);
         reset();
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("ImportXML") {
             public Object construct() {
                 return doWork();
             }

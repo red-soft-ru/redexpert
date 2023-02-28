@@ -45,7 +45,6 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
     private JButton addTag;
     private JButton deleteTag;
     private SimpleSqlTextPanel sqlTextPanel;
-    private SimpleSqlTextPanel descriptionPanel;
 
     private JCheckBox showPassword;
 
@@ -59,9 +58,9 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void init() {
+        centralPanel.setVisible(false);
         mainPanel = new JPanel();
         sqlTextPanel = new SimpleSqlTextPanel();
-        descriptionPanel = new SimpleSqlTextPanel();
         passTextField = new JPasswordField();
         passTextField.setTransferHandler(null);
         passTextField.addKeyListener(new KeyListener() {
@@ -161,7 +160,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         mainPanel.add(deleteTag, gbh.nextCol().setMaxWeightX().get());
         mainPanel.add(tagScrol, gbh.setX(2).nextRowWidth().setWidth(2).setMaxWeightY().setMaxWeightX().fillBoth().setHeight(10).get());
         tabbedPane.add(bundleString("properties"), mainPanel);
-        tabbedPane.add(bundleString("Description"), descriptionPanel);
+        addCommentTab(null);
         tabbedPane.add("SQL", sqlTextPanel);
         tabbedPane.addChangeListener(changeEvent -> {
             if (tabbedPane.getSelectedComponent() == sqlTextPanel) {
@@ -192,7 +191,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         firstNameField.setText(beginUser.getFirstName());
         middleNameField.setText(beginUser.getMiddleName());
         lastNameField.setText(beginUser.getLastName());
-        descriptionPanel.setSQLText(beginUser.getComment());
+        simpleCommentPanel.setDatabaseObject(beginUser);
         activeBox.setSelected(beginUser.getActive());
         pluginField.setSelectedItem(beginUser.getPlugin());
         pluginField.setEnabled(false);
@@ -210,7 +209,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         user.setMiddleName(middleNameField.getText());
         user.setLastName(lastNameField.getText());
         user.setPlugin((String) pluginField.getSelectedItem());
-        user.setComment(descriptionPanel.getSQLText());
+        user.setComment(simpleCommentPanel.getComment());
         user.setActive(activeBox.isSelected());
         user.setAdministrator(adminBox.isSelected());
         user.setTags(new HashMap<>());

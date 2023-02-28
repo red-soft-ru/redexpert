@@ -93,7 +93,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
     private void transferData() {
         reset();
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("ExportXml") {
             public Object construct() {
                 return doWork();
             }

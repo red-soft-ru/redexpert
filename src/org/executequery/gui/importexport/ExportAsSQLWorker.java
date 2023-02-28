@@ -53,7 +53,7 @@ public class ExportAsSQLWorker extends BaseImportExportWorker {
 
     protected void export() {
 
-        worker = new ThreadWorker() {
+        worker = new ThreadWorker("ExportToSQL") {
 
             public Object construct() {
 

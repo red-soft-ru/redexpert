@@ -9,7 +9,6 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.ListSelectionPanel;
@@ -33,8 +32,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     public static final String ALTER_TITLE = getEditTitle(NamedObject.INDEX);
     private JComboBox tableName;
     private ListSelectionPanel fieldsPanel;
-    private JPanel descriptionPanel;
-    private SimpleTextArea description;
     private SimpleSqlTextPanel computedPanel;
     private JComboBox sortingBox;
     private JComboBox tablespaceBox;
@@ -68,7 +65,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         databaseIndex = metaTag.getIndexFromName(databaseIndex.getName());
         databaseIndex.loadColumns();
         nameField.setEnabled(false);
-        description.getTextAreaComponent().setText(databaseIndex.getRemarks());
+        simpleCommentPanel.setDatabaseObject(databaseIndex);
         for (int i = 0; i < tableName.getItemCount(); i++) {
             if (databaseIndex.getTableName().trim().equals(tableName.getItemAt(i))) {
                 tableName.setSelectedIndex(i);
@@ -153,7 +150,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     protected void init() {
         fieldsPanel = new ListSelectionPanel();
-        descriptionPanel = new JPanel();
         tableName = new JComboBox(new Vector());
         sortingBox = new JComboBox(new String[]{bundleString("ascending"), bundleString("descending")});
         tablespaceBox = new JComboBox();
@@ -174,7 +170,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         computedBox = new JCheckBox(bundleStaticString("computed"));
         activeBox = new JCheckBox(bundleStaticString("active"));
         activeBox.setSelected(true);
-        this.description = new SimpleTextArea();
         computedPanel = new SimpleSqlTextPanel();
 
         computedBox.addActionListener(actionEvent -> {
@@ -205,42 +200,16 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             changed = true;
         });
 
-        centralPanel.setLayout(new GridBagLayout());
-
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaults(new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        gbh.defaults();
-        gbh.addLabelFieldPair(centralPanel, bundleStaticString("table"), tableName, null);
-        gbh.addLabelFieldPair(centralPanel, bundleString("sorting"), sortingBox, null);
+        centralPanel.setVisible(false);
+        topGbh.addLabelFieldPair(topPanel, bundleStaticString("table"), tableName, null, true, false);
+        topGbh.addLabelFieldPair(topPanel, bundleString("sorting"), sortingBox, null, false, true);
         if (tss != null)
-            gbh.addLabelFieldPair(centralPanel, bundleString("tablespace"), tablespaceBox, null);
-
-
-        JPanel checksPanel = new JPanel(new GridBagLayout());
-
-        checksPanel.add(uniqueBox, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        checksPanel.add(computedBox, new GridBagConstraints(1, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        checksPanel.add(activeBox, new GridBagConstraints(2, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        centralPanel.add(checksPanel, gbh.nextRowFirstCol().spanX().anchorNorthWest().get());
+            topGbh.addLabelFieldPair(topPanel, bundleString("tablespace"), tablespaceBox, null);
+        topPanel.add(uniqueBox, topGbh.nextRowFirstCol().setLabelDefault().get());
+        topPanel.add(computedBox, topGbh.nextCol().setLabelDefault().get());
+        topPanel.add(activeBox, topGbh.nextCol().setLabelDefault().get());
         tabbedPane.add(bundleString("fields"), fieldsPanel);
-        tabbedPane.add(bundleStaticString("description"), descriptionPanel);
-        descriptionPanel.setLayout(new BorderLayout());
-        descriptionPanel.add(description);
+        addCommentTab(null);
         if (table_name != null) {
             for (int i = 0; i < tableName.getItemCount(); i++) {
                 if (table_name.trim().equals(tableName.getItemAt(i))) {
@@ -358,8 +327,8 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             if (!activeBox.isSelected())
                 query += "ALTER INDEX " + getFormattedName() + " INACTIVE;";
         }
-        if (!MiscUtils.isNull(description.getTextAreaComponent().getText()))
-            query += "COMMENT ON INDEX " + getFormattedName() + " IS '" + description.getTextAreaComponent().getText() + "'";
+        if (!MiscUtils.isNull(simpleCommentPanel.getComment()))
+            query += "COMMENT ON INDEX " + getFormattedName() + " IS '" + simpleCommentPanel.getComment() + "'";
         return query;
     }
 

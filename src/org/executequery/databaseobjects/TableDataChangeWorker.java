@@ -100,7 +100,7 @@ public class TableDataChangeWorker {
 
         try {
 
-            connection = ConnectionManager.getConnection(table.getHost().getDatabaseConnection());
+            connection = ConnectionManager.getTemporaryConnection(table.getHost().getDatabaseConnection());
             connection.setAutoCommit(false);
 
         } catch (SQLException e) {

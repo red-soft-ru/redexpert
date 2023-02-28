@@ -242,7 +242,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
             public void actionPerformed(ActionEvent e) {
                 int returnVal = fileChooser.showOpenDialog(openFileLog);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    SwingWorker sw = new SwingWorker() {
+                    SwingWorker sw = new SwingWorker("loadTraceFromFile") {
                         @Override
                         public Object construct() {
                             openFileLogField.setText(fileChooser.getSelectedFile().getAbsolutePath());
@@ -332,7 +332,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                             connectionPanel.getComponents()[i].setEnabled(false);
                         }
                         logToFileBox.setEnabled(false);
-                        SwingWorker sw = new SwingWorker() {
+                        SwingWorker sw = new SwingWorker("TraceSession") {
                             @Override
                             public Object construct() {
                                 readFromBufferedReader(bufferedReader, false);

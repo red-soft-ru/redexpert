@@ -31,7 +31,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -70,15 +69,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         setFocusComponent();
     }
 
-    @Override
-    public String queryGetDescription() {
-        return "select\n" +
-                "p.rdb$description \n" +
-                "from rdb$procedures p\n" +
-                "where p.rdb$procedure_name = '" +
-                this.procedure +
-                "'";
-    }
+
 
     @Override
     protected String getFullSourceBody() {
@@ -89,9 +80,6 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                     (DatabaseConnection) connectionsCombo.getSelectedItem();
             host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
             DatabaseMetaData dmd = host.getDatabaseMetaData();
-            List<ProcedureParameter> parameters = new ArrayList<>();
-
-
             PooledDatabaseMetaData poolMetaData = (PooledDatabaseMetaData) dmd;
             DatabaseMetaData dMetaData = poolMetaData.getInner();
             URL[] urls;
@@ -148,7 +136,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         Vector<ColumnData> vars = new Vector<>();
         vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
         vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
-        return SQLUtils.generateCreateProcedure(nameField.getText(), externalField.getText(), engineField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(), outputParametersPanel.getProcedureParameterModel().getTableVector(), vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(), sqlBodyText.getSQLText(), descriptionArea.getTextAreaComponent().getText());
+        return SQLUtils.generateCreateProcedure(nameField.getText(), externalField.getText(), engineField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(), outputParametersPanel.getProcedureParameterModel().getTableVector(), vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(), sqlBodyText.getSQLText(), simpleCommentPanel.getComment());
     }
 
 

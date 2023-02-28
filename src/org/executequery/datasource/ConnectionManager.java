@@ -95,6 +95,7 @@ public final class ConnectionManager {
         databaseConnection.setConnected(true);
         DatabaseObjectNode hostNode = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection);
         ((DefaultDatabaseHost) hostNode.getDatabaseObject()).resetCountFinishedMetaTags();
+        long startTime = System.currentTimeMillis();
         loadTree(hostNode, connectionBuilder);
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(databaseConnection);
         try {
@@ -110,21 +111,12 @@ public final class ConnectionManager {
         } finally {
             querySender.releaseResources();
         }
-        DatabaseHost host = (DatabaseHost) hostNode.getDatabaseObject();
-        try {
-            while (host.countFinishedMetaTags() < hostNode.getChildCount()) {
-
-                Thread.sleep(100);
-            }
-
-        } catch (InterruptedException e) {
-            if (Log.isDebugEnabled())
-                e.printStackTrace();
-        }
         if (connectionBuilder != null && connectionBuilder.isCancelled())
             databaseConnection.setConnected(false);
-        if (databaseConnection.isConnected())
+        if (databaseConnection.isConnected()) {
+            Log.info("Connection time = "+(System.currentTimeMillis()-startTime)+"ms");
             Log.info("Data source " + databaseConnection.getName() + " initialized.");
+        }
     }
 
 
@@ -135,21 +127,9 @@ public final class ConnectionManager {
             while (nodes.hasMoreElements()) {
                 DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
                 if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
-                    SwingWorker sw = new SwingWorker() {
-                        @Override
-                        public Object construct() {
-                            loadTree(node, connectionBuilder);
-                            return null;
-                        }
-
-                        @Override
-                        public void finished() {
-                            if (node.getType() == NamedObject.META_TAG) {
-                                ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getHost().incCountFinishedMetaTags();
-                            }
-                        }
-                    };
-                    sw.start();
+                    loadTree(node, connectionBuilder);
+                    if (node.getType() == NamedObject.META_TAG)
+                        ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getHost().incCountFinishedMetaTags();
                 }
             }
         } catch (Exception e) {

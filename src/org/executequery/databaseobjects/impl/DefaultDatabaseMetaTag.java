@@ -25,6 +25,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledResultSet;
+import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -189,6 +190,32 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return children;
     }
 
+    public void loadFullInfoForObjects()
+    {
+        List<NamedObject> objects = getObjects();
+        boolean first=true;
+        DefaultStatementExecutor querySender=null;
+        PooledStatement statement=null;
+        for(NamedObject object:objects)
+        {
+            AbstractDatabaseObject abstractDatabaseObject = (AbstractDatabaseObject) object;
+            if(!first)
+            {
+                abstractDatabaseObject.setQuerySender(querySender);
+                abstractDatabaseObject.setStatementForLoadInfo(statement);
+            }
+            abstractDatabaseObject.setSomeExecute(true);
+            abstractDatabaseObject.getRemarks();
+
+                querySender=abstractDatabaseObject.getQuerySender();
+                statement=abstractDatabaseObject.getStatementForLoadInfo();
+                first=false;
+
+        }
+        if (querySender!=null)
+            querySender.releaseResources();
+    }
+
     private void addAsParentToObjects(List<NamedObject> children) {
 
         if (children != null) {
@@ -209,10 +236,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 DefaultDatabaseObject object = new DefaultDatabaseObject(this.getHost(), metaDataKey);
                 object.setName(tableName);
                 if (typeTree == DEFAULT) {
-                    object.setCatalogName("");
-                    object.setSchemaName("");
-                    object.setRemarks(rs.getString(2));
-                    object.setSource(rs.getString(3));
                 } else {
                     object.setTypeTree(typeTree);
                     object.setDependObject(dependedObject);
@@ -816,9 +839,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             String rel_type = " and (rdb$relation_type=0 or rdb$relation_type=2 or rdb$relation_type is NULL)";
             if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() < 2 || repeat)
                 rel_type = "";
-            String query = "select rdb$relation_name, \n" +
-                    "rdb$description,\n" +
-                    "rdb$view_source\n" +
+            String query = "select rdb$relation_name \n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is null \n" +
                     "and (rdb$system_flag is null or rdb$system_flag = 0)" +
@@ -832,18 +853,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 query = ((DefaultDatabaseTablespace) dependedObject).getTablesQuery();
             resultSet = getResultSetFromQuery(query);
         } else if (metaDataKey.equals("SYSTEM TABLE")) {
-            String query = "select rdb$relation_name, \n" +
-                    "rdb$description,\n" +
-                    "rdb$view_source\n" +
+            String query = "select rdb$relation_name \n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is null \n" +
                     "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +
                     "order by rdb$relation_name";
             resultSet = getResultSetFromQuery(query);
         } else if (metaDataKey.equals("VIEW")) {
-            String query = "select rdb$relation_name, \n" +
-                    "rdb$description,\n" +
-                    "rdb$view_source\n" +
+            String query = "select rdb$relation_name \n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is not null \n" +
                     "and (rdb$system_flag is null or rdb$system_flag = 0) \n" +
@@ -854,18 +871,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 query = getDependentQuery(1);
             resultSet = getResultSetFromQuery(query);
         } else if (metaDataKey.equals("SYSTEM VIEW")) {
-            String query = "select rdb$relation_name, \n" +
-                    "rdb$description,\n" +
-                    "rdb$view_source\n" +
+            String query = "select rdb$relation_name \n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is not null \n" +
                     "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +
                     "order by rdb$relation_name";
             resultSet = getResultSetFromQuery(query);
         } else if (metaDataKey.equals("GLOBAL TEMPORARY")) {
-            String query = "select r.rdb$relation_name, \n" +
-                    "r.rdb$description,\n" +
-                    "rdb$view_source\n" +
+            String query = "select r.rdb$relation_name \n" +
                     "from rdb$relations r\n" +
                     "join rdb$types t on r.rdb$relation_type = t.rdb$type \n" +
                     "where\n" +

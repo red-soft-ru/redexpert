@@ -115,7 +115,7 @@ public class GenerateScriptsPanelFour extends JPanel
      */
     protected void start() {
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker(GenerateScriptsPanelFour.class.getSimpleName()) {
 
             public Object construct() {
 

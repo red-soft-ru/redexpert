@@ -30,7 +30,6 @@ import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.AnaliseRecompileDialog;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
-import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
@@ -38,6 +37,7 @@ import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
 import org.executequery.gui.importexport.ImportExportXMLPanel;
+import org.executequery.gui.table.CreateTablePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -124,6 +124,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     }
             switch (type) {
                 case NamedObject.TABLE:
+                case NamedObject.GLOBAL_TEMPORARY:
                     if (GUIUtilities.isDialogOpen(CreateTablePanel.TITLE)) {
 
                         GUIUtilities.setSelectedDialog(CreateTablePanel.TITLE);
@@ -133,7 +134,11 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
                                     new BaseDialog(CreateTablePanel.TITLE, false);
-                            CreateTablePanel panel = new CreateTablePanel(currentSelection, dialog, false);
+                            CreateTablePanel panel;
+                            if (type == NamedObject.GLOBAL_TEMPORARY)
+                                panel = new CreateGlobalTemporaryTable(currentSelection, dialog);
+                            else
+                                panel = new CreateTablePanel(currentSelection, dialog);
                             showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
@@ -144,11 +149,9 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     try {
                         GUIUtilities.showWaitCursor();
                         BaseDialog dialog =
-                                new BaseDialog(WindowAddRole.TITLE, true);
-                        WindowAddRole panel = new WindowAddRole(dialog, currentSelection);
-                        dialog.addDisplayComponentWithEmptyBorder(panel);
-                        dialog.display();
-                        treePanel.reloadPath(currentPath.getParentPath());
+                                new BaseDialog(CreateRolePanel.TITLE, true);
+                        CreateRolePanel panel = new CreateRolePanel(currentSelection, dialog, null);
+                        showDialogCreateObject(panel, dialog);
                     } finally {
                         GUIUtilities.showNormalCursor();
                     }
@@ -320,23 +323,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreatePackagePanel.CREATE_TITLE, false);
                             CreatePackagePanel panel = new CreatePackagePanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.GLOBAL_TEMPORARY:
-                    if (GUIUtilities.isDialogOpen(CreateTablePanel.TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateTablePanel.TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateTablePanel.TITLE, false);
-                            CreateTablePanel panel = new CreateTablePanel(currentSelection, dialog, true);
                             showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
@@ -951,13 +937,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     }
 
     protected void showDialogCreateObject(AbstractCreateObjectPanel panel, BaseDialog dialog) {
-        panel.setTreePanel(treePanel);
-        panel.setCurrentPath(currentPath);
-        dialog.addDisplayComponentWithEmptyBorder(panel);
-        dialog.display();
-    }
-
-    protected void showDialogCreateObject(CreateTablePanel panel, BaseDialog dialog) {
         panel.setTreePanel(treePanel);
         panel.setCurrentPath(currentPath);
         dialog.addDisplayComponentWithEmptyBorder(panel);

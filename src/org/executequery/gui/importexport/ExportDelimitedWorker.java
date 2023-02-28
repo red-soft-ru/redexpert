@@ -75,7 +75,7 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
         reset();
 
         // create the worker
-        worker = new SwingWorker() {
+        worker = new SwingWorker("ExportCSV") {
             public Object construct() {
                 return doWork();
             }

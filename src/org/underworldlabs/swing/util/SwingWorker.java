@@ -39,6 +39,8 @@ public abstract class SwingWorker {
     private Object value;  // see getValue(), setValue()
     private Thread thread;
 
+    private String name;
+
     /**
      * Class to maintain reference to current worker thread
      * under separate synchronization control.
@@ -127,7 +129,9 @@ public abstract class SwingWorker {
      * Start a thread that will call the <code>construct</code> method
      * and then exit.
      */
-    public SwingWorker() {
+    public SwingWorker(String name) {
+
+        this.name=name;
         final Runnable doFinished = new Runnable() {
             public void run() {
                 finished();
@@ -147,6 +151,7 @@ public abstract class SwingWorker {
         };
 
         Thread t = new Thread(doConstruct);
+        t.setName(this.name);
         threadVar = new ThreadVar(t);
     }
 

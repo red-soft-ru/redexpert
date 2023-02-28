@@ -71,7 +71,7 @@ public class ExportExcelWorker extends AbstractImportExportWorker
         reset();
 
         // create the worker
-        worker = new SwingWorker() {
+        worker = new SwingWorker("ExportExcel") {
             public Object construct() {
                 return doWork();
             }

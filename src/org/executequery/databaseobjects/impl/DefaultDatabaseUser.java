@@ -34,7 +34,7 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     @Override
     protected String queryForInfo() {
         String query = "select * from SEC$USERS \n" +
-                "where SEC$USER_NAME = '" + getName() + "'";
+                "where SEC$USER_NAME = ?";
         return query;
     }
 

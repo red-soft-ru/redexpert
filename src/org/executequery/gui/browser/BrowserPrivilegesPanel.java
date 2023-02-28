@@ -261,7 +261,7 @@ public class BrowserPrivilegesPanel extends JPanel implements ActionListener {
     void get_users() {
         Connection connection = null;
         try {
-            connection = ConnectionManager.getConnection(databaseConnection).unwrap(Connection.class);
+            connection = ConnectionManager.getTemporaryConnection(databaseConnection).unwrap(Connection.class);
         } catch (SQLException e) {
             Log.error("error get connection for getting users in grant manager:", e);
         }
@@ -511,7 +511,7 @@ public class BrowserPrivilegesPanel extends JPanel implements ActionListener {
     void execute_thread() {
         if (enableElements) {
             setEnableElements(false);
-            org.underworldlabs.swing.util.SwingWorker sw = new SwingWorker() {
+            org.underworldlabs.swing.util.SwingWorker sw = new SwingWorker(BrowserPrivilegesPanel.class.getSimpleName()+"executeThread") {
                 @Override
                 public Object construct() {
                     runToThread();

@@ -90,16 +90,15 @@ public class Comparer {
         for (NamedObject obj : createObjects) {
             AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) obj;
 
-            if(!isFirst) {
+            if (!isFirst) {
                 databaseObject.setStatementForLoadInfo(statement);
                 databaseObject.setQuerySender(querySender);
-                databaseObject.setSomeExecute(true);
             }
+            databaseObject.setSomeExecute(true);
 
             String sqlScript = databaseObject.getCompareCreateSQL();
             querySender = databaseObject.getQuerySender();
             statement = databaseObject.getStatementForLoadInfo();
-            databaseObject.setSomeExecute(true);
             isFirst = false;
 
             if (!sqlScript.contains("Will be created with constraint defining")) {
@@ -176,27 +175,25 @@ public class Comparer {
             AbstractDatabaseObject masterObject = (AbstractDatabaseObject) obj;
             AbstractDatabaseObject compareObject = (AbstractDatabaseObject) alterObjects.get(obj);
 
-            if(!isFirst) {
+            if (!isFirst) {
 
                 masterObject.setStatementForLoadInfo(masterStatement);
                 masterObject.setQuerySender(masterQuerySender);
-                masterObject.setSomeExecute(true);
 
                 compareObject.setStatementForLoadInfo(compareStatement);
                 compareObject.setQuerySender(compareQuerySender);
-                compareObject.setSomeExecute(true);
             }
+            masterObject.setSomeExecute(true);
+            compareObject.setSomeExecute(true);
 
             String sqlScript = masterObject.getCompareAlterSQL(compareObject);
             isFirst = false;
 
             masterQuerySender = masterObject.getQuerySender();
             masterStatement = masterObject.getStatementForLoadInfo();
-            masterObject.setSomeExecute(true);
 
             compareQuerySender = compareObject.getQuerySender();
             compareStatement = compareObject.getStatementForLoadInfo();
-            compareObject.setSomeExecute(true);
 
             if (!sqlScript.contains("there are no changes")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);

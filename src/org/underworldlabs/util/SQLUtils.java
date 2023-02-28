@@ -45,13 +45,12 @@ public final class SQLUtils {
         primary.append(" PRIMARY KEY (");
 
         boolean primary_flag = false;
-        String autoincrementSQLText = "";
+        StringBuilder autoincrementSQLText = new StringBuilder();
         StringBuilder primaryText = new StringBuilder();
 
-        for (int i = 0, k = columnDataList.size(); i < k; i++) {
+        for (ColumnData cd : columnDataList) {
 
-            ColumnData cd = columnDataList.get(i);
-            autoincrementSQLText += cd.getAutoincrement().getSqlAutoincrement();
+            autoincrementSQLText.append(cd.getAutoincrement().getSqlAutoincrement());
 
             if (cd.isPrimaryKey()) {
                 primaryText.append(primary_flag ? ", " : " ");
@@ -61,7 +60,9 @@ public final class SQLUtils {
 
             sqlText.append(generateDefinitionColumn(cd, computed, true, true));
         }
-        sqlText.deleteCharAt(sqlText.lastIndexOf(COMMA));
+        if (sqlText.lastIndexOf(COMMA) > -1)
+            sqlText.deleteCharAt(sqlText.lastIndexOf(COMMA));
+
         primary.append(primaryText).append(B_CLOSE);
         sb.append(sqlText.toString().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name)));
 
@@ -86,7 +87,7 @@ public final class SQLUtils {
         sb.append(";\n");
 
         if (autoincrementSQLText != null)
-            sb.append(autoincrementSQLText.replace(TableDefinitionPanel.SUBSTITUTE_NAME, format(name))).append(NEW_LINE);
+            sb.append(autoincrementSQLText.toString().replace(TableDefinitionPanel.SUBSTITUTE_NAME, format(name))).append(NEW_LINE);
 
         if (setComment && !MiscUtils.isNull(comment) && !comment.equals("")) {
             sb.append(generateCommentForColumns(name, columnDataList, "COLUMN", "^"));

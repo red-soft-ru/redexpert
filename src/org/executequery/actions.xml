@@ -913,6 +913,13 @@
             description="Trace Manager"
             execute-class="org.executequery.actions.toolscommands.TraceManagerCommands"/>
 
+    <action id="profiler-command"
+            name="Profiler"
+            mnemonic="PF"
+            accel-editable="true"
+            description="Profiler"
+            execute-class="org.executequery.actions.toolscommands.ProfilerCommand"/>
+
     <action id="exit-from-account-command"
             name="Exit From Account"
             mnemonic="EA"

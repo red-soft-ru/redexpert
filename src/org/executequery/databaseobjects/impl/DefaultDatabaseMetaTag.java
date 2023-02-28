@@ -203,8 +203,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             {
                 abstractDatabaseObject.setQuerySender(querySender);
                 abstractDatabaseObject.setStatementForLoadInfo(statement);
-                abstractDatabaseObject.setSomeExecute(true);
             }
+            abstractDatabaseObject.setSomeExecute(true);
             abstractDatabaseObject.getRemarks();
 
                 querySender=abstractDatabaseObject.getQuerySender();

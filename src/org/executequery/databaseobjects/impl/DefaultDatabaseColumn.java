@@ -27,6 +27,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -117,9 +118,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     public DefaultDatabaseColumn() {
     }
 
-    public List<ColumnConstraint> getConstraints() {
-        return null;
-    }
+    List<ColumnConstraint> constraints;
 
     @Override
     public void setColumnDescription(String description) {
@@ -487,6 +486,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         }
     }
 
+
     @Override
     public String getCharset() {
         return charset;
@@ -504,6 +504,18 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     public void setCollate(String collate) {
         this.collate = collate;
     }
+
+    public List<ColumnConstraint> getConstraints() {
+        return constraints;
+    }
+
+    public void addConstraint(ColumnConstraint constraint) {
+        if (constraints == null)
+            constraints = new ArrayList<>();
+        constraints.add(constraint);
+    }
+
+
 }
 
 

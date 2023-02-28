@@ -33,9 +33,9 @@ public final class SQLUtils {
                 CreateTableSQLSyntax.CREATE_TABLE);
         sb.append(format(name));
 
-        if (externalFile != null)
+        if (!MiscUtils.isNull(externalFile))
             sb.append(NEW_LINE).append("EXTERNAL FILE '").append(externalFile.trim()).append("'");
-        if (adapter != null)
+        if (!MiscUtils.isNull(adapter))
             sb.append(SPACE).append(" ADAPTER '").append(adapter.trim()).append("'");
         sb.append(SPACE).append(B_OPEN);
 
@@ -76,7 +76,7 @@ public final class SQLUtils {
 
         sb.append(CreateTableSQLSyntax.B_CLOSE);
 
-        if (tablespace != null)
+        if (!MiscUtils.isNull(tablespace))
             sb.append("\nTABLESPACE ").append(format(tablespace));
         if (!MiscUtils.isNull(sqlSecurity))
             sb.append("\n" + SQL_SECURITY).append(sqlSecurity);

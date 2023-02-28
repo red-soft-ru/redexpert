@@ -31,6 +31,7 @@ import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.TokenizingFormatter;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
@@ -215,68 +216,51 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
                     }
 
-                }
-                DefaultStatementExecutor executor = new DefaultStatementExecutor(getHost().getDatabaseConnection(), true);
-                SqlStatementResult result = null;
-                try {
-                    String query = "select A.RDB$CONSTRAINT_NAME,\n" + "A.RDB$CONSTRAINT_TYPE,\n" + "A.RDB$RELATION_NAME,\n" + "C.RDB$TRIGGER_SOURCE\n" + "from RDB$RELATION_CONSTRAINTS A, RDB$CHECK_CONSTRAINTS B, RDB$TRIGGERS C\n" + "where (A.RDB$CONSTRAINT_TYPE = 'CHECK') and\n" + "(A.RDB$CONSTRAINT_NAME = B.RDB$CONSTRAINT_NAME) and\n" + "(B.RDB$TRIGGER_NAME = C.RDB$TRIGGER_NAME) and\n" + "(C.RDB$TRIGGER_TYPE = 1)\n" + "and (A.RDB$RELATION_NAME = ?)";
-                    PreparedStatement st = executor.getPreparedStatement(query);
-                    st.setString(1, getName());
-                    result = executor.execute(QueryTypes.SELECT, st);
-                    ResultSet rs = result.getResultSet();
-                    List<String> names = new ArrayList<>();
-                    if (rs != null) {
-                        while (rs.next()) {
-                            String name = rs.getString(1).trim();
-                            if (!names.contains(name)) {
-                                ColumnConstraint constraint = new TableColumnConstraint(rs.getString(4));
-                                constraint.setName(name);
-                                constraint.setTable(this);
-                                constraints.add(constraint);
-                                names.add(name);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.error("Error loading check-constraints:" + (result != null ? result.getErrorMessage() : e.getMessage()), e);
-                } finally {
-                    executor.releaseResources();
-                }
-                result = null;
-                try {
-                    String query = "SELECT C.RDB$CONSTRAINT_NAME,I.RDB$FIELD_NAME\n" + "FROM RDB$RELATION_CONSTRAINTS AS C LEFT JOIN RDB$INDEX_SEGMENTS AS I\n" + "ON C.RDB$INDEX_NAME=I.RDB$INDEX_NAME\n" + "where C.RDB$RELATION_NAME=? AND C.RDB$CONSTRAINT_TYPE = 'UNIQUE'";
-                    PreparedStatement st = executor.getPreparedStatement(query);
-                    st.setString(1, getName());
-                    result = executor.execute(QueryTypes.SELECT, st);
-                    ResultSet rs = result.getResultSet();
-                    if (rs != null) {
-                        while (rs.next()) {
-                            String name = rs.getString(1).trim();
-                            ColumnConstraint constraint = new TableColumnConstraint(UNIQUE_KEY);
-                            constraint.setName(name);
-                            String columnName = rs.getString("RDB$FIELD_NAME").trim();
-                            for (DatabaseColumn i : columns) {
-                                if (i.getName().trim().contentEquals(columnName))
-                                    constraint.setColumn((DatabaseTableColumn) i);
-                            }
-                            if (isContainsTheSameObjectByName(name))
-                                getConstraintByName(name).addColumnToDisplayList(constraint.getColumn());
-                            else constraints.add(constraint);
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.error("Error loading unique-constraints:" + result.getErrorMessage(), e);
-                } finally {
-                    executor.releaseResources();
-                }
-                constraints.removeAll(Collections.singleton(null));
-                constraints.sort(new Comparator<ColumnConstraint>() {
-                    @Override
-                    public int compare(ColumnConstraint o1, ColumnConstraint o2) {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                });
-                return constraints;
+        }
+        DefaultStatementExecutor executor = new DefaultStatementExecutor(getHost().getDatabaseConnection(), true);
+        SqlStatementResult result = null;
+        try {
+          String query = "select A.RDB$CONSTRAINT_NAME,\n" +
+                  "A.RDB$CONSTRAINT_TYPE,\n" +
+                  "A.RDB$RELATION_NAME,\n" +
+                  "C.RDB$TRIGGER_SOURCE\n" +
+                  "from RDB$RELATION_CONSTRAINTS A, RDB$CHECK_CONSTRAINTS B, RDB$TRIGGERS C\n" +
+                  "where (A.RDB$CONSTRAINT_TYPE = 'CHECK') and\n" +
+                  "(A.RDB$CONSTRAINT_NAME = B.RDB$CONSTRAINT_NAME) and\n" +
+                  "(B.RDB$TRIGGER_NAME = C.RDB$TRIGGER_NAME) and\n" +
+                  "(C.RDB$TRIGGER_TYPE = 1)\n" +
+                  "and (A.RDB$RELATION_NAME = ?)";
+          PreparedStatement st = executor.getPreparedStatement(query);
+          st.setString(1, getName());
+          result = executor.execute(QueryTypes.SELECT, st);
+          ResultSet rs = result.getResultSet();
+          List<String> names = new ArrayList<>();
+          if (rs != null) {
+            while (rs.next()) {
+              String name = rs.getString(1).trim();
+              if (!names.contains(name)) {
+                ColumnConstraint constraint = new TableColumnConstraint(rs.getString(4));
+                constraint.setName(name);
+                constraint.setTable(this);
+                constraints.add(constraint);
+                names.add(name);
+              }
+            }
+          }
+        } catch (Exception e) {
+          Log.error("Error loading check-constraints:" + (result != null ? result.getErrorMessage() : e.getMessage()), e);
+        } finally {
+          executor.releaseResources();
+        }
+        result = null;
+        constraints.removeAll(Collections.singleton(null));
+        constraints.sort(new Comparator<ColumnConstraint>() {
+          @Override
+          public int compare(ColumnConstraint o1, ColumnConstraint o2) {
+            return o1.getName().compareTo(o2.getName());
+          }
+        });
+        return constraints;
 
             } else {
 
@@ -621,65 +605,13 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         }
     }
 
-    private boolean loadedInfoAboutExternalFile = false;
-    private boolean loadedInfoAboutTablespace = false;
 
-    private void loadInfoAboutExternalFile() {
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        try {
-            //querySender.setDatabaseConnection(getHost().getDatabaseConnection());
-            String adapter = ", RDB$ADAPTER";
-            if (!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")) adapter = "";
-            PreparedStatement statement = querySender.getPreparedStatement("select rdb$external_file" + adapter + " from rdb$relations where rdb$relation_name = ?");
-            statement.setString(1, getName());
-            ResultSet rs = querySender.getResultSet(-1, statement).getResultSet();
-            if (rs.next()) {
-                setExternalFile(rs.getString(1));
-                if (!adapter.isEmpty()) setAdapter(rs.getString(2));
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        } finally {
-            querySender.releaseResources();
-            loadedInfoAboutExternalFile = true;
-        }
-    }
+  protected static final String DESCRIPTION = "DESCRIPTION";
 
-    private void loadInfoAboutTablespace() {
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        try {
-            if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase") && getHost().getDatabaseMajorVersion() >= 4) {
-                PreparedStatement statement = querySender.getPreparedStatement("select rdb$tablespace_name from rdb$relations where rdb$relation_name = ?");
-                statement.setString(1, getName());
-                ResultSet rs = querySender.getResultSet(-1, statement).getResultSet();
-                if (rs.next()) {
-                    setTablespace(rs.getString(1));
-                }
-
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        } finally {
-            querySender.releaseResources();
-            loadedInfoAboutTablespace = true;
-        }
-    }
-
-    @Override
-    public String getExternalFile() {
-        if (!loadedInfoAboutExternalFile) loadInfoAboutExternalFile();
-        return externalFile;
-    }
-
-    public void setExternalFile(String externalFile) {
-        this.externalFile = externalFile;
-    }
-
-    @Override
-    public String getAdapter() {
-        if (!loadedInfoAboutExternalFile) loadInfoAboutExternalFile();
-        return adapter;
-    }
+  public void setExternalFile(String externalFile) {
+    this.externalFile = externalFile;
+  }
+  protected static final String SQL_SECURITY = "SQL_SECURITY";
 
     public void setAdapter(String adapter) {
         this.adapter = adapter;
@@ -1356,33 +1288,73 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         for (ColumnConstraint constraint : constraints)
             names.add(constraint.getColumnName());
 
-        return names;
-    }
+    return names;
+  }
+  protected static final String EXTERNAL_FILE = "EXTERNAL_FILE";
+  protected static final String ADAPTER = "ADAPTER";
+  protected static final String TABLESPACE = "TABLESPACE";
 
-    @Override
-    protected String queryForInfo() {
+  @Override
+  public String getExternalFile() {
+    checkOnReload(externalFile);
+    return externalFile;
+  }
 
-        String query = "select r.rdb$description as DESCRIPTION\n" +
-                "from rdb$relations r\n" +
-                "where r.rdb$relation_name = ?";
+  @Override
+  public String getAdapter() {
+    checkOnReload(adapter);
+    return adapter;
+  }
+
+  @Override
+  protected String queryForInfo() {
+    String prefix = "RDB$";
+    SelectBuilder sb = new SelectBuilder();
+    Table rels = new Table();
+    rels.setName("RDB$RELATIONS").setAlias("R");
+    sb.appendTable(rels);
+
+    Field sqlSecurity = new Field();
+    sqlSecurity.setTable(rels).setName(prefix + SQL_SECURITY).setAlias(SQL_SECURITY);
+    sqlSecurity.setStatement(Function.createFunction().setName("IIF")
+            .appendArgument(sqlSecurity.getFieldTable() + " IS NULL").appendArgument("NULL").appendArgument(Function.createFunction().setName("IIF")
+                    .appendArgument(sqlSecurity.getFieldTable()).appendArgument("'DEFINER'").appendArgument("'INVOKER'").getStatement()).getStatement());
+    sqlSecurity.setNull(getDatabaseMajorVersion() < 3);
+    sb.appendField(sqlSecurity);
+
+    sb.appendField(Field.createField().setTable(rels).setName(prefix + EXTERNAL_FILE).setAlias(EXTERNAL_FILE));
+    sb.appendField(Field.createField().setTable(rels).setName(prefix + ADAPTER).setAlias(ADAPTER).setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")));
+    sb.appendField(Field.createField().setTable(rels).setName(prefix + TABLESPACE + "_NAME").setAlias(TABLESPACE).
+            setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")
+                    || getDatabaseMajorVersion() < 4));
+    sb.appendField(Field.createField().setTable(rels).setName(prefix + DESCRIPTION).setAlias(DESCRIPTION));
+
+    sb.appendCondition(Condition.createCondition().setLeftField(Field.createField().setTable(rels).setName(prefix + "RELATION_NAME")).setOperator("=").setRightStatement("?"));
+    String query = sb.getSQLQuery();
 
         return query;
     }
 
-    @Override
-    protected void setInfoFromResultSet(ResultSet rs) {
-        try {
-            if (rs.next()) setRemarks(getFromResultSet(rs, "DESCRIPTION"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+  @Override
+  protected void setInfoFromResultSet(ResultSet rs) {
+    try {
+      if (rs.next()) {
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+        setExternalFile(getFromResultSet(rs, EXTERNAL_FILE));
+        setAdapter(getFromResultSet(rs, ADAPTER));
+        setTablespace(getFromResultSet(rs, TABLESPACE));
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
     }
 
-    public String getTablespace() {
-        if (!loadedInfoAboutTablespace) loadInfoAboutTablespace();
-        return tablespace;
-    }
+  public String getTablespace() {
+    checkOnReload(tablespace);
+    return tablespace;
+  }
 
     public void setTablespace(String tablespace) {
         this.tablespace = tablespace;

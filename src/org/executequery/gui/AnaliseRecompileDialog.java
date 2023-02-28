@@ -91,8 +91,8 @@ public class AnaliseRecompileDialog extends BaseDialog {
                     {
                         databaseObject.setStatementForLoadInfo(statement);
                         databaseObject.setQuerySender(querySender);
-                        databaseObject.setSomeExecute(true);
                     }
+                    databaseObject.setSomeExecute(true);
                     String s = databaseObject.getCreateSQLText();
                     querySender=databaseObject.getQuerySender();
                     statement=databaseObject.getStatementForLoadInfo();

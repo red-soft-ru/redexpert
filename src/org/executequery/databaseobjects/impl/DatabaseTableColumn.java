@@ -102,6 +102,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setDefaultValue(column.getDefaultValue());
         setPrimaryKey(column.isPrimaryKey());
         setForeignKey(column.isForeignKey());
+        setUnique(column.isUnique());
         setGenerated(column.isGenerated());
         setComputedSource(column.getComputedSource());
         setColumnDescription(column.getColumnDescription());

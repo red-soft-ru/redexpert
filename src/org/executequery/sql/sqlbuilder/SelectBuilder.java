@@ -85,7 +85,7 @@ public class SelectBuilder {
 
     public String getSQLQuery() {
         StringBuilder sb = new StringBuilder();
-        sb.append("select ");
+        sb.append("SELECT ");
         if (fields != null) {
             boolean first = true;
             for (Field field : fields) {
@@ -126,7 +126,7 @@ public class SelectBuilder {
                     sb.append(join.getLeftTable().getName()).append(" ").append(join.getLeftTable().getAlias());
                     usedTables.add(join.getLeftTable());
                 }
-                sb.append(" LEFT JOIN ").append(join.getRightTable().getName()).append(" ").append(join.getRightTable().getAlias());
+                sb.append("\nLEFT JOIN ").append(join.getRightTable().getName()).append(" ").append(join.getRightTable().getAlias());
                 usedTables.add(join.getRightTable());
                 boolean firstField = true;
                 for (Field leftField : join.getMapField().keySet()) {

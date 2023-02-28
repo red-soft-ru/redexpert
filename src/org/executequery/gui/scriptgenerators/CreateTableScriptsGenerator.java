@@ -80,7 +80,7 @@ public class CreateTableScriptsGenerator {
     }
 
     public void generate() {
-        worker = new SwingWorker() {
+        worker = new SwingWorker(CreateTableScriptsGenerator.class.getSimpleName()) {
             public Object construct() {
                 return doWork();
             }

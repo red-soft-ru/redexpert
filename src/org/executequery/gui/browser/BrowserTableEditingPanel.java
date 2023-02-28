@@ -923,9 +923,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     public void setValues(DatabaseTable table) {
 
         this.table = table;
-        if (table.getExternalFile() != null) {
+        if (!MiscUtils.isNull(table.getExternalFile())) {
             externalFileField.setText(table.getExternalFile());
-            if (table.getAdapter() != null)
+            if (!MiscUtils.isNull(table.getAdapter()))
                 adapterField.setText(table.getAdapter());
             for (JComponent component : externalFileComponents)
                 component.setVisible(true);
@@ -964,7 +964,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             referencesLoaded = false;
             tableNameField.setText(table.getName());
             descriptionTable.setDatabaseTable(table);
-            SwingWorker sw = new SwingWorker() {
+            SwingWorker sw = new SwingWorker("loadingConstraintsFor'"+table.getName()+"'") {
                 @Override
                 public Object construct() {
                     constraintsTable.setDatabaseTable(table);
@@ -972,7 +972,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
-            sw = new SwingWorker() {
+            sw = new SwingWorker("loadingIndicesFor'"+table.getName()+"'") {
                 @Override
                 public Object construct() {
                     loadIndexes();
@@ -980,7 +980,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
-            sw = new SwingWorker() {
+            sw = new SwingWorker("loadingTriggersFor'"+table.getName()+"'") {
                 @Override
                 public Object construct() {
                     loadTriggers();
@@ -988,7 +988,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
-            sw = new SwingWorker() {
+            sw = new SwingWorker("loadingDependenciesFor'"+table.getName()+"'") {
                 @Override
                 public Object construct() {
                     dependenciesPanel.setDatabaseObject(table);
@@ -996,7 +996,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
-            sw = new SwingWorker() {
+            sw = new SwingWorker("loadingCreateSQLFor'"+table.getName()+"'") {
                 @Override
                 public Object construct() {
                     try {
@@ -1066,7 +1066,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             worker.interrupt();
         }
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("loadingRowCountFor'"+table.getName()+"'") {
             public Object construct() {
                 try {
 

@@ -90,7 +90,6 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     @Override
     protected String queryForInfo() {
-        String name = getName();
         String sql;
         if (getDatabaseMajorVersion() >= 3)
             sql = "select prc.rdb$procedure_name,\n" +
@@ -131,7 +130,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
                     "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
                     "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                    "where prc.rdb$procedure_name = '" + name + "'\n" +
+                    "where prc.rdb$procedure_name = ?\n" +
                     "and (prc.rdb$package_name is null) \n" +
                     "order by pp.rdb$parameter_number";
         else if (getDatabaseMinorVersion() >= 5)
@@ -172,7 +171,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
                     "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
                     "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                    "where prc.rdb$procedure_name = '" + name + "'\n" +
+                    "where prc.rdb$procedure_name = ?\n" +
                     "order by pp.rdb$parameter_number";
         else
             sql = "select prc.rdb$procedure_name,\n" +
@@ -212,7 +211,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
                     "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
                     "left join rdb$collations co2 on (fs.rdb$character_set_id = co2.rdb$character_set_id)\n" +
-                    "where prc.rdb$procedure_name = '" + name + "'\n" +
+                    "where prc.rdb$procedure_name = ?\n" +
                     "order by pp.rdb$parameter_number";
         return sql;
     }

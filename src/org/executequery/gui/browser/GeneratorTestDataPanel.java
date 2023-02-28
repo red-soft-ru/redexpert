@@ -139,7 +139,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         if (tableBox.getSelectedItem() != "") {
             NamedObject object = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(getSelectedConnection()).getDatabaseObject();
             DatabaseHost host = (DatabaseHost) object;
-            List<DatabaseColumn> cols = host.getColumns(null, null, (String) tableBox.getSelectedItem());
+            List<DatabaseColumn> cols = host.getColumns( (String) tableBox.getSelectedItem());
             List<FieldGenerator> fieldGenerators = new ArrayList<>();
             for (int i = 0; i < cols.size(); i++) {
                 fieldGenerators.add(new FieldGenerator(cols.get(i), executor));
@@ -188,7 +188,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SwingWorker worker = new SwingWorker() {
+                SwingWorker worker = new SwingWorker("TestDataGenerator") {
                     @Override
                     public Object construct() {
                         stop = false;

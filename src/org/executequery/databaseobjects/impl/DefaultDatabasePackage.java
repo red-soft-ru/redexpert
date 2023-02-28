@@ -150,7 +150,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
                 "p.rdb$description as DESCRIPTION,\n" +
                 sql_security + " as SQL_SECURITY\n" +
                 "from rdb$packages p\n" +
-                "where p.rdb$package_name='" + getName().trim() + "'";
+                "where p.rdb$package_name=?";
         return sql;
     }
 

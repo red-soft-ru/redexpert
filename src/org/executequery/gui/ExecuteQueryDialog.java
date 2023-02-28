@@ -103,7 +103,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         this.autocommit = autocommit;
         querySender.setCommitMode(autocommit);
         init();
-        SwingWorker sw = new SwingWorker() {
+        SwingWorker sw = new SwingWorker("ExecuteQueriesInDialog") {
             @Override
             public Object construct() {
                 execute();

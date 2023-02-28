@@ -144,7 +144,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
 
     private void load(final int type) {
 
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("LoadSystemLogs") {
 
             public Object construct() {
 

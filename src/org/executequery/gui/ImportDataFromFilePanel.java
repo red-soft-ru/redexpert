@@ -428,8 +428,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // ----------- filling ColumnMappingTable -----------
 
-        List<DatabaseColumn> dbHostTableColumns = dbHost.getColumns(
-                null, null, Objects.requireNonNull(tableCombo.getSelectedItem()).toString());
+        List<DatabaseColumn> dbHostTableColumns = dbHost.getColumns( Objects.requireNonNull(tableCombo.getSelectedItem()).toString());
 
         for (DatabaseColumn dbHostTableColumn : dbHostTableColumns)
             columnMappingTableModel.addRow(new Object[]{
@@ -533,7 +532,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
                 progressDialog = new DefaultProgressDialog(bundledString("ExecutingProgressDialog"));
 
-                SwingWorker worker = new SwingWorker() {
+                SwingWorker worker = new SwingWorker("ImportCSV") {
                     @Override
                     public Object construct() {
                         insertCSV(sourceColumnList, valuesIndexes, insertStatement, executor);

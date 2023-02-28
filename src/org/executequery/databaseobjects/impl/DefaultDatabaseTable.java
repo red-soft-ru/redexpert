@@ -258,36 +258,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
           executor.releaseResources();
         }
         result = null;
-        try {
-          String query = "SELECT C.RDB$CONSTRAINT_NAME,I.RDB$FIELD_NAME\n" +
-                  "FROM RDB$RELATION_CONSTRAINTS AS C LEFT JOIN RDB$INDEX_SEGMENTS AS I\n" +
-                  "ON C.RDB$INDEX_NAME=I.RDB$INDEX_NAME\n" +
-                  "where C.RDB$RELATION_NAME=? AND C.RDB$CONSTRAINT_TYPE = 'UNIQUE'";
-          PreparedStatement st = executor.getPreparedStatement(query);
-          st.setString(1, getName());
-          result = executor.execute(QueryTypes.SELECT, st);
-          ResultSet rs = result.getResultSet();
-          if (rs != null) {
-            while (rs.next()) {
-              String name = rs.getString(1).trim();
-                ColumnConstraint constraint = new TableColumnConstraint(UNIQUE_KEY);
-              constraint.setName(name);
-              String columnName = rs.getString("RDB$FIELD_NAME").trim();
-              for (DatabaseColumn i : columns) {
-                if (i.getName().trim().contentEquals(columnName))
-                  constraint.setColumn((DatabaseTableColumn) i);
-              }
-              if (isContainsTheSameObjectByName(name))
-                getConstraintByName(name).addColumnToDisplayList(constraint.getColumn());
-              else
-                constraints.add(constraint);
-            }
-          }
-        } catch (Exception e) {
-          Log.error("Error loading unique-constraints:" + result.getErrorMessage(), e);
-        } finally {
-          executor.releaseResources();
-        }
         constraints.removeAll(Collections.singleton(null));
         constraints.sort(new Comparator<ColumnConstraint>() {
           @Override

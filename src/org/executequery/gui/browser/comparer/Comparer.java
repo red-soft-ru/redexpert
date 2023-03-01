@@ -609,8 +609,8 @@ public class Comparer {
                     if (Objects.equals(masterC.getName(), comparingC.getName())) {
 
                         if (!SQLUtils.generateAlterDefinitionColumn(
-                                new ColumnData(((DefaultDatabaseTable) masterObject).getHost().getDatabaseConnection(), masterC),
-                                new ColumnData(((DefaultDatabaseTable) compareObject).getHost().getDatabaseConnection(), comparingC),
+                                new ColumnData(((DefaultDatabaseTable) masterObject).getHost().getDatabaseConnection(), masterC, false),
+                                new ColumnData(((DefaultDatabaseTable) compareObject).getHost().getDatabaseConnection(), comparingC, false),
                                 isComputedFieldsNeed()).equals("")) {
 
                             constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
@@ -656,7 +656,7 @@ public class Comparer {
         DefaultDatabaseTable tempTable = (DefaultDatabaseTable) databaseObject;
 
         for (int i = 0; i < tempTable.getColumnCount(); i++)
-            listCD.add(new ColumnData(tempTable.getHost().getDatabaseConnection(), tempTable.getColumns().get(i)));
+            listCD.add(new ColumnData(tempTable.getHost().getDatabaseConnection(), tempTable.getColumns().get(i), false));
 
         for (ColumnData cd : listCD) {
             if (!MiscUtils.isNull(cd.getComputedBy())) {

@@ -302,7 +302,12 @@ public class ColumnData implements Serializable {
 
     public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn) {
         this(databaseConnection);
-        setValues(databaseColumn);
+        setValues(databaseColumn, true);
+    }
+
+    public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn, boolean loadDomainInfo) {
+        this(databaseConnection);
+        setValues(databaseColumn, loadDomainInfo);
     }
 
     public ColumnData(String columnName, DatabaseConnection databaseConnection) {
@@ -406,7 +411,7 @@ public class ColumnData implements Serializable {
         }
     }
 
-    public void setValues(DatabaseColumn cd) {
+    public void setValues(DatabaseColumn cd, boolean loadDomainInfo) {
         setTableName(cd.getParentsName());
         setColumnName(cd.getName());
         setColumnType(cd.getTypeName());
@@ -415,7 +420,7 @@ public class ColumnData implements Serializable {
         setColumnSize(cd.getColumnSize());
         setNotNull(cd.isRequired());
         setSQLType(cd.getTypeInt());
-        setDomain(cd.getDomain());
+        setDomain(cd.getDomain(), loadDomainInfo);
         setDescription(cd.getColumnDescription());
         setComputedBy(cd.getComputedSource());
         setDefaultValue(cd.getDefaultValue());

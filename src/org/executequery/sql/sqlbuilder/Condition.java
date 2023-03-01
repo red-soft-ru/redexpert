@@ -1,10 +1,16 @@
 package org.executequery.sql.sqlbuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Condition {
 
+    String logicOperator = "AND";
     Field leftField;
     String operator;
     String rightStatement;
+
+    List<Condition> conditions;
 
     public static Condition createCondition() {
         return new Condition();
@@ -36,4 +42,39 @@ public class Condition {
         this.rightStatement = rightStatement;
         return this;
     }
+
+    public String getLogicOperator() {
+        return logicOperator;
+    }
+
+    public Condition setLogicOperator(String logicOperator) {
+        this.logicOperator = logicOperator;
+        return this;
+    }
+
+    public Condition appendCondition(Condition condition) {
+        if (conditions == null)
+            conditions = new ArrayList<>();
+        conditions.add(condition);
+        return this;
+    }
+
+    public String getConditionStatement() {
+        StringBuilder sb = new StringBuilder();
+        if (conditions == null)
+            sb.append(leftField.getFieldTable()).append(" ").append(operator).append(" ").append(rightStatement);
+        else {
+            sb.append("(");
+            boolean first = true;
+            for (Condition condition : conditions) {
+                if (!first)
+                    sb.append(" ").append(logicOperator).append(" ");
+                first = false;
+                sb.append(condition.getConditionStatement());
+            }
+            sb.append(")");
+        }
+        return sb.toString();
+    }
+
 }

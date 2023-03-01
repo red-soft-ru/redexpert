@@ -148,7 +148,7 @@ public class SelectBuilder {
                 if (!first)
                     sb.append("AND ");
                 first = false;
-                sb.append(condition.leftField.getFieldTable()).append(" ").append(condition.operator).append(" ").append(condition.rightStatement);
+                sb.append(condition.getConditionStatement());
                 sb.append("\n");
             }
         }

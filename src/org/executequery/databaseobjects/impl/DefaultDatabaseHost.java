@@ -804,10 +804,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     sb.appendCondition(Condition.createCondition().setLeftField(relName).setOperator("=").setRightStatement("?"));
                     sb.appendCondition(Condition.createCondition().setLeftField(fieldSource).setOperator("=").
                             setRightStatement(Field.createField().setTable(fields).setName("RDB$FIELD_NAME").getFieldTable()));
-                    sb.appendCondition(Condition.createCondition().setLeftField(Field.createField().setTable(constraints1).setName(prefix + CONSTRAINT_TYPE))
-                            .setOperator("<>").setRightStatement("'NOT NULL'"));
-                    sb.appendCondition(Condition.createCondition().setLeftField(Field.createField().setTable(constraints1).setName(prefix + CONSTRAINT_TYPE))
-                            .setOperator("<>").setRightStatement("'CHECK'"));
+                    Field conType = Field.createField().setTable(constraints1).setName(prefix + CONSTRAINT_TYPE);
+                    sb.appendCondition(Condition.createCondition()
+                            .appendCondition(Condition.createCondition()
+                                    .appendCondition(Condition.createCondition().setLeftField(conType).setOperator("<>").setRightStatement("'NOT NULL'"))
+                                    .appendCondition(Condition.createCondition().setLeftField(conType).setOperator("<>").setRightStatement("'CHECK'")))
+                            .appendCondition(Condition.createCondition().setLeftField(conType).setOperator("IS").setRightStatement("NULL")).setLogicOperator("OR"));
                     sb.setOrdering(fieldPosition.getFieldTable());
 
                     String firebirdSql = sb.getSQLQuery();

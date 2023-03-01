@@ -53,7 +53,7 @@ net start "${SERVICE_NAME}"
 
 echo "Start testing"
 cd re-tests
-start-process "${PYTHON}" "-m pytest -vv --junitxml ./results.xml ./tests" -wait -nonewwindow
+start-process "${PYTHON}" "-m pytest -vv -s --junitxml ./results.xml ./tests" -wait -nonewwindow
 
 echo "Copy test results"
 if (Test-Path "results.xml") {

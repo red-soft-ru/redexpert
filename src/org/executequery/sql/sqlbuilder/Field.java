@@ -1,7 +1,6 @@
 package org.executequery.sql.sqlbuilder;
 
 public class Field {
-
     String name;
     Table table;
     String alias;

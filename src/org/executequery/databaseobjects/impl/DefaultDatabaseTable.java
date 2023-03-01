@@ -21,15 +21,12 @@
 package org.executequery.databaseobjects.impl;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.resultset.RecordDataItem;
-import org.executequery.log.Log;
 import org.executequery.sql.SQLFormatter;
-import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.TokenizingFormatter;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -53,6 +50,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     protected static final String EXTERNAL_FILE = "EXTERNAL_FILE";
     protected static final String ADAPTER = "ADAPTER";
     protected static final String TABLESPACE = "TABLESPACE";
+    protected static final String CONSTRAINT_NAME = "CONSTRAINT_NAME";
+    protected static final String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+    protected static final String TRIGGER_SOURCE = "TRIGGER_SOURCE";
     static final long serialVersionUID = -963831243178078154L;
     List<ColumnConstraint> constraints;
     TokenizingFormatter formatter;
@@ -60,6 +60,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     public DefaultDatabaseTable(DatabaseHost host, String metaDataKey) {
         super(host, metaDataKey);
     }
+
     /**
      * the table columns exported
      */
@@ -209,6 +210,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
      *
      * @return the columns
      */
+
+    private List<ColumnConstraint> checkConstraints;
     public List<ColumnConstraint> getConstraints() throws DataSourceException {
 
         if (constraints == null) {
@@ -238,42 +241,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                     }
 
                 }
-                DefaultStatementExecutor executor = new DefaultStatementExecutor(getHost().getDatabaseConnection(), true);
-                SqlStatementResult result = null;
-                try {
-                    String query = "select A.RDB$CONSTRAINT_NAME,\n" +
-                            "A.RDB$CONSTRAINT_TYPE,\n" +
-                            "A.RDB$RELATION_NAME,\n" +
-                            "C.RDB$TRIGGER_SOURCE\n" +
-                            "from RDB$RELATION_CONSTRAINTS A, RDB$CHECK_CONSTRAINTS B, RDB$TRIGGERS C\n" +
-                            "where (A.RDB$CONSTRAINT_TYPE = 'CHECK') and\n" +
-                            "(A.RDB$CONSTRAINT_NAME = B.RDB$CONSTRAINT_NAME) and\n" +
-                            "(B.RDB$TRIGGER_NAME = C.RDB$TRIGGER_NAME) and\n" +
-                            "(C.RDB$TRIGGER_TYPE = 1)\n" +
-                            "and (A.RDB$RELATION_NAME = ?)";
-                    PreparedStatement st = executor.getPreparedStatement(query);
-                    st.setString(1, getName());
-                    result = executor.execute(QueryTypes.SELECT, st);
-                    ResultSet rs = result.getResultSet();
-                    List<String> names = new ArrayList<>();
-                    if (rs != null) {
-                        while (rs.next()) {
-                            String name = rs.getString(1).trim();
-                            if (!names.contains(name)) {
-                                ColumnConstraint constraint = new TableColumnConstraint(rs.getString(4));
-                                constraint.setName(name);
-                                constraint.setTable(this);
-                                constraints.add(constraint);
-                                names.add(name);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.error("Error loading check-constraints:" + (result != null ? result.getErrorMessage() : e.getMessage()), e);
-                } finally {
-                    executor.releaseResources();
-                }
-                result = null;
+                if (checkConstraints == null)
+                    getObjectInfo();
+                constraints.addAll(checkConstraints);
                 constraints.removeAll(Collections.singleton(null));
                 constraints.sort(new Comparator<ColumnConstraint>() {
                     @Override
@@ -493,6 +463,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             constraints.clear();
         }
         constraints = null;
+        checkConstraints = null;
     }
 
     public void clearIndexes() {
@@ -1291,10 +1262,17 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     protected String queryForInfo() {
         String prefix = "RDB$";
         SelectBuilder sb = new SelectBuilder();
-        Table rels = new Table();
-        rels.setName("RDB$RELATIONS").setAlias("R");
-        sb.appendTable(rels);
+        sb.setDistinct(true);
+        Table rels = Table.createTable().setName("RDB$RELATIONS").setAlias("R");
+        Table relCons = Table.createTable().setName("RDB$RELATION_CONSTRAINTS").setAlias("RC");
+        Table checkCons = Table.createTable().setName("RDB$CHECK_CONSTRAINTS").setAlias("CC");
+        Table triggers = Table.createTable().setName("RDB$TRIGGERS").setAlias("T");
 
+        Field conName = Field.createField().setTable(relCons).setName(prefix + CONSTRAINT_NAME).setAlias(CONSTRAINT_NAME);
+        Field conType = Field.createField().setTable(relCons).setName(prefix + CONSTRAINT_TYPE).setAlias(CONSTRAINT_TYPE);
+        sb.appendField(Field.createField().setStatement(Function.createFunction().setName("IIF").appendArgument(conType.getFieldTable() + " <> 'CHECK'").appendArgument("NULL").appendArgument(conName.getFieldTable()).getStatement()).setAlias(conName.getAlias()));
+        sb.appendField(Field.createField().setStatement(Function.createFunction().setName("IIF").appendArgument(conType.getFieldTable() + " <> 'CHECK'").appendArgument("NULL").appendArgument(conType.getFieldTable()).getStatement()).setAlias(conType.getAlias()));
+        sb.appendField(Field.createField().setTable(triggers).setName(prefix + TRIGGER_SOURCE).setAlias(TRIGGER_SOURCE));
         Field sqlSecurity = new Field();
         sqlSecurity.setTable(rels).setName(prefix + SQL_SECURITY).setAlias(SQL_SECURITY);
         sqlSecurity.setStatement(Function.createFunction().setName("IIF")
@@ -1309,8 +1287,19 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")
                         || getDatabaseMajorVersion() < 4));
         sb.appendField(Field.createField().setTable(rels).setName(prefix + DESCRIPTION).setAlias(DESCRIPTION));
+        Field relName = Field.createField().setTable(rels).setName(prefix + "RELATION_NAME");
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField().setTable(relCons).setName(relName.getName())));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(conName, Field.createField().setTable(checkCons).setName(conName.getName())));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField().setTable(checkCons).setName("RDB$TRIGGER_NAME"),
+                Field.createField().setTable(triggers).setName("RDB$TRIGGER_NAME")));
+        sb.appendCondition(Condition.createCondition().setLeftField(relName).setOperator("=").setRightStatement("?"));
 
-        sb.appendCondition(Condition.createCondition().setLeftField(Field.createField().setTable(rels).setName(prefix + "RELATION_NAME")).setOperator("=").setRightStatement("?"));
+        sb.appendCondition(Condition.createCondition()
+                .appendCondition(Condition.createCondition().setLeftField(Field.createField().setTable(triggers).setName("RDB$TRIGGER_TYPE")).setOperator("=").setRightStatement("1"))
+                .appendCondition(Condition.createCondition().setLeftField(Field.createField().setTable(triggers).setName("RDB$TRIGGER_TYPE")).setOperator("IS").setRightStatement("NULL"))
+                .setLogicOperator("OR"));
+
+
         String query = sb.getSQLQuery();
 
         return query;
@@ -1319,12 +1308,29 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     @Override
     protected void setInfoFromResultSet(ResultSet rs) {
         try {
-            if (rs.next()) {
-                setRemarks(getFromResultSet(rs, DESCRIPTION));
-                setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
-                setExternalFile(getFromResultSet(rs, EXTERNAL_FILE));
-                setAdapter(getFromResultSet(rs, ADAPTER));
-                setTablespace(getFromResultSet(rs, TABLESPACE));
+            boolean first = true;
+            checkConstraints = new ArrayList<>();
+            List<String> names = new ArrayList<>();
+            while (rs.next()) {
+                if (first) {
+                    setRemarks(getFromResultSet(rs, DESCRIPTION));
+                    setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+                    setExternalFile(getFromResultSet(rs, EXTERNAL_FILE));
+                    setAdapter(getFromResultSet(rs, ADAPTER));
+                    setTablespace(getFromResultSet(rs, TABLESPACE));
+                }
+                first = false;
+                String conType = rs.getString(CONSTRAINT_TYPE);
+                if (conType != null) {
+                    String name = rs.getString(CONSTRAINT_NAME).trim();
+                    if (!names.contains(name)) {
+                        ColumnConstraint constraint = new TableColumnConstraint(rs.getString(TRIGGER_SOURCE));
+                        constraint.setName(name);
+                        constraint.setTable(this);
+                        checkConstraints.add(constraint);
+                        names.add(name);
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

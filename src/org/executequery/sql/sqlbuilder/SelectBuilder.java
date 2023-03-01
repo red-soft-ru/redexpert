@@ -5,6 +5,7 @@ import java.util.List;
 
 public class SelectBuilder {
 
+    boolean distinct = false;
     List<Table> tables;
     List<Field> fields;
     List<LeftJoin> joins;
@@ -12,6 +13,10 @@ public class SelectBuilder {
     List<Condition> conditions;
 
     String ordering;
+
+    public static SelectBuilder createSelectBuilder() {
+        return new SelectBuilder();
+    }
 
     public List<Table> getTables() {
         return tables;
@@ -83,9 +88,20 @@ public class SelectBuilder {
         return this;
     }
 
+    public boolean isDistinct() {
+        return distinct;
+    }
+
+    public SelectBuilder setDistinct(boolean distinct) {
+        this.distinct = distinct;
+        return this;
+    }
+
     public String getSQLQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
+        if (distinct)
+            sb.append("DISTINCT ");
         if (fields != null) {
             boolean first = true;
             for (Field field : fields) {

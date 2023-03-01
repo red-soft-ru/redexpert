@@ -7,6 +7,10 @@ public class Condition {
 
     String logicOperator = "AND";
     Field leftField;
+
+    String leftStatement;
+
+    String statement;
     String operator;
     String rightStatement;
 
@@ -59,11 +63,34 @@ public class Condition {
         return this;
     }
 
+    public String getLeftStatement() {
+        return leftStatement;
+    }
+
+    public Condition setLeftStatement(String leftStatement) {
+        this.leftStatement = leftStatement;
+        return this;
+    }
+
+    public String getStatement() {
+        return statement;
+    }
+
+    public Condition setStatement(String statement) {
+        this.statement = statement;
+        return this;
+    }
+
     public String getConditionStatement() {
         StringBuilder sb = new StringBuilder();
-        if (conditions == null)
-            sb.append(leftField.getFieldTable()).append(" ").append(operator).append(" ").append(rightStatement);
-        else {
+        if (conditions == null) {
+            if (statement != null)
+                return statement;
+            if (leftStatement != null)
+                sb.append(leftStatement);
+            else sb.append(leftField.getFieldTable());
+            sb.append(" ").append(operator).append(" ").append(rightStatement);
+        } else {
             sb.append("(");
             boolean first = true;
             for (Condition condition : conditions) {

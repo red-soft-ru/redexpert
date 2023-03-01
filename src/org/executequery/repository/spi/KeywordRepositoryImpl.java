@@ -52,11 +52,14 @@ public class KeywordRepositoryImpl implements KeywordRepository {
     private List<String> firebirdKeyWords = new ArrayList<>();
     private List<String> databaseKeyWords = new ArrayList<>();
 
+    private TreeSet<String> allWords;
+    private boolean keyWordsListUpdated;
+
     public List<String> getSQL92() {
 
         if (sql92KeyWords == null) {
-
             sql92KeyWords = loadSQL92();
+            keyWordsListUpdated = true;
         }
 
         return sql92KeyWords;
@@ -68,18 +71,23 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         return keywords.contains(word);
     }
 
+    @Override
     public TreeSet<String> getSQLKeywords() {
 
+        if (allWords == null || keyWordsListUpdated) {
 
-        TreeSet<String> allWords = new TreeSet<>();
-        if(sql92KeyWords!=null)
-        allWords.addAll(sql92KeyWords);
-        if(userDefinedKeyWords!=null)
-        allWords.addAll(userDefinedKeyWords);
-        if(firebirdKeyWords!=null)
-        allWords.addAll(this.firebirdKeyWords);
-        if(databaseKeyWords!=null)
-        allWords.addAll(this.databaseKeyWords);
+            allWords = new TreeSet<>();
+            keyWordsListUpdated = false;
+
+            if (sql92KeyWords != null)
+                allWords.addAll(sql92KeyWords);
+            if (userDefinedKeyWords != null)
+                allWords.addAll(userDefinedKeyWords);
+            if (firebirdKeyWords != null)
+                allWords.addAll(this.firebirdKeyWords);
+            if (databaseKeyWords != null)
+                allWords.addAll(this.databaseKeyWords);
+        }
 
         return allWords;
     }
@@ -129,6 +137,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
             }
 
             this.firebirdKeyWords = list;
+            keyWordsListUpdated = true;
 
             return this.firebirdKeyWords;
 
@@ -150,6 +159,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         if (userDefinedKeyWords == null) {
 
             userDefinedKeyWords = loadUserDefinedKeywords();
+            keyWordsListUpdated = true;
         }
 
         return userDefinedKeyWords;
@@ -182,6 +192,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
             FileUtils.writeFile(path, sb.toString());
 
             userDefinedKeyWords = keywords;
+            keyWordsListUpdated = true;
 
             // fire the event to registered listeners
             EventMediator.fireEvent(new DefaultKeywordEvent("KeywordProperties",
@@ -312,6 +323,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
 
     public void setDatabaseKeyWords(List<String> list) {
         this.databaseKeyWords = list;
+        keyWordsListUpdated = true;
     }
 }
 

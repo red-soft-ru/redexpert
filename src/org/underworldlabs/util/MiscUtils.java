@@ -757,9 +757,12 @@ public final class MiscUtils {
         return str.equals(str.toUpperCase());
     }
 
+    private static KeywordRepository keywordRepository;
     public static boolean checkKeyword(String str) {
-        KeywordRepository keywordRepository =
-                (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+
+        if (keywordRepository == null)
+            keywordRepository = (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+
         TreeSet<String> keywords = keywordRepository.getSQLKeywords();
         return keywords.contains(str.toUpperCase());
     }

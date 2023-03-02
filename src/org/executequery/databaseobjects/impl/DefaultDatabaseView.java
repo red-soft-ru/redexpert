@@ -86,16 +86,6 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
-    @Override
     public String getSelectSQLText() {
 
         String fields = "";

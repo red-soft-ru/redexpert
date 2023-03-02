@@ -125,16 +125,6 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
-    @Override
     protected String queryForInfo() {
         String sql = "select fnc.rdb$function_name,\n" +
                 "fnc.rdb$function_source as SOURCE_CODE,\n" +

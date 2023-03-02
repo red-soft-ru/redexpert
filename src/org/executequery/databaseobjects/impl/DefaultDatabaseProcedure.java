@@ -89,16 +89,6 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
-    @Override
     protected String queryForInfo() {
         String sql;
         if (getDatabaseMajorVersion() >= 3)

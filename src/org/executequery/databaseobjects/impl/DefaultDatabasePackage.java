@@ -107,16 +107,6 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         return SQLUtils.generateDefaultDropQuery("PACKAGE", getName());
     }
 
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
     protected String queryForInfo() {
 
         String sql_security = "null";

@@ -42,16 +42,6 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         return SQLUtils.generateDefaultDropQuery("TABLE", getName());
     }
 
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
-        return null;
-    }
-
     private String getTypeTemporary() {
 
         DefaultStatementExecutor querySender = new DefaultStatementExecutor();

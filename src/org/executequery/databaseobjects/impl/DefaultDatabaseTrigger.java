@@ -393,16 +393,6 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
         return SQLUtils.generateDefaultDropQuery("TRIGGER", getName());
     }
 
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
     protected String queryForInfo() {
         String externalTriggerInfo = "t.RDB$ENGINE_NAME as ENGINE,\n" +
                 "t.RDB$ENTRYPOINT as ENTRY_POINT,\n";

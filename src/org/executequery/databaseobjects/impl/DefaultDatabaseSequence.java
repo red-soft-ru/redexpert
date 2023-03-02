@@ -210,16 +210,6 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
-    @Override
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         if (rs.next())
             setRemarks(getFromResultSet(rs, "DESCRIPTION"));

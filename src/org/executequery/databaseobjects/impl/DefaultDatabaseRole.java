@@ -29,16 +29,6 @@ public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
-    @Override
     protected String queryForInfo() {
 
         String query = "select r.rdb$description as DESCRIPTION\n" +

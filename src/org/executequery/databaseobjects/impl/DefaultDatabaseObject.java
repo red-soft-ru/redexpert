@@ -59,16 +59,6 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
         return null;
     }
 
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
     /**
      * Creates a new instance of DefaultDatabaseObject
      */

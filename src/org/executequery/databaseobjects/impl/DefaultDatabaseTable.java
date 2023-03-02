@@ -639,16 +639,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
-        return null;
-    }
-
-    @Override
     public String getDropSQLText(boolean cascadeConstraints) {
 
     /*StatementGenerator statementGenerator = null;

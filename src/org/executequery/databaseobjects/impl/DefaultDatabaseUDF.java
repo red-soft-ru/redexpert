@@ -295,15 +295,6 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
         return this.freeIt;
     }
 
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public String getCreateSQLText() {
         return SQLUtils.generateCreateUDF(getName(), parameters, returnArg, getEntryPoint(), getModuleName(), freeIt);
     }
@@ -311,16 +302,6 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("UDF", getName());
-    }
-
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
     }
 
     @Override

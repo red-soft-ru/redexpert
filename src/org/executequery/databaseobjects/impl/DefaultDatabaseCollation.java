@@ -183,14 +183,4 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
         return SQLUtils.generateDefaultDropQuery("COLLATION", getName());
     }
 
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
 }

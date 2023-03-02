@@ -95,16 +95,6 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
-    @Override
     protected String queryForInfo() {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT \n")

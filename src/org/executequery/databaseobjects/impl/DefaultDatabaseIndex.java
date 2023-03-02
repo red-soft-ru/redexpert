@@ -210,22 +210,13 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateIndex(
-                getName(), getType(), getNamePrefix(), getTableName(), null, getIndexColumns());
+                getName(), getType(), isUnique(), getTableName(), null, getCondition(),
+                getIndexColumns(), getTablespace(), isActive, getRemarks());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("INDEX", getName());
-    }
-
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
     }
 
     private static final String CONDITION_SOURCE = "CONDITION_SOURCE";

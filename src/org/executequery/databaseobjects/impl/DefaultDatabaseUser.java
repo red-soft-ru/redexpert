@@ -223,14 +223,4 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         return SQLUtils.generateDefaultDropQuery("USER", getName());
     }
 
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
 }

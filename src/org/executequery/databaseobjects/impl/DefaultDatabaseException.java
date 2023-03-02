@@ -78,18 +78,19 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
         this.exceptionText = exceptionText;
     }
 
+    @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateException(getName(), getExceptionText());
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return this.getCreateSQLText();
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("EXCEPTION", getName());
     }
 
     @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("EXCEPTION", getName());
+    public String getCompareCreateSQL() throws DataSourceException {
+        return this.getCreateSQLText();
     }
 
     @Override
@@ -99,12 +100,8 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getFillSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
     protected String queryForInfo() {
+
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT\n")
                 .append("RDB$MESSAGE AS ").append(EXCEPTION_TEXT).append(",\n")
@@ -113,6 +110,7 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
                 .append("FROM RDB$EXCEPTIONS\n")
                 .append("WHERE\n")
                 .append("TRIM(RDB$EXCEPTION_NAME) = ?");
+
         return sb.toString();
     }
 

@@ -5,6 +5,8 @@ import java.util.List;
 
 public class SelectBuilder {
 
+    public static final String PREFIX = "RDB$";
+
     boolean distinct = false;
     List<Table> tables;
     List<Field> fields;

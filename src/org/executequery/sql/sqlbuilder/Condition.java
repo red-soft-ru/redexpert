@@ -20,6 +20,10 @@ public class Condition {
         return new Condition();
     }
 
+    public static Condition createCondition(Field leftField, String operator, String rightStatement) {
+        return createCondition().setLeftField(leftField).setOperator(operator).setRightStatement(rightStatement);
+    }
+
     public Field getLeftField() {
         return leftField;
     }

@@ -6,7 +6,6 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.comparer.Comparer;
-import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
@@ -14,8 +13,6 @@ import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -29,7 +26,6 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     }
 
     public DefaultTemporaryDatabaseTable(DatabaseHost host) {
-
         super(host, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
     }
 
@@ -42,6 +38,11 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, true, true, true, true,
                 getTypeTemporary(), getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("TABLE", getName());
     }
 
     @Override
@@ -62,19 +63,10 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     }
 
     @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("TABLE", getName());
-    }
-
-    @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultTemporaryDatabaseTable comparingTable = (DefaultTemporaryDatabaseTable) databaseObject;
         return SQLUtils.generateAlterTable(this, comparingTable, true,
                 new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed());
-    }
-
-    private String formatSqlText(String text) {
-        return new SQLFormatter(text).format();
     }
 
     private String getTypeTemporary() {

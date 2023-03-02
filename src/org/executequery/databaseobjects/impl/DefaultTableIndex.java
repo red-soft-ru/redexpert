@@ -76,9 +76,9 @@ public class DefaultTableIndex extends AbstractDatabaseObjectElement
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
 
@@ -110,19 +110,18 @@ public class DefaultTableIndex extends AbstractDatabaseObjectElement
 
     private List<DatabaseColumn> columns() {
 
-        if (columns == null) {
-
-            columns = new ArrayList<DatabaseColumn>();
-        }
+        if (columns == null)
+            columns = new ArrayList<>();
 
         return columns;
     }
 
+    @Override
     public DatabaseTable getTable() {
-
         return table;
     }
 
+    @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateIndex(formatName(), indexType, getTable().getNamePrefix(), getTable().getName(), columns, null);
     }

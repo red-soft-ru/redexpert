@@ -1,14 +1,10 @@
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
-import org.executequery.gui.browser.ComparerDBPanel;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
-import org.underworldlabs.util.MiscUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,17 +46,13 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getHeaderSource() {
-        if (isMarkedForReload()) {
+
+        if (isMarkedForReload())
             getObjectInfo();
-        }
+
         StringBuilder sb = new StringBuilder();
-        sb.append("create or alter package");
-        sb.append(" ");
-        sb.append(getName());
-        sb.append("\n");
-        sb.append("as");
-        sb.append("\n");
-        sb.append(this.headerSource);
+        sb.append("create or alter package  ").append(getName());
+        sb.append("\nas\n").append(this.headerSource);
 
         return sb.toString();
     }
@@ -70,14 +62,10 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getBodySource() {
+
         StringBuilder sb = new StringBuilder();
-        sb.append("recreate package body");
-        sb.append(" ");
-        sb.append(getName());
-        sb.append("\n");
-        sb.append("as");
-        sb.append("\n");
-        sb.append(this.bodySource);
+        sb.append("recreate package body ").append(getName());
+        sb.append("\nas\n").append(this.bodySource);
 
         return sb.toString();
     }
@@ -116,14 +104,14 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        String comment = Comparer.isCommentsNeed() ? getDescription() : null;
-        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), comment);
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("PACKAGE", getName());
     }
 
     @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("PACKAGE", getName());
+    public String getCompareCreateSQL() throws DataSourceException {
+        String comment = Comparer.isCommentsNeed() ? getDescription() : null;
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), comment);
     }
 
     @Override
@@ -132,15 +120,12 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
                 databaseObject.getCompareCreateSQL() : "/* there are no changes */";
     }
 
-    @Override
-    public String getFillSQL() throws DataSourceException {
-        return null;
-    }
-
     protected String queryForInfo() {
+
         String sql_security = "null";
         if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
             sql_security = "IIF(p.rdb$sql_security is null,null,IIF(p.rdb$sql_security,'DEFINER','INVOKER'))";
+
         String sql = "select 0,\n" +
                 "p.rdb$package_header_source,\n" +
                 "p.rdb$package_body_source,\n" +
@@ -152,6 +137,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
                 sql_security + " as SQL_SECURITY\n" +
                 "from rdb$packages p\n" +
                 "where p.rdb$package_name=?";
+
         return sql;
     }
 

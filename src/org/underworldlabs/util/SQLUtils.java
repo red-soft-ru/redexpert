@@ -252,7 +252,7 @@ public final class SQLUtils {
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE], authid));
         String output = formattedParameters(outputParameters, false);
         if (!MiscUtils.isNull(output.trim())) {
-            sb.append("RETURNS (\n");
+            sb.append("\nRETURNS (\n");
             sb.append(output);
             sb.append(")");
         }
@@ -324,7 +324,7 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         sb.append("CREATE OR ALTER ").append(metaTag).append(" ");
-        sb.append(format(name)).append(" ");
+        sb.append(format(name));
 
         if (!MiscUtils.isNull(authid))
             sb.append("\nAUTHID ").append(authid).append("\n");
@@ -333,7 +333,7 @@ public final class SQLUtils {
                 (inputParameters.size() == 1 &&
                         !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
 
-            sb.append("(\n");
+            sb.append(" (\n");
             sb.append(formattedParameters(inputParameters, false));
             sb.append(") ");
         }
@@ -389,7 +389,7 @@ public final class SQLUtils {
             sb.append("SET TERM ^;\n");
 
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION], null));
-        sb.append(" RETURNS ");
+        sb.append("\nRETURNS ");
 
         if (returnType != null)
             sb.append(returnType.getFormattedDataType());
@@ -694,7 +694,7 @@ public final class SQLUtils {
         return columnConstraints;
     }
 
-    public static String generateDefaultDropRequest(String metaTag, String name) {
+    public static String generateDefaultDropQuery(String metaTag, String name) {
         StringBuilder sb = new StringBuilder();
         sb.append("DROP ").append(metaTag).append(" ");
         sb.append(format(name)).append(";\n");

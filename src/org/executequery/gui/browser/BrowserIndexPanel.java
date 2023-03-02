@@ -166,7 +166,6 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         }
 
         columns.clear();
-        index.loadColumns();
         for (DefaultDatabaseIndex.DatabaseIndexColumn column : index.getIndexColumns())
             columns.add(column);
 

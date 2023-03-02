@@ -84,25 +84,20 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName());
+    }
+    @Override
     public String getCompareCreateSQL() throws DataSourceException {
         return SQLUtils.generateCreateProcedure(
                 getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(), getSourceCode(),
                 getRemarks(), getHost().getDatabaseConnection(), true, Comparer.isCommentsNeed());
-    }
-    @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("PROCEDURE", getName());
     }
 
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
                 databaseObject.getCompareCreateSQL() : "/* there are no changes */";
-    }
-
-    @Override
-    public String getFillSQL() throws DataSourceException {
-        return null;
     }
 
     @Override

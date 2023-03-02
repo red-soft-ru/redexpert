@@ -41,14 +41,10 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
 
     private DatabaseObject dependObject;
 
-    /**
-     * the meta data key name for this object
-     */
+    /** the metadata key name for this object */
     private String metaDataKey;
 
-    /**
-     * Creates a new instance of DefaultDatabaseObject
-     */
+    /** Creates a new instance of DefaultDatabaseObject */
     public DefaultDatabaseObject(DatabaseHost host) {
         super(host);
     }
@@ -59,22 +55,17 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getDropSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
     public String getCompareCreateSQL() throws DataSourceException {
         return null;
     }
 
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getDropSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getFillSQL() throws DataSourceException {
         return null;
     }
 
@@ -107,14 +98,13 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) {
-
         try {
             if (rs.next())
-                setRemarks(getFromResultSet(rs,"DESCRIPTION"));
+                setRemarks(getFromResultSet(rs, "DESCRIPTION"));
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     public int getTypeTree() {
@@ -134,9 +124,9 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         return metaDataKey;
@@ -152,17 +142,11 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
         if (getType() == SYSTEM_TABLE || getType() == TABLE) {
 
             List<DatabaseColumn> _columns = getColumns();
-
-            if (_columns == null) {
-
+            if (_columns == null)
                 return null;
-            }
 
-            List<NamedObject> objects = new ArrayList<NamedObject>(_columns.size());
-            for (DatabaseColumn i : _columns) {
-
-                objects.add(i);
-            }
+            List<NamedObject> objects = new ArrayList<>(_columns.size());
+            objects.addAll(_columns);
 
             return objects;
         }
@@ -183,25 +167,15 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     public int getType() {
 
         String key = getMetaDataKey();
-        for (int i = 0; i < META_TYPES.length; i++) {
-
-            if (META_TYPES[i].equals(key)) {
-
+        for (int i = 0; i < META_TYPES.length; i++)
+            if (META_TYPES[i].equals(key))
                 return i;
-            }
-
-        }
 
         // check if this a 'derivative object' -
-        // ie. a SYSTEM INDEX is still an INDEX
-        for (int i = 0; i < META_TYPES.length; i++) {
-
-            if (MiscUtils.containsWholeWord(key, META_TYPES[i])) {
-
+        // i.e. a SYSTEM INDEX is still an INDEX
+        for (int i = 0; i < META_TYPES.length; i++)
+            if (MiscUtils.containsWholeWord(key, META_TYPES[i]))
                 return i;
-            }
-
-        }
 
         // ...and if all else fails
         return OTHER;
@@ -212,36 +186,21 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
         String underscore = "_";
         String _value = value.replaceAll(" ", underscore);
 
-        if (!_value.contains(underscore)) {
-
+        if (!_value.contains(underscore))
             return _value.toLowerCase();
-        }
 
         StringBuilder sb = new StringBuilder();
 
         String[] parts = _value.split(underscore);
-        for (int i = 0; i < parts.length; i++) {
-
-            if (i > 0) {
-
-                sb.append(MiscUtils.firstLetterToUpper(parts[i].toLowerCase()));
-
-            } else {
-
-                sb.append(parts[i].toLowerCase());
-            }
-
-        }
+        for (int i = 0; i < parts.length; i++)
+            sb.append((i > 0) ? MiscUtils.firstLetterToUpper(parts[i].toLowerCase()) : parts[i].toLowerCase());
 
         return sb.toString();
     }
 
     protected String databaseProductName() {
-
         return getHost().getDatabaseProductName();
     }
-
-
 
 }
 

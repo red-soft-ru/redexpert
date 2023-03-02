@@ -70,9 +70,9 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
@@ -113,11 +113,29 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
      *
      * @return the result set
      */
-
+    @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateFunction(
                 getName(), getFunctionArguments(), getSourceCode(),
                 getEntryPoint(), getEngine(), getSqlSecurity(), getRemarks(), false, true, isDeterministic(), getHost().getDatabaseConnection());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(),
+                getEngine(), getSqlSecurity(), getRemarks(), true, Comparer.isCommentsNeed(),
+                isDeterministic(), getHost().getDatabaseConnection());
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("FUNCTION", getName());
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
     }
 
     @Override
@@ -188,27 +206,27 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         rs.getString("RN"),
                         rs.getString("FN")
                 );
-                    int return_arg = rs.getInt("RETURN_ARGUMENT");
-                    if (return_arg == fp.getPosition())
-                        fp.setType(DatabaseMetaData.procedureColumnReturn);
-                    else fp.setType(DatabaseMetaData.procedureColumnIn);
-                    String domain = rs.getString("FS");
-                    if (domain != null && !domain.startsWith("RDB$"))
-                        fp.setDomain(domain.trim());
+                int return_arg = rs.getInt("RETURN_ARGUMENT");
+                if (return_arg == fp.getPosition())
+                    fp.setType(DatabaseMetaData.procedureColumnReturn);
+                else fp.setType(DatabaseMetaData.procedureColumnIn);
+                String domain = rs.getString("FS");
+                if (domain != null && !domain.startsWith("RDB$"))
+                    fp.setDomain(domain.trim());
                 fp.setNullable(rs.getInt("null_flag") == 1 ? 0 : 1);
-                    if (rs.getInt("FIELD_PRECISION") != 0)
-                        fp.setSize(rs.getInt("FIELD_PRECISION"));
-                    if (rs.getInt("CHAR_LEN") != 0)
-                        fp.setSize(rs.getInt("CHAR_LEN"));
-                    if (fp.getDataType() == Types.LONGVARBINARY ||
-                            fp.getDataType() == Types.LONGVARCHAR ||
-                            fp.getDataType() == Types.BLOB) {
-                        fp.setSize(rs.getInt("segment_length"));
-                    }
-                    String characterSet = rs.getString("character_set_name");
+                if (rs.getInt("FIELD_PRECISION") != 0)
+                    fp.setSize(rs.getInt("FIELD_PRECISION"));
+                if (rs.getInt("CHAR_LEN") != 0)
+                    fp.setSize(rs.getInt("CHAR_LEN"));
+                if (fp.getDataType() == Types.LONGVARBINARY ||
+                        fp.getDataType() == Types.LONGVARCHAR ||
+                        fp.getDataType() == Types.BLOB) {
+                    fp.setSize(rs.getInt("segment_length"));
+                }
+                String characterSet = rs.getString("character_set_name");
                 if (!MiscUtils.isNull(characterSet))
                     fp.setEncoding(characterSet.trim());
-                    fp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(6), fp.getSubType(), fp.getScale()));
+                fp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(6), fp.getSubType(), fp.getScale()));
                 fp.setDefaultValue(rs.getString("DEFAULT_SOURCE"));
                 fp.setDescription(rs.getString("argument_description"));
                 arguments.add(fp);
@@ -234,29 +252,6 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
     public void setDeterministic(boolean deterministic) {
         this.deterministic = deterministic;
-    }
-
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(),
-                getEngine(), getSqlSecurity(), getRemarks(), true, Comparer.isCommentsNeed(),
-                isDeterministic(), getHost().getDatabaseConnection());
-    }
-
-    @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("FUNCTION", getName());
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
-                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
-    }
-
-    @Override
-    public String getFillSQL() throws DataSourceException {
-        return null;
     }
 
 }

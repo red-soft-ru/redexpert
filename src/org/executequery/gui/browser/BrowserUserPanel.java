@@ -45,11 +45,11 @@ public class BrowserUserPanel extends AbstractFormObjectViewPanel {
         super();
         this.controller = controller;
 
-        try {
-            // init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            init();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
     }
 

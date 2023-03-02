@@ -142,8 +142,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     @Override
     public void createObject() {
         try {
-            String querys = getSQLText();
-            displayExecuteQueryDialog(querys, "^");
+            String queries = getSQLText();
+            displayExecuteQueryDialog(queries, "^");
 
         } catch (Exception exc) {
             GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);

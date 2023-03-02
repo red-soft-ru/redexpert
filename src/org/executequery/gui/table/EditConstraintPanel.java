@@ -232,7 +232,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
 
         tabbedPane.add(typePanel, 0);
         tabbedPane.setTitleAt(0, bundleString("Constraint"));
-        if(generate_name)
+        if (generate_name)
             nameField.setText(generateName());
 
         updateUI();
@@ -509,13 +509,16 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
     }
 
     @Override
-    public void keyPressed(KeyEvent keyEvent) {}
+    public void keyPressed(KeyEvent keyEvent) {
+    }
 
     @Override
-    public void keyReleased(KeyEvent keyEvent) {}
+    public void keyReleased(KeyEvent keyEvent) {
+    }
 
     @Override
-    protected void reset() {}
+    protected void reset() {
+    }
 
     private String generateName() {
 

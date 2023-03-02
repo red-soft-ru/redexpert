@@ -5,14 +5,12 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,7 +43,7 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
     public static class UDFTableModel implements TableModel {
 
-        private final Set<TableModelListener> listeners = new HashSet<TableModelListener>();
+        private final Set<TableModelListener> listeners = new HashSet<>();
 
         private final List<DefaultDatabaseUDF> udfs;
 
@@ -133,7 +131,7 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
         private final int mechanism;
         private final int fieldType;
         private final int fieldScale;
-        private final int fieldLenght;
+        private final int fieldLength;
         private final int fieldSubType;
         private final int fieldPrecision;
         private String encoding;
@@ -152,7 +150,7 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 this.notNull = false;
             this.fieldType = fieldType;
             this.fieldScale = fieldScale;
-            this.fieldLenght = fieldLength;
+            this.fieldLength = fieldLength;
             this.fieldSubType = fieldSubType;
             this.fieldStringType = DatabaseTypeConverter.getTypeWithSize(fieldType, fieldSubType, fieldLength, fieldScale);
             if (this.fieldStringType.contains("BLOB"))
@@ -183,8 +181,8 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
             return this.fieldType;
         }
 
-        public int getFieldLenght() {
-            return this.fieldLenght;
+        public int getFieldLength() {
+            return this.fieldLength;
         }
 
         public int getFieldSubType() {
@@ -296,17 +294,13 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
         return this.freeIt;
     }
 
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public String getCreateSQLText() {
         return SQLUtils.generateCreateUDF(getName(), parameters, returnArg, getEntryPoint(), getModuleName(), freeIt);
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("UDF", getName());
     }
 
     @Override
@@ -315,19 +309,9 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
     }
 
     @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("UDF", getName());
-    }
-
-    @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseUDF comparingUDF = (DefaultDatabaseUDF) databaseObject;
         return SQLUtils.generateAlterUDF(this, comparingUDF);
-    }
-
-    @Override
-    public String getFillSQL() throws DataSourceException {
-        return null;
     }
 
     @Override

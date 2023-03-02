@@ -64,6 +64,7 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
 
     @Override
     protected String queryForInfo() {
+
         String query = "select ch.RDB$CHARACTER_SET_NAME as " + CHARSET + ",\n" +
                 "co.RDB$BASE_COLLATION_NAME as " + BASE_COLLATE + ",\n" +
                 "co.RDB$COLLATION_ATTRIBUTES as " + COLLATION_ATTRIBUTES + ",\n" +
@@ -71,6 +72,7 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
                 "co.RDB$DESCRIPTION as " + DESCRIPTION + "\n" +
                 "from RDB$COLLATIONS co left join RDB$CHARACTER_SETS ch on co.RDB$CHARACTER_SET_ID=ch.RDB$CHARACTER_SET_ID \n" +
                 "where co.RDB$COLLATION_NAME=?";
+
         return query;
     }
 
@@ -178,7 +180,7 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("COLLATION", getName());
+        return SQLUtils.generateDefaultDropQuery("COLLATION", getName());
     }
 
     @Override
@@ -193,11 +195,6 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
                 SQLUtils.generateCreateCollation(comparingCollation.getName(), comparingCollation.getCharacterSet(),
                 comparingCollation.getBaseCollate(), comparingCollation.getAttributes(), comparingCollation.isPadSpace(),
                 comparingCollation.isCaseSensitive(), comparingCollation.isAccentSensitive(), isExternal());
-    }
-
-    @Override
-    public String getFillSQL() throws DataSourceException {
-        return null;
     }
 
 }

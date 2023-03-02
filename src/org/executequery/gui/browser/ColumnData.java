@@ -47,7 +47,7 @@ import java.util.Vector;
 /**
  * This class represents a single table
  * column definition. This includes data types
- * sizes, scales and key referencing meta data.
+ * sizes, scales and key referencing metadata.
  *
  * @author Takis Diakoumis
  */
@@ -94,7 +94,7 @@ public class ColumnData implements Serializable {
 
     /**
      * The key of this column - if any
-     * (ie primary, foreign etc)
+     * (ie primary, foreign etc.)
      */
     private String keyType;
 
@@ -124,7 +124,7 @@ public class ColumnData implements Serializable {
     private int columnSubtype;
 
     /**
-     * Whether this column is required ie. NOT NULL
+     * Whether this column is required i.e. NOT NULL
      */
     private boolean notNull;
 
@@ -180,7 +180,7 @@ public class ColumnData implements Serializable {
     private int domainScale = -1;
 
     /**
-     * Domain sub type
+     * Domain subtype
      */
     private int domainSubType;
 
@@ -329,9 +329,8 @@ public class ColumnData implements Serializable {
     }
 
     public void addConstraint(ColumnConstraint cc) {
-        if (columnConstraints == null) {
-            columnConstraints = new Vector<ColumnConstraint>();
-        }
+        if (columnConstraints == null)
+            columnConstraints = new Vector<>();
         columnConstraints.add(cc);
     }
 
@@ -424,7 +423,7 @@ public class ColumnData implements Serializable {
         setDescription(cd.getColumnDescription());
         setComputedBy(cd.getComputedSource());
         setDefaultValue(cd.getDefaultValue());
-        if(cd.isIdentity())
+        if (cd.isIdentity())
             ai.setIdentity(true);
     }
 
@@ -750,7 +749,7 @@ public class ColumnData implements Serializable {
         }
         StringBuilder sb = new StringBuilder(typeString);
 
-        // if the type doesn't end with a digit or it
+        // if the type doesn't end with a digit, or it
         // is a char type then add the size - attempt
         // here to avoid int4, int8 etc. type values
 

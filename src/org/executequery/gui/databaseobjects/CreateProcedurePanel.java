@@ -94,7 +94,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
             fullProcedureBody = db.getProcedureSourceCode(dMetaData, this.procedure);
 
 
-        } catch (IllegalAccessException | InstantiationException | MalformedURLException | ClassNotFoundException | SQLException e) {
+        } catch (IllegalAccessException | InstantiationException | MalformedURLException | ClassNotFoundException |
+                 SQLException e) {
             e.printStackTrace();
         } finally {
             if (host != null)
@@ -229,8 +230,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
     private void createProcedure() {
         try {
-            String querys = getSQLText();
-            displayExecuteQueryDialog(querys, "^");
+            String queries = getSQLText();
+            displayExecuteQueryDialog(queries, "^");
 
         } catch (Exception exc) {
             GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);

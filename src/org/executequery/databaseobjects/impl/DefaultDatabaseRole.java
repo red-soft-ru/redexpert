@@ -11,7 +11,7 @@ import java.sql.SQLException;
 /**
  * Created by vasiliy on 02.02.17.
  */
-public class DefaultDatabaseRole extends AbstractDatabaseObject {
+public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
     public String name;
 
     public DefaultDatabaseRole(DatabaseMetaTag metaTagParent, String name) {
@@ -24,13 +24,13 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return this.getCreateSQLText();
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("ROLE", getName());
     }
 
     @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("ROLE", getName());
+    public String getCompareCreateSQL() throws DataSourceException {
+        return this.getCreateSQLText();
     }
 
     @Override
@@ -39,25 +39,20 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getFillSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
     protected String queryForInfo() {
 
-            String query = "select r.rdb$description as DESCRIPTION\n" +
-                    "from rdb$roles r\n" +
-                    "where r.rdb$role_name = ?'";
+        String query = "select r.rdb$description as DESCRIPTION\n" +
+                "from rdb$roles r\n" +
+                "where r.rdb$role_name = ?'";
 
-            return query;
+        return query;
     }
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         try {
             if (rs.next())
-                setRemarks(getFromResultSet(rs,"DESCRIPTION"));
+                setRemarks(getFromResultSet(rs, "DESCRIPTION"));
         } catch (Exception e) {
             e.printStackTrace();
         }

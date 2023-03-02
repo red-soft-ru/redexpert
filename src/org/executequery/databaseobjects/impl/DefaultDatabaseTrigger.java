@@ -14,6 +14,8 @@ import java.sql.SQLException;
  */
 public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
 
+    private int type = -1;
+
     private String triggerSourceCode;
     private boolean triggerActive;
     private String tableName;
@@ -152,9 +154,6 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
      *
      * @return the object type
      */
-
-    private int type = -1;
-
     public int getType() {
         if (type == -1) {
             if (getParent().getMetaDataKey().equalsIgnoreCase(META_TYPES[NamedObject.DATABASE_TRIGGER]))
@@ -169,9 +168,9 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
@@ -391,6 +390,11 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     }
 
     @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("TRIGGER", getName());
+    }
+
+    @Override
     public String getCompareCreateSQL() throws DataSourceException {
         String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
         return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
@@ -398,19 +402,9 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     }
 
     @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("TRIGGER", getName());
-    }
-
-    @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
                 databaseObject.getCompareCreateSQL() : "/* there are no changes */";
-    }
-
-    @Override
-    public String getFillSQL() throws DataSourceException {
-        return null;
     }
 
     protected String queryForInfo() {
@@ -436,6 +430,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
         return query;
     }
 
+    @Override
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         if (rs.next()) {
             setTableName(getFromResultSet(rs, "TABLE_NAME"));

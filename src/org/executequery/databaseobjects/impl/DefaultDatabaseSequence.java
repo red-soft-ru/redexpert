@@ -206,7 +206,13 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("SEQUENCE", getName());
+    }
+
+    @Override
     public String getCompareCreateSQL() throws DataSourceException {
+
         String query = "";
         String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
         try {
@@ -223,11 +229,6 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropRequest("SEQUENCE", getName());
-    }
-
-    @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
 
         DefaultDatabaseSequence comparingSequence = (DefaultDatabaseSequence) databaseObject;
@@ -240,16 +241,12 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         return SQLUtils.generateAlterSequence(this, comparingSequence, version);
     }
 
-    @Override
-    public String getFillSQL() throws DataSourceException {
-        return null;
-    }
-
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         if (rs.next())
-            setRemarks(getFromResultSet(rs,"DESCRIPTION"));
+            setRemarks(getFromResultSet(rs, "DESCRIPTION"));
     }
 
+    @Override
     protected String queryForInfo() {
         return "select rdb$description as DESCRIPTION from rdb$generators where \n" +
                 "rdb$generator_name=?";

@@ -4,36 +4,66 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.components.TableSelectionCombosGroup;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
-import org.executequery.sql.SqlStatementResult;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
 
+/**
+ * @author Alexey Kozlov
+ */
 public class ProfilerPanel extends JPanel
         implements TabView {
 
     public final static String TITLE = bundleString("title");
 
+    private static final int ACTIVE = 0;
+    private static final int PAUSED = ACTIVE + 1;
+    private static final int INACTIVE = PAUSED + 1;
+
+    // --- useful query keywords ---
+
+    private static final String NULL = "NULL";
+    private static final String TRUE = "TRUE";
+    private static final String FALSE = "FALSE";
+
     // --- profiler commands ---
 
-    private static final String START_SESSION_PATTERN =
-            "SELECT RDB$PROFILER.START_SESSION('%s') FROM RDB$DATABASE";
-    private static final String FINISH_SESSION_QUERY =
-            "EXECUTE PROCEDURE RDB$PROFILER.FINISH_SESSION(true)";
+    private static final String START_SESSION =
+            "SELECT RDB$PROFILER.START_SESSION('%s', %s) FROM RDB$DATABASE";
+    private static final String PAUSE_SESSION =
+            "EXECUTE PROCEDURE RDB$PROFILER.PAUSE_SESSION(%s)";
+    private static final String RESUME_SESSION =
+            "EXECUTE PROCEDURE RDB$PROFILER.RESUME_SESSION";
+    private static final String FINISH_SESSION =
+            "EXECUTE PROCEDURE RDB$PROFILER.FINISH_SESSION(%s)";
+    private static final String CANCEL_SESSION =
+            "EXECUTE PROCEDURE RDB$PROFILER.CANCEL_SESSION";
+    private static final String DISCARD =
+            "EXECUTE PROCEDURE RDB$PROFILER.DISCARD";
+    private static final String FLASH =
+            "EXECUTE PROCEDURE RDB$PROFILER.FLUSH";
+    private static final String SET_FLUSH_INTERVAL =
+            "EXECUTE PROCEDURE RDB$PROFILER.SET_FLUSH_INTERVAL(%s)";
+
+    private static final String SELECT_FROM_PROF_STATEMENT_STATS_VIEW =
+            "SELECT * FROM PLG$PROF_STATEMENT_STATS_VIEW WHERE PROFILE_ID = %s";
 
     // --- GUI objects ---
 
@@ -57,13 +87,46 @@ public class ProfilerPanel extends JPanel
     private TableSelectionCombosGroup combosGroup;
 
     private String sessionName;
-    private boolean isSessionActive;
+    private Integer sessionId;
+    private int sessionState;
+    private int flashInterval;
+
+    private final SwingWorker flashWorker = new SwingWorker("Profiler data updater") {
+        @Override
+        public Object construct() {
+            try {
+
+                DefaultStatementExecutor flashExecutor = new DefaultStatementExecutor();
+                flashExecutor.setDatabaseConnection(connection);
+                flashExecutor.setCommitMode(false);
+                flashExecutor.setKeepAlive(true);
+
+                PreparedStatement statement =
+                        flashExecutor.getPreparedStatement(String.format(SELECT_FROM_PROF_STATEMENT_STATS_VIEW, sessionId));
+
+                while (sessionState == ACTIVE) {
+                    Thread.sleep(flashInterval * 1000L);
+                    ResultSet rs = flashExecutor.execute(QueryTypes.SELECT, statement).getResultSet();
+                    resultSetTableModel.createTable(rs);
+                }
+
+            } catch (Exception e) {
+                Log.error("Error updating profiler data", e);
+            }
+
+            return null;
+        }
+    };
 
     public ProfilerPanel() {
         init();
     }
 
     private void init() {
+
+        executor = new DefaultStatementExecutor();
+        executor.setCommitMode(false);
+        executor.setKeepAlive(true);
 
         connectionsComboBox = WidgetFactory.createComboBox();
         connectionsComboBox.setModel(
@@ -73,28 +136,31 @@ public class ProfilerPanel extends JPanel
         combosGroup = new TableSelectionCombosGroup(connectionsComboBox);
 
         flashIntervalSpinner = new JSpinner();
-        flashIntervalSpinner.setModel(new SpinnerNumberModel(1, 1, 120, 1));
+        flashIntervalSpinner.setModel(new SpinnerNumberModel(5, 0, 120, 1));
+        flashIntervalSpinner.setToolTipText("The interval with which the profiler data will be updated in seconds.\n" +
+                "If value is 0, data won't be updated until the end of the session");
 
         startButton = new JButton("Start");
         startButton.addActionListener(e -> startSession());
 
         pauseButton = new JButton("Pause");
-        //TODO button handler
+        pauseButton.addActionListener(e -> pauseSession());
 
         resumeButton = new JButton("Resume");
-        //TODO button handler
+        resumeButton.addActionListener(e -> resumeSession());
 
         finishButton = new JButton("Stop");
         finishButton.addActionListener(e -> finishSession());
 
         cancelButton = new JButton("Cancel");
-        //TODO button handler
+        cancelButton.addActionListener(e -> cancelSession());
 
         discardButton = new JButton("Discard");
-        //TODO button handler
+        discardButton.addActionListener(e -> discardSession());
 
         buildResultSetTable();
         arrangeComponents();
+        switchSessionState(INACTIVE);
     }
 
     private void arrangeComponents() {
@@ -106,11 +172,11 @@ public class ProfilerPanel extends JPanel
         JPanel buttonPanel = new JPanel(new GridBagLayout());
 
         buttonPanel.add(startButton, gridBagHelper.get());
-//        buttonPanel.add(pauseButton, gridBagHelper.nextCol().get());
-//        buttonPanel.add(resumeButton, gridBagHelper.nextCol().get());
+        buttonPanel.add(pauseButton, gridBagHelper.nextCol().get());
+        buttonPanel.add(resumeButton, gridBagHelper.nextCol().get());
         buttonPanel.add(finishButton, gridBagHelper.nextCol().get());
-//        buttonPanel.add(cancelButton, gridBagHelper.nextCol().get());
-//        buttonPanel.add(discardButton, gridBagHelper.nextCol().get());
+        buttonPanel.add(cancelButton, gridBagHelper.nextCol().get());
+        buttonPanel.add(discardButton, gridBagHelper.nextCol().get());
 
         // --- tools panel ---
 
@@ -202,42 +268,120 @@ public class ProfilerPanel extends JPanel
             return;
         }
 
-        executor = new DefaultStatementExecutor();
-        executor.setCommitMode(false);
-        executor.setKeepAlive(true);
         executor.setDatabaseConnection(connection);
 
-        sessionName = connection.getName() + "_" + System.currentTimeMillis();
-        String query = String.format(START_SESSION_PATTERN, sessionName);
+        sessionName = connection.getName() + "_session";
+        flashInterval = (int) flashIntervalSpinner.getValue();
+        String query = String.format(START_SESSION, sessionName, (flashInterval > 0) ? flashInterval : NULL);
 
         try {
 
             ResultSet resultSet = executor.execute(query, true).getResultSet();
+            if (resultSet.next())
+                sessionId = resultSet.getInt(1);
             resultSetTableModel.createTable(resultSet);
-            isSessionActive = true;
+            executor.getConnection().commit();
+            switchSessionState(ACTIVE);
+            flashWorker.start();
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Error occurred when starting profiler session", e);
+            GUIUtilities.displayExceptionErrorDialog("Unable to start profiler session", e);
+        }
+    }
+
+    private void pauseSession() {
+        try {
+
+            executor.execute(String.format(PAUSE_SESSION, TRUE), true);
+            executor.getConnection().commit();
+            switchSessionState(PAUSED);
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog("Unable to pause profiler session", e);
+        }
+    }
+
+    private void resumeSession() {
+        try {
+
+            executor.execute(RESUME_SESSION, true);
+            executor.getConnection().commit();
+            switchSessionState(ACTIVE);
+            flashWorker.start();
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog("Unable to resume profiler session", e);
         }
     }
 
     private void finishSession() {
-
-        if (!isSessionActive)
-            return;
-
         try {
 
-            executor.execute(FINISH_SESSION_QUERY, true);
+            executor.execute(String.format(FINISH_SESSION, TRUE), true);
             executor.getConnection().commit();
-            isSessionActive = false;
+            switchSessionState(INACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Error occurred when finishing profiler session", e);
+            GUIUtilities.displayExceptionErrorDialog("Unable to finish profiler session", e);
+        }
+    }
+
+    private void cancelSession() {
+        try {
+
+            executor.execute(CANCEL_SESSION, true);
+            executor.getConnection().commit();
+            switchSessionState(INACTIVE);
+            flashWorker.interrupt();
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog("Unable to cancel profiler session", e);
+        }
+    }
+
+    private void discardSession() {
+        try {
+
+            executor.execute(DISCARD, true);
+            executor.getConnection().commit();
+            switchSessionState(INACTIVE);
+            flashWorker.interrupt();
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog("Unable to discard profiler sessions", e);
         }
     }
 
     // ---
+
+    private void switchSessionState(int state) {
+
+        sessionState = state;
+
+        switch (state) {
+            case ACTIVE:
+                startButton.setEnabled(false);
+                pauseButton.setEnabled(true);
+                resumeButton.setEnabled(false);
+                finishButton.setEnabled(true);
+                cancelButton.setEnabled(true);
+                break;
+            case PAUSED:
+                startButton.setEnabled(false);
+                pauseButton.setEnabled(false);
+                resumeButton.setEnabled(true);
+                finishButton.setEnabled(true);
+                cancelButton.setEnabled(true);
+                break;
+            case INACTIVE:
+                startButton.setEnabled(true);
+                pauseButton.setEnabled(false);
+                resumeButton.setEnabled(false);
+                finishButton.setEnabled(false);
+                cancelButton.setEnabled(false);
+                break;
+        }
+    }
 
     @Override
     public boolean tabViewClosing() {

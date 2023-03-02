@@ -216,7 +216,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
             query += "DESCENDING ";
         query += "INDEX " + MiscUtils.getFormattedObject(getName()) +
                 " ON " + MiscUtils.getFormattedObject(getTableName().trim()) + " ";
-        if (getExpression() != null) {
+        if (!MiscUtils.isNull(getExpression())) {
             query += "COMPUTED BY (" + getExpression() + ")";
         } else {
             query += "(";
@@ -230,7 +230,9 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
             }
             query += fieldss + ")";
         }
-        if (getTablespace() != null)
+        if (!MiscUtils.isNull(getCondition()))
+            query += "\nWHERE " + getCondition();
+        if (!MiscUtils.isNull(getTablespace()))
             query += "\nTABLESPACE " + MiscUtils.getFormattedObject(getTablespace());
         query += ";";
         if (!isActive())
@@ -275,7 +277,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         SelectBuilder sb = new SelectBuilder();
         Table indicies = Table.createTable("RDB$INDICES", "I");
         Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
-        Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "IS");
+        Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT");
 
         sb.appendField(Field.createField(indicies, RELATION_NAME));
         sb.appendField(Field.createField(indicies, INDEX_TYPE));

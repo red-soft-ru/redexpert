@@ -1260,43 +1260,47 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     protected String queryForInfo() {
-        String prefix = "RDB$";
+
         SelectBuilder sb = new SelectBuilder();
         sb.setDistinct(true);
-        Table rels = Table.createTable().setName("RDB$RELATIONS").setAlias("R");
-        Table relCons = Table.createTable().setName("RDB$RELATION_CONSTRAINTS").setAlias("RC");
-        Table checkCons = Table.createTable().setName("RDB$CHECK_CONSTRAINTS").setAlias("CC");
-        Table triggers = Table.createTable().setName("RDB$TRIGGERS").setAlias("T");
+        Table rels = Table.createTable("RDB$RELATIONS", "R");
+        Table relCons = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
+        Table checkCons = Table.createTable("RDB$CHECK_CONSTRAINTS", "CC");
+        Table triggers = Table.createTable("RDB$TRIGGERS", "T");
 
-        Field conName = Field.createField().setTable(relCons).setName(prefix + CONSTRAINT_NAME).setAlias(CONSTRAINT_NAME);
-        Field conType = Field.createField().setTable(relCons).setName(prefix + CONSTRAINT_TYPE).setAlias(CONSTRAINT_TYPE);
-        sb.appendField(Field.createField().setStatement(Function.createFunction().setName("IIF").appendArgument(conType.getFieldTable() + " <> 'CHECK'").appendArgument("NULL").appendArgument(conName.getFieldTable()).getStatement()).setAlias(conName.getAlias()));
-        sb.appendField(Field.createField().setStatement(Function.createFunction().setName("IIF").appendArgument(conType.getFieldTable() + " <> 'CHECK'").appendArgument("NULL").appendArgument(conType.getFieldTable()).getStatement()).setAlias(conType.getAlias()));
-        sb.appendField(Field.createField().setTable(triggers).setName(prefix + TRIGGER_SOURCE).setAlias(TRIGGER_SOURCE));
-        Field sqlSecurity = new Field();
-        sqlSecurity.setTable(rels).setName(prefix + SQL_SECURITY).setAlias(SQL_SECURITY);
-        sqlSecurity.setStatement(Function.createFunction().setName("IIF")
+        Field conName = Field.createField(relCons, CONSTRAINT_NAME);
+        Field conType = Field.createField(relCons, CONSTRAINT_TYPE);
+        Function compareCheck = Function.createFunction("IIF")
+                .appendArgument(conType.getFieldTable() + " <> 'CHECK'")
+                .appendArgument("NULL")
+                .appendArgument(conName.getFieldTable());
+        sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conName.getAlias()));
+        compareCheck.setArgument(2, conType.getFieldTable());
+        sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conType.getAlias()));
+        sb.appendField(Field.createField(triggers, TRIGGER_SOURCE));
+        Field sqlSecurity = Field.createField(rels, SQL_SECURITY);
+        sqlSecurity.setStatement(Function.createFunction("IIF")
                 .appendArgument(sqlSecurity.getFieldTable() + " IS NULL").appendArgument("NULL").appendArgument(Function.createFunction().setName("IIF")
                         .appendArgument(sqlSecurity.getFieldTable()).appendArgument("'DEFINER'").appendArgument("'INVOKER'").getStatement()).getStatement());
         sqlSecurity.setNull(getDatabaseMajorVersion() < 3);
         sb.appendField(sqlSecurity);
 
-        sb.appendField(Field.createField().setTable(rels).setName(prefix + EXTERNAL_FILE).setAlias(EXTERNAL_FILE));
-        sb.appendField(Field.createField().setTable(rels).setName(prefix + ADAPTER).setAlias(ADAPTER).setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")));
-        sb.appendField(Field.createField().setTable(rels).setName(prefix + TABLESPACE + "_NAME").setAlias(TABLESPACE).
+        sb.appendField(Field.createField(rels, EXTERNAL_FILE));
+        sb.appendField(Field.createField(rels, ADAPTER).setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")));
+        sb.appendField(Field.createField(rels, TABLESPACE + "_NAME").setAlias(TABLESPACE).
                 setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")
                         || getDatabaseMajorVersion() < 4));
-        sb.appendField(Field.createField().setTable(rels).setName(prefix + DESCRIPTION).setAlias(DESCRIPTION));
-        Field relName = Field.createField().setTable(rels).setName(prefix + "RELATION_NAME");
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField().setTable(relCons).setName(relName.getName())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(conName, Field.createField().setTable(checkCons).setName(conName.getName())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField().setTable(checkCons).setName("RDB$TRIGGER_NAME"),
-                Field.createField().setTable(triggers).setName("RDB$TRIGGER_NAME")));
-        sb.appendCondition(Condition.createCondition().setLeftField(relName).setOperator("=").setRightStatement("?"));
+        sb.appendField(Field.createField(rels, DESCRIPTION));
+        Field relName = Field.createField(rels, "RELATION_NAME");
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField(relCons, relName.getAlias())));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
+                Field.createField(triggers, "TRIGGER_NAME")));
+        sb.appendCondition(Condition.createCondition(relName, "=", "?"));
 
         sb.appendCondition(Condition.createCondition()
-                .appendCondition(Condition.createCondition().setLeftField(Field.createField().setTable(triggers).setName("RDB$TRIGGER_TYPE")).setOperator("=").setRightStatement("1"))
-                .appendCondition(Condition.createCondition().setLeftField(Field.createField().setTable(triggers).setName("RDB$TRIGGER_TYPE")).setOperator("IS").setRightStatement("NULL"))
+                .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "=", "1"))
+                .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "IS", "NULL"))
                 .setLogicOperator("OR"));
 
 

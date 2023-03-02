@@ -30,7 +30,6 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 public class DefaultDatabaseView extends AbstractTableObject implements DatabaseView {
@@ -76,29 +75,27 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         super(host, "VIEW");
     }
 
+    @Override
     public String getCreateSQLText() throws DataSourceException {
-
-        String fields = null;
-
-        try {
-
-            List<DatabaseColumn> columns = getColumns();
-            if (columns != null) {
-                fields = "";
-
-                for (int i = 0; i < columns.size(); i++) {
-                    fields += MiscUtils.getFormattedObject(columns.get(i).getName());
-                    if (i != columns.size() - 1)
-                        fields += ", ";
-                }
-            }
-
-        } catch (Exception ignored) {}
-
-        return SQLUtils.generateCreateView(getName(), fields, getSource(),
+        return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
                 getRemarks(), getDatabaseMajorVersion(), false);
     }
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("VIEW", getName());
+    }
 
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
     public String getSelectSQLText() {
 
         String fields = "";
@@ -106,7 +103,6 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         try {
 
             List<DatabaseColumn> columns = getColumns();
-
             for (int i = 0, n = columns.size(); i < n; i++) {
 
                 fields += columns.get(i).getName();
@@ -123,6 +119,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields));
     }
 
+    @Override
     public String getInsertSQLText() {
 
         String fields = "";
@@ -131,7 +128,6 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         try {
 
             List<DatabaseColumn> columns = getColumns();
-
             for (int i = 0, n = columns.size(); i < n; i++) {
 
                 fields += columns.get(i).getName();
@@ -153,6 +149,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
     }
 
+    @Override
     public String getUpdateSQLText() {
 
         String settings = "";
@@ -160,7 +157,6 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         try {
 
             List<DatabaseColumn> columns = getColumns();
-
             for (int i = 0, n = columns.size(); i < n; i++) {
 
                 settings += columns.get(i).getName() + " = :" +
@@ -176,7 +172,6 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         }
 
         return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings));
-
     }
 
     TokenizingFormatter formatter;
@@ -194,6 +189,28 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
     public int getType() {
         return isSystem() ? SYSTEM_VIEW : VIEW;
+    }
+
+    private String getCreateFields() {
+
+        String fields = null;
+
+        try {
+
+            List<DatabaseColumn> columns = getColumns();
+            if (columns != null) {
+                fields = "";
+
+                for (int i = 0; i < columns.size(); i++) {
+                    fields += MiscUtils.getFormattedObject(columns.get(i).getName());
+                    if (i != columns.size() - 1)
+                        fields += ", ";
+                }
+            }
+
+        } catch (Exception ignored) {}
+
+        return fields;
     }
 
     public String getMetaDataKey() {

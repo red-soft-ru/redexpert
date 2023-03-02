@@ -2,7 +2,8 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
-import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,17 +45,13 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getHeaderSource() {
-        if (isMarkedForReload()) {
+
+        if (isMarkedForReload())
             getObjectInfo();
-        }
+
         StringBuilder sb = new StringBuilder();
-        sb.append("create or alter package");
-        sb.append(" ");
-        sb.append(getName());
-        sb.append("\n");
-        sb.append("as");
-        sb.append("\n");
-        sb.append(this.headerSource);
+        sb.append("create or alter package  ").append(getName());
+        sb.append("\nas\n").append(this.headerSource);
 
         return sb.toString();
     }
@@ -64,14 +61,10 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getBodySource() {
+
         StringBuilder sb = new StringBuilder();
-        sb.append("recreate package body");
-        sb.append(" ");
-        sb.append(getName());
-        sb.append("\n");
-        sb.append("as");
-        sb.append("\n");
-        sb.append(this.bodySource);
+        sb.append("recreate package body ").append(getName());
+        sb.append("\nas\n").append(this.bodySource);
 
         return sb.toString();
     }
@@ -106,40 +99,30 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     @Override
     public String getCreateSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("set term ^ ;");
-        sb.append("\n");
-        sb.append("\n");
-        sb.append(getHeaderSource());
-        sb.append("^");
-        sb.append("\n");
-        sb.append("\n");
-        sb.append(getBodySource());
-        sb.append("^");
-        sb.append("\n");
-        sb.append("\n");
-        sb.append("set term ; ^");
-        sb.append("\n");
-        sb.append("\n");
-        if (!MiscUtils.isNull(getRemarks())) {
-            sb.append("comment on package");
-            sb.append(" ");
-            sb.append(getName());
-            sb.append(" ");
-            sb.append("is");
-            sb.append("\n");
-            sb.append("'");
-            sb.append(getRemarks());
-            sb.append("';");
-        }
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), getDescription());
+    }
 
-        return sb.toString();
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("PACKAGE", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
     }
 
     protected String queryForInfo() {
+
         String sql_security = "null";
         if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
             sql_security = "IIF(p.rdb$sql_security is null,null,IIF(p.rdb$sql_security,'DEFINER','INVOKER'))";
+
         String sql = "select 0,\n" +
                 "p.rdb$package_header_source,\n" +
                 "p.rdb$package_body_source,\n" +
@@ -151,6 +134,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
                 sql_security + " as SQL_SECURITY\n" +
                 "from rdb$packages p\n" +
                 "where p.rdb$package_name=?";
+
         return sql;
     }
 

@@ -4,7 +4,8 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
-import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -36,14 +37,13 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
             return mechanisms[mechanism];
         else if (mechanism == -1) {
             return mechanisms[1];
-        }
-        else
+        } else
             return "";
     }
 
     public static class UDFTableModel implements TableModel {
 
-        private final Set<TableModelListener> listeners = new HashSet<TableModelListener>();
+        private final Set<TableModelListener> listeners = new HashSet<>();
 
         private final List<DefaultDatabaseUDF> udfs;
 
@@ -131,7 +131,7 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
         private final int mechanism;
         private final int fieldType;
         private final int fieldScale;
-        private final int fieldLenght;
+        private final int fieldLength;
         private final int fieldSubType;
         private final int fieldPrecision;
         private String encoding;
@@ -150,7 +150,7 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 this.notNull = false;
             this.fieldType = fieldType;
             this.fieldScale = fieldScale;
-            this.fieldLenght = fieldLength;
+            this.fieldLength = fieldLength;
             this.fieldSubType = fieldSubType;
             this.fieldStringType = DatabaseTypeConverter.getTypeWithSize(fieldType, fieldSubType, fieldLength, fieldScale);
             if (this.fieldStringType.contains("BLOB"))
@@ -181,8 +181,8 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
             return this.fieldType;
         }
 
-        public int getFieldLenght() {
-            return this.fieldLenght;
+        public int getFieldLength() {
+            return this.fieldLength;
         }
 
         public int getFieldSubType() {
@@ -245,7 +245,6 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
     }
 
 
-
     /**
      * Creates a new instance with
      * the specified values.
@@ -263,7 +262,6 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
     public void setModuleName(String moduleName) {
         this.moduleName = moduleName;
     }
-
 
     public int getReturnArg() {
         return returnArg;
@@ -297,53 +295,32 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
         return this.freeIt;
     }
 
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public String getCreateSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("DECLARE EXTERNAL FUNCTION ");
-        sb.append(getName());
-        sb.append("\n");
-        String args = "";
-        for (int i = 0; i < parameters.size(); i++) {
-            if (returnArg == 0 && i == 0)
-                continue;
-            args += "\t" + parameters.get(i).getFieldStringType();
-            if (parameters.get(i).getMechanism() != BY_VALUE &&
-                    parameters.get(i).getMechanism() != BY_REFERENCE
-                    ) {
-                if (parameters.get(i).isNotNull() || parameters.get(i).getMechanism() == BY_DESCRIPTOR)
-                        args += " " + parameters.get(i).getStringMechanism();
-            }
-            if (!parameters.get(i).isNotNull() && parameters.get(i).getMechanism() != BY_DESCRIPTOR &&
-                    parameters.get(i).getMechanism() != BY_REFERENCE && returnArg - 1 != i)
-                args += " " + "NULL";
-            args += ",\n";
-        }
-        if (!args.isEmpty())
-            args = args.substring(0, args.length() - 2);
-        sb.append(args);
-        sb.append("\n");
-        sb.append("RETURNS\n");
-        if (returnArg == 0) {
-            sb.append(parameters.get(0).getFieldStringType());
-            if (parameters.get(0).getMechanism() != BY_REFERENCE &&
-                    parameters.get(0).getMechanism() != -1) {
-                sb.append(" ");
-                sb.append(parameters.get(0).getStringMechanism());
-            }
-        }
-        else
-            sb.append("PARAMETER " + returnArg);
-        if (this.freeIt)
-            sb.append(" FREE_IT ");
-        sb.append("\n");
-        sb.append("ENTRY_POINT '");
-        if (!MiscUtils.isNull(getEntryPoint()))
-            sb.append(getEntryPoint());
-        sb.append("' MODULE_NAME '");
-        if (!MiscUtils.isNull(getModuleName()))
-            sb.append(getModuleName());
-        sb.append("';");
-        return sb.toString();
+        return SQLUtils.generateCreateUDF(getName(), parameters, returnArg, getEntryPoint(), getModuleName(), freeIt);
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("UDF", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
     }
 
     @Override

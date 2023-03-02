@@ -9,7 +9,6 @@ import org.underworldlabs.util.SQLUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
@@ -41,20 +40,22 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
 
     @Override
     protected String queryForInfo() {
+
         String query = MessageFormat.format("select rdb$tablespace_id as {" + ID + "},rdb$security_class as {" + SECURITY_CLASS + "}," +
                 "rdb$system_flag as {" + SYSTEM + "},rdb$description as {" + DESCRIPTION + "},rdb$owner_name as {" + OWNER + "}," +
                 "rdb$file_name as {" + FILE_NAME + "}, rdb$offline as {" + OFFLINE + "},rdb$read_only as {" + READ_ONLY + "}" +
                 " from rdb$tablespaces where rdb$tablespace_name = ?", COLUMNS);
+
         return query;
     }
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+
         attributes = new String[COLUMNS.length];
-        if (rs.next()) {
+        if (rs.next())
             for (int i = 0; i < COLUMNS.length; i++) {
                 attributes[i] = rs.getString(COLUMNS[i]);
-            }
         }
         setSystemFlag(Integer.parseInt(attributes[SYSTEM].trim()) != 0);
         setRemarks(attributes[DESCRIPTION]);
@@ -112,19 +113,35 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
         return attributes;
     }
 
-    public String getAttribute(int atrrIndex) {
+    public String getAttribute(int attributeIndex) {
         if (attributes == null || isMarkedForReload())
             getObjectInfo();
-        return attributes[atrrIndex];
+        return attributes[attributeIndex];
     }
 
     public String getFileName() {
         return getAttribute(FILE_NAME);
     }
 
+    @Override
     public String getCreateSQLText() throws DataSourceException {
-
         return SQLUtils.generateCreateTablespace(getName(), getFileName());
     }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("TABLESPACE", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
 }
 

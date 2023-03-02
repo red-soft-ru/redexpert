@@ -26,6 +26,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.TableIndex;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,9 +76,9 @@ public class DefaultTableIndex extends AbstractDatabaseObjectElement
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
 
@@ -109,61 +110,20 @@ public class DefaultTableIndex extends AbstractDatabaseObjectElement
 
     private List<DatabaseColumn> columns() {
 
-        if (columns == null) {
-
-            columns = new ArrayList<DatabaseColumn>();
-        }
+        if (columns == null)
+            columns = new ArrayList<>();
 
         return columns;
     }
 
+    @Override
     public DatabaseTable getTable() {
-
         return table;
     }
 
+    @Override
     public String getCreateSQLText() {
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("CREATE ");
-        sb.append(indexTypeSqlString());
-        sb.append("INDEX ");
-        sb.append(formatName());
-        sb.append("\n    ON ");
-
-        String namePrefix = getTable().getNamePrefix();
-        if (namePrefix != null) {
-
-            sb.append(namePrefix);
-            sb.append(".");
-        }
-
-        sb.append(getTable().getName());
-        sb.append(" (");
-
-        if (columns != null) {
-
-            for (int i = 0, n = columns.size(); i < n; i++) {
-
-                sb.append(columns.get(i).getName());
-
-                if (i < n - 1) {
-                    sb.append(", ");
-                }
-
-            }
-
-        }
-
-        sb.append(")");
-
-        if (indexType == UNSORTED_INDEX) {
-
-            sb.append(" NOSORT");
-        }
-
-        return sb.toString();
+        return SQLUtils.generateCreateIndex(formatName(), indexType, getTable().getNamePrefix(), getTable().getName(), columns, null);
     }
 
     private String formatName() {

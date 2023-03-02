@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.gui.browser.ColumnData;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
@@ -39,13 +40,6 @@ import java.util.ArrayList;
  */
 public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
-
-    /**
-     * Creates a new instance of DefaultDatabaseProcedure.
-     */
-    public DefaultDatabaseProcedure() {
-    }
-
 
     /**
      * Creates a new instance of DefaultDatabaseProcedure
@@ -73,9 +67,9 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name
+     * @return the metadata key name
      */
 
 
@@ -84,8 +78,24 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     public String getCreateSQLText() {
+        return SQLUtils.generateCreateProcedure(
+                getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(),
+                getSourceCode(), getRemarks(), getHost().getDatabaseConnection(), false, true);
+    }
 
-        return SQLUtils.generateCreateProcedure(getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(), getSourceCode(), getRemarks(), getHost().getDatabaseConnection());
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
     }
 
     @Override
@@ -219,9 +229,9 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     @Override
     protected void setInfoFromResultSet(ResultSet rs) {
         try {
-            parameters = new ArrayList<ProcedureParameter>();
-            procedureInputParameters = new ArrayList<ProcedureParameter>();
-            procedureOutputParameters = new ArrayList<ProcedureParameter>();
+            parameters = new ArrayList<>();
+            procedureInputParameters = new ArrayList<>();
+            procedureOutputParameters = new ArrayList<>();
             boolean first = true;
             while (rs.next()) {
                 String parameterName = rs.getString(4);

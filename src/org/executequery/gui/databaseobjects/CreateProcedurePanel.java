@@ -69,8 +69,6 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         setFocusComponent();
     }
 
-
-
     @Override
     protected String getFullSourceBody() {
         DatabaseHost host = null;
@@ -94,7 +92,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
             fullProcedureBody = db.getProcedureSourceCode(dMetaData, this.procedure);
 
 
-        } catch (IllegalAccessException | InstantiationException | MalformedURLException | ClassNotFoundException | SQLException e) {
+        } catch (IllegalAccessException | InstantiationException | MalformedURLException | ClassNotFoundException |
+                 SQLException e) {
             e.printStackTrace();
         } finally {
             if (host != null)
@@ -136,7 +135,12 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         Vector<ColumnData> vars = new Vector<>();
         vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
         vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
-        return SQLUtils.generateCreateProcedure(nameField.getText(), externalField.getText(), engineField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(), outputParametersPanel.getProcedureParameterModel().getTableVector(), vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(), sqlBodyText.getSQLText(), simpleCommentPanel.getComment());
+        return SQLUtils.generateCreateProcedure(
+                nameField.getText(), externalField.getText(), engineField.getText(),
+                inputParametersPanel.getProcedureParameterModel().getTableVector(),
+                outputParametersPanel.getProcedureParameterModel().getTableVector(),
+                vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
+                sqlBodyText.getSQLText(), simpleCommentPanel.getComment(), false, true);
     }
 
 
@@ -224,8 +228,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
     private void createProcedure() {
         try {
-            String querys = getSQLText();
-            displayExecuteQueryDialog(querys, "^");
+            String queries = getSQLText();
+            displayExecuteQueryDialog(queries, "^");
 
         } catch (Exception exc) {
             GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);

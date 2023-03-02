@@ -6,17 +6,16 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by vasiliy on 15.02.17.
@@ -60,7 +59,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     public static class IndexColumnsModel implements TableModel {
 
-        private final Set<TableModelListener> listeners = new HashSet<TableModelListener>();
+        private final Set<TableModelListener> listeners = new HashSet<>();
 
         private final List<DatabaseIndexColumn> columns;
 
@@ -158,6 +157,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     public void setIndexType(int indexType) {
         this.indexType = indexType;
     }
+
     private static final String INDEX_INACTIVE = "INDEX_INACTIVE";
 
     public void setTableName(String tableName) {
@@ -193,6 +193,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     public void setMarkedReloadActive(boolean markedReloadActive) {
         this.markedReloadActive = markedReloadActive;
     }
+
     private static final String STATISTICS = "STATISTICS";
     private static final String EXPRESSION_SOURCE = "EXPRESSION_SOURCE";
 
@@ -208,39 +209,25 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-
-        String query = "CREATE ";
-        if (isUnique())
-            query += "UNIQUE ";
-        if (getIndexType() == 1)
-            query += "DESCENDING ";
-        query += "INDEX " + MiscUtils.getFormattedObject(getName()) +
-                " ON " + MiscUtils.getFormattedObject(getTableName().trim()) + " ";
-        if (!MiscUtils.isNull(getExpression())) {
-            query += "COMPUTED BY (" + getExpression() + ")";
-        } else {
-            query += "(";
-            StringBuilder fieldss = new StringBuilder();
-            boolean first = true;
-            for (int i = 0; i < getIndexColumns().size(); i++) {
-                if (!first)
-                    fieldss.append(",");
-                first = false;
-                fieldss.append(MiscUtils.getFormattedObject(getIndexColumns().get(i).getFieldName()));
-            }
-            query += fieldss + ")";
-        }
-        if (!MiscUtils.isNull(getCondition()))
-            query += "\nWHERE " + getCondition();
-        if (!MiscUtils.isNull(getTablespace()))
-            query += "\nTABLESPACE " + MiscUtils.getFormattedObject(getTablespace());
-        query += ";";
-        if (!isActive())
-            query += "ALTER INDEX " + MiscUtils.getFormattedObject(getName()) + " INACTIVE;";
-        if (!MiscUtils.isNull(getRemarks()))
-            query += "COMMENT ON INDEX " + MiscUtils.getFormattedObject(getName()) + " IS '" + getRemarks() + "'";
-        return query;
+        return SQLUtils.generateCreateIndex(
+                getName(), getType(), getNamePrefix(), getTableName(), null, getIndexColumns());
     }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("INDEX", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
     private static final String CONDITION_SOURCE = "CONDITION_SOURCE";
     private static final String TABLESPACE_NAME = "TABLESPACE_NAME";
     private static final String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
@@ -274,6 +261,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     protected String queryForInfo() {
+
         SelectBuilder sb = new SelectBuilder();
         Table indicies = Table.createTable("RDB$INDICES", "I");
         Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
@@ -298,9 +286,8 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
         sb.appendCondition(Condition.createCondition(indexName, "=", "?"));
         sb.setOrdering(Field.createField(indexSegments, FIELD_POSITION).getFieldTable());
-        String query = sb.getSQLQuery();
-        return query;
 
+        return sb.getSQLQuery();
     }
 
     @Override
@@ -330,18 +317,18 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
                 columns.add(column);
             }
             setIndexColumns(columns);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
+    @Override
     public int getType() {
-        if (isSystem()) {
-            return SYSTEM_INDEX;
-        } else return INDEX;
+        return isSystem() ? SYSTEM_INDEX : INDEX;
     }
 
+    @Override
     public String getMetaDataKey() {
         return META_TYPES[getType()];
     }
@@ -361,20 +348,27 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public boolean setStatistics() {
+
         boolean res = true;
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
         String query = "SET STATISTICS INDEX " + MiscUtils.getFormattedObject(getName());
+
         try {
+
             SqlStatementResult result = querySender.execute(QueryTypes.SET_STATISTICS, query);
             if (result.isException()) {
                 res = false;
                 result.getSqlException().printStackTrace();
-            } else Log.info("Executing:\"" + query + "\"");
+            } else
+                Log.info("Executing:\"" + query + "\"");
+
         } catch (SQLException e) {
             e.printStackTrace();
+
         } finally {
             querySender.releaseResources();
         }
+
         return res;
     }
 

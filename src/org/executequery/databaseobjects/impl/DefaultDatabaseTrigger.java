@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
@@ -11,6 +12,8 @@ import java.sql.SQLException;
  * Created by vasiliy on 26.01.17.
  */
 public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
+
+    private int type = -1;
 
     private String triggerSourceCode;
     private boolean triggerActive;
@@ -150,8 +153,6 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
      *
      * @return the object type
      */
-
-    private int type = -1;
     public int getType() {
         if (type == -1) {
             if (getParent().getMetaDataKey().equalsIgnoreCase(META_TYPES[NamedObject.DATABASE_TRIGGER]))
@@ -166,9 +167,9 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
@@ -384,7 +385,22 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
-                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), getRemarks());
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), getRemarks(), false);
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("TRIGGER", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
     }
 
     protected String queryForInfo() {
@@ -411,8 +427,6 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     }
 
     @Override
-
-
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         if (rs.next()) {
             setTableName(getFromResultSet(rs, "TABLE_NAME"));

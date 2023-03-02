@@ -4,6 +4,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.gui.browser.ColumnData;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -60,9 +61,9 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
@@ -85,7 +86,22 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true);
+        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true, true);
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("DOMAIN", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
     }
 
     @Override

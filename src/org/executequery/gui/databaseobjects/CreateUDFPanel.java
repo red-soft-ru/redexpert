@@ -236,10 +236,10 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             DefaultDatabaseUDF.UDFParameter udfParameter = editedUDF.getUDFParameters().get(0);
             if (udfParameter.getFieldType() == 40) {// check for cstring type
                 cstringBox.setSelected(true);
-                cstringLengthField.setText(String.valueOf(udfParameter.getFieldLenght()));
+                cstringLengthField.setText(String.valueOf(udfParameter.getFieldLength()));
                 cstringBoxChanged();
             } else {
-                returnsType.setColumnSize(udfParameter.getFieldLenght());
+                returnsType.setColumnSize(udfParameter.getFieldLength());
                 returnsType.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(udfParameter.getFieldType(),
                         udfParameter.getFieldSubType()));
                 returnsType.setColumnSubtype(udfParameter.getFieldSubType());
@@ -267,7 +267,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             cd.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(parameter.getFieldType(),
                     parameter.getFieldSubType()));
             cd.setColumnSubtype(parameter.getFieldSubType());
-            cd.setColumnSize(parameter.getFieldLenght());
+            cd.setColumnSize(parameter.getFieldLength());
             cd.setColumnType(DatabaseTypeConverter.getDataTypeName(parameter.getFieldType(),
                     parameter.getFieldSubType(), parameter.getFieldScale()));
             cd.setMechanism(parameter.getStringMechanism());

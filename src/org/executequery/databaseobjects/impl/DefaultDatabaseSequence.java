@@ -204,18 +204,34 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         return query;
     }
 
-
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        if (rs.next())
-            setRemarks(getFromResultSet(rs,"DESCRIPTION"));
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("SEQUENCE", getName());
     }
 
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+        if (rs.next())
+            setRemarks(getFromResultSet(rs, "DESCRIPTION"));
+    }
+
+    @Override
     protected String queryForInfo() {
         return "select rdb$description as DESCRIPTION from rdb$generators where \n" +
                 "rdb$generator_name=?";
     }
 
-    int getVersion() throws SQLException {
+    public int getVersion() throws SQLException {
         return getHost().getDatabaseMetaData().getDatabaseMajorVersion();
     }
 

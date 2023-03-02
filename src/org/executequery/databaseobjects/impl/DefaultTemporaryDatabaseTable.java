@@ -53,7 +53,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
         if (Comparer.isComputedFieldsNeed())
             for (ColumnData cd : listCD)
-                if(!MiscUtils.isNull(cd.getComputedBy()))
+                if (!MiscUtils.isNull(cd.getComputedBy()))
                     cd.setComputedBy(null);
 
         return SQLUtils.generateCreateTable(

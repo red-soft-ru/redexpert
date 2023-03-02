@@ -1326,48 +1326,48 @@ public final class SQLUtils {
     }
 
     public static String generateCreateIndex(
-            String name, int type, String namePrefix, String tableName,
-            List<DatabaseColumn> databaseColumns, List<DefaultDatabaseIndex.DatabaseIndexColumn> databaseIndexColumns) {
+            String name, int type, boolean isUnique, String tableName, String expression, String condition,
+            List<DefaultDatabaseIndex.DatabaseIndexColumn> indexColumns, String tablespace, boolean isActive, String comment) {
 
         StringBuilder sb = new StringBuilder();
+        sb.append("CREATE ");
 
-        String stringType = "";
+        if (isUnique)
+            sb.append("UNIQUE ");
         if (type == 1)
-            stringType = "BITMAP ";
-        if (type == 3)
-            stringType = "UNIQUE ";
+            sb.append("DESCENDING ");
 
-        sb.append("CREATE ").append(stringType);
         sb.append("INDEX ").append(format(name));
-        sb.append("\n\tON ");
+        sb.append(" ON ").append(format(tableName.trim())).append(SPACE);
 
-        if (namePrefix != null)
-            sb.append(namePrefix).append(".");
+        if (!MiscUtils.isNull(expression)) {
+            sb.append("COMPUTED BY (").append(expression).append(B_CLOSE);
 
-        sb.append(format(tableName)).append(" (");
+        } else {
 
-        if (databaseColumns != null) {
-            for (int i = 0, n = databaseColumns.size(); i < n; i++) {
-                sb.append(format(databaseColumns.get(i).getName()));
-                if (i < n - 1)
-                    sb.append(", ");
+            boolean first = true;
+            StringBuilder fields = new StringBuilder();
+            for (DefaultDatabaseIndex.DatabaseIndexColumn indexColumn : indexColumns) {
+                if (!first)
+                    fields.append(COMMA);
+                first = false;
+                fields.append(format(indexColumn.getFieldName()));
             }
+
+            sb.append(B_OPEN).append(fields).append(B_CLOSE);
         }
 
-        if (databaseIndexColumns != null) {
-            for (int i = 0, n = databaseIndexColumns.size(); i < n; i++) {
-                sb.append(format(databaseIndexColumns.get(i).getFieldName()));
-                if (i < n - 1)
-                    sb.append(", ");
-            }
-        }
+        if (!MiscUtils.isNull(condition))
+            sb.append("\nWHERE ").append(condition);
+        if (!MiscUtils.isNull(tablespace))
+            sb.append("\nTABLESPACE ").append(format(tablespace));
 
-        sb.append(")");
+        sb.append(";");
 
-        if (type == 2)
-            sb.append(" NOSORT");
-
-        sb.append(";\n");
+        if (!isActive)
+            sb.append("ALTER INDEX ").append(format(name)).append(" INACTIVE;");
+        if (!MiscUtils.isNull(comment))
+            sb.append("COMMENT ON INDEX ").append(format(name)).append(" IS '").append(comment).append("';");
 
         return sb.toString();
     }

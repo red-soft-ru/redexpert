@@ -121,15 +121,15 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("FUNCTION", getName());
+    }
+
+    @Override
     public String getCompareCreateSQL() throws DataSourceException {
         return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(),
                 getEngine(), getSqlSecurity(), getRemarks(), true, Comparer.isCommentsNeed(),
                 isDeterministic(), getHost().getDatabaseConnection());
-    }
-
-    @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("FUNCTION", getName());
     }
 
     @Override

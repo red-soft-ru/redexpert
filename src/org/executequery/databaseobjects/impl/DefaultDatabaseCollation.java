@@ -193,8 +193,8 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
         DefaultDatabaseCollation comparingCollation = (DefaultDatabaseCollation) databaseObject;
         return getDropSQL() + "\n" +
                 SQLUtils.generateCreateCollation(comparingCollation.getName(), comparingCollation.getCharacterSet(),
-                comparingCollation.getBaseCollate(), comparingCollation.getAttributes(), comparingCollation.isPadSpace(),
-                comparingCollation.isCaseSensitive(), comparingCollation.isAccentSensitive(), isExternal());
+                        comparingCollation.getBaseCollate(), comparingCollation.getAttributes(), comparingCollation.isPadSpace(),
+                        comparingCollation.isCaseSensitive(), comparingCollation.isAccentSensitive(), isExternal());
     }
 
 }

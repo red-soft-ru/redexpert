@@ -123,7 +123,7 @@ public class DefaultTableIndex extends AbstractDatabaseObjectElement
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateIndex(formatName(), indexType, getTable().getNamePrefix(), getTable().getName(), columns, null);
+        return null;
     }
 
     private String formatName() {

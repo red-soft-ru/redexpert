@@ -139,6 +139,16 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
     }
 
     @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
+    @Override
     protected String queryForInfo() {
         return null;
     }

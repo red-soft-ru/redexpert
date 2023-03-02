@@ -332,7 +332,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(getHost(), null, null, META_TYPES[INDEX]);
             for (TableColumnIndex index : tindexes) {
                 DefaultDatabaseIndex index1 = metaTag.getIndexFromName(index.getName());
-                index1.loadColumns();
+                index1.getObjectInfo();
                 indexes.add(index1);
                 if (index1.getExpression() != null) {
                     index.setIndexedColumns(null);

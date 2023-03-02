@@ -11,6 +11,16 @@ public class Field {
         return new Field();
     }
 
+    public static Field createField(Table table, String alias) {
+
+        return createField(table, SelectBuilder.PREFIX + alias, alias);
+    }
+
+    public static Field createField(Table table, String name, String alias) {
+
+        return createField().setTable(table).setName(name).setAlias(alias);
+    }
+
     public String getName() {
         return name;
     }

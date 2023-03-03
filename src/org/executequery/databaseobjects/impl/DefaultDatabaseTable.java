@@ -765,7 +765,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     protected void updateListCD() {
         listCD = new ArrayList<>();
         for (int i = 0; i < getColumnCount(); i++)
-            listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
+            listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i), false));
     }
 
     protected void updateListCC() {

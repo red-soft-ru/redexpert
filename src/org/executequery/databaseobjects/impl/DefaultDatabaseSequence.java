@@ -24,26 +24,28 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     protected final static String CURRENT_VALUE = "CURRENT_VALUE";
     protected final static String INITIAL_VALUE = "INITIAL_VALUE";
-    private Integer increment;
+    protected final static String GENERATOR_INCREMENT = "GENERATOR_INCREMENT";
+    protected final static String DESCRIPTION = "DESCRIPTION";
 
+    private Integer increment;
+    private Long firstValue;
+    private Long currentValue;
 
     /**
-     * Creates a new instance.
+     * Creates a new instance
      */
     public DefaultDatabaseSequence(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
     }
-
 
     /**
      * Returns the database object type.
      *
      * @return the object type
      */
+    @Override
     public int getType() {
-        if (isSystem())
-            return SYSTEM_SEQUENCE;
-        return SEQUENCE;
+        return isSystem() ? SYSTEM_SEQUENCE : SEQUENCE;
     }
 
     /**
@@ -51,25 +53,22 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
      *
      * @return the metadata key name.
      */
+    @Override
     public String getMetaDataKey() {
-        if (isSystem())
-            return META_TYPES[SYSTEM_SEQUENCE];
-        return META_TYPES[SEQUENCE];
+        return isSystem() ? META_TYPES[SYSTEM_SEQUENCE] : META_TYPES[SEQUENCE];
     }
 
     @Override
     public boolean allowsChildren() {
         return false;
     }
-    protected final static String GENERATOR_INCREMENT = "GENERATOR_INCREMENT";
-    protected final static String DESCRIPTION = "DESCRIPTION";
-    private Long currentValue;
 
     @Override
     public String getCreateSQLText() {
 
         String query = "";
         try {
+
             long firstValue = (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue();
             query = SQLUtils.generateCreateSequence(getName(), firstValue,
                     getIncrement(), getRemarks(), getVersion(), false);
@@ -86,7 +85,6 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("SEQUENCE", getName());
     }
-    private Long firstValue;
 
     public long getSequenceCurrentValue() {
 
@@ -98,7 +96,6 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         try {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-
             if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
 
                 statement = dmd.getConnection().createStatement();
@@ -107,8 +104,9 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
                 if (rs.next())
                     currentValue = rs.getLong(1);
             }
+
             if (currentValue == null)
-                currentValue = Long.valueOf(0);
+                currentValue = 0L;
             return currentValue;
 
         } catch (SQLException e) {
@@ -120,6 +118,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
                 try {
                     if (!statement.isClosed())
                         statement.close();
+
                 } catch (SQLException e) {
                     Log.error("Error close statement in method getSequenceValue in class DefaultDatabaseSequence", e);
                 }
@@ -129,7 +128,6 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     }
 
     public long getSequenceFirstValue() {
-
         checkOnReload(firstValue);
         return firstValue;
     }
@@ -146,11 +144,11 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
             firstValue = rs.getLong(INITIAL_VALUE);
             increment = rs.getInt(GENERATOR_INCREMENT);
         }
-
     }
 
     @Override
     protected String queryForInfo() {
+
         SelectBuilder sb = SelectBuilder.createSelectBuilder();
         Table gens = Table.createTable("RDB$GENERATORS", "G");
         sb.appendTable(gens);

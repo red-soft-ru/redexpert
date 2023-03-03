@@ -914,12 +914,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 final short nullFlag = rs.getShort(NULL_FLAG);
                 final short sourceNullFlag = rs.getShort(DOMAIN_NULL_FLAG);
                 column.setRemarks(rs.getString(DESCRIPTION));
-                column.setRequired(nullFlag == 1 || sourceNullFlag == 1);
+                column.setRequired(nullFlag == 1);
+                column.setDomainNotNull(sourceNullFlag == 1);
 
                 String column_def = rs.getString(DEFAULT_SOURCE);
-                if (column_def == null) {
-                    column_def = rs.getString(DOMAIN_DEFAULT_SOURCE);
-                }
                 if (column_def != null) {
                     // TODO This looks suspicious (what if it contains default)
                     int defaultPos = column_def.toUpperCase().trim().indexOf("DEFAULT");
@@ -927,7 +925,14 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         column_def = column_def.substring(7).trim();
                     column.setDefaultValue(column_def);
                 }
-
+                column_def = rs.getString(DOMAIN_DEFAULT_SOURCE);
+                if (column_def != null) {
+                    // TODO This looks suspicious (what if it contains default)
+                    int defaultPos = column_def.toUpperCase().trim().indexOf("DEFAULT");
+                    if (defaultPos == 0)
+                        column_def = column_def.substring(7).trim();
+                    column.setDomainDefaultValue(column_def);
+                }
                 column.setIdentity(rs.getInt(IDENTITY_TYPE) == 1);
                 String charset = rs.getString(CHARACTER_SET_NAME);
                 String collate = rs.getString(COLLATION_NAME);

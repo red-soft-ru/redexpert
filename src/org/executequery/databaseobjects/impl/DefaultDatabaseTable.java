@@ -72,7 +72,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     protected List<ColumnData> listCD;
     protected List<org.executequery.gui.browser.ColumnConstraint> listCC;
-    private List<ColumnConstraint> checkConstraints;
+    protected List<ColumnConstraint> checkConstraints;
 
     /**
      * Creates a new instance of DatabaseTable

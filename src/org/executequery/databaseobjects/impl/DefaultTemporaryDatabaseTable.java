@@ -1,15 +1,15 @@
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.sql.SqlStatementResult;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -26,6 +26,8 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         super(host, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
     }
 
+    protected static final String RELATION_TYPE = "RELATION_TYPE";
+
     @Override
     public String getCreateSQLText() throws DataSourceException {
 
@@ -41,38 +43,111 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("TABLE", getName());
     }
+    private String typeTemporary;
+
+    @Override
+    protected String queryForInfo() {
+
+        SelectBuilder sb = new SelectBuilder();
+        sb.setDistinct(true);
+        Table rels = Table.createTable("RDB$RELATIONS", "R");
+        Table relCons = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
+        Table checkCons = Table.createTable("RDB$CHECK_CONSTRAINTS", "CC");
+        Table triggers = Table.createTable("RDB$TRIGGERS", "T");
+
+        Field conName = Field.createField(relCons, CONSTRAINT_NAME);
+        Field conType = Field.createField(relCons, CONSTRAINT_TYPE);
+        Function compareCheck = Function.createFunction("IIF")
+                .appendArgument(conType.getFieldTable() + " <> 'CHECK'")
+                .appendArgument("NULL")
+                .appendArgument(conName.getFieldTable());
+        sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conName.getAlias()));
+        compareCheck.setArgument(2, conType.getFieldTable());
+        sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conType.getAlias()));
+        sb.appendField(Field.createField(triggers, TRIGGER_SOURCE));
+        Field sqlSecurity = Field.createField(rels, SQL_SECURITY);
+        sqlSecurity.setStatement(Function.createFunction("IIF")
+                .appendArgument(sqlSecurity.getFieldTable() + " IS NULL").appendArgument("NULL").appendArgument(Function.createFunction().setName("IIF")
+                        .appendArgument(sqlSecurity.getFieldTable()).appendArgument("'DEFINER'").appendArgument("'INVOKER'").getStatement()).getStatement());
+        sqlSecurity.setNull(getDatabaseMajorVersion() < 3);
+        sb.appendField(sqlSecurity);
+        Field typeTemp = Field.createField(rels, RELATION_TYPE);
+        Function subIIF = Function.createFunction("IIF")
+                .appendArgument(typeTemp.getFieldTable() + " = 5")
+                .appendArgument("'ON COMMIT DELETE ROWS'")
+                .appendArgument("NULL");
+        Function mainIIF = Function.createFunction("IIF").appendArgument(typeTemp.getFieldTable() + " = 4")
+                .appendArgument("'ON COMMIT PRESERVE ROWS'")
+                .appendArgument(subIIF.getStatement());
+        sb.appendField(typeTemp.setStatement(mainIIF.getStatement()));
+        sb.appendField(Field.createField(rels, DESCRIPTION));
+        Field relName = Field.createField(rels, "RELATION_NAME");
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField(relCons, relName.getAlias())));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
+                Field.createField(triggers, "TRIGGER_NAME")));
+        sb.appendCondition(Condition.createCondition(relName, "=", "?"));
+
+        sb.appendCondition(Condition.createCondition()
+                .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "=", "1"))
+                .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "IS", "NULL"))
+                .setLogicOperator("OR"));
+
+        return sb.getSQLQuery();
+    }
+
+    protected void setInfoFromResultSet(ResultSet rs) {
+        try {
+
+            boolean first = true;
+            checkConstraints = new ArrayList<>();
+            List<String> names = new ArrayList<>();
+            while (rs.next()) {
+
+                if (first) {
+                    setRemarks(getFromResultSet(rs, DESCRIPTION));
+                    setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+                    setTypeTemporary(getFromResultSet(rs, RELATION_TYPE));
+                }
+
+                first = false;
+                String conType = rs.getString(CONSTRAINT_TYPE);
+                if (conType != null) {
+                    String name = rs.getString(CONSTRAINT_NAME).trim();
+                    if (!names.contains(name)) {
+                        ColumnConstraint constraint = new TableColumnConstraint(rs.getString(TRIGGER_SOURCE));
+                        constraint.setName(name);
+                        constraint.setTable(this);
+                        checkConstraints.add(constraint);
+                        names.add(name);
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private String getTypeTemporary() {
-
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor();
-        querySender.setDatabaseConnection(getHost().getDatabaseConnection());
-        int type = -1;
-
-        try {
-            String statement = "SELECT RDB$RELATION_TYPE FROM RDB$RELATIONS R WHERE R.RDB$RELATION_NAME = '%s'";
-            SqlStatementResult result = querySender.getResultSet(String.format(statement, getName()));
-
-            if (result.isException())
-                throw result.getSqlException();
-
-            ResultSet resultSet = result.getResultSet();
-            resultSet.next();
-            type = resultSet.getInt(1);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-        } finally {
-            querySender.releaseResources();
-        }
-
-        String typeTemporary = "";
-        if (type == 4)
-            typeTemporary = " ON COMMIT PRESERVE ROWS";
-        else if (type == 5)
-            typeTemporary = " ON COMMIT DELETE ROWS";
-
+        checkOnReload(typeTemporary);
         return typeTemporary;
+    }
+
+    public void setTypeTemporary(String typeTemporary) {
+        this.typeTemporary = typeTemporary;
+    }
+
+    public String getTablespace() {
+        return null;
+    }
+
+    public String getExternalFile() {
+        return null;
+    }
+
+    public String getAdapter() {
+        return null;
     }
 
     @Override

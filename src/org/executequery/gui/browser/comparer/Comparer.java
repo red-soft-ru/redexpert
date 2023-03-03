@@ -699,15 +699,15 @@ public class Comparer {
 
         try {
 
-            PreparedStatement insertStatement = executor.getPreparedStatement(templateQuery);
+            PreparedStatement selectDependenciesStatement = executor.getPreparedStatement(templateQuery);
 
             for (String objectName : objectMap.keySet()) {
                 NamedObject tempObject = objectMap.get(objectName);
 
-                insertStatement.setString(1, MiscUtils.getFormattedObject(objectName));
-                insertStatement.executeQuery();
+                selectDependenciesStatement.setString(1, objectName);
+                selectDependenciesStatement.executeQuery();
 
-                ResultSet resultSet = insertStatement.executeQuery();
+                ResultSet resultSet = selectDependenciesStatement.executeQuery();
 
                 if (resultSet == null)
                     continue;
@@ -727,7 +727,7 @@ public class Comparer {
             }
 
             executor.closeConnection();
-            insertStatement.close();
+            selectDependenciesStatement.close();
             executor.releaseResources();
 
         } catch (java.lang.Exception e) {

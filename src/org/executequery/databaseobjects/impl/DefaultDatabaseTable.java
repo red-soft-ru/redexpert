@@ -73,7 +73,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     protected List<ColumnData> listCD;
     protected List<org.executequery.gui.browser.ColumnConstraint> listCC;
-    private List<ColumnConstraint> checkConstraints;
+    protected List<ColumnConstraint> checkConstraints;
 
     /**
      * Creates a new instance of DatabaseTable
@@ -786,103 +786,13 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     protected void updateListCD() {
         listCD = new ArrayList<>();
         for (int i = 0; i < getColumnCount(); i++)
-            listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i)));
+            listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i), false));
     }
 
     protected void updateListCC() {
         listCC = new ArrayList<>();
         for (int i = 0; i < getConstraints().size(); i++)
             listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
-    }
-
-    /**
-     * Returns the CREATE TABLE statement for this database table.
-     * This will be table column (plus data type) definitions only,
-     * this does not include constraint metadata.
-     */
-    public String getCreateSQLTextX(int style) throws DataSourceException {
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("CREATE TABLE ");
-        sb.append(getName());
-        sb.append(" (");
-
-        // determine the spaces from the left side to each column name
-        String firstIndent = getSpacesForLength(sb.length());
-
-        // determine the spaces from the column name to the data type
-        int maxLength = 0;
-        for (DatabaseColumn i : columns) {
-            DatabaseTableColumn column = (DatabaseTableColumn) i;
-            maxLength = Math.max(maxLength, column.getName().length());
-        }
-
-        // add another 5 spaces from the max
-        maxLength += 5;
-
-        int secondIndentLength;
-        for (int i = 0, n = columns.size(); i < n; i++) {
-            DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
-
-            if (i > 0)
-                sb.append(firstIndent);
-
-            String columnName = column.getName();
-            sb.append(columnName.toUpperCase());
-
-            secondIndentLength = maxLength - columnName.length();
-            for (int j = 0; j < secondIndentLength; j++)
-                sb.append(" ");
-
-            sb.append(column.getFormattedDataType());
-
-            if (StringUtils.isNotBlank(column.getDefaultValue())) {
-                sb.append(" DEFAULT ");
-                sb.append(column.getDefaultValue());
-            }
-
-            if (column.isRequired())
-                sb.append(" NOT NULL");
-            if (i < (n - 1))
-                sb.append(",\n");
-        }
-
-        if (style == STYLE_CONSTRAINTS_DEFAULT) {
-
-            sb.append(",\n");
-            List<ColumnConstraint> constraints = getConstraints();
-
-            for (int i = 0, n = constraints.size(); i < n; i++) {
-
-                TableColumnConstraint constraint = (TableColumnConstraint) constraints.get(i);
-                sb.append(firstIndent);
-                sb.append(constraint.getConstraintSQLText());
-
-                if (i < (n - 1))
-                    sb.append(",\n");
-            }
-            sb.append(");\n");
-
-        } else if (style == STYLE_CONSTRAINTS_ALTER) {
-
-            sb.append(");\n\n");
-            List<ColumnConstraint> constraints = getConstraints();
-
-            for (ColumnConstraint i : constraints) {
-
-                TableColumnConstraint constraint = (TableColumnConstraint) i;
-                sb.append(constraint.getCreateSQLText());
-                sb.append("\n");
-            }
-
-        } else {
-
-            // finish off the statement as is
-            sb.append(");\n");
-        }
-
-        return sb.toString();
     }
 
     /**
@@ -1109,7 +1019,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             RecordDataItem rdi = changes.get(i);
 
             if (column.isGenerated() || column.isIdentity()
-                    && rdi.isNewValueNull() || column.getDefaultValue() != null && rdi.isNewValueNull()) {
+                    && rdi.isNewValueNull() || column.getDefaultValue() != null && rdi.isNewValueNull()
+                    || column.getDomainDefaultValue() != null && rdi.isNewValueNull()) {
                 rdi.setGenerated(true);
 
             } else {

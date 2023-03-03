@@ -62,6 +62,8 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
      */
     private boolean required;
 
+    private boolean domainNotNull;
+
     /**
      * the column data type name
      */
@@ -91,6 +93,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
      * the column default value
      */
     private String defaultValue;
+    private String domainDefaultValue;
 
     /**
      * generated column
@@ -180,6 +183,14 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         this.required = required;
     }
 
+    public boolean isDomainNotNull() {
+        return domainNotNull;
+    }
+
+    public void setDomainNotNull(boolean domainNotNull) {
+        this.domainNotNull = domainNotNull;
+    }
+
     public String getTypeName() {
         return typeName;
     }
@@ -230,6 +241,14 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
      */
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public String getDomainDefaultValue() {
+        return domainDefaultValue;
+    }
+
+    public void setDomainDefaultValue(String domainDefaultValue) {
+        this.domainDefaultValue = domainDefaultValue;
     }
 
     /**

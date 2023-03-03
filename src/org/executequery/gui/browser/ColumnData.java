@@ -418,11 +418,13 @@ public class ColumnData implements Serializable {
         setForeignKey(cd.isForeignKey());
         setColumnSize(cd.getColumnSize());
         setNotNull(cd.isRequired());
+        setDomainNotNull(cd.isDomainNotNull());
         setSQLType(cd.getTypeInt());
         setDomain(cd.getDomain(), loadDomainInfo);
         setDescription(cd.getColumnDescription());
         setComputedBy(cd.getComputedSource());
         setDefaultValue(cd.getDefaultValue());
+        setDomainDefault(cd.getDomainDefaultValue());
         if (cd.isIdentity())
             ai.setIdentity(true);
     }

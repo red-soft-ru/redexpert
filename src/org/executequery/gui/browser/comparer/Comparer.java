@@ -386,6 +386,10 @@ public class Comparer {
                 getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
 
         List<NamedObject> createObjects = new ArrayList<>();
+        DefaultStatementExecutor querySender = null;
+        PooledStatement statement = null;
+
+        boolean isFirst = true;
 
         for (NamedObject databaseObject : compareConnectionObjectsList) {
             if (ConnectionsTreePanel.getNamedObjectFromHost(
@@ -394,11 +398,23 @@ public class Comparer {
                 createObjects.add(databaseObject);
 
                 if (databaseObject.getType() == NamedObject.TABLE || databaseObject.getType() == NamedObject.GLOBAL_TEMPORARY) {
+                    AbstractDatabaseObject abstractDatabaseObject = (AbstractDatabaseObject) databaseObject;
+
+                    if (!isFirst) {
+                        abstractDatabaseObject.setStatementForLoadInfo(statement);
+                        abstractDatabaseObject.setQuerySender(querySender);
+                    }
+                    abstractDatabaseObject.setSomeExecute(true);
 
                     if (!Arrays.equals(TABLE_CONSTRAINTS_NEED, new boolean[]{false, false, false, false}))
                         createListConstraints(databaseObject);
                     if (COMPUTED_FIELDS_NEED)
                         createListComputedFields(databaseObject);
+
+                    querySender = abstractDatabaseObject.getQuerySender();
+                    statement = abstractDatabaseObject.getStatementForLoadInfo();
+                    isFirst = false;
+
                 }
             }
         }

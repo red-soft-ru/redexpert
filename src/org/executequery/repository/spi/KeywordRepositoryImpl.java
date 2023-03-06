@@ -72,7 +72,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
     }
 
     @Override
-    public TreeSet<String> getSQLKeywords() {
+    public synchronized TreeSet<String> getSQLKeywords() {
 
         if (allWords == null || keyWordsListUpdated) {
 

@@ -117,7 +117,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     public String getCreateSQLText() {
         return SQLUtils.generateCreateFunction(
                 getName(), getFunctionArguments(), getSourceCode(),
-                getEntryPoint(), getEngine(), getSqlSecurity(), getRemarks(), false, true, isDeterministic(), getHost().getDatabaseConnection());
+                getEntryPoint(), getEngine(), getSqlSecurity(), getRemarks(),
+                false, true, isDeterministic(), getHost().getDatabaseConnection());
     }
 
     @Override

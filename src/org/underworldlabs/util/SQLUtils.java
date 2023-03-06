@@ -362,7 +362,8 @@ public final class SQLUtils {
 
     public static String generateCreateFunction(
             String name, List<FunctionArgument> argumentList, String fullFunctionBody,
-            String entryPoint, String engine, String sqlSecurity, String comment, boolean deterministic, boolean setTerm, boolean setComment, DatabaseConnection dc) {
+            String entryPoint, String engine, String sqlSecurity, String comment,
+            boolean setTerm, boolean setComment, boolean deterministic, DatabaseConnection dc) {
 
         Vector<ColumnData> inputs = new Vector<>();
         ColumnData returnType = null;
@@ -375,13 +376,14 @@ public final class SQLUtils {
                 returnType = columnDataFromProcedureParameter(parameter, dc, false);
         }
 
-        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine, sqlSecurity, comment, deterministic, setTerm, setComment);
+        return generateCreateFunction(name, inputs, returnType, fullFunctionBody, entryPoint, engine,
+                sqlSecurity, comment, setTerm, setComment, deterministic);
     }
 
     public static String generateCreateFunction(
             String name, Vector<ColumnData> inputArguments, ColumnData returnType,
             String fullFunctionBody, String entryPoint, String engine, String sqlSecurity,
-            String comment, boolean deterministic, boolean setTerm, boolean setComment) {
+            String comment, boolean setTerm, boolean setComment, boolean deterministic) {
 
         StringBuilder sb = new StringBuilder();
 

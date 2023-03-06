@@ -69,6 +69,27 @@ public class SelectBuilder {
         return this;
     }
 
+    public SelectBuilder appendFields(Table table, String... aliases) {
+        return appendFields(table, false, aliases);
+    }
+
+    public SelectBuilder appendFields(Table table, boolean nullFlag, String... aliases) {
+        return appendFields("", table, nullFlag, aliases);
+    }
+
+    public SelectBuilder appendFields(String aliasPrefix, Table table, String... aliases) {
+        return appendFields(aliasPrefix, table, false, aliases);
+    }
+
+    public SelectBuilder appendFields(String aliasPrefix, Table table, boolean nullFlag, String... aliases) {
+        if (aliases != null)
+            for (String alias : aliases) {
+                Field field = Field.createField(table, alias).setAlias(aliasPrefix + alias).setNull(nullFlag);
+                appendField(field);
+            }
+        return this;
+    }
+
     public SelectBuilder appendJoin(LeftJoin join) {
         if (joins == null)
             joins = new ArrayList<>();
@@ -156,6 +177,9 @@ public class SelectBuilder {
                     sb.append(leftField.getFieldTable());
                     sb.append(" = ").append(rightField.getFieldTable());
                 }
+                if (join.getCondition() != null) {
+                    sb.append("\nAND (").append(join.getCondition().getConditionStatement()).append(")");
+                }
             }
         }
         sb.append("\n");
@@ -175,6 +199,7 @@ public class SelectBuilder {
 
         }
         return sb.toString();
+
 
     }
 

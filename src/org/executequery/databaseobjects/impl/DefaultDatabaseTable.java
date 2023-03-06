@@ -40,9 +40,6 @@ import java.util.*;
  * @author Takis Diakoumis
  */
 public class DefaultDatabaseTable extends AbstractTableObject implements DatabaseTable {
-
-    protected static final String DESCRIPTION = "DESCRIPTION";
-    protected static final String SQL_SECURITY = "SQL_SECURITY";
     protected static final String EXTERNAL_FILE = "EXTERNAL_FILE";
     protected static final String ADAPTER = "ADAPTER";
     protected static final String TABLESPACE = "TABLESPACE";
@@ -1123,18 +1120,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         compareCheck.setArgument(2, conType.getFieldTable());
         sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conType.getAlias()));
         sb.appendField(Field.createField(triggers, TRIGGER_SOURCE));
-        Field sqlSecurity = Field.createField(rels, SQL_SECURITY);
-        sqlSecurity.setStatement(Function.createFunction("IIF")
-                .appendArgument(sqlSecurity.getFieldTable() + " IS NULL").appendArgument("NULL").appendArgument(Function.createFunction().setName("IIF")
-                        .appendArgument(sqlSecurity.getFieldTable()).appendArgument("'DEFINER'").appendArgument("'INVOKER'").getStatement()).getStatement());
-        sqlSecurity.setNull(getDatabaseMajorVersion() < 3);
-        sb.appendField(sqlSecurity);
-
+        sb.appendField(buildSqlSecurityField(rels));
         sb.appendField(Field.createField(rels, EXTERNAL_FILE));
-        sb.appendField(Field.createField(rels, ADAPTER).setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")));
+        sb.appendField(Field.createField(rels, ADAPTER).setNull(!isRDB()));
         sb.appendField(Field.createField(rels, TABLESPACE + "_NAME").setAlias(TABLESPACE).
-                setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")
-                        || getDatabaseMajorVersion() < 4));
+                setNull(!tablespaceCheck()));
         sb.appendField(Field.createField(rels, DESCRIPTION));
         Field relName = Field.createField(rels, "RELATION_NAME");
         sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField(relCons, relName.getAlias())));

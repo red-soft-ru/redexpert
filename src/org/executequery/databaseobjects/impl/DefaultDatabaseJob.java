@@ -3,7 +3,10 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
@@ -14,10 +17,6 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
 
     public static final int PSQL_TYPE=0;
     public static final int BASH_TYPE=1;
-
-
-
-    private final DefaultStatementExecutor querySender;
     private String id;
     private String source;
     private boolean active;
@@ -37,32 +36,26 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
         return false;
     }
 
-    private static final String ID = "ID";
-    private static final String SOURCE = "SOURCE";
+    private static final String JOB_ID = "JOB_ID";
+    private static final String SOURCE = "JOB_SOURCE";
 
-    private static final String ACTIVE = "ACTIVE";
+    private static final String ACTIVE = "JOB_INACTIVE";
     private static final String JOB_TYPE = "JOB_TYPE";
-    private static final String SCHEDULE = "SCHEDULE";
+    private static final String SCHEDULE = "JOB_SCHEDULE";
     private static final String START_DATE = "START_DATE";
     private static final String END_DATE = "END_DATE";
-
     private static final String DATABASE = "DATABASE";
-    private static final String DESCRIPTION = "DESCRIPTION";
 
 
     @Override
     protected String queryForInfo() {
-        String query = "SELECT J.RDB$JOB_NAME,\n" +
-                "J.RDB$JOB_ID AS "+ID+",\n" +
-                "J.RDB$JOB_SOURCE AS "+SOURCE+",\n" +
-                "J.RDB$JOB_INACTIVE AS "+ACTIVE+",\n" +
-                "J.RDB$JOB_TYPE AS "+JOB_TYPE+",\n" +
-                "J.RDB$JOB_SCHEDULE AS "+SCHEDULE+",\n" +
-                "J.RDB$START_DATE AS "+START_DATE+",\n" +
-                "J.RDB$END_DATE AS "+END_DATE+",\n" +
-                "J.RDB$DATABASE AS "+DATABASE+",\n" +
-                "J.RDB$DESCRIPTION AS "+DESCRIPTION+"\n" +
-                "FROM RDB$JOBS J WHERE J.RDB$JOB_NAME='"+getName()+"'";
+        SelectBuilder sb = new SelectBuilder();
+        Table jobs = Table.createTable("RDB$JOBS", "J");
+        sb.appendTable(jobs);
+
+        sb.appendFields(jobs, JOB_ID, SOURCE, ACTIVE, JOB_TYPE, SCHEDULE, START_DATE, END_DATE, DATABASE, DESCRIPTION);
+        sb.appendCondition(buildNameCondition(jobs, "JOB_NAME"));
+        String query = sb.getSQLQuery();
         return query;
     }
 
@@ -70,8 +63,8 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         if(rs.next())
         {
-            setId(getFromResultSet(rs,ID));
-            setSource(getFromResultSet(rs,SOURCE));
+            setId(getFromResultSet(rs, JOB_ID));
+            setSource(getFromResultSet(rs, SOURCE));
             setCronSchedule(getFromResultSet(rs,SCHEDULE));
             setDatabase(getFromResultSet(rs,DATABASE));
             setRemarks(getFromResultSet(rs,DESCRIPTION));
@@ -94,8 +87,14 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
 
     public String getCreateSQLText() throws DataSourceException {
 
-        return SQLUtils.generateCreateJob(getName(),getCronSchedule(),isActive(),getStartDate(),getEndDate(),getJobType(),getSource());
+        return SQLUtils.generateCreateJob(getName(), getCronSchedule(), isActive(), getStartDate(), getEndDate(), getJobType(), getSource());
     }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return "DROP JOB " + MiscUtils.getFormattedObject(getName());
+    }
+
     public String getId() {
         return id;
     }

@@ -44,6 +44,8 @@ import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.*;
 
+import static org.executequery.databaseobjects.impl.AbstractDatabaseObject.*;
+
 /**
  * Default database host object implementation.
  *
@@ -678,35 +680,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     DefaultStatementExecutor querySender;
 
-    private final static String RELATION_NAME = "RELATION_NAME";
-    private final static String FIELD_NAME = "FIELD_NAME";
-    private final static String FIELD_TYPE = "FIELD_TYPE";
-    private final static String FIELD_SUB_TYPE = "FIELD_SUB_TYPE";
-    private final static String SEGMENT_LENGTH = "SEGMENT_LENGTH";
-    private final static String FIELD_PRECISION = "FIELD_PRECISION";
-    private final static String FIELD_SCALE = "FIELD_SCALE";
-    private final static String FIELD_LENGTH = "FIELD_LENGTH";
-    private final static String CHARACTER_LENGTH = "CHAR_LEN";
-    private final static String DESCRIPTION = "DESCRIPTION";
-    private final static String DEFAULT_SOURCE = "DEFAULT_SOURCE";
-    private final static String DOMAIN_DEFAULT_SOURCE = "DOMAIN_DEFAULT_SOURCE";
-    private final static String FIELD_POSITION = "FIELD_POSITION";
-    private final static String NULL_FLAG = "NULL_FLAG";
-    private final static String DOMAIN_NULL_FLAG = "DOMAIN_NULL_FLAG";
-    private final static String COMPUTED_BLR = "COMPUTED_BLR";
-    private final static String IDENTITY_TYPE = "IDENTITY_TYPE";
-    private final static String CHARACTER_SET_ID = "CHARACTER_SET_ID";
-    private final static String CHARACTER_SET_NAME = "CHARACTER_SET_NAME";
-    private final static String COLLATION_NAME = "COLLATION_NAME";
-    private final static String FIELD_SOURCE = "FIELD_SOURCE";
-    private final static String COMPUTED_SOURCE = "COMPUTED_SOURCE";
-    private final static String KEY_SEQ = "KEY_SEQ";
-    private final static String CONSTRAINT_NAME = "CONSTRAINT_NAME";
-    private final static String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
-    private final static String REF_TABLE = "REF_TABLE";
-    private final static String REF_COLUMN = "REF_COLUMN";
-    private final static String UPDATE_RULE = "UPDATE_RULE";
-    private final static String DELETE_RULE = "DELETE_RULE";
 
     public synchronized List<DatabaseColumn> getColumns(String table) {
         for (NamedObject namedObject : getTables()) {
@@ -731,83 +704,76 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
 
                 if(statementForColumns==null||statementForColumns.isClosed()) {
-                    String prefix = "RDB$";
                     SelectBuilder sb = new SelectBuilder();
-
-                    Table relationFields = Table.createTable().setName("RDB$RELATION_FIELDS").setAlias("RF");
-                    Table fields = Table.createTable().setName("RDB$FIELDS").setAlias("F");
-                    Table charsets = Table.createTable().setName("RDB$CHARACTER_SETS").setAlias("CH");
-                    Table collations = Table.createTable().setName("RDB$COLLATIONS").setAlias("CO");
-                    Table constraints = Table.createTable().setName("RDB$RELATION_CONSTRAINTS").setAlias("RC");
-                    Table constraints1 = Table.createTable().setName("RDB$RELATION_CONSTRAINTS").setAlias("RCO");
-                    Table indexSegments = Table.createTable().setName("RDB$INDEX_SEGMENTS").setAlias("ISGMT");
-                    Table refTable = Table.createTable().setName("RDB$RELATION_CONSTRAINTS").setAlias("RC_REF");
-                    Table refColumn = Table.createTable().setName("RDB$INDEX_SEGMENTS").setAlias("ISGMT_REF");
-                    Table refCons = Table.createTable().setName("RDB$REF_CONSTRAINTS").setAlias("REF_CONS");
-                    Field relName = Field.createField().setTable(relationFields).setName(prefix + RELATION_NAME).setAlias(RELATION_NAME);
+                    sb.setDistinct(true);
+                    Table relationFields = Table.createTable("RDB$RELATION_FIELDS", "RF");
+                    Table fields = Table.createTable("RDB$FIELDS", "F");
+                    Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CH");
+                    Table collations = Table.createTable("RDB$COLLATIONS", "CO");
+                    Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
+                    Table constraints1 = Table.createTable("RDB$RELATION_CONSTRAINTS", "RCO");
+                    Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT");
+                    Table refTable = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC_REF");
+                    Table refColumn = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT_REF");
+                    Table refCons = Table.createTable("RDB$REF_CONSTRAINTS", "REF_CONS");
+                    Field relName = Field.createField(relationFields, RELATION_NAME);
                     sb.appendField(relName);
-                    Field fieldName = Field.createField().setTable(relationFields).setName(prefix + FIELD_NAME).setAlias(FIELD_NAME);
+                    Field fieldName = Field.createField(relationFields, FIELD_NAME);
                     sb.appendField(fieldName);
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + FIELD_TYPE).setAlias(FIELD_TYPE));
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + FIELD_SUB_TYPE).setAlias(FIELD_SUB_TYPE));
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + SEGMENT_LENGTH).setAlias(SEGMENT_LENGTH));
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + FIELD_PRECISION).setAlias(FIELD_PRECISION));
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + FIELD_SCALE).setAlias(FIELD_SCALE));
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + FIELD_LENGTH).setAlias(FIELD_LENGTH));
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + "CHARACTER_LENGTH").setAlias(CHARACTER_LENGTH));
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + DEFAULT_SOURCE).setAlias(DOMAIN_DEFAULT_SOURCE));
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + NULL_FLAG).setAlias(DOMAIN_NULL_FLAG));
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + COMPUTED_BLR).setAlias(COMPUTED_BLR));
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + CHARACTER_SET_ID).setAlias(CHARACTER_SET_ID));
-                    sb.appendField(Field.createField().setTable(fields).setName(prefix + COMPUTED_SOURCE).setAlias(COMPUTED_SOURCE));
-                    sb.appendField(Field.createField().setTable(charsets).setName(prefix + CHARACTER_SET_NAME).setAlias(CHARACTER_SET_NAME));
-                    sb.appendField(Field.createField().setTable(collations).setName(prefix + COLLATION_NAME).setAlias(COLLATION_NAME));
-                    sb.appendField(Field.createField().setTable(relationFields).setName(prefix + DEFAULT_SOURCE).setAlias(DEFAULT_SOURCE));
-                    sb.appendField(Field.createField().setTable(relationFields).setName(prefix + NULL_FLAG).setAlias(NULL_FLAG));
-                    Field fieldSource = Field.createField().setTable(relationFields).setName(prefix + FIELD_SOURCE).setAlias(FIELD_SOURCE);
+                    sb.appendField(Field.createField(fields, FIELD_TYPE));
+                    sb.appendField(Field.createField(fields, FIELD_SUB_TYPE));
+                    sb.appendField(Field.createField(fields, SEGMENT_LENGTH));
+                    sb.appendField(Field.createField(fields, FIELD_PRECISION));
+                    sb.appendField(Field.createField(fields, FIELD_SCALE));
+                    sb.appendField(Field.createField(fields, FIELD_LENGTH));
+                    sb.appendField(Field.createField(fields, "CHARACTER_LENGTH").setAlias(CHARACTER_LENGTH));
+                    sb.appendField(Field.createField(fields, DEFAULT_SOURCE).setAlias(DOMAIN_DEFAULT_SOURCE));
+                    sb.appendField(Field.createField(fields, NULL_FLAG).setAlias(DOMAIN_NULL_FLAG));
+                    sb.appendField(Field.createField(fields, COMPUTED_BLR));
+                    sb.appendField(Field.createField(fields, CHARACTER_SET_ID));
+                    sb.appendField(Field.createField(fields, COMPUTED_SOURCE));
+                    sb.appendField(Field.createField(charsets, CHARACTER_SET_NAME));
+                    sb.appendField(Field.createField(collations, COLLATION_NAME));
+                    sb.appendField(Field.createField(relationFields, DEFAULT_SOURCE));
+                    sb.appendField(Field.createField(relationFields, NULL_FLAG));
+                    Field fieldSource = Field.createField(relationFields, FIELD_SOURCE);
                     sb.appendField(fieldSource);
-                    sb.appendField(Field.createField().setTable(relationFields).setName(prefix + DESCRIPTION).setAlias(DESCRIPTION));
-                    sb.appendField(Field.createField().setTable(relationFields).setName(prefix + IDENTITY_TYPE).setAlias(IDENTITY_TYPE).setNull(getDatabaseMajorVersion() < 3));
-                    Field fieldPosition = Field.createField().setTable(relationFields).setName(prefix + FIELD_POSITION).setAlias(FIELD_POSITION);
+                    sb.appendField(Field.createField(relationFields, DESCRIPTION));
+                    sb.appendField(Field.createField(relationFields, IDENTITY_TYPE).setNull(getDatabaseMajorVersion() < 3));
+                    Field fieldPosition = Field.createField(relationFields, FIELD_POSITION);
                     fieldPosition.setStatement(fieldPosition.getFieldTable() + " + 1");
                     sb.appendField(fieldPosition);
-                    sb.appendField(Field.createField().setTable(constraints).setName(prefix + CONSTRAINT_NAME).setAlias(CONSTRAINT_NAME));
-                    sb.appendField(Field.createField().setTable(constraints).setName(prefix + CONSTRAINT_TYPE).setAlias(CONSTRAINT_TYPE));
-                    Field keyPosition = Field.createField().setTable(indexSegments).setName(prefix + FIELD_POSITION).setAlias(KEY_SEQ);
+                    sb.appendField(Field.createField(constraints, CONSTRAINT_NAME));
+                    sb.appendField(Field.createField(constraints, CONSTRAINT_TYPE));
+                    Field keyPosition = Field.createField(indexSegments, FIELD_POSITION).setAlias(KEY_SEQ);
                     keyPosition.setStatement(keyPosition.getFieldTable() + " + 1");
                     sb.appendField(keyPosition);
-                    sb.appendField(Field.createField().setTable(refTable).setName(relName.getName()).setAlias(REF_TABLE));
-                    sb.appendField(Field.createField().setTable(refColumn).setName(fieldName.getName()).setAlias(REF_COLUMN));
-                    sb.appendField(Field.createField().setTable(refCons).setName(prefix + UPDATE_RULE).setAlias(UPDATE_RULE));
-                    sb.appendField(Field.createField().setTable(refCons).setName(prefix + DELETE_RULE).setAlias(DELETE_RULE));
+                    sb.appendField(Field.createField(refTable, relName.getAlias()).setAlias(REF_TABLE));
+                    sb.appendField(Field.createField(refColumn, fieldName.getAlias()).setAlias(REF_COLUMN));
+                    sb.appendField(Field.createField(refCons, UPDATE_RULE));
+                    sb.appendField(Field.createField(refCons, DELETE_RULE));
 
+                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField(constraints1, relName.getAlias())));
+                    sb.appendJoin(LeftJoin.createLeftJoin()
+                            .appendFields(Field.createField(constraints1, "INDEX_NAME"), Field.createField(indexSegments, "INDEX_NAME"))
+                            .appendFields(fieldName, Field.createField(indexSegments, fieldName.getAlias())));
+                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(indexSegments, "INDEX_NAME"),
+                            Field.createField(constraints, "INDEX_NAME")));
+                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(constraints, CONSTRAINT_NAME),
+                            Field.createField(refCons, CONSTRAINT_NAME)));
+                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(refCons, "CONST_NAME_UQ"),
+                            Field.createField(refTable, CONSTRAINT_NAME)));
+                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(refTable, "INDEX_NAME"),
+                            Field.createField(refColumn, "INDEX_NAME")));
+                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID),
+                            Field.createField(charsets, CHARACTER_SET_ID)));
+                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID),
+                                    Field.createField(collations, CHARACTER_SET_ID))
+                            .appendFields(Field.createField(fields, "COLLATION_ID"),
+                                    Field.createField(collations, "COLLATION_ID")));
 
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField().setTable(constraints1).setName(relName.getName())));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField().setTable(constraints1).setName("RDB$INDEX_NAME"),
-                            Field.createField().setTable(indexSegments).setName("RDB$INDEX_NAME")).appendFields(fieldName
-                            , Field.createField().setTable(indexSegments).setName(fieldName.getName())));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField().setTable(indexSegments).setName("RDB$INDEX_NAME"),
-                            Field.createField().setTable(constraints).setName("RDB$INDEX_NAME")));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField().setTable(constraints).setName(prefix + CONSTRAINT_NAME),
-                            Field.createField().setTable(refCons).setName(prefix + CONSTRAINT_NAME)));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField().setTable(refCons).setName(prefix + "CONST_NAME_UQ"),
-                            Field.createField().setTable(refTable).setName(prefix + CONSTRAINT_NAME)));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField().setTable(refTable).setName("RDB$INDEX_NAME"),
-                            Field.createField().setTable(refColumn).setName("RDB$INDEX_NAME")));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField().setTable(fields).setName("RDB$CHARACTER_SET_ID"),
-                            Field.createField().setTable(charsets).setName("RDB$CHARACTER_SET_ID")));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField().setTable(fields).setName("RDB$CHARACTER_SET_ID"),
-                                    Field.createField().setTable(collations).setName("RDB$CHARACTER_SET_ID"))
-                            .appendFields(Field.createField().setTable(fields).setName("RDB$COLLATION_ID"),
-                                    Field.createField().setTable(collations).setName("RDB$COLLATION_ID")));
-
-                    sb.appendCondition(Condition.createCondition().setLeftField(relName).setOperator("=").setRightStatement("?"));
-                    sb.appendCondition(Condition.createCondition().setLeftField(fieldSource).setOperator("=").
-                            setRightStatement(Field.createField().setTable(fields).setName("RDB$FIELD_NAME").getFieldTable()));
-                    sb.appendCondition(Condition.createCondition().setLeftField(Field.createField().setTable(constraints1).setName(prefix + CONSTRAINT_TYPE))
-                            .setOperator("<>").setRightStatement("'NOT NULL'"));
-                    sb.appendCondition(Condition.createCondition().setLeftField(Field.createField().setTable(constraints1).setName(prefix + CONSTRAINT_TYPE))
-                            .setOperator("<>").setRightStatement("'CHECK'"));
+                    sb.appendCondition(Condition.createCondition(relName, "=", "?"));
+                    sb.appendCondition(Condition.createCondition(fieldSource, "=", Field.createField(fields, FIELD_NAME).getFieldTable()));
                     sb.setOrdering(fieldPosition.getFieldTable());
 
                     String firebirdSql = sb.getSQLQuery();
@@ -816,7 +782,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 statementForColumns.setString(1,table);
                 rs = querySender.getResultSet(-1,statementForColumns).getResultSet();
                 columns = createColumns(rs, table);
-            //releaseResources(rs);
 
             return columns;
 
@@ -922,12 +887,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 final short nullFlag = rs.getShort(NULL_FLAG);
                 final short sourceNullFlag = rs.getShort(DOMAIN_NULL_FLAG);
                 column.setRemarks(rs.getString(DESCRIPTION));
-                column.setRequired(nullFlag == 1 || sourceNullFlag == 1);
+                column.setRequired(nullFlag == 1);
+                column.setDomainNotNull(sourceNullFlag == 1);
 
                 String column_def = rs.getString(DEFAULT_SOURCE);
-                if (column_def == null) {
-                    column_def = rs.getString(DOMAIN_DEFAULT_SOURCE);
-                }
                 if (column_def != null) {
                     // TODO This looks suspicious (what if it contains default)
                     int defaultPos = column_def.toUpperCase().trim().indexOf("DEFAULT");
@@ -935,7 +898,14 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         column_def = column_def.substring(7).trim();
                     column.setDefaultValue(column_def);
                 }
-
+                column_def = rs.getString(DOMAIN_DEFAULT_SOURCE);
+                if (column_def != null) {
+                    // TODO This looks suspicious (what if it contains default)
+                    int defaultPos = column_def.toUpperCase().trim().indexOf("DEFAULT");
+                    if (defaultPos == 0)
+                        column_def = column_def.substring(7).trim();
+                    column.setDomainDefaultValue(column_def);
+                }
                 column.setIdentity(rs.getInt(IDENTITY_TYPE) == 1);
                 String charset = rs.getString(CHARACTER_SET_NAME);
                 String collate = rs.getString(COLLATION_NAME);

@@ -20,7 +20,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashMap;
@@ -40,7 +39,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
     private JTextField middleNameField;
     private JPasswordField passTextField;
     private JTable tagTable;
-    private JScrollPane tagScrol;
+    private JScrollPane tagScroll;
     private JCheckBox activeBox;
     private JButton addTag;
     private JButton deleteTag;
@@ -83,22 +82,14 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         });
         showPassword = new JCheckBox(Bundles.get(ConnectionPanel.class, "ShowPassword"));
 
-        showPassword.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    passTextField.setEchoChar((char) 0);
-                } else {
-                    passTextField.setEchoChar('•');
-                }
-            }
-        });
+        showPassword.addItemListener(e -> passTextField.setEchoChar((e.getStateChange() == ItemEvent.SELECTED) ? (char) 0 : '•'));
 
         firstNameField = new JTextField();
         middleNameField = new JTextField();
         lastNameField = new JTextField();
         tagLabel = new JLabel();
         tagTable = new JTable();
-        tagScrol = new JScrollPane();
+        tagScroll = new JScrollPane();
         activeBox = new JCheckBox();
         addTag = new DefaultButton();
         deleteTag = new DefaultButton();
@@ -107,13 +98,13 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         pluginField.setEditable(true);
         adminBox = new JCheckBox();
 
-        tagScrol.setViewportView(tagTable);
+        tagScroll.setViewportView(tagTable);
 
         addTag.setText(bundleString("addTag"));
-        addTag.addActionListener(evt -> addTagActionPerformed(evt));
+        addTag.addActionListener(this::addTagActionPerformed);
 
         deleteTag.setText(bundleString("deleteTag"));
-        deleteTag.addActionListener(evt -> deleteTagActionPerformed(evt));
+        deleteTag.addActionListener(this::deleteTagActionPerformed);
 
 
         pluginLabel.setText(bundleString("Plugin"));
@@ -158,7 +149,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         gbh.setXY(2, 1).setLabelDefault().setHeight(2).setMinWeightY();
         mainPanel.add(addTag, gbh.nextRow().setMaxWeightX().get());
         mainPanel.add(deleteTag, gbh.nextCol().setMaxWeightX().get());
-        mainPanel.add(tagScrol, gbh.setX(2).nextRowWidth().setWidth(2).setMaxWeightY().setMaxWeightX().fillBoth().setHeight(10).get());
+        mainPanel.add(tagScroll, gbh.setX(2).nextRowWidth().setWidth(2).setMaxWeightY().setMaxWeightX().fillBoth().setHeight(10).get());
         tabbedPane.add(bundleString("properties"), mainPanel);
         addCommentTab(null);
         tabbedPane.add("SQL", sqlTextPanel);
@@ -223,7 +214,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
                 user.setTag(tag, value);
         }
 
-        return editing ? SQLUtils.generateAlterUser(beginUser, user) : SQLUtils.generateCreateUser(user);
+        return editing ? SQLUtils.generateAlterUser(beginUser, user, true) : SQLUtils.generateCreateUser(user, true);
     }
 
     protected void generateSQL() {

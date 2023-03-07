@@ -23,6 +23,17 @@ public class LeftJoin {
         return this;
     }
 
+    private Condition condition;
+
+    public Condition getCondition() {
+        return condition;
+    }
+
+    public LeftJoin setCondition(Condition condition) {
+        this.condition = condition;
+        return this;
+    }
+
     public Table getLeftTable() {
         return leftTable;
     }

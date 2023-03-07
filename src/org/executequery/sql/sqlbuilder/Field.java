@@ -1,7 +1,6 @@
 package org.executequery.sql.sqlbuilder;
 
 public class Field {
-
     String name;
     Table table;
     String alias;
@@ -10,6 +9,16 @@ public class Field {
 
     public static Field createField() {
         return new Field();
+    }
+
+    public static Field createField(Table table, String alias) {
+
+        return createField(table, SelectBuilder.PREFIX + alias, alias);
+    }
+
+    public static Field createField(Table table, String name, String alias) {
+
+        return createField().setTable(table).setName(name).setAlias(alias);
     }
 
     public String getName() {

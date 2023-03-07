@@ -6,6 +6,14 @@ public class Table {
         return new Table();
     }
 
+    public static Table createTable(String name, String alias) {
+        return createTable().setName(name).setAlias(alias);
+    }
+
+    public static Table createTable(String name, String alias, boolean usePrefix) {
+        return createTable(usePrefix ? SelectBuilder.PREFIX + name : name, alias);
+    }
+
     private String name;
     private String alias;
 

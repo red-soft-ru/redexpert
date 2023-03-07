@@ -1,6 +1,8 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -76,20 +78,19 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
         this.exceptionText = exceptionText;
     }
 
+    @Override
     public String getCreateSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE EXCEPTION \n");
-        sb.append(getName());
-        sb.append("\n");
-        sb.append("'");
-        sb.append(getExceptionText());
-        sb.append("';");
+        return SQLUtils.generateCreateException(getName(), getExceptionText());
+    }
 
-        return sb.toString();
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("EXCEPTION", getName());
     }
 
     @Override
     protected String queryForInfo() {
+
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT\n")
                 .append("RDB$MESSAGE AS ").append(EXCEPTION_TEXT).append(",\n")
@@ -98,6 +99,7 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
                 .append("FROM RDB$EXCEPTIONS\n")
                 .append("WHERE\n")
                 .append("TRIM(RDB$EXCEPTION_NAME) = ?");
+
         return sb.toString();
     }
 

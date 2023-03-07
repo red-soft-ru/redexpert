@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
@@ -63,6 +64,7 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
 
     @Override
     protected String queryForInfo() {
+
         String query = "select ch.RDB$CHARACTER_SET_NAME as " + CHARSET + ",\n" +
                 "co.RDB$BASE_COLLATION_NAME as " + BASE_COLLATE + ",\n" +
                 "co.RDB$COLLATION_ATTRIBUTES as " + COLLATION_ATTRIBUTES + ",\n" +
@@ -70,6 +72,7 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
                 "co.RDB$DESCRIPTION as " + DESCRIPTION + "\n" +
                 "from RDB$COLLATIONS co left join RDB$CHARACTER_SETS ch on co.RDB$CHARACTER_SET_ID=ch.RDB$CHARACTER_SET_ID \n" +
                 "where co.RDB$COLLATION_NAME=?";
+
         return query;
     }
 
@@ -169,7 +172,15 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
         this.attributes = attributes;
     }
 
+    @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateCollation(getName(), getCharacterSet(), getBaseCollate(), getAttributes(), isPadSpace(), isCaseSensitive(), isAccentSensitive(), isExternal());
+        return SQLUtils.generateCreateCollation(getName(), getCharacterSet(), getBaseCollate(),
+                getAttributes(), isPadSpace(), isCaseSensitive(), isAccentSensitive(), isExternal());
     }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("COLLATION", getName());
+    }
+
 }

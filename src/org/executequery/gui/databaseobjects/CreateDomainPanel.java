@@ -150,12 +150,11 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements Docu
     }
 
     protected String generateQuery() {
-
         columnData.setColumnName(nameField.getText());
         if (editing)
             return SQLUtils.generateAlterDomain(columnData, domain);
         else
-            return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false);
+            return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false, true);
     }
 
     @Override

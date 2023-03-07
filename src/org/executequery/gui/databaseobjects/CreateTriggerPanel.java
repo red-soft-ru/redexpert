@@ -18,6 +18,7 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
@@ -64,7 +65,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     private JLabel actionLabel;
     private JLabel labelTable;
     private List<Component> tableTriggerComponents;
-    private JLabel beforeAfterlabel;
+    private JLabel beforeAfterLabel;
 
     //components for ddl trigger
     private JComboBox typeTableTriggerCombo;
@@ -74,7 +75,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     private JPanel ddlTriggerPanel;
     private List<Component> ddlTableTriggerComponents;
     private List<JCheckBox> ddlCheckBoxes;
-    private JScrollPane scrolDDL;
+    private JScrollPane scrollDDL;
     private JCheckBox anyDdlBox;
     /**
      * The table combo selection
@@ -136,12 +137,12 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         updateBox = new JCheckBox("UPDATE");
         deleteBox = new JCheckBox("DELETE");
         labelTable = new JLabel(bundleStaticString("table"));
-        beforeAfterlabel = new JLabel(bundleString("before-after"));
+        beforeAfterLabel = new JLabel(bundleString("before-after"));
         tablesCombo = new JComboBox(getTables());
         sqlBodyText = new SimpleSqlTextPanel();
         ddlTriggerPanel = new JPanel(new GridBagLayout());
-        scrolDDL = new JScrollPane(ddlTriggerPanel);
-        scrolDDL.setMinimumSize(new Dimension(100, 200));
+        scrollDDL = new JScrollPane(ddlTriggerPanel);
+        scrollDDL.setMinimumSize(new Dimension(100, 200));
         setPreferredSize(new Dimension(800, 800));
         ddlTableTriggerComponents = new ArrayList<>();
         ddlCheckBoxes = new ArrayList<>();
@@ -159,7 +160,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         centralPanel.setVisible(false);
         topPanel.add(activeBox, topGbh.nextRowFirstCol().setLabelDefault().get());
         topPanel.add(typeTriggerCombo, topGbh.nextCol().fillHorizontally().setMaxWeightX().get());
-        topGbh.addLabelFieldPair(topPanel, positionLabel, positionField, null, false,true);
+        topGbh.addLabelFieldPair(topPanel, positionLabel, positionField, null, false, true);
 
         tabbedPane.add(bundleStaticString("SQL"), sqlBodyText);
         addCommentTab(null);
@@ -168,24 +169,24 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         ddlTriggerPanel.setLayout(new GridBagLayout());
         databaseTriggerComponents.add(actionLabel);
         databaseTriggerComponents.add(actionCombo);
-        topGbh.addLabelFieldPair(topPanel,actionLabel,actionCombo,null,true,false);
+        topGbh.addLabelFieldPair(topPanel, actionLabel, actionCombo, null, true, false);
         tableTriggerComponents.add(labelTable);
         tableTriggerComponents.add(tablesCombo);
-        topGbh.addLabelFieldPair(topPanel,labelTable,tablesCombo,null,true,false);
-        ddlTableTriggerComponents.add(beforeAfterlabel);
+        topGbh.addLabelFieldPair(topPanel, labelTable, tablesCombo, null, true, false);
+        ddlTableTriggerComponents.add(beforeAfterLabel);
         ddlTableTriggerComponents.add(typeTableTriggerCombo);
-        topGbh.addLabelFieldPair(topPanel,beforeAfterlabel,typeTableTriggerCombo,null,triggerType==NamedObject.DDL_TRIGGER,false);
+        topGbh.addLabelFieldPair(topPanel, beforeAfterLabel, typeTableTriggerCombo, null, triggerType == NamedObject.DDL_TRIGGER, false);
 
         tableTriggerComponents.add(insertBox);
         tableTriggerComponents.add(updateBox);
         tableTriggerComponents.add(deleteBox);
-        topPanel.add(insertBox,topGbh.setLabelDefault().nextCol().get());
-        topPanel.add(updateBox,topGbh.setLabelDefault().nextCol().get());
-        topPanel.add(deleteBox,topGbh.setLabelDefault().nextCol().get());
+        topPanel.add(insertBox, topGbh.setLabelDefault().nextCol().get());
+        topPanel.add(updateBox, topGbh.setLabelDefault().nextCol().get());
+        topPanel.add(deleteBox, topGbh.setLabelDefault().nextCol().get());
 
         ddlTableTriggerComponents.addAll(tableTriggerComponents);
-        ddlTableTriggerComponents.add(scrolDDL);
-        topPanel.add(scrolDDL,topGbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        ddlTableTriggerComponents.add(scrollDDL);
+        topPanel.add(scrollDDL, topGbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
         gbh.defaults();
         ddlTriggerPanel.add(anyDdlBox, gbh.setLabelDefault().get());
         JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
@@ -337,7 +338,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
 
     @Override
     public void setParameters(Object[] params) {
-        this.triggerType = (int)params[0];
+        this.triggerType = (int) params[0];
     }
 
     int getVersion() throws SQLException {
@@ -346,15 +347,14 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     }
 
     private void changeTypeTrigger() {
-        visibleComponents(databaseTriggerComponents,typeTriggerCombo.getSelectedItem() == DB_TRIGGER);
-        visibleComponents(ddlTableTriggerComponents,typeTriggerCombo.getSelectedItem() == DDL_TRIGGER||typeTriggerCombo.getSelectedItem() == TRIGGER);
-        visibleComponents(tableTriggerComponents,typeTriggerCombo.getSelectedItem() == TRIGGER);
-        scrolDDL.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER);
+        visibleComponents(databaseTriggerComponents, typeTriggerCombo.getSelectedItem() == DB_TRIGGER);
+        visibleComponents(ddlTableTriggerComponents, typeTriggerCombo.getSelectedItem() == DDL_TRIGGER || typeTriggerCombo.getSelectedItem() == TRIGGER);
+        visibleComponents(tableTriggerComponents, typeTriggerCombo.getSelectedItem() == TRIGGER);
+        scrollDDL.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER);
     }
 
-    private void visibleComponents(List<Component> components,boolean flag)
-    {
-        for (Component component:components)
+    private void visibleComponents(List<Component> components, boolean flag) {
+        for (Component component : components)
             component.setVisible(flag);
     }
 
@@ -370,13 +370,13 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     protected String generateQuery() {
         String selectedItem = (String) typeTriggerCombo.getSelectedItem();
         String table = null;
-        if (selectedItem == TRIGGER) {
+        if (Objects.equals(selectedItem, TRIGGER)) {
             table = (String) tablesCombo.getSelectedItem();
             if (table != null)
                 table = table.trim();
         }
         StringBuilder triggerType = new StringBuilder();
-        if (selectedItem == TRIGGER) {
+        if (Objects.equals(selectedItem, TRIGGER)) {
             triggerType.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
             boolean first = true;
             if (insertBox.isSelected()) {
@@ -396,7 +396,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
             }
 
         } else {
-            if (selectedItem == DB_TRIGGER)
+            if (Objects.equals(selectedItem, DB_TRIGGER))
                 triggerType.append("ON ").append(actionCombo.getSelectedItem()).append(" ");
             else {
                 triggerType.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
@@ -421,9 +421,10 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
             engine = null;
             external = null;
         }
-        String query = SQLUtils.generateCreateTriggerStatement(nameField.getText(), table, activeBox.isSelected(), triggerType.toString(),
-                (int) positionField.getValue(), sqlBodyText.getSQLText(), engine, external, (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment());
-        return query;
+
+        return SQLUtils.generateCreateTriggerStatement(nameField.getText(), table, activeBox.isSelected(),
+                triggerType.toString(), (int) positionField.getValue(), sqlBodyText.getSQLText(), engine, external,
+                (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment(), false);
     }
 
     private void generateScript() {

@@ -94,7 +94,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         uniqueBox.setSelected(databaseIndex.isUnique());
         activeBox.setSelected(databaseIndex.isActive());
         sortingBox.setSelectedIndex(databaseIndex.getIndexType());
-        if (databaseIndex.getTablespace() != null)
+        if (!MiscUtils.isNull(databaseIndex.getTablespace()))
             for (NamedObject ts : tss)
                 if (ts.getName().equalsIgnoreCase(databaseIndex.getTablespace().trim()))
                     tablespaceBox.setSelectedItem(ts);

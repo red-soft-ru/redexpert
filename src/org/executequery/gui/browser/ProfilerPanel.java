@@ -16,11 +16,9 @@ import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
-import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
@@ -59,11 +57,45 @@ public class ProfilerPanel extends JPanel
             "EXECUTE PROCEDURE RDB$PROFILER.DISCARD";
     private static final String FLASH =
             "EXECUTE PROCEDURE RDB$PROFILER.FLUSH";
-    private static final String SET_FLUSH_INTERVAL =
-            "EXECUTE PROCEDURE RDB$PROFILER.SET_FLUSH_INTERVAL(%s)";
 
     private static final String SELECT_FROM_PROF_STATEMENT_STATS_VIEW =
             "SELECT * FROM PLG$PROF_STATEMENT_STATS_VIEW WHERE PROFILE_ID = %s";
+
+//    private static final String DEFAULT_SELECT_PROFILER_DATA_QUERY =
+//            "SELECT req.statement_id,\n" +
+//                    "\tsta.statement_type,\n" +
+//                    "\tsta.package_name,\n" +
+//                    "\tsta.routine_name,\n" +
+//                    "\tsta.parent_statement_id,\n" +
+//                    "\tsta_parent.statement_type parent_statement_type,\n" +
+//                    "\tsta_parent.routine_name parent_routine_name,\n" +
+//                    "\t(SELECT sql_text\n" +
+//                        "\t\tFROM plg$prof_statements\n" +
+//                        "\t\tWHERE profile_id = req.profile_id AND\n" +
+//                        "\t\t\tstatement_id = COALESCE(sta.parent_statement_id, req.statement_id)\n" +
+//                    "\t) sql_text,\n" +
+//                    "\tcount(*) counter,\n" +
+//                    "\tmin(req.total_elapsed_time) min_elapsed_time,\n" +
+//                    "\tmax(req.total_elapsed_time) max_elapsed_time,\n" +
+//                    "\tcast(sum(req.total_elapsed_time) as bigint) total_elapsed_time,\n" +
+//                    "\tcast(sum(req.total_elapsed_time) / count(*) as bigint) avg_elapsed_time\n" +
+//            "FROM plg$prof_requests req\n" +
+//            "JOIN plg$prof_statements sta\n" +
+//                    "\tON sta.profile_id = req.profile_id AND\n" +
+//                    "\t\tsta.statement_id = req.statement_id\n" +
+//            "LEFT JOIN plg$prof_statements sta_parent\n" +
+//                    "\tON sta_parent.profile_id = sta.profile_id AND\n" +
+//                    "\t\tsta_parent.statement_id = sta.parent_statement_id\n" +
+//            "WHERE req.profile_id = %s\n" +
+//            "GROUP BY req.profile_id,\n" +
+//                    "\treq.statement_id,\n" +
+//                    "\tsta.statement_type,\n" +
+//                    "\tsta.package_name,\n" +
+//                    "\tsta.routine_name,\n" +
+//                    "\tsta.parent_statement_id,\n" +
+//                    "\tsta_parent.statement_type,\n" +
+//                    "\tsta_parent.routine_name\n" +
+//            "ORDER BY req.statement_id ASCENDING;";
 
     // --- GUI objects ---
 
@@ -90,33 +122,6 @@ public class ProfilerPanel extends JPanel
     private Integer sessionId;
     private int sessionState;
     private int flashInterval;
-
-    private final SwingWorker flashWorker = new SwingWorker("Profiler data updater") {
-        @Override
-        public Object construct() {
-            try {
-
-                DefaultStatementExecutor flashExecutor = new DefaultStatementExecutor();
-                flashExecutor.setDatabaseConnection(connection);
-                flashExecutor.setCommitMode(false);
-                flashExecutor.setKeepAlive(true);
-
-                PreparedStatement statement =
-                        flashExecutor.getPreparedStatement(String.format(SELECT_FROM_PROF_STATEMENT_STATS_VIEW, sessionId));
-
-                while (sessionState == ACTIVE) {
-                    Thread.sleep(flashInterval * 1000L);
-                    ResultSet rs = flashExecutor.execute(QueryTypes.SELECT, statement).getResultSet();
-                    resultSetTableModel.createTable(rs);
-                }
-
-            } catch (Exception e) {
-                Log.error("Error updating profiler data", e);
-            }
-
-            return null;
-        }
-    };
 
     public ProfilerPanel() {
         init();
@@ -200,7 +205,7 @@ public class ProfilerPanel extends JPanel
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        resultSetPanel.add(scrollPane);
+        resultSetPanel.add(scrollPane, gridBagHelper.spanY().spanX().fillBoth().get());
 
         // --- main panel ---
 
@@ -213,7 +218,9 @@ public class ProfilerPanel extends JPanel
 
         // ---
 
-        add(mainPanel, BorderLayout.CENTER);
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest();
+        add(mainPanel, gridBagHelper.fillBoth().get());
         setBorder(BorderFactory.createEmptyBorder());
     }
 
@@ -221,9 +228,9 @@ public class ProfilerPanel extends JPanel
 
         try {
 
-            resultSetTableModel = new ResultSetTableModel(
-                    SystemProperties.getIntProperty("user", "browser.max.records"), false);
+            resultSetTableModel = new ResultSetTableModel(false);
             resultSetTableModel.setHoldMetaData(false);
+            resultSetTableModel.setFetchAll(true);
 
             if (resultSetTable == null)
                 resultSetTable = new ResultSetTable(resultSetTableModel);
@@ -258,6 +265,31 @@ public class ProfilerPanel extends JPanel
         return isSupported;
     }
 
+    private synchronized void monitorProfilerData() {
+        try {
+
+            DefaultStatementExecutor flashExecutor = new DefaultStatementExecutor();
+            flashExecutor.setDatabaseConnection(connection);
+            flashExecutor.setCommitMode(false);
+            flashExecutor.setKeepAlive(true);
+
+            String formattedQuery = String.format(SELECT_FROM_PROF_STATEMENT_STATS_VIEW, sessionId);
+
+            while (sessionState == ACTIVE) {
+
+                executor.execute(QueryTypes.EXECUTE, executor.getPreparedStatement(FLASH));
+                ResultSet rs = flashExecutor.getResultSet(formattedQuery).getResultSet();
+
+                resultSetTableModel.createTable(rs);
+                flashExecutor.releaseResources();
+                Thread.sleep(flashInterval * 1000L);
+            }
+
+        } catch (Exception e) {
+            Log.error("Error updating profiler data", e);
+        }
+    }
+
     // --- button handlers ---
 
     private void startSession() {
@@ -272,7 +304,7 @@ public class ProfilerPanel extends JPanel
 
         sessionName = connection.getName() + "_session";
         flashInterval = (int) flashIntervalSpinner.getValue();
-        String query = String.format(START_SESSION, sessionName, (flashInterval > 0) ? flashInterval : NULL);
+        String query = String.format(START_SESSION, sessionName, NULL);
 
         try {
 
@@ -281,8 +313,16 @@ public class ProfilerPanel extends JPanel
                 sessionId = resultSet.getInt(1);
             resultSetTableModel.createTable(resultSet);
             executor.getConnection().commit();
+
             switchSessionState(ACTIVE);
-            flashWorker.start();
+            SwingWorker worker = new SwingWorker("Profiler data updater") {
+                @Override
+                public Object construct() {
+                    monitorProfilerData();
+                    return null;
+                }
+            };
+            worker.start();
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog("Unable to start profiler session", e);
@@ -306,8 +346,16 @@ public class ProfilerPanel extends JPanel
 
             executor.execute(RESUME_SESSION, true);
             executor.getConnection().commit();
+
             switchSessionState(ACTIVE);
-            flashWorker.start();
+            SwingWorker worker = new SwingWorker("Profiler data updater") {
+                @Override
+                public Object construct() {
+                    monitorProfilerData();
+                    return null;
+                }
+            };
+            worker.start();
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog("Unable to resume profiler session", e);
@@ -332,7 +380,6 @@ public class ProfilerPanel extends JPanel
             executor.execute(CANCEL_SESSION, true);
             executor.getConnection().commit();
             switchSessionState(INACTIVE);
-            flashWorker.interrupt();
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog("Unable to cancel profiler session", e);
@@ -345,7 +392,6 @@ public class ProfilerPanel extends JPanel
             executor.execute(DISCARD, true);
             executor.getConnection().commit();
             switchSessionState(INACTIVE);
-            flashWorker.interrupt();
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog("Unable to discard profiler sessions", e);

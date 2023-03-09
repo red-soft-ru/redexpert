@@ -11,9 +11,6 @@ import org.underworldlabs.swing.EQDateTimePicker;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
@@ -155,8 +152,12 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
 
     @Override
     protected String generateQuery() {
-        return SQLUtils.generateCreateJob(getFormattedName(),cronField.getText(),activeBox.isSelected(),startDatePicker.isNull()?null:startDatePicker.getDateTime(),
-                endDatePicker.isNull()?null:endDatePicker.getDateTime(),jobTypeCombo.getSelectedIndex(),jobTypeCombo.getSelectedIndex()==DefaultDatabaseJob.PSQL_TYPE?sqlTextPanel.getSQLText():bashTextPanel.getTextAreaComponent().getText());
+        if (!editing)
+            return SQLUtils.generateCreateJob(getFormattedName(), cronField.getText(), activeBox.isSelected(), startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
+                    endDatePicker.isNull() ? null : endDatePicker.getDateTime(), jobTypeCombo.getSelectedIndex(), jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ? sqlTextPanel.getSQLText() : bashTextPanel.getTextAreaComponent().getText());
+        else
+            return SQLUtils.generateAlterJob(job, getFormattedName(), cronField.getText(), activeBox.isSelected(), startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
+                    endDatePicker.isNull() ? null : endDatePicker.getDateTime(), jobTypeCombo.getSelectedIndex(), jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ? sqlTextPanel.getSQLText() : bashTextPanel.getTextAreaComponent().getText());
     }
 
 }

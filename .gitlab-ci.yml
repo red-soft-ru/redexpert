@@ -244,15 +244,17 @@ test:windows:
    - $USERNAME = 'jenkins'
    - $PASSWORD = 'jenkins'
    - $SECURITYPASSWORD = ConvertTo-SecureString $PASSWORD -AsPlainText -Force
-   - $CREDENTIAL = New-Object System.Management.Automation.PSCredential $USERNAME, $SECURITYPASSWORD
+   - $CREDENTIAL = New-Object System.Management.Automation.PSCredential ($USERNAME, $SECURITYPASSWORD)
    - |
-      if ($env:ARCH -eq "x86_64")
-      {
-        start-process .\RedExpert64.exe -Credential $CREDENTIAL
-      }
-      else
-      {
-        start-process .\RedExpert.exe -Credential $CREDENTIAL
+      Invoke-Command -ComputerName localhost -Credential $CREDENTIAL -ScriptBlock {
+        if ($env:ARCH -eq "x86_64")
+        {
+          start-process .\RedExpert64.exe
+        }
+        else
+        {
+          start-process .\RedExpert.exe
+        }
       }
   script:
    - cd $TEST_DIR\RedExpert-$env:VERSION\ci

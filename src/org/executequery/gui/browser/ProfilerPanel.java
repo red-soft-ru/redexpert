@@ -142,25 +142,23 @@ public class ProfilerPanel extends JPanel
 
         flashIntervalSpinner = new JSpinner();
         flashIntervalSpinner.setModel(new SpinnerNumberModel(5, 0, 120, 1));
-        flashIntervalSpinner.setToolTipText("The interval with which the profiler data will be updated in seconds.\n" +
-                "If value is 0, data won't be updated until the end of the session");
 
-        startButton = new JButton("Start");
+        startButton = new JButton(bundleString("Start"));
         startButton.addActionListener(e -> startSession());
 
-        pauseButton = new JButton("Pause");
+        pauseButton = new JButton(bundleString("Pause"));
         pauseButton.addActionListener(e -> pauseSession());
 
-        resumeButton = new JButton("Resume");
+        resumeButton = new JButton(bundleString("Resume"));
         resumeButton.addActionListener(e -> resumeSession());
 
-        finishButton = new JButton("Stop");
+        finishButton = new JButton(bundleString("Stop"));
         finishButton.addActionListener(e -> finishSession());
 
-        cancelButton = new JButton("Cancel");
+        cancelButton = new JButton(bundleString("Cancel"));
         cancelButton.addActionListener(e -> cancelSession());
 
-        discardButton = new JButton("Discard");
+        discardButton = new JButton(bundleString("Discard"));
         discardButton.addActionListener(e -> discardSession());
 
         buildResultSetTable();
@@ -186,42 +184,36 @@ public class ProfilerPanel extends JPanel
         // --- tools panel ---
 
         gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 0, 5, 0).anchorNorthWest();
+        gridBagHelper.setInsets(5, 0, 5, 0).anchorNorthWest().fillHorizontally();
         JPanel toolsPanel = new JPanel(new GridBagLayout());
 
-        gridBagHelper.addLabelFieldPair(toolsPanel, "Connection:", connectionsComboBox,
-                null, false, false);
-        gridBagHelper.addLabelFieldPair(toolsPanel, "Flash interval:", flashIntervalSpinner,
-                null, false, false);
+        gridBagHelper.addLabelFieldPair(toolsPanel,
+                bundleString("Connection"), connectionsComboBox, null, false, false);
+        gridBagHelper.addLabelFieldPair(toolsPanel,
+                bundleString("FlashInterval"), flashIntervalSpinner, null, false, false);
         toolsPanel.add(buttonPanel, gridBagHelper.nextCol().get());
 
         // --- resultSet panel ---
 
         gridBagHelper = new GridBagHelper();
-        gridBagHelper.anchorNorthWest();
+        gridBagHelper.anchorNorthWest().fillBoth();
         JPanel resultSetPanel = new JPanel(new GridBagLayout());
 
         JScrollPane scrollPane = new JScrollPane(resultSetTable,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        resultSetPanel.add(scrollPane, gridBagHelper.spanY().spanX().fillBoth().get());
+        resultSetPanel.add(scrollPane, gridBagHelper.spanX().spanY().get());
 
         // --- main panel ---
 
         gridBagHelper = new GridBagHelper();
         gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest();
-        JPanel mainPanel = new JPanel(new GridBagLayout());
 
-        mainPanel.add(toolsPanel, gridBagHelper.fillHorizontally().spanX().get());
-        mainPanel.add(resultSetPanel, gridBagHelper.nextRowFirstCol().fillBoth().setMaxWeightY().spanX().get());
+        setLayout(new GridBagLayout());
+        add(toolsPanel, gridBagHelper.fillHorizontally().spanX().get());
+        add(resultSetPanel, gridBagHelper.nextRowFirstCol().setMaxWeightY().fillBoth().spanX().spanY().get());
 
-        // ---
-
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest();
-        add(mainPanel, gridBagHelper.fillBoth().get());
-        setBorder(BorderFactory.createEmptyBorder());
     }
 
     private void buildResultSetTable() {
@@ -238,7 +230,7 @@ public class ProfilerPanel extends JPanel
                 resultSetTable.setModel(resultSetTableModel);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Error occurred when building resultSetTable", e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorBuildingTable"), e);
         }
 
     }
@@ -286,7 +278,7 @@ public class ProfilerPanel extends JPanel
             }
 
         } catch (Exception e) {
-            Log.error("Error updating profiler data", e);
+            Log.error(bundleString("ErrorUpdatingData"), e);
         }
     }
 
@@ -296,7 +288,7 @@ public class ProfilerPanel extends JPanel
 
         connectionChange();
         if (!isConnectionVersionSupported(connection)) {
-            GUIUtilities.displayWarningMessage("Unable to start profiler session\nDB version below 5.0");
+            GUIUtilities.displayWarningMessage(bundleString("VersionNotSupported"));
             return;
         }
 
@@ -325,7 +317,7 @@ public class ProfilerPanel extends JPanel
             worker.start();
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Unable to start profiler session", e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionStart"), e);
         }
     }
 
@@ -337,7 +329,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(PAUSED);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Unable to pause profiler session", e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionPause"), e);
         }
     }
 
@@ -358,7 +350,7 @@ public class ProfilerPanel extends JPanel
             worker.start();
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Unable to resume profiler session", e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionResume"), e);
         }
     }
 
@@ -370,7 +362,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(INACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Unable to finish profiler session", e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionFinish"), e);
         }
     }
 
@@ -382,7 +374,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(INACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Unable to cancel profiler session", e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionCancel"), e);
         }
     }
 
@@ -394,7 +386,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(INACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Unable to discard profiler sessions", e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionDiscard"), e);
         }
     }
 

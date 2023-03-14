@@ -24,8 +24,6 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
 
     private CronPanel cronPanel;
 
-    private JTextField cronField;
-
     private EQDateTimePicker startDatePicker;
     private EQDateTimePicker endDatePicker;
 
@@ -48,7 +46,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
     @Override
     protected void reset() {
         nameField.setText(job.getName());
-        cronField.setText(job.getCronSchedule());
+        cronPanel.setCron(job.getCronSchedule());
         jobTypeCombo.setSelectedIndex(job.getJobType());
         if(job.getJobType()==DefaultDatabaseJob.PSQL_TYPE)
             sqlTextPanel.setSQLText(job.getSource());
@@ -76,20 +74,18 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
             }
         });
         activeBox = new JCheckBox(bundleStaticString("active"));
-        //cronPanel =new CronPanel();
-        cronField = new JTextField();
-        startDatePicker=new EQDateTimePicker();
+        startDatePicker = new EQDateTimePicker();
         startDatePicker.setVisibleNullBox(true);
         endDatePicker = new EQDateTimePicker();
         endDatePicker.setVisibleNullBox(true);
+        cronPanel = new CronPanel();
 
-        topGbh.addLabelFieldPair(topPanel,"startDate",startDatePicker,null,true,false);
-        topGbh.addLabelFieldPair(topPanel,"endDate",endDatePicker,null,false,true);
-        topGbh.addLabelFieldPair(topPanel,"jobType",jobTypeCombo,null,true,false);
-        topGbh.addLabelFieldPair(topPanel,"cronField",cronField,null,false,true);
-        topPanel.add(activeBox,topGbh.nextRowFirstCol().setLabelDefault().get());
-        tabbedPane.add("SQL",sqlTextPanel);
-        //tabbedPane.add("Schedule",cronPanel);
+        topGbh.addLabelFieldPair(topPanel, bundleString("startDate"), startDatePicker, null, true, false);
+        topGbh.addLabelFieldPair(topPanel, bundleString("endDate"), endDatePicker, null, false, true);
+        topGbh.addLabelFieldPair(topPanel, bundleString("jobType"), jobTypeCombo, null, true, false);
+        topPanel.add(activeBox, topGbh.nextCol().setLabelDefault().get());
+        tabbedPane.add("SQL", sqlTextPanel);
+        tabbedPane.add(bundleString("Schedule"), cronPanel);
         addCommentTab(null);
     }
 
@@ -112,10 +108,8 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
         idField.setEditable(false);
         databaseField = new JTextField();
         databaseField.setEditable(false);
-        topGbh.previousRow();
-        topGbh.addLabelFieldPair(topPanel,"ID",idField,null,true,false);
-        topGbh.addLabelFieldPair(topPanel,"Database",databaseField,null,false,true);
-        topPanel.add(activeBox,topGbh.nextRowFirstCol().setLabelDefault().get());
+        topGbh.addLabelFieldPair(topPanel, bundleString("ID"), idField, null, false, false);
+        topGbh.addLabelFieldPair(topPanel, bundleString("Database"), databaseField, null, false, true);
         reset();
         addCreateSqlTab(job);
     }
@@ -153,10 +147,10 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
     @Override
     protected String generateQuery() {
         if (!editing)
-            return SQLUtils.generateCreateJob(getFormattedName(), cronField.getText(), activeBox.isSelected(), startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
+            return SQLUtils.generateCreateJob(getFormattedName(), cronPanel.getCron(), activeBox.isSelected(), startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
                     endDatePicker.isNull() ? null : endDatePicker.getDateTime(), jobTypeCombo.getSelectedIndex(), jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ? sqlTextPanel.getSQLText() : bashTextPanel.getTextAreaComponent().getText());
         else
-            return SQLUtils.generateAlterJob(job, getFormattedName(), cronField.getText(), activeBox.isSelected(), startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
+            return SQLUtils.generateAlterJob(job, getFormattedName(), cronPanel.getCron(), activeBox.isSelected(), startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
                     endDatePicker.isNull() ? null : endDatePicker.getDateTime(), jobTypeCombo.getSelectedIndex(), jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ? sqlTextPanel.getSQLText() : bashTextPanel.getTextAreaComponent().getText());
     }
 

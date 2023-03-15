@@ -156,6 +156,8 @@ public class CronTab extends JPanel {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getSource() == endCheck && endCheck.isSelected())
                     beginCheck.setSelected(true);
+                if (e.getSource() == beginCheck && !beginCheck.isSelected())
+                    endCheck.setSelected(false);
                 checkEnabled();
                 generateCron();
             }

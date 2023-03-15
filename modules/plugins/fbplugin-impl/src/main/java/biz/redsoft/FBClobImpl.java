@@ -1,48 +1,55 @@
 package biz.redsoft;
 
-import org.firebirdsql.gds.DatabaseParameterBuffer;
 import org.firebirdsql.gds.TransactionParameterBuffer;
+import org.firebirdsql.gds.impl.GDSHelper;
 import org.firebirdsql.gds.impl.TransactionParameterBufferImpl;
 import org.firebirdsql.gds.ng.FbTransaction;
+import org.firebirdsql.gds.ng.TransactionState;
 import org.firebirdsql.jdbc.FBBlob;
 import org.firebirdsql.jdbc.FBClob;
-import org.firebirdsql.jdbc.FirebirdBlob;
+import org.firebirdsql.jdbc.FBConnection;
+import org.firebirdsql.jdbc.FBStatement;
 
 import java.io.InputStream;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * @author vasiliy
  */
 public class FBClobImpl implements IFBClob {
-    DatabaseParameterBuffer buffer;
-    FirebirdBlob detached = null;
     FbTransaction transaction = null;
+    GDSHelper gdsHelper = null;
+    FBBlob fbBlob = null;
+    long blobId = 0;
 
     @Override
-    public void detach(Clob clob) throws SQLException {
-        FBClob fbClob = (FBClob) clob;
-        detached = fbClob.getWrappedBlob().detach();
-        buffer = ((FBBlob) detached).getGdsHelper().getDatabaseParameterBuffer();
+    public void detach(Clob clob, Statement statement) throws SQLException {
+        blobId = ((FBClob) clob).getWrappedBlob().getBlobId();
+        FBStatement fbStatement = (FBStatement) statement;
+        FBConnection connection = (FBConnection) fbStatement.getConnection();
+        gdsHelper = new GDSHelper(connection.getFbDatabase());
     }
 
     @Override
     public InputStream open() throws SQLException {
-        if (((FBBlob) detached).getGdsHelper().getCurrentTransaction() == null) {
+        if (gdsHelper.getCurrentTransaction() == null) {
             TransactionParameterBuffer tpb = new TransactionParameterBufferImpl();
-            transaction = ((FBBlob) detached).getGdsHelper().startTransaction(tpb);
-            ((FBBlob) detached).getGdsHelper().setCurrentTransaction(transaction);
+            transaction = gdsHelper.startTransaction(tpb);
+            gdsHelper.setCurrentTransaction(transaction);
         }
-        return detached.getBinaryStream();
+        fbBlob = new FBBlob(gdsHelper, blobId);
+        return fbBlob.getBinaryStream();
     }
 
     @Override
     public void close() throws SQLException {
         if (transaction == null)
             return;
-        transaction.commit();
-        detached.free();
-        ((FBBlob) detached).getGdsHelper().setCurrentTransaction(null);
+        if (transaction.getState() != TransactionState.COMMITTED)
+            transaction.commit();
+        fbBlob.free();
+        gdsHelper.setCurrentTransaction(null);
     }
 }

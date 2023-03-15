@@ -27,6 +27,8 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.datasource.PooledResultSet;
+import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.ErrorMessagePublisher;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -44,9 +46,19 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.sql.*;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import java.text.ParseException;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -588,8 +600,10 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                     e.printStackTrace();
                                 }
 
+                                PooledResultSet pooledResultSet = (PooledResultSet) resultSet;
+
                                 IFBClob ifbClob = (IFBClob) odb;
-                                ifbClob.detach(clob);
+                                ifbClob.detach(clob, ((PooledStatement)pooledResultSet.getStatement()).getStatement());
                                 value.setValue(ifbClob);
                             } else {
                                 value.setValue(clob);
@@ -626,8 +640,10 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                     e.printStackTrace();
                                 }
 
+                                final PooledResultSet pooledResultSet = (PooledResultSet) resultSet;
+
                                 IFBBlob ifbBlob = (IFBBlob) odb;
-                                ifbBlob.detach(blob);
+                                ifbBlob.detach(blob, ((PooledStatement)pooledResultSet.getStatement()).getStatement());
                                 value.setValue(ifbBlob);
                             } else {
                                 value.setValue(blob);

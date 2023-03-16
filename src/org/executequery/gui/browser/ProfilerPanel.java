@@ -35,22 +35,16 @@ public class ProfilerPanel extends JPanel
     private static final int PAUSED = ACTIVE + 1;
     private static final int INACTIVE = PAUSED + 1;
 
-    // --- useful query keywords ---
-
-    private static final String NULL = "NULL";
-    private static final String TRUE = "TRUE";
-    private static final String FALSE = "FALSE";
-
     // --- profiler commands ---
 
     private static final String START_SESSION =
-            "SELECT RDB$PROFILER.START_SESSION('%s', %s) FROM RDB$DATABASE";
+            "SELECT RDB$PROFILER.START_SESSION('%s') FROM RDB$DATABASE";
     private static final String PAUSE_SESSION =
-            "EXECUTE PROCEDURE RDB$PROFILER.PAUSE_SESSION(%s)";
+            "EXECUTE PROCEDURE RDB$PROFILER.PAUSE_SESSION(TRUE)";
     private static final String RESUME_SESSION =
             "EXECUTE PROCEDURE RDB$PROFILER.RESUME_SESSION";
     private static final String FINISH_SESSION =
-            "EXECUTE PROCEDURE RDB$PROFILER.FINISH_SESSION(%s)";
+            "EXECUTE PROCEDURE RDB$PROFILER.FINISH_SESSION(TRUE)";
     private static final String CANCEL_SESSION =
             "EXECUTE PROCEDURE RDB$PROFILER.CANCEL_SESSION";
     private static final String DISCARD =
@@ -296,7 +290,7 @@ public class ProfilerPanel extends JPanel
 
         sessionName = connection.getName() + "_session";
         flashInterval = (int) flashIntervalSpinner.getValue();
-        String query = String.format(START_SESSION, sessionName, NULL);
+        String query = String.format(START_SESSION, sessionName);
 
         try {
 
@@ -324,7 +318,7 @@ public class ProfilerPanel extends JPanel
     private void pauseSession() {
         try {
 
-            executor.execute(String.format(PAUSE_SESSION, TRUE), true);
+            executor.execute(PAUSE_SESSION, true);
             executor.getConnection().commit();
             switchSessionState(PAUSED);
 
@@ -357,7 +351,7 @@ public class ProfilerPanel extends JPanel
     private void finishSession() {
         try {
 
-            executor.execute(String.format(FINISH_SESSION, TRUE), true);
+            executor.execute(FINISH_SESSION, true);
             executor.getConnection().commit();
             switchSessionState(INACTIVE);
 

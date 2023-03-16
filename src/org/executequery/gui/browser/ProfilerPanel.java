@@ -16,11 +16,14 @@ import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -52,44 +55,22 @@ public class ProfilerPanel extends JPanel
     private static final String FLASH =
             "EXECUTE PROCEDURE RDB$PROFILER.FLUSH";
 
-    private static final String SELECT_FROM_PROF_STATEMENT_STATS_VIEW =
-            "SELECT * FROM PLG$PROF_STATEMENT_STATS_VIEW WHERE PROFILE_ID = %s";
+    // --- selected fields ---
 
-//    private static final String DEFAULT_SELECT_PROFILER_DATA_QUERY =
-//            "SELECT req.statement_id,\n" +
-//                    "\tsta.statement_type,\n" +
-//                    "\tsta.package_name,\n" +
-//                    "\tsta.routine_name,\n" +
-//                    "\tsta.parent_statement_id,\n" +
-//                    "\tsta_parent.statement_type parent_statement_type,\n" +
-//                    "\tsta_parent.routine_name parent_routine_name,\n" +
-//                    "\t(SELECT sql_text\n" +
-//                        "\t\tFROM plg$prof_statements\n" +
-//                        "\t\tWHERE profile_id = req.profile_id AND\n" +
-//                        "\t\t\tstatement_id = COALESCE(sta.parent_statement_id, req.statement_id)\n" +
-//                    "\t) sql_text,\n" +
-//                    "\tcount(*) counter,\n" +
-//                    "\tmin(req.total_elapsed_time) min_elapsed_time,\n" +
-//                    "\tmax(req.total_elapsed_time) max_elapsed_time,\n" +
-//                    "\tcast(sum(req.total_elapsed_time) as bigint) total_elapsed_time,\n" +
-//                    "\tcast(sum(req.total_elapsed_time) / count(*) as bigint) avg_elapsed_time\n" +
-//            "FROM plg$prof_requests req\n" +
-//            "JOIN plg$prof_statements sta\n" +
-//                    "\tON sta.profile_id = req.profile_id AND\n" +
-//                    "\t\tsta.statement_id = req.statement_id\n" +
-//            "LEFT JOIN plg$prof_statements sta_parent\n" +
-//                    "\tON sta_parent.profile_id = sta.profile_id AND\n" +
-//                    "\t\tsta_parent.statement_id = sta.parent_statement_id\n" +
-//            "WHERE req.profile_id = %s\n" +
-//            "GROUP BY req.profile_id,\n" +
-//                    "\treq.statement_id,\n" +
-//                    "\tsta.statement_type,\n" +
-//                    "\tsta.package_name,\n" +
-//                    "\tsta.routine_name,\n" +
-//                    "\tsta.parent_statement_id,\n" +
-//                    "\tsta_parent.statement_type,\n" +
-//                    "\tsta_parent.routine_name\n" +
-//            "ORDER BY req.statement_id ASCENDING;";
+    private static final String PROFILE_ID = "profile_id";
+    private static final String STATEMENT_ID = "statement_id";
+    private static final String STATEMENT_TYPE = "statement_type";
+    private static final String PACKAGE_NAME = "package_name";
+    private static final String ROUTINE_NAME = "routine_name";
+    private static final String PARENT_STATEMENT_ID = "parent_statement_id";
+    private static final String PARENT_STATEMENT_TYPE = "parent_statement_type";
+    private static final String PARENT_ROUTINE_NAME = "parent_routine_name";
+    private static final String SQL_TEXT = "sql_text";
+    private static final String COUNTER = "counter";
+    private static final String MIN_ELAPSED_TIME = "min_elapsed_time";
+    private static final String MAX_ELAPSED_TIME = "max_elapsed_time";
+    private static final String TOTAL_ELAPSED_TIME = "total_elapsed_time";
+    private static final String AVG_ELAPSED_TIME = "avg_elapsed_time";
 
     // --- GUI objects ---
 
@@ -112,10 +93,16 @@ public class ProfilerPanel extends JPanel
     private DefaultStatementExecutor executor;
     private TableSelectionCombosGroup combosGroup;
 
-    private String sessionName;
+    private Map<String, JCheckBox> selectFieldsCheckBoxList;
+
     private Integer sessionId;
     private int sessionState;
     private int flashInterval;
+
+    private boolean isSelectQueryMarkedForUpdate;
+    private String selectQuery;
+
+    // ---
 
     public ProfilerPanel() {
         init();
@@ -135,7 +122,7 @@ public class ProfilerPanel extends JPanel
         combosGroup = new TableSelectionCombosGroup(connectionsComboBox);
 
         flashIntervalSpinner = new JSpinner();
-        flashIntervalSpinner.setModel(new SpinnerNumberModel(5, 0, 120, 1));
+        flashIntervalSpinner.setModel(new SpinnerNumberModel(5, 1, 60, 1));
 
         startButton = new JButton(bundleString("Start"));
         startButton.addActionListener(e -> startSession());
@@ -155,9 +142,30 @@ public class ProfilerPanel extends JPanel
         discardButton = new JButton(bundleString("Discard"));
         discardButton.addActionListener(e -> discardSession());
 
+        selectFieldsCheckBoxList = new LinkedHashMap<>();
+        selectFieldsCheckBoxList.put(PROFILE_ID, new JCheckBox(PROFILE_ID));
+        selectFieldsCheckBoxList.put(STATEMENT_ID, new JCheckBox(STATEMENT_ID));
+        selectFieldsCheckBoxList.put(STATEMENT_TYPE, new JCheckBox(STATEMENT_TYPE));
+        selectFieldsCheckBoxList.put(PACKAGE_NAME, new JCheckBox(PACKAGE_NAME));
+        selectFieldsCheckBoxList.put(ROUTINE_NAME, new JCheckBox(ROUTINE_NAME));
+        selectFieldsCheckBoxList.put(PARENT_STATEMENT_ID, new JCheckBox(PARENT_STATEMENT_ID));
+        selectFieldsCheckBoxList.put(PARENT_STATEMENT_TYPE, new JCheckBox(PARENT_STATEMENT_TYPE));
+        selectFieldsCheckBoxList.put(PARENT_ROUTINE_NAME, new JCheckBox(PARENT_ROUTINE_NAME));
+        selectFieldsCheckBoxList.put(SQL_TEXT, new JCheckBox(SQL_TEXT));
+        selectFieldsCheckBoxList.put(COUNTER, new JCheckBox(COUNTER));
+        selectFieldsCheckBoxList.put(MIN_ELAPSED_TIME, new JCheckBox(MIN_ELAPSED_TIME));
+        selectFieldsCheckBoxList.put(MAX_ELAPSED_TIME, new JCheckBox(MAX_ELAPSED_TIME));
+        selectFieldsCheckBoxList.put(TOTAL_ELAPSED_TIME, new JCheckBox(TOTAL_ELAPSED_TIME));
+        selectFieldsCheckBoxList.put(AVG_ELAPSED_TIME, new JCheckBox(AVG_ELAPSED_TIME));
+        selectFieldsCheckBoxList.values().forEach(item -> {
+            item.setSelected(true);
+            item.addActionListener(i -> selectFieldChange());
+        });
+
         buildResultSetTable();
         arrangeComponents();
         switchSessionState(INACTIVE);
+        rebuildSelectQuery();
     }
 
     private void arrangeComponents() {
@@ -178,14 +186,31 @@ public class ProfilerPanel extends JPanel
         // --- tools panel ---
 
         gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 0, 5, 0).anchorNorthWest().fillHorizontally();
+        gridBagHelper.setInsets(5, 5, 5, 0).anchorNorthWest().fillHorizontally();
         JPanel toolsPanel = new JPanel(new GridBagLayout());
 
         gridBagHelper.addLabelFieldPair(toolsPanel,
                 bundleString("Connection"), connectionsComboBox, null, false, false);
-        gridBagHelper.addLabelFieldPair(toolsPanel,
-                bundleString("FlashInterval"), flashIntervalSpinner, null, false, false);
         toolsPanel.add(buttonPanel, gridBagHelper.nextCol().get());
+
+        // --- checkBox panel ---
+
+        GridBagHelper gbh = new GridBagHelper();
+        JPanel checkBoxPanel = new JPanel(new GridBagLayout());
+        checkBoxPanel.setBorder(BorderFactory.createTitledBorder(bundleString("Fields")));
+
+        gbh.setInsets(5, 5, 5, 5).anchorNorthWest();
+        selectFieldsCheckBoxList.values().forEach(item -> checkBoxPanel.add(item, gbh.nextRowFirstCol().get()));
+
+        // --- properties panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest();
+        JPanel propertiesPanel = new JPanel(new GridBagLayout());
+
+        propertiesPanel.add(new JLabel(bundleString("FlashInterval")), gridBagHelper.get());
+        propertiesPanel.add(flashIntervalSpinner, gridBagHelper.nextCol().get());
+        propertiesPanel.add(checkBoxPanel, gridBagHelper.nextRowFirstCol().setWidth(2).get());
 
         // --- resultSet panel ---
 
@@ -199,14 +224,23 @@ public class ProfilerPanel extends JPanel
 
         resultSetPanel.add(scrollPane, gridBagHelper.spanX().spanY().get());
 
-        // --- main panel ---
+        // --- profiler panel ---
 
         gridBagHelper = new GridBagHelper();
         gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest();
+        JPanel profilerPanel = new JPanel(new GridBagLayout());
+
+        profilerPanel.add(toolsPanel, gridBagHelper.fillBoth().get());
+        profilerPanel.add(resultSetPanel, gridBagHelper.nextRowFirstCol().spanX().spanY().get());
+
+        // --- main panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
 
         setLayout(new GridBagLayout());
-        add(toolsPanel, gridBagHelper.fillHorizontally().spanX().get());
-        add(resultSetPanel, gridBagHelper.nextRowFirstCol().setMaxWeightY().fillBoth().spanX().spanY().get());
+        add(profilerPanel, gridBagHelper.setMaxWeightX().spanY().get());
+        add(propertiesPanel, gridBagHelper.nextCol().setMinWeightX().spanY().get());
 
     }
 
@@ -231,6 +265,10 @@ public class ProfilerPanel extends JPanel
 
     private void connectionChange() {
         connection = combosGroup.getSelectedHost().getDatabaseConnection();
+    }
+
+    private void selectFieldChange() {
+        isSelectQueryMarkedForUpdate = true;
     }
 
     private boolean isConnectionVersionSupported(DatabaseConnection connection) {
@@ -259,17 +297,25 @@ public class ProfilerPanel extends JPanel
             flashExecutor.setCommitMode(false);
             flashExecutor.setKeepAlive(true);
 
-            String formattedQuery = String.format(SELECT_FROM_PROF_STATEMENT_STATS_VIEW, sessionId);
+            if (isSelectQueryMarkedForUpdate)
+                rebuildSelectQuery();
 
-            while (sessionState == ACTIVE) {
+            if (!MiscUtils.isNull(selectQuery)) {
 
-                executor.execute(QueryTypes.EXECUTE, executor.getPreparedStatement(FLASH));
-                ResultSet rs = flashExecutor.getResultSet(formattedQuery).getResultSet();
+                String formattedQuery = String.format(selectQuery, sessionId);
+                while (sessionState == ACTIVE) {
 
-                resultSetTableModel.createTable(rs);
-                flashExecutor.releaseResources();
-                Thread.sleep(flashInterval * 1000L);
-            }
+                    executor.execute(QueryTypes.EXECUTE, executor.getPreparedStatement(FLASH));
+
+                    ResultSet rs = flashExecutor.getResultSet(formattedQuery).getResultSet();
+
+                    resultSetTableModel.createTable(rs);
+                    flashExecutor.releaseResources();
+                    Thread.sleep(flashInterval * 1000L);
+                }
+
+            } else if (GUIUtilities.displayConfirmDialog(bundleString("ErrorNoFieldsForDisplay")) == JOptionPane.NO_OPTION)
+                cancelSession();
 
         } catch (Exception e) {
             Log.error(bundleString("ErrorUpdatingData"), e);
@@ -288,9 +334,8 @@ public class ProfilerPanel extends JPanel
 
         executor.setDatabaseConnection(connection);
 
-        sessionName = connection.getName() + "_session";
         flashInterval = (int) flashIntervalSpinner.getValue();
-        String query = String.format(START_SESSION, sessionName);
+        String query = String.format(START_SESSION, connection.getName() + "_session");
 
         try {
 
@@ -413,6 +458,27 @@ public class ProfilerPanel extends JPanel
                 cancelButton.setEnabled(false);
                 break;
         }
+    }
+
+    private void rebuildSelectQuery() {
+
+        StringBuilder sb = new StringBuilder();
+
+        selectFieldsCheckBoxList.keySet().stream()
+                .filter(key -> selectFieldsCheckBoxList.get(key).isSelected())
+                .forEach(key -> sb.append(key).append(", "));
+
+        if (!sb.toString().equals("")) {
+
+            sb.insert(0, "SELECT ");
+            sb.deleteCharAt(sb.lastIndexOf(","));
+            sb.append("FROM PLG$PROF_STATEMENT_STATS_VIEW WHERE PROFILE_ID = %s");
+            selectQuery = sb.toString();
+
+        } else
+            selectQuery = null;
+
+        isSelectQueryMarkedForUpdate = false;
     }
 
     @Override

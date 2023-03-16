@@ -45,11 +45,11 @@ public class BrowserUserPanel extends AbstractFormObjectViewPanel {
         super();
         this.controller = controller;
 
-        try {
-            // init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            init();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -68,7 +68,7 @@ public class BrowserUserPanel extends AbstractFormObjectViewPanel {
         for (String tag : user.getTags().keySet()) {
             ((DefaultTableModel) tagTable.getModel()).addRow(new Object[]{tag, user.getTag(tag)});
         }
-        sqlPanel.setSQLText(SQLUtils.generateCreateUser(user));
+        sqlPanel.setSQLText(SQLUtils.generateCreateUser(user, true));
     }
 
     public String getLayoutName() {

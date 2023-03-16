@@ -116,7 +116,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     protected String generateQuery() {
         return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 variablesPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
-                externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment(), deterministicBox.isSelected());
+                externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
+                simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected());
     }
 
     @Override
@@ -124,6 +125,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         ddlTextPanel.setSQLText(generateQuery());
     }
 
+    @Override
     protected void init() {
         super.init();
         deterministicBox = new JCheckBox(bundleStaticString("deterministic"));
@@ -141,8 +143,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     @Override
     public void createObject() {
         try {
-            String querys = getSQLText();
-            displayExecuteQueryDialog(querys, "^");
+            String queries = getSQLText();
+            displayExecuteQueryDialog(queries, "^");
 
         } catch (Exception exc) {
             GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);

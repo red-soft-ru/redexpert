@@ -4,6 +4,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.gui.browser.ColumnData;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -60,9 +61,9 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
@@ -85,7 +86,12 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true);
+        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true, true);
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("DOMAIN", getName());
     }
 
     @Override
@@ -112,7 +118,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
                 .append("LEFT JOIN RDB$COLLATIONS CO ON ((F.RDB$COLLATION_ID = CO.RDB$COLLATION_ID) AND")
                 .append("(F.RDB$CHARACTER_SET_ID = CO.RDB$CHARACTER_SET_ID))\n")
                 .append("WHERE\n")
-                .append("TRIM(F.RDB$FIELD_NAME) = '").append(getName()).append("'");
+                .append("TRIM(F.RDB$FIELD_NAME) = ?");
         String query = sb.toString();
         return query;
     }
@@ -171,8 +177,8 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
                 column.setColumnSize(rs.getInt(CHAR_LENGTH));
             column.setColumnScale(Math.abs(rs.getInt(SCALE)));
             column.setRequired(rs.getInt(NULL_FLAG) == DatabaseMetaData.columnNoNulls);
-            column.setRemarks(rs.getString(DESCRIPTION));
-            setRemarks(rs.getString(DESCRIPTION));
+            column.setRemarks(getFromResultSet(rs,DESCRIPTION));
+            setRemarks(getFromResultSet(rs,DESCRIPTION));
             column.setDefaultValue(COMPUTED_BY);
 
             sqlType = rs.getInt(TYPE);

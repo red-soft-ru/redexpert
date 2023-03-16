@@ -33,9 +33,7 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
 
     @Override
     protected String queryForInfo() {
-        String query = "select * from SEC$USERS \n" +
-                "where SEC$USER_NAME = '" + getName() + "'";
-        return query;
+        return "select * from SEC$USERS where SEC$USER_NAME = ?";
     }
 
     @Override
@@ -215,9 +213,14 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         loadTags();
     }
 
+    @Override
     public String getCreateSQLText() throws DataSourceException {
+        return SQLUtils.generateCreateUser(this, true);
+    }
 
-        return SQLUtils.generateCreateUser(this);
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("USER", getName());
     }
 
 }

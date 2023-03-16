@@ -1,22 +1,21 @@
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by vasiliy on 15.02.17.
@@ -60,7 +59,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     public static class IndexColumnsModel implements TableModel {
 
-        private final Set<TableModelListener> listeners = new HashSet<TableModelListener>();
+        private final Set<TableModelListener> listeners = new HashSet<>();
 
         private final List<DatabaseIndexColumn> columns;
 
@@ -129,7 +128,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     private int indexType;
-    private List<DatabaseIndexColumn> columns = new ArrayList<>();
+    private static final String RELATION_NAME = "RELATION_NAME";
 
     private String tableName;
     private boolean isActive;
@@ -138,14 +137,12 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     private String constraint_type;
     private boolean markedReloadActive;
     private String tablespace;
+    private static final String INDEX_TYPE = "INDEX_TYPE";
 
     public DefaultDatabaseIndex(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
     }
-
-    public List<DatabaseIndexColumn> getIndexColumns() {
-        return columns;
-    }
+    private static final String UNIQUE_FLAG = "UNIQUE_FLAG";
 
     public void setIndexColumns(List<DatabaseIndexColumn> columns) {
         this.columns = columns;
@@ -161,11 +158,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         this.indexType = indexType;
     }
 
-    public String getTableName() {
-        if (isMarkedForReload())
-            getObjectInfo();
-        return tableName;
-    }
+    private static final String INDEX_INACTIVE = "INDEX_INACTIVE";
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
@@ -192,46 +185,6 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         isUnique = unique;
     }
 
-    public void loadColumns() {
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor();
-        querySender.setDatabaseConnection(getHost().getDatabaseConnection());
-        try {
-            ResultSet rs2 = querySender.getResultSet("select i.rdb$index_name,\n" +
-                    "i.rdb$relation_name,\n" +
-                    "i.rdb$unique_flag,\n" +
-                    "i.rdb$index_inactive,\n" +
-                    "i.rdb$index_type,\n" +
-                    "isg.rdb$field_name,\n" +
-                    "isg.rdb$field_position,\n" +
-                    "i.rdb$statistics,\n" +
-                    "i.rdb$expression_source,\n" +
-                    "c.rdb$constraint_type,\n" +
-                    "i.rdb$description\n" +
-                    "from rdb$indices i\n" +
-                    "left join rdb$relation_constraints c on i.rdb$index_name = c.rdb$index_name\n" +
-                    "left join rdb$index_segments isg on isg.rdb$index_name = i.rdb$index_name\n" +
-                    "where (i.rdb$index_name = '" + getName() + "')\n" +
-                    "order by isg.rdb$field_position").getResultSet();
-
-            List<DefaultDatabaseIndex.DatabaseIndexColumn> columns = new ArrayList<>();
-            while (rs2.next()) {
-                DefaultDatabaseIndex.DatabaseIndexColumn column = new DefaultDatabaseIndex.DatabaseIndexColumn();
-                String string = rs2.getString(6);
-                if (string != null)
-                    column.setFieldName(string.trim());
-                column.setSelectivity(rs2.getDouble(8));
-                column.setFieldPosition(rs2.getInt(7));
-                setExpression(rs2.getString(9));
-                columns.add(column);
-            }
-
-            this.setIndexColumns(columns);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            querySender.releaseResources();
-        }
-    }
 
     public boolean isMarkedReloadActive() {
         return markedReloadActive;
@@ -241,16 +194,8 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         this.markedReloadActive = markedReloadActive;
     }
 
-    public void setExpression(String expression) {
-        if (expression == null)
-            return;
-        expression = expression.trim().substring(1, expression.trim().length() - 1);
-        this.expression = expression;
-    }
-
-    public String getExpression() {
-        return expression;
-    }
+    private static final String STATISTICS = "STATISTICS";
+    private static final String EXPRESSION_SOURCE = "EXPRESSION_SOURCE";
 
     public void setConstraint_type(String constraint_type) {
         this.constraint_type = constraint_type;
@@ -264,88 +209,117 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
+        return SQLUtils.generateCreateIndex(
+                getName(), getType(), isUnique(), getTableName(), null, getCondition(),
+                getIndexColumns(), getTablespace(), isActive, getRemarks());
+    }
 
-        String query = "CREATE ";
-        if (isUnique())
-            query += "UNIQUE ";
-        if (getIndexType() == 1)
-            query += "DESCENDING ";
-        query += "INDEX " + MiscUtils.getFormattedObject(getName()) +
-                " ON " + MiscUtils.getFormattedObject(getTableName().trim()) + " ";
-        if (getExpression() != null) {
-            query += "COMPUTED BY (" + getExpression() + ")";
-        } else {
-            query += "(";
-            StringBuilder fieldss = new StringBuilder();
-            boolean first = true;
-            for (int i = 0; i < getIndexColumns().size(); i++) {
-                if (!first)
-                    fieldss.append(",");
-                first = false;
-                fieldss.append(MiscUtils.getFormattedObject(getIndexColumns().get(i).getFieldName()));
-            }
-            query += fieldss + ")";
-        }
-        if (getTablespace() != null)
-            query += "\nTABLESPACE " + MiscUtils.getFormattedObject(getTablespace());
-        query += ";";
-        if (!isActive())
-            query += "ALTER INDEX " + MiscUtils.getFormattedObject(getName()) + " INACTIVE;";
-        if (!MiscUtils.isNull(getRemarks()))
-            query += "COMMENT ON INDEX " + MiscUtils.getFormattedObject(getName()) + " IS '" + getRemarks() + "'";
-        return query;
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("INDEX", getName());
+    }
+
+    private static final String CONDITION_SOURCE = "CONDITION_SOURCE";
+    private static final String TABLESPACE_NAME = "TABLESPACE_NAME";
+    private static final String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+    private static final String DESCRIPTION = "DESCRIPTION";
+    private static final String FIELD_NAME = "FIELD_NAME";
+    private static final String FIELD_POSITION = "FIELD_POSITION";
+    private List<DatabaseIndexColumn> columns;
+    private String condition;
+
+    public List<DatabaseIndexColumn> getIndexColumns() {
+        checkOnReload(columns);
+        return columns;
+    }
+
+    public String getTableName() {
+        checkOnReload(tableName);
+        return tableName;
+    }
+
+    public String getExpression() {
+        checkOnReload(expression);
+        return expression;
+    }
+
+    public void setExpression(String expression) {
+        if (MiscUtils.isNull(expression))
+            return;
+        expression = expression.trim().substring(1, expression.trim().length() - 1);
+        this.expression = expression;
     }
 
     @Override
     protected String queryForInfo() {
-        String tablespace_query = "";
-        try {
-            if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase") && getHost().getDatabaseMajorVersion() >= 4)
-                tablespace_query = ", I.RDB$TABLESPACE_NAME";
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        String query = "select " +
-                "0, " +
-                "I.RDB$RELATION_NAME, " +
-                "0," +
-                "I.RDB$INDEX_TYPE," +
-                "I.RDB$UNIQUE_FLAG," +
-                "I.RDB$INDEX_INACTIVE," +
-                "I.RDB$DESCRIPTION," +
-                "C.RDB$CONSTRAINT_TYPE" +
-                tablespace_query +
-                "\nFROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
-                "where I.RDB$INDEX_NAME='" + getName().trim() + "'";
-        return query;
 
+        SelectBuilder sb = new SelectBuilder();
+        Table indicies = Table.createTable("RDB$INDICES", "I");
+        Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
+        Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT");
+
+        sb.appendField(Field.createField(indicies, RELATION_NAME));
+        sb.appendField(Field.createField(indicies, INDEX_TYPE));
+        sb.appendField(Field.createField(indicies, UNIQUE_FLAG));
+        sb.appendField(Field.createField(indicies, INDEX_INACTIVE));
+        sb.appendField(Field.createField(indicies, STATISTICS));
+        sb.appendField(Field.createField(indicies, EXPRESSION_SOURCE));
+        sb.appendField(Field.createField(indicies, DESCRIPTION));
+        sb.appendField(Field.createField(indicies, CONDITION_SOURCE).setNull(getDatabaseMajorVersion() < 5));
+        sb.appendField(Field.createField(indicies, TABLESPACE_NAME).setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")
+                || getDatabaseMajorVersion() < 4));
+        sb.appendField(Field.createField(constraints, CONSTRAINT_TYPE));
+        sb.appendField(Field.createField(indexSegments, FIELD_NAME));
+        sb.appendField(Field.createField(indexSegments, FIELD_POSITION));
+        Field indexName = Field.createField(indicies, "INDEX_NAME");
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(indexName, Field.createField(constraints, indexName.getAlias())));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(indexName, Field.createField(indexSegments, indexName.getAlias())));
+
+        sb.appendCondition(Condition.createCondition(indexName, "=", "?"));
+        sb.setOrdering(Field.createField(indexSegments, FIELD_POSITION).getFieldTable());
+
+        return sb.getSQLQuery();
     }
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) {
         try {
-            if (rs != null && rs.next()) {
-                setTableName(rs.getString(2));
-                setIndexType(rs.getInt(4));
-                setActive(rs.getInt(6) != 1);
-                setUnique(rs.getInt(5) == 1);
-                setRemarks(rs.getString(7));
-                setConstraint_type(rs.getString(8));
-                if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase") && getHost().getDatabaseMajorVersion() >= 4)
-                    setTablespace(rs.getString(9));
+            boolean first = true;
+            List<DefaultDatabaseIndex.DatabaseIndexColumn> columns = new ArrayList<>();
+            while (rs.next()) {
+                if (first) {
+                    setTableName(getFromResultSet(rs, RELATION_NAME));
+                    setIndexType(rs.getInt(INDEX_TYPE));
+                    setActive(rs.getInt(INDEX_INACTIVE) != 1);
+                    setUnique(rs.getInt(UNIQUE_FLAG) == 1);
+                    setRemarks(getFromResultSet(rs, DESCRIPTION));
+                    setConstraint_type(getFromResultSet(rs, CONSTRAINT_TYPE));
+                    setExpression(getFromResultSet(rs, EXPRESSION_SOURCE));
+                    setTablespace(getFromResultSet(rs, TABLESPACE_NAME));
+                    setCondition(getFromResultSet(rs, CONDITION_SOURCE));
+                }
+                first = false;
+                DefaultDatabaseIndex.DatabaseIndexColumn column = new DefaultDatabaseIndex.DatabaseIndexColumn();
+                String name = rs.getString(FIELD_NAME);
+                if (name != null)
+                    column.setFieldName(name.trim());
+                column.setSelectivity(rs.getDouble(STATISTICS));
+                column.setFieldPosition(rs.getInt(FIELD_POSITION));
+                columns.add(column);
             }
+            setIndexColumns(columns);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
+    @Override
     public int getType() {
-        if (isSystem()) {
-            return SYSTEM_INDEX;
-        } else return INDEX;
+        return isSystem() ? SYSTEM_INDEX : INDEX;
     }
 
+    @Override
     public String getMetaDataKey() {
         return META_TYPES[getType()];
     }
@@ -355,18 +329,8 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         return false;
     }
 
-    protected void getObjectInfo() {
-        try {
-            super.getObjectInfo();
-            loadColumns();
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Error loading info about Index", e);
-        } finally {
-            setMarkedForReload(false);
-        }
-    }
-
     public String getTablespace() {
+        checkOnReload(tablespace);
         return tablespace;
     }
 
@@ -375,25 +339,41 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public boolean setStatistics() {
+
         boolean res = true;
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
         String query = "SET STATISTICS INDEX " + MiscUtils.getFormattedObject(getName());
+
         try {
+
             SqlStatementResult result = querySender.execute(QueryTypes.SET_STATISTICS, query);
             if (result.isException()) {
                 res = false;
                 result.getSqlException().printStackTrace();
-            } else Log.info("Executing:\"" + query + "\"");
+            } else
+                Log.info("Executing:\"" + query + "\"");
+
         } catch (SQLException e) {
             e.printStackTrace();
+
         } finally {
             querySender.releaseResources();
         }
+
         return res;
     }
 
     public void reset() {
         super.reset();
         setMarkedReloadActive(true);
+    }
+
+    public String getCondition() {
+        checkOnReload(condition);
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
     }
 }

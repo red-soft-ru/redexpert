@@ -98,10 +98,13 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setColumnSize(column.getColumnSize());
         setColumnScale(column.getColumnScale());
         setRequired(column.isRequired());
+        setDomainNotNull(column.isDomainNotNull());
         setRemarks(column.getRemarks());
         setDefaultValue(column.getDefaultValue());
+        setDomainDefaultValue(column.getDomainDefaultValue());
         setPrimaryKey(column.isPrimaryKey());
         setForeignKey(column.isForeignKey());
+        setUnique(column.isUnique());
         setGenerated(column.isGenerated());
         setComputedSource(column.getComputedSource());
         setColumnDescription(column.getColumnDescription());
@@ -689,8 +692,10 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         destination.setColumnSize(source.getColumnSize());
         destination.setColumnScale(source.getColumnScale());
         destination.setRequired(source.isRequired());
+        destination.setDomainNotNull(source.isDomainNotNull());
         destination.setRemarks(source.getRemarks());
         destination.setDefaultValue(source.getDefaultValue());
+        destination.setDomainDefaultValue(source.getDomainDefaultValue());
         destination.setPrimaryKey(source.isPrimaryKey());
         destination.setForeignKey(source.isForeignKey());
         destination.setNewColumn(source.isNewColumn());

@@ -2,6 +2,8 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,13 +19,33 @@ public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
     }
 
     @Override
+    public String getCreateSQLText() throws DataSourceException {
+        return SQLUtils.generateCreateRole(getName());
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("ROLE", getName());
+    }
+
+    @Override
     protected String queryForInfo() {
-        return null;
+
+        String query = "select r.rdb$description as DESCRIPTION\n" +
+                "from rdb$roles r\n" +
+                "where r.rdb$role_name = ?'";
+
+        return query;
     }
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-
+        try {
+            if (rs.next())
+                setRemarks(getFromResultSet(rs, "DESCRIPTION"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -38,5 +60,10 @@ public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
         if (isSystem())
             return META_TYPES[SYSTEM_ROLE];
         return META_TYPES[ROLE];
+    }
+
+    @Override
+    public boolean allowsChildren() {
+        return false;
     }
 }

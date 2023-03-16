@@ -25,6 +25,8 @@ import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.sql.sqlbuilder.*;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
@@ -39,13 +41,6 @@ import java.util.ArrayList;
  */
 public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
-
-    /**
-     * Creates a new instance of DefaultDatabaseProcedure.
-     */
-    public DefaultDatabaseProcedure() {
-    }
-
 
     /**
      * Creates a new instance of DefaultDatabaseProcedure
@@ -73,9 +68,9 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name
+     * @return the metadata key name
      */
 
 
@@ -84,15 +79,67 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     public String getCreateSQLText() {
-
-        return SQLUtils.generateCreateProcedure(getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(), getSourceCode(), getRemarks(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateProcedure(
+                getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(),
+                getSourceCode(), getRemarks(), getHost().getDatabaseConnection(), false, true);
     }
 
     @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName());
+    }
+
+    protected static final String PP = "PP_";
+    protected static final String PROCEDURE_SOURCE = "PROCEDURE_SOURCE";
+    protected static final String PROCEDURE_CONTEXT = "PROCEDURE_CONTEXT";
+    protected static final String AUTHID = "AUTHID";
+    protected static final String PARAMETER_NAME = "PARAMETER_NAME";
+    protected static final String PARAMETER_TYPE = "PARAMETER_TYPE";
+    protected static final String PARAMETER_NUMBER = "PARAMETER_NUMBER";
+    protected static final String PARAMETER_MECHANISM = "PARAMETER_MECHANISM";
+
+    @Override
     protected String queryForInfo() {
-        String name = getName();
-        String sql;
-        if (getDatabaseMajorVersion() >= 3)
+        SelectBuilder sb = SelectBuilder.createSelectBuilder();
+        Table procedures = Table.createTable("RDB$PROCEDURES", "PRC");
+        Table parameters = Table.createTable("RDB$PROCEDURE_PARAMETERS", "PP");
+        Table fields = Table.createTable("RDB$FIELDS", "F");
+        Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CR");
+        Table collations1 = Table.createTable("RDB$COLLATIONS", "CO1");
+        Table collations2 = Table.createTable("RDB$COLLATIONS", "CO2");
+        sb.appendFields(procedures, PROCEDURE_SOURCE, DESCRIPTION);
+        sb.appendFields(procedures, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
+        sb.appendField(buildSqlSecurityField(procedures));
+        Field authid = Field.createField(procedures, PROCEDURE_CONTEXT);
+        authid.setStatement(Function.createFunction("IIF")
+                .appendArgument(authid.getFieldTable() + " IS NULL").appendArgument("NULL").appendArgument(Function.createFunction().setName("IIF")
+                        .appendArgument(authid.getFieldTable() + "=1").appendArgument("'CALLER'").appendArgument("'OWNER'").getStatement()).getStatement());
+        authid.setNull(sqlSecurityCheck() || getDatabaseMajorVersion() < 3 && getDatabaseMinorVersion() < 5 || !isRDB());
+        authid.setAlias(AUTHID);
+        sb.appendField(authid);
+        sb.appendFields(PP, parameters, PARAMETER_NAME, PARAMETER_TYPE, PARAMETER_NUMBER, FIELD_SOURCE, DESCRIPTION);
+        sb.appendFields(fields, FIELD_NAME, FIELD_TYPE, FIELD_LENGTH, FIELD_SCALE, FIELD_SUB_TYPE, SEGMENT_LENGTH, DIMENSIONS, FIELD_PRECISION, DEFAULT_SOURCE);
+        sb.appendFields(charsets, CHARACTER_SET_NAME, DEFAULT_COLLATE_NAME);
+        sb.appendField(Field.createField(fields, "CHARACTER_LENGTH").setAlias(CHARACTER_LENGTH));
+        sb.appendField(Field.createField(collations1, COLLATION_NAME).setAlias("CO1_" + COLLATION_NAME));
+        sb.appendField(Field.createField(collations2, COLLATION_NAME).setAlias("CO2_" + COLLATION_NAME));
+        sb.appendFields(PP, parameters, !moreOrEqualsVersionCheck(2, 5), PARAMETER_MECHANISM, DEFAULT_SOURCE, RELATION_NAME, FIELD_NAME, NULL_FLAG);
+
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(procedures, "PROCEDURE_NAME"),
+                Field.createField(parameters, "PROCEDURE_NAME")).setCondition(Condition.createCondition(Field.createField(parameters, "PACKAGE_NAME"), "IS", "NULL")));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(parameters, FIELD_SOURCE), Field.createField(fields, FIELD_NAME)));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, "COLLATION_ID"), Field.createField(collations1, "COLLATION_ID"))
+                .appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(collations1, CHARACTER_SET_ID)));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(parameters, "COLLATION_ID"), Field.createField(collations2, "COLLATION_ID"))
+                .appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(collations2, CHARACTER_SET_ID)));
+        sb.appendCondition(buildNameCondition(procedures, "PROCEDURE_NAME"));
+        sb.appendCondition(Condition.createCondition(Field.createField(procedures, "PACKAGE_NAME"), "IS", "NULL"));
+        sb.setOrdering(Field.createField(parameters, PARAMETER_NUMBER).getFieldTable());
+
+
+        String sql = sb.getSQLQuery();
+        /*if (getDatabaseMajorVersion() >= 3)
             sql = "select prc.rdb$procedure_name,\n" +
                     "prc.rdb$procedure_source as PROCEDURE_SOURCE,\n" +
                     "prc.rdb$description AS DESCRIPTION, \n" +
@@ -131,7 +178,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
                     "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
                     "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                    "where prc.rdb$procedure_name = '" + name + "'\n" +
+                    "where prc.rdb$procedure_name = ?\n" +
                     "and (prc.rdb$package_name is null) \n" +
                     "order by pp.rdb$parameter_number";
         else if (getDatabaseMinorVersion() >= 5)
@@ -172,7 +219,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
                     "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
                     "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                    "where prc.rdb$procedure_name = '" + name + "'\n" +
+                    "where prc.rdb$procedure_name = ?\n" +
                     "order by pp.rdb$parameter_number";
         else
             sql = "select prc.rdb$procedure_name,\n" +
@@ -212,57 +259,57 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
                     "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
                     "left join rdb$collations co2 on (fs.rdb$character_set_id = co2.rdb$character_set_id)\n" +
-                    "where prc.rdb$procedure_name = '" + name + "'\n" +
-                    "order by pp.rdb$parameter_number";
+                    "where prc.rdb$procedure_name = ?\n" +
+                    "order by pp.rdb$parameter_number";*/
         return sql;
     }
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) {
         try {
-            parameters = new ArrayList<ProcedureParameter>();
-            procedureInputParameters = new ArrayList<ProcedureParameter>();
-            procedureOutputParameters = new ArrayList<ProcedureParameter>();
+            parameters = new ArrayList<>();
+            procedureInputParameters = new ArrayList<>();
+            procedureOutputParameters = new ArrayList<>();
             boolean first = true;
             while (rs.next()) {
-                String parameterName = rs.getString(4);
+                String parameterName = rs.getString(PP + PARAMETER_NAME);
                 if (parameterName != null) {
                     ProcedureParameter pp = new ProcedureParameter(parameterName.trim(),
-                            rs.getInt(5) == 0 ? DatabaseMetaData.procedureColumnIn : DatabaseMetaData.procedureColumnOut,
-                            DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(7), rs.getInt(10)),
-                            DatabaseTypeConverter.getDataTypeName(rs.getInt(7), rs.getInt(10), rs.getInt(9)),
-                            rs.getInt(8),
-                            1 - rs.getInt("null_flag"));
-                    if (rs.getInt("FIELD_PRECISION") != 0)
-                        pp.setSize(rs.getInt("FIELD_PRECISION"));
-                    if (rs.getInt("CHAR_LEN") != 0)
-                        pp.setSize(rs.getInt("CHAR_LEN"));
+                            rs.getInt(PP + PARAMETER_TYPE) == 0 ? DatabaseMetaData.procedureColumnIn : DatabaseMetaData.procedureColumnOut,
+                            DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(FIELD_TYPE), rs.getInt(FIELD_SUB_TYPE)),
+                            DatabaseTypeConverter.getDataTypeName(rs.getInt(FIELD_TYPE), rs.getInt(FIELD_SUB_TYPE), rs.getInt(FIELD_SCALE)),
+                            rs.getInt(FIELD_LENGTH),
+                            1 - rs.getInt(PP + NULL_FLAG));
+                    if (rs.getInt(FIELD_PRECISION) != 0)
+                        pp.setSize(rs.getInt(FIELD_PRECISION));
+                    if (rs.getInt(CHARACTER_LENGTH) != 0)
+                        pp.setSize(rs.getInt(CHARACTER_LENGTH));
                     if (pp.getDataType() == Types.LONGVARBINARY ||
                             pp.getDataType() == Types.LONGVARCHAR ||
                             pp.getDataType() == Types.BLOB) {
-                        pp.setSubType(rs.getInt(10));
-                        pp.setSize(rs.getInt("segment_length"));
+                        pp.setSubType(rs.getInt(FIELD_SUB_TYPE));
+                        pp.setSize(rs.getInt(SEGMENT_LENGTH));
                     }
 
-                    String domain = rs.getString(6);
+                    String domain = rs.getString(FIELD_NAME);
                     if (domain != null && !domain.startsWith("RDB$"))
                         pp.setDomain(domain.trim());
-                    pp.setTypeOf(rs.getInt("AM") == 1);
-                    String relationName = rs.getString("RN");
+                    pp.setTypeOf(rs.getInt(PP + PARAMETER_MECHANISM) == 1);
+                    String relationName = rs.getString(PP + RELATION_NAME);
                     if (relationName != null)
                         pp.setRelationName(relationName.trim());
-                    String fieldName = rs.getString("FN");
+                    String fieldName = rs.getString(PP + FIELD_NAME);
                     if (fieldName != null)
                         pp.setFieldName(fieldName.trim());
 
                     if (pp.getRelationName() != null && pp.getFieldName() != null)
                         pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
-                    String characterSet = rs.getString("character_set_name");
+                    String characterSet = rs.getString(CHARACTER_SET_NAME);
                     if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
                         pp.setEncoding(characterSet.trim());
-                    pp.setDefaultValue(rs.getString("default_source"));
+                    pp.setDefaultValue(rs.getString(PP + DEFAULT_SOURCE));
                     if (pp.getDefaultValue() == null)
-                        pp.setDefaultValue(rs.getString("FS_DEFAULT_SOURCE"));
+                        pp.setDefaultValue(rs.getString(DEFAULT_SOURCE));
                     if (pp.getType() == DatabaseMetaData.procedureColumnIn)
                         procedureInputParameters.add(pp);
                     else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
@@ -270,12 +317,12 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     parameters.add(pp);
                 }
                 if (first) {
-                    sourceCode = getFromResultSet(rs, "PROCEDURE_SOURCE");
-                    entryPoint = getFromResultSet(rs, "ENTRY_POINT");
-                    engine = getFromResultSet(rs, "ENGINE");
-                    setRemarks(getFromResultSet(rs, "DESCRIPTION"));
-                    setSqlSecurity(getFromResultSet(rs, "SQL_SECURITY"));
-                    setAuthid(getFromResultSet(rs, "AUTHID"));
+                    sourceCode = getFromResultSet(rs, PROCEDURE_SOURCE);
+                    entryPoint = getFromResultSet(rs, ENTRYPOINT);
+                    engine = getFromResultSet(rs, ENGINE_NAME);
+                    setRemarks(getFromResultSet(rs, DESCRIPTION));
+                    setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+                    setAuthid(getFromResultSet(rs, AUTHID));
                     first = false;
                 }
             }

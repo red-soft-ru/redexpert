@@ -923,9 +923,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     public void setValues(DatabaseTable table) {
 
         this.table = table;
-        if (table.getExternalFile() != null) {
+        if (!MiscUtils.isNull(table.getExternalFile())) {
             externalFileField.setText(table.getExternalFile());
-            if (table.getAdapter() != null)
+            if (!MiscUtils.isNull(table.getAdapter()))
                 adapterField.setText(table.getAdapter());
             for (JComponent component : externalFileComponents)
                 component.setVisible(true);

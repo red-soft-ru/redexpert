@@ -988,7 +988,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
-            sw = new SwingWorker("loadingDependenciesFor'"+table.getName()+"'") {
+            sw = new SwingWorker("loadingDependenciesFor'" + table.getName() + "'") {
                 @Override
                 public Object construct() {
                     dependenciesPanel.setDatabaseObject(table);
@@ -996,25 +996,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
-            sw = new SwingWorker("loadingCreateSQLFor'"+table.getName()+"'") {
-                @Override
-                public Object construct() {
-                    try {
-                        alterSqlText.setSQLText(EMPTY);
-                        createSqlText.setSQLText("Loading data");
-                        createSqlText.setSQLText(createTableStatementFormatted());
-
-                    } catch (Exception e) { // some liquibase generated issues... ??
-
-                        String message = "Error generating SQL for table - " + e.getMessage();
-                        createSqlText.setSQLText(message);
-                        Log.error("Error generating SQL for table - " + e.getMessage(), e);
-                    }
-                    return null;
-                }
-            };
-            sw.start();
-
+            alterSqlText.setSQLText(EMPTY);
+            createSqlText.setSQLText(createTableStatementFormatted());
 
         } catch (DataSourceException e) {
 

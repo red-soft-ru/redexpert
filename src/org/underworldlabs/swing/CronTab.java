@@ -2,6 +2,7 @@ package org.underworldlabs.swing;
 
 import com.github.lgooddatepicker.zinternaltools.ExtraDateStrings;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -285,16 +286,16 @@ public class CronTab extends JPanel {
                     } else if (interval.contains("-")) {
                         beginCheck.setSelected(true);
                         endCheck.setSelected(true);
-                        String beginValue = cron.substring(0, cron.indexOf("-"));
-                        String endValue = cron.substring(cron.indexOf("/") + 1);
+                        String beginValue = interval.substring(0, cron.indexOf("-"));
+                        String endValue = interval.substring(cron.indexOf("-") + 1);
                         int ind1 = Integer.parseInt(beginValue);
                         int ind2 = Integer.parseInt(endValue);
                         beginCombo.setSelectedIndex(getIndexFromValue(ind1));
-                        endCombo.setSelectedItem(getIndexFromValue(ind2));
+                        endCombo.setSelectedIndex(getIndexFromValue(ind2));
                     } else {
                         beginCheck.setSelected(true);
                         int ind = Integer.parseInt(interval);
-                        beginCombo.setSelectedItem(ind);
+                        beginCombo.setSelectedItem(getIndexFromValue(ind));
                     }
                 } else if (cron.contains("-") && !cron.contains(",")) {
                     eachUnitBetweenButton.setSelected(true);
@@ -309,7 +310,8 @@ public class CronTab extends JPanel {
 
 
             } catch (Exception e) {
-                e.printStackTrace();
+                if (Log.isDebugEnabled())
+                    e.printStackTrace();
                 validValue = false;
             }
             if (!validValue)

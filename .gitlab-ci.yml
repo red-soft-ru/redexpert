@@ -248,11 +248,11 @@ test:windows:
    - |
       if ($env:ARCH -eq "x86_64")
       {
-        start-process .\RedExpert64.exe -Credential $CREDENTIAL
+        start-process powershell -Credential $CREDENTIAL -ArgumentList '.\RedExpert64.exe'
       }
       else
       {
-        start-process .\RedExpert.exe -Credential $CREDENTIAL
+        start-process powershell -Credential $CREDENTIAL -ArgumentList '.\RedExpert.exe'
       }
   script:
    - cd $TEST_DIR\RedExpert-$env:VERSION\ci

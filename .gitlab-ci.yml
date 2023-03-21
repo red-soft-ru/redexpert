@@ -241,18 +241,18 @@ test:windows:
    - cd $TEST_DIR
    - unzip -q ${CI_PROJECT_DIR}\dist-src\RedExpert-$env:VERSION-src.zip
    - cd $DIST\bin
-   - $USERNAME = 'jenkins'
-   - $PASSWORD = 'jenkins'
-   - $SECURITYPASSWORD = ConvertTo-SecureString $PASSWORD -AsPlainText -Force
-   - $CREDENTIAL = New-Object System.Management.Automation.PSCredential $USERNAME, $SECURITYPASSWORD
+  #  - $USERNAME = 'jenkins'
+  #  - $PASSWORD = 'jenkins'
+  #  - $SECURITYPASSWORD = ConvertTo-SecureString $PASSWORD -AsPlainText -Force
+  #  - $CREDENTIAL = New-Object System.Management.Automation.PSCredential $USERNAME, $SECURITYPASSWORD
    - |
       if ($env:ARCH -eq "x86_64")
       {
-        start-process powershell -Credential $CREDENTIAL -ArgumentList '.\RedExpert64.exe'
+        start-process .\RedExpert64.exe
       }
       else
       {
-        start-process powershell -Credential $CREDENTIAL -ArgumentList '.\RedExpert.exe'
+        start-process .\RedExpert.exe
       }
   script:
    - cd $TEST_DIR\RedExpert-$env:VERSION\ci

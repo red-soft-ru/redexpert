@@ -58,7 +58,7 @@ start-process "${PYTHON}" "-m pytest -vv -s --junitxml ./results.xml ./tests" -w
 echo "Copy test results"
 if (Test-Path "results.xml") {
     mkdir "${WORKSPACE}\test-results\"
-    copy "results.xml" "${WORKSPACE}\test-results\${DISTRO}-${ARCH}-${ARCHITECTURE}.xml"
+    copy "results.xml" "${WORKSPACE}\test-results\${DISTRO}-${ARCH}.xml"
 }
 else
 {

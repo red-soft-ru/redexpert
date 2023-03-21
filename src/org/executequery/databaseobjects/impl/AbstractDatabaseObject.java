@@ -26,6 +26,10 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledStatement;
+import org.executequery.sql.sqlbuilder.Condition;
+import org.executequery.sql.sqlbuilder.Field;
+import org.executequery.sql.sqlbuilder.Function;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.Log;
 
@@ -78,6 +82,42 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     protected DatabaseMetaTag metaTagParent;
 
     protected String source;
+
+    protected final static String RELATION_NAME = "RELATION_NAME";
+    protected final static String FIELD_NAME = "FIELD_NAME";
+    protected final static String FIELD_TYPE = "FIELD_TYPE";
+    protected final static String FIELD_SUB_TYPE = "FIELD_SUB_TYPE";
+    protected final static String SEGMENT_LENGTH = "SEGMENT_LENGTH";
+    protected final static String FIELD_PRECISION = "FIELD_PRECISION";
+    protected final static String FIELD_SCALE = "FIELD_SCALE";
+    protected final static String FIELD_LENGTH = "FIELD_LENGTH";
+    protected final static String CHARACTER_LENGTH = "CHAR_LEN";
+    protected final static String DESCRIPTION = "DESCRIPTION";
+    protected final static String DEFAULT_SOURCE = "DEFAULT_SOURCE";
+    protected final static String DOMAIN_DEFAULT_SOURCE = "DOMAIN_DEFAULT_SOURCE";
+    protected final static String FIELD_POSITION = "FIELD_POSITION";
+    protected final static String NULL_FLAG = "NULL_FLAG";
+    protected final static String DOMAIN_NULL_FLAG = "DOMAIN_NULL_FLAG";
+    protected final static String COMPUTED_BLR = "COMPUTED_BLR";
+    protected final static String IDENTITY_TYPE = "IDENTITY_TYPE";
+    protected final static String CHARACTER_SET_ID = "CHARACTER_SET_ID";
+    protected final static String CHARACTER_SET_NAME = "CHARACTER_SET_NAME";
+    protected final static String COLLATION_NAME = "COLLATION_NAME";
+    protected final static String FIELD_SOURCE = "FIELD_SOURCE";
+    protected final static String COMPUTED_SOURCE = "COMPUTED_SOURCE";
+    protected final static String KEY_SEQ = "KEY_SEQ";
+    protected final static String CONSTRAINT_NAME = "CONSTRAINT_NAME";
+    protected final static String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+    protected final static String REF_TABLE = "REF_TABLE";
+    protected final static String REF_COLUMN = "REF_COLUMN";
+    protected final static String UPDATE_RULE = "UPDATE_RULE";
+    protected final static String DELETE_RULE = "DELETE_RULE";
+    protected static final String ENGINE_NAME = "ENGINE_NAME";
+    protected static final String ENTRYPOINT = "ENTRYPOINT";
+    protected static final String SQL_SECURITY = "SQL_SECURITY";
+    protected static final String DIMENSIONS = "DIMENSIONS";
+    protected static final String DEFAULT_COLLATE_NAME = "DEFAULT_COLLATE_NAME";
+
 
     public AbstractDatabaseObject(DatabaseHost host) {
         setHost(host);
@@ -161,6 +201,43 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
         return null;
     }
+
+    protected boolean sqlSecurityCheck() {
+        return getDatabaseMajorVersion() >= 3 && isRDB()
+                || getDatabaseMajorVersion() >= 4 && !isRDB();
+    }
+
+    protected boolean externalCheck() {
+        return getDatabaseMajorVersion() >= 3;
+    }
+
+    protected boolean tablespaceCheck() {
+        return getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")
+                && getDatabaseMajorVersion() >= 4;
+    }
+
+    protected boolean isRDB() {
+        return getHost().getDatabaseProductName().toLowerCase().contains("reddatabase");
+    }
+
+    protected boolean moreOrEqualsVersionCheck(int major, int minor) {
+        return getDatabaseMajorVersion() > major || getDatabaseMajorVersion() == major && getDatabaseMinorVersion() >= minor;
+    }
+
+
+    protected Field buildSqlSecurityField(Table table) {
+        Field sqlSecurity = Field.createField(table, SQL_SECURITY);
+        sqlSecurity.setStatement(Function.createFunction("IIF")
+                .appendArgument(sqlSecurity.getFieldTable() + " IS NULL").appendArgument("NULL").appendArgument(Function.createFunction().setName("IIF")
+                        .appendArgument(sqlSecurity.getFieldTable()).appendArgument("'DEFINER'").appendArgument("'INVOKER'").getStatement()).getStatement());
+        sqlSecurity.setNull(!sqlSecurityCheck());
+        return sqlSecurity;
+    }
+
+    protected Condition buildNameCondition(Table table, String fieldAlias) {
+        return Condition.createCondition(Field.createField(table, fieldAlias), "=", "?");
+    }
+
 
     /**
      * Returns the columns (if any) of this object.

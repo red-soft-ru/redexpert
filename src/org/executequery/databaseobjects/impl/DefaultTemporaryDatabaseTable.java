@@ -92,12 +92,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         compareCheck.setArgument(2, conType.getFieldTable());
         sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conType.getAlias()));
         sb.appendField(Field.createField(triggers, TRIGGER_SOURCE));
-        Field sqlSecurity = Field.createField(rels, SQL_SECURITY);
-        sqlSecurity.setStatement(Function.createFunction("IIF")
-                .appendArgument(sqlSecurity.getFieldTable() + " IS NULL").appendArgument("NULL").appendArgument(Function.createFunction().setName("IIF")
-                        .appendArgument(sqlSecurity.getFieldTable()).appendArgument("'DEFINER'").appendArgument("'INVOKER'").getStatement()).getStatement());
-        sqlSecurity.setNull(getDatabaseMajorVersion() < 3);
-        sb.appendField(sqlSecurity);
+        sb.appendField(buildSqlSecurityField(rels));
         Field typeTemp = Field.createField(rels, RELATION_TYPE);
         Function subIIF = Function.createFunction("IIF")
                 .appendArgument(typeTemp.getFieldTable() + " = 5")

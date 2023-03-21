@@ -64,7 +64,7 @@ public class TableTriggersTableModel extends AbstractDatabaseTableViewModel {
             case 3:
                 return trigger.getTriggerSequence();
             case 4:
-                return trigger.getTriggerDescription();
+                return trigger.getRemarks();
             default:
                 return null;
         }

@@ -116,7 +116,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     protected String generateQuery() {
         return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 variablesPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
-                externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment(), deterministicBox.isSelected(), false, true);
+                externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
+                simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected());
     }
 
     @Override

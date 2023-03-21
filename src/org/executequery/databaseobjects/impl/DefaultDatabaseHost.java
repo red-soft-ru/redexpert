@@ -44,6 +44,8 @@ import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.*;
 
+import static org.executequery.databaseobjects.impl.AbstractDatabaseObject.*;
+
 /**
  * Default database host object implementation.
  *
@@ -678,35 +680,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     DefaultStatementExecutor querySender;
 
-    private final static String RELATION_NAME = "RELATION_NAME";
-    private final static String FIELD_NAME = "FIELD_NAME";
-    private final static String FIELD_TYPE = "FIELD_TYPE";
-    private final static String FIELD_SUB_TYPE = "FIELD_SUB_TYPE";
-    private final static String SEGMENT_LENGTH = "SEGMENT_LENGTH";
-    private final static String FIELD_PRECISION = "FIELD_PRECISION";
-    private final static String FIELD_SCALE = "FIELD_SCALE";
-    private final static String FIELD_LENGTH = "FIELD_LENGTH";
-    private final static String CHARACTER_LENGTH = "CHAR_LEN";
-    private final static String DESCRIPTION = "DESCRIPTION";
-    private final static String DEFAULT_SOURCE = "DEFAULT_SOURCE";
-    private final static String DOMAIN_DEFAULT_SOURCE = "DOMAIN_DEFAULT_SOURCE";
-    private final static String FIELD_POSITION = "FIELD_POSITION";
-    private final static String NULL_FLAG = "NULL_FLAG";
-    private final static String DOMAIN_NULL_FLAG = "DOMAIN_NULL_FLAG";
-    private final static String COMPUTED_BLR = "COMPUTED_BLR";
-    private final static String IDENTITY_TYPE = "IDENTITY_TYPE";
-    private final static String CHARACTER_SET_ID = "CHARACTER_SET_ID";
-    private final static String CHARACTER_SET_NAME = "CHARACTER_SET_NAME";
-    private final static String COLLATION_NAME = "COLLATION_NAME";
-    private final static String FIELD_SOURCE = "FIELD_SOURCE";
-    private final static String COMPUTED_SOURCE = "COMPUTED_SOURCE";
-    private final static String KEY_SEQ = "KEY_SEQ";
-    private final static String CONSTRAINT_NAME = "CONSTRAINT_NAME";
-    private final static String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
-    private final static String REF_TABLE = "REF_TABLE";
-    private final static String REF_COLUMN = "REF_COLUMN";
-    private final static String UPDATE_RULE = "UPDATE_RULE";
-    private final static String DELETE_RULE = "DELETE_RULE";
 
     public synchronized List<DatabaseColumn> getColumns(String table) {
         for (NamedObject namedObject : getTables()) {

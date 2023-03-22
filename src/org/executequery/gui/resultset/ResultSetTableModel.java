@@ -27,6 +27,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.datasource.PooledConnection;
 import org.executequery.gui.ErrorMessagePublisher;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -598,7 +599,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getCharset());
                                 if (MiscUtils.isNull(columnDataList.get(i - 1).getCharset()) || Objects.equals(columnDataList.get(i - 1).getCharset(), CreateTableSQLSyntax.NONE))
                                     ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getDatabaseConnection().getCharset());
-                            } else ((ClobRecordDataItem) value).setCharset(CreateTableSQLSyntax.NONE);
+                            } else
+                                ((ClobRecordDataItem) value).setCharset(((PooledConnection) resultSet.getStatement().getConnection()).getDatabaseConnection().getCharset());
                             break;
                         case Types.LONGVARBINARY:
                         case Types.VARBINARY:

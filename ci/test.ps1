@@ -23,7 +23,7 @@ git clone -q http://git.red-soft.biz/red-database/re-tests.git
 
 echo "Installing components"
 start-process "${PYTHON}" "-m pip install pytest" -wait -nonewwindow
-start-process "${PYTHON}" "-m pip install lackey" -wait -nonewwindow
+start-process "${PYTHON}" "-m pip install -e .\re-tests" -wait -nonewwindow
 
 echo "Downloading Red RedDatabase"
 $URL_DOWNLOAD="http://builds.red-soft.biz/release_hub/rdb30/3.0.10-rc.5/download/red-database:windows-${ARCH}-enterprise:3.0.10-rc.5:exe"
@@ -53,7 +53,7 @@ net start "${SERVICE_NAME}"
 
 echo "Start testing"
 cd re-tests
-start-process "${PYTHON}" "-m pytest -vv --junitxml ./results.xml ./tests" -wait -nonewwindow
+start-process "${PYTHON}" "-m pytest -vv --junitxml .\results.xml .\tests" -wait -nonewwindow
 
 echo "Copy test results"
 if (Test-Path "results.xml") {

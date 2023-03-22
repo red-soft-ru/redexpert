@@ -185,7 +185,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         sb.appendTable(gens);
 
         //sb.appendField(Field.createField().setStatement("GEN_ID(" + MiscUtils.getFormattedObject(getName()) + ", 0)").setAlias(CURRENT_VALUE));
-        sb.appendField(Field.createField(gens, INITIAL_VALUE));
+        sb.appendField(Field.createField(gens, INITIAL_VALUE).setNull(getDatabaseMajorVersion() < 3));
         sb.appendField(Field.createField(gens, GENERATOR_INCREMENT).setNull(getDatabaseMajorVersion() < 3));
         sb.appendField(Field.createField(gens, DESCRIPTION));
 

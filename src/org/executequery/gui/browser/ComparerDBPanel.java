@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ComparerDBPanel extends JPanel {
 
@@ -61,6 +62,7 @@ public class ComparerDBPanel extends JPanel {
     private JButton selectAllPropertiesButton;
     private LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
+    private static JProgressBar progressBar;
     private static BackgroundProgressDialog progressDialog;
 
     private Map<Integer, JCheckBox> attributesCheckBoxMap;
@@ -176,6 +178,10 @@ public class ComparerDBPanel extends JPanel {
         loggingOutputPanel = new LoggingOutputPanel();
         loggingOutputPanel.append(bundleString("WelcomeText"));
 
+        progressBar = new JProgressBar();
+        progressBar.setStringPainted(true);
+        progressBar.setMinimum(0);
+
         sqlTextPanel = new SimpleSqlTextPanel();
 
         // ---
@@ -276,8 +282,9 @@ public class ComparerDBPanel extends JPanel {
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
-        mainPanel.add(comparePanel, gridBagHelper.get());
-        mainPanel.add(tabPane, gridBagHelper.nextCol().spanY().spanX().get());
+        mainPanel.add(comparePanel, gridBagHelper.setMaxWeightY().get());
+        mainPanel.add(tabPane, gridBagHelper.nextCol().spanX().get());
+        mainPanel.add(progressBar, gridBagHelper.nextRowFirstCol().setMinWeightY().spanX().get());
 
         // --- layout configure ---
 
@@ -327,6 +334,12 @@ public class ComparerDBPanel extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        List<Integer> itemsList = attributesCheckBoxMap.keySet().stream()
+                .filter(i -> attributesCheckBoxMap.get(i).isSelected()).collect(Collectors.toList());
+        progressBar.setMaximum(comparer.getTotalIterationsCount(itemsList, propertiesCheckBoxMap.get(CHECK_CREATE).isSelected(),
+                propertiesCheckBoxMap.get(CHECK_DROP).isSelected(), propertiesCheckBoxMap.get(CHECK_ALTER).isSelected()));
+        progressBar.setValue(0);
 
         settingScriptProps = new StringBuilder();
         settingScriptProps.append("\n/* Setting properties */\n\n");
@@ -690,6 +703,10 @@ public class ComparerDBPanel extends JPanel {
         }
 
         return dialect;
+    }
+
+    public static void incrementProgressBarValue() {
+        progressBar.setValue(progressBar.getValue() + 1);
     }
 
     public static boolean isCanceled() {

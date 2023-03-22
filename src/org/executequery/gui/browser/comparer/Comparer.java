@@ -12,6 +12,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
 import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ComparerDBPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -423,6 +424,8 @@ public class Comparer {
 
                 }
             }
+
+            ComparerDBPanel.incrementProgressBarValue();
         }
 
         return createObjects;
@@ -442,6 +445,8 @@ public class Comparer {
 
                 dropObjects.add(databaseObject);
             }
+
+            ComparerDBPanel.incrementProgressBarValue();
         }
 
         return dropObjects;
@@ -465,6 +470,8 @@ public class Comparer {
                     break;
                 }
             }
+
+            ComparerDBPanel.incrementProgressBarValue();
         }
 
         return alterObjects;
@@ -790,6 +797,26 @@ public class Comparer {
 
     public int[] getCounter() {
         return counter;
+    }
+
+    public int getTotalIterationsCount(List<Integer> objectsTypes, boolean forCreate, boolean forDrop, boolean forAlter) {
+
+        int count = 0;
+
+        for (Integer type : objectsTypes) {
+            if (forCreate || forAlter) {
+                int tempCount = ConnectionsTreePanel.getPanelFromBrowser().
+                        getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
+                        getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]).size();
+                count += (forCreate && forAlter) ? tempCount * 2 : tempCount;
+            }
+            if (forDrop)
+                count += ConnectionsTreePanel.getPanelFromBrowser().
+                        getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
+                        getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]).size();
+        }
+
+        return count;
     }
 
     public void addToScript(String addedScript) {

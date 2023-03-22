@@ -335,7 +335,7 @@ public class ComparerDBPanel extends JPanel {
         settingScriptProps.append("CONNECT '").append(comparer.getMasterConnection().getDatabaseConnection().getName());
         settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getDatabaseConnection().getUserName());
         settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword());
-        settingScriptProps.append("';\nSET AUTO DDL ON;\n");
+        settingScriptProps.append("';\nSET AUTODDL ON;\n");
 
         comparer.addToScript(settingScriptProps.toString());
     }

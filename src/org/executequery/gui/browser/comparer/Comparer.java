@@ -39,6 +39,7 @@ public class Comparer {
     protected StatementExecutor masterConnection;
 
     private String lists;
+    private int[] counter;
     private String constraintsList;
     private String computedFieldsList;
 
@@ -58,6 +59,8 @@ public class Comparer {
         constraintsToCreate = new ArrayList<>();
         constraintsToDrop = new ArrayList<>();
         computedFields = new ArrayList<>();
+
+        counter = new int[] {0, 0, 0};
 
         compareConnection = new DefaultStatementExecutor(dbSlave, true);
         masterConnection = new DefaultStatementExecutor(dbMaster, true);
@@ -106,6 +109,7 @@ public class Comparer {
                 script.add("\n" + sqlScript);
                 lists += "\t" + obj.getName() + "\n";
                 isHeaderNeeded = true;
+                counter[0] ++;
             }
         }
 
@@ -138,6 +142,7 @@ public class Comparer {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
                 lists += "\t" + obj.getName() + "\n";
                 isHeaderNeeded = true;
+                counter[1] ++;
             }
         }
 
@@ -199,6 +204,7 @@ public class Comparer {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
                 lists += "\t" + obj.getName() + "\n";
                 isHeaderNeeded = true;
+                counter[2] ++;
             }
         }
 
@@ -780,6 +786,10 @@ public class Comparer {
 
     public String getScript(int elemIndex) {
         return script.get(elemIndex);
+    }
+
+    public int[] getCounter() {
+        return counter;
     }
 
     public void addToScript(String addedScript) {

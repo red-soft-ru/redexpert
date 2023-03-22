@@ -539,9 +539,11 @@ public class ComparerDBPanel extends JPanel {
             sqlTextPanel.getTextPane().append(comparer.getScript(i));
 
         isComparing = false;
+        int[] counter = comparer.getCounter();
         compareButton.setEnabled(true);
         compareButton.setText(bundleString("CompareButton"));
-        GUIUtilities.displayInformationMessage(bundleString("ComparingEnds"));
+        GUIUtilities.displayInformationMessage(
+                String.format(bundleString("ComparingEnds"), counter[0], counter[1], counter[2]));
     }
 
     private void saveScript() {

@@ -89,6 +89,6 @@ public class EQDateTimePicker extends JPanel {
 
     public boolean isNull()
     {
-        return timePicker.isNull();
+        return datePicker.getDate() == null;
     }
 }

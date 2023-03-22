@@ -4,6 +4,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseJob;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.swing.CronPanel;
@@ -111,6 +112,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
         topGbh.addLabelFieldPair(topPanel, bundleString("ID"), idField, null, false, false);
         topGbh.addLabelFieldPair(topPanel, bundleString("Database"), databaseField, null, false, true);
         reset();
+        tabbedPane.addTab("Log", new JobsLogPanel(job));
         addCreateSqlTab(job);
     }
 

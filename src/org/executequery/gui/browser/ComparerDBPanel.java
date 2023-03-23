@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
@@ -293,7 +294,7 @@ public class ComparerDBPanel extends JPanel {
 
     }
 
-    private void prepareComparer() {
+    private boolean prepareComparer() {
 
         comparer = new Comparer(
                 databaseConnectionList.get(dbCompareComboBox.getSelectedIndex()),
@@ -331,8 +332,9 @@ public class ComparerDBPanel extends JPanel {
                 loggingOutputPanel.append(bundleString("RDBVersionBelow4"));
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException | NullPointerException e) {
+            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
+            return false;
         }
 
         List<Integer> itemsList = attributesCheckBoxMap.keySet().stream()
@@ -351,6 +353,8 @@ public class ComparerDBPanel extends JPanel {
         settingScriptProps.append("';\nSET AUTODDL ON;\n");
 
         comparer.addToScript(settingScriptProps.toString());
+
+        return true;
     }
 
     private void compare() {
@@ -520,10 +524,15 @@ public class ComparerDBPanel extends JPanel {
 
                 long startTime = System.currentTimeMillis();
 
-                prepareComparer();
-                compare();
+                if (prepareComparer()) {
+                    compare();
 
-                Log.info(String.format("Comparing has been finished. Time elapsed: %d ms", System.currentTimeMillis() - startTime));
+                    int[] counter = comparer.getCounter();
+                    GUIUtilities.displayInformationMessage(
+                            String.format(bundleString("ComparingEnds"), counter[0], counter[1], counter[2]));
+                    Log.info(String.format("Comparing has been finished. Time elapsed: %d ms", System.currentTimeMillis() - startTime));
+                }
+
                 return null;
             }
 
@@ -533,7 +542,7 @@ public class ComparerDBPanel extends JPanel {
                 if (progressDialog != null)
                     progressDialog.dispose();
 
-                showScriptAndMessage();
+                finishCompare();
             }
         };
 
@@ -546,17 +555,14 @@ public class ComparerDBPanel extends JPanel {
         }
     }
 
-    private void showScriptAndMessage() {
+    private void finishCompare() {
 
         for (int i = 0; i < comparer.getScript().size(); i++)
             sqlTextPanel.getTextPane().append(comparer.getScript(i));
 
         isComparing = false;
-        int[] counter = comparer.getCounter();
         compareButton.setEnabled(true);
         compareButton.setText(bundleString("CompareButton"));
-        GUIUtilities.displayInformationMessage(
-                String.format(bundleString("ComparingEnds"), counter[0], counter[1], counter[2]));
     }
 
     private void saveScript() {

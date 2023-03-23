@@ -344,7 +344,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         bottomPanel.add(sqlBodyText, gbcBottom);
 
         JSplitPane3 splitPane = new JSplitPane3();//new SplitPaneFactory().create(JSplitPane.VERTICAL_SPLIT, topPanel, bottomPanel);
-        splitPane.setTopComponent(new JScrollPane(topPanel));
+        splitPane.setTopComponent(topPanel);
         splitPane.setBottomComponent(bottomPanel);
         splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
         splitPane.setDividerLocation(0.3);

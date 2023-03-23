@@ -4,26 +4,26 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.components.TableSelectionCombosGroup;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.resultset.ResultSetTable;
-import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.swing.util.SwingWorker;
-import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Enumeration;
 import java.util.Vector;
 
 /**
@@ -52,33 +52,13 @@ public class ProfilerPanel extends JPanel
             "EXECUTE PROCEDURE RDB$PROFILER.CANCEL_SESSION";
     private static final String DISCARD =
             "EXECUTE PROCEDURE RDB$PROFILER.DISCARD";
-    private static final String FLASH =
-            "EXECUTE PROCEDURE RDB$PROFILER.FLUSH";
-
-    // --- selected fields ---
-
-    private static final String PROFILE_ID = "profile_id";
-    private static final String STATEMENT_ID = "statement_id";
-    private static final String STATEMENT_TYPE = "statement_type";
-    private static final String PACKAGE_NAME = "package_name";
-    private static final String ROUTINE_NAME = "routine_name";
-    private static final String PARENT_STATEMENT_ID = "parent_statement_id";
-    private static final String PARENT_STATEMENT_TYPE = "parent_statement_type";
-    private static final String PARENT_ROUTINE_NAME = "parent_routine_name";
-    private static final String SQL_TEXT = "sql_text";
-    private static final String COUNTER = "counter";
-    private static final String MIN_ELAPSED_TIME = "min_elapsed_time";
-    private static final String MAX_ELAPSED_TIME = "max_elapsed_time";
-    private static final String TOTAL_ELAPSED_TIME = "total_elapsed_time";
-    private static final String AVG_ELAPSED_TIME = "avg_elapsed_time";
 
     // --- GUI objects ---
 
     private JComboBox<?> connectionsComboBox;
-    private JSpinner flashIntervalSpinner;
 
-    private ResultSetTable resultSetTable;
-    private ResultSetTableModel resultSetTableModel;
+    private JTree profilerTree;
+    private DefaultMutableTreeNode rootTreeNode;
 
     private JButton startButton;
     private JButton pauseButton;
@@ -89,18 +69,10 @@ public class ProfilerPanel extends JPanel
 
     // ---
 
+    private int sessionId;
     private DatabaseConnection connection;
     private DefaultStatementExecutor executor;
     private TableSelectionCombosGroup combosGroup;
-
-    private Map<String, JCheckBox> selectFieldsCheckBoxList;
-
-    private Integer sessionId;
-    private int sessionState;
-    private int flashInterval;
-
-    private boolean isSelectQueryMarkedForUpdate;
-    private String selectQuery;
 
     // ---
 
@@ -121,8 +93,9 @@ public class ProfilerPanel extends JPanel
         connectionsComboBox.addActionListener(e -> connectionChange());
         combosGroup = new TableSelectionCombosGroup(connectionsComboBox);
 
-        flashIntervalSpinner = new JSpinner();
-        flashIntervalSpinner.setModel(new SpinnerNumberModel(5, 1, 60, 1));
+        rootTreeNode = new DefaultMutableTreeNode("root");
+        profilerTree = new JTree(new DefaultTreeModel(rootTreeNode));
+        profilerTree.setCellRenderer(new ProfilerTreeCellRenderer());
 
         startButton = new JButton(bundleString("Start"));
         startButton.addActionListener(e -> startSession());
@@ -142,30 +115,8 @@ public class ProfilerPanel extends JPanel
         discardButton = new JButton(bundleString("Discard"));
         discardButton.addActionListener(e -> discardSession());
 
-        selectFieldsCheckBoxList = new LinkedHashMap<>();
-        selectFieldsCheckBoxList.put(PROFILE_ID, new JCheckBox(PROFILE_ID));
-        selectFieldsCheckBoxList.put(STATEMENT_ID, new JCheckBox(STATEMENT_ID));
-        selectFieldsCheckBoxList.put(STATEMENT_TYPE, new JCheckBox(STATEMENT_TYPE));
-        selectFieldsCheckBoxList.put(PACKAGE_NAME, new JCheckBox(PACKAGE_NAME));
-        selectFieldsCheckBoxList.put(ROUTINE_NAME, new JCheckBox(ROUTINE_NAME));
-        selectFieldsCheckBoxList.put(PARENT_STATEMENT_ID, new JCheckBox(PARENT_STATEMENT_ID));
-        selectFieldsCheckBoxList.put(PARENT_STATEMENT_TYPE, new JCheckBox(PARENT_STATEMENT_TYPE));
-        selectFieldsCheckBoxList.put(PARENT_ROUTINE_NAME, new JCheckBox(PARENT_ROUTINE_NAME));
-        selectFieldsCheckBoxList.put(SQL_TEXT, new JCheckBox(SQL_TEXT));
-        selectFieldsCheckBoxList.put(COUNTER, new JCheckBox(COUNTER));
-        selectFieldsCheckBoxList.put(MIN_ELAPSED_TIME, new JCheckBox(MIN_ELAPSED_TIME));
-        selectFieldsCheckBoxList.put(MAX_ELAPSED_TIME, new JCheckBox(MAX_ELAPSED_TIME));
-        selectFieldsCheckBoxList.put(TOTAL_ELAPSED_TIME, new JCheckBox(TOTAL_ELAPSED_TIME));
-        selectFieldsCheckBoxList.put(AVG_ELAPSED_TIME, new JCheckBox(AVG_ELAPSED_TIME));
-        selectFieldsCheckBoxList.values().forEach(item -> {
-            item.setSelected(true);
-            item.addActionListener(i -> selectFieldChange());
-        });
-
-        buildResultSetTable();
         arrangeComponents();
         switchSessionState(INACTIVE);
-        rebuildSelectQuery();
     }
 
     private void arrangeComponents() {
@@ -193,32 +144,13 @@ public class ProfilerPanel extends JPanel
                 bundleString("Connection"), connectionsComboBox, null, false, false);
         toolsPanel.add(buttonPanel, gridBagHelper.nextCol().get());
 
-        // --- checkBox panel ---
-
-        GridBagHelper gbh = new GridBagHelper();
-        JPanel checkBoxPanel = new JPanel(new GridBagLayout());
-        checkBoxPanel.setBorder(BorderFactory.createTitledBorder(bundleString("Fields")));
-
-        gbh.setInsets(5, 5, 5, 5).anchorNorthWest();
-        selectFieldsCheckBoxList.values().forEach(item -> checkBoxPanel.add(item, gbh.nextRowFirstCol().get()));
-
-        // --- properties panel ---
-
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest();
-        JPanel propertiesPanel = new JPanel(new GridBagLayout());
-
-        propertiesPanel.add(new JLabel(bundleString("FlashInterval")), gridBagHelper.get());
-        propertiesPanel.add(flashIntervalSpinner, gridBagHelper.nextCol().get());
-        propertiesPanel.add(checkBoxPanel, gridBagHelper.nextRowFirstCol().setWidth(2).get());
-
         // --- resultSet panel ---
 
         gridBagHelper = new GridBagHelper();
         gridBagHelper.anchorNorthWest().fillBoth();
         JPanel resultSetPanel = new JPanel(new GridBagLayout());
 
-        JScrollPane scrollPane = new JScrollPane(resultSetTable,
+        JScrollPane scrollPane = new JScrollPane(profilerTree,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
@@ -240,38 +172,194 @@ public class ProfilerPanel extends JPanel
 
         setLayout(new GridBagLayout());
         add(profilerPanel, gridBagHelper.setMaxWeightX().spanY().get());
-        add(propertiesPanel, gridBagHelper.nextCol().setMinWeightX().spanY().get());
 
     }
 
-    private void buildResultSetTable() {
+    // --- button handlers ---
+
+    private void startSession() {
+
+        connectionChange();
+        if (!isVersionSupported(connection)) {
+            GUIUtilities.displayWarningMessage(bundleString("VersionNotSupported"));
+            return;
+        }
+
+        executor.setDatabaseConnection(connection);
+        try {
+
+            String query = String.format(START_SESSION, connection.getName() + "_session");
+            ResultSet resultSet = executor.execute(query, true).getResultSet();
+            sessionId = resultSet.next() ? resultSet.getInt(1) : -1;
+            executor.getConnection().commit();
+            executor.releaseResources();
+            switchSessionState(ACTIVE);
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionStart"), e);
+        }
+    }
+
+    private void pauseSession() {
+        try {
+
+            executor.execute(PAUSE_SESSION, true);
+            executor.getConnection().commit();
+            executor.releaseResources();
+            switchSessionState(PAUSED);
+            generateTree();
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionPause"), e);
+        }
+    }
+
+    private void resumeSession() {
+        try {
+
+            executor.execute(RESUME_SESSION, true);
+            executor.getConnection().commit();
+            executor.releaseResources();
+            switchSessionState(ACTIVE);
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionResume"), e);
+        }
+    }
+
+    private void finishSession() {
+        try {
+
+            executor.execute(FINISH_SESSION, true);
+            executor.getConnection().commit();
+            executor.releaseResources();
+            switchSessionState(INACTIVE);
+            generateTree();
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionFinish"), e);
+        }
+    }
+
+    private void cancelSession() {
+        try {
+
+            executor.execute(CANCEL_SESSION, true);
+            executor.getConnection().commit();
+            executor.releaseResources();
+            switchSessionState(INACTIVE);
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionCancel"), e);
+        }
+    }
+
+    private void discardSession() {
+        try {
+
+            executor.execute(DISCARD, true);
+            executor.getConnection().commit();
+            executor.releaseResources();
+            switchSessionState(INACTIVE);
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionDiscard"), e);
+        }
+    }
+
+    // ---
+
+    private void generateTree() {
+
+        ResultSet rs = getProfilerData();
+
+        if (rs == null) {
+            GUIUtilities.displayWarningMessage(bundleString("ErrorUpdatingData"));
+            return;
+        }
 
         try {
 
-            resultSetTableModel = new ResultSetTableModel(false);
-            resultSetTableModel.setHoldMetaData(false);
-            resultSetTableModel.setFetchAll(true);
+            rootTreeNode.removeAllChildren();
+            while (rs.next()) {
 
-            if (resultSetTable == null)
-                resultSetTable = new ResultSetTable(resultSetTableModel);
-            else
-                resultSetTable.setModel(resultSetTableModel);
+                int id = rs.getInt(1);
+                int callerId = rs.getInt(2);
+                String packageName = rs.getNString(3);
+                String routineName = rs.getNString(4);
+                String sqlText = rs.getNString(5);
+                long totalTime = rs.getLong(6);
 
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorBuildingTable"), e);
+                ProfilerData data = sqlText != null ?
+                        new ProfilerData(id, sqlText, totalTime) :
+                        new ProfilerData(id, packageName, routineName, totalTime);
+
+                if (callerId == 0)
+                    rootTreeNode.add(new DefaultMutableTreeNode(data));
+
+                else {
+                    DefaultMutableTreeNode node = getParenNode(callerId, rootTreeNode);
+                    if (node != null)
+                        node.add(new DefaultMutableTreeNode(data));
+                    else
+                        rootTreeNode.add(new DefaultMutableTreeNode(data));
+                }
+            }
+
+            profilerTree.setModel(new DefaultTreeModel(rootTreeNode));
+            executor.getConnection().commit();
+
+        } catch (SQLException | NullPointerException e) {
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorUpdatingData"), e);
         }
 
+        executor.releaseResources();
     }
 
-    private void connectionChange() {
-        connection = combosGroup.getSelectedHost().getDatabaseConnection();
+    private DefaultMutableTreeNode getParenNode(int id, DefaultMutableTreeNode node) {
+
+        Enumeration<TreeNode> children = node.children();
+        while (children.hasMoreElements()) {
+
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+            ProfilerData childData = (ProfilerData) child.getUserObject();
+
+            if (childData.getId() == id)
+                return child;
+
+            DefaultMutableTreeNode returnNode = getParenNode(id, child);
+            if (returnNode != null)
+                return returnNode;
+        }
+
+        return null;
     }
 
-    private void selectFieldChange() {
-        isSelectQueryMarkedForUpdate = true;
+    private ResultSet getProfilerData() {
+
+        String query = "SELECT DISTINCT\n" +
+                "REQ.REQUEST_ID,\n" +
+                "REQ.CALLER_REQUEST_ID CALLER_ID,\n" +
+                "STA.PACKAGE_NAME,\n" +
+                "STA.ROUTINE_NAME,\n" +
+                "STA.SQL_TEXT,\n" +
+                "REQ.TOTAL_ELAPSED_TIME TOTAL_TIME\n" +
+                "FROM PLG$PROF_STATEMENT_STATS_VIEW STA\n" +
+                "JOIN PLG$PROF_REQUESTS REQ ON\n" +
+                "STA.PROFILE_ID = REQ.PROFILE_ID AND STA.STATEMENT_ID = REQ.STATEMENT_ID\n" +
+                "WHERE STA.PROFILE_ID = '" + sessionId + "'\n" +
+                "ORDER BY REQ.CALLER_REQUEST_ID;";
+
+        try {
+            return executor.execute(query, true).getResultSet();
+
+        } catch (SQLException e) {
+            Log.error("Error loading profiler data", e);
+            return null;
+        }
     }
 
-    private boolean isConnectionVersionSupported(DatabaseConnection connection) {
+    private boolean isVersionSupported(DatabaseConnection connection) {
 
         boolean isSupported;
 
@@ -289,152 +377,7 @@ public class ProfilerPanel extends JPanel
         return isSupported;
     }
 
-    private synchronized void monitorProfilerData() {
-        try {
-
-            DefaultStatementExecutor flashExecutor = new DefaultStatementExecutor();
-            flashExecutor.setDatabaseConnection(connection);
-            flashExecutor.setCommitMode(false);
-            flashExecutor.setKeepAlive(true);
-
-            if (isSelectQueryMarkedForUpdate)
-                rebuildSelectQuery();
-
-            if (!MiscUtils.isNull(selectQuery)) {
-
-                String formattedQuery = String.format(selectQuery, sessionId);
-                while (sessionState == ACTIVE) {
-
-                    executor.execute(QueryTypes.EXECUTE, executor.getPreparedStatement(FLASH));
-
-                    ResultSet rs = flashExecutor.getResultSet(formattedQuery).getResultSet();
-
-                    resultSetTableModel.createTable(rs);
-                    flashExecutor.releaseResources();
-                    Thread.sleep(flashInterval * 1000L);
-                }
-
-            } else if (GUIUtilities.displayConfirmDialog(bundleString("ErrorNoFieldsForDisplay")) == JOptionPane.NO_OPTION)
-                cancelSession();
-
-        } catch (Exception e) {
-            Log.error(bundleString("ErrorUpdatingData"), e);
-        }
-    }
-
-    // --- button handlers ---
-
-    private void startSession() {
-
-        connectionChange();
-        if (!isConnectionVersionSupported(connection)) {
-            GUIUtilities.displayWarningMessage(bundleString("VersionNotSupported"));
-            return;
-        }
-
-        executor.setDatabaseConnection(connection);
-
-        flashInterval = (int) flashIntervalSpinner.getValue();
-        String query = String.format(START_SESSION, connection.getName() + "_session");
-
-        try {
-
-            ResultSet resultSet = executor.execute(query, true).getResultSet();
-            if (resultSet.next())
-                sessionId = resultSet.getInt(1);
-            resultSetTableModel.createTable(resultSet);
-            executor.getConnection().commit();
-
-            switchSessionState(ACTIVE);
-            SwingWorker worker = new SwingWorker("Profiler data updater") {
-                @Override
-                public Object construct() {
-                    monitorProfilerData();
-                    return null;
-                }
-            };
-            worker.start();
-
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionStart"), e);
-        }
-    }
-
-    private void pauseSession() {
-        try {
-
-            executor.execute(PAUSE_SESSION, true);
-            executor.getConnection().commit();
-            switchSessionState(PAUSED);
-
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionPause"), e);
-        }
-    }
-
-    private void resumeSession() {
-        try {
-
-            executor.execute(RESUME_SESSION, true);
-            executor.getConnection().commit();
-
-            switchSessionState(ACTIVE);
-            SwingWorker worker = new SwingWorker("Profiler data updater") {
-                @Override
-                public Object construct() {
-                    monitorProfilerData();
-                    return null;
-                }
-            };
-            worker.start();
-
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionResume"), e);
-        }
-    }
-
-    private void finishSession() {
-        try {
-
-            executor.execute(FINISH_SESSION, true);
-            executor.getConnection().commit();
-            switchSessionState(INACTIVE);
-
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionFinish"), e);
-        }
-    }
-
-    private void cancelSession() {
-        try {
-
-            executor.execute(CANCEL_SESSION, true);
-            executor.getConnection().commit();
-            switchSessionState(INACTIVE);
-
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionCancel"), e);
-        }
-    }
-
-    private void discardSession() {
-        try {
-
-            executor.execute(DISCARD, true);
-            executor.getConnection().commit();
-            switchSessionState(INACTIVE);
-
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionDiscard"), e);
-        }
-    }
-
-    // ---
-
     private void switchSessionState(int state) {
-
-        sessionState = state;
-
         switch (state) {
             case ACTIVE:
                 startButton.setEnabled(false);
@@ -442,6 +385,7 @@ public class ProfilerPanel extends JPanel
                 resumeButton.setEnabled(false);
                 finishButton.setEnabled(true);
                 cancelButton.setEnabled(true);
+                discardButton.setEnabled(true);
                 break;
             case PAUSED:
                 startButton.setEnabled(false);
@@ -460,25 +404,8 @@ public class ProfilerPanel extends JPanel
         }
     }
 
-    private void rebuildSelectQuery() {
-
-        StringBuilder sb = new StringBuilder();
-
-        selectFieldsCheckBoxList.keySet().stream()
-                .filter(key -> selectFieldsCheckBoxList.get(key).isSelected())
-                .forEach(key -> sb.append(key).append(", "));
-
-        if (!sb.toString().equals("")) {
-
-            sb.insert(0, "SELECT ");
-            sb.deleteCharAt(sb.lastIndexOf(","));
-            sb.append("FROM PLG$PROF_STATEMENT_STATS_VIEW WHERE PROFILE_ID = %s");
-            selectQuery = sb.toString();
-
-        } else
-            selectQuery = null;
-
-        isSelectQueryMarkedForUpdate = false;
+    private void connectionChange() {
+        connection = combosGroup.getSelectedHost().getDatabaseConnection();
     }
 
     @Override
@@ -499,4 +426,57 @@ public class ProfilerPanel extends JPanel
     private static String bundleString(String key) {
         return Bundles.get(ProfilerPanel.class, key);
     }
+
+    static class ProfilerData {
+
+        private final int id;
+        private final String label;
+        private final long totalTime;
+
+        public ProfilerData(int id, String label, long totalTime) {
+            this.id = id;
+            this.label = label;
+            this.totalTime = totalTime;
+        }
+
+        public ProfilerData(int id, String packageName, String routineName, long totalTime) {
+            this.id = id;
+            this.label = (packageName != null) ? (packageName.trim() + "::" + routineName.trim()) : routineName.trim();
+            this.totalTime = totalTime;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public long getTotalTime() {
+            return totalTime;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+    }
+
+    static class ProfilerTreeCellRenderer extends AbstractTreeCellRenderer {
+
+        @Override
+        public Component getTreeCellRendererComponent (
+                JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+            Object userObject = node.getUserObject();
+
+            if (userObject instanceof ProfilerData) {
+
+                ProfilerData data = (ProfilerData) userObject;
+                String record = "[" + data.getTotalTime() + "ms] " + data.getLabel();
+                setText(record);
+            }
+
+            return this;
+        }
+    }
+
 }

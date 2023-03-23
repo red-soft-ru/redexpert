@@ -7,6 +7,7 @@ import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 
 public class DefaultDatabaseCollation extends AbstractDatabaseObject {
 
@@ -181,6 +182,18 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("COLLATION", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return getCreateSQLText();
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        String comparingSqlQuery = databaseObject.getCompareCreateSQL();
+        return !Objects.equals(this.getCompareCreateSQL(), comparingSqlQuery) ?
+                getDropSQL() + comparingSqlQuery : "/* there are no changes */\n";
     }
 
 }

@@ -118,7 +118,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
                     int row = tableDescriptionTable.getSelectedRow();
                     if (row >= 0) {
                         BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, true);
-                        CreateDomainPanel panel = new CreateDomainPanel(currentObjectView.getHost().getDatabaseConnection(), dialog, currentObjectView.getName().trim());
+                        CreateDomainPanel panel = new CreateDomainPanel(currentObjectView.getHost().getDatabaseConnection(), dialog, currentObjectView.getName());
                         dialog.addDisplayComponent(panel);
                         dialog.display();
                     }

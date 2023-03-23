@@ -133,5 +133,16 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
         return SQLUtils.generateDefaultDropQuery("TABLESPACE", getName());
     }
 
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return getCreateSQLText();
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        DefaultDatabaseTablespace comparingTablespace = (DefaultDatabaseTablespace) databaseObject;
+        return SQLUtils.generateAlterTablespace(this, comparingTablespace);
+    }
+
 }
 

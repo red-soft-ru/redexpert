@@ -3,12 +3,14 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.event.TableModelListener;
@@ -211,12 +213,30 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     public String getCreateSQLText() {
         return SQLUtils.generateCreateIndex(
                 getName(), getType(), isUnique(), getTableName(), null, getCondition(),
-                getIndexColumns(), getTablespace(), isActive, getRemarks());
+                getIndexColumns(), getTablespace(), isActive(), getRemarks());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("INDEX", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return (!MiscUtils.isNull(this.getConstraint_type())) ?
+                "/* Will be created with constraint defining */\n" :
+                getCreateSQLText();
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        DefaultDatabaseIndex comparingIndex = (DefaultDatabaseIndex) databaseObject;
+        return SQLUtils.generateAlterIndex(this, comparingIndex);
+    }
+
+    public String getComparedDropSQL() throws DataSourceException {
+        return (!MiscUtils.isNull(this.getConstraint_type())) ?
+                "/* Remove with table constraint */\n" : getDropSQL();
     }
 
     private static final String CONDITION_SOURCE = "CONDITION_SOURCE";

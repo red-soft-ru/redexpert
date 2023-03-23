@@ -284,16 +284,15 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-
     }
 
     @Override
     public void setParameters(Object[] params) {
-
     }
 
     @Override
     protected String generateQuery() {
+
         String tablespace = null;
         if (tablespacesCombo.getSelectedItem() != null)
             tablespace = ((NamedObject) tablespacesCombo.getSelectedItem()).getName();

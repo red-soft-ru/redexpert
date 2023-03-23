@@ -839,6 +839,16 @@ public final class MiscUtils {
         return source_str;
     }
 
+    public static boolean compareStrings(String s1, String s2) {
+        if (MiscUtils.isNull(s1)) {
+            return MiscUtils.isNull(s2);
+        } else {
+            if (MiscUtils.isNull(s2))
+                return false;
+        }
+        return s1.equalsIgnoreCase(s2);
+    }
+
 
 }
 

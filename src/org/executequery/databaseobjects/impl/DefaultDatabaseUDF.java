@@ -244,7 +244,6 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
         setHost(host);
     }
 
-
     /**
      * Creates a new instance with
      * the specified values.
@@ -302,6 +301,17 @@ DefaultDatabaseUDF extends DefaultDatabaseExecutable
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("UDF", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return getCreateSQLText();
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        DefaultDatabaseUDF comparingUDF = (DefaultDatabaseUDF) databaseObject;
+        return SQLUtils.generateAlterUDF(this, comparingUDF);
     }
 
     @Override

@@ -3,8 +3,11 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
@@ -17,6 +20,7 @@ import java.util.List;
  */
 public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
+    private String typeTemporary;
 
     public DefaultTemporaryDatabaseTable(DatabaseObject object) {
         super(object, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
@@ -43,7 +47,30 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("TABLE", getName());
     }
-    private String typeTemporary;
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+
+        updateListCD();
+        updateListCC();
+
+        if (Comparer.isComputedFieldsNeed())
+            for (ColumnData cd : listCD)
+                if (!MiscUtils.isNull(cd.getComputedBy()))
+                    cd.setComputedBy(null);
+
+        return SQLUtils.generateCreateTable(
+                getName(), listCD, listCC, true, true, false, false,
+                Comparer.isCommentsNeed(), getTypeTemporary(), getExternalFile(),
+                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
+        DefaultTemporaryDatabaseTable comparingTable = (DefaultTemporaryDatabaseTable) databaseObject;
+        return SQLUtils.generateAlterTable(this, comparingTable, true,
+                new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed());
+    }
 
     @Override
     protected String queryForInfo() {
@@ -133,14 +160,17 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         this.typeTemporary = typeTemporary;
     }
 
+    @Override
     public String getTablespace() {
         return null;
     }
 
+    @Override
     public String getExternalFile() {
         return null;
     }
 
+    @Override
     public String getAdapter() {
         return null;
     }

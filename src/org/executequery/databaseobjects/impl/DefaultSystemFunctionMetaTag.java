@@ -48,9 +48,7 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
     /**
      * Creates a new instance of DefaultSystemFunctionMetaTag
      */
-    public DefaultSystemFunctionMetaTag(DatabaseMetaTag metaTagParent,
-                                        int type,
-                                        String name) {
+    public DefaultSystemFunctionMetaTag(DatabaseMetaTag metaTagParent, int type, String name) {
         super(metaTagParent, name);
         this.type = type;
     }
@@ -60,6 +58,7 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
      *
      * @return this meta tag's child database objects.
      */
+    @Override
     public List<NamedObject> getObjects() throws DataSourceException {
 
         String functions = null;
@@ -105,6 +104,7 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
      *
      * @return the parent meta tag
      */
+    @Override
     public DatabaseMetaTag getMetaTagParent() {
         return metaTagParent;
     }
@@ -114,6 +114,7 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
      *
      * @return the object type
      */
+    @Override
     public int getType() {
         return type;
     }
@@ -134,6 +135,16 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
 
     @Override
     public String getDropSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return null;
     }
 

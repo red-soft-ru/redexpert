@@ -54,7 +54,7 @@ import java.util.logging.Logger;
 @SuppressWarnings({"rawtypes"})
 public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
-    private static final DriverLoader DRIVER_LOADER = new DefaultDriverLoader();
+    public static final DriverLoader DRIVER_LOADER = new DefaultDriverLoader();
 
     static final String PORT = "[port]";
     static final String SOURCE = "[source]";
@@ -146,7 +146,12 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                 try {
 
                     // Checking for original jaybird or rdb jaybird...
-                    Class<?> aClass = driver.getClass().getClassLoader().loadClass("org.firebirdsql.jca.FBSADataSource");
+                    try {
+                        Class<?> aClass = driver.getClass().getClassLoader().loadClass("org.firebirdsql.jca.FBSADataSource");
+                    } catch (ClassNotFoundException e) {
+                        Class<?> aClass = driver.getClass().getClassLoader().loadClass("org.firebirdsql.jaybird.xca.FBSADataSource");
+                    }
+
 
                     // ...rdb jaybird
                     // in multifactor authentication case, need to initialize crypto plugin,
@@ -156,7 +161,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                             String path = databaseConnection.getJDBCDriver().getPath();
                             path = path.replace("../", "./") + ";" + path.replace("./", "../");
                             path = path.replace(".../", "../");
-                            path += ";./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar";
+                            path += ";" + DynamicLibraryLoader.getFbPluginImplPath(driver.getMajorVersion());
                             Object odb = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
                                     "biz.redsoft.FBCryptoPluginInitImpl",
                                     path);
@@ -175,16 +180,16 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
                     if (databaseConnection.useNewAPI()) {
                         try {
-                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver,
+                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), driver,
                                     "FBDataSourceImpl",
                                     new DynamicLibraryLoader.Parameter(String.class, "FBOONATIVE"));
                         } catch (ClassNotFoundException e) {
-                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver,
                                     "FBDataSourceImpl");
                         }
 
                     } else {
-                        dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+                        dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver,
                                 "FBDataSourceImpl");
                     }
 
@@ -369,8 +374,13 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
     public void close() throws ResourceException {
 
-        if (dataSource != null)
-            dataSource.close();
+        if (dataSource != null) {
+            try {
+                dataSource.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 

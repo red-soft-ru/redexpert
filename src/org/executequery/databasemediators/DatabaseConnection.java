@@ -224,6 +224,8 @@ public interface DatabaseConnection extends Serializable {
     String[] getDataTypesArray();
 
     int[] getIntDataTypesArray();
+
+    int getDriverMajorVersion();
 }
 
 

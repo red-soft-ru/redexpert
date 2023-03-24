@@ -278,6 +278,7 @@
                                     <directory>${pom.basedir}/../../lib</directory>
                                     <includes>
                                         <include>fbplugin-impl.jar</include>
+                                        <include>fbplugin-impl5.jar</include>
                                         <include>jdbc-logger.jar</include>
                                     </includes>
                                 </resource>

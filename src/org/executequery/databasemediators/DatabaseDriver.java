@@ -62,6 +62,8 @@ public interface DatabaseDriver extends Serializable {
 
     boolean isDatabaseTypeValid();
 
+    int getMajorVersion();
+
 }
 
 

@@ -261,7 +261,7 @@ public class PooledConnection implements Connection {
     public void checkConnectionToServer()
     {
         try {
-            IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(realConnection, "FBDatabasePerformanceImpl");
+            IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), realConnection, "FBDatabasePerformanceImpl");
             db.setConnection(realConnection);
             TimerTask task = new TimerTask() {
                 @Override

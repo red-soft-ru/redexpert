@@ -206,25 +206,15 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
     return dataTypesArray;
   }
 
-  @Override
-  public int[] getIntDataTypesArray() {
-    if (intDataTypesArray == null) {
-      MetaDataValues metaData = new MetaDataValues(true);
-      metaData.setDatabaseConnection(this);
-      intDataTypesArray = metaData.getIntDataTypesArray();
+    /**
+     * Creates a new empty <code>DatabaseConnection</code> object.
+     */
+    public TemplateDatabaseConnection() {
+
+        this(null);
     }
-    return intDataTypesArray;
-  }
 
-  /**
-   * Creates a new empty <code>DatabaseConnection</code> object.
-   */
-  public TemplateDatabaseConnection() {
-
-    this(null);
-  }
-
-  /**
+    /**
    * Creates a new empty <code>DatabaseConnection</code> object
    * with the specified name.
    *
@@ -235,6 +225,21 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
     this.name = name;
     transactionIsolation = -1;
   }
+
+    @Override
+    public int[] getIntDataTypesArray() {
+        if (intDataTypesArray == null) {
+            MetaDataValues metaData = new MetaDataValues(true);
+            metaData.setDatabaseConnection(this);
+            intDataTypesArray = metaData.getIntDataTypesArray();
+        }
+        return intDataTypesArray;
+    }
+
+    @Override
+    public int getDriverMajorVersion() {
+        return getJDBCDriver().getMajorVersion();
+    }
 
   public TemplateDatabaseConnection(String userName, String password, String charset, boolean passStored) {
     this.userName = userName;

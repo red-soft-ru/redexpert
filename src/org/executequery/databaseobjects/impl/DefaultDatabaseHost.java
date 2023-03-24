@@ -34,6 +34,7 @@ import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.log.Log;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -1296,20 +1297,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             if (type >= SYSTEM_DOMAIN)
                 return false;
         }
-        DefaultDriverLoader driverLoader = new DefaultDriverLoader();
         Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
         DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
         if (driver.getClass().getName().contains("FBDriver")) {
             Connection conn = getConnection().unwrap(Connection.class);
-            URL[] urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, conn.getClass().getClassLoader());
-            IFBDatabaseConnection db;
-            Class clazzdb;
-            Object odb;
-            clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
-            odb = clazzdb.newInstance();
-            db = (IFBDatabaseConnection) odb;
+            IFBDatabaseConnection db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), conn, "FBDatabaseConnectionImpl");
             db.setConnection(conn);
             switch (db.getMajorVersion()) {
                 case 2:

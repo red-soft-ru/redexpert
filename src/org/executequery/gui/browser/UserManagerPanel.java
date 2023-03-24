@@ -15,6 +15,7 @@ import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.browser.managment.*;
@@ -24,6 +25,7 @@ import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.DefaultButton;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -32,10 +34,7 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -534,71 +533,23 @@ public class UserManagerPanel extends JPanel {
     void initUserManager() throws Exception {
         if (con == null) {
             version = 2;
-            DatabaseDriver dd = null;
-            List<DatabaseDriver> dds = driverRepository().findAll();
-            for (DatabaseDriver d : dds) {
-                if (d.getClassName().contains("FBDriver")) {
-                    dd = d;
-                    break;
-                }
-            }
-            if (dd == null) {
-                throw new SQLException("There are no drivers to initialize the user manager.");
-            }
-            URL[] urlDriver = new URL[0];
-            Class clazzDriver = null;
-            URL[] urls = new URL[0];
-            Class clazzdb = null;
-            Object o = null;
-            Object odb = null;
-
-            urlDriver = MiscUtils.loadURLs(dd.getPath());
-            ClassLoader clD = new URLClassLoader(urlDriver);
-            clazzDriver = clD.loadClass(dd.getClassName());
-            o = clazzDriver.newInstance();
-
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, o.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBUserImpl");
-            odb = clazzdb.newInstance();
-
-            userAdd = (IFBUser) odb;
-
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            cl = new URLClassLoader(urls, o.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBUserManagerImpl");
-            odb = clazzdb.newInstance();
-
-            this.userManager = (IFBUserManager) odb;
+            Driver driver = DefaultDriverLoader.getDefaultDriver();
+            userAdd = (IFBUser) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver, "FBUserImpl");
+            this.userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver, "FBUserManagerImpl");
+            ;
         } else {
             Connection connection = con.unwrap(Connection.class);
-
-            URL[] urls = new URL[0];
-            Class clazzdb = null;
-            Object odb = null;
             DatabaseHost host = new DefaultDatabaseHost(getSelectedDatabaseConnection());
             version = host.getDatabaseMetaData().getDatabaseMajorVersion();
 
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBUserImpl");
-            odb = clazzdb.newInstance();
 
-            userAdd = (IFBUser) odb;
+            userAdd = (IFBUser) DynamicLibraryLoader.loadingObjectFromClassLoader(getSelectedDatabaseConnection().getDriverMajorVersion(), connection, "FBUserImpl");
+            if (version >= 3) {
+                DynamicLibraryLoader.Parameter param = new DynamicLibraryLoader.Parameter(Connection.class, con);
+                this.userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(getSelectedDatabaseConnection().getDriverMajorVersion(), connection, "FB3UserManagerImpl", param);
 
-            String loadedClass;
-            if (version >= 3)
-                loadedClass = "biz.redsoft.FB3UserManagerImpl";
-            else
-                loadedClass = "biz.redsoft.FBUserManagerImpl";
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-            clazzdb = cl.loadClass(loadedClass);
-            if (version >= 3)
-                odb = clazzdb.getConstructor(Connection.class).newInstance(con);
-            else
-                odb = clazzdb.newInstance();
-            this.userManager = (IFBUserManager) odb;
+            } else
+                this.userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(getSelectedDatabaseConnection().getDriverMajorVersion(), connection, "FBUserManagerImpl");
         }
     }
 

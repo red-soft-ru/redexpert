@@ -578,7 +578,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             Connection fbConn = realConnection.unwrap(Connection.class);
             IFBDatabaseConnection db = null;
             try {
-                db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(fbConn, "FBDatabaseConnectionImpl");
+                db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(getHost().getDatabaseConnection().getDriverMajorVersion(), fbConn, "FBDatabaseConnectionImpl");
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }

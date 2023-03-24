@@ -39,6 +39,7 @@ import org.executequery.gui.text.SQLTextArea;
 import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
 import java.net.MalformedURLException;
@@ -92,7 +93,6 @@ public class AutoCompleteSelectionsFactory {
                 databaseSystemFunctionsForHost(databaseHost, listSelections);
 
                 DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
-                DefaultDriverLoader driverLoader = new DefaultDriverLoader();
                 Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
                 DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
                 Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
@@ -106,30 +106,12 @@ public class AutoCompleteSelectionsFactory {
                         e.printStackTrace();
                     }
 
-                    URL[] urls = new URL[0];
-                    Class clazzdb = null;
-                    Object odb = null;
-                    try {
-                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-                        ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                        clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
-                        odb = clazzdb.newInstance();
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InstantiationException e) {
-                        e.printStackTrace();
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                    }
 
-                    IFBDatabaseConnection db = (IFBDatabaseConnection) odb;
                     try {
-
+                        IFBDatabaseConnection db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabaseConnectionImpl");
                         db.setConnection(connection);
                         addFirebirdDefnedKeywords(databaseHost, listSelections, db.getMajorVersion(), db.getMinorVersion());
-                    } catch (SQLException e) {
+                    } catch (SQLException | ClassNotFoundException e) {
                         e.printStackTrace();
                     }
 
@@ -186,31 +168,12 @@ public class AutoCompleteSelectionsFactory {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-
-                    URL[] urls = new URL[0];
-                    Class clazzdb = null;
-                    Object odb = null;
-                    try {
-                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-                        ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                        clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
-                        odb = clazzdb.newInstance();
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InstantiationException e) {
-                        e.printStackTrace();
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                    }
-
-                    IFBDatabaseConnection db = (IFBDatabaseConnection) odb;
                     try {
 
+                        IFBDatabaseConnection db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabaseConnectionImpl");
                         db.setConnection(connection);
                         addFirebirdDefnedKeywords(databaseHost, listSelections, db.getMajorVersion(), db.getMinorVersion());
-                    } catch (SQLException e) {
+                    } catch (SQLException | ClassNotFoundException e) {
                         e.printStackTrace();
                     }
 

@@ -22,6 +22,8 @@ lib/fbplugin\.jar
 
 lib/fbplugin-impl\.jar
 
+lib/fbplugin-impl5\.jar
+
 lib/jdbc-logger\.jar
 
 lib/jaybird-full\.jar

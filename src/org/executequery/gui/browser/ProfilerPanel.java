@@ -5,7 +5,6 @@ import org.executequery.base.TabView;
 import org.executequery.components.TableSelectionCombosGroup;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
@@ -15,9 +14,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
@@ -38,21 +35,6 @@ public class ProfilerPanel extends JPanel
     private static final int PAUSED = ACTIVE + 1;
     private static final int INACTIVE = PAUSED + 1;
 
-    // --- profiler commands ---
-
-    private static final String START_SESSION =
-            "SELECT RDB$PROFILER.START_SESSION('%s') FROM RDB$DATABASE";
-    private static final String PAUSE_SESSION =
-            "EXECUTE PROCEDURE RDB$PROFILER.PAUSE_SESSION(TRUE)";
-    private static final String RESUME_SESSION =
-            "EXECUTE PROCEDURE RDB$PROFILER.RESUME_SESSION";
-    private static final String FINISH_SESSION =
-            "EXECUTE PROCEDURE RDB$PROFILER.FINISH_SESSION(TRUE)";
-    private static final String CANCEL_SESSION =
-            "EXECUTE PROCEDURE RDB$PROFILER.CANCEL_SESSION";
-    private static final String DISCARD =
-            "EXECUTE PROCEDURE RDB$PROFILER.DISCARD";
-
     // --- GUI objects ---
 
     private JComboBox<?> connectionsComboBox;
@@ -70,7 +52,7 @@ public class ProfilerPanel extends JPanel
     // ---
 
     private int sessionId;
-    private DatabaseConnection connection;
+    private DefaultProfilerExecutor profilerExecutor;
     private DefaultStatementExecutor executor;
     private TableSelectionCombosGroup combosGroup;
 
@@ -80,17 +62,25 @@ public class ProfilerPanel extends JPanel
         init();
     }
 
+    public ProfilerPanel(int sessionId, DatabaseConnection connection) {
+
+        init();
+        this.sessionId = sessionId;
+        executor.setDatabaseConnection(connection);
+        generateTree();
+
+    }
+
     private void init() {
 
         executor = new DefaultStatementExecutor();
-        executor.setCommitMode(false);
         executor.setKeepAlive(true);
+        executor.setCommitMode(false);
 
         connectionsComboBox = WidgetFactory.createComboBox();
         connectionsComboBox.setModel(
                 new DynamicComboBoxModel(new Vector<>(ConnectionManager.getActiveConnections()))
         );
-        connectionsComboBox.addActionListener(e -> connectionChange());
         combosGroup = new TableSelectionCombosGroup(connectionsComboBox);
 
         rootTreeNode = new DefaultMutableTreeNode("root");
@@ -179,20 +169,16 @@ public class ProfilerPanel extends JPanel
 
     private void startSession() {
 
-        connectionChange();
-        if (!isVersionSupported(connection)) {
-            GUIUtilities.displayWarningMessage(bundleString("VersionNotSupported"));
-            return;
-        }
+        profilerExecutor = new DefaultProfilerExecutor(combosGroup.getSelectedHost().getDatabaseConnection());
+        executor.setDatabaseConnection(combosGroup.getSelectedHost().getDatabaseConnection());
 
-        executor.setDatabaseConnection(connection);
         try {
 
-            String query = String.format(START_SESSION, connection.getName() + "_session");
-            ResultSet resultSet = executor.execute(query, true).getResultSet();
-            sessionId = resultSet.next() ? resultSet.getInt(1) : -1;
-            executor.getConnection().commit();
-            executor.releaseResources();
+            sessionId = profilerExecutor.startSession();
+            if (sessionId == -1) {
+                GUIUtilities.displayWarningMessage(bundleString("VersionNotSupported"));
+                return;
+            }
             switchSessionState(ACTIVE);
 
         } catch (Exception e) {
@@ -203,9 +189,7 @@ public class ProfilerPanel extends JPanel
     private void pauseSession() {
         try {
 
-            executor.execute(PAUSE_SESSION, true);
-            executor.getConnection().commit();
-            executor.releaseResources();
+            profilerExecutor.pauseSession();
             switchSessionState(PAUSED);
             generateTree();
 
@@ -217,9 +201,7 @@ public class ProfilerPanel extends JPanel
     private void resumeSession() {
         try {
 
-            executor.execute(RESUME_SESSION, true);
-            executor.getConnection().commit();
-            executor.releaseResources();
+            profilerExecutor.resumeSession();
             switchSessionState(ACTIVE);
 
         } catch (Exception e) {
@@ -230,9 +212,7 @@ public class ProfilerPanel extends JPanel
     private void finishSession() {
         try {
 
-            executor.execute(FINISH_SESSION, true);
-            executor.getConnection().commit();
-            executor.releaseResources();
+            profilerExecutor.finishSession();
             switchSessionState(INACTIVE);
             generateTree();
 
@@ -244,9 +224,7 @@ public class ProfilerPanel extends JPanel
     private void cancelSession() {
         try {
 
-            executor.execute(CANCEL_SESSION, true);
-            executor.getConnection().commit();
-            executor.releaseResources();
+            profilerExecutor.cancelSession();
             switchSessionState(INACTIVE);
 
         } catch (Exception e) {
@@ -257,9 +235,7 @@ public class ProfilerPanel extends JPanel
     private void discardSession() {
         try {
 
-            executor.execute(DISCARD, true);
-            executor.getConnection().commit();
-            executor.releaseResources();
+            profilerExecutor.discardSession();
             switchSessionState(INACTIVE);
 
         } catch (Exception e) {
@@ -359,24 +335,6 @@ public class ProfilerPanel extends JPanel
         }
     }
 
-    private boolean isVersionSupported(DatabaseConnection connection) {
-
-        boolean isSupported;
-
-        try {
-
-            DefaultDatabaseHost dbHost = new DefaultDatabaseHost(connection);
-            isSupported = dbHost.getDatabaseMajorVersion() > 4;
-            dbHost.close();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            isSupported = false;
-        }
-
-        return isSupported;
-    }
-
     private void switchSessionState(int state) {
         switch (state) {
             case ACTIVE:
@@ -402,10 +360,6 @@ public class ProfilerPanel extends JPanel
                 cancelButton.setEnabled(false);
                 break;
         }
-    }
-
-    private void connectionChange() {
-        connection = combosGroup.getSelectedHost().getDatabaseConnection();
     }
 
     @Override
@@ -462,7 +416,7 @@ public class ProfilerPanel extends JPanel
     static class ProfilerTreeCellRenderer extends AbstractTreeCellRenderer {
 
         @Override
-        public Component getTreeCellRendererComponent (
+        public Component getTreeCellRendererComponent(
                 JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;

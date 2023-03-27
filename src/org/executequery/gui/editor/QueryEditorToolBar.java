@@ -97,6 +97,8 @@ class QueryEditorToolBar extends PanelToolBar {
 
     private static final String EXECUTE_SCRIPT_COMMAND = "execute-script-command";
 
+    private static final String EXECUTE_IN_PROFILER_COMMAND = "execute-in-profiler-command";
+
     private static final String CHANGE_SPLIT_ORIENTATION = "change-split-orientation-command";
 
     public static final String NAME = "Query Editor Tool Bar";
@@ -143,6 +145,9 @@ class QueryEditorToolBar extends PanelToolBar {
 
         addButton(createButton(EXECUTE_SCRIPT_COMMAND,
                 bundleString(EXECUTE_SCRIPT_COMMAND)));
+
+        addButton(createButton(EXECUTE_IN_PROFILER_COMMAND,
+                bundleString(EXECUTE_IN_PROFILER_COMMAND)));
 
         addButton(createButton(PRINT_PLAN_COMMAND,
                 bundleString(PRINT_PLAN_COMMAND)));

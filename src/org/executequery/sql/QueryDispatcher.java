@@ -29,6 +29,7 @@ import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.executequery.Constants;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.QueryTypes;
@@ -39,10 +40,13 @@ import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledResultSet;
 import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.DefaultProfilerExecutor;
+import org.executequery.gui.browser.ProfilerPanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.editor.InputParametersDialog;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.editor.autocomplete.Parameter;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
@@ -56,6 +60,7 @@ import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -239,34 +244,11 @@ public class QueryDispatcher {
      * @param query          query string
      * @param executeAsBlock to execute in entirety, false otherwise
      */
-    public void executeSQLQuery(DatabaseConnection dc,
-                                final String query,
-                                final boolean executeAsBlock) {
-        String checkUpdatesToLog = "Checking for updates from the release hub is ";
-        if (query.toLowerCase().trim().startsWith("releasehub on")) {
-            SystemProperties.setProperty("user", "releasehub",
-                    "true");
-            checkUpdatesToLog += "enabled";
-            Log.info(checkUpdatesToLog);
-            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
-            return;
-        }
-        if (query.toLowerCase().trim().startsWith("releasehub off")) {
-            SystemProperties.setProperty("user", "releasehub",
-                    "false");
-            checkUpdatesToLog += "disabled";
-            Log.info(checkUpdatesToLog);
-            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
-            return;
-        }
+    public void executeSQLQuery(
+            DatabaseConnection dc, final String query, final boolean executeAsBlock) {
 
-        if (!ConnectionManager.hasConnections()) {
-
-            setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Not Connected");
-            setStatusMessage(ERROR_EXECUTING);
-
+        if (!checkBeforeExecuteQuery(query))
             return;
-        }
 
         if (querySender == null) {
 
@@ -299,6 +281,71 @@ public class QueryDispatcher {
                             "Statement cancelled");
                     delegate.setStatusMessage(" Statement cancelled");
                 }
+                querySender.setCloseConnectionAfterQuery(false);
+                querySender.releaseResourcesWithoutCommit();
+                executing = false;
+            }
+
+        };
+
+        setOutputMessage(SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc);
+
+        delegate.executing();
+        delegate.setStatusMessage(Constants.EMPTY);
+        worker.start();
+    }
+
+    public void executeSQLQueryInProfiler(
+            DatabaseConnection dc, final String query, final boolean executeAsBlock) {
+
+        if (!checkBeforeExecuteQuery(query))
+            return;
+
+        if (querySender == null)
+            querySender = new DefaultStatementExecutor(null, true);
+
+        if (dc != null)
+            querySender.setDatabaseConnection(dc);
+
+        querySender.setTransactionIsolation(transactionLevel);
+        statementCancelled = false;
+
+        worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
+
+            @Override
+            public Object construct() {
+
+                try {
+
+                    DefaultProfilerExecutor profilerExecutor = new DefaultProfilerExecutor(dc);
+                    int sessionId = profilerExecutor.startSession();
+
+                    if (sessionId != -1) {
+                        executeSQL(query, executeAsBlock);
+                        profilerExecutor.finishSession();
+                        GUIUtilities.addCentralPane(ProfilerPanel.TITLE,
+                                (Icon) null, new ProfilerPanel(sessionId, dc), null, true);
+
+                    } else
+                        GUIUtilities.displayWarningMessage(Bundles.get(ProfilerPanel.class, "VersionNotSupported"));
+
+                } catch (SQLException ex) {
+                    Log.error("Error executing script in profiler session", ex);
+                }
+
+                return null;
+            }
+
+            @Override
+            public void finished() {
+
+                delegate.finished(duration);
+
+                if (statementCancelled) {
+                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Statement cancelled");
+                    delegate.setStatusMessage(" Statement cancelled");
+                }
+
                 querySender.setCloseConnectionAfterQuery(false);
                 querySender.releaseResourcesWithoutCommit();
                 executing = false;
@@ -1794,6 +1841,37 @@ public class QueryDispatcher {
 
     public void setTransactionIsolation(int transactionLevel) {
         this.transactionLevel = transactionLevel;
+    }
+
+    private boolean checkBeforeExecuteQuery(String query) {
+
+        String checkUpdatesToLog = "Checking for updates from the release hub is ";
+        if (query.toLowerCase().trim().startsWith("releasehub on")) {
+            SystemProperties.setProperty("user", "releasehub",
+                    "true");
+            checkUpdatesToLog += "enabled";
+            Log.info(checkUpdatesToLog);
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
+            return false;
+        }
+        if (query.toLowerCase().trim().startsWith("releasehub off")) {
+            SystemProperties.setProperty("user", "releasehub",
+                    "false");
+            checkUpdatesToLog += "disabled";
+            Log.info(checkUpdatesToLog);
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
+            return false;
+        }
+
+        if (!ConnectionManager.hasConnections()) {
+
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Not Connected");
+            setStatusMessage(ERROR_EXECUTING);
+
+            return false;
+        }
+
+        return true;
     }
 }
 

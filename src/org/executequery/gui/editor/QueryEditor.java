@@ -30,6 +30,8 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.*;
 import org.executequery.gui.FocusablePanel;
 import org.executequery.gui.SaveFunction;
+import org.executequery.gui.browser.DefaultProfilerExecutor;
+import org.executequery.gui.browser.ProfilerPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.gui.text.TextEditor;
@@ -1276,6 +1278,19 @@ public class QueryEditor extends DefaultTabView
         editorPanel.resetExecutingLine();
 
         delegate.executeScript(getSelectedConnection(), script);
+    }
+
+    public void executeInProfiler(String query) {
+
+        preExecute();
+
+        if (query == null)
+            query = editorPanel.getQueryAreaText();
+
+        editorPanel.resetExecutingLine();
+        boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
+        delegate.executeQueryInProfiler(getSelectedConnection(), query, executeAsBlock);
+
     }
 
     public void printExecutedPlan(boolean explained) {

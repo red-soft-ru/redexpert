@@ -308,8 +308,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         sqlBodyText = new SimpleSqlTextPanel();
         sqlBodyText.appendSQLText(getEmptySqlBody());
-        sqlBodyText.setBorder(BorderFactory.createTitledBorder(bundleString("Body", bundleString(getTypeObject()))));
+        //sqlBodyText.setBorder(BorderFactory.createTitledBorder());
         sqlBodyText.getTextPane().setDatabaseConnection(connection);
+        parametersTabs.insertTab(bundleString("Body", bundleString(getTypeObject())),null,sqlBodyText,null,0);
+
 
         outSqlText = new SimpleSqlTextPanel();
         outSqlText.getTextPane().setDatabaseConnection(connection);
@@ -329,28 +331,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         topPanel.add(ddlPanel, topGbh.nextRowFirstCol().setLabelDefault().get());
 
         //centralGbh.previousRow().previousRow().addLabelFieldPair(topPanel, sqlSecurityLabel, authidCombo, null);
-        JPanel topPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
-                1, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0);
-        topPanel.add(parametersTabs, gbcTop);
 
-        JPanel bottomPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbcBottom = new GridBagConstraints(0, 0,
-                1, GridBagConstraints.REMAINDER, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0);
-        bottomPanel.add(sqlBodyText, gbcBottom);
-
-        JSplitPane3 splitPane = new JSplitPane3();//new SplitPaneFactory().create(JSplitPane.VERTICAL_SPLIT, topPanel, bottomPanel);
-        splitPane.setTopComponent(topPanel);
-        splitPane.setBottomComponent(bottomPanel);
-        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setDividerLocation(0.3);
-        splitPane.setDividerSize(5);
-
-        containerPanel.add(splitPane,
+        containerPanel.add(parametersTabs,
                 new GridBagConstraints(0, 0,
                         1, 1, 1, 1,
                         GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
@@ -408,10 +390,12 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     protected void checkExternal() {
         super.checkExternal();
         boolean selected = useExternalBox.isSelected();
-        sqlBodyText.getParent().setVisible(!selected);
-        if (!selected) {
-            ((JSplitPane3) sqlBodyText.getParent().getParent()).setDividerLocation(0.4);
-        }
+        if(selected)
+            parametersTabs.remove(sqlBodyText);
+       else {
+            parametersTabs.insertTab(bundleString("Body", bundleString(getTypeObject())), null, sqlBodyText, null, 0);
+            parametersTabs.setSelectedComponent(sqlBodyText);
+       }
     }
 
     protected abstract String getEmptySqlBody();

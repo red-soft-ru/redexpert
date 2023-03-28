@@ -40,11 +40,7 @@ import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.DynamicLibraryLoader;
-import org.underworldlabs.util.MiscUtils;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.*;
 
@@ -90,7 +86,7 @@ public class AutoCompleteSelectionsFactory {
             if (autoCompleteKeywords) {
 
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
-                databaseSystemFunctionsForHost(databaseHost, listSelections);
+                //databaseSystemFunctionsForHost(databaseHost, listSelections);
 
                 DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
                 Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
@@ -222,9 +218,10 @@ public class AutoCompleteSelectionsFactory {
     }
 
     private void databaseFunctionsAndProceduresForHost(DatabaseHost databaseHost) {
-
-        databaseExecutableForHost(databaseHost, "FUNCTION", DATABASE_FUNCTION_DESCRIPTION, AutoCompleteListItemType.DATABASE_FUNCTION);
-        databaseExecutableForHost(databaseHost, "PROCEDURE", DATABASE_PROCEDURE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PROCEDURE);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.FUNCTION], DATABASE_FUNCTION_DESCRIPTION, AutoCompleteListItemType.DATABASE_FUNCTION);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.PROCEDURE], DATABASE_PROCEDURE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PROCEDURE);
+        /*databaseExecutableForHost(databaseHost, "FUNCTION", DATABASE_FUNCTION_DESCRIPTION, AutoCompleteListItemType.DATABASE_FUNCTION);
+        databaseExecutableForHost(databaseHost, "PROCEDURE", DATABASE_PROCEDURE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PROCEDURE);*/
     }
 
     private void databaseTablesForHost(DatabaseHost databaseHost) {

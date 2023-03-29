@@ -41,6 +41,8 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
     private static final Icon systemFunction;
     private static final Icon databaseFunction;
     private static final Icon databaseProcedure;
+    private static final Icon variable;
+    private static final Icon parameter;
     private static final ImageIcon animatedSpinner;
     private static final ImageIcon databaseTableView;
 
@@ -56,6 +58,8 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
         systemFunction = GUIUtilities.loadIcon("SystemFunction16.png", true);
         databaseFunction = GUIUtilities.loadIcon("Function16.png", true);
         databaseProcedure = GUIUtilities.loadIcon("Procedure16.png", true);
+        variable = GUIUtilities.loadIcon("Variable16.png");
+        parameter = GUIUtilities.loadIcon("Argument16.png");
     }
 
 
@@ -121,6 +125,12 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
                     setForeground(list.getForeground());
                     setBorder(noFocusBorder);
                     setIcon(animateImageIcon(animatedSpinner, list, index));
+                    break;
+                case VARIABLE:
+                    setIcon(variable);
+                    break;
+                case PARAMETER:
+                    setIcon(parameter);
                     break;
             }
 

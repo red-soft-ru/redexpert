@@ -13,6 +13,8 @@ import java.util.TreeSet;
 public class SqlLexerTokenMaker extends AntlrTokenMaker {
 
     public final static int DB_OBJECT = 999;
+    public final static int VARIABLE = DB_OBJECT-1;
+    public final static int PARAMETER = VARIABLE-1;
 
     public SqlLexerTokenMaker() {
         super(new MultiLineTokenInfo(0, Token.COMMENT_MULTILINE, "/*", "*/"),
@@ -20,6 +22,9 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
     }
 
     TreeSet<String> dbobjects;
+    TreeSet<String> variables;
+    TreeSet<String> parameters;
+
 
     @Override
     protected int convertType(int i) {
@@ -38,6 +43,8 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
             case SqlLexer.STRING_LITERAL:
                 return Token.LITERAL_STRING_DOUBLE_QUOTE;
             case SqlLexer.PART_OBJECT:
+            case PARAMETER:
+            case VARIABLE:
                 return Token.VARIABLE;
             case SqlLexer.LINTERAL_VALUE:
                 return Token.LITERAL_BOOLEAN;
@@ -67,7 +74,31 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
                     customToken.setType(DB_OBJECT);
                     return customToken;
                 }
+            }
 
+            if (parameters != null) {
+                String x = token.getText();
+                if (x.length() > 0 && x.charAt(0) >= 'A' && x.charAt(0) <= 'z')
+                    x = x.toUpperCase();
+                if (x.startsWith("\"") && x.endsWith("\"") && x.length() > 1)
+                    x = x.substring(1, x.length() - 1);
+                if (parameters.contains(x)) {
+                    CustomToken customToken = new CustomToken(token);
+                    customToken.setType(PARAMETER);
+                    return customToken;
+                }
+            }
+            if (variables != null) {
+                String x = token.getText();
+                if (x.length() > 0 && x.charAt(0) >= 'A' && x.charAt(0) <= 'z')
+                    x = x.toUpperCase();
+                if (x.startsWith("\"") && x.endsWith("\"") && x.length() > 1)
+                    x = x.substring(1, x.length() - 1);
+                if (variables.contains(x)) {
+                    CustomToken customToken = new CustomToken(token);
+                    customToken.setType(VARIABLE);
+                    return customToken;
+                }
             }
         }
         return token;
@@ -80,6 +111,22 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
 
     public void setDbobjects(TreeSet<String> dbobjects) {
         this.dbobjects = dbobjects;
+    }
+
+    public TreeSet<String> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(TreeSet<String> variables) {
+        this.variables = variables;
+    }
+
+    public TreeSet<String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(TreeSet<String> parameters) {
+        this.parameters = parameters;
     }
 
     @Override

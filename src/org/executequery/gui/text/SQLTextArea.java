@@ -511,6 +511,17 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
         SqlLexerTokenMaker maker = (SqlLexerTokenMaker) tokenMakerFactory.getTokenMaker("antlr/sql");
         maker.setDbobjects(dbobjects);
     }
+
+    public void setVariables(TreeSet<String> variables) {
+        SqlLexerTokenMaker maker = (SqlLexerTokenMaker) tokenMakerFactory.getTokenMaker("antlr/sql");
+        maker.setVariables(variables);
+        autoCompletePopup.setVariables(variables);
+    }
+    public void setParameters(TreeSet<String> parameters) {
+        SqlLexerTokenMaker maker = (SqlLexerTokenMaker) tokenMakerFactory.getTokenMaker("antlr/sql");
+        maker.setParameters(parameters);
+        autoCompletePopup.setParameters(parameters);
+    }
     private KeywordRepository keywords() {
 
         return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);

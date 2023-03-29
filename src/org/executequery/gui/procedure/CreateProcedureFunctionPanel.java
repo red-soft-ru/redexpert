@@ -34,6 +34,7 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,6 +45,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.Vector;
 
 /**
@@ -157,6 +159,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         simpleCommentPanel.setDatabaseObject((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         generateScript();
         reset();
+        fillCustomKeyWords();
     }
 
     private void loadVariables() {
@@ -311,6 +314,12 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         //sqlBodyText.setBorder(BorderFactory.createTitledBorder());
         sqlBodyText.getTextPane().setDatabaseConnection(connection);
         parametersTabs.insertTab(bundleString("Body", bundleString(getTypeObject())),null,sqlBodyText,null,0);
+        parametersTabs.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                fillCustomKeyWords();
+            }
+        });
 
 
         outSqlText = new SimpleSqlTextPanel();
@@ -386,6 +395,31 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         topGbh.nextRowFirstCol();
         checkExternal();
     }
+
+    protected void fillCustomKeyWords()
+    {
+        TreeSet<String> vars = new TreeSet<>();
+        vars = fillTreeSetFromTableVector(vars,variablesPanel.tableVector);
+        vars = fillTreeSetFromTableVector(vars,cursorsPanel.tableVector);
+        sqlBodyText.getTextPane().setVariables(vars);
+        ddlTextPanel.getTextPane().setVariables(vars);
+        TreeSet<String> pars = new TreeSet<>();
+        pars = fillTreeSetFromTableVector(pars,inputParametersPanel.tableVector);
+        pars = fillTreeSetFromTableVector(pars,outputParametersPanel.tableVector);
+        sqlBodyText.getTextPane().setParameters(pars);
+        ddlTextPanel.getTextPane().setParameters(pars);
+    }
+
+    TreeSet<String> fillTreeSetFromTableVector(TreeSet<String> treeSet,List<ColumnData> tableVector)
+    {
+        for(ColumnData cd:tableVector)
+        {
+            if(!MiscUtils.isNull(cd.getColumnName()))
+                treeSet.add(cd.getColumnName().toUpperCase());
+        }
+        return treeSet;
+    }
+
 
     protected void checkExternal() {
         super.checkExternal();

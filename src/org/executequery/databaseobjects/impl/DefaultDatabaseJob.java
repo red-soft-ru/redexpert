@@ -95,6 +95,16 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
         return "DROP JOB " + MiscUtils.getFormattedObject(getName());
     }
 
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return null;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return null;
+    }
+
     public String getId() {
         return id;
     }

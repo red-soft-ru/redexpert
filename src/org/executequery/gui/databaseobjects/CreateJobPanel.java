@@ -112,7 +112,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
         topGbh.addLabelFieldPair(topPanel, bundleString("ID"), idField, null, false, false);
         topGbh.addLabelFieldPair(topPanel, bundleString("Database"), databaseField, null, false, true);
         reset();
-        tabbedPane.addTab("Log", new JobsLogPanel(job));
+        tabbedPane.addTab(bundleString("Log"), new JobsLogPanel(job));
         addCreateSqlTab(job);
     }
 

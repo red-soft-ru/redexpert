@@ -1,17 +1,20 @@
 package org.executequery.gui.browser;
 
+import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.impl.DefaultDatabaseJob;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
+import org.executequery.localization.Bundles;
 import org.executequery.sql.sqlbuilder.Condition;
 import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.swing.EQDateTimePicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.util.IconUtilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -55,7 +58,8 @@ public class JobsLogPanel extends JPanel implements TabView {
         typesEvents.add(new JCheckBox("RUN_ERROR"));
         startDatePicker = new EQDateTimePicker();
         endDatePicker = new EQDateTimePicker();
-        refreshButton = new JButton("refresh");
+        refreshButton = new JButton();
+        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.png"));
         refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -66,8 +70,8 @@ public class JobsLogPanel extends JPanel implements TabView {
         setLayout(new GridBagLayout());
         GridBagHelper gbh = new GridBagHelper();
         gbh.setDefaultsStatic().defaults();
-        gbh.addLabelFieldPair(this, "startDate", startDatePicker, null, true, false, typesEvents.size());
-        gbh.addLabelFieldPair(this, "endDate", endDatePicker, null, false, true);
+        gbh.addLabelFieldPair(this, bundleString("startDate"), startDatePicker, null, true, false, typesEvents.size());
+        gbh.addLabelFieldPair(this, bundleString("endDate"), endDatePicker, null, false, true);
         add(refreshButton, gbh.nextRowFirstCol().setLabelDefault().get());
         for (JCheckBox checkBox : typesEvents) {
             checkBox.setSelected(true);
@@ -105,7 +109,7 @@ public class JobsLogPanel extends JPanel implements TabView {
         if (!startDatePicker.isNull())
             sb.appendCondition(Condition.createCondition(Field.createField(jl, "TIMESTAMP"), ">=", "'" + startDatePicker.getStringValue() + "'"));
         if (!endDatePicker.isNull())
-            sb.appendCondition(Condition.createCondition(Field.createField(jl, "TIMESTAMP"), "<=", "'" + startDatePicker.getStringValue() + "'"));
+            sb.appendCondition(Condition.createCondition(Field.createField(jl, "TIMESTAMP"), "<=", "'" + endDatePicker.getStringValue() + "'"));
         sb.setOrdering("1");
         String query = sb.getSQLQuery();
         try {
@@ -132,5 +136,10 @@ public class JobsLogPanel extends JPanel implements TabView {
     @Override
     public boolean tabViewDeselected() {
         return true;
+    }
+
+    private String bundleString(String key,Object... args)
+    {
+        return Bundles.get(JobsLogPanel.class,key,args);
     }
 }

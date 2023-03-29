@@ -4,6 +4,7 @@ import com.github.lgooddatepicker.zinternaltools.ExtraDateStrings;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -112,14 +113,13 @@ public class CronTab extends JPanel {
                 for (int i = 1; i < weekdays.length; i++) {
                     String unit = weekdays[i];
                     units.add(unit);
-                    intervalUnits.add(1);
+                    intervalUnits.add(i);
                 }
                 break;
             default:
                 break;
         }
         intervalCombo = new JComboBox(intervalUnits);
-        intervalCombo.setEditable(true);
         beginCheck = new JCheckBox(bundleString("begin_with"));
         beginCombo = new JComboBox<>(units);
         endCheck = new JCheckBox(bundleString("end_with"));
@@ -223,8 +223,12 @@ public class CronTab extends JPanel {
     private void generateCron() {
         if (!fillValues) {
             generatingCron = true;
+            String[] crons=cronField.getText().split(" ");
+            if(crons.length!=5)
+                crons=new String[]{"*","*","*","*","*"};
+            String cronRes = crons[typeCronTab];
             if (eachUnitButton.isSelected()) {
-                cronField.setText("*");
+                cronRes="*";
             } else if (intervalUnitsButton.isSelected()) {
                 StringBuilder cron = new StringBuilder();
                 if (beginCheck.isSelected())
@@ -234,10 +238,10 @@ public class CronTab extends JPanel {
                 if (!beginCheck.isSelected() && !endCheck.isSelected())
                     cron.append("*");
                 cron.append("/").append(intervalCombo.getSelectedItem());
-                cronField.setText(cron.toString());
+                cronRes=cron.toString();
 
             } else if (eachUnitBetweenButton.isSelected()) {
-                cronField.setText(getValueFromIndex(betweenBeginCombo.getSelectedIndex()) + "-" + getValueFromIndex(betweenEndCombo.getSelectedIndex()));
+               cronRes = getValueFromIndex(betweenBeginCombo.getSelectedIndex()) + "-" + getValueFromIndex(betweenEndCombo.getSelectedIndex());
             } else if (specificUnitsButton.isSelected()) {
                 StringBuilder cron = new StringBuilder();
                 boolean first = true;
@@ -250,8 +254,19 @@ public class CronTab extends JPanel {
                     }
 
                 }
-                cronField.setText(cron.toString());
+                cronRes = cron.toString();
+                if(MiscUtils.isNull(cronRes))
+                    cronRes="?";
             }
+            StringBuilder sb = new StringBuilder();
+            for(int i=0;i<crons.length;i++) {
+                if(i!=0)
+                    sb.append(" ");
+                if (i == typeCronTab)
+                    sb.append(cronRes);
+                else sb.append(crons[i]);
+            }
+            cronField.setText(sb.toString());
             generatingCron = false;
         }
     }
@@ -261,51 +276,56 @@ public class CronTab extends JPanel {
             boolean validValue = true;
             fillValues = true;
             try {
-                String cron = cronField.getText();
-                if (cron.trim().equalsIgnoreCase("*"))
-                    eachUnitButton.setSelected(true);
-                else if (cron.contains(",") && !(cron.contains("-") || cron.contains("/")) || (!cron.contains(",") && !cron.contains("/") && !cron.contains("-"))) {
-                    specificUnitsButton.setSelected(true);
-                    String[] qs = cron.split(",");
-                    for (String q : checkBoxPanel.getCheckBoxMap().keySet()) {
-                        checkBoxPanel.getCheckBoxMap().get(q).setSelected(false);
-                    }
-                    for (String q : qs) {
-                        int index = Integer.parseInt(q);
-                        checkBoxPanel.getCheckBoxMap().get(units.get(index)).setSelected(true);
-                    }
+                String[] crons=cronField.getText().split(" ");
+                if(crons.length!=5)
+                    validValue=false;
+                else {
+                    String cron = crons[typeCronTab];
+                    if (cron.trim().equalsIgnoreCase("*"))
+                        eachUnitButton.setSelected(true);
+                    else if (cron.contains(",") && !(cron.contains("-") || cron.contains("/")) || (!cron.contains(",") && !cron.contains("/") && !cron.contains("-"))) {
+                        specificUnitsButton.setSelected(true);
+                        String[] qs = cron.split(",");
+                        for (String q : checkBoxPanel.getCheckBoxMap().keySet()) {
+                            checkBoxPanel.getCheckBoxMap().get(q).setSelected(false);
+                        }
+                        for (String q : qs) {
+                            int index = Integer.parseInt(q);
+                            checkBoxPanel.getCheckBoxMap().get(units.get(index)).setSelected(true);
+                        }
 
-                } else if (cron.contains("/") && !cron.contains(",")) {
-                    intervalUnitsButton.setSelected(true);
-                    String interval = cron.substring(cron.indexOf("/") + 1);
-                    intervalCombo.setSelectedIndex(Integer.parseInt(interval) - 1);
-                    interval = cron.substring(0, cron.indexOf("/"));
-                    if (interval.equalsIgnoreCase("*")) {
-                        beginCheck.setSelected(false);
-                        endCheck.setSelected(false);
-                    } else if (interval.contains("-")) {
-                        beginCheck.setSelected(true);
-                        endCheck.setSelected(true);
-                        String beginValue = interval.substring(0, cron.indexOf("-"));
-                        String endValue = interval.substring(cron.indexOf("-") + 1);
-                        int ind1 = Integer.parseInt(beginValue);
-                        int ind2 = Integer.parseInt(endValue);
-                        beginCombo.setSelectedIndex(getIndexFromValue(ind1));
-                        endCombo.setSelectedIndex(getIndexFromValue(ind2));
+                    } else if (cron.contains("/") && !cron.contains(",")) {
+                        intervalUnitsButton.setSelected(true);
+                        String interval = cron.substring(cron.indexOf("/") + 1);
+                        intervalCombo.setSelectedIndex(Integer.parseInt(interval) - 1);
+                        interval = cron.substring(0, cron.indexOf("/"));
+                        if (interval.equalsIgnoreCase("*")) {
+                            beginCheck.setSelected(false);
+                            endCheck.setSelected(false);
+                        } else if (interval.contains("-")) {
+                            beginCheck.setSelected(true);
+                            endCheck.setSelected(true);
+                            String beginValue = interval.substring(0, cron.indexOf("-"));
+                            String endValue = interval.substring(cron.indexOf("-") + 1);
+                            int ind1 = Integer.parseInt(beginValue);
+                            int ind2 = Integer.parseInt(endValue);
+                            beginCombo.setSelectedIndex(getIndexFromValue(ind1));
+                            endCombo.setSelectedIndex(getIndexFromValue(ind2));
+                        } else {
+                            beginCheck.setSelected(true);
+                            int ind = Integer.parseInt(interval);
+                            beginCombo.setSelectedItem(getIndexFromValue(ind));
+                        }
+                    } else if (cron.contains("-") && !cron.contains(",")) {
+                        eachUnitBetweenButton.setSelected(true);
+                        String[] qs = cron.split("-");
+                        if (qs.length > 2)
+                            validValue = false;
+                        betweenBeginCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(qs[0])));
+                        betweenEndCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(qs[1])));
                     } else {
-                        beginCheck.setSelected(true);
-                        int ind = Integer.parseInt(interval);
-                        beginCombo.setSelectedItem(getIndexFromValue(ind));
+                        useTextFieldButton.setSelected(true);
                     }
-                } else if (cron.contains("-") && !cron.contains(",")) {
-                    eachUnitBetweenButton.setSelected(true);
-                    String[] qs = cron.split("-");
-                    if (qs.length > 2)
-                        validValue = false;
-                    betweenBeginCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(qs[0])));
-                    betweenEndCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(qs[1])));
-                } else {
-                    useTextFieldButton.setSelected(true);
                 }
 
 

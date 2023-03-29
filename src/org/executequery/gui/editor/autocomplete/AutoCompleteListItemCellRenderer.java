@@ -58,8 +58,8 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
         systemFunction = GUIUtilities.loadIcon("SystemFunction16.png", true);
         databaseFunction = GUIUtilities.loadIcon("Function16.png", true);
         databaseProcedure = GUIUtilities.loadIcon("Procedure16.png", true);
-        variable = GUIUtilities.loadIcon("Variable16.png");
-        parameter = GUIUtilities.loadIcon("Argument16.png");
+        variable = GUIUtilities.loadIcon("Variable16.png",true);
+        parameter = GUIUtilities.loadIcon("Argument16.png",true);
     }
 
 

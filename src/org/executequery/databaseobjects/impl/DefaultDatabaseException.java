@@ -89,6 +89,17 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return this.getCreateSQLText();
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        DefaultDatabaseException comparingException = (DefaultDatabaseException) databaseObject;
+        return SQLUtils.generateAlterException(this, comparingException);
+    }
+
+    @Override
     protected String queryForInfo() {
 
         StringBuilder sb = new StringBuilder();

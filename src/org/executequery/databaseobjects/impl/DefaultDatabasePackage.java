@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
@@ -105,6 +106,18 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("PACKAGE", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        String comment = Comparer.isCommentsNeed() ? getDescription() : null;
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), comment);
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
     }
 
     protected String queryForInfo() {

@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -353,6 +354,19 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("TRIGGER", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
+        return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), comment, true);
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
     }
 
     protected static final String TRIGGER_SOURCE = "TRIGGER_SOURCE";

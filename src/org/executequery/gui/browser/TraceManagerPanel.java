@@ -7,6 +7,7 @@ import org.executequery.base.TabView;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.browser.managment.tracemanager.BuildConfigurationPanel;
@@ -36,6 +37,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -323,7 +325,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                                 GUIUtilities.displayErrorMessage("Please select configuration file");
                                 return;
                             }
-                            conf = traceManager.loadConfigurationFromFile(fileConfField.getText());
+                            conf = FileUtils.loadFile(fileConfField.getText());
                         } else conf = confPanel.getConfig();
                         traceManager.startTraceSession(sessionField.getText(), conf);
                         startStopSessionButton.setText(bundleString("Stop"));
@@ -431,19 +433,12 @@ public class TraceManagerPanel extends JPanel implements TabView {
     }
 
     private void initTraceManager() {
-        DatabaseDriver dd = null;
-        List<DatabaseDriver> dds = driverRepository().findAll();
-        for (DatabaseDriver d : dds) {
-            if (d.getClassName().contains("FBDriver"))
-                dd = d;
-            break;
-        }
-        Object driver = null;
         try {
-            driver = DynamicLibraryLoader.loadingObjectFromClassLoader(dd, dd.getClassName(), dd.getPath());
-            traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+            Driver driver = DefaultDriverLoader.getDefaultDriver();
+            traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(),
+                    driver,
                     "FBTraceManagerImpl");
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
     }

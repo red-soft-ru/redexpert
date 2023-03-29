@@ -17,8 +17,6 @@ public interface IFBTraceManager {
 
     void listTraceSessions() throws SQLException;
 
-    String loadConfigurationFromFile(String var1) throws IOException;
-
     String getCharSet();
 
     void setCharSet(String var1);

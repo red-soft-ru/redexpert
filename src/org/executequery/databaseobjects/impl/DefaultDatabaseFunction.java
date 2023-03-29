@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.FunctionArgument;
 import org.executequery.sql.sqlbuilder.*;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
@@ -124,6 +125,19 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("FUNCTION", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(),
+                getEngine(), getSqlSecurity(), getRemarks(), true, Comparer.isCommentsNeed(),
+                isDeterministic(), getHost().getDatabaseConnection());
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
     }
 
     protected static final String FA = "FA_";

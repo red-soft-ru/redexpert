@@ -28,6 +28,8 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.datasource.PooledConnection;
+import org.executequery.datasource.PooledResultSet;
+import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.ErrorMessagePublisher;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -36,6 +38,7 @@ import org.executequery.sql.SqlStatementResult;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.table.AbstractSortableTableModel;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -571,27 +574,16 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                         case Types.CLOB:
                             Clob clob = resultSet.getClob(i);
                             if (clob != null && clob.getClass().getName().contains("org.firebirdsql.jdbc")) {
-                                URL[] urls = new URL[0];
-                                Class clazzdb = null;
-                                Object odb = null;
                                 try {
-                                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-                                    ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
-                                    clazzdb = cl.loadClass("biz.redsoft.FBClobImpl");
-                                    odb = clazzdb.newInstance();
+                                    PooledResultSet pooledResultSet = (PooledResultSet) resultSet;
+                                    PooledConnection connection = (PooledConnection) pooledResultSet.getStatement().getConnection();
+                                    Connection unwrapCon = connection.unwrap(Connection.class);
+                                    IFBClob ifbClob = (IFBClob) DynamicLibraryLoader.loadingObjectFromClassLoader(connection.getDatabaseConnection().getDriverMajorVersion(), unwrapCon, "FBClobImpl");
+                                    ifbClob.detach(clob, ((PooledStatement) pooledResultSet.getStatement()).getStatement());
+                                    value.setValue(ifbClob);
                                 } catch (ClassNotFoundException e) {
                                     e.printStackTrace();
-                                } catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                } catch (InstantiationException e) {
-                                    e.printStackTrace();
-                                } catch (MalformedURLException e) {
-                                    e.printStackTrace();
                                 }
-
-                                IFBClob ifbClob = (IFBClob) odb;
-                                ifbClob.detach(clob);
-                                value.setValue(ifbClob);
                             } else {
                                 value.setValue(clob);
                             }
@@ -599,8 +591,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getCharset());
                                 if (MiscUtils.isNull(columnDataList.get(i - 1).getCharset()) || Objects.equals(columnDataList.get(i - 1).getCharset(), CreateTableSQLSyntax.NONE))
                                     ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getDatabaseConnection().getCharset());
-                            } else
-                                ((ClobRecordDataItem) value).setCharset(((PooledConnection) resultSet.getStatement().getConnection()).getDatabaseConnection().getCharset());
+                            } else ((ClobRecordDataItem) value).setCharset(CreateTableSQLSyntax.NONE);
                             break;
                         case Types.LONGVARBINARY:
                         case Types.VARBINARY:
@@ -610,27 +601,16 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                         case Types.BLOB:
                             Blob blob = resultSet.getBlob(i);
                             if (blob != null && blob.getClass().getName().contains("org.firebirdsql.jdbc")) {
-                                URL[] urls = new URL[0];
-                                Class clazzdb = null;
-                                Object odb = null;
                                 try {
-                                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-                                    ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
-                                    clazzdb = cl.loadClass("biz.redsoft.FBBlobImpl");
-                                    odb = clazzdb.newInstance();
+                                    PooledResultSet pooledResultSet = (PooledResultSet) resultSet;
+                                    PooledConnection connection = (PooledConnection) pooledResultSet.getStatement().getConnection();
+                                    Connection unwrapCon = connection.unwrap(Connection.class);
+                                    IFBBlob ifbBlob = (IFBBlob) DynamicLibraryLoader.loadingObjectFromClassLoader(connection.getDatabaseConnection().getDriverMajorVersion(), unwrapCon, "FBBlobImpl");
+                                    ifbBlob.detach(blob, ((PooledStatement) pooledResultSet.getStatement()).getStatement());
+                                    value.setValue(ifbBlob);
                                 } catch (ClassNotFoundException e) {
                                     e.printStackTrace();
-                                } catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                } catch (InstantiationException e) {
-                                    e.printStackTrace();
-                                } catch (MalformedURLException e) {
-                                    e.printStackTrace();
                                 }
-
-                                IFBBlob ifbBlob = (IFBBlob) odb;
-                                ifbBlob.detach(blob);
-                                value.setValue(ifbBlob);
                             } else {
                                 value.setValue(blob);
                             }

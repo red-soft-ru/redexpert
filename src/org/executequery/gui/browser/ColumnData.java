@@ -21,6 +21,7 @@
 package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -31,9 +32,13 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.log.Log;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 
 import java.io.Serializable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;

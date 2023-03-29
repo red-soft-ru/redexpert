@@ -24,6 +24,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
@@ -32,7 +33,8 @@ import org.underworldlabs.util.SQLUtils;
 import java.sql.ResultSet;
 import java.util.List;
 
-public class DefaultDatabaseView extends AbstractTableObject implements DatabaseView {
+public class DefaultDatabaseView extends AbstractTableObject
+        implements DatabaseView {
 
     public DefaultDatabaseView(DatabaseObject object) {
 
@@ -48,8 +50,8 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
     protected String queryForInfo() {
 
-        String query = "select r.rdb$description as "+DESCRIPTION+",\n" +
-                "r.rdb$view_source as "+SOURCE+"\n"+
+        String query = "select r.rdb$description as " + DESCRIPTION + ",\n" +
+                "r.rdb$view_source as " + SOURCE + "\n" +
                 "from rdb$relations r\n" +
                 "where r.rdb$relation_name = ?";
 
@@ -58,16 +60,14 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) {
-       try {
-           if(rs.next())
-           {
-                setRemarks(getFromResultSet(rs,DESCRIPTION));
-                setSource(getFromResultSet(rs,SOURCE));
-           }
-       } catch (Exception e)
-       {
-           e.printStackTrace();
-       }
+        try {
+            if (rs.next()) {
+                setRemarks(getFromResultSet(rs, DESCRIPTION));
+                setSource(getFromResultSet(rs, SOURCE));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -80,9 +80,23 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
                 getRemarks(), getDatabaseMajorVersion(), false);
     }
+
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("VIEW", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
+        return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
+                comment, getDatabaseMajorVersion(), false);
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
     }
 
     @Override
@@ -198,7 +212,8 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
                 }
             }
 
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         return fields;
     }

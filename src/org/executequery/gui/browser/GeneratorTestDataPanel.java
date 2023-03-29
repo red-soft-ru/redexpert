@@ -240,7 +240,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                                         Connection fbConn = realConnection.unwrap(Connection.class);
                                         IFBDatabaseConnection db = null;
                                         try {
-                                            db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(fbConn, "FBDatabaseConnectionImpl4");
+                                            db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(getSelectedConnection().getDriverMajorVersion(), fbConn, "FBDatabaseConnectionImpl4");
                                         } catch (ClassNotFoundException e) {
                                             e.printStackTrace();
                                         }

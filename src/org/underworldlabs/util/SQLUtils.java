@@ -340,7 +340,7 @@ public final class SQLUtils {
 
             sb.append(" (\n");
             sb.append(formattedParameters(inputParameters, false));
-            sb.append(")");
+            sb.append(") ");
         }
 
         return sb.toString();

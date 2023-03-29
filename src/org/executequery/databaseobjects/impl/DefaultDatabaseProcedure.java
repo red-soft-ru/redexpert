@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
@@ -87,6 +88,19 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return SQLUtils.generateCreateProcedure(
+                getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(), getSourceCode(),
+                getRemarks(), getHost().getDatabaseConnection(), true, Comparer.isCommentsNeed());
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
     }
 
     protected static final String PP = "PP_";

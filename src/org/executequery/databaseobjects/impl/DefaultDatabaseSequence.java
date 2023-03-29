@@ -3,6 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.log.Log;
 import org.executequery.sql.sqlbuilder.Condition;
 import org.executequery.sql.sqlbuilder.Field;
@@ -138,6 +139,36 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+
+        String query = "";
+        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
+        try {
+            long firstValue = (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue();
+            query = SQLUtils.generateCreateSequence(getName(), firstValue,
+                    getIncrement(), comment, getVersion(), false);
+
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            e.printStackTrace();
+        }
+
+        return query;
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+
+        DefaultDatabaseSequence comparingSequence = (DefaultDatabaseSequence) databaseObject;
+        int version = 0;
+        try {
+            version = getVersion();
+        } catch (SQLException ignored) {
+        }
+
+        return SQLUtils.generateAlterSequence(this, comparingSequence, version);
+    }
+
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         if (rs.next()) {
             setRemarks(getFromResultSet(rs, DESCRIPTION));
@@ -154,7 +185,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         sb.appendTable(gens);
 
         //sb.appendField(Field.createField().setStatement("GEN_ID(" + MiscUtils.getFormattedObject(getName()) + ", 0)").setAlias(CURRENT_VALUE));
-        sb.appendField(Field.createField(gens, INITIAL_VALUE));
+        sb.appendField(Field.createField(gens, INITIAL_VALUE).setNull(getDatabaseMajorVersion() < 3));
         sb.appendField(Field.createField(gens, GENERATOR_INCREMENT).setNull(getDatabaseMajorVersion() < 3));
         sb.appendField(Field.createField(gens, DESCRIPTION));
 

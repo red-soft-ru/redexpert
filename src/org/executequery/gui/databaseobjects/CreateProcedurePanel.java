@@ -20,6 +20,8 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -30,6 +32,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Vector;
@@ -80,19 +83,12 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
             DatabaseMetaData dmd = host.getDatabaseMetaData();
             PooledDatabaseMetaData poolMetaData = (PooledDatabaseMetaData) dmd;
             DatabaseMetaData dMetaData = poolMetaData.getInner();
-            URL[] urls;
-            Class clazzdb;
-            Object odb;
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, dMetaData.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBDatabaseMetadataImpl");
-            odb = clazzdb.newInstance();
-            IFBDatabaseMetadata db = (IFBDatabaseMetadata) odb;
+            IFBDatabaseMetadata db = (IFBDatabaseMetadata) DynamicLibraryLoader.loadingObjectFromClassLoader(connection.getDriverMajorVersion(), dMetaData, "FBDatabaseMetadataImpl");
 
             fullProcedureBody = db.getProcedureSourceCode(dMetaData, this.procedure);
 
 
-        } catch (IllegalAccessException | InstantiationException | MalformedURLException | ClassNotFoundException |
+        } catch (ClassNotFoundException |
                  SQLException e) {
             e.printStackTrace();
         } finally {

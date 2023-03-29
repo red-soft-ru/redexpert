@@ -658,7 +658,7 @@ public class QueryDispatcher {
                             e.printStackTrace();
                         }
 
-                        IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(connection, "FBDatabasePerformanceImpl");
+                        IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabasePerformanceImpl");
                         try {
 
                             db.setConnection(connection);
@@ -940,7 +940,7 @@ public class QueryDispatcher {
                         e.printStackTrace();
                     }
 
-                    IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(connection, "FBDatabasePerformanceImpl");
+                    IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), connection, "FBDatabasePerformanceImpl");
                     try {
 
                         db.setConnection(connection);
@@ -1326,32 +1326,12 @@ public class QueryDispatcher {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
-            URL[] urls = new URL[0];
-            Class clazzdb = null;
-            Object odb = null;
             try {
-                urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-                ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
-                odb = clazzdb.newInstance();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-
-            IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
-            try {
-
+                IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabasePerformanceImpl");
                 db.setConnection(connection);
                 after = db.getPerformanceInfo();
 
-            } catch (SQLException e) {
+            } catch (SQLException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
 
@@ -1381,31 +1361,12 @@ public class QueryDispatcher {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-
-                URL[] urls = new URL[0];
-                Class clazzdb = null;
-                Object odb = null;
                 try {
-                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-                    ClassLoader cl = new URLClassLoader(urls, resultSet.getClass().getClassLoader());
-                    clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
-                    odb = clazzdb.newInstance();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-
-                IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
-                try {
+                    IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), resultSet, "FBDatabasePerformanceImpl");
 
                     setOutputMessage(SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(resultSet));
 
-                } catch (SQLException e) {
+                } catch (SQLException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }
@@ -1418,7 +1379,6 @@ public class QueryDispatcher {
     private void printPlan(Statement st, boolean explained) {
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-            DefaultDriverLoader driverLoader = new DefaultDriverLoader();
             Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
             DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
             Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
@@ -1432,34 +1392,15 @@ public class QueryDispatcher {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-
-                URL[] urls = new URL[0];
-                Class clazzdb = null;
-                Object odb = null;
                 try {
-                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-                    ClassLoader cl = new URLClassLoader(urls, statement.getClass().getClassLoader());
-                    clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
-                    odb = clazzdb.newInstance();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-
-                IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
-                try {
+                    IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), statement, "FBDatabasePerformanceImpl");
                     String plan;
                     if (explained)
                         plan = db.getLastExplainExecutedPlan(statement);
                     else plan = db.getLastExecutedPlan(statement);
                     setOutputMessage(SqlMessages.PLAIN_MESSAGE, plan, true);
 
-                } catch (SQLException e) {
+                } catch (SQLException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }

@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.sql.TokenizingFormatter;
@@ -636,6 +637,26 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+
+        updateListCD();
+        updateListCC();
+
+        if (Comparer.isComputedFieldsNeed())
+            listCD.stream().filter(cd -> !MiscUtils.isNull(cd.getComputedBy())).forEach(cd -> cd.setComputedBy(null));
+
+        return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, false,
+                false, Comparer.isCommentsNeed(), null, getExternalFile(),
+                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
+        DefaultDatabaseTable comparingTable = (DefaultDatabaseTable) databaseObject;
+        return SQLUtils.generateAlterTable(this, comparingTable, false,
+                new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed());
+    }
+
     public String getDropSQLText(boolean cascadeConstraints) {
 
     /*StatementGenerator statementGenerator = null;

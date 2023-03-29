@@ -17,6 +17,7 @@ import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -265,25 +266,12 @@ public class BrowserPrivilegesPanel extends JPanel implements ActionListener {
         } catch (SQLException e) {
             Log.error("error get connection for getting users in grant manager:", e);
         }
-
-        URL[] urls = new URL[0];
-        Class clazzdb = null;
-        Object odb = null;
+        IFBUserManager userManager = null;
         try {
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBUserManagerImpl");
-            odb = clazzdb.newInstance();
+            userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBUserManagerImpl");
         } catch (ClassNotFoundException e) {
-            Log.error("Error get users in Grant Manager:", e);
-        } catch (IllegalAccessException e) {
-            Log.error("Error get users in Grant Manager:", e);
-        } catch (InstantiationException e) {
-            Log.error("Error get users in Grant Manager:", e);
-        } catch (MalformedURLException e) {
-            Log.error("Error get users in Grant Manager:", e);
+            e.printStackTrace();
         }
-        IFBUserManager userManager = (IFBUserManager) odb;
         userManager = getUserManager(userManager, databaseConnection);
         Map<String, IFBUser> users;
         try {

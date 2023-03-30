@@ -38,6 +38,7 @@ public class ProfilerPanel extends JPanel
     // --- GUI objects ---
 
     private JComboBox<?> connectionsComboBox;
+    private JCheckBox showProfilerProcessesCheckBox;
 
     private JTree profilerTree;
     private DefaultMutableTreeNode rootTreeNode;
@@ -81,6 +82,8 @@ public class ProfilerPanel extends JPanel
         connectionsComboBox.setModel(
                 new DynamicComboBoxModel(new Vector<>(ConnectionManager.getActiveConnections())));
         combosGroup = new TableSelectionCombosGroup(connectionsComboBox);
+
+        showProfilerProcessesCheckBox = new JCheckBox(bundleString("showProfilerProcessesCheckBox"));
 
         rootTreeNode = new DefaultMutableTreeNode("root");
         profilerTree = new JTree(new DefaultTreeModel(rootTreeNode));
@@ -132,6 +135,7 @@ public class ProfilerPanel extends JPanel
         gridBagHelper.addLabelFieldPair(toolsPanel,
                 bundleString("Connection"), connectionsComboBox, null, false, false);
         toolsPanel.add(buttonPanel, gridBagHelper.nextCol().get());
+        toolsPanel.add(showProfilerProcessesCheckBox, gridBagHelper.nextCol().get());
 
         // --- resultSet panel ---
 
@@ -323,6 +327,9 @@ public class ProfilerPanel extends JPanel
                 "JOIN PLG$PROF_REQUESTS REQ ON\n" +
                 "STA.PROFILE_ID = REQ.PROFILE_ID AND STA.STATEMENT_ID = REQ.STATEMENT_ID\n" +
                 "WHERE STA.PROFILE_ID = '" + sessionId + "'\n" +
+                (!showProfilerProcessesCheckBox.isSelected() ?
+                        "AND (STA.PACKAGE_NAME IS NULL OR STA.PACKAGE_NAME NOT CONTAINING 'RDB$PROFILER')\n" +
+                                "AND (STA.SQL_TEXT IS NULL OR STA.SQL_TEXT NOT CONTAINING 'RDB$PROFILER')\n" : "") +
                 "ORDER BY REQ.CALLER_REQUEST_ID;";
 
         try {

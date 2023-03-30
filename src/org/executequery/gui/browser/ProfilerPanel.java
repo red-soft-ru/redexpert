@@ -68,7 +68,7 @@ public class ProfilerPanel extends JPanel
         init();
         this.sessionId = sessionId;
         executor.setDatabaseConnection(connection);
-        generateTree();
+        generateTree(false);
 
     }
 
@@ -194,7 +194,7 @@ public class ProfilerPanel extends JPanel
 
             profilerExecutor.pauseSession();
             switchSessionState(PAUSED);
-            generateTree();
+            generateTree(showProfilerProcessesCheckBox.isSelected());
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionPause"), e);
@@ -217,7 +217,7 @@ public class ProfilerPanel extends JPanel
 
             profilerExecutor.finishSession();
             switchSessionState(INACTIVE);
-            generateTree();
+            generateTree(showProfilerProcessesCheckBox.isSelected());
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionFinish"), e);
@@ -248,9 +248,9 @@ public class ProfilerPanel extends JPanel
 
     // ---
 
-    private void generateTree() {
+    private void generateTree(boolean showProfilerProcesses) {
 
-        ResultSet rs = getProfilerData();
+        ResultSet rs = getProfilerData(showProfilerProcesses);
 
         if (rs == null) {
             GUIUtilities.displayWarningMessage(bundleString("ErrorUpdatingData"));
@@ -314,7 +314,7 @@ public class ProfilerPanel extends JPanel
         return null;
     }
 
-    private ResultSet getProfilerData() {
+    private ResultSet getProfilerData(boolean showProfilerProcesses) {
 
         String query = "SELECT DISTINCT\n" +
                 "REQ.REQUEST_ID,\n" +
@@ -327,9 +327,9 @@ public class ProfilerPanel extends JPanel
                 "JOIN PLG$PROF_REQUESTS REQ ON\n" +
                 "STA.PROFILE_ID = REQ.PROFILE_ID AND STA.STATEMENT_ID = REQ.STATEMENT_ID\n" +
                 "WHERE STA.PROFILE_ID = '" + sessionId + "'\n" +
-                (!showProfilerProcessesCheckBox.isSelected() ?
+                (showProfilerProcesses ? "" :
                         "AND (STA.PACKAGE_NAME IS NULL OR STA.PACKAGE_NAME NOT CONTAINING 'RDB$PROFILER')\n" +
-                                "AND (STA.SQL_TEXT IS NULL OR STA.SQL_TEXT NOT CONTAINING 'RDB$PROFILER')\n" : "") +
+                                "AND (STA.SQL_TEXT IS NULL OR STA.SQL_TEXT NOT CONTAINING 'RDB$PROFILER')\n") +
                 "ORDER BY REQ.CALLER_REQUEST_ID;";
 
         try {

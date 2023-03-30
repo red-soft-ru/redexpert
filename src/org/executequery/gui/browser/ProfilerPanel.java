@@ -79,8 +79,7 @@ public class ProfilerPanel extends JPanel
 
         connectionsComboBox = WidgetFactory.createComboBox();
         connectionsComboBox.setModel(
-                new DynamicComboBoxModel(new Vector<>(ConnectionManager.getActiveConnections()))
-        );
+                new DynamicComboBoxModel(new Vector<>(ConnectionManager.getActiveConnections())));
         combosGroup = new TableSelectionCombosGroup(connectionsComboBox);
 
         rootTreeNode = new DefaultMutableTreeNode("root");
@@ -270,10 +269,10 @@ public class ProfilerPanel extends JPanel
                         new ProfilerData(id, sqlText, totalTime) :
                         new ProfilerData(id, packageName, routineName, totalTime);
 
-                if (callerId == 0)
+                if (callerId == 0) {
                     rootTreeNode.add(new DefaultMutableTreeNode(data));
 
-                else {
+                } else {
                     DefaultMutableTreeNode node = getParenNode(callerId, rootTreeNode);
                     if (node != null)
                         node.add(new DefaultMutableTreeNode(data));
@@ -381,26 +380,31 @@ public class ProfilerPanel extends JPanel
         return Bundles.get(ProfilerPanel.class, key);
     }
 
+    /**
+     * A class describing the data that is displayed in the node of the <code>JTree</code>.
+     *
+     * @author Alexey Kozlov
+     */
     static class ProfilerData {
 
         private final int id;
-        private final String label;
+        private final String processName;
         private final long totalTime;
 
-        public ProfilerData(int id, String label, long totalTime) {
+        public ProfilerData(int id, String processName, long totalTime) {
             this.id = id;
-            this.label = label;
+            this.processName = processName;
             this.totalTime = totalTime;
         }
 
         public ProfilerData(int id, String packageName, String routineName, long totalTime) {
             this.id = id;
-            this.label = (packageName != null) ? (packageName.trim() + "::" + routineName.trim()) : routineName.trim();
+            this.processName = (packageName != null) ? (packageName.trim() + "::" + routineName.trim()) : routineName.trim();
             this.totalTime = totalTime;
         }
 
-        public String getLabel() {
-            return label;
+        public String getProcessName() {
+            return processName;
         }
 
         public long getTotalTime() {
@@ -425,7 +429,7 @@ public class ProfilerPanel extends JPanel
             if (userObject instanceof ProfilerData) {
 
                 ProfilerData data = (ProfilerData) userObject;
-                String record = "[" + data.getTotalTime() + "ms] " + data.getLabel();
+                String record = "[" + data.getTotalTime() + "ms] " + data.getProcessName();
                 setText(record);
             }
 

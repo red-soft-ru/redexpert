@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ * Class responsible for the interaction of external modules with the profiler.
+ *
  * @author Alexey Kozlov
  */
 public class DefaultProfilerExecutor {
@@ -35,6 +37,9 @@ public class DefaultProfilerExecutor {
         executor.setCommitMode(false);
     }
 
+    /**
+     * @return profiler session <code>id</code> or '<code>-1</code>' if failed
+     */
     public int startSession() throws SQLException {
 
         if (!isVersionSupported(executor.getDatabaseConnection()))

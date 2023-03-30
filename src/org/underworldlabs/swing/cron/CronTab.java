@@ -1,8 +1,9 @@
-package org.underworldlabs.swing;
+package org.underworldlabs.swing.cron;
 
 import com.github.lgooddatepicker.zinternaltools.ExtraDateStrings;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.CheckBoxPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 

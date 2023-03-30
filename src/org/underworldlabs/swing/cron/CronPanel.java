@@ -1,11 +1,10 @@
-package org.underworldlabs.swing;
+package org.underworldlabs.swing.cron;
 
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
 
 public class CronPanel extends JPanel {
    private JTextField cronField;
@@ -26,7 +25,6 @@ public class CronPanel extends JPanel {
       gbh.addLabelFieldPair(this, "Cron", cronField, null, true, false);
       for (int i = 0; i < CronTab.CRON_NAMES.length; i++) {
          tabbedPane.addTab(Bundles.get(CronTab.class, CronTab.CRON_NAMES[i] + "s"), new CronTab(i, cronField));
-         //gbh.addLabelFieldPair(this, Bundles.get(CronTab.class, CronTab.CRON_NAMES[i] + "s"), cronField, null, i == 0, false);
       }
       add(tabbedPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
    }

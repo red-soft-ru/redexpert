@@ -7,7 +7,7 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
-import org.underworldlabs.swing.CronPanel;
+import org.underworldlabs.swing.cron.CronPanel;
 import org.underworldlabs.swing.EQDateTimePicker;
 import org.underworldlabs.util.SQLUtils;
 

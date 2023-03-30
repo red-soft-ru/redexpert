@@ -114,6 +114,7 @@ public class ComparerDBPanel extends JPanel {
         scriptGenerationOrder.add(STUBS);
         scriptGenerationOrder.add(NamedObject.FUNCTION);
         scriptGenerationOrder.add(NamedObject.PROCEDURE);
+        scriptGenerationOrder.add(NamedObject.JOB);
         scriptGenerationOrder.add(NamedObject.UDF);
         scriptGenerationOrder.add(NamedObject.TRIGGER);
         scriptGenerationOrder.add(NamedObject.DDL_TRIGGER);
@@ -323,12 +324,14 @@ public class ComparerDBPanel extends JPanel {
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("FUNCTION")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("DDL_TRIGGER")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
                 loggingOutputPanel.append(bundleString("RDBVersionBelow3"));
 
             } else if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||
                     new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4) {
 
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
                 loggingOutputPanel.append(bundleString("RDBVersionBelow4"));
             }
 
@@ -382,7 +385,8 @@ public class ComparerDBPanel extends JPanel {
                             attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
                             attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
                             attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected());
+                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.JOB).isSelected());
 
                     continue;
                 }

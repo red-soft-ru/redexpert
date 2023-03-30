@@ -9,6 +9,7 @@ import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.table.TableDefinitionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -1399,6 +1400,10 @@ public final class SQLUtils {
             case (DATABASE_TRIGGER):
                 sb.append(generateCreateTriggerStub((DefaultDatabaseTrigger) object));
                 break;
+
+            case (JOB):
+                sb.append(generateCreateJobStub((DefaultDatabaseJob) object));
+                break;
         }
 
         sb.append("SET TERM ;^\n");
@@ -1477,6 +1482,15 @@ public final class SQLUtils {
             sb.append(" ON CONNECT");
 
         return sb.append("\nAS BEGIN END^\n").toString();
+    }
+
+    public static String generateCreateJobStub(DefaultDatabaseJob obj) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE JOB ").append(format(obj.getName())).append("\n");
+        sb.append("\t'' COMMAND ''^");
+
+        return sb.toString();
     }
 
     public static String generateCreateCollation(
@@ -1572,6 +1586,48 @@ public final class SQLUtils {
         }
         sb.append("^");
         return sb.toString();
+    }
+
+    public static String generateAlterJob(DefaultDatabaseJob thisJob, DefaultDatabaseJob compareJob) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER JOB ").append(format(thisJob.getName())).append("\n");
+        String noChangesCheckString = sb.toString();
+
+        if (!thisJob.getCronSchedule().equals(compareJob.getCronSchedule()))
+            sb.append("'").append(compareJob.getCronSchedule()).append("'").append("\n");
+
+        if (thisJob.isActive() != compareJob.isActive())
+            sb.append(compareJob.isActive() ? "ACTIVE\n" : "INACTIVE\n");
+
+        if (!Objects.equals(thisJob.getStartDate(), compareJob.getStartDate())) {
+            sb.append("START DATE ");
+            if (compareJob.getStartDate() != null)
+                sb.append("'").append(compareJob.getStartDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+            else
+                sb.append("NULL");
+            sb.append("\n");
+        }
+
+        if (!Objects.equals(thisJob.getEndDate(), compareJob.getEndDate())) {
+            sb.append("END DATE ");
+            if (compareJob.getEndDate() != null)
+                sb.append("'").append(compareJob.getEndDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+            else
+                sb.append("NULL");
+            sb.append("\n");
+        }
+
+        if (thisJob.getJobType() != compareJob.getJobType() || !thisJob.getSource().equals(compareJob.getSource())) {
+            sb.append((compareJob.getJobType() == DefaultDatabaseJob.BASH_TYPE) ? "COMMAND '" : "AS\n");
+            sb.append(compareJob.getSource());
+            if (compareJob.getJobType() == DefaultDatabaseJob.BASH_TYPE)
+                sb.append("'");
+        }
+
+        if (noChangesCheckString.equals(sb.toString()))
+            return "/* there are no changes */\n";
+        return sb.append("^\n").toString();
     }
 
     private static String format(String object) {

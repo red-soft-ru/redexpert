@@ -361,7 +361,7 @@ public class Comparer {
     }
 
     public void createStubs(
-            boolean functions, boolean procedures, boolean triggers, boolean ddlTriggers, boolean dbTriggers) {
+            boolean functions, boolean procedures, boolean triggers, boolean ddlTriggers, boolean dbTriggers, boolean jobs) {
 
         if (functions)
             addStubsToScript(FUNCTION, createListObjects(FUNCTION));
@@ -373,6 +373,9 @@ public class Comparer {
             addStubsToScript(DDL_TRIGGER, createListObjects(DDL_TRIGGER));
         if (dbTriggers)
             addStubsToScript(DATABASE_TRIGGER, createListObjects(DATABASE_TRIGGER));
+        if (jobs)
+            addStubsToScript(JOB, createListObjects(JOB));
+
     }
 
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {

@@ -85,24 +85,26 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
         return NamedObject.META_TYPES[NamedObject.JOB];
     }
 
+    @Override
     public String getCreateSQLText() throws DataSourceException {
-
-        return SQLUtils.generateCreateJob(getName(), getCronSchedule(), isActive(), getStartDate(), getEndDate(), getJobType(), getSource());
+        return SQLUtils.generateCreateJob(getName(), getCronSchedule(), isActive(),
+                getStartDate(), getEndDate(), getJobType(), getSource());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return "DROP JOB " + MiscUtils.getFormattedObject(getName());
+        return SQLUtils.generateDefaultDropQuery("JOB", getName());
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return null;
+        return getDropSQL() + "\n" + getCreateSQLText();
     }
 
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return null;
+        DefaultDatabaseJob comparingJob = (DefaultDatabaseJob) databaseObject;
+        return SQLUtils.generateAlterJob(this, comparingJob);
     }
 
     public String getId() {

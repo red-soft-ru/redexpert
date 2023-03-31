@@ -326,8 +326,10 @@ public class QueryDispatcher {
                         GUIUtilities.addCentralPane(ProfilerPanel.TITLE,
                                 (Icon) null, new ProfilerPanel(sessionId, dc), null, true);
 
-                    } else
+                    } else {
                         GUIUtilities.displayWarningMessage(Bundles.get(ProfilerPanel.class, "VersionNotSupported"));
+                        setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Action canceled, DB version in not supported");
+                    }
 
                 } catch (SQLException ex) {
                     Log.error("Error executing script in profiler session", ex);

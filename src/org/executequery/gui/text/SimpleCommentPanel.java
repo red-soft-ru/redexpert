@@ -147,6 +147,7 @@ public class SimpleCommentPanel {
     public void setDatabaseObject(DatabaseObject databaseObject) {
         this.currentDatabaseObject = databaseObject;
         updateCommentButton.setEnabled(currentDatabaseObject != null);
+        resetComment();
     }
 
     public String getComment() {

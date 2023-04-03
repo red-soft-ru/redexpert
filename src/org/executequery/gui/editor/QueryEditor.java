@@ -1247,21 +1247,18 @@ public class QueryEditor extends DefaultTabView
     /**
      * Executes the specified query.
      *
-     * @param the query
+     * @param query query to execute
      */
     public void executeSQLQuery(String query) {
 
         preExecute();
 
-        if (query == null) {
-
+        if (query == null)
             query = editorPanel.getQueryAreaText();
-        }
 
         editorPanel.resetExecutingLine();
-        boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
+        delegate.executeQuery(getSelectedConnection(), query, true);
 
-        delegate.executeQuery(getSelectedConnection(), query, executeAsBlock);
     }
 
     public void executeSQLScript(String script) {

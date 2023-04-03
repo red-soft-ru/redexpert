@@ -181,6 +181,11 @@
             <artifactId>rsyntaxtextarea</artifactId>
             <version>3.3.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.japura</groupId>
+            <artifactId>japura-gui</artifactId>
+            <version>7.5.2</version>
+        </dependency>
     </dependencies>
 
     <build>

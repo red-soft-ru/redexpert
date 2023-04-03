@@ -3,7 +3,11 @@ package org.underworldlabs.swing.cron;
 import com.github.lgooddatepicker.zinternaltools.ExtraDateStrings;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.japura.gui.CheckComboBox;
+import org.japura.gui.event.ListCheckListener;
+import org.japura.gui.event.ListEvent;
 import org.underworldlabs.swing.CheckBoxPanel;
+import org.underworldlabs.swing.EQCheckCombox;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
@@ -35,7 +39,7 @@ public class CronTab extends JPanel {
     JComboBox beginCombo;
     JCheckBox endCheck;
     JComboBox endCombo;
-    CheckBoxPanel checkBoxPanel;
+    EQCheckCombox checkBoxPanel;
     JComboBox betweenBeginCombo;
     JComboBox betweenEndCombo;
     private boolean fillValues = false;
@@ -127,8 +131,14 @@ public class CronTab extends JPanel {
         endCombo = new JComboBox<>(units);
         betweenBeginCombo = new JComboBox<>(units);
         betweenEndCombo = new JComboBox<>(units);
-        checkBoxPanel = new CheckBoxPanel(units.toArray(new String[0]), countOnRow, false);
-        checkBoxPanel.setVisibleAllCheckBox(false);
+        checkBoxPanel = new EQCheckCombox();
+
+        for(String unit:units)
+        {
+            checkBoxPanel.getModel().addElement(unit);
+        }
+
+        //checkBoxPanel.setVisibleAllCheckBox(false);
 
 
         setLayout(new GridBagLayout());
@@ -150,8 +160,8 @@ public class CronTab extends JPanel {
         add(betweenBeginCombo, gbh.nextCol().setLabelDefault().get());
         add(new JLabel(bundleString("and")), gbh.nextCol().setLabelDefault().get());
         add(betweenEndCombo, gbh.nextCol().setLabelDefault().get());
-        add(specificUnitsButton, gbh.nextRowFirstCol().fillHorizontally().spanX().get());
-        add(checkBoxPanel, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        add(specificUnitsButton, gbh.nextRowFirstCol().fillHorizontally().setLabelDefault().get());
+        add(checkBoxPanel, gbh.nextCol().fillHorizontally().spanX().spanY().get());
 
         itemListener = new ItemListener() {
             @Override
@@ -176,9 +186,19 @@ public class CronTab extends JPanel {
         endCombo.addItemListener(itemListener);
         betweenBeginCombo.addItemListener(itemListener);
         betweenEndCombo.addItemListener(itemListener);
-        for (JCheckBox checkBox : checkBoxPanel.getCheckBoxMap().values()) {
-            checkBox.addItemListener(itemListener);
-        }
+        checkBoxPanel.getModel().addListCheckListener(new ListCheckListener() {
+            @Override
+            public void removeCheck(ListEvent listEvent) {
+                checkEnabled();
+                generateCron();
+            }
+
+            @Override
+            public void addCheck(ListEvent listEvent) {
+                checkEnabled();
+                generateCron();
+            }
+        });
         cronField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -247,7 +267,7 @@ public class CronTab extends JPanel {
                 StringBuilder cron = new StringBuilder();
                 boolean first = true;
                 for (int i = 0; i < units.size(); i++) {
-                    if (checkBoxPanel.getCheckBoxMap().get(units.get(i)).isSelected()) {
+                    if (checkBoxPanel.getModel().isChecked(units.get(i))) {
                         if (!first)
                             cron.append(",");
                         first = false;
@@ -287,12 +307,10 @@ public class CronTab extends JPanel {
                     else if (cron.contains(",") && !(cron.contains("-") || cron.contains("/")) || (!cron.contains(",") && !cron.contains("/") && !cron.contains("-"))) {
                         specificUnitsButton.setSelected(true);
                         String[] qs = cron.split(",");
-                        for (String q : checkBoxPanel.getCheckBoxMap().keySet()) {
-                            checkBoxPanel.getCheckBoxMap().get(q).setSelected(false);
-                        }
+                        checkBoxPanel.getModel().removeChecks();
                         for (String q : qs) {
-                            int index = Integer.parseInt(q);
-                            checkBoxPanel.getCheckBoxMap().get(units.get(index)).setSelected(true);
+                            int index = getIndexFromValue(Integer.parseInt(q));
+                            checkBoxPanel.getModel().addCheck(units.get(index));
                         }
 
                     } else if (cron.contains("/") && !cron.contains(",")) {

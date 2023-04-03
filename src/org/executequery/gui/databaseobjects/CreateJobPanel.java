@@ -79,7 +79,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
         startDatePicker.setVisibleNullBox(true);
         endDatePicker = new EQDateTimePicker();
         endDatePicker.setVisibleNullBox(true);
-        cronPanel = new CronPanel();
+        cronPanel = new CronPanel(editing);
 
         topGbh.addLabelFieldPair(topPanel, bundleString("startDate"), startDatePicker, null, true, false);
         topGbh.addLabelFieldPair(topPanel, bundleString("endDate"), endDatePicker, null, false, true);

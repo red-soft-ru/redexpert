@@ -4,7 +4,6 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseException;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 
 import java.util.Objects;
@@ -14,7 +13,6 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.EXCEPTION);
     public static final String ALTER_TITLE = getEditTitle(NamedObject.EXCEPTION);
     private SimpleTextArea textExceptionPanel;
-    private SimpleSqlTextPanel ddlTextPanel;
     private DefaultDatabaseException exception;
 
     public CreateExceptionPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseException exception) {
@@ -55,25 +53,18 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
 
     }
 
+    @Override
     protected void init() {
-
         centralPanel.setVisible(false);
-
         textExceptionPanel = new SimpleTextArea();
         tabbedPane.add(bundleStaticString("text"), textExceptionPanel);
-
-        ddlTextPanel = new SimpleSqlTextPanel();
-        ddlTextPanel.getTextPane().setDatabaseConnection(connection);
-        tabbedPane.add("DDL", ddlTextPanel);
-
         addCommentTab(null);
-
-        tabbedPane.addChangeListener(e -> ddlTextPanel.setSQLText(generateQuery()));
-
     }
 
+    @Override
     protected void initEdited() {
         reset();
+        addCreateSqlTab(exception);
     }
 
     void generateScript() {

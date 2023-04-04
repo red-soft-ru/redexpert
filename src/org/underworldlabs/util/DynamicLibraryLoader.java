@@ -81,16 +81,16 @@ public class DynamicLibraryLoader extends URLClassLoader {
 
     }
 
-    public static Object loadingObjectFromClassLoader(int jaybirdVesion, Object unwrapObject, String shortClassName)
+    public static Object loadingObjectFromClassLoader(int jaybirdVersion, Object unwrapObject, String shortClassName)
             throws ClassNotFoundException {
         return loadingObjectFromClassLoader(unwrapObject, "biz.redsoft."
-                + shortClassName, getFbPluginImplPath(jaybirdVesion));
+                + shortClassName, getFbPluginImplPath(jaybirdVersion));
     }
 
-    public static Object loadingObjectFromClassLoaderWithCS(ClassLoader classLoader, String shortClassName)
+    public static Object loadingObjectFromClassLoaderWithCS(int jaybirdVersion, ClassLoader classLoader, String shortClassName)
             throws ClassNotFoundException {
         return loadingObjectFromClassLoaderWithCS(classLoader, "biz.redsoft."
-                + shortClassName, "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
+                + shortClassName, getFbPluginImplPath(jaybirdVersion));
     }
 
     public static Object loadingObjectFromClassLoader(Object unwrapObject, String className, String jarPath)

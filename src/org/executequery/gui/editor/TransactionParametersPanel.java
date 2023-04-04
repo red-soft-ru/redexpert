@@ -127,7 +127,7 @@ public class TransactionParametersPanel extends JPanel {
     public ITPB getTpb(DatabaseConnection databaseConnection) {
         if (databaseConnection != null && databaseConnection.isConnected()) {
             try {
-                tpb = (ITPB) DynamicLibraryLoader.loadingObjectFromClassLoaderWithCS(ConnectionManager.getClassLoaderForDatabaseConnection(databaseConnection), "ITPBImpl");
+                tpb = (ITPB) DynamicLibraryLoader.loadingObjectFromClassLoaderWithCS(databaseConnection.getDriverMajorVersion(),ConnectionManager.getClassLoaderForDatabaseConnection(databaseConnection), "ITPBImpl");
                 tpb.initTPB();
             } catch (Exception e) {
                 e.printStackTrace();

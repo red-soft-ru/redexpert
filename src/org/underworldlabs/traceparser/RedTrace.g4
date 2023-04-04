@@ -631,7 +631,7 @@ any_name
 ;
 
 path
-:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|'='|'?'|'-'|'('|')'|lexem)+
+:(LETTER|DIGIT|CYRILLIC_LETTER|MINUSES|':\\'|':/'|'_'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|'='|'?'|'-'|'('|')'|DATE|lexem)+
 ;
 
 //LEXEMS

@@ -11,6 +11,8 @@ import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
+import javax.swing.*;
+import java.awt.*;
 import java.sql.SQLException;
 
 public class CreateGeneratorPanel extends AbstractCreateObjectPanel {

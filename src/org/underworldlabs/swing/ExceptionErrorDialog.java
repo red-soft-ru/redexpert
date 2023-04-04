@@ -302,6 +302,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
                     gbc.weighty = 0;
                     gbc.gridwidth = 1;
                     gbc.weightx = 1.0;
+                    gbc.gridx = 0;
                     gbc.fill = GridBagConstraints.NONE;
                     gbc.anchor = GridBagConstraints.EAST;
                     stackTracePanel.add(previousButton, gbc);

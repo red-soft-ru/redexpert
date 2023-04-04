@@ -18,7 +18,7 @@ public interface IFBDataSource {
 
     Connection getConnection(ITPB tpb) throws SQLException;
 
-    void close() throws ResourceException;
+    void close() throws ResourceException, SQLException;
 
     void setCertificate(String certificate);
 

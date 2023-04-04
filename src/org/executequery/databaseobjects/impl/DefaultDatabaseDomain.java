@@ -4,6 +4,8 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.comparer.Comparer;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -60,9 +62,9 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
@@ -85,7 +87,23 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true);
+        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true, true);
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("DOMAIN", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true, Comparer.isCommentsNeed());
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        DefaultDatabaseDomain comparingDomain = (DefaultDatabaseDomain) databaseObject;
+        return SQLUtils.generateAlterDomain(getDomainData(), comparingDomain.getDomainData());
     }
 
     @Override
@@ -121,6 +139,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         columns = new ArrayList<>();
         domainData = new ColumnData(getHost().getDatabaseConnection());
+        domainData.setColumnName(getName());
         while (rs.next()) {
             domainData.setDomainType(rs.getInt(TYPE));
             domainData.setDomainSize(rs.getInt(FIELD_LENGTH));
@@ -136,6 +155,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
             String domainCheck = rs.getString(VALIDATION_SOURCE);
             domainData.setDomainDescription(rs.getString(DESCRIPTION));
             domainData.setDomainNotNull(rs.getInt(NULL_FLAG) == 1);
+            domainData.setNotNull(domainData.isDomainNotNull());
             domainData.setDomainDefault(rs.getString(DEFAULT_SOURCE));
             domainData.setDomainComputedBy(rs.getString(COMPUTED_SOURCE));
             String domainCollate = rs.getString(COLLATION_NAME);

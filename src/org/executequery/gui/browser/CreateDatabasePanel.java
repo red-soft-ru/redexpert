@@ -846,9 +846,7 @@ public class CreateDatabasePanel extends ActionPanel
             }
 
             try {
-                Object odb1 = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
-                        "biz.redsoft.FBCryptoPluginInitImpl",
-                        "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
+                Object odb1 = DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver, "FBCryptoPluginInitImpl");
                 IFBCryptoPluginInit cryptoPlugin = (IFBCryptoPluginInit) odb1;
                 // try to initialize crypto plugin
                 cryptoPlugin.init();
@@ -859,9 +857,7 @@ public class CreateDatabasePanel extends ActionPanel
                         "Please install the crypto pro library to enable cryptographic modules.");
                 //advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
             }
-            odb = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
-                    "biz.redsoft.FBCreateDatabaseImpl",
-                    "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
+            odb = DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver, "FBCreateDatabaseImpl");
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | MalformedURLException e) {
             e.printStackTrace();
         }

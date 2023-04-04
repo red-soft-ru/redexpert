@@ -48,7 +48,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                                String procedure, DefaultDatabaseFunction databaseFunction) {
         super(dc, dialog, procedure, new Object[]{databaseFunction});
         parametersTabs.remove(outputParametersPanel);
-        parametersTabs.setTitleAt(0, bundledString("Arguments"));
+        parametersTabs.setTitleAt(parametersTabs.indexOfComponent(inputParametersPanel), bundledString("Arguments"));
         selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(),
                 connection.getIntDataTypesArray(), returnType, true);
         returnType.setDomain(returnType.getDomain());
@@ -116,7 +116,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     protected String generateQuery() {
         return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 variablesPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
-                externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment(), deterministicBox.isSelected());
+                externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
+                simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected());
     }
 
     @Override
@@ -124,6 +125,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         ddlTextPanel.setSQLText(generateQuery());
     }
 
+    @Override
     protected void init() {
         super.init();
         deterministicBox = new JCheckBox(bundleStaticString("deterministic"));
@@ -141,8 +143,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     @Override
     public void createObject() {
         try {
-            String querys = getSQLText();
-            displayExecuteQueryDialog(querys, "^");
+            String queries = getSQLText();
+            displayExecuteQueryDialog(queries, "^");
 
         } catch (Exception exc) {
             GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);

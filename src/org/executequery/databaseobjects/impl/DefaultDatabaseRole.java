@@ -2,6 +2,8 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,20 +19,40 @@ public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
     }
 
     @Override
+    public String getCreateSQLText() throws DataSourceException {
+        return SQLUtils.generateCreateRole(getName());
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("ROLE", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return this.getCreateSQLText();
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return "/* there are no changes */\n";
+    }
+
+    @Override
     protected String queryForInfo() {
 
-            String query = "select r.rdb$description as DESCRIPTION\n" +
-                    "from rdb$roles r\n" +
-                    "where r.rdb$role_name = ?'";
+        String query = "select r.rdb$description as DESCRIPTION\n" +
+                "from rdb$roles r\n" +
+                "where r.rdb$role_name = ?'";
 
-            return query;
+        return query;
     }
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
         try {
             if (rs.next())
-                setRemarks(getFromResultSet(rs,"DESCRIPTION"));
+                setRemarks(getFromResultSet(rs, "DESCRIPTION"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -48,5 +70,10 @@ public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
         if (isSystem())
             return META_TYPES[SYSTEM_ROLE];
         return META_TYPES[ROLE];
+    }
+
+    @Override
+    public boolean allowsChildren() {
+        return false;
     }
 }

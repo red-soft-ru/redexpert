@@ -12,6 +12,10 @@ public class Function {
         return new Function();
     }
 
+    public static Function createFunction(String name) {
+        return createFunction().setName(name);
+    }
+
     public String getName() {
         return name;
     }
@@ -27,6 +31,11 @@ public class Function {
 
     public void setArguments(List<String> arguments) {
         this.arguments = arguments;
+    }
+
+    public Function setArgument(int index, String argument) {
+        arguments.set(index, argument);
+        return this;
     }
 
     public Function appendArgument(String argument) {

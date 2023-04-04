@@ -354,14 +354,14 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                 GridBagConstraints.VERTICAL,
                 new Insets(2, 2, 2, 2), 0, 0));
 
-        definitionPanel.add(table.getTableHeader(), new GridBagConstraints(
+        /*definitionPanel.add(table.getTableHeader(), new GridBagConstraints(
                 1, 0, 0, 1, 1.0, 0.0,
                 GridBagConstraints.NORTHEAST,
                 GridBagConstraints.BOTH,
                 new Insets(2, 2, 0, 2), 0, 0)
-        );
+        );*/
 
-        definitionPanel.add(table, new GridBagConstraints(
+        definitionPanel.add(new JScrollPane(table), new GridBagConstraints(
                 1, 1, 0, 1, 1.0, 1.0,
                 GridBagConstraints.NORTHEAST,
                 GridBagConstraints.BOTH,

@@ -49,8 +49,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
@@ -149,12 +153,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         consPanel = new NewTableConstraintsPanel(this);
         consPanel.setData(new Vector(0), true);
         typeTemporaryBox = new JComboBox(new DefaultComboBoxModel(new String[]{"DELETE ROWS", "PRESERVE ROWS"}));
-        typeTemporaryBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                setSQLText();
-            }
-        });
+        typeTemporaryBox.addActionListener(actionEvent -> setSQLText());
         gbh.setDefaultsStatic();
         constraintsPanel.add(conTools, gbh.setLabelDefault().fillVertical().spanY().get());
         constraintsPanel.add(consPanel, gbh.nextCol().fillBoth().spanX().spanY().get());
@@ -163,7 +162,6 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         addCommentTab(null);
 
         sqlText = new SimpleSqlTextPanel();
-
 
         // ----- components for creating EXTERNAL table -----
 
@@ -226,8 +224,6 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         // -----
 
         topPanel.add(externalTablePropsPanel, topGbh.nextRowFirstCol().spanX().spanY().fillHorizontally().get());
-
-
         tabbedPane.addTab("SQL", sqlText);
 
         // ------
@@ -245,7 +241,6 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         sqlBuffer = new StringBuffer(CreateTableSQLSyntax.CREATE_TABLE);
 
         // check initial values for possible value inits
-
 
         tablePanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         tablePanel.setDomains(getDomains());
@@ -289,16 +284,15 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-
     }
 
     @Override
     public void setParameters(Object[] params) {
-
     }
 
     @Override
     protected String generateQuery() {
+
         String tablespace = null;
         if (tablespacesCombo.getSelectedItem() != null)
             tablespace = ((NamedObject) tablespacesCombo.getSelectedItem()).getName();
@@ -316,8 +310,10 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         if (!Objects.equals(simpleCommentPanel.getComment(), ""))
             comment = simpleCommentPanel.getComment().trim();
 
-        return SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
-                false, this instanceof CreateGlobalTemporaryTable, "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
+        return SQLUtils.generateCreateTable(
+                nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
+                false, this instanceof CreateGlobalTemporaryTable, true, true, true,
+                "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
                 externalFile, adapter, (String) sqlSecurityCombo.getSelectedItem(), tablespace, comment);
     }
 
@@ -416,17 +412,16 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         final Object source = event.getSource();
         if (event.getSource() == tablespacesCombo) {
             setSQLText();
+
         } else
-            GUIUtils.startWorker(new Runnable() {
-                public void run() {
-                    try {
-                        setInProcess(true);
-                        if (source == connectionsCombo) {
-                            connectionChanged();
-                        }
-                    } finally {
-                        setInProcess(false);
-                    }
+            GUIUtils.startWorker(() -> {
+                try {
+                    setInProcess(true);
+                    if (source == connectionsCombo)
+                        connectionChanged();
+
+                } finally {
+                    setInProcess(false);
                 }
             });
     }
@@ -514,9 +509,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
 
     public void setColumnConstraintsArray(ColumnConstraint[] cca, boolean fillCombos) {
         Vector ccv = new Vector(cca.length);
-        for (int i = 0; i < cca.length; i++) {
-            ccv.add(cca[i]);
-        }
+        Collections.addAll(ccv, cca);
         consPanel.setData(ccv, fillCombos);
     }
 
@@ -530,28 +523,25 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     public void setInProcess(boolean inProcess) {
     }
 
-
     public void resetSQLText() {
         tablePanel.resetSQLText();
         consPanel.resetSQLText();
     }
 
+    @Override
     public void setSQLText() {
         setSQLText(generateQuery());
     }
 
     private void setSQLText(final String text) {
-        GUIUtils.invokeLater(new Runnable() {
-            public void run() {
-                sqlText.setSQLText(text);
-            }
-        });
+        GUIUtils.invokeLater(() -> sqlText.setSQLText(text));
     }
 
     public String getSQLText() {
         return sqlText.getSQLText();
     }
 
+    @Override
     public String getTableName() {
         return nameField.getText();
     }
@@ -607,37 +597,37 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     */
 
     public ColumnData[] getTableColumnDataAndConstraints() {
-        String tableName = null;
+        String tableName;
         ColumnData[] cda = tablePanel.getTableColumnData();
         ColumnConstraint[] cca = consPanel.getColumnConstraintArray();
 
-        for (int i = 0; i < cda.length; i++) {
+        for (ColumnData columnData : cda) {
 
             // reset the keys
-            cda[i].setPrimaryKey(false);
-            cda[i].setForeignKey(false);
-            cda[i].resetConstraints();
+            columnData.setPrimaryKey(false);
+            columnData.setForeignKey(false);
+            columnData.resetConstraints();
 
-            tableName = cda[i].getTableName();
+            tableName = columnData.getTableName();
 
-            String columnName = cda[i].getColumnName();
+            String columnName = columnData.getColumnName();
 
-            for (int j = 0; j < cca.length; j++) {
+            for (ColumnConstraint columnConstraint : cca) {
 
-                String constraintColumn = cca[j].getColumn();
+                String constraintColumn = columnConstraint.getColumn();
 
                 if (constraintColumn != null
                         && constraintColumn.equalsIgnoreCase(columnName)) {
 
-                    if (cca[j].isPrimaryKey()) {
-                        cda[i].setPrimaryKey(true);
-                    } else if (cca[j].isForeignKey()) {
-                        cda[i].setForeignKey(true);
+                    if (columnConstraint.isPrimaryKey()) {
+                        columnData.setPrimaryKey(true);
+                    } else if (columnConstraint.isForeignKey()) {
+                        columnData.setForeignKey(true);
                     }
 
-                    cca[j].setTable(tableName);
-                    cca[j].setNewConstraint(true);
-                    cda[i].addConstraint(cca[j]);
+                    columnConstraint.setTable(tableName);
+                    columnConstraint.setNewConstraint(true);
+                    columnData.addConstraint(columnConstraint);
                 }
 
             }

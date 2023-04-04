@@ -5,6 +5,9 @@ import java.util.List;
 
 public class SelectBuilder {
 
+    public static final String PREFIX = "RDB$";
+
+    boolean distinct = false;
     List<Table> tables;
     List<Field> fields;
     List<LeftJoin> joins;
@@ -12,6 +15,10 @@ public class SelectBuilder {
     List<Condition> conditions;
 
     String ordering;
+
+    public static SelectBuilder createSelectBuilder() {
+        return new SelectBuilder();
+    }
 
     public List<Table> getTables() {
         return tables;
@@ -62,6 +69,27 @@ public class SelectBuilder {
         return this;
     }
 
+    public SelectBuilder appendFields(Table table, String... aliases) {
+        return appendFields(table, false, aliases);
+    }
+
+    public SelectBuilder appendFields(Table table, boolean nullFlag, String... aliases) {
+        return appendFields("", table, nullFlag, aliases);
+    }
+
+    public SelectBuilder appendFields(String aliasPrefix, Table table, String... aliases) {
+        return appendFields(aliasPrefix, table, false, aliases);
+    }
+
+    public SelectBuilder appendFields(String aliasPrefix, Table table, boolean nullFlag, String... aliases) {
+        if (aliases != null)
+            for (String alias : aliases) {
+                Field field = Field.createField(table, alias).setAlias(aliasPrefix + alias).setNull(nullFlag);
+                appendField(field);
+            }
+        return this;
+    }
+
     public SelectBuilder appendJoin(LeftJoin join) {
         if (joins == null)
             joins = new ArrayList<>();
@@ -83,9 +111,20 @@ public class SelectBuilder {
         return this;
     }
 
+    public boolean isDistinct() {
+        return distinct;
+    }
+
+    public SelectBuilder setDistinct(boolean distinct) {
+        this.distinct = distinct;
+        return this;
+    }
+
     public String getSQLQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
+        if (distinct)
+            sb.append("DISTINCT ");
         if (fields != null) {
             boolean first = true;
             for (Field field : fields) {
@@ -138,6 +177,9 @@ public class SelectBuilder {
                     sb.append(leftField.getFieldTable());
                     sb.append(" = ").append(rightField.getFieldTable());
                 }
+                if (join.getCondition() != null) {
+                    sb.append("\nAND (").append(join.getCondition().getConditionStatement()).append(")");
+                }
             }
         }
         sb.append("\n");
@@ -148,7 +190,7 @@ public class SelectBuilder {
                 if (!first)
                     sb.append("AND ");
                 first = false;
-                sb.append(condition.leftField.getFieldTable()).append(" ").append(condition.operator).append(" ").append(condition.rightStatement);
+                sb.append(condition.getConditionStatement());
                 sb.append("\n");
             }
         }
@@ -157,6 +199,7 @@ public class SelectBuilder {
 
         }
         return sb.toString();
+
 
     }
 

@@ -799,6 +799,11 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         return intDataTypesArray;
     }
 
+    @Override
+    public int getDriverMajorVersion() {
+        return getJDBCDriver().getMajorVersion();
+    }
+
     public String getDBCharset() {
         return dBCharset;
     }

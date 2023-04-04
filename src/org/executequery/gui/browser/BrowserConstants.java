@@ -184,6 +184,7 @@ public class BrowserConstants {
     public static final String USER_IMAGE = "User16.png";
 
     public static final String TABLESPACE_IMAGE = "tablespace16.png";
+    public static final String JOB_IMAGE = "job16.png";
 
 
     public static final String GRANT_IMAGE = "grant.png";
@@ -228,6 +229,7 @@ public class BrowserConstants {
             SYSTEM_ROLE_IMAGE,
             USER_IMAGE,
             TABLESPACE_IMAGE,
+            JOB_IMAGE,
             DB_TRIGGER_IMAGE,
             DDL_TRIGGER_IMAGE,
             SYSTEM_PACKAGE_IMAGE,

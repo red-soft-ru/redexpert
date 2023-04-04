@@ -33,9 +33,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1041,5 +1039,15 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
     private void debug(String message, Throwable e) {
 
         Log.debug(message, e);
+    }
+    public void setVariables(TreeSet<String> variables)
+    {
+        selectionsFactory.setVariables(variables);
+        rebuildListSelectionsItems();
+    }
+    public void setParameters(TreeSet<String> parameters)
+    {
+        selectionsFactory.setParameters(parameters);
+        rebuildListSelectionsItems();
     }
 }

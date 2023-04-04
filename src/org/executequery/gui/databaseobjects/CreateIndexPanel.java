@@ -63,7 +63,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         nameField.setText(databaseIndex.getName().trim());
         DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseIndex.getHost(), null, null, NamedObject.META_TYPES[NamedObject.INDEX]);
         databaseIndex = metaTag.getIndexFromName(databaseIndex.getName());
-        databaseIndex.loadColumns();
         nameField.setEnabled(false);
         simpleCommentPanel.setDatabaseObject(databaseIndex);
         for (int i = 0; i < tableName.getItemCount(); i++) {
@@ -95,7 +94,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         uniqueBox.setSelected(databaseIndex.isUnique());
         activeBox.setSelected(databaseIndex.isActive());
         sortingBox.setSelectedIndex(databaseIndex.getIndexType());
-        if (databaseIndex.getTablespace() != null)
+        if (!MiscUtils.isNull(databaseIndex.getTablespace()))
             for (NamedObject ts : tss)
                 if (ts.getName().equalsIgnoreCase(databaseIndex.getTablespace().trim()))
                     tablespaceBox.setSelectedItem(ts);

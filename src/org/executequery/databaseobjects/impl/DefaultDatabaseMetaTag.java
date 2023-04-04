@@ -167,6 +167,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 || type == SYSTEM_PACKAGE
                 || type == ROLE
                 || type == TABLESPACE
+                || type == JOB
         )
             if (typeTree == TreePanel.DEPENDENT || typeTree == TreePanel.DEPENDED_ON) {
                 return new ArrayList<NamedObject>();
@@ -282,6 +283,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 return getIndicesResultSet();
             case TABLESPACE:
                 return getTablespacesResultSet();
+            case JOB:
+                return getJobsResultSet();
             case COLLATION:
                 return getCollationsResultSet();
             case SYSTEM_DOMAIN:
@@ -367,6 +370,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                             break;
                         case TABLESPACE:
                             namedObject = getTablespace(rs);
+                            break;
+                        case JOB:
+                            namedObject = getJob(rs);
                             break;
                         case COLLATION:
                             namedObject = getCollation(rs);
@@ -513,6 +519,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
+    private AbstractDatabaseObject getJob(ResultSet rs) throws SQLException {
+
+        return new DefaultDatabaseJob(this, rs.getObject(1).toString());
+
+    }
+
     private AbstractDatabaseObject getCollation(ResultSet rs) throws SQLException {
 
         return new DefaultDatabaseCollation(this, rs.getObject(1).toString());
@@ -578,7 +590,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             Connection fbConn = realConnection.unwrap(Connection.class);
             IFBDatabaseConnection db = null;
             try {
-                db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(fbConn, "FBDatabaseConnectionImpl");
+                db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(getHost().getDatabaseConnection().getDriverMajorVersion(), fbConn, "FBDatabaseConnectionImpl");
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -720,6 +732,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getTablespacesResultSet() throws SQLException {
         String query = "SELECT RDB$TABLESPACE_NAME FROM RDB$TABLESPACES ORDER BY 1";
+        return getResultSetFromQuery(query);
+    }
+
+    private ResultSet getJobsResultSet() throws SQLException {
+        String query = "SELECT RDB$JOB_NAME FROM RDB$JOBS ORDER BY 1";
         return getResultSetFromQuery(query);
     }
 

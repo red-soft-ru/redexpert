@@ -1214,9 +1214,8 @@ public class QueryEditor extends DefaultTabView
             query = editorPanel.getQueryAreaText();
 
         editorPanel.resetExecutingLine();
-        boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
 
-        delegate.executeQuery(getSelectedConnection(), query, executeAsBlock, false);
+        delegate.executeQuery(getSelectedConnection(), query, true, false);
     }
 
     public void executeSQLQueryInAnyConnections(String query) {
@@ -1229,11 +1228,10 @@ public class QueryEditor extends DefaultTabView
             }
 
             editorPanel.resetExecutingLine();
-            boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
 
             for (DatabaseConnection dc : selectConnectionsPanel.getSelectedConnections()) {
                 preExecute(dc);
-                delegates.get(dc).executeQuery(dc, query, executeAsBlock, true);
+                delegates.get(dc).executeQuery(dc, query, true, true);
             }
         }
     }

@@ -1257,7 +1257,9 @@ public class QueryEditor extends DefaultTabView
             query = editorPanel.getQueryAreaText();
 
         editorPanel.resetExecutingLine();
-        delegate.executeQuery(getSelectedConnection(), query, true);
+        boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
+
+        delegate.executeQuery(getSelectedConnection(), query, executeAsBlock);
 
     }
 

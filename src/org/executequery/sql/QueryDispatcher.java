@@ -56,9 +56,6 @@ import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -602,16 +599,16 @@ public class QueryDispatcher {
                 return executeCreateOrAlterObject(sql, derivedQuery);
             }
 
-            List<DerivedQuery> queries = queryTokenizer.tokenize(sql);
+            //List<DerivedQuery> queries = queryTokenizer.tokenize(sql);
             boolean removeQueryComments = userProperties().getBooleanProperty("editor.execute.remove.comments");
 
-            for (DerivedQuery query : queries) {
+            DerivedQuery query = new DerivedQuery(sql);
 
                 if (!query.isExecutable()) {
 
                     setOutputMessage(
                             SqlMessages.WARNING_MESSAGE, "Non executable query provided");
-                    continue;
+                    return DONE;
                 }
 
                 // reset clock
@@ -836,7 +833,6 @@ public class QueryDispatcher {
                 totalDuration += timeTaken;
                 logExecutionTime(timeTaken);
 
-            }
 
             statementExecuted(sql);
 

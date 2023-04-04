@@ -23,6 +23,7 @@ package org.executequery.listeners;
 import org.executequery.GUIUtilities;
 import org.executequery.components.StatusBarPanel;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.ApplicationEvent;
@@ -83,12 +84,16 @@ public class DefaultConnectionListener implements ConnectionListener {
     }
 
     void populate(DatabaseObjectNode root) {
-        root.populateChildren();
-        Enumeration<TreeNode> nodes = root.children();
-        while (nodes.hasMoreElements()) {
-            DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-            populate(node);
-        }
+        if(root.getDatabaseObject() instanceof AbstractDatabaseObject)
+            if(!((AbstractDatabaseObject)root.getDatabaseObject()).getHost().isConnected())
+                return;
+            root.populateChildren();
+            Enumeration<TreeNode> nodes = root.children();
+            while (nodes.hasMoreElements()) {
+                DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
+                populate(node);
+            }
+
     }
 
     private StatusBarPanel statusBar() {

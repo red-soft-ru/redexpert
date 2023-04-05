@@ -225,7 +225,7 @@ test:windows:
     - proxmox
     - tester
   variables:
-    PROXMOX_TEMPLATE: testing-re-test-nikita
+    PROXMOX_TEMPLATE: template-testing-re-windows-7
     JAVA_HOME: c:\Program Files\Java\jdk8
     ErrorActionPreference: STOP
     DIST: ${CI_PROJECT_DIR}\dist\windows-${ARCH}

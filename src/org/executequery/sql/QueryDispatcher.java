@@ -217,7 +217,7 @@ public class QueryDispatcher {
      * @param query          query string
      * @param executeAsBlock to execute in entirety, false otherwise
      */
-    public void executeSQLQuery(String query, boolean executeAsBlock) {
+    public void executeSQLQuery(String query, boolean executeAsBlock, boolean anyConnections) {
 
         executeSQLQuery(null, query, executeAsBlock, anyConnections);
     }

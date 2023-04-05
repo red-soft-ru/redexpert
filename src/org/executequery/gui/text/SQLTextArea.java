@@ -1,6 +1,5 @@
 package org.executequery.gui.text;
 
-import org.apache.log4j.lf5.viewer.categoryexplorer.TreeModelAdapter;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.searchcommands.FindAction;
@@ -263,6 +262,8 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
         this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
     }
 
+    TreeModelListener treeModelListener;
+
     public SQLTextArea() {
         super();
         document = new SQLSyntaxDocument(null, tokenMakerFactory, "antlr/sql");
@@ -318,8 +319,22 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
         ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
         if (treePanel != null) {
             SchemaTree tree = treePanel.getTree();
-            if (tree != null)
-                tree.getModel().addTreeModelListener(new TreeModelAdapter() {
+            if (tree != null) {
+                treeModelListener = new TreeModelListener() {
+                    @Override
+                    public void treeNodesChanged(TreeModelEvent e) {
+
+                    }
+
+                    @Override
+                    public void treeNodesInserted(TreeModelEvent e) {
+
+                    }
+
+                    @Override
+                    public void treeNodesRemoved(TreeModelEvent e) {
+
+                    }
 
                     @Override
                     public void treeStructureChanged(TreeModelEvent e) {
@@ -331,7 +346,9 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
                             }
                         }
                     }
-                });
+                };
+                tree.getModel().addTreeModelListener(treeModelListener);
+            }
         }
         lineBorder = new LineNumber(this);
         if (document!=null)
@@ -748,6 +765,17 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
 
             fireTextUpdateFinished();
             setCaretPosition(offset);
+        }
+    }
+
+    public void cleanup() {
+        ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        if (treePanel != null) {
+            SchemaTree tree = treePanel.getTree();
+            if (tree != null) {
+                if (treeModelListener != null)
+                    tree.getModel().removeTreeModelListener(treeModelListener);
+            }
         }
     }
 

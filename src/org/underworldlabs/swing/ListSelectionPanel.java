@@ -446,6 +446,10 @@ public class ListSelectionPanel extends ActionPanel
         listeners.remove(listener);
     }
 
+    public void removeAllListSelectionPanelListeners() {
+        listeners.clear();
+    }
+
     private void fireChange(int type) {
         ListSelectionPanelEvent event = new ListSelectionPanelEvent(this, type);
         for (ListSelectionPanelListener listener : listeners)

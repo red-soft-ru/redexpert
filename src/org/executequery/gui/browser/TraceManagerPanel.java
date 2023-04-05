@@ -505,8 +505,17 @@ public class TraceManagerPanel extends JPanel implements TabView {
             } finally {
                 stopSession();
             }
-
-
+        inputStream = null;
+        outputStream = null;
+        fileLog = null;
+        confPanel = null;
+        openFileLog = null;
+        startStopSessionButton = null;
+        loggerPanel.cleanup();
+        loggerPanel = null;
+        tabPane.removeAll();
+        tabPane = null;
+        bufferedReader = null;
         return true;
     }
 

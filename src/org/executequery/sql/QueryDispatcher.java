@@ -57,9 +57,6 @@ import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -220,7 +217,7 @@ public class QueryDispatcher {
      * @param query          query string
      * @param executeAsBlock to execute in entirety, false otherwise
      */
-    public void executeSQLQuery(String query, boolean executeAsBlock, boolean anyConnections) {
+    public void executeSQLQuery(String query, boolean executeAsBlock) {
 
         executeSQLQuery(null, query, executeAsBlock, anyConnections);
     }
@@ -597,16 +594,16 @@ public class QueryDispatcher {
                 return executeCreateOrAlterObject(sql, derivedQuery, anyConnections);
             }
 
-            List<DerivedQuery> queries = queryTokenizer.tokenize(sql);
+            //List<DerivedQuery> queries = queryTokenizer.tokenize(sql);
             boolean removeQueryComments = userProperties().getBooleanProperty("editor.execute.remove.comments");
 
-            for (DerivedQuery query : queries) {
+            DerivedQuery query = new DerivedQuery(sql);
 
                 if (!query.isExecutable()) {
 
                     setOutputMessage(querySender.getDatabaseConnection(),
                             SqlMessages.WARNING_MESSAGE, "Non executable query provided", anyConnections);
-                    continue;
+                    return DONE;
                 }
 
                 // reset clock
@@ -829,7 +826,6 @@ public class QueryDispatcher {
                 totalDuration += timeTaken;
                 logExecutionTime(timeTaken, anyConnections);
 
-            }
 
             statementExecuted(sql);
 

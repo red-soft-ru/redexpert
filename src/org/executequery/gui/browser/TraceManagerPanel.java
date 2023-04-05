@@ -6,7 +6,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
@@ -355,9 +354,10 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     }
                 } else try {
                     traceManager.stopTraceSession(currentSessionId);
-                    stopSession();
                 } catch (SQLException e1) {
                     GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1);
+                } finally {
+                    stopSession();
                 }
             }
         });
@@ -502,7 +502,11 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 traceManager.stopTraceSession(traceManager.getSessionID(sessionField.getText()));
             } catch (SQLException e) {
                 GUIUtilities.displayExceptionErrorDialog("Error stop session", e);
+            } finally {
+                stopSession();
             }
+
+
         return true;
     }
 
@@ -601,6 +605,11 @@ public class TraceManagerPanel extends JPanel implements TabView {
         public void write(int b) throws IOException {
             fileLog.write(b);
             super.write(b);
+        }
+
+        public void close() throws IOException {
+            fileLog.close();
+            super.close();
         }
     }
 }

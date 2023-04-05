@@ -787,6 +787,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             return columns;
 
         } catch (Exception e) {
+            if(!isConnected())
+                throw new DataSourceException(e);
+            else
 
             Log.error("Error retrieving column data for table " + table
                     + " using connection " + getDatabaseConnection(), e);

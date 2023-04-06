@@ -80,6 +80,8 @@ public class BrowserUserPanel extends AbstractFormObjectViewPanel {
     }
 
     public void cleanup() {
+        sqlPanel.cleanup();
+        descriptionPanel.cleanup();
     }
 
     public void setValues(DefaultDatabaseUser user) {

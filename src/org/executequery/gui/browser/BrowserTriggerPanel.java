@@ -184,6 +184,8 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
     }
 
     public void cleanup() {
+        sqlPane.cleanup();
+        textPane.cleanup();
     }
 
     public JTable getTable() {

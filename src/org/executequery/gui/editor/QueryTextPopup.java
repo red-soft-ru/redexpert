@@ -246,6 +246,7 @@ class QueryTextPopup extends JPanel
      * frame's layered pane.
      */
     public void dispose() {
+        textPane.cleanup();
         if (mouseOverPanel) {
             return;
         }

@@ -450,6 +450,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     }
 
     public void cleanup() {
+        sqlTextPanel.cleanup();
     }
 
     public JTable getTable() {

@@ -164,6 +164,8 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
     }
 
     public void cleanup() {
+        sourceTextPane.cleanup();
+        createSqlPane.cleanup();
     }
 
     public JTable getTable() {

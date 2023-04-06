@@ -156,6 +156,9 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
     }
 
     public void cleanup() {
+        sqlPane.cleanup();
+        headerTextPane.cleanup();
+        bodyTextPane.cleanup();
     }
 
     public void setValues(DefaultDatabasePackage databasePackage) {

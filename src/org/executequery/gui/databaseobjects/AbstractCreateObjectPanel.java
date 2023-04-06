@@ -18,6 +18,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.DependenciesPanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
@@ -357,7 +358,16 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
     @Override
     public void cleanup() {
+        cleanupComponent(this);
+    }
 
+    protected void cleanupComponent(Component component) {
+        if (component instanceof SQLTextArea)
+            ((SQLTextArea) component).cleanup();
+        else if (component instanceof Container)
+            for (Component child : ((Container) component).getComponents()) {
+                cleanupComponent(child);
+            }
     }
 
     @Override

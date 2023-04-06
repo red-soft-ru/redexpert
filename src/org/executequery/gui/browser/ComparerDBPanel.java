@@ -1,6 +1,7 @@
 package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
+import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ComparerDBPanel extends JPanel {
+public class ComparerDBPanel extends JPanel implements TabView {
 
     public static final String TITLE = bundleString("ComparerDB");
     public static final String FRAME_ICON = "ComparerDB_16.png";
@@ -637,6 +638,22 @@ public class ComparerDBPanel extends JPanel {
             checkBox.setSelected(!curFlag);
         }
 
+    }
+
+    @Override
+    public boolean tabViewClosing() {
+        sqlTextPanel.cleanup();
+        return true;
+    }
+
+    @Override
+    public boolean tabViewSelected() {
+        return true;
+    }
+
+    @Override
+    public boolean tabViewDeselected() {
+        return true;
     }
 
     // ---

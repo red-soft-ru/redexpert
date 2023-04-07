@@ -567,6 +567,7 @@ public class ComparerDBPanel extends JPanel {
         isComparing = false;
         compareButton.setEnabled(true);
         compareButton.setText(bundleString("CompareButton"));
+        progressBar.setValue(progressBar.getMaximum());
     }
 
     private void saveScript() {

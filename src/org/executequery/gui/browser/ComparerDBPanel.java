@@ -61,7 +61,7 @@ public class ComparerDBPanel extends JPanel {
     private JButton executeScriptButton;
     private JButton selectAllAttributesButton;
     private JButton selectAllPropertiesButton;
-    private LoggingOutputPanel loggingOutputPanel;
+    private static LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
     private static JProgressBar progressBar;
     private static BackgroundProgressDialog progressDialog;
@@ -393,15 +393,9 @@ public class ComparerDBPanel extends JPanel {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    comparer.setLists("");
+                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
+                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     comparer.createObjects(type);
-
-                    if (!Objects.equals(comparer.getLists(), "")) {
-                        loggingOutputPanel.append(MessageFormat.format("============= {0} to CREATE  =============",
-                                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                        loggingOutputPanel.append(comparer.getLists());
-                    }
-
                 }
             }
         }
@@ -423,15 +417,9 @@ public class ComparerDBPanel extends JPanel {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    comparer.setLists("");
+                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to ALTER  =============",
+                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     comparer.alterObjects(type);
-
-                    if (!Objects.equals(comparer.getLists(), "")) {
-                        loggingOutputPanel.append(MessageFormat.format("============= {0} to ALTER  =============",
-                                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                        loggingOutputPanel.append(comparer.getLists());
-                    }
-
                 }
             }
         }
@@ -453,33 +441,25 @@ public class ComparerDBPanel extends JPanel {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    comparer.setLists("");
+                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to DROP  =============",
+                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     comparer.dropObjects(type);
-
-                    if (!Objects.equals(comparer.getLists(), "")) {
-                        loggingOutputPanel.append(MessageFormat.format("============= {0} to DROP  =============",
-                                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                        loggingOutputPanel.append(comparer.getLists());
-                    }
-
                 }
             }
         }
 
         if (!isCanceled()) {
-            comparer.createConstraints();
-            if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null) {
-                loggingOutputPanel.append("============= CONSTRAINTS defining  =============");
+            loggingOutputPanel.append("\n============= CONSTRAINTS defining  =============");
+            if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null)
                 loggingOutputPanel.append(comparer.getConstraintsList());
-            }
+            comparer.createConstraints();
         }
 
         if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !isCanceled()) {
-            comparer.createComputedFields();
-            if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null) {
-                loggingOutputPanel.append("============= COMPUTED FIELDS defining  =============");
+            loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
+            if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
                 loggingOutputPanel.append(comparer.getComputedFieldsList());
-            }
+            comparer.createComputedFields();
         }
 
     }
@@ -722,6 +702,10 @@ public class ComparerDBPanel extends JPanel {
 
     public static boolean isCanceled() {
         return progressDialog.isCancel() || !isComparing;
+    }
+
+    public static void addToLog(String text) {
+        loggingOutputPanel.append(text);
     }
 
     public static String bundleString(String key) {

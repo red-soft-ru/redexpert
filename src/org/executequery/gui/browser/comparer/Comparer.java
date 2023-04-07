@@ -39,7 +39,6 @@ public class Comparer {
     protected StatementExecutor compareConnection;
     protected StatementExecutor masterConnection;
 
-    private String lists;
     private int[] counter;
     private String constraintsList;
     private String computedFieldsList;
@@ -110,9 +109,8 @@ public class Comparer {
             isFirst = false;
 
             if (!sqlScript.contains("Will be created with constraint defining")) {
-                script.add("\n/* " + obj.getName() + " */");
-                script.add("\n" + sqlScript);
-                lists += "\t" + obj.getName() + "\n";
+                script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                ComparerDBPanel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[0] ++;
             }
@@ -148,7 +146,7 @@ public class Comparer {
 
             if (!sqlScript.contains("Remove with table constraint")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
-                lists += "\t" + obj.getName() + "\n";
+                ComparerDBPanel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[1] ++;
             }
@@ -213,7 +211,7 @@ public class Comparer {
 
             if (!sqlScript.contains("there are no changes")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
-                lists += "\t" + obj.getName() + "\n";
+                ComparerDBPanel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[2] ++;
             }
@@ -889,20 +887,12 @@ public class Comparer {
 
     // ---
 
-    public String getLists() {
-        return lists;
-    }
-
     public String getConstraintsList() {
         return constraintsList;
     }
 
     public String getComputedFieldsList() {
         return computedFieldsList;
-    }
-
-    public void setLists(String lists) {
-        this.lists = lists;
     }
 
     public ArrayList<String> getScript() {
@@ -958,7 +948,6 @@ public class Comparer {
         alteredObjects.clear();
         droppedObjects.clear();
         script.clear();
-        lists = "";
     }
 
 }

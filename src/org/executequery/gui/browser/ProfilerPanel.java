@@ -4,11 +4,9 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.components.TableSelectionCombosGroup;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
@@ -18,9 +16,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -54,7 +52,6 @@ public class ProfilerPanel extends JPanel
 
     private int sessionId;
     private DefaultProfilerExecutor profilerExecutor;
-    private DefaultStatementExecutor executor;
     private TableSelectionCombosGroup combosGroup;
 
     // ---
@@ -67,16 +64,12 @@ public class ProfilerPanel extends JPanel
 
         init();
         this.sessionId = sessionId;
-        executor.setDatabaseConnection(connection);
+        this.profilerExecutor = new DefaultProfilerExecutor(connection);
         generateTree(false);
 
     }
 
     private void init() {
-
-        executor = new DefaultStatementExecutor();
-        executor.setKeepAlive(true);
-        executor.setCommitMode(false);
 
         connectionsComboBox = WidgetFactory.createComboBox();
         connectionsComboBox.setModel(
@@ -173,8 +166,6 @@ public class ProfilerPanel extends JPanel
     private void startSession() {
 
         profilerExecutor = new DefaultProfilerExecutor(combosGroup.getSelectedHost().getDatabaseConnection());
-        executor.setDatabaseConnection(combosGroup.getSelectedHost().getDatabaseConnection());
-
         try {
 
             sessionId = profilerExecutor.startSession();
@@ -250,49 +241,27 @@ public class ProfilerPanel extends JPanel
 
     private void generateTree(boolean showProfilerProcesses) {
 
-        ResultSet rs = getProfilerData(showProfilerProcesses);
-
-        if (rs == null) {
+        List<ProfilerData> profilerDataList = profilerExecutor.getProfilerData(sessionId, showProfilerProcesses);
+        if (profilerDataList.isEmpty()) {
             GUIUtilities.displayWarningMessage(bundleString("ErrorUpdatingData"));
             return;
         }
 
-        try {
+        rootTreeNode.removeAllChildren();
+        for (ProfilerData data : profilerDataList) {
+            if (data.getCallerId() == 0) {
+                rootTreeNode.add(new DefaultMutableTreeNode(data));
 
-            rootTreeNode.removeAllChildren();
-            while (rs.next()) {
-
-                int id = rs.getInt(1);
-                int callerId = rs.getInt(2);
-                String packageName = rs.getNString(3);
-                String routineName = rs.getNString(4);
-                String sqlText = rs.getNString(5);
-                long totalTime = rs.getLong(6);
-
-                ProfilerData data = sqlText != null ?
-                        new ProfilerData(id, sqlText, totalTime) :
-                        new ProfilerData(id, packageName, routineName, totalTime);
-
-                if (callerId == 0) {
+            } else {
+                DefaultMutableTreeNode node = getParenNode(data.getCallerId(), rootTreeNode);
+                if (node != null)
+                    node.add(new DefaultMutableTreeNode(data));
+                else
                     rootTreeNode.add(new DefaultMutableTreeNode(data));
-
-                } else {
-                    DefaultMutableTreeNode node = getParenNode(callerId, rootTreeNode);
-                    if (node != null)
-                        node.add(new DefaultMutableTreeNode(data));
-                    else
-                        rootTreeNode.add(new DefaultMutableTreeNode(data));
-                }
             }
-
-            profilerTree.setModel(new DefaultTreeModel(rootTreeNode));
-            executor.getConnection().commit();
-
-        } catch (SQLException | NullPointerException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorUpdatingData"), e);
         }
 
-        executor.releaseResources();
+        profilerTree.setModel(new DefaultTreeModel(rootTreeNode));
     }
 
     private DefaultMutableTreeNode getParenNode(int id, DefaultMutableTreeNode node) {
@@ -312,33 +281,6 @@ public class ProfilerPanel extends JPanel
         }
 
         return null;
-    }
-
-    private ResultSet getProfilerData(boolean showProfilerProcesses) {
-
-        String query = "SELECT DISTINCT\n" +
-                "REQ.REQUEST_ID,\n" +
-                "REQ.CALLER_REQUEST_ID CALLER_ID,\n" +
-                "STA.PACKAGE_NAME,\n" +
-                "STA.ROUTINE_NAME,\n" +
-                "STA.SQL_TEXT,\n" +
-                "REQ.TOTAL_ELAPSED_TIME TOTAL_TIME\n" +
-                "FROM PLG$PROF_STATEMENT_STATS_VIEW STA\n" +
-                "JOIN PLG$PROF_REQUESTS REQ ON\n" +
-                "STA.PROFILE_ID = REQ.PROFILE_ID AND STA.STATEMENT_ID = REQ.STATEMENT_ID\n" +
-                "WHERE STA.PROFILE_ID = '" + sessionId + "'\n" +
-                (showProfilerProcesses ? "" :
-                        "AND (STA.PACKAGE_NAME IS NULL OR STA.PACKAGE_NAME NOT CONTAINING 'RDB$PROFILER')\n" +
-                                "AND (STA.SQL_TEXT IS NULL OR STA.SQL_TEXT NOT CONTAINING 'RDB$PROFILER')\n") +
-                "ORDER BY REQ.CALLER_REQUEST_ID;";
-
-        try {
-            return executor.execute(query, true).getResultSet();
-
-        } catch (SQLException e) {
-            Log.error("Error loading profiler data", e);
-            return null;
-        }
     }
 
     private void switchSessionState(int state) {
@@ -395,19 +337,44 @@ public class ProfilerPanel extends JPanel
     static class ProfilerData {
 
         private final int id;
+        private final int callerId;
         private final String processName;
         private final long totalTime;
+        private final long avgTime;
+        private final long callCount;
 
-        public ProfilerData(int id, String processName, long totalTime) {
+        public ProfilerData(int id, int callerId, String processName, long totalTime, long avgTime, long callCount) {
             this.id = id;
+            this.callerId = callerId;
             this.processName = processName;
             this.totalTime = totalTime;
+            this.avgTime = avgTime;
+            this.callCount = callCount;
         }
 
-        public ProfilerData(int id, String packageName, String routineName, long totalTime) {
+        public ProfilerData(int id, int callerId, String packageName, String routineName, long totalTime, long avgTime, long callCount) {
             this.id = id;
+            this.callerId = callerId;
             this.processName = (packageName != null) ? (packageName.trim() + "::" + routineName.trim()) : routineName.trim();
             this.totalTime = totalTime;
+            this.avgTime = avgTime;
+            this.callCount = callCount;
+        }
+
+        public boolean isSame(ProfilerData comparingData) {
+            return this.callerId == comparingData.callerId &&
+                    Objects.equals(this.processName, comparingData.processName) &&
+                    this.totalTime == comparingData.totalTime &&
+                    this.avgTime == comparingData.avgTime &&
+                    this.callCount == comparingData.callCount;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public int getCallerId() {
+            return callerId;
         }
 
         public String getProcessName() {
@@ -418,8 +385,12 @@ public class ProfilerPanel extends JPanel
             return totalTime;
         }
 
-        public int getId() {
-            return id;
+        public long getAvgTime() {
+            return avgTime;
+        }
+
+        public long getCallCount() {
+            return callCount;
         }
 
     }
@@ -436,7 +407,10 @@ public class ProfilerPanel extends JPanel
             if (userObject instanceof ProfilerData) {
 
                 ProfilerData data = (ProfilerData) userObject;
-                String record = "[" + data.getTotalTime() + "ms] " + data.getProcessName();
+                String prefix = data.getCallCount() == 1 ?
+                        "[" + data.getTotalTime() + "ms] " :
+                        "[" + data.getTotalTime() + "ms [" + data.getCallCount() + " times, ~" + data.getAvgTime() + "ms]] ";
+                String record = prefix + data.getProcessName();
                 setText(record);
             }
 

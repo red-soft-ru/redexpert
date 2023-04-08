@@ -7,6 +7,8 @@ import org.executequery.log.Log;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Class responsible for the interaction of external modules with the profiler.
@@ -78,6 +80,60 @@ public class DefaultProfilerExecutor {
     public void discardSession() throws SQLException {
         executeAndReleaseResources(DISCARD);
         Log.info("Profiler sessions discarded");
+    }
+
+    public List<ProfilerPanel.ProfilerData> getProfilerData(int sessionId, boolean showProfilerProcesses) {
+
+        String query = "SELECT DISTINCT\n" +
+                "REQ.REQUEST_ID,\n" +
+                "REQ.CALLER_REQUEST_ID CALLER_ID,\n" +
+                "STA.PACKAGE_NAME,\n" +
+                "STA.ROUTINE_NAME,\n" +
+                "STA.SQL_TEXT,\n" +
+                "STA.TOTAL_ELAPSED_TIME TOTAL_TIME,\n" +
+                "STA.AVG_ELAPSED_TIME AVG_TIME,\n" +
+                "STA.COUNTER\n" +
+                "FROM PLG$PROF_STATEMENT_STATS_VIEW STA\n" +
+                "JOIN PLG$PROF_REQUESTS REQ ON\n" +
+                "STA.PROFILE_ID = REQ.PROFILE_ID AND STA.STATEMENT_ID = REQ.STATEMENT_ID\n" +
+                "WHERE STA.PROFILE_ID = '" + sessionId + "'\n" +
+                (showProfilerProcesses ? "" :
+                        "AND (STA.PACKAGE_NAME IS NULL OR STA.PACKAGE_NAME NOT CONTAINING 'RDB$PROFILER')\n" +
+                                "AND (STA.SQL_TEXT IS NULL OR STA.SQL_TEXT NOT CONTAINING 'RDB$PROFILER')\n"
+                ) +
+                "ORDER BY REQ.CALLER_REQUEST_ID;";
+
+        List<ProfilerPanel.ProfilerData> profilerDataList = new LinkedList<>();
+        try {
+
+            ResultSet rs = executor.execute(query, true).getResultSet();
+            while (rs.next()) {
+
+                int id = rs.getInt(1);
+                int callerId = rs.getInt(2);
+                String packageName = rs.getNString(3);
+                String routineName = rs.getNString(4);
+                String sqlText = rs.getNString(5);
+                long totalTime = rs.getLong(6);
+                long avgTime = rs.getLong(7);
+                long callCount = rs.getLong(8);
+
+                ProfilerPanel.ProfilerData data = sqlText != null ?
+                        new ProfilerPanel.ProfilerData(id, callerId, sqlText, totalTime, avgTime, callCount) :
+                        new ProfilerPanel.ProfilerData(id, callerId, packageName, routineName, totalTime, avgTime, callCount);
+
+                if (profilerDataList.stream().noneMatch(obj -> obj.isSame(data)))
+                    profilerDataList.add(data);
+
+            }
+            executor.getConnection().commit();
+
+        } catch (SQLException | NullPointerException e) {
+            Log.error("Error loading profiler data", e);
+        }
+
+        executor.releaseResources();
+        return profilerDataList;
     }
 
     private static boolean isVersionSupported(DatabaseConnection connection) {

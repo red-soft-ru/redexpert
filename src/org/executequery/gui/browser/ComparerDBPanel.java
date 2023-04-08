@@ -61,7 +61,7 @@ public class ComparerDBPanel extends JPanel {
     private JButton executeScriptButton;
     private JButton selectAllAttributesButton;
     private JButton selectAllPropertiesButton;
-    private LoggingOutputPanel loggingOutputPanel;
+    private static LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
     private static JProgressBar progressBar;
     private static BackgroundProgressDialog progressDialog;
@@ -114,6 +114,7 @@ public class ComparerDBPanel extends JPanel {
         scriptGenerationOrder.add(STUBS);
         scriptGenerationOrder.add(NamedObject.FUNCTION);
         scriptGenerationOrder.add(NamedObject.PROCEDURE);
+        scriptGenerationOrder.add(NamedObject.JOB);
         scriptGenerationOrder.add(NamedObject.UDF);
         scriptGenerationOrder.add(NamedObject.TRIGGER);
         scriptGenerationOrder.add(NamedObject.DDL_TRIGGER);
@@ -323,12 +324,14 @@ public class ComparerDBPanel extends JPanel {
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("FUNCTION")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("DDL_TRIGGER")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
                 loggingOutputPanel.append(bundleString("RDBVersionBelow3"));
 
             } else if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||
                     new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4) {
 
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
                 loggingOutputPanel.append(bundleString("RDBVersionBelow4"));
             }
 
@@ -382,22 +385,17 @@ public class ComparerDBPanel extends JPanel {
                             attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
                             attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
                             attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected());
+                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.JOB).isSelected());
 
                     continue;
                 }
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    comparer.setLists("");
+                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
+                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     comparer.createObjects(type);
-
-                    if (!Objects.equals(comparer.getLists(), "")) {
-                        loggingOutputPanel.append(MessageFormat.format("============= {0} to CREATE  =============",
-                                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                        loggingOutputPanel.append(comparer.getLists());
-                    }
-
                 }
             }
         }
@@ -419,15 +417,9 @@ public class ComparerDBPanel extends JPanel {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    comparer.setLists("");
+                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to ALTER  =============",
+                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     comparer.alterObjects(type);
-
-                    if (!Objects.equals(comparer.getLists(), "")) {
-                        loggingOutputPanel.append(MessageFormat.format("============= {0} to ALTER  =============",
-                                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                        loggingOutputPanel.append(comparer.getLists());
-                    }
-
                 }
             }
         }
@@ -449,33 +441,25 @@ public class ComparerDBPanel extends JPanel {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    comparer.setLists("");
+                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to DROP  =============",
+                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     comparer.dropObjects(type);
-
-                    if (!Objects.equals(comparer.getLists(), "")) {
-                        loggingOutputPanel.append(MessageFormat.format("============= {0} to DROP  =============",
-                                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                        loggingOutputPanel.append(comparer.getLists());
-                    }
-
                 }
             }
         }
 
         if (!isCanceled()) {
-            comparer.createConstraints();
-            if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null) {
-                loggingOutputPanel.append("============= CONSTRAINTS defining  =============");
+            loggingOutputPanel.append("\n============= CONSTRAINTS defining  =============");
+            if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null)
                 loggingOutputPanel.append(comparer.getConstraintsList());
-            }
+            comparer.createConstraints();
         }
 
         if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !isCanceled()) {
-            comparer.createComputedFields();
-            if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null) {
-                loggingOutputPanel.append("============= COMPUTED FIELDS defining  =============");
+            loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
+            if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
                 loggingOutputPanel.append(comparer.getComputedFieldsList());
-            }
+            comparer.createComputedFields();
         }
 
     }
@@ -525,7 +509,13 @@ public class ComparerDBPanel extends JPanel {
                 long startTime = System.currentTimeMillis();
 
                 if (prepareComparer()) {
-                    compare();
+
+                    try {
+                        compare();
+                    } catch (Exception e) {
+                        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorOccurred"), e);
+                        Log.error("Error occurred while comparing DBs", e);
+                    }
 
                     int[] counter = comparer.getCounter();
                     GUIUtilities.displayInformationMessage(
@@ -563,6 +553,7 @@ public class ComparerDBPanel extends JPanel {
         isComparing = false;
         compareButton.setEnabled(true);
         compareButton.setText(bundleString("CompareButton"));
+        progressBar.setValue(progressBar.getMaximum());
     }
 
     private void saveScript() {
@@ -717,6 +708,10 @@ public class ComparerDBPanel extends JPanel {
 
     public static boolean isCanceled() {
         return progressDialog.isCancel() || !isComparing;
+    }
+
+    public static void addToLog(String text) {
+        loggingOutputPanel.append(text);
     }
 
     public static String bundleString(String key) {

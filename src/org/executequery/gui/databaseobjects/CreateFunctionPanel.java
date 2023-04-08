@@ -48,7 +48,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                                String procedure, DefaultDatabaseFunction databaseFunction) {
         super(dc, dialog, procedure, new Object[]{databaseFunction});
         parametersTabs.remove(outputParametersPanel);
-        parametersTabs.setTitleAt(0, bundledString("Arguments"));
+        parametersTabs.setTitleAt(parametersTabs.indexOfComponent(inputParametersPanel), bundledString("Arguments"));
         selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(),
                 connection.getIntDataTypesArray(), returnType, true);
         returnType.setDomain(returnType.getDomain());

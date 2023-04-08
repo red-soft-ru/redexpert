@@ -1126,7 +1126,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
         IFBUserManager userManager = null;
         try {
-            userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(connection, "FBUserManagerImpl");
+            userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(listConnections.get(databaseBox.getSelectedIndex()).getDriverMajorVersion(), connection, "FBUserManagerImpl");
         } catch (ClassNotFoundException e) {
             Log.error("Error get users in Grant Manager:", e);
         }

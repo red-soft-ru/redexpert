@@ -371,6 +371,7 @@ public class BrowserController {
                 case NamedObject.PACKAGE:
                 case NamedObject.USER:
                 case NamedObject.TABLESPACE:
+                case NamedObject.JOB:
                 case NamedObject.EXCEPTION:
                 case NamedObject.UDF:
                     AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel.getEditPanelFromType(type, connection, node.getDatabaseObject(), null);

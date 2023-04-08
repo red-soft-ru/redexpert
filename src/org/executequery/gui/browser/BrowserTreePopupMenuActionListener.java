@@ -363,6 +363,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
+                case NamedObject.JOB:
+                    if (GUIUtilities.isDialogOpen(CreateJobPanel.CREATE_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateJobPanel.CREATE_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateJobPanel.CREATE_TITLE, false);
+                            CreateJobPanel panel = new CreateJobPanel(currentSelection, dialog);
+                            showDialogCreateObject(panel, dialog);
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;

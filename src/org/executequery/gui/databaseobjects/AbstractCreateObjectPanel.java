@@ -83,6 +83,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                 return new CreateUserPanel(dc, null, (DefaultDatabaseUser) databaseObject);
             case NamedObject.TABLESPACE:
                 return new CreateTablespacePanel(dc, null, databaseObject);
+            case NamedObject.JOB:
+                return new CreateJobPanel(dc, null, databaseObject);
             default:
                 return null;
         }

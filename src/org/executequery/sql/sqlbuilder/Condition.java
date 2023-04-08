@@ -108,4 +108,7 @@ public class Condition {
         return sb.toString();
     }
 
+    public List<Condition> getConditions() {
+        return conditions;
+    }
 }

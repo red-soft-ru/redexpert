@@ -1,16 +1,22 @@
 package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.FunctionArgument;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.Parameter;
+import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.table.TableDefinitionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.executequery.databaseobjects.NamedObject.*;
@@ -1394,6 +1400,10 @@ public final class SQLUtils {
             case (DATABASE_TRIGGER):
                 sb.append(generateCreateTriggerStub((DefaultDatabaseTrigger) object));
                 break;
+
+            case (JOB):
+                sb.append(generateCreateJobStub((DefaultDatabaseJob) object));
+                break;
         }
 
         sb.append("SET TERM ;^\n");
@@ -1474,6 +1484,15 @@ public final class SQLUtils {
         return sb.append("\nAS BEGIN END^\n").toString();
     }
 
+    public static String generateCreateJobStub(DefaultDatabaseJob obj) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE JOB ").append(format(obj.getName())).append("\n");
+        sb.append("\t'' COMMAND ''^");
+
+        return sb.toString();
+    }
+
     public static String generateCreateCollation(
             String name, String charset, String baseCollation, String attributes, boolean padSpace,
             boolean caseSensitive, boolean accentSensitive, boolean isExternal) {
@@ -1500,6 +1519,115 @@ public final class SQLUtils {
             sb.append("\n'").append(attributes).append("'");
 
         return sb.append(";\n").toString();
+    }
+
+    public static String generateCreateJob(String name, String cronSchedule, boolean active,
+                                           LocalDateTime startDate,LocalDateTime endDate,int jobType,String source) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE JOB ").append(format(name)).append("\n");
+        sb.append("'").append(cronSchedule).append("'").append("\n");
+        if(active)
+            sb.append("ACTIVE");
+        else sb.append("INACTIVE");
+        sb.append("\n");
+        sb.append("START DATE ");
+        if(startDate!=null)
+            sb.append("'").append(startDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+        else sb.append("NULL");
+        sb.append("\n");
+        sb.append("END DATE ");
+        if(endDate!=null)
+            sb.append("'").append(endDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+        else sb.append("NULL");
+        sb.append("\n");
+        if (jobType == DefaultDatabaseJob.BASH_TYPE)
+            sb.append("COMMAND '");
+        else sb.append("AS\n");
+        sb.append(source);
+        if (jobType == DefaultDatabaseJob.BASH_TYPE)
+            sb.append("'");
+        sb.append("^");
+        return sb.toString();
+    }
+
+    public static String generateAlterJob(DefaultDatabaseJob job, String name, String cronSchedule, boolean active,
+                                          LocalDateTime startDate, LocalDateTime endDate, int jobType, String source) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER JOB ").append(format(name)).append("\n");
+        if (!job.getCronSchedule().equals(cronSchedule))
+            sb.append("'").append(cronSchedule).append("'").append("\n");
+        if (job.isActive() != active) {
+            if (active)
+                sb.append("ACTIVE");
+            else sb.append("INACTIVE");
+            sb.append("\n");
+        }
+        if (!Objects.equals(job.getStartDate(), startDate)) {
+            sb.append("START DATE ");
+            if (startDate != null)
+                sb.append("'").append(startDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+            else sb.append("NULL");
+            sb.append("\n");
+        }
+        if (!Objects.equals(job.getEndDate(), endDate)) {
+            sb.append("END DATE ");
+            if (endDate != null)
+                sb.append("'").append(endDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+            else sb.append("NULL");
+            sb.append("\n");
+        }
+        if (job.getJobType() != jobType || !job.getSource().equals(source)) {
+            if (jobType == DefaultDatabaseJob.BASH_TYPE)
+                sb.append("COMMAND '");
+            else sb.append("AS\n");
+            sb.append(source);
+            if (jobType == DefaultDatabaseJob.BASH_TYPE)
+                sb.append("'");
+        }
+        sb.append("^");
+        return sb.toString();
+    }
+
+    public static String generateAlterJob(DefaultDatabaseJob thisJob, DefaultDatabaseJob compareJob) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER JOB ").append(format(thisJob.getName())).append("\n");
+        String noChangesCheckString = sb.toString();
+
+        if (!thisJob.getCronSchedule().equals(compareJob.getCronSchedule()))
+            sb.append("'").append(compareJob.getCronSchedule()).append("'").append("\n");
+
+        if (thisJob.isActive() != compareJob.isActive())
+            sb.append(compareJob.isActive() ? "ACTIVE\n" : "INACTIVE\n");
+
+        if (!Objects.equals(thisJob.getStartDate(), compareJob.getStartDate())) {
+            sb.append("START DATE ");
+            if (compareJob.getStartDate() != null)
+                sb.append("'").append(compareJob.getStartDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+            else
+                sb.append("NULL");
+            sb.append("\n");
+        }
+
+        if (!Objects.equals(thisJob.getEndDate(), compareJob.getEndDate())) {
+            sb.append("END DATE ");
+            if (compareJob.getEndDate() != null)
+                sb.append("'").append(compareJob.getEndDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+            else
+                sb.append("NULL");
+            sb.append("\n");
+        }
+
+        if (thisJob.getJobType() != compareJob.getJobType() || !thisJob.getSource().equals(compareJob.getSource())) {
+            sb.append((compareJob.getJobType() == DefaultDatabaseJob.BASH_TYPE) ? "COMMAND '" : "AS\n");
+            sb.append(compareJob.getSource());
+            if (compareJob.getJobType() == DefaultDatabaseJob.BASH_TYPE)
+                sb.append("'");
+        }
+
+        if (noChangesCheckString.equals(sb.toString()))
+            return "/* there are no changes */\n";
+        return sb.append("^\n").toString();
     }
 
     private static String format(String object) {

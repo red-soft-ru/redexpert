@@ -6,6 +6,8 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseException;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SimpleTextArea;
 
+import java.util.Objects;
+
 public class CreateExceptionPanel extends AbstractCreateObjectPanel {
 
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.EXCEPTION);
@@ -51,6 +53,7 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
 
     }
 
+    @Override
     protected void init() {
         centralPanel.setVisible(false);
         textExceptionPanel = new SimpleTextArea();
@@ -58,18 +61,25 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
         addCommentTab(null);
     }
 
+    @Override
     protected void initEdited() {
         reset();
+        addCreateSqlTab(exception);
     }
 
     void generateScript() {
-
         displayExecuteQueryDialog(generateQuery(), "^");
     }
 
+    @Override
     protected String generateQuery() {
-        String query = "CREATE OR ALTER EXCEPTION " + getFormattedName() + " '" + textExceptionPanel.getTextAreaComponent().getText() + "'^";
-        query += "COMMENT ON EXCEPTION " + getFormattedName() + " IS '" + simpleCommentPanel.getComment() + "'";
+
+        String query = "CREATE OR ALTER EXCEPTION " + getFormattedName() + " '" + textExceptionPanel.getTextAreaComponent().getText() + "'^\n";
+
+        String comment = simpleCommentPanel.getComment();
+        if (!Objects.equals(comment, ""))
+            query += "COMMENT ON EXCEPTION " + getFormattedName() + " IS '" + comment + "'\n";
+
         return query;
     }
 

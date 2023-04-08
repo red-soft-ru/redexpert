@@ -209,6 +209,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
     public void reset() {
         super.reset();
         visibleChildren = null;
+        allChildren=null;
     }
 
     public boolean isDefaultCatalogsAndSchemasOnly() {

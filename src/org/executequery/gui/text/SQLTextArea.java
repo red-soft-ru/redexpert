@@ -1,10 +1,10 @@
 package org.executequery.gui.text;
 
-import org.apache.log4j.lf5.viewer.categoryexplorer.TreeModelAdapter;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.searchcommands.FindAction;
 import org.executequery.actions.searchcommands.ReplaceAction;
+import org.executequery.components.LineNumber;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -40,7 +40,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
+public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentListener {
 
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
     private static final String FIND_ACTION_KEY = "findActionKey";
@@ -68,6 +68,13 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
      */
     protected int fontHeight;
     private DefaultAutoCompletePopupProvider autoCompletePopup;
+
+    /**
+     * To display line numbers
+     */
+    protected LineNumber lineBorder;
+
+    private JLabel caretPositionLabel;
 
     protected void setEditorPreferences() {
 
@@ -255,6 +262,8 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
     }
 
+    TreeModelListener treeModelListener;
+
     public SQLTextArea() {
         super();
         document = new SQLSyntaxDocument(null, tokenMakerFactory, "antlr/sql");
@@ -310,8 +319,22 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
         if (treePanel != null) {
             SchemaTree tree = treePanel.getTree();
-            if (tree != null)
-                tree.getModel().addTreeModelListener(new TreeModelAdapter() {
+            if (tree != null) {
+                treeModelListener = new TreeModelListener() {
+                    @Override
+                    public void treeNodesChanged(TreeModelEvent e) {
+
+                    }
+
+                    @Override
+                    public void treeNodesInserted(TreeModelEvent e) {
+
+                    }
+
+                    @Override
+                    public void treeNodesRemoved(TreeModelEvent e) {
+
+                    }
 
                     @Override
                     public void treeStructureChanged(TreeModelEvent e) {
@@ -323,9 +346,60 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
                             }
                         }
                     }
-                });
+                };
+                tree.getModel().addTreeModelListener(treeModelListener);
+            }
         }
+        lineBorder = new LineNumber(this);
+        if (document!=null)
+            document.addDocumentListener(this);
+        lineBorder.updatePreferences(QueryEditorSettings.getEditorFont());
+        lineBorder.repaint();
+        caretPositionLabel = new JLabel();
+        addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                int currentPosition = getCaretPosition();
+
+                Element map = getElementMap();
+                int row = map.getElementIndex(currentPosition);
+
+                Element lineElem = map.getElement(row);
+                int col = currentPosition - lineElem.getStartOffset();
+                setCaretPosition(row+1,col+1);
+            }
+        });
         setEditorPreferences();
+    }
+
+    protected void setCaretPosition(int row,int col)
+    {
+        caretPositionLabel.setText("Caret position: "+row+":"+col);
+    }
+
+    public JLabel getCaretPositionLabel() {
+        return caretPositionLabel;
+    }
+
+    private int lastElementCount;
+    private void updateLineBorder() {
+        int elementCount = document.getDefaultRootElement().getElementCount();
+        if (elementCount != lastElementCount) {
+            lineBorder.setRowCount(elementCount);
+            lastElementCount = elementCount;
+        }
+    }
+
+    public void showLineNumbers(boolean show) {
+        lineBorder.getParent().setVisible(show);
+    }
+
+    public JComponent getLineBorder() {
+        return lineBorder;
+    }
+
+    public void resetExecutingLine() {
+        lineBorder.resetExecutingLine();
     }
 
     protected void registerCommentAction() {
@@ -453,6 +527,17 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
     protected void setDbobjects(TreeSet<String> dbobjects) {
         SqlLexerTokenMaker maker = (SqlLexerTokenMaker) tokenMakerFactory.getTokenMaker("antlr/sql");
         maker.setDbobjects(dbobjects);
+    }
+
+    public void setVariables(TreeSet<String> variables) {
+        SqlLexerTokenMaker maker = (SqlLexerTokenMaker) tokenMakerFactory.getTokenMaker("antlr/sql");
+        maker.setVariables(variables);
+        autoCompletePopup.setVariables(variables);
+    }
+    public void setParameters(TreeSet<String> parameters) {
+        SqlLexerTokenMaker maker = (SqlLexerTokenMaker) tokenMakerFactory.getTokenMaker("antlr/sql");
+        maker.setParameters(parameters);
+        autoCompletePopup.setParameters(parameters);
     }
     private KeywordRepository keywords() {
 
@@ -683,6 +768,17 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         }
     }
 
+    public void cleanup() {
+        ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        if (treePanel != null) {
+            SchemaTree tree = treePanel.getTree();
+            if (tree != null) {
+                if (treeModelListener != null)
+                    tree.getModel().removeTreeModelListener(treeModelListener);
+            }
+        }
+    }
+
     class CommentAction extends RecordableTextAction {
 
 
@@ -843,6 +939,19 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
 
     public void setAutocompleteOnlyHotKey(boolean autocompleteOnlyHotKey) {
         this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        lineBorder.resetExecutingLine();
+        updateLineBorder();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        insertUpdate(e);
+    }
+
+    public void changedUpdate(DocumentEvent e) {
     }
 
     class SQLTextUndoManager extends RUndoManager {

@@ -30,8 +30,6 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.*;
 import org.executequery.gui.FocusablePanel;
 import org.executequery.gui.SaveFunction;
-import org.executequery.gui.browser.DefaultProfilerExecutor;
-import org.executequery.gui.browser.ProfilerPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.gui.text.TextEditor;

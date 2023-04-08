@@ -1,4 +1,4 @@
-package org.executequery.gui.browser;
+package org.executequery.gui.browser.profiler;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -40,7 +40,9 @@ public class DefaultProfilerExecutor {
     }
 
     /**
-     * @return profiler session <code>id</code> or '<code>-1</code>' if failed
+     * Start new profiler session
+     *
+     * @return profiler session id or '-1' if failed
      */
     public int startSession() throws SQLException {
 
@@ -57,32 +59,54 @@ public class DefaultProfilerExecutor {
         return sessionId;
     }
 
+    /**
+     * Pause current profiler session
+     */
     public void pauseSession() throws SQLException {
         executeAndReleaseResources(PAUSE_SESSION);
         Log.info("Profiler session paused");
     }
 
+    /**
+     * Resume current profiler session
+     */
     public void resumeSession() throws SQLException {
         executeAndReleaseResources(RESUME_SESSION);
         Log.info("Profiler session resumed");
     }
 
+    /**
+     * Finish current profiler session
+     */
     public void finishSession() throws SQLException {
         executeAndReleaseResources(FINISH_SESSION);
         Log.info("Profiler session finished");
     }
 
+    /**
+     * Cancel current profiler session
+     */
     public void cancelSession() throws SQLException {
         executeAndReleaseResources(CANCEL_SESSION);
         Log.info("Profiler session canceled");
     }
 
+    /**
+     * Discard all profiler session
+     */
     public void discardSession() throws SQLException {
         executeAndReleaseResources(DISCARD);
         Log.info("Profiler sessions discarded");
     }
 
-    public List<ProfilerPanel.ProfilerData> getProfilerData(int sessionId, boolean showProfilerProcesses) {
+    /**
+     * Get list of filtered profiler data from system tables
+     *
+     * @param sessionId             profiler session id
+     * @param showProfilerProcesses whether to include data about profiler operations in the result
+     * @return linked list of profiler data
+     */
+    public List<ProfilerData> getProfilerData(int sessionId, boolean showProfilerProcesses) {
 
         String query = "SELECT DISTINCT\n" +
                 "REQ.REQUEST_ID,\n" +
@@ -103,7 +127,7 @@ public class DefaultProfilerExecutor {
                 ) +
                 "ORDER BY REQ.CALLER_REQUEST_ID;";
 
-        List<ProfilerPanel.ProfilerData> profilerDataList = new LinkedList<>();
+        List<ProfilerData> profilerDataList = new LinkedList<>();
         try {
 
             ResultSet rs = executor.execute(query, true).getResultSet();
@@ -118,9 +142,9 @@ public class DefaultProfilerExecutor {
                 long avgTime = rs.getLong(7);
                 long callCount = rs.getLong(8);
 
-                ProfilerPanel.ProfilerData data = sqlText != null ?
-                        new ProfilerPanel.ProfilerData(id, callerId, sqlText, totalTime, avgTime, callCount) :
-                        new ProfilerPanel.ProfilerData(id, callerId, packageName, routineName, totalTime, avgTime, callCount);
+                ProfilerData data = sqlText != null ?
+                        new ProfilerData(id, callerId, sqlText, totalTime, avgTime, callCount) :
+                        new ProfilerData(id, callerId, packageName, routineName, totalTime, avgTime, callCount);
 
                 if (profilerDataList.stream().noneMatch(obj -> obj.isSame(data)))
                     profilerDataList.add(data);

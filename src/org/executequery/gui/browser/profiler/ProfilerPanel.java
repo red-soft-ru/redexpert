@@ -1,4 +1,4 @@
-package org.executequery.gui.browser;
+package org.executequery.gui.browser.profiler;
 
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
@@ -9,7 +9,6 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -18,7 +17,6 @@ import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -327,95 +325,6 @@ public class ProfilerPanel extends JPanel
 
     private static String bundleString(String key) {
         return Bundles.get(ProfilerPanel.class, key);
-    }
-
-    /**
-     * A class describing the data that is displayed in the node of the <code>JTree</code>.
-     *
-     * @author Alexey Kozlov
-     */
-    static class ProfilerData {
-
-        private final int id;
-        private final int callerId;
-        private final String processName;
-        private final long totalTime;
-        private final long avgTime;
-        private final long callCount;
-
-        public ProfilerData(int id, int callerId, String processName, long totalTime, long avgTime, long callCount) {
-            this.id = id;
-            this.callerId = callerId;
-            this.processName = processName;
-            this.totalTime = totalTime;
-            this.avgTime = avgTime;
-            this.callCount = callCount;
-        }
-
-        public ProfilerData(int id, int callerId, String packageName, String routineName, long totalTime, long avgTime, long callCount) {
-            this.id = id;
-            this.callerId = callerId;
-            this.processName = (packageName != null) ? (packageName.trim() + "::" + routineName.trim()) : routineName.trim();
-            this.totalTime = totalTime;
-            this.avgTime = avgTime;
-            this.callCount = callCount;
-        }
-
-        public boolean isSame(ProfilerData comparingData) {
-            return this.callerId == comparingData.callerId &&
-                    Objects.equals(this.processName, comparingData.processName) &&
-                    this.totalTime == comparingData.totalTime &&
-                    this.avgTime == comparingData.avgTime &&
-                    this.callCount == comparingData.callCount;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public int getCallerId() {
-            return callerId;
-        }
-
-        public String getProcessName() {
-            return processName;
-        }
-
-        public long getTotalTime() {
-            return totalTime;
-        }
-
-        public long getAvgTime() {
-            return avgTime;
-        }
-
-        public long getCallCount() {
-            return callCount;
-        }
-
-    }
-
-    static class ProfilerTreeCellRenderer extends AbstractTreeCellRenderer {
-
-        @Override
-        public Component getTreeCellRendererComponent(
-                JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-            Object userObject = node.getUserObject();
-
-            if (userObject instanceof ProfilerData) {
-
-                ProfilerData data = (ProfilerData) userObject;
-                String prefix = data.getCallCount() == 1 ?
-                        "[" + data.getTotalTime() + "ms] " :
-                        "[" + data.getTotalTime() + "ms [" + data.getCallCount() + " times, ~" + data.getAvgTime() + "ms]] ";
-                String record = prefix + data.getProcessName();
-                setText(record);
-            }
-
-            return this;
-        }
     }
 
 }

@@ -509,7 +509,13 @@ public class ComparerDBPanel extends JPanel {
                 long startTime = System.currentTimeMillis();
 
                 if (prepareComparer()) {
-                    compare();
+
+                    try {
+                        compare();
+                    } catch (Exception e) {
+                        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorOccurred"), e);
+                        Log.error("Error occurred while comparing DBs", e);
+                    }
 
                     int[] counter = comparer.getCounter();
                     GUIUtilities.displayInformationMessage(

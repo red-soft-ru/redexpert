@@ -98,21 +98,21 @@ public class CreateTableToolBar extends JPanel implements ActionListener {
         insertAfterButton = ActionUtilities.createToolbarButton(
                 this,
                 GUIUtilities.getAbsoluteIconPath("ColumnInsertAfter16.png"),
-                "Insert a value after the current selection",
+                bundleString("InsertAfter"),
                 null
         );
 
         insertBeforeButton = ActionUtilities.createToolbarButton(
                 this,
                 GUIUtilities.getAbsoluteIconPath("ColumnInsertBefore16.png"),
-                "Insert a value before the current selection",
+                bundleString("InsertBefore"),
                 null
         );
 
         deleteRowButton = ActionUtilities.createToolbarButton(
                 this,
                 GUIUtilities.getAbsoluteIconPath("ColumnDelete16.png"),
-                "Delete the selected value",
+                bundleString("DeleteSelection"),
                 null
         );
 
@@ -128,14 +128,14 @@ public class CreateTableToolBar extends JPanel implements ActionListener {
             moveUpButton = ActionUtilities.createToolbarButton(
                     this,
                     "Up16.png",
-                    "Move the selection up",
+                    bundleString("MoveUp"),
                     null
             );
 
             moveDownButton = ActionUtilities.createToolbarButton(
                     this,
                     "Down16.png",
-                    "Move the selection down",
+                    bundleString("MoveDown"),
                     null
             );
 

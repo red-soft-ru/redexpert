@@ -21,7 +21,9 @@
 package org.executequery.gui.table;
 
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionUtilities;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,13 +40,17 @@ import java.awt.event.ActionListener;
 /**
  * @author Takis Diakoumis
  */
-public class CreateTableToolBar extends JPanel
-        implements ActionListener {
+public class CreateTableToolBar extends JPanel implements ActionListener {
 
     /**
-     * The parent panel where this tool bar will be attached
+     * The parent panel where this toolbar will be attached
      */
-    private TableFunction parent;
+    private final TableFunction parent;
+
+    /**
+     * Whether the move buttons are available
+     */
+    private final boolean canMove;
 
     /**
      * The insert row (column) after button
@@ -71,11 +77,6 @@ public class CreateTableToolBar extends JPanel
      */
     private JButton moveDownButton;
 
-    /**
-     * Whether the move buttons are available
-     */
-    private boolean canMove;
-
     public CreateTableToolBar(TableFunction parent) {
         this(parent, true);
     }
@@ -89,7 +90,7 @@ public class CreateTableToolBar extends JPanel
     }
 
     /**
-     * <p>Creates the tool bar buttons and associates
+     * <p>Creates the toolbar buttons and associates
      * these with the relevant listener.
      */
     private void initialiseButtons() {
@@ -98,48 +99,48 @@ public class CreateTableToolBar extends JPanel
                 this,
                 GUIUtilities.getAbsoluteIconPath("ColumnInsertAfter16.png"),
                 "Insert a value after the current selection",
-                null);
+                null
+        );
 
         insertBeforeButton = ActionUtilities.createToolbarButton(
                 this,
                 GUIUtilities.getAbsoluteIconPath("ColumnInsertBefore16.png"),
                 "Insert a value before the current selection",
-                null);
+                null
+        );
 
         deleteRowButton = ActionUtilities.createToolbarButton(
                 this,
                 GUIUtilities.getAbsoluteIconPath("ColumnDelete16.png"),
                 "Delete the selected value",
-                null);
+                null
+        );
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.NORTH;
-        gbc.gridy++;
-        gbc.gridx++;
-        gbc.insets.bottom = 1;
-        add(insertAfterButton, gbc);
-        gbc.gridy++;
-        add(insertBeforeButton, gbc);
-        gbc.gridy++;
-        add(deleteRowButton, gbc);
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.anchorNorth().setInsets(0, 0, 0, 1);
+
+        add(insertAfterButton, gbh.get());
+        add(insertBeforeButton, gbh.nextRowFirstCol().get());
+        add(deleteRowButton, gbh.nextRowFirstCol().get());
 
         if (canMove) {
+
             moveUpButton = ActionUtilities.createToolbarButton(
                     this,
                     "Up16.png",
                     "Move the selection up",
-                    null);
+                    null
+            );
 
             moveDownButton = ActionUtilities.createToolbarButton(
                     this,
                     "Down16.png",
                     "Move the selection down",
-                    null);
+                    null
+            );
 
-            gbc.gridy++;
-            add(moveUpButton, gbc);
-            gbc.gridy++;
-            add(moveDownButton, gbc);
+            add(moveUpButton, gbh.nextRowFirstCol().get());
+            add(moveDownButton, gbh.nextRowFirstCol().get());
         }
 
     }
@@ -148,12 +149,11 @@ public class CreateTableToolBar extends JPanel
      * <p>Enables/disables as specified the buttons
      * insert before, move up and move down.
      *
-     * @param <code>true</code> to enable these buttons
-     *                          <code>false</code> to disable these buttons
+     * @param enable <code>true</code> to enable these button or <code>false</code> to disable
      */
     public void enableButtons(boolean enable) {
-        insertBeforeButton.setEnabled(enable);
 
+        insertBeforeButton.setEnabled(enable);
         if (canMove) {
             moveUpButton.setEnabled(enable);
             moveDownButton.setEnabled(enable);
@@ -164,41 +164,22 @@ public class CreateTableToolBar extends JPanel
      * <p>Determines which button was selected and
      * calls the relevant method to execute that action.
      *
-     * @param the event initiating this action
+     * @param e the event initiating this action
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
+
         Object button = e.getSource();
-
-        if (button == insertAfterButton)
-            parent.insertAfter();
-
-        else if (button == insertBeforeButton)
-            parent.insertBefore();
-
-        else if (button == deleteRowButton)
-            parent.deleteRow();
-
-        else if (button == moveUpButton)
-            parent.moveColumnUp();
-
-        else if (button == moveDownButton)
-            parent.moveColumnDown();
+        if (button.equals(insertAfterButton)) parent.insertAfter();
+        else if (button.equals(insertBeforeButton)) parent.insertBefore();
+        else if (button.equals(deleteRowButton)) parent.deleteRow();
+        else if (button.equals(moveUpButton)) parent.moveColumnUp();
+        else if (button.equals(moveDownButton)) parent.moveColumnDown();
 
     }
 
+    public static String bundleString(String key) {
+        return Bundles.get(CreateTableToolBar.class, key);
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

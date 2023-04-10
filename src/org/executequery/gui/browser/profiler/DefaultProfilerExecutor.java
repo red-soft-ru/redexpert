@@ -114,18 +114,15 @@ public class DefaultProfilerExecutor {
                 "STA.PACKAGE_NAME,\n" +
                 "STA.ROUTINE_NAME,\n" +
                 "STA.SQL_TEXT,\n" +
-                "STA.TOTAL_ELAPSED_TIME TOTAL_TIME,\n" +
-                "STA.AVG_ELAPSED_TIME AVG_TIME,\n" +
-                "STA.COUNTER\n" +
-                "FROM PLG$PROF_STATEMENT_STATS_VIEW STA\n" +
-                "JOIN PLG$PROF_REQUESTS REQ ON\n" +
-                "STA.PROFILE_ID = REQ.PROFILE_ID AND STA.STATEMENT_ID = REQ.STATEMENT_ID\n" +
+                "REQ.TOTAL_ELAPSED_TIME TOTAL_TIME\n" +
+                "FROM PLG$PROF_REQUESTS REQ\n" +
+                "LEFT OUTER JOIN PLG$PROF_STATEMENTS STA USING (PROFILE_ID, STATEMENT_ID)\n" +
                 "WHERE STA.PROFILE_ID = '" + sessionId + "'\n" +
                 (showProfilerProcesses ? "" :
                         "AND (STA.PACKAGE_NAME IS NULL OR STA.PACKAGE_NAME NOT CONTAINING 'RDB$PROFILER')\n" +
                                 "AND (STA.SQL_TEXT IS NULL OR STA.SQL_TEXT NOT CONTAINING 'RDB$PROFILER')\n"
                 ) +
-                "ORDER BY REQ.CALLER_REQUEST_ID;";
+                "ORDER BY REQ.CALLER_REQUEST_ID, REQ.REQUEST_ID;";
 
         List<ProfilerData> profilerDataList = new LinkedList<>();
         try {
@@ -139,15 +136,12 @@ public class DefaultProfilerExecutor {
                 String routineName = rs.getNString(4);
                 String sqlText = rs.getNString(5);
                 long totalTime = rs.getLong(6);
-                long avgTime = rs.getLong(7);
-                long callCount = rs.getLong(8);
 
                 ProfilerData data = sqlText != null ?
-                        new ProfilerData(id, callerId, sqlText, totalTime, avgTime, callCount) :
-                        new ProfilerData(id, callerId, packageName, routineName, totalTime, avgTime, callCount);
+                        new ProfilerData(id, callerId, sqlText, totalTime) :
+                        new ProfilerData(id, callerId, packageName, routineName, totalTime);
 
-                if (profilerDataList.stream().noneMatch(obj -> obj.isSame(data)))
-                    profilerDataList.add(data);
+                profilerDataList.add(data);
 
             }
             executor.getConnection().commit();

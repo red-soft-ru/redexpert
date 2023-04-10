@@ -19,8 +19,8 @@ class ProfilerTreeCellRenderer extends AbstractTreeCellRenderer {
 
             ProfilerData data = (ProfilerData) userObject;
             String prefix = data.getCallCount() == 1 ?
-                    "[" + data.getTotalTime() + "ms] " :
-                    "[" + data.getTotalTime() + "ms [" + data.getCallCount() + " times, ~" + data.getAvgTime() + "ms]] ";
+                    "[" + data.getTotalTime() + "ms]   " :
+                    "[" + data.getTotalTime() + "ms [" + data.getCallCount() + " times, ~" + data.getAvgTime() + "ms]]   ";
             String record = prefix + data.getProcessName();
             setText(record);
         }

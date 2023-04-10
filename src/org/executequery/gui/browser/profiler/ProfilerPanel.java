@@ -15,9 +15,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * @author Alexey Kozlov
@@ -34,7 +33,7 @@ public class ProfilerPanel extends JPanel
     // --- GUI objects ---
 
     private JComboBox<?> connectionsComboBox;
-    private JCheckBox showProfilerProcessesCheckBox;
+    private JCheckBox compactViewCheckBox;
 
     private JTree profilerTree;
     private DefaultMutableTreeNode rootTreeNode;
@@ -63,7 +62,7 @@ public class ProfilerPanel extends JPanel
         init();
         this.sessionId = sessionId;
         this.profilerExecutor = new DefaultProfilerExecutor(connection);
-        generateTree(false);
+        generateTree(false, false);
 
     }
 
@@ -74,7 +73,8 @@ public class ProfilerPanel extends JPanel
                 new DynamicComboBoxModel(new Vector<>(ConnectionManager.getActiveConnections())));
         combosGroup = new TableSelectionCombosGroup(connectionsComboBox);
 
-        showProfilerProcessesCheckBox = new JCheckBox(bundleString("showProfilerProcessesCheckBox"));
+        compactViewCheckBox = new JCheckBox(bundleString("compactViewCheckBox"));
+        compactViewCheckBox.addActionListener(e -> switchViewMode());
 
         rootTreeNode = new DefaultMutableTreeNode("root");
         profilerTree = new JTree(new DefaultTreeModel(rootTreeNode));
@@ -126,7 +126,7 @@ public class ProfilerPanel extends JPanel
         gridBagHelper.addLabelFieldPair(toolsPanel,
                 bundleString("Connection"), connectionsComboBox, null, false, false);
         toolsPanel.add(buttonPanel, gridBagHelper.nextCol().get());
-        toolsPanel.add(showProfilerProcessesCheckBox, gridBagHelper.nextCol().get());
+        toolsPanel.add(compactViewCheckBox, gridBagHelper.nextCol().get());
 
         // --- resultSet panel ---
 
@@ -183,7 +183,7 @@ public class ProfilerPanel extends JPanel
 
             profilerExecutor.pauseSession();
             switchSessionState(PAUSED);
-            generateTree(showProfilerProcessesCheckBox.isSelected());
+            generateTree(false, compactViewCheckBox.isSelected());
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionPause"), e);
@@ -206,7 +206,7 @@ public class ProfilerPanel extends JPanel
 
             profilerExecutor.finishSession();
             switchSessionState(INACTIVE);
-            generateTree(showProfilerProcessesCheckBox.isSelected());
+            generateTree(false, compactViewCheckBox.isSelected());
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionFinish"), e);
@@ -237,7 +237,7 @@ public class ProfilerPanel extends JPanel
 
     // ---
 
-    private void generateTree(boolean showProfilerProcesses) {
+    private void generateTree(boolean showProfilerProcesses, boolean isCompactView) {
 
         List<ProfilerData> profilerDataList = profilerExecutor.getProfilerData(sessionId, showProfilerProcesses);
         if (profilerDataList.isEmpty()) {
@@ -259,6 +259,9 @@ public class ProfilerPanel extends JPanel
             }
         }
 
+        if (isCompactView)
+            compressNodes(rootTreeNode);
+
         profilerTree.setModel(new DefaultTreeModel(rootTreeNode));
     }
 
@@ -279,6 +282,39 @@ public class ProfilerPanel extends JPanel
         }
 
         return null;
+    }
+
+    private DefaultMutableTreeNode compressNodes(DefaultMutableTreeNode node) {
+
+        List<DefaultMutableTreeNode> childrenList = new LinkedList<>();
+
+        Enumeration<TreeNode> children = node.children();
+        while (children.hasMoreElements()) {
+
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+            if (child.getChildCount() > 0)
+                childrenList.add(compressNodes(child));
+            else
+                childrenList.add(child);
+        }
+
+        for (int i = 0, activeNodeIndex = 0; i < childrenList.size() - 1; i++) {
+
+            ProfilerData data_1 = (ProfilerData) childrenList.get(activeNodeIndex).getUserObject();
+            ProfilerData data_2 = (ProfilerData) childrenList.get(i + 1).getUserObject();
+
+            if (data_1.compareAndMergeData(data_2))
+                node.remove(childrenList.get(i + 1));
+            else
+                activeNodeIndex = i + 1;
+
+        }
+
+        return node;
+    }
+
+    private void switchViewMode() {
+        generateTree(false, compactViewCheckBox.isSelected());
     }
 
     private void switchSessionState(int state) {

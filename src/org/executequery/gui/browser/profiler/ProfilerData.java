@@ -12,34 +12,38 @@ class ProfilerData {
     private final int id;
     private final int callerId;
     private final String processName;
-    private final long totalTime;
-    private final long avgTime;
-    private final long callCount;
+    private long totalTime;
+    private long avgTime;
+    private long callCount;
 
-    public ProfilerData(int id, int callerId, String processName, long totalTime, long avgTime, long callCount) {
+    public ProfilerData(int id, int callerId, String processName, long totalTime) {
         this.id = id;
         this.callerId = callerId;
         this.processName = processName;
         this.totalTime = totalTime;
-        this.avgTime = avgTime;
-        this.callCount = callCount;
+        this.avgTime = totalTime;
+        this.callCount = 1;
     }
 
-    public ProfilerData(int id, int callerId, String packageName, String routineName, long totalTime, long avgTime, long callCount) {
+    public ProfilerData(int id, int callerId, String packageName, String routineName, long totalTime) {
         this.id = id;
         this.callerId = callerId;
         this.processName = (packageName != null) ? (packageName.trim() + "::" + routineName.trim()) : routineName.trim();
         this.totalTime = totalTime;
-        this.avgTime = avgTime;
-        this.callCount = callCount;
+        this.avgTime = totalTime;
+        this.callCount = 1;
     }
 
-    public boolean isSame(ProfilerData comparingData) {
-        return this.callerId == comparingData.callerId &&
-                Objects.equals(this.processName, comparingData.processName) &&
-                this.totalTime == comparingData.totalTime &&
-                this.avgTime == comparingData.avgTime &&
-                this.callCount == comparingData.callCount;
+    public boolean compareAndMergeData(ProfilerData comparingData) {
+
+        if (this.callerId == comparingData.callerId && Objects.equals(this.processName, comparingData.processName)) {
+            this.callCount++;
+            this.avgTime = (this.avgTime + comparingData.avgTime) / 2;
+            this.totalTime += comparingData.totalTime;
+            return true;
+        }
+
+        return false;
     }
 
     public int getId() {

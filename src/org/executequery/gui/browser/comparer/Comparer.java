@@ -100,12 +100,11 @@ public class Comparer {
                 break;
 
             AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) obj;
-            if (isFirst) {
-                if (isFirst) {
-                    fullLoad = databaseObject.getMetaTagParent().getObjects().size() / createObjects.size() < FULL_LOAD_CONSTANT;
-                }
-                databaseObject.setFullLoad(fullLoad);
-            }
+
+            if (isFirst)
+                fullLoad = databaseObject.getMetaTagParent().getObjects().size() / createObjects.size() < FULL_LOAD_CONSTANT;
+            databaseObject.setFullLoad(fullLoad);
+
             if (!isFirst) {
                 databaseObject.setStatementForLoadInfo(statement);
                 databaseObject.setQuerySender(querySender);

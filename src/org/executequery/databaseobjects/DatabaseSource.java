@@ -54,13 +54,6 @@ public interface DatabaseSource extends NamedObject {
     DatabaseHost getHost();
 
     /**
-     * Returns the tables belonging to this source.
-     *
-     * @return the hosted tables
-     */
-    List<NamedObject> getTables() throws DataSourceException;
-
-    /**
      * Returns the procedure with the specified name.
      *
      * @param name

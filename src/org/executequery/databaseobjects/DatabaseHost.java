@@ -95,18 +95,6 @@ public interface DatabaseHost extends NamedObject {
     List<DatabaseSchema> getSchemas() throws DataSourceException;
 
     /**
-     * Returns the tables hosted by this host of the specified type and
-     * belonging to the specified catalog and schema.
-     *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param type    the table type
-     * @return the hosted tables
-     */
-    List<NamedObject> getTables(String catalog, String schema, String type)
-            throws DataSourceException;
-
-    /**
      * Returns the columns of the specified database object.
      *
      * @return the columns

@@ -245,7 +245,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
 
                 String tableName = rs.getString(1);
-                DefaultDatabaseObject object = new DefaultDatabaseObject(this.getHost(), metaDataKey);
+        DefaultDatabaseObject object = new DefaultDatabaseObject(this, metaDataKey);
                 object.setName(tableName);
                 if (typeTree == DEFAULT) {
                 } else {

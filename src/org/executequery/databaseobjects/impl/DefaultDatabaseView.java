@@ -44,7 +44,7 @@ public class DefaultDatabaseView extends AbstractTableObject
     public DefaultDatabaseView(DatabaseObject object) {
 
         this(object.getHost());
-
+        metaTagParent = ((DefaultDatabaseObject) object).getMetaTagParent();
         setCatalogName(object.getCatalogName());
         setSchemaName(object.getSchemaName());
         setName(object.getName());

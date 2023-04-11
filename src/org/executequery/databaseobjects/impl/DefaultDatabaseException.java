@@ -97,6 +97,7 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
         Table mainTable = getMainTable();
         sb.appendFields(mainTable, getFieldName(), ID, EXCEPTION_TEXT, DESCRIPTION);
         sb.appendTable(mainTable);
+        sb.setOrdering(getObjectField().getFieldTable());
         return sb;
     }
 

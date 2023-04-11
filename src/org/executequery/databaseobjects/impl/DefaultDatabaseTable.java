@@ -94,10 +94,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         this(object.getHost(), metaDataKey);
         setName(object.getName());
 
+
         if (object instanceof DefaultDatabaseObject) {
             DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
             setTypeTree(ddo.getTypeTree());
             setDependObject(ddo.getDependObject());
+            metaTagParent = ddo.getMetaTagParent();
 
         } else {
             typeTree = TreePanel.DEFAULT;
@@ -113,10 +115,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         this(object.getHost());
         setName(object.getName());
 
+
         if (object instanceof DefaultDatabaseObject) {
             DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
             setTypeTree(ddo.getTypeTree());
             setDependObject(ddo.getDependObject());
+            metaTagParent = ddo.getMetaTagParent();
 
         } else {
             typeTree = TreePanel.DEFAULT;

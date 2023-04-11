@@ -13,6 +13,10 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class AbstractTableObject extends DefaultDatabaseObject implements DatabaseTableObject {
+    public AbstractTableObject(DatabaseMetaTag metaTag, String metaDataKey) {
+        super(metaTag, metaDataKey);
+    }
+
     public AbstractTableObject(DatabaseHost host, String metaDataKey) {
         super(host, metaDataKey);
     }

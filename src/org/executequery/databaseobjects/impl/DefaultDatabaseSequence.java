@@ -183,6 +183,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         SelectBuilder sb = SelectBuilder.createSelectBuilder();
         Table gens = getMainTable();
         sb.appendTable(gens);
+        sb.appendField(getObjectField());
         sb.appendField(Field.createField(gens, INITIAL_VALUE).setNull(getDatabaseMajorVersion() < 3));
         sb.appendField(Field.createField(gens, GENERATOR_INCREMENT).setNull(getDatabaseMajorVersion() < 3));
         sb.appendField(Field.createField(gens, DESCRIPTION));

@@ -20,10 +20,7 @@
 
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
@@ -75,18 +72,17 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     /**
      * Creates a new instance of DefaultDatabaseObject
      */
+    public DefaultDatabaseObject(DatabaseMetaTag metaTagParent, String metaDataKey) {
+        this(metaTagParent.getHost(), metaDataKey);
+        this.metaTagParent = metaTagParent;
+    }
+
     public DefaultDatabaseObject(DatabaseHost host, String metaDataKey) {
         super(host);
         typeTree = TreePanel.DEFAULT;
         dependObject = null;
         this.metaDataKey = metaDataKey;
         setSystemFlag(false);
-    }
-
-    public DefaultDatabaseObject(DatabaseHost host, String metaDataKey, int typeTree, DatabaseObject dependObject) {
-        this(host, metaDataKey);
-        this.typeTree = typeTree;
-        this.dependObject = dependObject;
     }
 
     public int getTypeTree() {

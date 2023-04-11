@@ -5,6 +5,7 @@ import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.datasource.SimpleDataSource;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.editor.QueryEditor;
@@ -351,7 +352,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
         settingScriptProps.append("\n/* Setting properties */\n\n");
         settingScriptProps.append("SET NAMES ").append(getMasterDBCharset()).append(";\n");
         settingScriptProps.append("SET SQL DIALECT ").append(getMasterDBDialect()).append(";\n");
-        settingScriptProps.append("CONNECT '").append(comparer.getMasterConnection().getDatabaseConnection().getName());
+        settingScriptProps.append("CONNECT '").append(SimpleDataSource.generateUrl(
+                comparer.getMasterConnection().getDatabaseConnection(),
+                SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection().getDatabaseConnection()))
+        );
         settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getDatabaseConnection().getUserName());
         settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword());
         settingScriptProps.append("';\nSET AUTODDL ON;\n");

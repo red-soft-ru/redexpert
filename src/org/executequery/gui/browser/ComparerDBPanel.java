@@ -206,9 +206,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
         connectionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ConnectionsLabel")));
 
         gridBagHelper.addLabelFieldPair(connectionsPanel,
-                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
-        gridBagHelper.addLabelFieldPair(connectionsPanel,
                 bundleString("CompareDatabaseLabel"), dbCompareComboBox, null);
+        gridBagHelper.addLabelFieldPair(connectionsPanel,
+                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
         connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().get());
 
         // --- attributes panel ---

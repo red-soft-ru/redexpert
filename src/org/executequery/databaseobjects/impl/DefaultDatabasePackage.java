@@ -3,6 +3,8 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
@@ -20,6 +22,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     private boolean validBodyFlag;
     private String securityClass;
     private String ownerName;
+
 
     public DefaultDatabasePackage() {
     }
@@ -141,17 +144,61 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         return sql;
     }
 
+    protected final static String PACKAGE_HEADER_SOURCE = "PACKAGE_HEADER_SOURCE";
+    protected final static String PACKAGE_BODY_SOURCE = "PACKAGE_BODY_SOURCE";
+    protected final static String VALID_BODY_FLAG = "VALID_BODY_FLAG";
+    protected final static String SECURITY_CLASS = "SECURITY_CLASS";
+    protected final static String OWNER_NAME = "OWNER_NAME";
+    protected final static String SYSTEM_FLAG = "SYSTEM_FLAG";
+
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        if (rs.next()) {
-            setHeaderSource(rs.getString(2));
-            setBodySource(rs.getString(3));
-            setValidBodyFlag(rs.getBoolean(4));
-            setSecurityClass(rs.getString(5));
-            setOwnerName(rs.getString(6));
-            setSystemFlag(rs.getBoolean(7));
-            setRemarks(getFromResultSet(rs, "DESCRIPTION"));
-            setSqlSecurity(getFromResultSet(rs, "SQL_SECURITY"));
-        }
+    protected String getFieldName() {
+        return "PACKAGE_NAME";
+    }
+
+    @Override
+    protected Table getMainTable() {
+        return Table.createTable("RDB$PACKAGES", "P");
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        Table packages = getMainTable();
+        sb.appendFields(packages, getFieldName(), PACKAGE_HEADER_SOURCE, PACKAGE_BODY_SOURCE, VALID_BODY_FLAG,
+                SECURITY_CLASS, OWNER_NAME, SYSTEM_FLAG, DESCRIPTION);
+        sb.appendField(buildSqlSecurityField(packages));
+        sb.appendTable(packages);
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setHeaderSource(getFromResultSet(rs, PACKAGE_HEADER_SOURCE));
+        setBodySource(getFromResultSet(rs, PACKAGE_BODY_SOURCE));
+        setValidBodyFlag(rs.getBoolean(VALID_BODY_FLAG));
+        /*setSecurityClass(getFromResultSet(rs,SECURITY_CLASS));
+        setOwnerName(getFromResultSet(rs,OWNER_NAME));
+        setSystemFlag(rs.getBoolean(SYSTEM_FLAG))*/
+        ;
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
     }
 }

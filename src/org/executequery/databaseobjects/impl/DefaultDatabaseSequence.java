@@ -5,7 +5,6 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.log.Log;
-import org.executequery.sql.sqlbuilder.Condition;
 import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
@@ -169,29 +168,51 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         return SQLUtils.generateAlterSequence(this, comparingSequence, version);
     }
 
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        if (rs.next()) {
-            setRemarks(getFromResultSet(rs, DESCRIPTION));
-            firstValue = rs.getLong(INITIAL_VALUE);
-            increment = rs.getInt(GENERATOR_INCREMENT);
-        }
+    @Override
+    protected String getFieldName() {
+        return "GENERATOR_NAME";
     }
 
     @Override
-    protected String queryForInfo() {
+    protected Table getMainTable() {
+        return Table.createTable("RDB$GENERATORS", "G");
+    }
 
+    @Override
+    protected SelectBuilder builderCommonQuery() {
         SelectBuilder sb = SelectBuilder.createSelectBuilder();
-        Table gens = Table.createTable("RDB$GENERATORS", "G");
+        Table gens = getMainTable();
         sb.appendTable(gens);
-
-        //sb.appendField(Field.createField().setStatement("GEN_ID(" + MiscUtils.getFormattedObject(getName()) + ", 0)").setAlias(CURRENT_VALUE));
         sb.appendField(Field.createField(gens, INITIAL_VALUE).setNull(getDatabaseMajorVersion() < 3));
         sb.appendField(Field.createField(gens, GENERATOR_INCREMENT).setNull(getDatabaseMajorVersion() < 3));
         sb.appendField(Field.createField(gens, DESCRIPTION));
-
-        sb.appendCondition(Condition.createCondition(Field.createField(gens, "GENERATOR_NAME"), "=", "?"));
-        return sb.getSQLQuery();
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
     }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        firstValue = rs.getLong(INITIAL_VALUE);
+        increment = rs.getInt(GENERATOR_INCREMENT);
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
+    }
+
 
     public int getVersion() throws SQLException {
         return getDatabaseMajorVersion();

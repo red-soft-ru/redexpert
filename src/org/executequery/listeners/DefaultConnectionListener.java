@@ -22,7 +22,6 @@ package org.executequery.listeners;
 
 import org.executequery.GUIUtilities;
 import org.executequery.components.StatusBarPanel;
-import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
@@ -35,7 +34,6 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.SwingWorker;
-import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.tree.TreeNode;
 import java.util.Enumeration;
@@ -84,15 +82,23 @@ public class DefaultConnectionListener implements ConnectionListener {
     }
 
     void populate(DatabaseObjectNode root) {
-        if(root.getDatabaseObject() instanceof AbstractDatabaseObject)
-            if(!((AbstractDatabaseObject)root.getDatabaseObject()).getHost().isConnected())
+        if (root.getDatabaseObject() instanceof AbstractDatabaseObject) {
+            if (!((AbstractDatabaseObject) root.getDatabaseObject()).getHost().isConnected())
                 return;
-            root.populateChildren();
-            Enumeration<TreeNode> nodes = root.children();
-            while (nodes.hasMoreElements()) {
-                DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-                populate(node);
+            while (((AbstractDatabaseObject) root.getDatabaseObject()).getHost().isPauseLoadingTreeForSearch()) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
+        }
+        root.populateChildren();
+        Enumeration<TreeNode> nodes = root.children();
+        while (nodes.hasMoreElements()) {
+            DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
+            populate(node);
+        }
 
     }
 

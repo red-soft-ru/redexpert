@@ -86,19 +86,22 @@ public class AnaliseRecompileDialog extends BaseDialog {
                 for (int i = 0; i < childs.size(); i++) {
                     progressBar.setValue(i);
                     AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) childs.get(i).getDatabaseObject();
+                    if (i == 0)
+                        databaseObject.getHost().setPauseLoadingTreeForSearch(true);
                     addOutputMessage(SqlMessages.PLAIN_MESSAGE, bundleString("generateScript", databaseObject.getName()));
-                    if(i>0)
-                    {
+                    if (i > 0) {
                         databaseObject.setStatementForLoadInfo(statement);
                         databaseObject.setQuerySender(querySender);
                     }
                     databaseObject.setSomeExecute(true);
                     String s = databaseObject.getCreateSQLText();
-                    querySender=databaseObject.getQuerySender();
-                    statement=databaseObject.getStatementForLoadInfo();
+                    querySender = databaseObject.getQuerySender();
+                    statement = databaseObject.getStatementForLoadInfo();
                     sb.append(s);
                     if (!sb.toString().trim().endsWith("^"))
                         sb.append("^");
+                    if (i == childs.size() - 1)
+                        databaseObject.getHost().setPauseLoadingTreeForSearch(false);
                 }
                 if(querySender!=null)
                     querySender.releaseResources();

@@ -40,8 +40,6 @@ import org.underworldlabs.util.SystemProperties;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.*;
 
@@ -84,6 +82,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      */
     private List<DatabaseSchema> schemas;
     private DatabaseObject dependObject;
+    private boolean pauseLoadingTreeForSearch = false;
 
     /**
      * Creates a new instance of DefaultDatabaseHost with the
@@ -550,11 +549,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     /**
      * Returns the table names hosted by this host of the specified type and
      * belonging to the specified catalog and schema.
-     *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param type    the table type
-     * @return the hosted tables
      */
     public List<String> getTableNames()
             throws DataSourceException {
@@ -581,8 +575,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     /**
      * Returns the column names of the specified database object.
      *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
      * @param table   the database object name
      * @return the column names
      */
@@ -1670,5 +1662,13 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     public NamedObject getDatabaseObjectFromTypeAndName(int type, String name) {
         return getDatabaseObjectFromMetaTagAndName(NamedObject.META_TYPES[type], name);
+    }
+
+    public boolean isPauseLoadingTreeForSearch() {
+        return pauseLoadingTreeForSearch;
+    }
+
+    public void setPauseLoadingTreeForSearch(boolean pauseLoadingTreeForSearch) {
+        this.pauseLoadingTreeForSearch = pauseLoadingTreeForSearch;
     }
 }

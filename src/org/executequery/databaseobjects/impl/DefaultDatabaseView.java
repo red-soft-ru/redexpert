@@ -26,11 +26,16 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.TokenizingFormatter;
+import org.executequery.sql.sqlbuilder.Condition;
+import org.executequery.sql.sqlbuilder.Field;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public class DefaultDatabaseView extends AbstractTableObject
@@ -46,29 +51,53 @@ public class DefaultDatabaseView extends AbstractTableObject
     }
 
     private static final String DESCRIPTION = "DESCRIPTION";
-    private static final String SOURCE = "SOURCE";
+    private static final String SOURCE = "VIEW_SOURCE";
 
-    protected String queryForInfo() {
-
-        String query = "select r.rdb$description as " + DESCRIPTION + ",\n" +
-                "r.rdb$view_source as " + SOURCE + "\n" +
-                "from rdb$relations r\n" +
-                "where r.rdb$relation_name = ?";
-
-        return query;
+    @Override
+    protected String getFieldName() {
+        return "RELATION_NAME";
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) {
-        try {
-            if (rs.next()) {
-                setRemarks(getFromResultSet(rs, DESCRIPTION));
-                setSource(getFromResultSet(rs, SOURCE));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    protected Table getMainTable() {
+        return Table.createTable("RDB$RELATIONS", "R");
+    }
 
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        Table rels = getMainTable();
+        sb.appendFields(rels, getFieldName(), SOURCE, DESCRIPTION);
+        sb.appendTable(rels);
+        sb.setOrdering("1");
+        return sb;
+    }
+
+    @Override
+    protected SelectBuilder builderForInfoAllObjects() {
+        return super.builderForInfoAllObjects().appendCondition(Condition.createCondition(Field.createField(getMainTable(), "VIEW_BLR"), "IS", "NOT NULL"));
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        setSource(getFromResultSet(rs, SOURCE));
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
     }
 
     public DefaultDatabaseView(DatabaseHost host) {

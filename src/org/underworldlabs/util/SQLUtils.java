@@ -1,15 +1,11 @@
 package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.FunctionArgument;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.Parameter;
-import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.table.TableDefinitionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -1269,7 +1265,7 @@ public final class SQLUtils {
     }
 
     public static String generateCreateUDF(
-            String name, List<DefaultDatabaseUDF.UDFParameter> parameters, int returnArg,
+            String name, List<UDFParameter> parameters, int returnArg,
             String entryPoint, String moduleName, boolean freeIt) {
 
         int BY_VALUE = 0;

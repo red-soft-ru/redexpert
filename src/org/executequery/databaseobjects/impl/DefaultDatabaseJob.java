@@ -6,7 +6,6 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
@@ -48,31 +47,53 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
 
 
     @Override
-    protected String queryForInfo() {
-        SelectBuilder sb = new SelectBuilder();
-        Table jobs = Table.createTable("RDB$JOBS", "J");
-        sb.appendTable(jobs);
-
-        sb.appendFields(jobs, JOB_ID, SOURCE, ACTIVE, JOB_TYPE, SCHEDULE, START_DATE, END_DATE, DATABASE, DESCRIPTION);
-        sb.appendCondition(buildNameCondition(jobs, "JOB_NAME"));
-        String query = sb.getSQLQuery();
-        return query;
+    protected String getFieldName() {
+        return "JOB_NAME";
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        if(rs.next())
-        {
-            setId(getFromResultSet(rs, JOB_ID));
-            setSource(getFromResultSet(rs, SOURCE));
-            setCronSchedule(getFromResultSet(rs,SCHEDULE));
-            setDatabase(getFromResultSet(rs,DATABASE));
-            setRemarks(getFromResultSet(rs,DESCRIPTION));
-            setJobType(rs.getInt(JOB_TYPE));
-            setActive(rs.getInt(ACTIVE)==0);
-            setStartDate(rs.getObject(START_DATE,LocalDateTime.class));
-            setEndDate(rs.getObject(END_DATE,LocalDateTime.class));
-        }
+    protected Table getMainTable() {
+        return Table.createTable("RDB$JOBS", "J");
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        Table jobs = getMainTable();
+        sb.appendTable(jobs);
+
+        sb.appendFields(jobs, JOB_ID, SOURCE, ACTIVE, JOB_TYPE, SCHEDULE, START_DATE, END_DATE, DATABASE, DESCRIPTION);
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setId(getFromResultSet(rs, JOB_ID));
+        setSource(getFromResultSet(rs, SOURCE));
+        setCronSchedule(getFromResultSet(rs, SCHEDULE));
+        setDatabase(getFromResultSet(rs, DATABASE));
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        setJobType(rs.getInt(JOB_TYPE));
+        setActive(rs.getInt(ACTIVE) == 0);
+        setStartDate(rs.getObject(START_DATE, LocalDateTime.class));
+        setEndDate(rs.getObject(END_DATE, LocalDateTime.class));
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
     }
 
     @Override

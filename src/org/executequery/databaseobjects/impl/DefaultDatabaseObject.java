@@ -25,10 +25,13 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.tree.TreePanel;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,27 +89,6 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
         this.dependObject = dependObject;
     }
 
-    @Override
-    protected String queryForInfo() {
-
-        String query = "select r.rdb$description as DESCRIPTION\n" +
-                "from rdb$relations r\n" +
-                "where r.rdb$relation_name = ?";
-
-        return query;
-    }
-
-    @Override
-    protected void setInfoFromResultSet(ResultSet rs) {
-        try {
-            if (rs.next())
-                setRemarks(getFromResultSet(rs, "DESCRIPTION"));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public int getTypeTree() {
         return typeTree;
     }
@@ -152,6 +134,47 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
         }
 
         return null;
+    }
+
+    @Override
+    protected String getFieldName() {
+        return "RELATION_NAME";
+    }
+
+    @Override
+    protected Table getMainTable() {
+        return Table.createTable("RDB$RELATIONS", "R");
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        Table table = getMainTable();
+        sb.appendFields(table, getFieldName(), DESCRIPTION);
+        sb.appendTable(table);
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
     }
 
     @Override

@@ -125,7 +125,7 @@ public class SelectBuilder {
         sb.append("SELECT ");
         if (distinct)
             sb.append("DISTINCT ");
-        if (fields != null) {
+        if (fields != null && fields.size() > 0) {
             boolean first = true;
             for (Field field : fields) {
                 if (!first)
@@ -138,8 +138,8 @@ public class SelectBuilder {
                 else sb.append(field.getFieldTable());
                 sb.append(" AS ").append(field.alias);
             }
-            sb.append("\n");
-        }
+        } else sb.append("*");
+        sb.append("\n");
         sb.append("FROM ");
         if (tables != null) {
             boolean first = true;

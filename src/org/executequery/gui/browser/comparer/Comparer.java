@@ -35,6 +35,7 @@ public class Comparer {
     private static boolean[] TABLE_CONSTRAINTS_NEED;
     private static boolean COMMENTS_NEED;
     private static boolean COMPUTED_FIELDS_NEED;
+    public static final int FULL_LOAD_CONSTANT = 25;
 
     protected StatementExecutor compareConnection;
     protected StatementExecutor masterConnection;
@@ -88,6 +89,9 @@ public class Comparer {
 
         DefaultStatementExecutor querySender = null;
         PooledStatement statement = null;
+        boolean fullLoad = false;
+        if (createObjects.size() > 0)
+            ((AbstractDatabaseObject) createObjects.get(0)).getHost().setPauseLoadingTreeForSearch(true);
 
         boolean isFirst = true;
         for (NamedObject obj : createObjects) {
@@ -96,7 +100,12 @@ public class Comparer {
                 break;
 
             AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) obj;
-
+            if (isFirst) {
+                if (isFirst) {
+                    fullLoad = databaseObject.getMetaTagParent().getObjects().size() / createObjects.size() < FULL_LOAD_CONSTANT;
+                }
+                databaseObject.setFullLoad(fullLoad);
+            }
             if (!isFirst) {
                 databaseObject.setStatementForLoadInfo(statement);
                 databaseObject.setQuerySender(querySender);
@@ -112,9 +121,11 @@ public class Comparer {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
                 ComparerDBPanel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
-                counter[0] ++;
+                counter[0]++;
             }
         }
+        if (createObjects.size() > 0)
+            ((AbstractDatabaseObject) createObjects.get(0)).getHost().setPauseLoadingTreeForSearch(false);
 
         if (!isHeaderNeeded)
             script.remove(headerIndex);
@@ -181,14 +192,25 @@ public class Comparer {
         PooledStatement compareStatement = null;
 
         boolean isFirst = true;
+        boolean fullLoadMaster = false;
+        boolean fullLoadCompare = false;
         for (NamedObject obj : alterObjects.keySet()) {
 
             if (ComparerDBPanel.isCanceled())
                 break;
 
             AbstractDatabaseObject masterObject = (AbstractDatabaseObject) obj;
+
             AbstractDatabaseObject compareObject = (AbstractDatabaseObject) alterObjects.get(obj);
 
+            if (isFirst) {
+                masterObject.getHost().setPauseLoadingTreeForSearch(true);
+                compareObject.getHost().setPauseLoadingTreeForSearch(true);
+                fullLoadMaster = masterObject.getMetaTagParent().getObjects().size() / alterObjects.size() < FULL_LOAD_CONSTANT;
+                fullLoadCompare = compareObject.getMetaTagParent().getObjects().size() / alterObjects.size() < FULL_LOAD_CONSTANT;
+            }
+            masterObject.setFullLoad(fullLoadMaster);
+            compareObject.setFullLoad(fullLoadCompare);
             if (!isFirst) {
 
                 masterObject.setStatementForLoadInfo(masterStatement);
@@ -213,10 +235,14 @@ public class Comparer {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
                 ComparerDBPanel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
-                counter[2] ++;
+                counter[2]++;
             }
         }
-
+        if (alterObjects.size() > 0) {
+            AbstractDatabaseObject masterObject = (AbstractDatabaseObject) alterObjects.keySet().toArray()[0];
+            masterObject.getHost().setPauseLoadingTreeForSearch(false);
+            ((AbstractDatabaseObject) alterObjects.get(masterObject)).getHost().setPauseLoadingTreeForSearch(false);
+        }
         if (!isHeaderNeeded)
             script.remove(headerIndex);
     }

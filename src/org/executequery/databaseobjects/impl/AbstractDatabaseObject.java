@@ -26,10 +26,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledStatement;
-import org.executequery.sql.sqlbuilder.Condition;
-import org.executequery.sql.sqlbuilder.Field;
-import org.executequery.sql.sqlbuilder.Function;
-import org.executequery.sql.sqlbuilder.Table;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.Log;
 
@@ -234,8 +231,10 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         return sqlSecurity;
     }
 
-    protected Condition buildNameCondition(Table table, String fieldAlias) {
-        return Condition.createCondition(Field.createField(table, fieldAlias), "=", "?");
+    protected boolean fullLoad = false;
+
+    protected Condition buildNameCondition(Field field) {
+        return Condition.createCondition(field, "=", "?");
     }
 
 
@@ -629,9 +628,65 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     public abstract String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException;
 
-    protected abstract String queryForInfo();
+    protected Condition buildNameCondition(Table table, String fieldName) {
+        return buildNameCondition(Field.createField(table, fieldName));
+    }
 
-    protected abstract void setInfoFromResultSet(ResultSet rs) throws SQLException;
+    protected abstract String getFieldName();
+
+    protected abstract Table getMainTable();
+
+    protected Field getObjectField() {
+        return Field.createField(getMainTable(), getFieldName());
+    }
+
+    protected String queryForInfo() {
+        SelectBuilder sb = builderCommonQuery();
+        sb.appendCondition(buildNameCondition(getObjectField()));
+        return sb.getSQLQuery();
+    }
+
+    protected SelectBuilder builderForInfoAllObjects() {
+        return builderCommonQuery().appendCondition(checkSystemCondition());
+    }
+
+    public String queryForInfoAllObjects() {
+        return builderForInfoAllObjects().getSQLQuery();
+    }
+
+    protected abstract SelectBuilder builderCommonQuery();
+
+    protected Condition checkSystemCondition() {
+        if (!isSystem()) {
+            return Condition.createCondition()
+                    .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "SYSTEM_FLAG"), "IS", "NULL"))
+                    .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "SYSTEM_FLAG"), "=", "0"))
+                    .setLogicOperator("OR");
+        } else return Condition.createCondition()
+                .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "SYSTEM_FLAG"), "IS", "NOT NULL"))
+                .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "SYSTEM_FLAG"), "<>", "0"))
+                .setLogicOperator("AND");
+    }
+
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+        prepareLoadingInfo();
+        boolean first = true;
+        if (isAnyRowsResultSet())
+            while (rs.next()) {
+                setInfoFromSingleRowResultSet(rs, first);
+                first = false;
+            }
+        else if (rs.next())
+            setInfoFromSingleRowResultSet(rs, true);
+        finishLoadingInfo();
+    }
+
+    //ResultSet.next cannot be called inside this function
+    public abstract Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException;
+
+    public abstract void prepareLoadingInfo();
+
+    public abstract void finishLoadingInfo();
 
     public int getDatabaseMajorVersion() {
         try {
@@ -657,6 +712,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     protected PooledStatement statementForLoadInfo;
     protected boolean someExecute = false;
 
+    public abstract boolean isAnyRowsResultSet();
+
     public boolean isSomeExecute() {
         return someExecute;
     }
@@ -665,7 +722,18 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         this.someExecute = someExecute;
     }
 
+    public boolean isFullLoad() {
+        return fullLoad;
+    }
+
+    public void setFullLoad(boolean fullLoad) {
+        this.fullLoad = fullLoad;
+    }
+
     protected void getObjectInfo() {
+        if (fullLoad) {
+            getMetaTagParent().loadFullInfoForObjects();
+        }
 
         if (querySender == null && someExecute)
             querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());

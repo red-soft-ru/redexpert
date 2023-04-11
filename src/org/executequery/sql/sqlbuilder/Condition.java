@@ -13,6 +13,7 @@ public class Condition {
     String statement;
     String operator;
     String rightStatement;
+    boolean isNot = false;
 
     List<Condition> conditions;
 
@@ -85,16 +86,31 @@ public class Condition {
         return this;
     }
 
+    public boolean isNot() {
+        return isNot;
+    }
+
+    public Condition setNot(boolean not) {
+        isNot = not;
+        return this;
+    }
+
     public String getConditionStatement() {
         StringBuilder sb = new StringBuilder();
         if (conditions == null) {
             if (statement != null)
                 return statement;
+            if (isNot())
+                sb.append("NOT(");
             if (leftStatement != null)
                 sb.append(leftStatement);
             else sb.append(leftField.getFieldTable());
             sb.append(" ").append(operator).append(" ").append(rightStatement);
+            if (isNot())
+                sb.append(")");
         } else {
+            if (isNot())
+                sb.append("NOT");
             sb.append("(");
             boolean first = true;
             for (Condition condition : conditions) {

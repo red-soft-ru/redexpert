@@ -1,6 +1,8 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
@@ -14,36 +16,15 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
 
     private String exceptionID;
     private String exceptionText;
-
-    private static final String NAME = "FIELD_NAME";
-    private static final String EXCEPTION_TEXT = "EXCEPTION_TEXT";
-    private static final String ID = "ID";
+    private static final String EXCEPTION_TEXT = "MESSAGE";
+    private static final String ID = "EXCEPTION_NUMBER";
     private static final String DESCRIPTION = "DESCRIPTION";
-
-    /**
-     * Creates a new instance.
-     */
-    public DefaultDatabaseException() {
-        super((DatabaseMetaTag) null);
-    }
 
     /**
      * Creates a new instance.
      */
     public DefaultDatabaseException(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
-
-
-    }
-
-    /**
-     * Creates a new instance with
-     * the specified values.
-     */
-    public DefaultDatabaseException(String schema, String name) {
-        super((DatabaseMetaTag) null);
-        setName(name);
-        setSchemaName(schema);
     }
 
     public int getType() {
@@ -99,27 +80,46 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
         return SQLUtils.generateAlterException(this, comparingException);
     }
 
+
     @Override
-    protected String queryForInfo() {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT\n")
-                .append("RDB$MESSAGE AS ").append(EXCEPTION_TEXT).append(",\n")
-                .append("RDB$EXCEPTION_NUMBER AS ").append(ID).append(",\n")
-                .append("RDB$DESCRIPTION AS ").append(DESCRIPTION).append("\n")
-                .append("FROM RDB$EXCEPTIONS\n")
-                .append("WHERE\n")
-                .append("TRIM(RDB$EXCEPTION_NAME) = ?");
-
-        return sb.toString();
+    protected String getFieldName() {
+        return "EXCEPTION_NAME";
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        if (rs.next()) {
-            setExceptionID(rs.getString(ID));
-            setExceptionText(rs.getString(EXCEPTION_TEXT));
-            setRemarks(rs.getString(DESCRIPTION));
-        }
+    protected Table getMainTable() {
+        return Table.createTable("RDB$EXCEPTIONS", "EXP");
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        Table mainTable = getMainTable();
+        sb.appendFields(mainTable, getFieldName(), ID, EXCEPTION_TEXT, DESCRIPTION);
+        sb.appendTable(mainTable);
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setExceptionID(getFromResultSet(rs, ID));
+        setExceptionText(getFromResultSet(rs, EXCEPTION_TEXT));
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
     }
 }

@@ -5,14 +5,16 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.comparer.Comparer;
-import org.executequery.sql.sqlbuilder.*;
+import org.executequery.sql.sqlbuilder.Condition;
+import org.executequery.sql.sqlbuilder.Field;
+import org.executequery.sql.sqlbuilder.Function;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.SQLException;
 
 
 /**
@@ -72,28 +74,9 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
                 new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed());
     }
 
-    @Override
-    protected String queryForInfo() {
-
-        SelectBuilder sb = new SelectBuilder();
-        sb.setDistinct(true);
-        Table rels = Table.createTable("RDB$RELATIONS", "R");
-        Table relCons = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
-        Table checkCons = Table.createTable("RDB$CHECK_CONSTRAINTS", "CC");
-        Table triggers = Table.createTable("RDB$TRIGGERS", "T");
-
-        Field conName = Field.createField(relCons, CONSTRAINT_NAME);
-        Field conType = Field.createField(relCons, CONSTRAINT_TYPE);
-        Function compareCheck = Function.createFunction("IIF")
-                .appendArgument(conType.getFieldTable() + " <> 'CHECK'")
-                .appendArgument("NULL")
-                .appendArgument(conName.getFieldTable());
-        sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conName.getAlias()));
-        compareCheck.setArgument(2, conType.getFieldTable());
-        sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conType.getAlias()));
-        sb.appendField(Field.createField(triggers, TRIGGER_SOURCE));
-        sb.appendField(buildSqlSecurityField(rels));
-        Field typeTemp = Field.createField(rels, RELATION_TYPE);
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = super.builderCommonQuery();
+        Field typeTemp = Field.createField(getMainTable(), RELATION_TYPE);
         Function subIIF = Function.createFunction("IIF")
                 .appendArgument(typeTemp.getFieldTable() + " = 5")
                 .appendArgument("'ON COMMIT DELETE ROWS'")
@@ -102,54 +85,30 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
                 .appendArgument("'ON COMMIT PRESERVE ROWS'")
                 .appendArgument(subIIF.getStatement());
         sb.appendField(typeTemp.setStatement(mainIIF.getStatement()));
-        sb.appendField(Field.createField(rels, DESCRIPTION));
-        Field relName = Field.createField(rels, "RELATION_NAME");
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField(relCons, relName.getAlias())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
-                Field.createField(triggers, "TRIGGER_NAME")));
-        sb.appendCondition(Condition.createCondition(relName, "=", "?"));
+        return sb;
+    }
 
+    @Override
+    protected SelectBuilder builderForInfoAllObjects() {
+        SelectBuilder sb = super.builderForInfoAllObjects();
         sb.appendCondition(Condition.createCondition()
-                .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "=", "1"))
-                .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "IS", "NULL"))
+                .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "RELATION_TYPE"), "=", "4"))
+                .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "RELATION_TYPE"), "=", "5"))
                 .setLogicOperator("OR"));
-
-        return sb.getSQLQuery();
+        return sb;
     }
 
-    protected void setInfoFromResultSet(ResultSet rs) {
-        try {
-
-            boolean first = true;
-            checkConstraints = new ArrayList<>();
-            List<String> names = new ArrayList<>();
-            while (rs.next()) {
-
-                if (first) {
-                    setRemarks(getFromResultSet(rs, DESCRIPTION));
-                    setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
-                    setTypeTemporary(getFromResultSet(rs, RELATION_TYPE));
-                }
-
-                first = false;
-                String conType = rs.getString(CONSTRAINT_TYPE);
-                if (conType != null) {
-                    String name = rs.getString(CONSTRAINT_NAME).trim();
-                    if (!names.contains(name)) {
-                        ColumnConstraint constraint = new TableColumnConstraint(rs.getString(TRIGGER_SOURCE));
-                        constraint.setName(name);
-                        constraint.setTable(this);
-                        checkConstraints.add(constraint);
-                        names.add(name);
-                    }
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        if (first) {
+            setRemarks(getFromResultSet(rs, DESCRIPTION));
+            setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+            setTypeTemporary(getFromResultSet(rs, RELATION_TYPE));
         }
+        addingConstraint(rs);
+        return null;
     }
+
 
     private String getTypeTemporary() {
         checkOnReload(typeTemporary);

@@ -69,6 +69,8 @@ public interface DatabaseMetaTag extends NamedObject {
      */
     int getSubType();
 
+    public void loadFullInfoForObjects();
+
 
 }
 

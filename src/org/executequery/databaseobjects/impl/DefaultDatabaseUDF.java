@@ -305,15 +305,4 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
     public boolean isAnyRowsResultSet() {
         return true;
     }
-
-    @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        parameters.clear();
-        inputParameters = "";
-        while (rs.next()) {
-
-        }
-
-
-    }
 }

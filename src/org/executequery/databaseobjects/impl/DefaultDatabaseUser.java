@@ -36,11 +36,6 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     @Override
-    protected String queryForInfo() {
-        return "select * from SEC$USERS where SEC$USER_NAME = ?";
-    }
-
-    @Override
     protected String getFieldName() {
         return "USER_NAME";
     }

@@ -23,19 +23,9 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     private String securityClass;
     private String ownerName;
 
-
-    public DefaultDatabasePackage() {
-    }
-
     public DefaultDatabasePackage(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
     }
-
-    public DefaultDatabasePackage(String schema, String name) {
-        setName(name);
-        setSchemaName(schema);
-    }
-
     public int getType() {
         if (isSystem())
             return SYSTEM_PACKAGE;
@@ -53,11 +43,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         if (isMarkedForReload())
             getObjectInfo();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("create or alter package  ").append(getName());
-        sb.append("\nas\n").append(this.headerSource);
-
-        return sb.toString();
+        return "create or alter package  " + getName() +
+                "\nas\n" + this.headerSource;
     }
 
     public void setHeaderSource(String headerSource) {
@@ -66,11 +53,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     public String getBodySource() {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("recreate package body ").append(getName());
-        sb.append("\nas\n").append(this.bodySource);
-
-        return sb.toString();
+        return "recreate package body " + getName() +
+                "\nas\n" + this.bodySource;
     }
 
     public void setBodySource(String bodySource) {
@@ -122,28 +106,6 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
                 databaseObject.getCompareCreateSQL() : "/* there are no changes */";
     }
-
-    protected String queryForInfo() {
-
-        String sql_security = "null";
-        if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
-            sql_security = "IIF(p.rdb$sql_security is null,null,IIF(p.rdb$sql_security,'DEFINER','INVOKER'))";
-
-        String sql = "select 0,\n" +
-                "p.rdb$package_header_source,\n" +
-                "p.rdb$package_body_source,\n" +
-                "p.rdb$valid_body_flag,\n" +
-                "p.rdb$security_class,\n" +
-                "p.rdb$owner_name,\n" +
-                "p.rdb$system_flag,\n" +
-                "p.rdb$description as DESCRIPTION,\n" +
-                sql_security + " as SQL_SECURITY\n" +
-                "from rdb$packages p\n" +
-                "where p.rdb$package_name=?";
-
-        return sql;
-    }
-
     protected final static String PACKAGE_HEADER_SOURCE = "PACKAGE_HEADER_SOURCE";
     protected final static String PACKAGE_BODY_SOURCE = "PACKAGE_BODY_SOURCE";
     protected final static String VALID_BODY_FLAG = "VALID_BODY_FLAG";
@@ -181,7 +143,6 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         /*setSecurityClass(getFromResultSet(rs,SECURITY_CLASS));
         setOwnerName(getFromResultSet(rs,OWNER_NAME));
         setSystemFlag(rs.getBoolean(SYSTEM_FLAG))*/
-        ;
         setRemarks(getFromResultSet(rs, DESCRIPTION));
         setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
         return null;

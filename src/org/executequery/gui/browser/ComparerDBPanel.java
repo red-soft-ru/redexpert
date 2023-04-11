@@ -17,6 +17,7 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.BackgroundProgressDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -342,12 +343,6 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return false;
         }
 
-        List<Integer> itemsList = attributesCheckBoxMap.keySet().stream()
-                .filter(i -> attributesCheckBoxMap.get(i).isSelected()).collect(Collectors.toList());
-        progressBar.setMaximum(comparer.getTotalIterationsCount(itemsList, propertiesCheckBoxMap.get(CHECK_CREATE).isSelected(),
-                propertiesCheckBoxMap.get(CHECK_DROP).isSelected(), propertiesCheckBoxMap.get(CHECK_ALTER).isSelected()));
-        progressBar.setValue(0);
-
         settingScriptProps = new StringBuilder();
         settingScriptProps.append("\n/* Setting properties */\n\n");
         settingScriptProps.append("SET NAMES ").append(getMasterDBCharset()).append(";\n");
@@ -559,6 +554,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         compareButton.setEnabled(true);
         compareButton.setText(bundleString("CompareButton"));
         progressBar.setValue(progressBar.getMaximum());
+        progressBar.setString(bundleString("ProgressBarFinish"));
     }
 
     private void saveScript() {
@@ -721,6 +717,12 @@ public class ComparerDBPanel extends JPanel implements TabView {
         }
 
         return dialect;
+    }
+
+    public static void recreateProgressBar(String label, String metaTag, int maxValue) {
+        progressBar.setValue(0);
+        progressBar.setMaximum(maxValue);
+        progressBar.setString(MiscUtils.isNull(metaTag) ? bundleString(label) : String.format(bundleString(label), metaTag));
     }
 
     public static void incrementProgressBarValue() {

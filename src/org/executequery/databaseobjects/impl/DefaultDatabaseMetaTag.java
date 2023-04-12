@@ -191,8 +191,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return children;
     }
 
-    public void loadFullInfoForObjects()
-    {
+    public void loadFullInfoForObjects() {
         getHost().setPauseLoadingTreeForSearch(true);
         List<NamedObject> objects = getObjects();
         boolean first = true;
@@ -226,6 +225,59 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             for (NamedObject namedObject : objects) {
                 ((AbstractDatabaseObject) namedObject).finishLoadingInfo();
                 ((AbstractDatabaseObject) namedObject).setMarkedForReload(false);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (querySender != null)
+                querySender.releaseResources();
+            getHost().setPauseLoadingTreeForSearch(false);
+        }
+
+    }
+
+    public void loadColumnsForAllTables() {
+        List<NamedObject> objects = getObjects();
+        boolean first = true;
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        if (objects.size() == 0)
+            return;
+
+        String query = ((AbstractDatabaseObject) objects.get(0)).getBuilderLoadColsForAllTables().getSQLQuery();
+        try {
+            ResultSet rs = querySender.getResultSet(query).getResultSet();
+            int i = 0;
+            AbstractDatabaseObject previousObject = null;
+            while (rs.next()) {
+                while (getHost().isPauseLoadingTreeForSearch() && Thread.currentThread().getName().contentEquals("loadingTreeForSearch")) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                while (!objects.get(i).getName().contentEquals(rs.getString(1).trim())) {
+                    i++;
+                    if (i >= objects.size())
+                        throw new DataSourceException("Error load columns for " + metaDataKey);
+                    first = true;
+                }
+                if (((AbstractDatabaseObject) objects.get(i)).isMarkedForReloadCols()) {
+                    if (first) {
+                        ((AbstractDatabaseObject) objects.get(i)).prepareLoadColumns();
+                        if (previousObject != null) {
+                            previousObject.finishLoadColumns();
+                            previousObject.setMarkedForReloadCols(false);
+                        }
+                    }
+                    ((AbstractDatabaseObject) objects.get(i)).addColumnFromResultSet(rs);
+                    first = false;
+                    previousObject = (AbstractDatabaseObject) objects.get(i);
+                }
+            }
+            if (previousObject != null) {
+                previousObject.finishLoadColumns();
+                previousObject.setMarkedForReloadCols(false);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -415,40 +467,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             logThrowable(e);
             return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
-            } catch (SQLException throwables) {
-                releaseResources(rs, null);
-            }
-        }
-    }
-
-    public void loadObjectsInfo(String query) throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            List<NamedObject> list = children;
-            rs = getResultSetFromQuery(query);
-            int i = 0;
-            if (rs != null) {
-
-                while (rs.next()) {
-                    if (!getHost().getDatabaseConnection().isConnected())
-                        return;
-                    AbstractDatabaseObject namedObject = (AbstractDatabaseObject) list.get(i);
-                    namedObject.setInfoFromResultSet(rs);
-                }
-
-            }
-
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
 
         } finally {
 

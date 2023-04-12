@@ -6,11 +6,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
-import org.executequery.databaseobjects.impl.ColumnConstraint;
-import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
-import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
-import org.executequery.datasource.PooledStatement;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ComparerDBPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -35,7 +31,7 @@ public class Comparer {
     private static boolean[] TABLE_CONSTRAINTS_NEED;
     private static boolean COMMENTS_NEED;
     private static boolean COMPUTED_FIELDS_NEED;
-    public static final int FULL_LOAD_CONSTANT = 25;
+
 
     protected StatementExecutor compareConnection;
     protected StatementExecutor masterConnection;
@@ -87,13 +83,7 @@ public class Comparer {
         int headerIndex = script.size() - 1;
         boolean isHeaderNeeded = false;
 
-        DefaultStatementExecutor querySender = null;
-        PooledStatement statement = null;
-        boolean fullLoad = false;
-        if (createObjects.size() > 0)
-            ((AbstractDatabaseObject) createObjects.get(0)).getHost().setPauseLoadingTreeForSearch(true);
-
-        boolean isFirst = true;
+        LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(createObjects.size());
 
         ComparerDBPanel.recreateProgressBar(
                 "GenerateCreateScript", NamedObject.META_TYPES[type],
@@ -107,20 +97,10 @@ public class Comparer {
 
             AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) obj;
 
-            if (isFirst)
-                fullLoad = databaseObject.getMetaTagParent().getObjects().size() / createObjects.size() < FULL_LOAD_CONSTANT;
-            databaseObject.setFullLoad(fullLoad);
-
-            if (!isFirst) {
-                databaseObject.setStatementForLoadInfo(statement);
-                databaseObject.setQuerySender(querySender);
-            }
-            databaseObject.setSomeExecute(true);
+            loadingObjectsHelper.preparingLoadForObjectAndCols(databaseObject);
 
             String sqlScript = databaseObject.getCompareCreateSQL();
-            querySender = databaseObject.getQuerySender();
-            statement = databaseObject.getStatementForLoadInfo();
-            isFirst = false;
+            loadingObjectsHelper.postProcessingLoadForObjectAndCols(databaseObject);
 
             if (!sqlScript.contains("Will be created with constraint defining")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
@@ -131,9 +111,7 @@ public class Comparer {
 
             ComparerDBPanel.incrementProgressBarValue();
         }
-
-        if (createObjects.size() > 0)
-            ((AbstractDatabaseObject) createObjects.get(0)).getHost().setPauseLoadingTreeForSearch(false);
+        loadingObjectsHelper.releaseResources();
 
         if (!isHeaderNeeded)
             script.remove(headerIndex);
@@ -200,15 +178,8 @@ public class Comparer {
         int headerIndex = script.size() - 1;
         boolean isHeaderNeeded = false;
 
-        DefaultStatementExecutor masterQuerySender = null;
-        PooledStatement masterStatement = null;
-
-        DefaultStatementExecutor compareQuerySender = null;
-        PooledStatement compareStatement = null;
-
-        boolean isFirst = true;
-        boolean fullLoadMaster = false;
-        boolean fullLoadCompare = false;
+        LoadingObjectsHelper loadingObjectsHelperMaster = new LoadingObjectsHelper(alterObjects.size());
+        LoadingObjectsHelper loadingObjectsHelperCompare = new LoadingObjectsHelper(alterObjects.size());
 
         ComparerDBPanel.recreateProgressBar(
                 "GenerateAlterScript", NamedObject.META_TYPES[type],
@@ -224,33 +195,12 @@ public class Comparer {
 
             AbstractDatabaseObject compareObject = (AbstractDatabaseObject) alterObjects.get(obj);
 
-            if (isFirst) {
-                masterObject.getHost().setPauseLoadingTreeForSearch(true);
-                compareObject.getHost().setPauseLoadingTreeForSearch(true);
-                fullLoadMaster = masterObject.getMetaTagParent().getObjects().size() / alterObjects.size() < FULL_LOAD_CONSTANT;
-                fullLoadCompare = compareObject.getMetaTagParent().getObjects().size() / alterObjects.size() < FULL_LOAD_CONSTANT;
-            }
-            masterObject.setFullLoad(fullLoadMaster);
-            compareObject.setFullLoad(fullLoadCompare);
-            if (!isFirst) {
-
-                masterObject.setStatementForLoadInfo(masterStatement);
-                masterObject.setQuerySender(masterQuerySender);
-
-                compareObject.setStatementForLoadInfo(compareStatement);
-                compareObject.setQuerySender(compareQuerySender);
-            }
-            masterObject.setSomeExecute(true);
-            compareObject.setSomeExecute(true);
+            loadingObjectsHelperMaster.preparingLoadForObjectAndCols(masterObject);
+            loadingObjectsHelperCompare.preparingLoadForObjectAndCols(compareObject);
 
             String sqlScript = masterObject.getCompareAlterSQL(compareObject);
-            isFirst = false;
-
-            masterQuerySender = masterObject.getQuerySender();
-            masterStatement = masterObject.getStatementForLoadInfo();
-
-            compareQuerySender = compareObject.getQuerySender();
-            compareStatement = compareObject.getStatementForLoadInfo();
+            loadingObjectsHelperMaster.postProcessingLoadForObjectAndCols(masterObject);
+            loadingObjectsHelperCompare.postProcessingLoadForObjectAndCols(compareObject);
 
             if (!sqlScript.contains("there are no changes")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
@@ -261,6 +211,8 @@ public class Comparer {
 
             ComparerDBPanel.incrementProgressBarValue();
         }
+        loadingObjectsHelperMaster.releaseResources();
+        loadingObjectsHelperCompare.releaseResources();
 
         if (alterObjects.size() > 0) {
             AbstractDatabaseObject masterObject = (AbstractDatabaseObject) alterObjects.keySet().toArray()[0];
@@ -532,10 +484,7 @@ public class Comparer {
                 getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
 
         List<NamedObject> createObjects = new ArrayList<>();
-        DefaultStatementExecutor querySender = null;
-        PooledStatement statement = null;
-
-        boolean isFirst = true;
+        LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(compareConnectionObjectsList.size());
 
         ComparerDBPanel.recreateProgressBar(
                 "ExtractingForCreate", NamedObject.META_TYPES[type],
@@ -555,26 +504,21 @@ public class Comparer {
                 if (databaseObject.getType() == NamedObject.TABLE || databaseObject.getType() == NamedObject.GLOBAL_TEMPORARY) {
                     AbstractDatabaseObject abstractDatabaseObject = (AbstractDatabaseObject) databaseObject;
 
-                    if (!isFirst) {
-                        abstractDatabaseObject.setStatementForLoadInfo(statement);
-                        abstractDatabaseObject.setQuerySender(querySender);
-                    }
-                    abstractDatabaseObject.setSomeExecute(true);
+                    loadingObjectsHelper.preparingLoadForObjectAndCols(abstractDatabaseObject);
 
                     if (!Arrays.equals(TABLE_CONSTRAINTS_NEED, new boolean[]{false, false, false, false}))
                         createListConstraints(databaseObject);
                     if (COMPUTED_FIELDS_NEED)
                         createListComputedFields(databaseObject);
 
-                    querySender = abstractDatabaseObject.getQuerySender();
-                    statement = abstractDatabaseObject.getStatementForLoadInfo();
-                    isFirst = false;
+                    loadingObjectsHelper.postProcessingLoadForObjectAndCols(abstractDatabaseObject);
 
                 }
             }
 
             ComparerDBPanel.incrementProgressBarValue();
         }
+        loadingObjectsHelper.releaseResources();
 
         return createObjects;
     }
@@ -719,24 +663,31 @@ public class Comparer {
                 "ExtractingConstraintsForAlter", null,
                 masterConnectionObjectsList.size() * masterConnectionObjectsList.size()
         );
-
+        LoadingObjectsHelper loadingObjectsHelperMaster = new LoadingObjectsHelper(masterConnectionObjectsList.size());
+        LoadingObjectsHelper loadingObjectsHelperCompare = new LoadingObjectsHelper(compareConnectionObjectsList.size());
         for (NamedObject compareObject : compareConnectionObjectsList) {
 
             if (ComparerDBPanel.isCanceled())
                 break;
-
+            AbstractDatabaseObject compareAbstractObject = (AbstractDatabaseObject) compareObject;
+            loadingObjectsHelperCompare.preparingLoadForObjectCols(compareAbstractObject);
             for (NamedObject masterObject : masterConnectionObjectsList) {
 
                 if (ComparerDBPanel.isCanceled())
                     break;
-
+                AbstractDatabaseObject masterAbstractObject = (AbstractDatabaseObject) masterObject;
+                loadingObjectsHelperMaster.preparingLoadForObjectCols(masterAbstractObject);
                 if (Objects.equals(masterObject.getName(), compareObject.getName()))
                     if (!((AbstractDatabaseObject) masterObject).getCompareAlterSQL((AbstractDatabaseObject) compareObject).contains("there are no changes"))
                         checkConstraintsPair(masterObject, compareObject, droppedConstraints);
+                loadingObjectsHelperMaster.postProcessingLoadForObjectForCols(masterAbstractObject);
 
                 ComparerDBPanel.incrementProgressBarValue();
             }
+            loadingObjectsHelperCompare.postProcessingLoadForObjectForCols(compareAbstractObject);
         }
+        loadingObjectsHelperMaster.releaseResources();
+        loadingObjectsHelperCompare.releaseResources();
 
         // --- check for temporary DROP dependent CONSTRAINT ---
 
@@ -755,11 +706,13 @@ public class Comparer {
                         .collect(Collectors.toList()));
         }
 
+        LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(masterConnectionObjectsList.size());
+
         for (NamedObject masterObject : masterConnectionObjectsList) {
 
             if (ComparerDBPanel.isCanceled())
                 break;
-
+            loadingObjectsHelper.preparingLoadForObjectAndCols((AbstractDatabaseObject) masterObject);
             for (ColumnConstraint masterCC : ((DefaultDatabaseTable) masterObject).getConstraints()) {
 
                 if (ComparerDBPanel.isCanceled())
@@ -777,7 +730,9 @@ public class Comparer {
                     droppedConstraints.add(masterCC);
                 }
             }
+            loadingObjectsHelper.postProcessingLoadForObjectAndCols((AbstractDatabaseObject) masterObject);
         }
+        loadingObjectsHelper.releaseResources();
     }
 
     private void checkConstraintsPair(NamedObject masterObject, NamedObject compareObject, List<ColumnConstraint> droppedConstraints) {

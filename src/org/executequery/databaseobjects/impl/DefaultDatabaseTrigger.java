@@ -395,8 +395,8 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     }
 
     @Override
-    protected SelectBuilder builderForInfoAllObjects() {
-        SelectBuilder sb = super.builderForInfoAllObjects();
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
         if (getType() == NamedObject.DDL_TRIGGER)
             sb.appendCondition(checkTriggerType(TRIGGER_TYPE_DDL));
         else if (getType() == NamedObject.DATABASE_TRIGGER)

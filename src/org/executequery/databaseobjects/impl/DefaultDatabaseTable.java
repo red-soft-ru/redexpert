@@ -1138,8 +1138,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
-    protected SelectBuilder builderForInfoAllObjects() {
-        SelectBuilder sb = super.builderForInfoAllObjects();
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
         sb.appendCondition(Condition.createCondition(Field.createField(getMainTable(), "VIEW_BLR"), "IS", "NULL"));
         if (getDatabaseMajorVersion() >= 2 && !(this instanceof DefaultTemporaryDatabaseTable)) {
             sb.appendCondition(Condition.createCondition()

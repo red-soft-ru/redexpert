@@ -236,8 +236,8 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
     }
 
     @Override
-    protected SelectBuilder builderForInfoAllObjects() {
-        SelectBuilder sb = super.builderForInfoAllObjects();
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
         if (getDatabaseMajorVersion() > 3) {
             sb.appendCondition(Condition.createCondition(Field.createField(getMainTable(), "MODULE_NAME"), "IS", "NOT NULL"));
             sb.appendCondition(Condition.createCondition(Field.createField(getMainTable(), "LEGACY_FLAG"), "=", "1"));

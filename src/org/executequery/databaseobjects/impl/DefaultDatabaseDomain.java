@@ -133,8 +133,8 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     @Override
-    protected SelectBuilder builderForInfoAllObjects() {
-        SelectBuilder sb = super.builderForInfoAllObjects();
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
         if (!isSystem())
             sb.appendCondition(Condition.createCondition(getObjectField(), "STARTING  WITH ", "'RDB$'").setNot(true));
         return sb;

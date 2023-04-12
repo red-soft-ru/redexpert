@@ -160,8 +160,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     @Override
-    protected SelectBuilder builderForInfoAllObjects() {
-        SelectBuilder sb = super.builderForInfoAllObjects();
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
         if (!(this instanceof DefaultDatabaseUDF))
             sb.appendCondition(Condition.createCondition(Field.createField(getMainTable(), "MODULE_NAME"), "IS", "NULL"));
         return sb;

@@ -22,6 +22,8 @@ package org.executequery.listeners;
 
 import org.executequery.GUIUtilities;
 import org.executequery.components.StatusBarPanel;
+import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
@@ -50,6 +52,7 @@ public class DefaultConnectionListener implements ConnectionListener {
                 DatabaseObjectNode hostNode = panel.getHostNode(connectionEvent.getDatabaseConnection());
                 try {
                     populate(hostNode);
+                    populateCols(hostNode);
                 } catch (DataSourceException e) {
                     if (e.wasConnectionClosed())
                         Log.info("Connection was closed");
@@ -97,7 +100,37 @@ public class DefaultConnectionListener implements ConnectionListener {
         Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-            populate(node);
+            if (node.getType() == NamedObject.HOST || node.getType() == NamedObject.META_TAG)
+                populate(node);
+        }
+
+    }
+
+    void populateCols(DatabaseObjectNode root) {
+        if (root.getDatabaseObject() instanceof AbstractDatabaseObject) {
+            if (!((AbstractDatabaseObject) root.getDatabaseObject()).getHost().isConnected())
+                return;
+            while (((AbstractDatabaseObject) root.getDatabaseObject()).getHost().isPauseLoadingTreeForSearch()) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        if (root.getDatabaseObject() instanceof DatabaseMetaTag) {
+            if (((DatabaseMetaTag) root.getDatabaseObject()).getSubType() == NamedObject.TABLE
+                    || ((DatabaseMetaTag) root.getDatabaseObject()).getSubType() == NamedObject.GLOBAL_TEMPORARY
+                    || ((DatabaseMetaTag) root.getDatabaseObject()).getSubType() == NamedObject.SYSTEM_TABLE
+                    || ((DatabaseMetaTag) root.getDatabaseObject()).getSubType() == NamedObject.VIEW
+                    || ((DatabaseMetaTag) root.getDatabaseObject()).getSubType() == NamedObject.SYSTEM_VIEW)
+                ((DatabaseMetaTag) root.getDatabaseObject()).loadColumnsForAllTables();
+        }
+        Enumeration<TreeNode> nodes = root.children();
+        while (nodes.hasMoreElements()) {
+            DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
+            if (node.getType() == NamedObject.HOST || node.getType() == NamedObject.META_TAG)
+                populateCols(node);
         }
 
     }

@@ -99,8 +99,6 @@ public interface DatabaseHost extends NamedObject {
      *
      * @return the columns
      */
-    List<DatabaseColumn> getColumns( String table,boolean keepAlive)
-            throws DataSourceException;
 
     List<DatabaseColumn> getColumns( String table);
 

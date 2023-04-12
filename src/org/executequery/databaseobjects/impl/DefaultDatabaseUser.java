@@ -59,8 +59,8 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     @Override
-    protected SelectBuilder builderForInfoAllObjects() {
-        return builderCommonQuery();
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        return commonBuilder;
     }
 
     @Override

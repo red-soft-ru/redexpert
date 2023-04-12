@@ -89,8 +89,8 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     }
 
     @Override
-    protected SelectBuilder builderForInfoAllObjects() {
-        SelectBuilder sb = super.builderForInfoAllObjects();
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
         sb.appendCondition(Condition.createCondition()
                 .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "RELATION_TYPE"), "=", "4"))
                 .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "RELATION_TYPE"), "=", "5"))

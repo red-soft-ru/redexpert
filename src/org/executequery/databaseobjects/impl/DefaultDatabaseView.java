@@ -74,8 +74,8 @@ public class DefaultDatabaseView extends AbstractTableObject
     }
 
     @Override
-    protected SelectBuilder builderForInfoAllObjects() {
-        return super.builderForInfoAllObjects().appendCondition(Condition.createCondition(Field.createField(getMainTable(), "VIEW_BLR"), "IS", "NOT NULL"));
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        return super.builderForInfoAllObjects(commonBuilder).appendCondition(Condition.createCondition(Field.createField(getMainTable(), "VIEW_BLR"), "IS", "NOT NULL"));
     }
 
     @Override

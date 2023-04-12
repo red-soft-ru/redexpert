@@ -203,9 +203,9 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         return getColumns(false);
     }
 
-    public synchronized List<DatabaseColumn> getColumns(boolean keepAlive) throws DataSourceException {
+    public synchronized List<DatabaseColumn> getColumns(boolean loadForAllTables) throws DataSourceException {
 
-        if (!isMarkedForReload() && columns != null) {
+        if (!isMarkedForReloadCols() && columns != null) {
 
             return columns;
         }
@@ -222,26 +222,17 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
             try {
 
                 List<DatabaseColumn> _columns = null;
-                if (typeTree == TreePanel.DEFAULT)
-                    _columns = host.getColumns(
-                            getName(),keepAlive);
-                if (typeTree == TreePanel.DEPENDED_ON)
-                    _columns = getDependedColumns();
-                if (typeTree == TreePanel.DEPENDENT)
-                    _columns = getDependentColumns();
-                if (_columns != null) {
-
-                    columns = databaseColumnListWithSize(_columns.size());
-                    for (DatabaseColumn i : _columns) {
-                        DatabaseTableColumn databaseTableColumn = new DatabaseTableColumn(this, i);
-                        if (i.getConstraints() != null) {
-                            for (ColumnConstraint constraint : i.getConstraints()) {
-                                constraint.setColumn(databaseTableColumn);
-                                databaseTableColumn.addConstraint(constraint);
-                            }
-                        }
-                        columns.add(databaseTableColumn);
-                    }
+                if (typeTree == TreePanel.DEFAULT) {
+                    fullLoadCols = loadForAllTables;
+                    loadColumns();
+                }
+                if (typeTree == TreePanel.DEPENDED_ON) {
+                    preColumns = getDependedColumns();
+                    preColumnsToColumns();
+                }
+                if (typeTree == TreePanel.DEPENDENT) {
+                    preColumns = getDependentColumns();
+                    preColumnsToColumns();
                 }
 
             } catch (DataSourceException e) {
@@ -260,9 +251,31 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         return columns;
     }
 
+    protected void preColumnsToColumns() {
+        if (preColumns != null) {
+            columns = databaseColumnListWithSize(preColumns.size());
+            for (DatabaseColumn i : preColumns) {
+                DatabaseTableColumn databaseTableColumn = new DatabaseTableColumn(this, i);
+                if (i.getConstraints() != null) {
+                    for (ColumnConstraint constraint : i.getConstraints()) {
+                        constraint.setColumn(databaseTableColumn);
+                        databaseTableColumn.addConstraint(constraint);
+                    }
+                }
+                columns.add(databaseTableColumn);
+            }
+        }
+    }
+
+    public void finishLoadColumns() {
+        preColumnsToColumns();
+        lockLoadingCols(false);
+    }
+
+
     public List<NamedObject> getObjects() throws DataSourceException {
 
-        List<DatabaseColumn> _columns = getColumns(true);
+        List<DatabaseColumn> _columns = getColumns(false);
         if (_columns == null) {
 
             return null;
@@ -552,5 +565,11 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
 
     public void setSqlSecurity(String sqlSecurity) {
         this.sqlSecurity = sqlSecurity;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        setMarkedForReloadCols(true);
     }
 }

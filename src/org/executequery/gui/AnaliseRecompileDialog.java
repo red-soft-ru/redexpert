@@ -1,10 +1,9 @@
 package org.executequery.gui;
 
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
-import org.executequery.datasource.PooledStatement;
+import org.executequery.databaseobjects.impl.LoadingObjectsHelper;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -81,30 +80,19 @@ public class AnaliseRecompileDialog extends BaseDialog {
                 progressBar.setMaximum(childs.size());
                 if (metaTag.getSubType() == NamedObject.PACKAGE)
                     sb.append("set term ; ^");
-                DefaultStatementExecutor querySender = null;
-                PooledStatement statement = null;
+                LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(childs.size());
                 for (int i = 0; i < childs.size(); i++) {
                     progressBar.setValue(i);
                     AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) childs.get(i).getDatabaseObject();
-                    if (i == 0)
-                        databaseObject.getHost().setPauseLoadingTreeForSearch(true);
                     addOutputMessage(SqlMessages.PLAIN_MESSAGE, bundleString("generateScript", databaseObject.getName()));
-                    if (i > 0) {
-                        databaseObject.setStatementForLoadInfo(statement);
-                        databaseObject.setQuerySender(querySender);
-                    }
-                    databaseObject.setSomeExecute(true);
+                    loadingObjectsHelper.preparingLoadForObject(databaseObject);
                     String s = databaseObject.getCreateSQLText();
-                    querySender = databaseObject.getQuerySender();
-                    statement = databaseObject.getStatementForLoadInfo();
+                    loadingObjectsHelper.postProcessingLoadForObject(databaseObject);
                     sb.append(s);
                     if (!sb.toString().trim().endsWith("^"))
                         sb.append("^");
-                    if (i == childs.size() - 1)
-                        databaseObject.getHost().setPauseLoadingTreeForSearch(false);
                 }
-                if(querySender!=null)
-                    querySender.releaseResources();
+                loadingObjectsHelper.releaseResources();
 
             }
             Log.info("Analise time = "+(System.currentTimeMillis()-start));

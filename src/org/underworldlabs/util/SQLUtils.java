@@ -906,8 +906,8 @@ public final class SQLUtils {
             for (String comparingColumn : comparingColumnsNames) {
                 if (Objects.equals(thisColumn, comparingColumn)) {
                     sb.append(generateAlterDefinitionColumn(
-                            new ColumnData(thisTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn)),
-                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn)),
+                            new ColumnData(thisTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn), false),
+                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn), false),
                             computed));
                     break;
 
@@ -924,7 +924,7 @@ public final class SQLUtils {
             if (!thisColumnsNames.contains(comparingColumn))
                 sb.append("\n\tADD ").append(generateDefinitionColumn(new ColumnData(
                                 comparingTable.getHost().getDatabaseConnection(),
-                                comparingTable.getColumn(comparingColumn)), computed, false, false))
+                                comparingTable.getColumn(comparingColumn), false), computed, false, false))
                         .append(COMMA);
 
         if (!Arrays.equals(constraints, new boolean[]{false, false, false, false})) {

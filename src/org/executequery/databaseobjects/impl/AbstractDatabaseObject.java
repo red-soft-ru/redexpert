@@ -1064,8 +1064,10 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 someExecute ? querySender : new DefaultStatementExecutor(getHost().getDatabaseConnection());
         try {
 
-            if (statementForLoadInfo == null || statementForLoadInfo.isClosed())
-                statementForLoadInfo = (PooledStatement) executor.getPreparedStatement(queryForInfo());
+            if (statementForLoadInfo == null || statementForLoadInfo.isClosed()) {
+                String query = queryForInfo();
+                statementForLoadInfo = (PooledStatement) executor.getPreparedStatement(query);
+            }
             statementForLoadInfo.setString(1, getName());
             ResultSet rs = executor.getResultSet(-1, statementForLoadInfo).getResultSet();
             setInfoFromResultSet(rs);

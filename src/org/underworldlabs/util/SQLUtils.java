@@ -1004,9 +1004,6 @@ public final class SQLUtils {
                 sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceFirstValue());
             if (thisSequence.getIncrement() != comparingSequence.getIncrement())
                 sb.append("\n\tINCREMENT BY ").append(comparingSequence.getIncrement());
-        } else {
-            if (thisSequence.getSequenceCurrentValue() != comparingSequence.getSequenceCurrentValue())
-                sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceCurrentValue());
         }
 
         if (noChangesCheckString.equals(sb.toString()))

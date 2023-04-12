@@ -29,6 +29,7 @@ import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.util.InterruptibleThread;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
@@ -203,6 +204,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             ResultSet rs = querySender.getResultSet(query).getResultSet();
             int i = 0;
             while (rs.next()) {
+
+                if (Thread.currentThread() instanceof InterruptibleThread) {
+                    if (((InterruptibleThread) Thread.currentThread()).isCanceled()) {
+                        querySender.releaseResources();
+                        return;
+                    }
+                }
+
                 while (!objects.get(i).getName().contentEquals(rs.getString(1).trim())) {
                     i++;
                     if (i >= objects.size())

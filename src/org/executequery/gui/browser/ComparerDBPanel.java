@@ -540,6 +540,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         progressDialog.run();
 
         if (progressDialog.isCancel()) {
+            worker.setCancel(true);
             compareButton.setText(bundleString("Canceling"));
             compareButton.setEnabled(false);
         }

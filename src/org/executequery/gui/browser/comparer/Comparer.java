@@ -377,7 +377,7 @@ public class Comparer {
             if (globalTemporary) alterListConstraints(GLOBAL_TEMPORARY);
         }
 
-        if (constraintsToDrop.isEmpty())
+        if (constraintsToDrop.isEmpty() || ComparerDBPanel.isCanceled())
             return;
 
         ComparerDBPanel.recreateProgressBar(
@@ -667,7 +667,7 @@ public class Comparer {
 
     private void dropListConstraints(int type) {
 
-        if (type != TABLE && type != GLOBAL_TEMPORARY)
+        if ((type != TABLE && type != GLOBAL_TEMPORARY) || ComparerDBPanel.isCanceled())
             return;
 
         List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
@@ -703,7 +703,7 @@ public class Comparer {
 
     private void alterListConstraints(int type) {
 
-        if (type != TABLE && type != GLOBAL_TEMPORARY)
+        if ((type != TABLE && type != GLOBAL_TEMPORARY) || ComparerDBPanel.isCanceled())
             return;
 
         List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
@@ -740,7 +740,7 @@ public class Comparer {
 
         // --- check for temporary DROP dependent CONSTRAINT ---
 
-        if (droppedConstraints.isEmpty())
+        if (droppedConstraints.isEmpty() || ComparerDBPanel.isCanceled())
             return;
 
         List<String> droppedConstraintsColumns = new ArrayList<>();

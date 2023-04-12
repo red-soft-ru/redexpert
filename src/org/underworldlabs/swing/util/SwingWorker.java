@@ -37,8 +37,6 @@ import javax.swing.*;
 public abstract class SwingWorker {
 
     private Object value;  // see getValue(), setValue()
-    private Thread thread;
-
     private String name;
 
     /**
@@ -46,13 +44,13 @@ public abstract class SwingWorker {
      * under separate synchronization control.
      */
     private static class ThreadVar {
-        private Thread thread;
+        private InterruptibleThread thread;
 
-        ThreadVar(Thread t) {
+        ThreadVar(InterruptibleThread t) {
             thread = t;
         }
 
-        synchronized Thread get() {
+        synchronized InterruptibleThread get() {
             return thread;
         }
 
@@ -88,6 +86,13 @@ public abstract class SwingWorker {
      * after the <code>construct</code> method has returned.
      */
     public void finished() {
+    }
+
+    /**
+     * Sets canceled flag for thread
+     */
+    public void setCancel(boolean canceled) {
+        threadVar.thread.setCanceled(canceled);
     }
 
     /**
@@ -150,7 +155,7 @@ public abstract class SwingWorker {
             }
         };
 
-        Thread t = new Thread(doConstruct);
+        InterruptibleThread t = new InterruptibleThread(doConstruct);
         t.setName(this.name);
         threadVar = new ThreadVar(t);
     }

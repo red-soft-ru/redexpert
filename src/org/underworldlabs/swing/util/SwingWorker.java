@@ -136,28 +136,42 @@ public abstract class SwingWorker {
      */
     public SwingWorker(String name) {
 
-        this.name=name;
-        final Runnable doFinished = new Runnable() {
-            public void run() {
-                finished();
-            }
-        };
+        this.name = name;
+        final Runnable doFinished = this::finished;
 
-        Runnable doConstruct = new Runnable() {
-            public void run() {
-                try {
-                    setValue(construct());
-                } finally {
-                    threadVar.clear();
-                }
-
-                SwingUtilities.invokeLater(doFinished);
+        Runnable doConstruct = () -> {
+            try {
+                setValue(construct());
+            } finally {
+                threadVar.clear();
             }
+            SwingUtilities.invokeLater(doFinished);
         };
 
         InterruptibleThread t = new InterruptibleThread(doConstruct);
         t.setName(this.name);
         threadVar = new ThreadVar(t);
+
+    }
+
+    public SwingWorker (String name, Object userObject) {
+
+        this.name = name;
+        final Runnable doFinished = this::finished;
+
+        Runnable doConstruct = () -> {
+            try {
+                setValue(construct());
+            } finally {
+                threadVar.clear();
+            }
+            SwingUtilities.invokeLater(doFinished);
+        };
+
+        InterruptibleThread t = new InterruptibleThread(doConstruct, userObject);
+        t.setName(this.name);
+        threadVar = new ThreadVar(t);
+
     }
 
     /**

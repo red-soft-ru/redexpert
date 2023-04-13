@@ -64,10 +64,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private JButton executeScriptButton;
     private JButton selectAllAttributesButton;
     private JButton selectAllPropertiesButton;
-    private static LoggingOutputPanel loggingOutputPanel;
+    private LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
-    private static JProgressBar progressBar;
-    private static BackgroundProgressDialog progressDialog;
+    private JProgressBar progressBar;
+    private BackgroundProgressDialog progressDialog;
 
     private Map<Integer, JCheckBox> attributesCheckBoxMap;
     private Map<Integer, JCheckBox> propertiesCheckBoxMap;
@@ -301,6 +301,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private boolean prepareComparer() {
 
         comparer = new Comparer(
+                this,
                 databaseConnectionList.get(dbCompareComboBox.getSelectedIndex()),
                 databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()),
                 new boolean[]{
@@ -498,7 +499,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         }
 
         progressDialog = new BackgroundProgressDialog(bundleString("Executing"));
-        SwingWorker worker = new SwingWorker("DBComparerProcess") {
+        SwingWorker worker = new SwingWorker("DBComparerProcess", this) {
 
             @Override
             public Object construct() {
@@ -512,7 +513,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     try {
                         compare();
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorOccurred"), e);
                         Log.error("Error occurred while comparing DBs", e);
                     }
@@ -720,21 +721,21 @@ public class ComparerDBPanel extends JPanel implements TabView {
         return dialect;
     }
 
-    public static void recreateProgressBar(String label, String metaTag, int maxValue) {
+    public void recreateProgressBar(String label, String metaTag, int maxValue) {
         progressBar.setValue(0);
         progressBar.setMaximum(maxValue);
         progressBar.setString(MiscUtils.isNull(metaTag) ? bundleString(label) : String.format(bundleString(label), metaTag));
     }
 
-    public static void incrementProgressBarValue() {
+    public void incrementProgressBarValue() {
         progressBar.setValue(progressBar.getValue() + 1);
     }
 
-    public static boolean isCanceled() {
+    public boolean isCanceled() {
         return progressDialog.isCancel() || !isComparing;
     }
 
-    public static void addToLog(String text) {
+    public void addToLog(String text) {
         loggingOutputPanel.append(text);
     }
 

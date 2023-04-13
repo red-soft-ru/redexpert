@@ -25,11 +25,15 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
+import org.executequery.datasource.PooledStatement;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.Log;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 /**
  * Abstract database object implementation.
@@ -78,6 +82,43 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     protected String source;
 
+    protected final static String RELATION_NAME = "RELATION_NAME";
+    protected final static String FIELD_NAME = "FIELD_NAME";
+    protected final static String FIELD_TYPE = "FIELD_TYPE";
+    protected final static String FIELD_SUB_TYPE = "FIELD_SUB_TYPE";
+    protected final static String SEGMENT_LENGTH = "SEGMENT_LENGTH";
+    protected final static String FIELD_PRECISION = "FIELD_PRECISION";
+    protected final static String FIELD_SCALE = "FIELD_SCALE";
+    protected final static String FIELD_LENGTH = "FIELD_LENGTH";
+    protected final static String CHARACTER_LENGTH = "CHAR_LEN";
+    protected final static String DESCRIPTION = "DESCRIPTION";
+    protected final static String DEFAULT_SOURCE = "DEFAULT_SOURCE";
+    protected final static String DOMAIN_DEFAULT_SOURCE = "DOMAIN_DEFAULT_SOURCE";
+    protected final static String FIELD_POSITION = "FIELD_POSITION";
+    protected final static String NULL_FLAG = "NULL_FLAG";
+    protected final static String DOMAIN_NULL_FLAG = "DOMAIN_NULL_FLAG";
+    protected final static String COMPUTED_BLR = "COMPUTED_BLR";
+    protected final static String IDENTITY_TYPE = "IDENTITY_TYPE";
+    protected final static String CHARACTER_SET_ID = "CHARACTER_SET_ID";
+    protected final static String CHARACTER_SET_NAME = "CHARACTER_SET_NAME";
+    protected final static String COLLATION_NAME = "COLLATION_NAME";
+    protected final static String FIELD_SOURCE = "FIELD_SOURCE";
+    protected final static String COMPUTED_SOURCE = "COMPUTED_SOURCE";
+    protected final static String KEY_SEQ = "KEY_SEQ";
+    protected final static String CONSTRAINT_NAME = "CONSTRAINT_NAME";
+    protected final static String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+    protected final static String REF_TABLE = "REF_TABLE";
+    protected final static String REF_COLUMN = "REF_COLUMN";
+    protected final static String UPDATE_RULE = "UPDATE_RULE";
+    protected final static String DELETE_RULE = "DELETE_RULE";
+    protected static final String ENGINE_NAME = "ENGINE_NAME";
+    protected static final String ENTRYPOINT = "ENTRYPOINT";
+    protected static final String SQL_SECURITY = "SQL_SECURITY";
+    protected static final String DIMENSIONS = "DIMENSIONS";
+    protected static final String DEFAULT_COLLATE_NAME = "DEFAULT_COLLATE_NAME";
+    protected boolean fullLoadCols = false;
+
+
     public AbstractDatabaseObject(DatabaseHost host) {
         setHost(host);
     }
@@ -98,6 +139,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      *
      * @return the catalog name
      */
+    @Override
     public String getCatalogName() {
         return catalogName;
     }
@@ -107,6 +149,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      *
      * @param catalog the catalog name
      */
+    @Override
     public void setCatalogName(String catalog) {
         this.catalogName = catalog;
     }
@@ -116,6 +159,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      *
      * @return the schema name
      */
+    @Override
     public String getSchemaName() {
         return schemaName;
     }
@@ -125,18 +169,18 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      *
      * @param schema the schema name
      */
+    @Override
     public void setSchemaName(String schema) {
         this.schemaName = schema;
     }
 
+    @Override
     public String getNamePrefix() {
 
         String _schema = getSchemaName();
 
-        if (StringUtils.isNotBlank(_schema)) {
-
+        if (StringUtils.isNotBlank(_schema))
             return _schema;
-        }
 
         return getCatalogName(); // may still be null
     }
@@ -151,61 +195,65 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     public DatabaseColumn getColumn(String name) throws DataSourceException {
 
         List<DatabaseColumn> columns = getColumns();
-        for (DatabaseColumn column : columns) {
-
-            if (column.getName().equalsIgnoreCase(name)) {
-
+        for (DatabaseColumn column : columns)
+            if (column.getName().equalsIgnoreCase(name))
                 return column;
-            }
-
-        }
 
         return null;
     }
 
-    /**
-     * Returns the columns (if any) of this object.
-     *
-     * @return the columns
-     */
-    public List<DatabaseColumn> getColumns() throws DataSourceException {
-        if (!isMarkedForReload() && columns != null) {
-            return columns;
-        }
-
-        try {
-            DatabaseHost host = getHost();
-            if (host != null) {
-                columns = host.getColumns(getCatalogName(),
-                        getSchemaName(),
-                        getName());
-
-                if (columns != null) {
-                    for (DatabaseColumn i : columns) {
-                        i.setParent(this);
-                    }
-                }
-
-            }
-        } finally {
-            setMarkedForReload(false);
-        }
-        return columns;
+    protected boolean sqlSecurityCheck() {
+        return getDatabaseMajorVersion() >= 3 && isRDB()
+                || getDatabaseMajorVersion() >= 4 && !isRDB();
     }
+
+    protected boolean externalCheck() {
+        return getDatabaseMajorVersion() >= 3;
+    }
+
+    protected boolean tablespaceCheck() {
+        return getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")
+                && getDatabaseMajorVersion() >= 4;
+    }
+
+    protected boolean isRDB() {
+        return getHost().getDatabaseProductName().toLowerCase().contains("reddatabase");
+    }
+
+    protected boolean moreOrEqualsVersionCheck(int major, int minor) {
+        return getDatabaseMajorVersion() > major || getDatabaseMajorVersion() == major && getDatabaseMinorVersion() >= minor;
+    }
+
+
+    protected Field buildSqlSecurityField(Table table) {
+        Field sqlSecurity = Field.createField(table, SQL_SECURITY);
+        sqlSecurity.setStatement(Function.createFunction("IIF")
+                .appendArgument(sqlSecurity.getFieldTable() + " IS NULL").appendArgument("NULL").appendArgument(Function.createFunction().setName("IIF")
+                        .appendArgument(sqlSecurity.getFieldTable()).appendArgument("'DEFINER'").appendArgument("'INVOKER'").getStatement()).getStatement());
+        sqlSecurity.setNull(!sqlSecurityCheck());
+        return sqlSecurity;
+    }
+
+    protected boolean fullLoad = false;
+    protected DefaultStatementExecutor querySenderForColumns;
+
+    protected Condition buildNameCondition(Field field) {
+        return Condition.createCondition(field, "=", "?");
+    }
+    protected PooledStatement statementForLoadInfoForColumns;
+    protected boolean someExecuteForColumns = false;
+    DefaultDatabaseColumn previousColumn = null;
+    List<DatabaseColumn> preColumns;
 
     /**
      * Returns the privileges (if any) of this object.
      *
      * @return the privileges
      */
+    @Override
     public List<TablePrivilege> getPrivileges() throws DataSourceException {
         DatabaseHost host = getHost();
-        if (host != null) {
-            return host.getPrivileges(getCatalogName(),
-                    getSchemaName(),
-                    getName());
-        }
-        return null;
+        return (host != null) ? host.getPrivileges(getCatalogName(), getSchemaName(), getName()) : null;
     }
 
     /**
@@ -213,6 +261,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      *
      * @return the parent object
      */
+    @Override
     public DatabaseHost getHost() {
         return host;
     }
@@ -222,6 +271,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      *
      * @param host the host object
      */
+    @Override
     public void setHost(DatabaseHost host) {
         this.host = host;
     }
@@ -231,10 +281,10 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      *
      * @return database object remarks
      */
+    @Override
     public String getRemarks() {
-        if (remarks == null || isMarkedForReload()) {
+        if (remarks == null || isMarkedForReload())
             getObjectInfo();
-        }
         return remarks;
     }
 
@@ -243,6 +293,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      *
      * @param remarks the remarks to set
      */
+    @Override
     public void setRemarks(String remarks) {
         this.remarks = remarks;
     }
@@ -261,6 +312,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      *
      * @return drop statement result
      */
+    @Override
     public int drop() throws DataSourceException {
 
         String queryStart = null;
@@ -306,19 +358,15 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             stmnt = connection.createStatement();
 
             int result = stmnt.executeUpdate(queryStart + getNameWithPrefixForQuery());
-            if (!connection.getAutoCommit()) {
-
+            if (!connection.getAutoCommit())
                 connection.commit();
-            }
 
             return result;
 
         } catch (SQLException e) {
-
             throw new DataSourceException(e);
 
         } finally {
-
             releaseResources(stmnt);
         }
 
@@ -331,33 +379,28 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      */
     public int getDataRowCount() throws DataSourceException {
 
-        if (dataRowCount != -1) {
-
+        if (dataRowCount != -1)
             return dataRowCount;
-        }
 
         ResultSet rs = null;
         Statement stmnt = null;
         Connection connection = null;
+
         try {
 
             connection = getHost().getTemporaryConnection();
             stmnt = connection.createStatement();
             rs = stmnt.executeQuery(recordCountQueryString());
 
-            if (rs.next()) {
-
+            if (rs.next())
                 dataRowCount = rs.getInt(1);
-            }
 
             return dataRowCount;
 
         } catch (SQLException e) {
-
             throw new DataSourceException(e);
 
         } finally {
-
             releaseResources(stmnt, rs);
             releaseResources(connection);
         }
@@ -369,8 +412,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      *
      * @return the data for this object
      */
+    @Override
     public ResultSet getData() throws DataSourceException {
-
         return executeQuery(recordsQueryString());
     }
 
@@ -380,8 +423,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      * @param rollbackOnError to rollback if a DataSourceException is thrown
      * @return the data for this object
      */
+    @Override
     public ResultSet getData(boolean rollbackOnError) throws DataSourceException {
-
         try {
 
             return executeQuery(recordsQueryString());
@@ -391,7 +434,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             if (rollbackOnError) {
                 try {
                     getHost().getConnection().rollback();
-                } catch (SQLException e1) {
+
+                } catch (SQLException ignore) {
                 }
             }
 
@@ -399,12 +443,13 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         }
     }
 
+    @Override
     public ResultSet getMetaData() throws DataSourceException {
         try {
 
             DatabaseHost databaseHost = getHost();
-            String _catalog = null; /*databaseHost.getCatalogNameForQueries(getCatalogName());*/
-            String _schema = null;/*databaseHost.getSchemaNameForQueries(getSchemaName());*/
+            String _catalog = null;     //databaseHost.getCatalogNameForQueries(getCatalogName());
+            String _schema = null;      //databaseHost.getSchemaNameForQueries(getSchemaName());
 
             DatabaseMetaData dmd = databaseHost.getDatabaseMetaData();
             return dmd.getColumns(_catalog, _schema, getName(), null);
@@ -418,45 +463,48 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     private ResultSet executeQuery(String query) throws DataSourceException {
 
-        ResultSet rs = null;
+        ResultSet rs;
 
         try {
 
             if (statement != null) {
                 try {
-
                     statement.close();
 
-                } catch (SQLException e) {
+                } catch (SQLException ignore) {
                 }
             }
+
             if (connection == null || connection.isClosed())
                 connection = getHost().getTemporaryConnection();
-            else connection.commit();
+            else
+                connection.commit();
+
             statement = ((PooledConnection) connection).createIndividualStatement();
 
             rs = statement.executeQuery(query);
             return new TransactionAgnosticResultSet(connection, statement, rs);
 
         } catch (SQLException e) {
-
             throw new DataSourceException(e);
         }
 
     }
 
+    @Override
     public void releaseResources() {
-        {
-            try {
-                if (connection != null && !connection.isClosed())
-                    connection.commit();
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-        }
-        if (statement != null) {
 
+        try {
+            if (connection != null && !connection.isClosed())
+                connection.commit();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (statement != null) {
             try {
+
                 if (!statement.isClosed()) {
                     //Log.info("Close statement");
                     statement.close();
@@ -464,13 +512,12 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 statement = null;
 
             } catch (SQLException e) {
-
                 Log.error("Error releaseResources in AbstractDatabaseObject:", e);
             }
-
         }
     }
 
+    @Override
     public void cancelStatement() {
 
         if (statement != null) {
@@ -483,98 +530,308 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 statement = null;
 
             } catch (SQLException e) {
-
                 logThrowable(e);
             }
-
         }
-
     }
 
     private String recordCountQueryString() {
-
         return "SELECT COUNT(*) FROM " + getNameWithPrefixForQuery();
     }
 
     private String recordsQueryString() {
-
         return "SELECT * FROM " + getNameWithPrefixForQuery();
     }
 
     protected final String getNameWithPrefixForQuery() {
-
         String prefix = getNamePrefix();
-
-        if (StringUtils.isNotBlank(prefix)) {
-
-            return prefix + "." + getNameForQuery();
-        }
-
-        return getNameForQuery();
+        return StringUtils.isNotBlank(prefix) ? prefix + "." + getNameForQuery() : getNameForQuery();
     }
 
+    @Override
     public final String getNameForQuery() {
 
         String name = getName();
+
         /*if (name.contains(" ") // eg. access db allows this
                 || (isLowerCase(name) && host.storesLowerCaseQuotedIdentifiers())
                 || (isUpperCase(name) && host.storesUpperCaseQuotedIdentifiers())
                 || (isMixedCase(name) && (host.storesMixedCaseQuotedIdentifiers()
-                || host.supportsMixedCaseQuotedIdentifiers()))) {*/
+                || host.supportsMixedCaseQuotedIdentifiers()))) {
+        }
+        return name;*/
 
-            return quotedDatabaseObjectName(name);
-        //}
-
-        //return name;
+        return quotedDatabaseObjectName(name);
     }
 
     private String quotedDatabaseObjectName(String name) {
-
         String quoteString = getIdentifierQuoteString();
         return quoteString + name + quoteString;
     }
 
     protected boolean isMixedCase(String value) {
-
         return value.matches(".*[A-Z].*") && value.matches(".*[a-z].*");
     }
 
     protected boolean isLowerCase(String value) {
-
         return value.matches("[^A-Z]*");
     }
 
     protected boolean isUpperCase(String value) {
-
         return value.matches("[^a-z]*");
     }
 
     protected String getIdentifierQuoteString() {
-
         try {
-
             return getHost().getDatabaseMetaData().getIdentifierQuoteString();
 
         } catch (SQLException e) {
-
             logThrowable(e);
             return "\"";
         }
     }
 
+    @Override
     public boolean hasSQLDefinition() {
-
         return false;
     }
 
-    public String getCreateSQLText() throws DataSourceException {
+    @Override
+    public abstract String getCreateSQLText() throws DataSourceException;
 
-        return "";
+    public abstract String getDropSQL() throws DataSourceException;
+
+    public abstract String getCompareCreateSQL() throws DataSourceException;
+
+    public abstract String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException;
+
+    protected Condition buildNameCondition(Table table, String fieldName) {
+        return buildNameCondition(Field.createField(table, fieldName));
     }
+
+    protected abstract String getFieldName();
+
+    protected abstract Table getMainTable();
+
+    protected Field getObjectField() {
+        return Field.createField(getMainTable(), getFieldName());
+    }
+
+    protected String queryForInfo() {
+        SelectBuilder sb = builderCommonQuery();
+        sb.appendCondition(buildNameCondition(getObjectField()));
+        return sb.getSQLQuery();
+    }
+    Semaphore mutex = new Semaphore(1);
+    private boolean markedForReloadCols = true;
+
+    /**
+     * Returns the columns (if any) of this object.
+     *
+     * @return the columns
+     */
+    public List<DatabaseColumn> getColumns() throws DataSourceException {
+
+        if (!isMarkedForReload() && columns != null)
+            return columns;
+
+        try {
+
+            DatabaseHost host = getHost();
+            if (host != null) {
+
+                loadColumns();
+
+                if (columns != null)
+                    for (DatabaseColumn i : columns)
+                        i.setParent(this);
+            }
+
+        } finally {
+            setMarkedForReloadCols(false);
+        }
+
+        return columns;
+    }
+
+    protected abstract SelectBuilder builderCommonQuery();
+
+    protected Condition checkSystemCondition() {
+        if (!isSystem()) {
+            return Condition.createCondition()
+                    .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "SYSTEM_FLAG"), "IS", "NULL"))
+                    .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "SYSTEM_FLAG"), "=", "0"))
+                    .setLogicOperator("OR");
+        } else return Condition.createCondition()
+                .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "SYSTEM_FLAG"), "IS", "NOT NULL"))
+                .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "SYSTEM_FLAG"), "<>", "0"))
+                .setLogicOperator("AND");
+    }
+
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+        prepareLoadingInfo();
+        boolean first = true;
+        if (isAnyRowsResultSet())
+            while (rs.next()) {
+                setInfoFromSingleRowResultSet(rs, first);
+                first = false;
+            }
+        else if (rs.next())
+            setInfoFromSingleRowResultSet(rs, true);
+        finishLoadingInfo();
+    }
+
+    public SelectBuilder getBuilderLoadColsCommon() {
+        SelectBuilder sb = new SelectBuilder();
+        sb.setDistinct(true);
+        Table relations = getMainTable();
+        Table relationFields = Table.createTable("RDB$RELATION_FIELDS", "RF");
+        Table fields = Table.createTable("RDB$FIELDS", "F");
+        Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CH");
+        Table collations = Table.createTable("RDB$COLLATIONS", "CO");
+        Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
+        Table constraints1 = Table.createTable("RDB$RELATION_CONSTRAINTS", "RCO");
+        Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT");
+        Table refTable = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC_REF");
+        Table refColumn = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT_REF");
+        Table refCons = Table.createTable("RDB$REF_CONSTRAINTS", "REF_CONS");
+        Field relName = Field.createField(relationFields, RELATION_NAME);
+        sb.appendField(relName);
+        Field fieldName = Field.createField(relationFields, FIELD_NAME);
+        sb.appendField(fieldName);
+        sb.appendField(Field.createField(fields, FIELD_TYPE));
+        sb.appendField(Field.createField(fields, FIELD_SUB_TYPE));
+        sb.appendField(Field.createField(fields, SEGMENT_LENGTH));
+        sb.appendField(Field.createField(fields, FIELD_PRECISION));
+        sb.appendField(Field.createField(fields, FIELD_SCALE));
+        sb.appendField(Field.createField(fields, FIELD_LENGTH));
+        sb.appendField(Field.createField(fields, "CHARACTER_LENGTH").setAlias(CHARACTER_LENGTH));
+        sb.appendField(Field.createField(fields, DEFAULT_SOURCE).setAlias(DOMAIN_DEFAULT_SOURCE));
+        sb.appendField(Field.createField(fields, NULL_FLAG).setAlias(DOMAIN_NULL_FLAG));
+        sb.appendField(Field.createField(fields, COMPUTED_BLR));
+        sb.appendField(Field.createField(fields, CHARACTER_SET_ID));
+        sb.appendField(Field.createField(fields, COMPUTED_SOURCE));
+        sb.appendField(Field.createField(charsets, CHARACTER_SET_NAME));
+        sb.appendField(Field.createField(collations, COLLATION_NAME));
+        sb.appendField(Field.createField(relationFields, DEFAULT_SOURCE));
+        sb.appendField(Field.createField(relationFields, NULL_FLAG));
+        Field fieldSource = Field.createField(relationFields, FIELD_SOURCE);
+        sb.appendField(fieldSource);
+        sb.appendField(Field.createField(relationFields, DESCRIPTION));
+        sb.appendField(Field.createField(relationFields, IDENTITY_TYPE).setNull(getDatabaseMajorVersion() < 3));
+        Field fieldPosition = Field.createField(relationFields, FIELD_POSITION);
+        fieldPosition.setStatement(fieldPosition.getFieldTable() + " + 1");
+        sb.appendField(fieldPosition);
+        sb.appendField(Field.createField(constraints, CONSTRAINT_NAME));
+        sb.appendField(Field.createField(constraints, CONSTRAINT_TYPE));
+        Field keyPosition = Field.createField(indexSegments, FIELD_POSITION).setAlias(KEY_SEQ);
+        keyPosition.setStatement(keyPosition.getFieldTable() + " + 1");
+        sb.appendField(keyPosition);
+        sb.appendField(Field.createField(refTable, relName.getAlias()).setAlias(REF_TABLE));
+        sb.appendField(Field.createField(refColumn, fieldName.getAlias()).setAlias(REF_COLUMN));
+        sb.appendField(Field.createField(refCons, UPDATE_RULE));
+        sb.appendField(Field.createField(refCons, DELETE_RULE));
+
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(getObjectField(), relName));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField(constraints1, relName.getAlias())));
+        sb.appendJoin(LeftJoin.createLeftJoin()
+                .appendFields(Field.createField(constraints1, "INDEX_NAME"), Field.createField(indexSegments, "INDEX_NAME"))
+                .appendFields(fieldName, Field.createField(indexSegments, fieldName.getAlias())));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(indexSegments, "INDEX_NAME"),
+                Field.createField(constraints, "INDEX_NAME")));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(constraints, CONSTRAINT_NAME),
+                Field.createField(refCons, CONSTRAINT_NAME)));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(refCons, "CONST_NAME_UQ"),
+                Field.createField(refTable, CONSTRAINT_NAME)));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(refTable, "INDEX_NAME"),
+                Field.createField(refColumn, "INDEX_NAME")));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID),
+                Field.createField(charsets, CHARACTER_SET_ID)));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID),
+                        Field.createField(collations, CHARACTER_SET_ID))
+                .appendFields(Field.createField(fields, "COLLATION_ID"),
+                        Field.createField(collations, "COLLATION_ID")));
+        sb.appendCondition(Condition.createCondition(fieldSource, "=", Field.createField(fields, FIELD_NAME).getFieldTable()));
+        sb.setOrdering(relName.getFieldTable() + ", " + fieldPosition.getFieldTable());
+        return sb;
+    }
+
+    public SelectBuilder getBuilderLoadColsForSingleTable() {
+        SelectBuilder sb = getBuilderLoadColsCommon();
+        sb.appendCondition(buildNameCondition(getObjectField()));
+        return sb;
+    }
+
+    protected void loadColumns() {
+        if (fullLoadCols) {
+            getMetaTagParent().loadColumnsForAllTables();
+        }
+
+        if (querySenderForColumns == null && someExecuteForColumns)
+            querySenderForColumns = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+
+        DefaultStatementExecutor executor =
+                someExecuteForColumns ? querySenderForColumns : new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        try {
+
+            if (statementForLoadInfoForColumns == null || statementForLoadInfoForColumns.isClosed())
+                statementForLoadInfoForColumns = (PooledStatement) executor.getPreparedStatement(getBuilderLoadColsForSingleTable().getSQLQuery());
+            statementForLoadInfoForColumns.setString(1, getName());
+            ResultSet rs = executor.getResultSet(-1, statementForLoadInfoForColumns).getResultSet();
+            setColumnsFromResultSet(rs);
+
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e);
+
+        } finally {
+            if (!someExecuteForColumns)
+                executor.releaseResources();
+            setMarkedForReloadCols(false);
+        }
+    }
+
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        return commonBuilder.appendCondition(checkSystemCondition());
+    }
+
+    public SelectBuilder getBuilderLoadColsForAllTables() {
+        return builderForInfoAllObjects(getBuilderLoadColsCommon());
+    }
+
+    public String queryForInfoAllObjects() {
+        return builderForInfoAllObjects(builderCommonQuery()).getSQLQuery();
+    }
+
+    protected void lockLoadingCols(boolean flag) {
+
+        if (flag) {
+            try {
+                mutex.acquire();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } else {
+            mutex.release();
+        }
+    }
+
+    public void prepareLoadColumns() {
+        lockLoadingCols(true);
+        preColumns = new ArrayList<>();
+        previousColumn = null;
+    }
+
+    //ResultSet.next cannot be called inside this function
+    public abstract Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException;
+
+    public abstract void prepareLoadingInfo();
+
+    public abstract void finishLoadingInfo();
 
     public int getDatabaseMajorVersion() {
         try {
             return host.getDatabaseMetaData().getDatabaseMajorVersion();
+
         } catch (SQLException e) {
             e.printStackTrace();
             return 0;
@@ -584,33 +841,250 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     public int getDatabaseMinorVersion() {
         try {
             return host.getDatabaseMetaData().getDatabaseMinorVersion();
+
         } catch (SQLException e) {
             e.printStackTrace();
             return 0;
         }
     }
 
-    protected abstract String queryForInfo();
+    protected DefaultStatementExecutor querySender;
 
-    protected abstract void setInfoFromResultSet(ResultSet rs) throws SQLException;
+    public void addColumnFromResultSet(ResultSet rs) throws SQLException {
+        String colName = rs.getString(FIELD_NAME).trim();
+        if (previousColumn == null || !colName.equalsIgnoreCase(previousColumn.getName())) {
+            DefaultDatabaseColumn column = new DefaultDatabaseColumn();
+            previousColumn = column;
+            final short fieldType = rs.getShort(FIELD_TYPE);
+            final short fieldSubType = rs.getShort(FIELD_SUB_TYPE);
+            final short fieldScale = rs.getShort(FIELD_SCALE);
+            final int characterSetId = rs.getInt(CHARACTER_SET_ID);
+            final int dataType = DefaultDatabaseHost.getDataType(fieldType, fieldSubType, fieldScale, characterSetId);
+
+            column.setTypeInt(dataType);
+            column.setColumnSubtype(fieldSubType);
+            column.setColumnScale(fieldScale);
+            column.setName(colName);
+            column.setTypeName(DatabaseTypeConverter.getDataTypeName(fieldType, fieldSubType, fieldScale));
+            switch (dataType) {
+                case Types.DECIMAL:
+                case Types.NUMERIC:
+                    // TODO column precision
+                    column.setColumnScale(fieldScale * (-1));
+                    break;
+                case Types.CHAR:
+                case Types.VARCHAR:
+                case Types.BINARY:
+                case Types.VARBINARY:
+                    //valueBuilder.at(15).set(createInt(rs.getShort("FIELD_LENGTH")));
+                    column.setColumnSize(rs.getShort(FIELD_LENGTH));
+                    break;
+                case Types.FLOAT:
+                    // TODO column precision
+//                    valueBuilder.at(6).set(FLOAT_PRECISION);
+                    break;
+                case Types.DOUBLE:
+                    // TODO column precision
+//                    valueBuilder.at(6).set(DOUBLE_PRECISION);
+                    break;
+                case Types.BIGINT:
+                    // TODO column precision
+//                    valueBuilder
+//                            .at(6).set(BIGINT_PRECISION)
+//                            .at(8).set(INT_ZERO);
+                    break;
+                case Types.INTEGER:
+                    // TODO column precision
+//                    valueBuilder
+//                            .at(6).set(INTEGER_PRECISION)
+//                            .at(8).set(INT_ZERO);
+                    break;
+                case Types.SMALLINT:
+                    // TODO column precision
+//                    valueBuilder
+//                            .at(6).set(SMALLINT_PRECISION)
+//                            .at(8).set(INT_ZERO);
+                    break;
+                case Types.DATE:
+                    // TODO column precision
+//                    valueBuilder.at(6).set(DATE_PRECISION);
+                    break;
+                case Types.TIME:
+                    // TODO column precision
+//                    valueBuilder.at(6).set(TIME_PRECISION);
+                    break;
+                case Types.TIMESTAMP:
+                    // TODO column precision
+//                    valueBuilder.at(6).set(TIMESTAMP_PRECISION);
+                    break;
+                case Types.BOOLEAN:
+                    // TODO column precision
+//                    valueBuilder
+//                            .at(6).set(BOOLEAN_PRECISION)
+//                            .at(9).set(RADIX_BINARY);
+                    break;
+            }
+            column.setColumnSize(rs.getInt(FIELD_LENGTH));
+            if (rs.getInt(FIELD_PRECISION) != 0)
+                column.setColumnSize(rs.getInt(FIELD_PRECISION));
+            if (rs.getInt(CHARACTER_LENGTH) != 0)
+                column.setColumnSize(rs.getInt(CHARACTER_LENGTH));
+
+            final short nullFlag = rs.getShort(NULL_FLAG);
+            final short sourceNullFlag = rs.getShort(DOMAIN_NULL_FLAG);
+            column.setRemarks(rs.getString(DESCRIPTION));
+            column.setRequired(nullFlag == 1);
+            column.setDomainNotNull(sourceNullFlag == 1);
+
+            String column_def = rs.getString(DEFAULT_SOURCE);
+            if (column_def != null) {
+                // TODO This looks suspicious (what if it contains default)
+                int defaultPos = column_def.toUpperCase().trim().indexOf("DEFAULT");
+                if (defaultPos == 0)
+                    column_def = column_def.substring(7).trim();
+                column.setDefaultValue(column_def);
+            }
+            column_def = rs.getString(DOMAIN_DEFAULT_SOURCE);
+            if (column_def != null) {
+                // TODO This looks suspicious (what if it contains default)
+                int defaultPos = column_def.toUpperCase().trim().indexOf("DEFAULT");
+                if (defaultPos == 0)
+                    column_def = column_def.substring(7).trim();
+                column.setDomainDefaultValue(column_def);
+            }
+            column.setIdentity(rs.getInt(IDENTITY_TYPE) == 1);
+            String charset = rs.getString(CHARACTER_SET_NAME);
+            String collate = rs.getString(COLLATION_NAME);
+            if (charset != null)
+                charset = charset.trim();
+            if (collate != null)
+                collate = collate.trim();
+            column.setCharset(charset);
+            column.setCollate(collate);
+            String domain = rs.getString(FIELD_SOURCE);
+            if (domain != null && !domain.isEmpty()) {
+                column.setDomain(domain);
+            }
+            String computedSource = rs.getString(COMPUTED_SOURCE);
+            if (computedSource != null && !computedSource.isEmpty()) {
+                column.setGenerated(true);
+                if (computedSource.startsWith("(") && computedSource.endsWith(")"))
+                    computedSource = computedSource.substring(1, computedSource.length() - 1);
+                column.setComputedSource(computedSource);
+            }
+            if (column.getTypeInt() == Types.LONGVARBINARY ||
+                    column.getTypeInt() == Types.LONGVARCHAR ||
+                    column.getTypeInt() == Types.BLOB) {
+                column.setColumnSubtype(fieldSubType);
+                column.setColumnSize(rs.getInt(SEGMENT_LENGTH));
+            }
+            preColumns.add(column);
+        }
+        String conType = rs.getString(CONSTRAINT_TYPE);
+        if (conType != null) {
+            conType = conType.trim();
+            switch (conType) {
+                case "PRIMARY KEY":
+                    previousColumn.setPrimaryKey(true);
+                    TableColumnConstraint constraint = new TableColumnConstraint(null, ColumnConstraint.PRIMARY_KEY);
+                    constraint.setName(rs.getString(CONSTRAINT_NAME));
+                    previousColumn.addConstraint(constraint);
+                    break;
+                case "UNIQUE":
+                    previousColumn.setUnique(true);
+                    constraint = new TableColumnConstraint(null, ColumnConstraint.UNIQUE_KEY);
+                    constraint.setName(rs.getString(CONSTRAINT_NAME));
+                    previousColumn.addConstraint(constraint);
+                    break;
+                case "FOREIGN KEY":
+                    previousColumn.setForeignKey(true);
+                    constraint = new TableColumnConstraint(null, ColumnConstraint.FOREIGN_KEY);
+                    constraint.setName(rs.getString(CONSTRAINT_NAME));
+                    constraint.setReferencedTable(rs.getString(REF_TABLE));
+                    constraint.setReferencedColumn(rs.getString(REF_COLUMN));
+                    String rule = rs.getString(UPDATE_RULE);
+                    if (rule != null)
+                        constraint.setUpdateRule(rule.trim());
+                    rule = rs.getString(DELETE_RULE);
+                    if (rule != null)
+                        constraint.setDeleteRule(rule.trim());
+                    previousColumn.addConstraint(constraint);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    protected PooledStatement statementForLoadInfo;
+
+    public void finishLoadColumns() {
+        if (preColumns != null) {
+            columns = preColumns;
+        }
+        lockLoadingCols(false);
+    }
+
+    protected boolean someExecute = false;
+
+    protected void setColumnsFromResultSet(ResultSet rs) throws SQLException {
+        prepareLoadColumns();
+        while (rs.next()) {
+            addColumnFromResultSet(rs);
+        }
+        finishLoadColumns();
+    }
+
+    public abstract boolean isAnyRowsResultSet();
+
+    public boolean isSomeExecute() {
+        return someExecute;
+    }
+
+    public void setSomeExecute(boolean someExecute) {
+        this.someExecute = someExecute;
+    }
+
+    public boolean isFullLoad() {
+        return fullLoad;
+    }
+
+    public void setFullLoad(boolean fullLoad) {
+        this.fullLoad = fullLoad;
+    }
 
     protected void getObjectInfo() {
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        if (fullLoad) {
+            getMetaTagParent().loadFullInfoForObjects();
+        }
+
+        if (querySender == null && someExecute)
+            querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+
+        DefaultStatementExecutor executor =
+                someExecute ? querySender : new DefaultStatementExecutor(getHost().getDatabaseConnection());
         try {
-            ResultSet rs = querySender.getResultSet(queryForInfo()).getResultSet();
+
+            if (statementForLoadInfo == null || statementForLoadInfo.isClosed()) {
+                String query = queryForInfo();
+                statementForLoadInfo = (PooledStatement) executor.getPreparedStatement(query);
+            }
+            statementForLoadInfo.setString(1, getName());
+            ResultSet rs = executor.getResultSet(-1, statementForLoadInfo).getResultSet();
             setInfoFromResultSet(rs);
+
         } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
+            GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e);
+
         } finally {
-            querySender.releaseResources();
+            if (!someExecute)
+                executor.releaseResources();
             setMarkedForReload(false);
         }
     }
 
     protected void checkOnReload(Object object) {
-        if (object == null || isMarkedForReload()) {
+        if (object == null || isMarkedForReload())
             getObjectInfo();
-        }
     }
 
     public void resetRowsCount() {
@@ -619,6 +1093,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     @Override
     public String getSource() {
+        checkOnReload(source);
         return source;
     }
 
@@ -632,11 +1107,66 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     String getFromResultSet(ResultSet rs, String colName) throws SQLException {
         String res = rs.getString(colName);
-        if (res == null)
-            res = "";
-        else res = res.trim();
-        return res;
+        return (res == null) ? "" : res.trim();
     }
+
+    public DefaultStatementExecutor getQuerySender() {
+        return querySender;
+    }
+
+    public void setQuerySender(DefaultStatementExecutor querySender) {
+        this.querySender = querySender;
+    }
+
+    public PooledStatement getStatementForLoadInfo() {
+        return statementForLoadInfo;
+    }
+
+    public void setStatementForLoadInfo(PooledStatement statementForLoadInfo) {
+        this.statementForLoadInfo = statementForLoadInfo;
+    }
+
+    public boolean isFullLoadCols() {
+        return fullLoadCols;
+    }
+
+    public void setFullLoadCols(boolean fullLoadCols) {
+        this.fullLoadCols = fullLoadCols;
+    }
+
+    public DefaultStatementExecutor getQuerySenderForColumns() {
+        return querySenderForColumns;
+    }
+
+    public void setQuerySenderForColumns(DefaultStatementExecutor querySenderForColumns) {
+        this.querySenderForColumns = querySenderForColumns;
+    }
+
+    public PooledStatement getStatementForLoadInfoForColumns() {
+        return statementForLoadInfoForColumns;
+    }
+
+    public void setStatementForLoadInfoForColumns(PooledStatement statementForLoadInfoForColumns) {
+        this.statementForLoadInfoForColumns = statementForLoadInfoForColumns;
+    }
+
+    public boolean isSomeExecuteForColumns() {
+        return someExecuteForColumns;
+    }
+
+    public void setSomeExecuteForColumns(boolean someExecuteForColumns) {
+        this.someExecuteForColumns = someExecuteForColumns;
+    }
+
+    public boolean isMarkedForReloadCols() {
+        return markedForReloadCols;
+    }
+
+    public void setMarkedForReloadCols(boolean markedForReloadCols) {
+        this.markedForReloadCols = markedForReloadCols;
+    }
+
+
 }
 
 

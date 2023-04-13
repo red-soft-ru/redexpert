@@ -153,7 +153,7 @@ public class QueryEditorTextPanel extends JPanel {
      * Indicates that the editor is closing and performs some cleanup.
      */
     protected void closingEditor() {
-
+        queryPane.cleanup();
         queryEditor = null;
     }
 

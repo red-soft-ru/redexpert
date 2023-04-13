@@ -10,7 +10,6 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SQLFormatter;
 import org.underworldlabs.swing.GUIUtils;
@@ -31,7 +30,6 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
 
     private SimpleSqlTextPanel sqlTextPanel;
     private JButton formatSqlButton;
-    private SimpleTextArea descriptionTextArea;
     private static final String replacing_name = "<view_name>";
     String notChangedText;
     private DefaultDatabaseView view;
@@ -49,7 +47,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     @Override
     protected void initEdited() {
         nameField.setText(view.getName());
-        descriptionTextArea.getTextAreaComponent().setText(view.getRemarks());
+        simpleCommentPanel.setDatabaseObject(view);
     }
 
     protected void init() {
@@ -68,8 +66,6 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
                 gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillNone().get());
         sqlPanel.add(sqlTextPanel,
                 gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
-
-        descriptionTextArea = new SimpleTextArea();
 
         connectionsCombo.addItemListener(event -> {
             if (event.getStateChange() == ItemEvent.DESELECTED) {
@@ -94,7 +90,12 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             }
         });
 
-        descriptionTextArea.getTextAreaComponent().getDocument().addDocumentListener(new DocumentListener() {
+
+        //create location elements
+        tabbedPane.add(bundleStaticString("SQL"), sqlPanel);
+        addCommentTab(null);
+
+        simpleCommentPanel.getCommentField().getTextAreaComponent().getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 changeComment();
@@ -111,11 +112,8 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             }
         });
 
-        //create location elements
-        tabbedPane.add(bundleStaticString("SQL"), sqlPanel);
-        tabbedPane.add(bundleStaticString("description"), descriptionTextArea);
-
         sqlTextPanel.setSQLText(generateQuery());
+        centralPanel.setVisible(false);
     }
 
     @Override
@@ -174,7 +172,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
                 selectStatement = view.getSource();
 
             query = SQLUtils.generateCreateView(nameField.getText(), fields, selectStatement,
-                    descriptionTextArea.getTextAreaComponent().getText(), getDatabaseVersion(), editing);
+                    simpleCommentPanel.getComment(), getDatabaseVersion(), editing);
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
@@ -195,7 +193,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
 
         String sqlText = sqlTextPanel.getSQLText().trim().replaceAll("\nCOMMENT ON VIEW \"?.*\"? IS '.*';", "") +
                 SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
-                        descriptionTextArea.getTextAreaComponent().getText().trim(), ";", false);
+                        simpleCommentPanel.getComment().trim(), ";", false);
         sqlTextPanel.setSQLText(sqlText);
     }
 

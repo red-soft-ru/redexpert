@@ -20,9 +20,11 @@
 
 package org.executequery.gui.prefs;
 
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -38,16 +40,14 @@ import java.util.Vector;
 public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         implements ListSelectionListener {
 
-    private JLabel normalSample;
-    private JLabel italicSample;
-    private JLabel boldSample;
-    private JLabel italicBoldSample;
 
     protected JList fontList;
     protected JList sizeList;
 
     protected DisabledField selectedFontField;
-    protected DisabledField selectedSizeField;
+    protected NumberTextField selectedSizeField;
+
+    SQLTextArea samplePanel;
 
     public PropertiesEditorFonts() {
         try {
@@ -59,10 +59,10 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
 
     private void jbInit() {
         selectedFontField = new DisabledField();
-        selectedSizeField = new DisabledField();
+        selectedSizeField = new NumberTextField();
 
         Vector<String> fontNames = GUIUtils.getSystemFonts();
-        String[] fontSizes = {"8", "9", "10", "11", "12", "13", "14", "15", "16"};
+        String[] fontSizes = {"8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72"};
         fontList = new JList(fontNames);
         sizeList = new JList(fontSizes);
 
@@ -112,18 +112,11 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         panel.add(sizeScroll, gbc);
 
         // setup samples
-        normalSample = new JLabel(" Sample normal text");
-        italicSample = new JLabel(" Sample italic text");
-        boldSample = new JLabel(" Sample bold text");
-        italicBoldSample = new JLabel(" Sample bold and italic text");
 
-        JPanel samplePanel = new JPanel();
-        samplePanel.setLayout(new BoxLayout(samplePanel, BoxLayout.Y_AXIS));
-        samplePanel.add(normalSample);
-        samplePanel.add(italicSample);
-        samplePanel.add(boldSample);
-        samplePanel.add(italicBoldSample);
-        samplePanel.setBackground(SystemProperties.getColourProperty("user", "editor.text.background.colour"));
+
+        samplePanel = new SQLTextArea();
+        samplePanel.setText(" Sample normal text");
+        //samplePanel.setBackground(SystemProperties.getColourProperty("user", "editor.text.background.colour"));
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -161,12 +154,14 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         String fontName = (String) fontList.getSelectedValue();
         int fontSize = Integer.parseInt((String) sizeList.getSelectedValue());
 
-        int italicBold = Font.BOLD + Font.ITALIC;
+        //int italicBold = Font.BOLD + Font.ITALIC;
 
-        normalSample.setFont(new Font(fontName, Font.PLAIN, fontSize));
+
+        /*normalSample.setFont();
         italicSample.setFont(new Font(fontName, Font.ITALIC, fontSize));
         boldSample.setFont(new Font(fontName, Font.BOLD, fontSize));
-        italicBoldSample.setFont(new Font(fontName, italicBold, fontSize));
+        italicBoldSample.setFont(new Font(fontName, italicBold, fontSize));*/
+        samplePanel.setFont(new Font(fontName, Font.PLAIN, fontSize));
 
         selectedFontField.setText(fontName);
         selectedSizeField.setText(Integer.toString(fontSize));
@@ -175,7 +170,7 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
 
     public void save() {
         SystemProperties.setProperty("user", "sqlsyntax.font.size",
-                (String) sizeList.getSelectedValue());
+                selectedSizeField.getStringValue());
         SystemProperties.setProperty("user", "sqlsyntax.font.name",
                 (String) fontList.getSelectedValue());
     }

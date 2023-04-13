@@ -1,5 +1,5 @@
 /*
- * CreateTableFunctionPanel.java
+ * CreateTablePanel.java
  *
  * Copyright (C) 2002-2017 Takis Diakoumis
  *
@@ -23,16 +23,16 @@ package org.executequery.gui.table;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.ActionContainer;
 import org.executequery.gui.FocusComponentPanel;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.databaseobjects.AbstractSQLSecurityObjectPanel;
+import org.executequery.gui.databaseobjects.CreateGlobalTemporaryTable;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.localization.Bundles;
@@ -49,8 +49,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
@@ -60,7 +64,7 @@ import java.util.Vector;
  *
  * @author Takis Diakoumis
  */
-public abstract class CreateTableFunctionPanel extends JPanel
+public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         implements FocusComponentPanel,
         ItemListener,
         ChangeListener,
@@ -68,22 +72,9 @@ public abstract class CreateTableFunctionPanel extends JPanel
         TableConstraintFunction,
         TextEditorContainer {
 
-    /**
-     * The table name field
-     */
-    protected JTextField nameField;
-    /**
-     * The table comment area
-     */
-    protected SimpleTextArea commentField;
+    public static final String TITLE = Bundles.get(CreateTablePanel.class, "title");
 
-    /**
-     * The connection combo selection
-     */
-    protected JComboBox connectionsCombo;
-
-
-    protected DynamicComboBoxModel connectionsModel;
+    public static final String FRAME_ICON = "NewTable16.png";
 
     protected JComboBox tablespacesCombo;
 
@@ -97,10 +88,6 @@ public abstract class CreateTableFunctionPanel extends JPanel
     protected JTextField externalTableFilePathField;    //path to table data file
     protected JButton browseExternalTableFileButton;    //button for open selectFileDialog
     protected JCheckBox isAdapterNeeded;    //checking for using ADAPTER table
-
-
-    protected JLabel securitySQLLabel;
-    private JComboBox securitySQLSelection;
 
     /**
      * The table column definition panel
@@ -116,12 +103,6 @@ public abstract class CreateTableFunctionPanel extends JPanel
      * The text pane showing SQL generated
      */
     protected SimpleSqlTextPanel sqlText;
-
-    /**
-     * The tabbed pane containing definition and constraints
-     */
-    private JTabbedPane tableTabs;
-
     /**
      * The buffer off all SQL generated
      */
@@ -130,103 +111,57 @@ public abstract class CreateTableFunctionPanel extends JPanel
     /**
      * The toolbar
      */
-    private CreateTableToolBar tools;
-
-    /**
-     * Utility to retrieve database meta data
-     */
-    protected MetaDataValues metaData;
+    private CreateTableToolBar colTools;
+    private CreateTableToolBar conTools;
 
     /**
      * The base panel
      */
     protected JPanel mainPanel;
-
-    protected boolean temporary;
     private JComboBox typeTemporaryBox;
 
     /**
      * <p> Constructs a new instance.
      */
-    public CreateTableFunctionPanel(boolean temporary) {
-        super(new BorderLayout());
-        this.temporary = temporary;
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public CreateTablePanel(DatabaseConnection dc, ActionContainer dialog) {
+        super(dc, dialog, null, null);
+    }
+
+    @Override
+    protected void reset() {
 
     }
 
-    private void init() throws Exception {
-        nameField = new JFormattedTextField();
-        commentField = new SimpleTextArea();
-        commentField.getTextAreaComponent().getDocument().addDocumentListener(
-                new DocumentListener() {
-
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                        externalTablePropsChanged();
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                        externalTablePropsChanged();
-                    }
-
-                    @Override
-                    public void changedUpdate(DocumentEvent e) {
-                        externalTablePropsChanged();
-                    }
-
-                });
-        //initialise the schema label
-        metaData = new MetaDataValues(true);
-
-        // combo boxes
-        Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
-        connectionsModel = new DynamicComboBoxModel(connections);
-        connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
+    protected void init() {
+        initSQLSecurity(false);
         connectionsCombo.addItemListener(this);
-
+        colTools = new CreateTableToolBar(this);
+        conTools = new CreateTableToolBar(this);
         tablespaceComboModel = new DynamicComboBoxModel(new Vector<>());
         tablespacesCombo = WidgetFactory.createComboBox(tablespaceComboModel);
         tablespacesCombo.addItemListener(this);
-
-        // create tab pane
-        tableTabs = new JTabbedPane();
-        // create the column definition panel
-        // and add this to the tabbed pane
+        JPanel columnsPanel = new JPanel(new GridBagLayout());
         tablePanel = new NewTablePanel(this);
-        tableTabs.add(bundledString("Columns"), tablePanel);
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic();
+        columnsPanel.add(colTools, gbh.setLabelDefault().fillVertical().spanY().get());
+        columnsPanel.add(tablePanel, gbh.nextCol().fillBoth().spanX().spanY().get());
+        tabbedPane.add(bundledString("Columns"), columnsPanel);
 
         // create the constraints table and model
         JPanel constraintsPanel = new JPanel(new GridBagLayout());
         consPanel = new NewTableConstraintsPanel(this);
         consPanel.setData(new Vector(0), true);
         typeTemporaryBox = new JComboBox(new DefaultComboBoxModel(new String[]{"DELETE ROWS", "PRESERVE ROWS"}));
-        typeTemporaryBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                setSQLText();
-            }
-        });
+        typeTemporaryBox.addActionListener(actionEvent -> setSQLText());
+        gbh.setDefaultsStatic();
+        constraintsPanel.add(conTools, gbh.setLabelDefault().fillVertical().spanY().get());
+        constraintsPanel.add(consPanel, gbh.nextCol().fillBoth().spanX().spanY().get());
 
-        constraintsPanel.add(consPanel, new GridBagConstraints(
-                1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST,
-                GridBagConstraints.BOTH,
-                new Insets(2, 2, 2, 2), 0, 0));
-
-        tableTabs.add(bundledString("Constraints"), constraintsPanel);
-        tableTabs.add(bundledString("TableCommentLabel"), commentField);
+        tabbedPane.add(bundledString("Constraints"), constraintsPanel);
+        addCommentTab(null);
 
         sqlText = new SimpleSqlTextPanel();
-        tools = new CreateTableToolBar(this);
-
-        mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // ----- components for creating EXTERNAL table -----
 
@@ -260,53 +195,23 @@ public abstract class CreateTableFunctionPanel extends JPanel
         isAdapterNeeded.addActionListener(e -> externalTablePropsChanged());
 
         // ------ components arranging -----
+        if (!(this instanceof CreateGlobalTemporaryTable))
+            topGbh.addLabelFieldPair(topPanel, bundledString("Tablespace"), tablespacesCombo, null, false);
+        tablespacesCombo.setToolTipText(Bundles.get(TableDefinitionPanel.class, "Tablespace"));
+        if (this instanceof CreateGlobalTemporaryTable) {
+            topGbh.addLabelFieldPair(topPanel, bundledString("TypeTemporaryTable"), typeTemporaryBox, null, false);
+        }
 
-        GridBagHelper gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 5, 5, 5);
-        gridBagHelper.anchorNorthWest();
+        if (getDatabaseVersion() >= 3 && !(this instanceof CreateGlobalTemporaryTable)) {
 
-        gridBagHelper.addLabelFieldPair(mainPanel,
-                bundledString("Connection"), connectionsCombo,
-                null, true, true);
+            topPanel.add(isExternalTable, topGbh.nextRowFirstCol().setLabelDefault().get());
 
-        gridBagHelper.addLabelFieldPair(mainPanel,
-                bundledString("TableName"), nameField,
-                null, true, true);
-
-        /*ReflectiveAction action = new ReflectiveAction(this);
-        securitySQLLabel = new JLabel();
-        securitySQLLabel.setText("SQL SECURITY");
-        String[] typeSecurity = {"", "DEFINER", "INVOKER"};
-        securitySQLSelection = ActionUtilities.createComboBox(action, typeSecurity, "sqlSecurityChanged");
-        gridBagHelper.addLabelFieldPair(mainPanel, securitySQLLabel, securitySQLSelection, null, true, true);
-
-        int databaseversion = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(
-                (DatabaseConnection) connectionsCombo.getSelectedItem()).getDatabaseMetaData().getDatabaseMajorVersion();
-        securitySQLLabel.setVisible(databaseversion > 2);
-        securitySQLSelection.setVisible(databaseversion > 2);*/
-
-        gridBagHelper.addLabelFieldPair(mainPanel,
-                Bundles.get(TableDefinitionPanel.class, "Tablespace"), tablespacesCombo,
-                null, true, true);
-
-        if (temporary)
-            gridBagHelper.addLabelFieldPair(mainPanel,
-                    bundledString("TypeTemporaryTable"), typeTemporaryBox,
-                    null, true, true);
-
-        if (ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(
-                        (DatabaseConnection) connectionsCombo.getSelectedItem())
-                .getDatabaseMetaData().getDatabaseMajorVersion() >= 3) {
-
-            mainPanel.add(isExternalTable,
-                    gridBagHelper.nextRowFirstCol().setWidth(2).fillNone().get());
-
-            mainPanel.add(isAdapterNeeded,
-                    gridBagHelper.nextCol().setLabelDefault().get());
+            topPanel.add(isAdapterNeeded, topGbh.nextCol().get());
         }
 
         // ----- external panel -----
-
+        GridBagHelper gridBagHelper = new GridBagHelper();
+        gridBagHelper.setDefaultsStatic();
         externalTablePropsPanel = new JPanel(new GridBagLayout());
 
         gridBagHelper.addLabelFieldPair(externalTablePropsPanel,
@@ -318,34 +223,15 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
         // -----
 
-        mainPanel.add(externalTablePropsPanel,
-                gridBagHelper.nextRowFirstCol().fillHorizontally().spanX().get());
-
-        // ----- definition panel -----
-
-        JPanel definitionPanel = new JPanel(new GridBagLayout());
-
-        definitionPanel.add(tools,
-                gridBagHelper.setLabelDefault().setInsets(5, 20, 5, 0).fillVertical().get());
-
-        definitionPanel.add(tableTabs,
-                gridBagHelper.nextCol().setInsets(0, 0, 5, 0)
-                        .setWeightY(1.0).setWeightX(0.4).fillBoth().spanX().get());
-
-        // -----
-
-        mainPanel.add(definitionPanel,
-                gridBagHelper.nextRowFirstCol().setInsets(0, 10, 5, 0).get());
-
-        mainPanel.add(sqlText,
-                gridBagHelper.nextRowFirstCol().setWeightY(0.6).get());
+        topPanel.add(externalTablePropsPanel, topGbh.nextRowFirstCol().spanX().spanY().fillHorizontally().get());
+        tabbedPane.addTab("SQL", sqlText);
 
         // ------
 
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        add(mainPanel, BorderLayout.CENTER);
+        //add(mainPanel, BorderLayout.CENTER);
 
-        tableTabs.addChangeListener(this);
+        tabbedPane.addChangeListener(this);
         nameField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(KeyEvent e) {
                 setSQLText();
@@ -355,23 +241,80 @@ public abstract class CreateTableFunctionPanel extends JPanel
         sqlBuffer = new StringBuffer(CreateTableSQLSyntax.CREATE_TABLE);
 
         // check initial values for possible value inits
-        if (connections == null || connections.isEmpty()) {
-            connectionsCombo.setEnabled(false);
-        } else {
-            DatabaseConnection connection =
-                    connections.elementAt(0);
-            metaData.setDatabaseConnection(connection);
 
-            tablePanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
-            tablePanel.setDomains(getDomains());
-            tablePanel.setGenerators(getGenerators());
-            tablePanel.setDatabaseConnection(connection);
-            populateTablespaces(connection);
-            //metaData
-        }
+        tablePanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
+        tablePanel.setDomains(getDomains());
+        tablePanel.setGenerators(getGenerators());
+        tablePanel.setDatabaseConnection(connection);
+        populateTablespaces(connection);
 
         externalTablePropsChanged();
+        conTools.enableButtons(false);
+        colTools.enableButtons(true);
+        centralPanel.setVisible(false);
+    }
 
+    @Override
+    protected void initEdited() {
+
+    }
+
+    @Override
+    public void createObject() {
+        if (!checkFullType())
+            return;
+        String queries = getSQLText();
+        displayExecuteQueryDialog(queries, "^");
+    }
+
+    @Override
+    public String getCreateTitle() {
+        return TITLE;
+    }
+
+    @Override
+    public String getEditTitle() {
+        return TITLE;
+    }
+
+    @Override
+    public String getTypeObject() {
+        return NamedObject.META_TYPES[NamedObject.TABLE];
+    }
+
+    @Override
+    public void setDatabaseObject(Object databaseObject) {
+    }
+
+    @Override
+    public void setParameters(Object[] params) {
+    }
+
+    @Override
+    protected String generateQuery() {
+
+        String tablespace = null;
+        if (tablespacesCombo.getSelectedItem() != null)
+            tablespace = ((NamedObject) tablespacesCombo.getSelectedItem()).getName();
+
+        String externalFile = null;
+        String adapter = null;
+        if (isExternalTable.isSelected()) {
+            externalFile = externalTableFilePathField.getText();
+
+            if (isAdapterNeeded.isSelected())
+                adapter = "CSV";
+        }
+
+        String comment = null;
+        if (!Objects.equals(simpleCommentPanel.getComment(), ""))
+            comment = simpleCommentPanel.getComment().trim();
+
+        return SQLUtils.generateCreateTable(
+                nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
+                false, this instanceof CreateGlobalTemporaryTable, true, true, true,
+                "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
+                externalFile, adapter, (String) sqlSecurityCombo.getSelectedItem(), tablespace, comment);
     }
 
     private void externalTablePropsChanged() {
@@ -469,17 +412,16 @@ public abstract class CreateTableFunctionPanel extends JPanel
         final Object source = event.getSource();
         if (event.getSource() == tablespacesCombo) {
             setSQLText();
+
         } else
-            GUIUtils.startWorker(new Runnable() {
-                public void run() {
-                    try {
-                        setInProcess(true);
-                        if (source == connectionsCombo) {
-                            connectionChanged();
-                        }
-                    } finally {
-                        setInProcess(false);
-                    }
+            GUIUtils.startWorker(() -> {
+                try {
+                    setInProcess(true);
+                    if (source == connectionsCombo)
+                        connectionChanged();
+
+                } finally {
+                    setInProcess(false);
                 }
             });
     }
@@ -497,7 +439,6 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 (DatabaseConnection) connectionsCombo.getSelectedItem();
 
         // reset meta data
-        metaData.setDatabaseConnection(connection);
         tablePanel.setDatabaseConnection(connection);
         columnChangeConnection(connection);
 
@@ -505,7 +446,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
         // reset data types
         try {
-            populateDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+            populateDataTypes(getDatabaseConnection().getDataTypesArray(), getDatabaseConnection().getIntDataTypesArray());
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     bundledString("error.retrieving", bundledString("data-types"), bundledString("selected-connection"), e.getExtendedMessage()),
@@ -568,9 +509,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
     public void setColumnConstraintsArray(ColumnConstraint[] cca, boolean fillCombos) {
         Vector ccv = new Vector(cca.length);
-        for (int i = 0; i < cca.length; i++) {
-            ccv.add(cca[i]);
-        }
+        Collections.addAll(ccv, cca);
         consPanel.setData(ccv, fillCombos);
     }
 
@@ -584,58 +523,25 @@ public abstract class CreateTableFunctionPanel extends JPanel
     public void setInProcess(boolean inProcess) {
     }
 
-    // -----------------------------------------------
-    // --- TableConstraintFunction implementations ---
-    // -----------------------------------------------
-
-    public abstract Vector<String> getHostedSchemasVector();
-
-    public abstract Vector<String> getSchemaTables(String schemaName);
-
-    public abstract Vector<String> getColumnNamesVector(String tableName, String schemaName);
-
     public void resetSQLText() {
         tablePanel.resetSQLText();
         consPanel.resetSQLText();
     }
 
+    @Override
     public void setSQLText() {
-
-        String tablespace = null;
-        if (tablespacesCombo.getSelectedItem() != null)
-            tablespace = ((NamedObject) tablespacesCombo.getSelectedItem()).getName();
-
-        String externalFile = null;
-        String adapter = null;
-        if (isExternalTable.isSelected()) {
-            externalFile = externalTableFilePathField.getText();
-
-            if (isAdapterNeeded.isSelected())
-                adapter = "CSV";
-        }
-
-        String comment = null;
-        if (!Objects.equals(commentField.getTextAreaComponent().getText(), ""))
-            comment = commentField.getTextAreaComponent().getText().trim();
-
-        setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
-                false, temporary, "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
-                externalFile, adapter, null, tablespace, comment));
-
+        setSQLText(generateQuery());
     }
 
     private void setSQLText(final String text) {
-        GUIUtils.invokeLater(new Runnable() {
-            public void run() {
-                sqlText.setSQLText(text);
-            }
-        });
+        GUIUtils.invokeLater(() -> sqlText.setSQLText(text));
     }
 
     public String getSQLText() {
         return sqlText.getSQLText();
     }
 
+    @Override
     public String getTableName() {
         return nameField.getText();
     }
@@ -655,19 +561,18 @@ public abstract class CreateTableFunctionPanel extends JPanel
     }
 
     public void stateChanged(ChangeEvent e) {
-        if (tableTabs.getSelectedIndex() == 1) {
-            tools.enableButtons(false);
+        if (tabbedPane.getSelectedIndex() == 1) {
             checkFullType();
-        } else {
-            tools.enableButtons(true);
         }
+        if (e.getSource() == sqlText)
+            setSQLText();
     }
 
     protected boolean checkFullType() {
         for (int i = 0; i < getTableColumnData().length; i++) {
             if (getTableColumnData()[i].getColumnType() == null) {
                 GUIUtilities.displayErrorMessage(bundledString("error.select-type"));
-                tableTabs.setSelectedIndex(0);
+                tabbedPane.setSelectedIndex(0);
                 return false;
             }
         }
@@ -692,37 +597,37 @@ public abstract class CreateTableFunctionPanel extends JPanel
     */
 
     public ColumnData[] getTableColumnDataAndConstraints() {
-        String tableName = null;
+        String tableName;
         ColumnData[] cda = tablePanel.getTableColumnData();
         ColumnConstraint[] cca = consPanel.getColumnConstraintArray();
 
-        for (int i = 0; i < cda.length; i++) {
+        for (ColumnData columnData : cda) {
 
             // reset the keys
-            cda[i].setPrimaryKey(false);
-            cda[i].setForeignKey(false);
-            cda[i].resetConstraints();
+            columnData.setPrimaryKey(false);
+            columnData.setForeignKey(false);
+            columnData.resetConstraints();
 
-            tableName = cda[i].getTableName();
+            tableName = columnData.getTableName();
 
-            String columnName = cda[i].getColumnName();
+            String columnName = columnData.getColumnName();
 
-            for (int j = 0; j < cca.length; j++) {
+            for (ColumnConstraint columnConstraint : cca) {
 
-                String constraintColumn = cca[j].getColumn();
+                String constraintColumn = columnConstraint.getColumn();
 
                 if (constraintColumn != null
                         && constraintColumn.equalsIgnoreCase(columnName)) {
 
-                    if (cca[j].isPrimaryKey()) {
-                        cda[i].setPrimaryKey(true);
-                    } else if (cca[j].isForeignKey()) {
-                        cda[i].setForeignKey(true);
+                    if (columnConstraint.isPrimaryKey()) {
+                        columnData.setPrimaryKey(true);
+                    } else if (columnConstraint.isForeignKey()) {
+                        columnData.setForeignKey(true);
                     }
 
-                    cca[j].setTable(tableName);
-                    cca[j].setNewConstraint(true);
-                    cda[i].addConstraint(cca[j]);
+                    columnConstraint.setTable(tableName);
+                    columnConstraint.setNewConstraint(true);
+                    columnData.addConstraint(columnConstraint);
                 }
 
             }
@@ -736,6 +641,16 @@ public abstract class CreateTableFunctionPanel extends JPanel
     public void columnValuesChanging() {
     }
 
+    @Override
+    public List<String> getTables() {
+        return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getTableNames();
+    }
+
+    @Override
+    public List<String> getColumns(String table) {
+        return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getColumnNames(table);
+    }
+
     public ColumnData[] getTableColumnData() {
         return tablePanel.getTableColumnData();
     }
@@ -745,23 +660,23 @@ public abstract class CreateTableFunctionPanel extends JPanel
     // -----------------------------------------------
 
     public void moveColumnUp() {
-        int index = tableTabs.getSelectedIndex();
+        int index = tabbedPane.getSelectedIndex();
         if (index == 0) {
             tablePanel.moveColumnUp();
         }
     }
 
     public void moveColumnDown() {
-        int index = tableTabs.getSelectedIndex();
+        int index = tabbedPane.getSelectedIndex();
         if (index == 0) {
             tablePanel.moveColumnDown();
         }
     }
 
     public void deleteRow() {
-        if (tableTabs.getSelectedIndex() == 0) {
+        if (tabbedPane.getSelectedIndex() == 0) {
             tablePanel.deleteRow();
-        } else if (tableTabs.getSelectedIndex() == 1) {
+        } else if (tabbedPane.getSelectedIndex() == 1) {
             consPanel.deleteSelectedRow();
         }
     }
@@ -771,9 +686,9 @@ public abstract class CreateTableFunctionPanel extends JPanel
     }
 
     public void insertAfter() {
-        if (tableTabs.getSelectedIndex() == 0) {
+        if (tabbedPane.getSelectedIndex() == 0) {
             tablePanel.insertAfter();
-        } else if (tableTabs.getSelectedIndex() == 1) {
+        } else if (tabbedPane.getSelectedIndex() == 1) {
             consPanel.insertRowAfter();
         }
     }
@@ -796,20 +711,16 @@ public abstract class CreateTableFunctionPanel extends JPanel
         return sqlText;
     }
 
-    protected String bundleString(String key) {
-        return Bundles.get(getClass(), key);
-    }
-
     protected String bundleString(String key, Object... args) {
         return Bundles.get(getClass(), key, args);
     }
 
     private String bundledString(String key) {
-        return Bundles.get(CreateTableFunctionPanel.class, key);
+        return Bundles.get("CreateTableFunctionPanel." + key);
     }
 
     private String bundledString(String key, Object... args) {
-        return Bundles.get(CreateTableFunctionPanel.class, key, args);
+        return Bundles.get("CreateTableFunctionPanel." + key, args);
     }
 
 }

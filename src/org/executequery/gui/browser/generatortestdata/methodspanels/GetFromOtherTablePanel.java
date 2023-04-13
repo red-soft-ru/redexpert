@@ -133,6 +133,6 @@ public class GetFromOtherTablePanel extends AbstractMethodPanel {
     private List<DatabaseColumn> fillCols() {
         NamedObject object = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(executor.getDatabaseConnection()).getDatabaseObject();
         DatabaseHost host = (DatabaseHost) object;
-        return host.getColumns(null, null, (String) tableBox.getSelectedItem());
+        return host.getColumns( (String) tableBox.getSelectedItem());
     }
 }

@@ -7,12 +7,11 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.swing.NumberTextField;
-import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
+import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
 
@@ -23,7 +22,6 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     private NumberTextField startValueText;
     private NumberTextField currentValueText;
     private NumberTextField incrementText;
-    private SimpleTextArea description;
     private DefaultDatabaseSequence generator;
 
     public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog) {
@@ -89,34 +87,30 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         incrementText = new NumberTextField();
         incrementText.setValue(1);
 
-        this.description = new SimpleTextArea();
 
         // ----- preparing panel layout -----
 
-        centralPanel.setLayout(new GridBagLayout());
+        centralPanel.setVisible(false);
 
-        GridBagHelper gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 5, 5, 5);
-        gridBagHelper.anchorNorthWest().fillHorizontally();
 
         // ----- components arranging -----
 
-        if (getDatabaseVersion() >= 3)
-            gridBagHelper.addLabelFieldPair(centralPanel,
+        if (getDatabaseVersion() >= 3) {
+            topGbh.addLabelFieldPair(topPanel,
                     bundleString("start-value"), startValueText,
-                    null, true, true);
+                    null, true, false);
 
+            topGbh.addLabelFieldPair(topPanel,
+                    bundleString("increment"), incrementText,
+                    null, false, true);
+        }
         if (editing)
-            gridBagHelper.addLabelFieldPair(centralPanel,
+            topGbh.addLabelFieldPair(topPanel,
                     bundleString("current-value"), currentValueText,
                     null, true, true);
 
-        if (getDatabaseVersion() >= 3)
-            gridBagHelper.addLabelFieldPair(centralPanel,
-                    bundleString("increment"), incrementText,
-                    null, true, true);
 
-        tabbedPane.add(bundleStaticString("description"), description);
+        addCommentTab(null);
 
     }
 
@@ -130,7 +124,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         String query = "";
         try {
             query = SQLUtils.generateCreateSequence(nameField.getText(), Long.parseLong(startValueText.getStringValue()),
-                    Long.parseLong(incrementText.getStringValue()), description.getTextAreaComponent().getText(), getVersion(), editing);
+                    Long.parseLong(incrementText.getStringValue()), simpleCommentPanel.getComment(), getVersion(), editing);
 
         } catch (SQLException e) {
             GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
@@ -155,6 +149,6 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         currentValueText.setLongValue(generator.getSequenceCurrentValue());
         if (getDatabaseVersion() >= 3)
             incrementText.setValue(generator.getIncrement());
-        description.getTextAreaComponent().setText(generator.getRemarks());
+        simpleCommentPanel.setDatabaseObject(generator);
     }
 }

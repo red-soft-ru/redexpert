@@ -69,7 +69,7 @@ public class ImportDelimitedWorker extends AbstractImportExportWorker {
 
     private void transferData() {
         reset();
-        worker = new SwingWorker() {
+        worker = new SwingWorker("ImportDelimited") {
             public Object construct() {
                 return doWork();
             }

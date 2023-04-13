@@ -32,7 +32,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.EnumSet;
 
 public class TablePanel extends JPanel {
 
@@ -143,7 +142,7 @@ public class TablePanel extends JPanel {
         loadCols();
         dataModel = new ResultSetDataModel(columnsCheckPanel, comboBoxFilterType, comboBoxFilterColumn, txtFldSqlFilter, matchCaseBox);
         table = new JTable(dataModel);
-        tableCounterModel = new TableCounterModel(table);
+        tableCounterModel = new TableCounterModel();
         tableCounter = new JTable(tableCounterModel);
         tableCounter.addMouseListener(new TraceManagerPopupMenu(tableCounter));
         loadWidthCols();
@@ -196,8 +195,8 @@ public class TablePanel extends JPanel {
                 TitledBorder.LEADING, TitledBorder.TOP, null, null));
         filterPanel.setLayout(new GridBagLayout());
 
-        comboBoxFilterType
-                .setModel(new DefaultComboBoxModel<>(EnumSet.allOf(Filter.FilterType.class).toArray(new Filter.FilterType[0])));
+        comboBoxFilterType.addItem(Filter.FilterType.HIGHLIGHT);
+        comboBoxFilterType.addItem(Filter.FilterType.FILTER);
         comboBoxFilterType.setSelectedItem(Filter.FilterType.HIGHLIGHT);
         comboBoxFilterType.addActionListener(new ActionListener() {
             @Override
@@ -336,6 +335,11 @@ public class TablePanel extends JPanel {
 
     public void clearAll() {
         dataModel.clearAll();
+    }
+
+    public void cleanup() {
+        txtFieldRawSql.cleanup();
+        txtFieldRawSql = null;
     }
 
 

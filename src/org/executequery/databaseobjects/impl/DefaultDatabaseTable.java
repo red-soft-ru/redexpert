@@ -21,17 +21,16 @@
 package org.executequery.databaseobjects.impl;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.resultset.RecordDataItem;
-import org.executequery.log.Log;
-import org.executequery.sql.SQLFormatter;
-import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.TokenizingFormatter;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.Named;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -42,783 +41,627 @@ import java.util.*;
  * @author Takis Diakoumis
  */
 public class DefaultDatabaseTable extends AbstractTableObject implements DatabaseTable {
+    protected static final String EXTERNAL_FILE = "EXTERNAL_FILE";
+    protected static final String ADAPTER = "ADAPTER";
+    protected static final String TABLESPACE = "TABLESPACE";
+    protected static final String CONSTRAINT_NAME = "CONSTRAINT_NAME";
+    protected static final String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+    protected static final String TRIGGER_SOURCE = "TRIGGER_SOURCE";
 
-  /**
-   * the table columns
-   */
+    static final long serialVersionUID = -963831243178078154L;
 
-  /**
-   * the table columns exported
-   */
-  private List<DatabaseColumn> exportedColumns;
+    List<ColumnConstraint> constraints;
+    TokenizingFormatter formatter;
 
-  /**
-   * the table indexed columns
-   */
-  private List<DefaultDatabaseIndex> indexes;
+    /** the table columns exported */
+    private List<DatabaseColumn> exportedColumns;
 
-  /**
-   * the user modified SQL text for changes
-   */
-  private String modifiedSQLText;
+    /** the table indexed columns */
+    private List<DefaultDatabaseIndex> indexes;
 
-  private transient TableDataChangeWorker tableDataChangeExecutor;
+    /** the user modified SQL text for changes */
+    private String modifiedSQLText;
+    private transient TableDataChangeWorker tableDataChangeExecutor;
 
-  /**
-   * Creates a new instance of DatabaseTable
-   */
+    private String externalFile;
+    private String tablespace;
+    private List<DefaultDatabaseTrigger> triggers;
+    private String adapter;
 
+    protected List<ColumnData> listCD;
+    protected List<org.executequery.gui.browser.ColumnConstraint> listCC;
+    protected List<ColumnConstraint> checkConstraints;
 
-  private String externalFile;
-
-  private String tablespace;
-
-  public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
-
-    this(object.getHost(), metaDataKey);
-
-    setCatalogName(object.getCatalogName());
-    setSchemaName(object.getSchemaName());
-    setName(object.getName());
-    setRemarks(object.getRemarks());
-    if (object instanceof DefaultDatabaseObject) {
-        DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
-        setTypeTree(ddo.getTypeTree());
-        setDependObject(ddo.getDependObject());
-      } else {
-        typeTree = TreePanel.DEFAULT;
-        setDependObject(null);
-      }
+    /**
+     * Creates a new instance of DatabaseTable
+     */
+    public DefaultDatabaseTable(DatabaseHost host) {
+        super(host, "TABLE");
     }
 
-  /**
-   * Creates a new instance of DatabaseTable
-   */
-  public DefaultDatabaseTable(DatabaseHost host) {
-    super(host, "TABLE");
-  }
-
+    /**
+     * Creates a new instance of DatabaseTable
+     */
     public DefaultDatabaseTable(DatabaseHost host, String metaDataKey) {
         super(host, metaDataKey);
     }
 
-  /**
-   * Propagates the call to getColumns().
-   */
+    /**
+     * Creates a new instance of DatabaseTable
+     */
+    public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
+
+        this(object.getHost(), metaDataKey);
+        setName(object.getName());
 
 
-  @Override
-  public boolean allowsChildren() {
-    return true;
-  }
+        if (object instanceof DefaultDatabaseObject) {
+            DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
+            setTypeTree(ddo.getTypeTree());
+            setDependObject(ddo.getDependObject());
+            metaTagParent = ddo.getMetaTagParent();
 
-  public List<String> getColumnNames() {
-    List<String> names = new ArrayList<>();
-    for (DatabaseColumn column : getColumns()) {
-      names.add(column.getName());
-    }
-    return names;
-  }
-
-  public List<DatabaseColumn> getExportedKeys() throws DataSourceException {
-
-    if (!isMarkedForReload() && exportedColumns != null) {
-
-      return exportedColumns;
+        } else {
+            typeTree = TreePanel.DEFAULT;
+            setDependObject(null);
+        }
     }
 
-    if (exportedColumns != null) {
+    /**
+     * Creates a new instance of DatabaseTable
+     */
+    public DefaultDatabaseTable(DatabaseObject object) {
 
-      exportedColumns.clear();
-      exportedColumns = null;
+        this(object.getHost());
+        setName(object.getName());
+
+
+        if (object instanceof DefaultDatabaseObject) {
+            DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
+            setTypeTree(ddo.getTypeTree());
+            setDependObject(ddo.getDependObject());
+            metaTagParent = ddo.getMetaTagParent();
+
+        } else {
+            typeTree = TreePanel.DEFAULT;
+            setDependObject(null);
+        }
     }
 
-    DatabaseHost host = getHost();
-    if (host != null) {
-
-      exportedColumns = host.getExportedKeys(getCatalogName(),
-          getSchemaName(),
-          getName());
+    @Override
+    public boolean allowsChildren() {
+        return true;
     }
 
-    return exportedColumns;
-  }
+    public List<String> getColumnNames() {
 
-  public boolean hasReferenceTo(DatabaseTable anotherTable) {
+        List<String> names = new ArrayList<>();
+        for (DatabaseColumn column : getColumns())
+            names.add(column.getName());
 
+        return names;
+    }
 
+    @Override
+    public List<DatabaseColumn> getExportedKeys() throws DataSourceException {
 
-    List<ColumnConstraint> constraints = getConstraints();
+        if (!isMarkedForReload() && exportedColumns != null)
+            return exportedColumns;
 
-    String anotherTableName = anotherTable.getName();
-
-    for (ColumnConstraint constraint : constraints) {
-
-      if (constraint.isForeignKey()) {
-
-        if (constraint.getReferencedTable().equals(anotherTableName)) {
-
-          return true;
+        if (exportedColumns != null) {
+            exportedColumns.clear();
+            exportedColumns = null;
         }
 
-      }
+        DatabaseHost host = getHost();
+        if (host != null)
+            exportedColumns = host.getExportedKeys(getCatalogName(), getSchemaName(), getName());
 
+        return exportedColumns;
     }
 
-    return false;
+    @Override
+    public boolean hasReferenceTo(DatabaseTable anotherTable) {
 
-  }
+        List<ColumnConstraint> constraints = getConstraints();
+        String anotherTableName = anotherTable.getName();
 
-  /**
-   * Returns the column count of this table.
-   *
-   * @return the column count
-   */
-  public int getColumnCount() throws DataSourceException {
+        for (ColumnConstraint constraint : constraints)
+            if (constraint.isForeignKey())
+                if (constraint.getReferencedTable().equals(anotherTableName))
+                    return true;
 
-    return getColumns().size();
-  }
+        return false;
+    }
 
-  private List<ColumnConstraint> databaseConstraintsListWithSize(int size) {
+    /**
+     * Returns the column count of this table.
+     *
+     * @return the column count
+     */
+    @Override
+    public int getColumnCount() throws DataSourceException {
+        return getColumns().size();
+    }
 
-    return Collections.synchronizedList(new ArrayList<ColumnConstraint>(size));
-  }
+    private List<ColumnConstraint> databaseConstraintsListWithSize(int size) {
+        return Collections.synchronizedList(new ArrayList<>(size));
+    }
 
-  private List<DefaultDatabaseIndex> databaseIndexListWithSize(int size) {
+    private List<DefaultDatabaseIndex> databaseIndexListWithSize(int size) {
+        return Collections.synchronizedList(new ArrayList<>(size));
+    }
 
-    return Collections.synchronizedList(new ArrayList<DefaultDatabaseIndex>(size));
-  }
+    /**
+     * Returns the constraints of this table.
+     *
+     * @return the column constraints
+     */
+    @Override
+    public List<ColumnConstraint> getConstraints() throws DataSourceException {
 
-  List<ColumnConstraint> constraints;
+        if (constraints == null) {
+            if (getColumns() != null) {
 
-  /**
-   * Returns the columns of this table.
-   *
-   * @return the columns
-   */
-  public List<ColumnConstraint> getConstraints() throws DataSourceException {
+                constraints = new ArrayList<>();
 
-    if (constraints == null) {
+                for (DatabaseColumn i : columns) {
 
-      if (getColumns() != null) {
+                    DatabaseTableColumn column = (DatabaseTableColumn) i;
+                    if (column.hasConstraints()) {
 
-        constraints = new ArrayList<ColumnConstraint>();
+                        List<ColumnConstraint> columnConstraints = column.getConstraints();
+                        for (ColumnConstraint constraint : columnConstraints) {
 
+                            String name = constraint.getName();
+                            if (isContainsTheSameObjectByName(name)) {
+
+                                getConstraintByName(name).addColumnToDisplayList(constraint.getColumn());
+                                if (Objects.equals(constraint.getTypeName(), "FOREIGN"))
+                                    getConstraintByName(name).addReferenceColumnToDisplayList(constraint.getColumn());
+
+                            } else
+                                constraints.add(constraint);
+                        }
+                    }
+                }
+
+                if (checkConstraints == null)
+                    getObjectInfo();
+
+                constraints.addAll(checkConstraints);
+                constraints.removeAll(Collections.singleton(null));
+                constraints.sort(Comparator.comparing(Named::getName));
+
+                return constraints;
+
+            } else
+                return databaseConstraintsListWithSize(0);
+        } else
+            return constraints;
+    }
+
+    private boolean isContainsTheSameObjectByName(String name) {
+
+        if (constraints != null)
+            for (ColumnConstraint element : constraints)
+                if (Objects.equals(element.getName(), name))
+                    return true;
+
+        return false;
+    }
+
+    private ColumnConstraint getConstraintByName(String name) {
+
+        ColumnConstraint constraint = null;
+        if (constraints != null)
+            for (ColumnConstraint element : constraints)
+                if (Objects.equals(element.getName(), name))
+                    constraint = element;
+
+        return constraint;
+    }
+
+    /**
+     * Returns the indexes of this table.
+     *
+     * @return the indexes
+     */
+    @Override
+    public List<DefaultDatabaseIndex> getIndexes() throws DataSourceException {
+
+        if (!isMarkedForReload() && indexes != null)
+            return indexes;
+
+        ResultSet rs = null;
+        try {
+
+            DatabaseHost _host = getHost();
+            rs = _host.getDatabaseMetaData().getIndexInfo(getCatalogName(), getSchemaName(), getName(), false, true);
+            TableColumnIndex lastIndex = null;
+            indexes = new ArrayList<>();
+            List<TableColumnIndex> tindexes = new ArrayList<>();
+
+            while (rs.next()) {
+                String name = rs.getString(6);
+                if (StringUtils.isBlank(name))
+                    continue;
+
+                if (lastIndex == null || !lastIndex.getName().equals(name)) {
+                    TableColumnIndex index = new TableColumnIndex(name);
+                    index.setNonUnique(rs.getBoolean(4));
+                    index.addIndexedColumn(rs.getString(9));
+                    index.setMetaData(resultSetRowToMap(rs));
+                    lastIndex = index;
+                    tindexes.add(index);
+
+                } else
+                    lastIndex.addIndexedColumn(rs.getString(9));
+            }
+
+            releaseResources(rs, null);
+            DefaultDatabaseMetaTag metaTag =
+                    new DefaultDatabaseMetaTag(getHost(), null, null, META_TYPES[INDEX]);
+
+            for (TableColumnIndex index : tindexes) {
+                DefaultDatabaseIndex index1 = metaTag.getIndexFromName(index.getName());
+                index1.getObjectInfo();
+                indexes.add(index1);
+                if (index1.getExpression() != null) {
+                    index.setIndexedColumns(null);
+                    index.setExpression(index1.getExpression());
+                }
+                index.setConstraint_type(index1.getConstraint_type());
+            }
+
+            return indexes;
+
+        } catch (DataSourceException e) {
+
+            // catch and re-throw here to create
+            // an empty index list, so we don't
+            // keep hitting the same error
+            indexes = databaseIndexListWithSize(0);
+            throw e;
+
+        } catch (SQLException e) {
+
+            // catch and re-throw here to create
+            // an empty index list, so we don't
+            // keep hitting the same error
+            indexes = databaseIndexListWithSize(0);
+            throw new DataSourceException(e);
+
+        } finally {
+            releaseResources(rs, null);
+            setMarkedForReload(false);
+        }
+    }
+
+    @Override
+    public List<DefaultDatabaseTrigger> getTriggers() throws DataSourceException {
+
+        if (!isMarkedForReload() && triggers != null)
+            return triggers;
+
+        triggers = new ArrayList<>();
+        ResultSet rs;
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        String query = "select T.RDB$TRIGGER_NAME,\n" +
+                "T.RDB$RELATION_NAME\n" +
+                "from RDB$TRIGGERS T\n" +
+                "left join RDB$CHECK_CONSTRAINTS C ON C.RDB$TRIGGER_NAME = T.RDB$TRIGGER_NAME\n" +
+                "where ((T.RDB$SYSTEM_FLAG = 0) or (T.RDB$SYSTEM_FLAG is null))\n" +
+                "and (C.RDB$TRIGGER_NAME is NULL)\n" +
+                "and (T.RDB$RELATION_NAME = ?)\n" +
+                "order by  T.RDB$TRIGGER_SEQUENCE, T.RDB$TRIGGER_NAME";
+
+        try {
+
+            PreparedStatement st = querySender.getPreparedStatement(query);
+            st.setString(1, getName());
+            rs = querySender.getResultSet(-1, st).getResultSet();
+
+            while (rs.next()) {
+                String trigName = rs.getString(1);
+                if (trigName != null) {
+                    trigName = trigName.trim();
+                    triggers.add((DefaultDatabaseTrigger) ((DefaultDatabaseHost) getHost()).getDatabaseObjectFromTypeAndName(NamedObject.TRIGGER, trigName));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        } finally {
+            querySender.releaseResources();
+        }
+
+        return triggers;
+    }
+
+    /**
+     * Returns this table's column meta data result set.
+     *
+     * @return the column meta data result set
+     */
+    @Override
+    public ResultSet getColumnMetaData() throws DataSourceException {
+        return getMetaData();
+    }
+
+    /**
+     * Returns the database object type.
+     *
+     * @return the object type
+     */
+    @Override
+    public int getType() {
+        return isSystem() ? SYSTEM_TABLE : TABLE;
+    }
+
+    /**
+     * Returns the metadata key name of this object.
+     *
+     * @return the metadata key name.
+     */
+    @Override
+    public String getMetaDataKey() {
+        return META_TYPES[getType()];
+    }
+
+    /**
+     * Override to clear the columns.
+     */
+    @Override
+    public void reset() {
+        super.reset();
+        modifiedSQLText = null;
+        clearColumns();
+        clearIndexes();
+        clearDataChanges();
+        clearConstraints();
+        clearTriggers();
+    }
+
+    public void clearDefinitionChanges() {
+        modifiedSQLText = null;
+        clearColumns();
+        clearIndexes();
+    }
+
+    public void clearColumns() {
+        if (columns != null) {
+            columns.clear();
+        }
+        columns = null;
+    }
+
+    public void clearConstraints() {
+        if (constraints != null) {
+            constraints.clear();
+        }
+        constraints = null;
+        checkConstraints = null;
+    }
+
+    public void clearIndexes() {
+        if (indexes != null) {
+            indexes.clear();
+        }
+        indexes = null;
+    }
+
+    public void clearTriggers() {
+        if (triggers != null) {
+            triggers.clear();
+        }
+        triggers = null;
+    }
+
+    /**
+     * Reverts any changes made to this table and associated elements.
+     */
+    @Override
+    public void revert() {
+
+        List<DatabaseColumn> newColumns = new ArrayList<>();
         for (DatabaseColumn i : columns) {
 
-          DatabaseTableColumn column = (DatabaseTableColumn) i;
-          if (column.hasConstraints()) {
-
-            List<ColumnConstraint> columnConstraints = column.getConstraints();
-            for (ColumnConstraint constraint : columnConstraints) {
-
-              String name = constraint.getName();
-              if (isContainsTheSameObjectByName(name)) {
-                getConstraintByName(name).addColumnToDisplayList(constraint.getColumn());
-                if (Objects.equals(constraint.getTypeName(), "FOREIGN"))
-                  getConstraintByName(name).addReferenceColumnToDisplayList(constraint.getColumn());
-              } else
-                constraints.add(constraint);
-
-            }
-
-          }
-
+            DatabaseTableColumn column = (DatabaseTableColumn) i;
+            if (!column.isNewColumn())
+                column.revert();
+            else
+                newColumns.add(column);
         }
-        DefaultStatementExecutor executor = new DefaultStatementExecutor(getHost().getDatabaseConnection(), true);
-        SqlStatementResult result = null;
+
+        for (DatabaseColumn column : newColumns)
+            columns.remove(column);
+
+        newColumns.clear();
+        tableDataChanges().clear();
+        modifiedSQLText = null;
+
+    }
+
+    /**
+     * Applies any changes to the database.
+     */
+    @Override
+    public int applyChanges() throws DataSourceException {
+
+        int result = applyTableDefinitionChanges();
+        result += applyTableDataChanges();
+
+        return result;
+    }
+
+    @Override
+    public void cancelChanges() {
+        if (tableDataChangeExecutor != null)
+            tableDataChangeExecutor.cancel();
+        tableDataChangeExecutor = null;
+    }
+
+    public int applyTableDefinitionChanges() throws DataSourceException {
+
+        Statement stmnt = null;
+
         try {
-          String query = "select A.RDB$CONSTRAINT_NAME,\n" +
-                  "A.RDB$CONSTRAINT_TYPE,\n" +
-                  "A.RDB$RELATION_NAME,\n" +
-                  "C.RDB$TRIGGER_SOURCE\n" +
-                  "from RDB$RELATION_CONSTRAINTS A, RDB$CHECK_CONSTRAINTS B, RDB$TRIGGERS C\n" +
-                  "where (A.RDB$CONSTRAINT_TYPE = 'CHECK') and\n" +
-                  "(A.RDB$CONSTRAINT_NAME = B.RDB$CONSTRAINT_NAME) and\n" +
-                  "(B.RDB$TRIGGER_NAME = C.RDB$TRIGGER_NAME) and\n" +
-                  "(C.RDB$TRIGGER_TYPE = 1)\n" +
-                  "and (A.RDB$RELATION_NAME = ?)";
-          PreparedStatement st = executor.getPreparedStatement(query);
-          st.setString(1, getName());
-          result = executor.execute(QueryTypes.SELECT, st);
-          ResultSet rs = result.getResultSet();
-          List<String> names = new ArrayList<>();
-          if (rs != null) {
-            while (rs.next()) {
-              String name = rs.getString(1).trim();
-              if (!names.contains(name)) {
-                ColumnConstraint constraint = new TableColumnConstraint(rs.getString(4));
-                constraint.setName(name);
-                constraint.setTable(this);
-                constraints.add(constraint);
-                names.add(name);
-              }
+
+            String changes = getModifiedSQLText();
+            if (StringUtils.isBlank(changes)) {
+
+                // bail if we're empty here
+                return 1;
             }
-          }
-        } catch (Exception e) {
-          Log.error("Error loading check-constraints:" + (result != null ? result.getErrorMessage() : e.getMessage()), e);
-        } finally {
-          executor.releaseResources();
-        }
-        result = null;
-        try {
-          String query = "SELECT C.RDB$CONSTRAINT_NAME,I.RDB$FIELD_NAME\n" +
-                  "FROM RDB$RELATION_CONSTRAINTS AS C LEFT JOIN RDB$INDEX_SEGMENTS AS I\n" +
-                  "ON C.RDB$INDEX_NAME=I.RDB$INDEX_NAME\n" +
-                  "where C.RDB$RELATION_NAME=? AND C.RDB$CONSTRAINT_TYPE = 'UNIQUE'";
-          PreparedStatement st = executor.getPreparedStatement(query);
-          st.setString(1, getName());
-          result = executor.execute(QueryTypes.SELECT, st);
-          ResultSet rs = result.getResultSet();
-          if (rs != null) {
-            while (rs.next()) {
-              String name = rs.getString(1).trim();
-                ColumnConstraint constraint = new TableColumnConstraint(UNIQUE_KEY);
-              constraint.setName(name);
-              String columnName = rs.getString("RDB$FIELD_NAME").trim();
-              for (DatabaseColumn i : columns) {
-                if (i.getName().trim().contentEquals(columnName))
-                  constraint.setColumn((DatabaseTableColumn) i);
-              }
-              if (isContainsTheSameObjectByName(name))
-                getConstraintByName(name).addColumnToDisplayList(constraint.getColumn());
-              else
-                constraints.add(constraint);
+
+            int result = 0;
+            String[] queries = changes.split(";");
+
+            Connection connection = getHost().getConnection();
+            stmnt = connection.createStatement();
+
+            for (String s : queries) {
+                String query = s.trim();
+                if (StringUtils.isNotBlank(query))
+                    result += stmnt.executeUpdate(query);
             }
-          }
-        } catch (Exception e) {
-          Log.error("Error loading unique-constraints:" + result.getErrorMessage(), e);
+
+            if (!connection.getAutoCommit())
+                connection.commit();
+
+            // set to reset for the next call
+            reset();
+
+            return result;
+
+        } catch (SQLException e) {
+            throw new DataSourceException(e);
+
         } finally {
-          executor.releaseResources();
+            releaseResources(stmnt);
         }
-        constraints.removeAll(Collections.singleton(null));
-        constraints.sort(new Comparator<ColumnConstraint>() {
-          @Override
-          public int compare(ColumnConstraint o1, ColumnConstraint o2) {
-            return o1.getName().compareTo(o2.getName());
-          }
-        });
-        return constraints;
-
-      } else {
-
-        return databaseConstraintsListWithSize(0);
-      }
-    } else return constraints;
-  }
-
-  private boolean isContainsTheSameObjectByName(String name) {
-
-    if (constraints != null) {
-
-      for (ColumnConstraint element : constraints) {
-
-        if (Objects.equals(element.getName(), name))
-          return true;
-      }
-
     }
 
-    return false;
-  }
-
-  private ColumnConstraint getConstraintByName(String name) {
-
-    ColumnConstraint constraint = null;
-    if (constraints != null) {
-
-      for (ColumnConstraint element : constraints) {
-
-        if (Objects.equals(element.getName(), name))
-          constraint = element;
-      }
-
+    @Override
+    public boolean hasTableDefinitionChanges() {
+        return StringUtils.isNotBlank(getModifiedSQLText());
     }
 
-    return constraint;
-  }
+    /**
+     * Indicates whether this table or any of its columns
+     * or constraints have pending modifications to be applied.
+     *
+     * @return true | false
+     */
+    @Override
+    public boolean isAltered() throws DataSourceException {
 
-  /**
-   * Returns the indexes of this table.
-   *
-   * @return the indexes
-   */
-  public List<DefaultDatabaseIndex> getIndexes() throws DataSourceException {
+        if (hasTableDataChanges())
+            return true;
 
-    if (!isMarkedForReload() && indexes != null) {
-
-      return indexes;
-    }
-
-    ResultSet rs = null;
-    try {
-
-      DatabaseHost _host = getHost();
-      rs = _host.getDatabaseMetaData().getIndexInfo(getCatalogName(), getSchemaName(), getName(), false, true);
-      TableColumnIndex lastIndex = null;
-      indexes = new ArrayList<>();
-      List<TableColumnIndex> tindexes = new ArrayList<>();
-      while (rs.next()) {
-        String name = rs.getString(6);
-        if (StringUtils.isBlank(name)) {
-
-          continue;
-        }
-        if (lastIndex == null || !lastIndex.getName().equals(name)) {
-          TableColumnIndex index = new TableColumnIndex(name);
-          index.setNonUnique(rs.getBoolean(4));
-          index.addIndexedColumn(rs.getString(9));
-          index.setMetaData(resultSetRowToMap(rs));
-          lastIndex = index;
-          tindexes.add(index);
-        } else {
-          lastIndex.addIndexedColumn(rs.getString(9));
-        }
-      }
-      releaseResources(rs, null);
-      DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(getHost(),null,null,META_TYPES[INDEX]);
-      for (TableColumnIndex index : tindexes)
-      {
-        DefaultDatabaseIndex index1 = metaTag.getIndexFromName(index.getName());
-        index1.loadColumns();
-        indexes.add(index1);
-        if(index1.getExpression()!=null)
-        {
-          index.setIndexedColumns(null);
-          index.setExpression(index1.getExpression());
-        }
-        index.setConstraint_type(index1.getConstraint_type());
-      }
-
-      return indexes;
-
-    } catch (DataSourceException e) {
-
-      // catch and re-throw here to create
-      // an empty index list so we don't
-      // keep hitting the same error
-      indexes = databaseIndexListWithSize(0);
-      throw e;
-
-    } catch (SQLException e) {
-
-      // catch and re-throw here to create
-      // an empty index list so we don't
-      // keep hitting the same error
-      indexes = databaseIndexListWithSize(0);
-      throw new DataSourceException(e);
-
-    } finally {
-
-      releaseResources(rs, null);
-      setMarkedForReload(false);
-    }
-  }
-
-  private List<DefaultDatabaseTrigger> triggers;
-
-  @Override
-  public List<DefaultDatabaseTrigger> getTriggers() throws DataSourceException {
-    if (!isMarkedForReload() && triggers != null) {
-      return triggers;
-    }
-    triggers = new ArrayList<>();
-    ResultSet rs = null;
-    DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-    String query = "select T.RDB$TRIGGER_NAME,\n" +
-            "T.RDB$RELATION_NAME\n" +
-            "from RDB$TRIGGERS T\n" +
-            "left join RDB$CHECK_CONSTRAINTS C ON C.RDB$TRIGGER_NAME = T.RDB$TRIGGER_NAME\n" +
-            "where ((T.RDB$SYSTEM_FLAG = 0) or (T.RDB$SYSTEM_FLAG is null))\n" +
-            "and (C.RDB$TRIGGER_NAME is NULL)\n" +
-            "and (T.RDB$RELATION_NAME = ?)\n" +
-            "order by  T.RDB$TRIGGER_SEQUENCE, T.RDB$TRIGGER_NAME";
-    try {
-      PreparedStatement st = querySender.getPreparedStatement(query);
-      st.setString(1, getName());
-      rs = querySender.getResultSet(-1, st).getResultSet();
-      while (rs.next()) {
-        String trigName = rs.getString(1);
-        if (trigName != null) {
-          trigName = trigName.trim();
-          triggers.add((DefaultDatabaseTrigger) ((DefaultDatabaseHost) getHost()).getDatabaseObjectFromTypeAndName(NamedObject.TRIGGER, trigName));
-        }
-      }
-
-    } catch (SQLException e) {
-      e.printStackTrace();
-    } finally {
-      querySender.releaseResources();
-    }
-    return triggers;
-  }
-
-  /**
-   * Returns this table's column meta data result set.
-   *
-   * @return the column meta data result set
-   */
-  public ResultSet getColumnMetaData() throws DataSourceException {
-
-    return getMetaData();
-  }
-
-  /**
-   * Returns the database object type.
-   *
-   * @return the object type
-   */
-  public int getType() {
-    if (isSystem()) {
-      return SYSTEM_TABLE;
-    } else return TABLE;
-  }
-
-  /**
-   * Returns the meta data key name of this object.
-   *
-   * @return the meta data key name.
-   */
-  public String getMetaDataKey() {
-    return META_TYPES[getType()];
-  }
-
-  /**
-   * Override to clear the columns.
-   */
-  public void reset() {
-    super.reset();
-    modifiedSQLText = null;
-    clearColumns();
-    clearIndexes();
-    clearDataChanges();
-    clearConstraints();
-    clearTriggers();
-  }
-
-  public void clearDefinitionChanges() {
-    modifiedSQLText = null;
-    clearColumns();
-    clearIndexes();
-  }
-
-
-  public void clearColumns() {
-    if (columns != null) {
-      columns.clear();
-    }
-    columns = null;
-  }
-
-  public void clearConstraints() {
-    if (constraints != null) {
-      constraints.clear();
-    }
-    constraints = null;
-  }
-
-  public void clearIndexes() {
-    if (indexes != null) {
-      indexes.clear();
-    }
-    indexes = null;
-  }
-
-  public void clearTriggers() {
-    if (triggers != null) {
-      triggers.clear();
-    }
-    triggers = null;
-  }
-
-  /**
-   * Reverts any changes made to this table and associated elements.
-   */
-  public void revert() {
-
-    List<DatabaseColumn> newColumns = new ArrayList<DatabaseColumn>();
-    for (DatabaseColumn i : columns) {
-
-      DatabaseTableColumn column = (DatabaseTableColumn) i;
-
-      if (!column.isNewColumn()) {
-
-        column.revert();
-
-      } else {
-
-        newColumns.add(column);
-      }
-
-    }
-
-    for (DatabaseColumn column : newColumns) {
-
-      columns.remove(column);
-    }
-
-    newColumns.clear();
-    tableDataChanges().clear();
-    modifiedSQLText = null;
-  }
-
-  /**
-   * Applies any changes to the database.
-   */
-  public int applyChanges() throws DataSourceException {
-
-    int result = applyTableDefinitionChanges();
-    result += applyTableDataChanges();
-
-    return result;
-  }
-
-  public void cancelChanges() {
-
-    if (tableDataChangeExecutor != null) {
-
-      tableDataChangeExecutor.cancel();
-    }
-    tableDataChangeExecutor = null;
-  }
-
-  public int applyTableDefinitionChanges() throws DataSourceException {
-
-    Statement stmnt = null;
-
-    try {
-
-      String changes = getModifiedSQLText();
-      if (StringUtils.isBlank(changes)) {
-
-        // bail if we're empty here
-
-        return 1;
-      }
-
-      int result = 0;
-      String[] queries = changes.split(";");
-
-      Connection connection = getHost().getConnection();
-      stmnt = connection.createStatement();
-
-      for (int i = 0; i < queries.length; i++) {
-
-        String query = queries[i].trim();
-        if (StringUtils.isNotBlank(query)) {
-
-          result += stmnt.executeUpdate(query);
+        List<DatabaseColumn> _columns = getColumns();
+        if (_columns != null) {
+            for (DatabaseColumn i : _columns) {
+                DatabaseTableColumn column = (DatabaseTableColumn) i;
+                if (column.hasChanges())
+                    return true;
+            }
         }
 
-      }
+        List<ColumnConstraint> constraints = getConstraints();
+        if (constraints != null)
+            for (ColumnConstraint i : constraints)
+                if (i.isNewConstraint() || i.isAltered())
+                    return true;
 
-      if (!connection.getAutoCommit()) {
-
-        connection.commit();
-      }
-
-      // set to reset for the next call
-      reset();
-
-      return result;
-
-    } catch (SQLException e) {
-
-      throw new DataSourceException(e);
-
-    } finally {
-
-      releaseResources(stmnt);
+        return false;
     }
-  }
 
-  public boolean hasTableDefinitionChanges() {
+    /**
+     * Returns the ALTER TABLE statement to modify this constraint.
+     */
+    @Override
+    public String getAlteredSQLText() throws DataSourceException {
 
-    return StringUtils.isNotBlank(getModifiedSQLText());
-  }
+        StringBuilder sb = new StringBuilder();
+        List<DatabaseColumn> _columns = getColumns();
+        List<ColumnConstraint> _constraints = getConstraints();
+        boolean first = true;
 
-  private String adapter;
+        sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(getName()));
+        if (_constraints != null) {
+            for (ColumnConstraint constraint : _constraints) {
+                if (constraint instanceof TableColumnConstraint) {
 
-  public DefaultDatabaseTable(DatabaseObject object) {
-
-    this(object.getHost());
-
-    setCatalogName(object.getCatalogName());
-    setSchemaName(object.getSchemaName());
-    setName(object.getName());
-    setRemarks(object.getRemarks());
-    if (object instanceof DefaultDatabaseObject) {
-      DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
-      setTypeTree(ddo.getTypeTree());
-      setDependObject(ddo.getDependObject());
-    } else {
-      typeTree = TreePanel.DEFAULT;
-      setDependObject(null);
-    }
-  }
-
-  private boolean loadedInfoAboutExternalFile = false;
-  private boolean loadedInfoAboutTablespace = false;
-
-  private void loadInfoAboutExternalFile() {
-    DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-    try {
-      //querySender.setDatabaseConnection(getHost().getDatabaseConnection());
-      String adapter = ", RDB$ADAPTER";
-      if (!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
-        adapter = "";
-      PreparedStatement statement = querySender.getPreparedStatement("select rdb$external_file" + adapter + " from rdb$relations where rdb$relation_name = ?");
-      statement.setString(1, getName());
-      ResultSet rs = querySender.getResultSet(-1, statement).getResultSet();
-      if (rs.next()) {
-        setExternalFile(rs.getString(1));
-        if (!adapter.isEmpty())
-          setAdapter(rs.getString(2));
-      }
-    } catch (SQLException throwables) {
-      throwables.printStackTrace();
-    } finally {
-      querySender.releaseResources();
-      loadedInfoAboutExternalFile = true;
-    }
-  }
-
-  private void loadInfoAboutTablespace() {
-    DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-    try {
-      if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase") && getHost().getDatabaseMajorVersion() >= 4) {
-        PreparedStatement statement = querySender.getPreparedStatement("select rdb$tablespace_name from rdb$relations where rdb$relation_name = ?");
-        statement.setString(1, getName());
-        ResultSet rs = querySender.getResultSet(-1, statement).getResultSet();
-        if (rs.next()) {
-          setTablespace(rs.getString(1));
+                    TableColumnConstraint dtc = (TableColumnConstraint) constraint;
+                    if (dtc.isMarkedDeleted()) {
+                        if (!first)
+                            sb.append(",");
+                        first = false;
+                        sb.append("\nDROP CONSTRAINT ").append(MiscUtils.getFormattedObject(dtc.getName()));
+                    }
+                }
+            }
         }
 
-      }
-    } catch (SQLException throwables) {
-      throwables.printStackTrace();
-    } finally {
-      querySender.releaseResources();
-      loadedInfoAboutTablespace = true;
-    }
-  }
+        if (_columns != null) {
+            for (DatabaseColumn column : _columns) {
+                if (column instanceof DatabaseTableColumn) {
 
-  @Override
-  public String getExternalFile() {
-    if (!loadedInfoAboutExternalFile)
-      loadInfoAboutExternalFile();
-    return externalFile;
-  }
-
-  public void setExternalFile(String externalFile) {
-    this.externalFile = externalFile;
-  }
-
-  @Override
-  public String getAdapter() {
-    if (!loadedInfoAboutExternalFile)
-      loadInfoAboutExternalFile();
-    return adapter;
-  }
-
-  public void setAdapter(String adapter) {
-    this.adapter = adapter;
-  }
-
-  /**
-   * Indicates whether this table or any of its columns
-   * or constraints have pending modifications to be applied.
-   *
-   * @return true | false
-   */
-  public boolean isAltered() throws DataSourceException {
-
-    if (hasTableDataChanges()) {
-
-      return true;
-    }
-
-    List<DatabaseColumn> _columns = getColumns();
-    if (_columns != null) {
-
-      for (DatabaseColumn i : _columns) {
-
-        DatabaseTableColumn column = (DatabaseTableColumn) i;
-
-        if (column.hasChanges()) {
-
-          return true;
+                    DatabaseTableColumn dtc = (DatabaseTableColumn) column;
+                    if (dtc.isMarkedDeleted()) {
+                        if (!first)
+                            sb.append(",");
+                        first = false;
+                        sb.append("\nDROP ").append(dtc.getNameEscaped());
+                    }
+                }
+            }
         }
 
-      }
+        return first ? "" : sb.toString();
     }
 
-    List<ColumnConstraint> constraints = getConstraints();
-    if (constraints != null) {
+    @Override
+    public String getCreateSQLText() throws DataSourceException {
 
-      for (ColumnConstraint i : constraints) {
+        updateListCD();
+        updateListCC();
 
-        if (i.isNewConstraint() || i.isAltered()) {
-
-          return true;
-        }
-
-      }
-
+        return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, true,
+                true, true, null, getExternalFile(),
+                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
     }
 
-    return false;
-  }
-
-  /**
-   * Returns the ALTER TABLE statement to modify this constraint.
-   */
-  public String getAlteredSQLText() throws DataSourceException {
-
-    StringBuilder sb = new StringBuilder();
-    List<DatabaseColumn> _columns = getColumns();
-    List<ColumnConstraint> _constraints = getConstraints();
-    boolean first=true;
-    sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(getName()));
-    if (_constraints != null) {
-      for(int i=0;i<_constraints.size();i++) {
-        if(_constraints.get(i) instanceof TableColumnConstraint)
-        {
-          TableColumnConstraint dtc=(TableColumnConstraint) _constraints.get(i);
-          if(dtc.isMarkedDeleted()) {
-            if(!first)
-              sb.append(",");
-            first=false;
-            sb.append("\nDROP CONSTRAINT ").append(MiscUtils.getFormattedObject(dtc.getName()));
-          }
-        }
-      }
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("TABLE", getName());
     }
-    if (_columns != null) {
-      for(int i=0;i<_columns.size();i++) {
-        if(_columns.get(i) instanceof DatabaseTableColumn)
-        {
-          DatabaseTableColumn dtc=(DatabaseTableColumn)_columns.get(i);
-          if(dtc.isMarkedDeleted()) {
-            if(!first)
-              sb.append(",");
-            first=false;
-            sb.append("\nDROP ").append(dtc.getNameEscaped());
-          }
-        }
-      }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+
+        updateListCD();
+        updateListCC();
+
+        if (Comparer.isComputedFieldsNeed())
+            listCD.stream().filter(cd -> !MiscUtils.isNull(cd.getComputedBy())).forEach(cd -> cd.setComputedBy(null));
+
+        return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, false,
+                false, Comparer.isCommentsNeed(), null, getExternalFile(),
+                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
     }
-    if(first)
-      return "";
-    return sb.toString();
-  }
 
-  public String getCreateSQLText() throws DataSourceException {
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
+        DefaultDatabaseTable comparingTable = (DefaultDatabaseTable) databaseObject;
+        return SQLUtils.generateAlterTable(this, comparingTable, false,
+                new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed());
+    }
 
-    return getFormatter().format(getCreateSQLText(STYLE_CONSTRAINTS_ALTER));
-  }
-
-  public String getDropSQLText(boolean cascadeConstraints) {
+    public String getDropSQLText(boolean cascadeConstraints) {
 
     /*StatementGenerator statementGenerator = null;
     String databaseProductName = databaseProductName();
@@ -834,588 +677,572 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     return dropStatement;*/
-  return  null;
 
-  }
-
-  public boolean hasForeignKey() {
-
-    List<ColumnConstraint> keys = getForeignKeys();
-    return keys != null && !keys.isEmpty();
-  }
-
-  public boolean hasPrimaryKey() {
-
-    List<ColumnConstraint> keys = getPrimaryKeys();
-    return keys != null && !keys.isEmpty();
-  }
-
-  public List<ColumnConstraint> getPrimaryKeys() {
-
-    List<ColumnConstraint> primaryKeys = new ArrayList<ColumnConstraint>();
-    List<ColumnConstraint> _constraints = getConstraints();
-    for (int i = 0, n = _constraints.size(); i < n; i++) {
-
-      ColumnConstraint columnConstraint = _constraints.get(i);
-      if (columnConstraint.isPrimaryKey()) {
-
-        primaryKeys.add(columnConstraint);
-      }
-
+        return null;
     }
 
-    return primaryKeys;
-  }
-
-  public List<ColumnConstraint> getForeignKeys() {
-
-    List<ColumnConstraint> foreignKeys = new ArrayList<ColumnConstraint>();
-    List<ColumnConstraint> _constraints = getConstraints();
-    for (int i = 0, n = _constraints.size(); i < n; i++) {
-
-      ColumnConstraint columnConstraint = _constraints.get(i);
-      if (columnConstraint.isForeignKey()) {
-
-        foreignKeys.add(columnConstraint);
-      }
-
+    @Override
+    public boolean hasForeignKey() {
+        List<ColumnConstraint> keys = getForeignKeys();
+        return keys != null && !keys.isEmpty();
     }
 
-    return foreignKeys;
-  }
-
-  public List<ColumnConstraint> getUniqueKeys() {
-
-    List<ColumnConstraint> uniqueKeys = new ArrayList<ColumnConstraint>();
-    List<ColumnConstraint> _constraints = getConstraints();
-
-    for (int i = 0, n = _constraints.size(); i < n; i++) {
-
-      ColumnConstraint columnConstraint = _constraints.get(i);
-      if (columnConstraint.isUniqueKey()) {
-
-        uniqueKeys.add(columnConstraint);
-      }
-
+    @Override
+    public boolean hasPrimaryKey() {
+        List<ColumnConstraint> keys = getPrimaryKeys();
+        return keys != null && !keys.isEmpty();
     }
 
-    return uniqueKeys;
-  }
+    @Override
+    public List<ColumnConstraint> getPrimaryKeys() {
 
-  public String getAlterSQLTextForUniqueKeys() {
+        List<ColumnConstraint> primaryKeys = new ArrayList<>();
+        List<ColumnConstraint> _constraints = getConstraints();
+
+        for (ColumnConstraint columnConstraint : _constraints)
+            if (columnConstraint.isPrimaryKey())
+                primaryKeys.add(columnConstraint);
+
+        return primaryKeys;
+    }
+
+    @Override
+    public List<ColumnConstraint> getForeignKeys() {
+
+        List<ColumnConstraint> foreignKeys = new ArrayList<>();
+        List<ColumnConstraint> _constraints = getConstraints();
+
+        for (ColumnConstraint columnConstraint : _constraints)
+            if (columnConstraint.isForeignKey())
+                foreignKeys.add(columnConstraint);
+
+        return foreignKeys;
+    }
+
+    @Override
+    public List<ColumnConstraint> getUniqueKeys() {
+
+        List<ColumnConstraint> uniqueKeys = new ArrayList<>();
+        List<ColumnConstraint> _constraints = getConstraints();
+
+        for (ColumnConstraint columnConstraint : _constraints)
+            if (columnConstraint.isUniqueKey())
+                uniqueKeys.add(columnConstraint);
+
+        return uniqueKeys;
+    }
+
+    @Override
+    public String getAlterSQLTextForUniqueKeys() {
 
     /*StatementGenerator statementGenerator = null;
-
     return statementGenerator.createUniqueKeyChange(databaseProductName(), this);*/
-    return null;
-  }
 
-  public String getAlterSQLTextForForeignKeys() {
+        return null;
+    }
+
+    @Override
+    public String getAlterSQLTextForForeignKeys() {
 
     /*StatementGenerator statementGenerator = null;
     return statementGenerator.createForeignKeyChange(databaseProductName(), this);*/
-    return null;
-  }
 
-  public String getAlterSQLTextForPrimaryKeys() {
+        return null;
+    }
+
+    @Override
+    public String getAlterSQLTextForPrimaryKeys() {
 
     /*StatementGenerator statementGenerator = null;
-
     return statementGenerator.createPrimaryKeyChange(databaseProductName(), this);
      */
-    return  null;
-  }
+        return null;
+    }
 
-  public String getCreateConstraintsSQLText() throws DataSourceException {
+    public String getCreateConstraintsSQLText() throws DataSourceException {
 
     /*StatementGenerator statementGenerator = null;
-
     String databaseProductName = databaseProductName();
-
     return statementGenerator.tableConstraintsAsAlter(databaseProductName, this);*/
-    return null;
-  }
 
-  /**
-   * Returns the CREATE TABLE statement for this database table.
-   * This will be table column (plus data type) definitions only,
-   * this does not include constraint meta data.
-   */
-  public String getCreateSQLText(int style) throws DataSourceException {
-
-    return formatSqlText(generateCreateTableSQLText().replaceAll("\\^",";"));
-
-  }
-
-  private String generateCreateTableSQLText() {
-    List<ColumnData> listCD=new ArrayList<>();
-    for(int i=0;i<getColumnCount();i++)
-    {
-      listCD.add(new ColumnData(getHost().getDatabaseConnection(),getColumns().get(i)));
-    }
-    List<org.executequery.gui.browser.ColumnConstraint> listCC=new ArrayList<>();
-    for(int i=0;i<getConstraints().size();i++)
-    {
-      listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
+        return null;
     }
 
-    return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, null, getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+    /**
+     * Returns the CREATE TABLE statement for this database table.
+     * This will be table column (plus data type) definitions only,
+     * this does not include constraint metadata.
+     */
+    @Override
+    public String getCreateSQLText(int style) throws DataSourceException {
 
+        updateListCD();
+        updateListCC();
+
+        return SQLUtils.generateCreateTable(getName(), listCD, listCC,
+                true, false, true, true, true, null,
+                getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
     }
 
-  private String formatSqlText(String text) {
-
-    return new SQLFormatter(text).format();
-  }
-
-  /**
-   * Returns the CREATE TABLE statement for this database table.
-   * This will be table column (plus data type) definitions only,
-   * this does not include constraint meta data.
-   */
-  public String getCreateSQLTextX(int style) throws DataSourceException {
-
-    StringBuilder sb = new StringBuilder();
-
-    sb.append("CREATE TABLE ");
-    sb.append(getName());
-    sb.append(" (");
-
-    // determine the spaces from the left side to each column name
-    String firstIndent = getSpacesForLength(sb.length());
-
-    // determine the spaces from the column name to the data type
-    int maxLength = 0;
-    for (DatabaseColumn i : columns) {
-      DatabaseTableColumn column = (DatabaseTableColumn) i;
-      maxLength = Math.max(maxLength, column.getName().length());
-    }
-    // add another 5 spaces from the max
-    maxLength += 5;
-
-    int secondIndentLength = 0;
-    for (int i = 0, n = columns.size(); i < n; i++) {
-      DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
-
-      if (i > 0) {
-        sb.append(firstIndent);
-      }
-
-      String columnName = column.getName();
-      sb.append(columnName.toUpperCase());
-
-      secondIndentLength = maxLength - columnName.length();
-      for (int j = 0; j < secondIndentLength; j++) {
-        sb.append(" ");
-      }
-
-      sb.append(column.getFormattedDataType());
-
-      if (StringUtils.isNotBlank(column.getDefaultValue())) {
-        sb.append(" DEFAULT ");
-        sb.append(column.getDefaultValue());
-      }
-
-      if (column.isRequired()) {
-        sb.append(" NOT NULL");
-      }
-
-      if (i < (n - 1)) {
-        sb.append(",\n");
-      }
-
+    protected void updateListCD() {
+        listCD = new ArrayList<>();
+        for (int i = 0; i < getColumnCount(); i++)
+            listCD.add(new ColumnData(getHost().getDatabaseConnection(), getColumns().get(i), false));
     }
 
-    if (style == STYLE_CONSTRAINTS_DEFAULT) {
-      sb.append(",\n");
-      List<ColumnConstraint> constraints = getConstraints();
-      for (int i = 0, n = constraints.size(); i < n; i++) {
-        TableColumnConstraint constraint =
-            (TableColumnConstraint) constraints.get(i);
-        sb.append(firstIndent);
-        sb.append(constraint.getConstraintSQLText());
+    protected void updateListCC() {
+        listCC = new ArrayList<>();
+        for (int i = 0; i < getConstraints().size(); i++)
+            listCC.add(new org.executequery.gui.browser.ColumnConstraint(false, getConstraints().get(i)));
+    }
 
-        if (i < (n - 1)) {
-          sb.append(",\n");
+    /**
+     * Returns the user modified SQL text to apply
+     * any pending changes. If this has not been set (no
+     * changes were made) then a call to getAlteredSQLText()
+     * is made.
+     *
+     * @return the modified SQL
+     */
+    @Override
+    public String getModifiedSQLText() throws DataSourceException {
+        if (modifiedSQLText == null)
+            return getAlteredSQLText();
+        return modifiedSQLText;
+    }
+
+    @Override
+    public void setModifiedSQLText(String modifiedSQLText) {
+        this.modifiedSQLText = modifiedSQLText;
+    }
+
+    @Override
+    public String getInsertSQLText() {
+
+        String fields = "";
+        String values = "";
+
+        try {
+
+            List<DatabaseColumn> columns = getColumns();
+            for (int i = 0, n = columns.size(); i < n; i++) {
+
+                DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
+                fields += column.getNameForQuery();
+                values += ":" + toCamelCase(column.getName());
+
+                if (i < n - 1) {
+                    fields += ", ";
+                    values += ", ";
+                }
+            }
+
+        } catch (DataSourceException e) {
+
+            fields = "_fields_";
+            values = "_values_";
+            e.printStackTrace();
         }
 
-      }
-      sb.append(");\n");
-    } else if (style == STYLE_CONSTRAINTS_ALTER) {
-
-      sb.append(");\n\n");
-      List<ColumnConstraint> constraints = getConstraints();
-
-      for (ColumnConstraint i : constraints) {
-
-        TableColumnConstraint constraint = (TableColumnConstraint) i;
-
-        sb.append(constraint.getCreateSQLText());
-        sb.append("\n");
-      }
-
-    } else {
-
-      // finish off the statement as is
-      sb.append(");\n");
+        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
     }
 
-    return sb.toString();
-  }
+    @Override
+    public String getUpdateSQLText() {
 
-  /**
-   * Returns the user modified SQL text to apply
-   * any pending changes. If this has not been set (no
-   * changes were made) then a call to getAlteredSQLText()
-   * is made.
-   *
-   * @return the modified SQL
-   */
-  public String getModifiedSQLText() throws DataSourceException {
-    if (modifiedSQLText == null) {
-      return getAlteredSQLText();
-    }
-    return modifiedSQLText;
-  }
+        String settings = "";
 
-  public void setModifiedSQLText(String modifiedSQLText) {
-    this.modifiedSQLText = modifiedSQLText;
-  }
+        try {
 
-  public String getInsertSQLText() {
+            List<DatabaseColumn> columns = getColumns();
+            for (int i = 0, n = columns.size(); i < n; i++) {
 
-    String fields = "";
-    String values = "";
+                DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
+                settings += column.getNameForQuery() + " = :" + toCamelCase(column.getName());
 
-    try {
+                if (i < n - 1)
+                    settings += ", ";
+            }
 
-      List<DatabaseColumn> columns = getColumns();
+        } catch (DataSourceException e) {
 
-      for (int i = 0, n = columns.size(); i < n; i++) {
-
-        DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
-
-        fields += column.getNameForQuery();
-        values += ":" + toCamelCase(column.getName());
-
-        if (i < n - 1) {
-
-          fields += ", ";
-          values += ", ";
+            settings = "_oldValue_ = _newValue_";
+            e.printStackTrace();
         }
 
-      }
-
-    } catch (DataSourceException e) {
-
-      fields = "_fields_";
-      values = "_values_";
-      e.printStackTrace();
+        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings));
     }
 
-    return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
+    @Override
+    public String getSelectSQLText() {
 
-  }
+        String fields = "";
 
-  public String getUpdateSQLText() {
+        try {
 
-    String settings = "";
+            List<DatabaseColumn> columns = getColumns();
+            for (int i = 0, n = columns.size(); i < n; i++) {
 
-    try {
+                DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
+                fields += column.getNameForQuery();
 
-      List<DatabaseColumn> columns = getColumns();
+                if (i < n - 1)
+                    fields += ", ";
+            }
 
-      for (int i = 0, n = columns.size(); i < n; i++) {
+        } catch (DataSourceException e) {
 
-        DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
-
-        settings += column.getNameForQuery() + " = :" +
-                toCamelCase(column.getName());
-        if (i < n - 1)
-          settings += ", ";
-
-      }
-
-    } catch (DataSourceException e) {
-
-      settings = "_oldValue_ = _newValue_";
-      e.printStackTrace();
-    }
-
-    return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings));
-
-  }
-
-  public String getSelectSQLText() {
-
-    String fields = "";
-
-    try {
-
-      List<DatabaseColumn> columns = getColumns();
-
-      for (int i = 0, n = columns.size(); i < n; i++) {
-
-        DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
-
-        fields += column.getNameForQuery();
-        if (i < n - 1)
-          fields += ", ";
-
-      }
-
-    } catch (DataSourceException e) {
-
-      fields = "*";
-      e.printStackTrace();
-    }
-
-    return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields));
-
-  }
-
-  TokenizingFormatter formatter;
-
-  protected TokenizingFormatter getFormatter() {
-    if (formatter == null)
-      formatter = new TokenizingFormatter();
-    return formatter;
-  }
-
-  private String getSpacesForLength(int length) {
-    StringBuilder sb = new StringBuilder(length);
-    for (int i = 0; i < length; i++) {
-      sb.append(' ');
-    }
-    return sb.toString();
-  }
-
-  public DatabaseSource getDatabaseSource() {
-
-    if (getParent() != null) {
-
-      return (DatabaseSource) getParent().getParent();
-    }
-
-    return null;
-  }
-
-  public String getParentNameForStatement() {
-
-    if (getParent() != null && getParent().getParent() != null) {
-
-      return getParent().getParent().getName();
-    }
-
-    return null;
-  }
-
-  @Override
-  public boolean hasSQLDefinition() {
-
-    return true;
-  }
-
-  public String prepareStatement(List<String> columns, List<RecordDataItem> changes) {
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
-    for (String column : columns) {
-      sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
-    }
-
-    sb.deleteCharAt(sb.length() - 1);
-    sb.append(" WHERE ");
-
-    boolean applied = false;
-    List<DatabaseColumn> cols = getColumns();
-    for (int i = 0; i < cols.size(); i++) {
-      DatabaseColumn column = cols.get(i);
-      String col = MiscUtils.getFormattedObject(cols.get(i).getName());
-      RecordDataItem rdi = changes.get(i);
-      if (column.isGenerated())
-        rdi.setGenerated(true);
-      else {
-        if (applied) {
-          sb.append(" AND ");
+            fields = "*";
+            e.printStackTrace();
         }
-        if (rdi.isValueNull())
-          sb.append(col).append(" is NULL ");
-        else
-          sb.append(col).append(" = ? ");
-        applied = true;
-      }
+
+        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields));
     }
 
-    sb.deleteCharAt(sb.length() - 1);
-    sb.append("\nORDER BY " + cols.get(0) + " \n");
-    sb.append("ROWS 1");
-    return sb.toString();
-  }
+    protected TokenizingFormatter getFormatter() {
+        if (formatter == null)
+            formatter = new TokenizingFormatter();
+        return formatter;
+    }
 
-  public String prepareStatementDeleting(List<RecordDataItem> changes) {
+    private String getSpacesForLength(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++)
+            sb.append(' ');
+        return sb.toString();
+    }
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("DELETE FROM ").append(getNameWithPrefixForQuery());
-    sb.append(" WHERE ");
+    @Override
+    public DatabaseSource getDatabaseSource() {
+        if (getParent() != null)
+            return (DatabaseSource) getParent().getParent();
+        return null;
+    }
 
-    boolean applied = false;
-    List<DatabaseColumn> cols = getColumns();
-    for (int i = 0; i < cols.size(); i++) {
-      DatabaseColumn column = cols.get(i);
-      String col = MiscUtils.getFormattedObject(cols.get(i).getName());
-      RecordDataItem rdi = changes.get(i);
-      if (column.isGenerated())
-        rdi.setGenerated(true);
-      else {
-        if (applied) {
+    @Override
+    public String getParentNameForStatement() {
+        if (getParent() != null && getParent().getParent() != null)
+            return getParent().getParent().getName();
+        return null;
+    }
 
-          sb.append(" AND ");
+    @Override
+    public boolean hasSQLDefinition() {
+        return true;
+    }
+
+    @Override
+    public String prepareStatement(List<String> columns, List<RecordDataItem> changes) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
+        for (String column : columns)
+            sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
+
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(" WHERE ");
+
+        boolean applied = false;
+        List<DatabaseColumn> cols = getColumns();
+        for (int i = 0; i < cols.size(); i++) {
+
+            DatabaseColumn column = cols.get(i);
+            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
+            RecordDataItem rdi = changes.get(i);
+
+            if (column.isGenerated()) {
+                rdi.setGenerated(true);
+
+            } else {
+
+                if (applied)
+                    sb.append(" AND ");
+                sb.append(col).append(rdi.isValueNull() ? " is NULL " : " = ? ");
+                applied = true;
+            }
         }
-        if (rdi.isValueNull())
-          sb.append(col).append(" is NULL ");
-        else
-          sb.append(col).append(" = ? ");
-        applied = true;
-      }
+
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append("\nORDER BY ").append(cols.get(0)).append(" \n");
+        sb.append("ROWS 1");
+
+        return sb.toString();
     }
 
-    sb.deleteCharAt(sb.length() - 1);
-    sb.append("\nORDER BY " + cols.get(0) + " \n");
-    sb.append("ROWS 1");
-    return sb.toString();
-  }
+    @Override
+    public String prepareStatementDeleting(List<RecordDataItem> changes) {
 
-  public String prepareStatementAdding(List<String> columns, List<RecordDataItem> changes) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("DELETE FROM ").append(getNameWithPrefixForQuery());
+        sb.append(" WHERE ");
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("INSERT INTO ").append(getNameWithPrefixForQuery());
-    String columnsForQuery = " (";
-    String values = " VALUES (";
-    boolean applied = false;
-    List<DatabaseColumn> cols = getColumns();
-    for (int i = 0; i < cols.size(); i++) {
-      DatabaseColumn column = cols.get(i);
-      String col = MiscUtils.getFormattedObject(cols.get(i).getName());
-      RecordDataItem rdi = changes.get(i);
-      if (column.isGenerated() || column.isIdentity() && rdi.isNewValueNull() || column.getDefaultValue() != null && rdi.isNewValueNull())
-        rdi.setGenerated(true);
-      else {
-        if (applied) {
+        boolean applied = false;
+        List<DatabaseColumn> cols = getColumns();
+        for (int i = 0; i < cols.size(); i++) {
 
-          columnsForQuery += " , ";
-          values += " , ";
+            DatabaseColumn column = cols.get(i);
+            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
+            RecordDataItem rdi = changes.get(i);
+
+            if (column.isGenerated()) {
+                rdi.setGenerated(true);
+
+            } else {
+
+                if (applied)
+                    sb.append(" AND ");
+                sb.append(col).append(rdi.isValueNull() ? " is NULL " : " = ? ");
+                applied = true;
+            }
         }
-        columnsForQuery += col;
-        values += "?";
-        applied = true;
-      }
-    }
-    columnsForQuery += ") ";
-    values += ") ";
-    sb.append(columnsForQuery).append(values);
-    return sb.toString();
-  }
 
-  @Override
-  public String prepareStatementWithPK(List<String> columns) {
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append("\nORDER BY ").append(cols.get(0)).append(" \n");
+        sb.append("ROWS 1");
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
-    for (String column : columns) {
-      sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
-    }
-    sb.deleteCharAt(sb.length() - 1);
-    sb.append(" WHERE ");
-    boolean applied = false;
-    for (String primaryKey : getPrimaryKeyColumnNames()) {
-      if (applied) {
-        sb.append(" AND ");
-      }
-      sb.append(MiscUtils.getFormattedObject(primaryKey)).append(" = ? ");
-      applied = true;
-    }
-    sb.deleteCharAt(sb.length() - 1);
-
-    return sb.toString();
-  }
-
-  public String prepareStatementDeletingWithPK() {
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("DELETE FROM ").append(getNameWithPrefixForQuery());
-    sb.append(" WHERE ");
-
-    boolean applied = false;
-    for (String primaryKey : getPrimaryKeyColumnNames()) {
-
-      if (applied) {
-
-        sb.append(" AND ");
-      }
-      sb.append(MiscUtils.getFormattedObject(primaryKey)).append(" = ? ");
-      applied = true;
+        return sb.toString();
     }
 
-    sb.deleteCharAt(sb.length() - 1);
-    return sb.toString();
-  }
+    @Override
+    public String prepareStatementAdding(List<String> columns, List<RecordDataItem> changes) {
 
-  public List<String> getPrimaryKeyColumnNames() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO ").append(getNameWithPrefixForQuery());
+        StringBuilder columnsForQuery = new StringBuilder(" (");
+        StringBuilder values = new StringBuilder(" VALUES (");
 
-    return namesFromConstraints(getPrimaryKeys());
-  }
+        boolean applied = false;
+        List<DatabaseColumn> cols = getColumns();
+        for (int i = 0; i < cols.size(); i++) {
 
-  public List<String> getForeignKeyColumnNames() {
+            DatabaseColumn column = cols.get(i);
+            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
+            RecordDataItem rdi = changes.get(i);
 
-    return namesFromConstraints(getForeignKeys());
-  }
+            if (column.isGenerated() || column.isIdentity()
+                    && rdi.isNewValueNull() || column.getDefaultValue() != null && rdi.isNewValueNull()
+                    || column.getDomainDefaultValue() != null && rdi.isNewValueNull()) {
+                rdi.setGenerated(true);
 
-  private List<String> namesFromConstraints(List<ColumnConstraint> constraints) {
+            } else {
 
-    List<String> names = new ArrayList<String>();
-    for (ColumnConstraint constraint : constraints) {
+                if (applied) {
+                    columnsForQuery.append(" , ");
+                    values.append(" , ");
+                }
+                columnsForQuery.append(col);
+                values.append("?");
+                applied = true;
+            }
+        }
 
-      names.add(constraint.getColumnName());
+        columnsForQuery.append(") ");
+        values.append(") ");
+        sb.append(columnsForQuery).append(values);
+
+        return sb.toString();
     }
 
-    return names;
+    @Override
+    public String prepareStatementWithPK(List<String> columns) {
 
-  }
+        StringBuilder sb = new StringBuilder();
+        sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
+        for (String column : columns)
+            sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(" WHERE ");
 
-  @Override
-  protected String queryForInfo() {
+        boolean applied = false;
+        for (String primaryKey : getPrimaryKeyColumnNames()) {
 
-    String query = "select r.rdb$description\n" +
-            "from rdb$relations r\n" +
-            "where r.rdb$relation_name = '" + getName() + "'";
+            if (applied)
+                sb.append(" AND ");
+            sb.append(MiscUtils.getFormattedObject(primaryKey)).append(" = ? ");
+            applied = true;
+        }
+        sb.deleteCharAt(sb.length() - 1);
 
-    return query;
-  }
-
-  @Override
-  protected void setInfoFromResultSet(ResultSet rs) {
-
-    try {
-      if (rs.next())
-        setRemarks(rs.getString(1));
-    } catch (Exception e) {
-      e.printStackTrace();
+        return sb.toString();
     }
 
-  }
+    @Override
+    public String prepareStatementDeletingWithPK() {
 
-  public String getTablespace() {
-    if (!loadedInfoAboutTablespace)
-      loadInfoAboutTablespace();
-    return tablespace;
-  }
+        StringBuilder sb = new StringBuilder();
+        sb.append("DELETE FROM ").append(getNameWithPrefixForQuery());
+        sb.append(" WHERE ");
 
-  public void setTablespace(String tablespace) {
-    this.tablespace = tablespace;
-  }
+        boolean applied = false;
+        for (String primaryKey : getPrimaryKeyColumnNames()) {
 
-  static final long serialVersionUID = -963831243178078154L;
+            if (applied)
+                sb.append(" AND ");
+            sb.append(MiscUtils.getFormattedObject(primaryKey)).append(" = ? ");
+            applied = true;
+        }
+        sb.deleteCharAt(sb.length() - 1);
+
+        return sb.toString();
+    }
+
+    @Override
+    public List<String> getPrimaryKeyColumnNames() {
+        return namesFromConstraints(getPrimaryKeys());
+    }
+
+    @Override
+    public List<String> getForeignKeyColumnNames() {
+        return namesFromConstraints(getForeignKeys());
+    }
+
+    private List<String> namesFromConstraints(List<ColumnConstraint> constraints) {
+
+        List<String> names = new ArrayList<>();
+        for (ColumnConstraint constraint : constraints)
+            names.add(constraint.getColumnName());
+
+        return names;
+    }
+
+    @Override
+    public String getExternalFile() {
+        checkOnReload(externalFile);
+        return externalFile;
+    }
+
+    public void setExternalFile(String externalFile) {
+        this.externalFile = externalFile;
+    }
+
+    @Override
+    public String getAdapter() {
+        checkOnReload(adapter);
+        return adapter;
+    }
+
+    public void setAdapter(String adapter) {
+        this.adapter = adapter;
+    }
+
+    protected TreeSet<String> conNames;
+
+    @Override
+    protected String getFieldName() {
+        return "RELATION_NAME";
+    }
+
+    @Override
+    protected Table getMainTable() {
+        return Table.createTable("RDB$RELATIONS", "R");
+    }
+
+    @Override
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
+        sb.appendCondition(Condition.createCondition(Field.createField(getMainTable(), "VIEW_BLR"), "IS", "NULL"));
+        if (getDatabaseMajorVersion() >= 2 && !(this instanceof DefaultTemporaryDatabaseTable)) {
+            sb.appendCondition(Condition.createCondition()
+                    .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "RELATION_TYPE"), "IS", "NULL"))
+                    .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "RELATION_TYPE"), "=", "0"))
+                    .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "RELATION_TYPE"), "=", "2"))
+                    .setLogicOperator("OR"));
+        }
+        return sb;
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        sb.setDistinct(true);
+        Table rels = Table.createTable("RDB$RELATIONS", "R");
+        Table relCons = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
+        Table checkCons = Table.createTable("RDB$CHECK_CONSTRAINTS", "CC");
+        Table triggers = Table.createTable("RDB$TRIGGERS", "T");
+
+        Field conName = Field.createField(relCons, CONSTRAINT_NAME);
+        Field conType = Field.createField(relCons, CONSTRAINT_TYPE);
+        Function compareCheck = Function.createFunction("IIF")
+                .appendArgument(conType.getFieldTable() + " <> 'CHECK'")
+                .appendArgument("NULL")
+                .appendArgument(conName.getFieldTable());
+        sb.appendField(getObjectField());
+        sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conName.getAlias()));
+        compareCheck.setArgument(2, conType.getFieldTable());
+        sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conType.getAlias()));
+        sb.appendField(Field.createField(triggers, TRIGGER_SOURCE));
+        sb.appendField(buildSqlSecurityField(rels));
+        sb.appendField(Field.createField(rels, EXTERNAL_FILE));
+        sb.appendField(Field.createField(rels, ADAPTER).setNull(!isRDB()));
+        sb.appendField(Field.createField(rels, TABLESPACE + "_NAME").setAlias(TABLESPACE).
+                setNull(!tablespaceCheck()));
+        sb.appendField(Field.createField(rels, DESCRIPTION));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(getObjectField(), Field.createField(relCons, getObjectField().getAlias())));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
+                Field.createField(triggers, "TRIGGER_NAME")));
+
+        sb.appendCondition(Condition.createCondition()
+                .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "=", "1"))
+                .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "IS", "NULL"))
+                .setLogicOperator("OR"));
+        sb.setOrdering("1");
+
+        return sb;
+    }
+
+    protected void addingConstraint(ResultSet rs) throws SQLException {
+        String conType = rs.getString(CONSTRAINT_TYPE);
+        if (conType != null) {
+            String name = rs.getString(CONSTRAINT_NAME).trim();
+            if (!conNames.contains(name)) {
+                ColumnConstraint constraint = new TableColumnConstraint(rs.getString(TRIGGER_SOURCE));
+                constraint.setName(name);
+                constraint.setTable(this);
+                checkConstraints.add(constraint);
+                conNames.add(name);
+            }
+        }
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        if (first) {
+            setRemarks(getFromResultSet(rs, DESCRIPTION));
+            setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+            setExternalFile(getFromResultSet(rs, EXTERNAL_FILE));
+            setAdapter(getFromResultSet(rs, ADAPTER));
+            setTablespace(getFromResultSet(rs, TABLESPACE));
+        }
+        addingConstraint(rs);
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+        checkConstraints = new ArrayList<>();
+        conNames = new TreeSet<>();
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return true;
+    }
+
+
+    public String getTablespace() {
+        checkOnReload(tablespace);
+        return tablespace;
+    }
+
+    public void setTablespace(String tablespace) {
+        this.tablespace = tablespace;
+    }
 
 }
 

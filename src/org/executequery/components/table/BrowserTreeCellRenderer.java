@@ -224,6 +224,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.TABLESPACE_IMAGE));
                     break;
                 }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("job") == 0) {
+                    setIcon(icons.get(BrowserConstants.JOB_IMAGE));
+                    break;
+                }
                 if (databaseObject.getMetaDataKey().compareToIgnoreCase("exception") == 0) {
                     setIcon(icons.get(BrowserConstants.EXCEPTION_IMAGE));
                     break;
@@ -346,6 +350,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
             case NamedObject.TABLESPACE:
                 setIcon(icons.get(BrowserConstants.TABLESPACE_IMAGE));
+                break;
+
+            case NamedObject.JOB:
+                setIcon(icons.get(BrowserConstants.JOB_IMAGE));
                 break;
 
 

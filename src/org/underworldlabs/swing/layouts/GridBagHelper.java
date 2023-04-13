@@ -322,52 +322,53 @@ public class GridBagHelper {
         return defaultConstraints;
     }
 
-    public void addLabelFieldPair(JPanel panel, String label,
+    public void addLabelFieldPair(Container panel, String label,
                                   JComponent field, String toolTip) {
         addLabelFieldPair(panel, label, field, toolTip, true);
     }
 
-    public void addLabelFieldPair(JPanel panel, String label,
+    public void addLabelFieldPair(Container
+                                          panel, String label,
                                   JComponent field, String toolTip, boolean newLine) {
         addLabelFieldPair(panel, label, field, toolTip, newLine, true);
     }
 
-    public void addLabelFieldPair(JPanel panel, String label,
+    public void addLabelFieldPair(Container panel, String label,
                                   JComponent field, String toolTip, boolean newLine, boolean spanX) {
         addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, 1);
     }
 
-    public void addLabelFieldPair(JPanel panel, String label,
+    public void addLabelFieldPair(Container panel, String label,
                                   JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth) {
         addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, fieldWidth, 10);
     }
 
-    public void addLabelFieldPair(JPanel panel, String label,
+    public void addLabelFieldPair(Container panel, String label,
                                   JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth, int leftGap) {
         addLabelFieldPair(panel, new JLabel(label), field, toolTip, newLine, spanX, fieldWidth, leftGap);
     }
 
-    public void addLabelFieldPair(JPanel panel, JComponent label,
+    public void addLabelFieldPair(Container panel, JComponent label,
                                   JComponent field, String toolTip) {
         addLabelFieldPair(panel, label, field, toolTip, true);
     }
 
-    public void addLabelFieldPair(JPanel panel, JComponent label,
+    public void addLabelFieldPair(Container panel, JComponent label,
                                   JComponent field, String toolTip, boolean newLine) {
         addLabelFieldPair(panel, label, field, toolTip, newLine, true);
     }
 
-    public void addLabelFieldPair(JPanel panel, JComponent label,
+    public void addLabelFieldPair(Container panel, JComponent label,
                                   JComponent field, String toolTip, boolean newLine, boolean spanX) {
         addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, 1);
     }
 
-    public void addLabelFieldPair(JPanel panel, JComponent label,
+    public void addLabelFieldPair(Container panel, JComponent label,
                                   JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth) {
         addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, fieldWidth, 10);
     }
 
-    public void addLabelFieldPair(JPanel panel, JComponent label,
+    public void addLabelFieldPair(Container panel, JComponent label,
                                   JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth, int leftGap) {
         if (newLine)
             nextRowFirstCol();

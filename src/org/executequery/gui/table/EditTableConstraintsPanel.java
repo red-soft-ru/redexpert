@@ -49,17 +49,12 @@ public class EditTableConstraintsPanel extends TableConstraintsPanel {
     /**
      * The table creator object - parent to this
      */
-    private TableConstraintFunction creator;
+    private final TableConstraintFunction creator;
 
     /**
      * The buffer off all SQL generated
      */
-    private StringBuffer sqlBuffer;
-
-    /**
-     * The hosted schemas for the connection
-     */
-    private Vector hostedSchemas;
+    private final StringBuffer sqlBuffer;
 
     /**
      * The original constraints
@@ -69,7 +64,7 @@ public class EditTableConstraintsPanel extends TableConstraintsPanel {
     /**
      * Holds temporary SQL text during modifications
      */
-    private Hashtable tempSqlText;
+    private final Hashtable tempSqlText;
 
     public EditTableConstraintsPanel(TableConstraintFunction creator) {
         super();
@@ -107,23 +102,13 @@ public class EditTableConstraintsPanel extends TableConstraintsPanel {
                 else */
                 if (ColumnConstraint.FOREIGN.equals(value)) {
 
-                    if (hostedSchemas == null) {
-                        hostedSchemas = creator.getHostedSchemasVector();
-                    }
-                    int schemaSize = hostedSchemas.size();
 
                     // this means that cretor objects with null
                     // schema lists must generate the table values
                     // from elsewhere
-                    if (schemaSize == 0) {
-                        setCellEditor(5, new ComboBoxCellEditor(creator.getSchemaTables(value)));
-                        return;
-                    }
 
-                    String[] schemas = new String[schemaSize];
-                    for (int i = 0, k = hostedSchemas.size(); i < k; i++) {
-                        schemas[i] = (String) hostedSchemas.elementAt(i);
-                    }
+                    //setCellEditor(5, new ComboBoxCellEditor(creator.getSchemaTables(value)));
+                    return;
 
                     //setCellEditor(4, new ComboBoxCellEditor(schemas));
 
@@ -139,12 +124,12 @@ public class EditTableConstraintsPanel extends TableConstraintsPanel {
                 if (value == null || value.length() == 0) {
                     return;
                 }
-                setCellEditor(5, new ComboBoxCellEditor(creator.getSchemaTables(value)));
+                //setCellEditor(5, new ComboBoxCellEditor(creator.getSchemaTables(value)));
                 break;
 
             case 5:
-                setCellEditor(6, new ComboBoxCellEditor(
-                        creator.getColumnNamesVector(value, cc.getRefSchema())));
+                //setCellEditor(6, new ComboBoxCellEditor(
+                //creator.getColumnNamesVector(value, cc.getRefSchema())));
                 break;
 
             case 6:

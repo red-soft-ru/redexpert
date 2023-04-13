@@ -25,9 +25,15 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,7 +78,6 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         if (metaTagParent.getSchema() != null) {
             setSchemaName(metaTagParent.getSchema().getName());
         }
-
 
     }
 

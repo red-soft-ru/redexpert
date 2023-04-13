@@ -64,7 +64,7 @@ public class PrintPreviewCommand extends AbstractBaseCommand {
                 return;
             }
 
-            SwingWorker worker = new SwingWorker() {
+            SwingWorker worker = new SwingWorker("PrintPreview") {
                 public Object construct() {
 
                     return showPreview();

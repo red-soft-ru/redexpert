@@ -298,7 +298,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
     }
 
     public void cleanup() {
-
+        sqlText.cleanup();
         combosGroup.close();
 
         if (statusBar != null) {
@@ -370,7 +370,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
 
                 enableButtons(false, true);
 
-                swingWorker = new SwingWorker() {
+                swingWorker = new SwingWorker("ExportResultSet") {
                     public Object construct() {
 
                         executing = true;

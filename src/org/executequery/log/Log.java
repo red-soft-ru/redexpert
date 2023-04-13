@@ -194,6 +194,23 @@ public final class Log {
         log.error(message);
     }
 
+    public static final String DEFAULT_MESSAGE = "stack trace:";
+
+    public static void printStackTrace(String message) {
+        info(message);
+        int i = 2;
+        if (message == DEFAULT_MESSAGE)
+            i = 3;
+        StackTraceElement[] elems = Thread.currentThread().getStackTrace();
+        for (; i < elems.length; i++)
+            info("\tat " + elems[i]);
+    }
+
+    public static void printStackTrace() {
+        printStackTrace(DEFAULT_MESSAGE);
+    }
+
+
 }
 
 

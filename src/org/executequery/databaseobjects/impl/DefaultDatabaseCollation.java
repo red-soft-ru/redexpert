@@ -2,10 +2,16 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.sql.sqlbuilder.Field;
+import org.executequery.sql.sqlbuilder.LeftJoin;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 
 public class DefaultDatabaseCollation extends AbstractDatabaseObject {
 
@@ -45,11 +51,9 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
      */
     private String attributes;
 
-
-    private static final String CHARSET = "CHARSET";
-    private static final String BASE_COLLATE = "BASE_COLLATE";
+    private static final String BASE_COLLATE = "BASE_COLLATION_NAME";
     private static final String COLLATION_ATTRIBUTES = "COLLATION_ATTRIBUTES";
-    private static final String ATTRIBUTES = "ATTRIBUTES";
+    private static final String ATTRIBUTES = "SPECIFIC_ATTRIBUTES";
     private static final String DESCRIPTION = "DESCRIPTION";
 
     public DefaultDatabaseCollation(DatabaseMetaTag metaTagParent, String name) {
@@ -62,31 +66,55 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
     }
 
     @Override
-    protected String queryForInfo() {
-        String query = "select ch.RDB$CHARACTER_SET_NAME as " + CHARSET + ",\n" +
-                "co.RDB$BASE_COLLATION_NAME as " + BASE_COLLATE + ",\n" +
-                "co.RDB$COLLATION_ATTRIBUTES as " + COLLATION_ATTRIBUTES + ",\n" +
-                "co.RDB$SPECIFIC_ATTRIBUTES as " + ATTRIBUTES + ",\n" +
-                "co.RDB$DESCRIPTION as " + DESCRIPTION + "\n" +
-                "from RDB$COLLATIONS co left join RDB$CHARACTER_SETS ch on co.RDB$CHARACTER_SET_ID=ch.RDB$CHARACTER_SET_ID \n" +
-                "where co.RDB$COLLATION_NAME='" + getName() + "'";
-        return query;
+    protected String getFieldName() {
+        return "COLLATION_NAME";
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        if (rs.next()) {
-            setCharacterSet(getFromResultSet(rs, CHARSET));
-            setBaseCollate(getFromResultSet(rs, BASE_COLLATE));
-            setAttributes(getFromResultSet(rs, ATTRIBUTES));
-            setRemarks(getFromResultSet(rs, DESCRIPTION));
-            int collationAttributes = rs.getInt(COLLATION_ATTRIBUTES);
-            setPadSpace((collationAttributes & 1) == 1);
-            collationAttributes = collationAttributes >> 1;
-            setCaseSensitive((collationAttributes & 1) == 0);
-            collationAttributes = collationAttributes >> 1;
-            setAccentSensitive((collationAttributes & 1) == 0);
-        }
+    protected Table getMainTable() {
+        return Table.createTable("RDB$COLLATIONS", "CO");
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        Table collates = getMainTable();
+        Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CH");
+        sb.appendFields(collates, getFieldName(), BASE_COLLATE, ATTRIBUTES, DESCRIPTION, COLLATION_ATTRIBUTES);
+        sb.appendFields(charsets, CHARACTER_SET_NAME);
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(collates, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setCharacterSet(getFromResultSet(rs, CHARACTER_SET_NAME));
+        setBaseCollate(getFromResultSet(rs, BASE_COLLATE));
+        setAttributes(getFromResultSet(rs, ATTRIBUTES));
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        int collationAttributes = rs.getInt(COLLATION_ATTRIBUTES);
+        setPadSpace((collationAttributes & 1) == 1);
+        collationAttributes = collationAttributes >> 1;
+        setCaseSensitive((collationAttributes & 1) == 0);
+        collationAttributes = collationAttributes >> 1;
+        setAccentSensitive((collationAttributes & 1) == 0);
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
     }
 
     @Override
@@ -169,7 +197,27 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
         this.attributes = attributes;
     }
 
+    @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateCollation(getName(), getCharacterSet(), getBaseCollate(), getAttributes(), isPadSpace(), isCaseSensitive(), isAccentSensitive(), isExternal());
+        return SQLUtils.generateCreateCollation(getName(), getCharacterSet(), getBaseCollate(),
+                getAttributes(), isPadSpace(), isCaseSensitive(), isAccentSensitive(), isExternal());
     }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("COLLATION", getName());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return getCreateSQLText();
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        String comparingSqlQuery = databaseObject.getCompareCreateSQL();
+        return !Objects.equals(this.getCompareCreateSQL(), comparingSqlQuery) ?
+                getDropSQL() + comparingSqlQuery : "/* there are no changes */\n";
+    }
+
 }

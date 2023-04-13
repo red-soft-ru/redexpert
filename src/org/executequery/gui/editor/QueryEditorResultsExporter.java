@@ -385,7 +385,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         }
 
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("ExportFromResultSet") {
             public Object construct() {
 
                 return doExport();

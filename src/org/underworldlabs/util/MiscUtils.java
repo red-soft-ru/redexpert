@@ -757,9 +757,12 @@ public final class MiscUtils {
         return str.equals(str.toUpperCase());
     }
 
+    private static KeywordRepository keywordRepository;
     public static boolean checkKeyword(String str) {
-        KeywordRepository keywordRepository =
-                (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+
+        if (keywordRepository == null)
+            keywordRepository = (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+
         TreeSet<String> keywords = keywordRepository.getSQLKeywords();
         return keywords.contains(str.toUpperCase());
     }
@@ -834,6 +837,16 @@ public final class MiscUtils {
     public static String withoutFirstIntegerValue(String source_str) {
         source_str = source_str.replaceFirst("[(\\d)]*", "");
         return source_str;
+    }
+
+    public static boolean compareStrings(String s1, String s2) {
+        if (MiscUtils.isNull(s1)) {
+            return MiscUtils.isNull(s2);
+        } else {
+            if (MiscUtils.isNull(s2))
+                return false;
+        }
+        return s1.equalsIgnoreCase(s2);
     }
 
 

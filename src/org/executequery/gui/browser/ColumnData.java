@@ -21,6 +21,7 @@
 package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -31,9 +32,13 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.log.Log;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 
 import java.io.Serializable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +47,7 @@ import java.util.Vector;
 /**
  * This class represents a single table
  * column definition. This includes data types
- * sizes, scales and key referencing meta data.
+ * sizes, scales and key referencing metadata.
  *
  * @author Takis Diakoumis
  */
@@ -89,7 +94,7 @@ public class ColumnData implements Serializable {
 
     /**
      * The key of this column - if any
-     * (ie primary, foreign etc)
+     * (ie primary, foreign etc.)
      */
     private String keyType;
 
@@ -119,7 +124,7 @@ public class ColumnData implements Serializable {
     private int columnSubtype;
 
     /**
-     * Whether this column is required ie. NOT NULL
+     * Whether this column is required i.e. NOT NULL
      */
     private boolean notNull;
 
@@ -175,7 +180,7 @@ public class ColumnData implements Serializable {
     private int domainScale = -1;
 
     /**
-     * Domain sub type
+     * Domain subtype
      */
     private int domainSubType;
 
@@ -297,7 +302,12 @@ public class ColumnData implements Serializable {
 
     public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn) {
         this(databaseConnection);
-        setValues(databaseColumn);
+        setValues(databaseColumn, true);
+    }
+
+    public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn, boolean loadDomainInfo) {
+        this(databaseConnection);
+        setValues(databaseColumn, loadDomainInfo);
     }
 
     public ColumnData(String columnName, DatabaseConnection databaseConnection) {
@@ -319,9 +329,8 @@ public class ColumnData implements Serializable {
     }
 
     public void addConstraint(ColumnConstraint cc) {
-        if (columnConstraints == null) {
-            columnConstraints = new Vector<ColumnConstraint>();
-        }
+        if (columnConstraints == null)
+            columnConstraints = new Vector<>();
         columnConstraints.add(cc);
     }
 
@@ -401,7 +410,7 @@ public class ColumnData implements Serializable {
         }
     }
 
-    public void setValues(DatabaseColumn cd) {
+    public void setValues(DatabaseColumn cd, boolean loadDomainInfo) {
         setTableName(cd.getParentsName());
         setColumnName(cd.getName());
         setColumnType(cd.getTypeName());
@@ -409,12 +418,14 @@ public class ColumnData implements Serializable {
         setForeignKey(cd.isForeignKey());
         setColumnSize(cd.getColumnSize());
         setNotNull(cd.isRequired());
+        setDomainNotNull(cd.isDomainNotNull());
         setSQLType(cd.getTypeInt());
-        setDomain(cd.getDomain());
+        setDomain(cd.getDomain(), loadDomainInfo);
         setDescription(cd.getColumnDescription());
         setComputedBy(cd.getComputedSource());
         setDefaultValue(cd.getDefaultValue());
-        if(cd.isIdentity())
+        setDomainDefault(cd.getDomainDefaultValue());
+        if (cd.isIdentity())
             ai.setIdentity(true);
     }
 
@@ -578,7 +589,6 @@ public class ColumnData implements Serializable {
 
     public void setDomain(String domain) {
         setDomain(domain, true);
-
     }
 
     public void setDomain(String domain, boolean loadDomainInfo) {
@@ -741,7 +751,7 @@ public class ColumnData implements Serializable {
         }
         StringBuilder sb = new StringBuilder(typeString);
 
-        // if the type doesn't end with a digit or it
+        // if the type doesn't end with a digit, or it
         // is a char type then add the size - attempt
         // here to avoid int4, int8 etc. type values
 

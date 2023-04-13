@@ -18,6 +18,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.DependenciesPanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
@@ -53,6 +54,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     protected boolean edited = false;
     protected String firstQuery;
 
+    protected SimpleCommentPanel simpleCommentPanel;
+
     protected GridBagHelper topGbh;
 
     public static AbstractCreateObjectPanel getEditPanelFromType(int type, DatabaseConnection dc, Object databaseObject, Object[] params) {
@@ -81,6 +84,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                 return new CreateUserPanel(dc, null, (DefaultDatabaseUser) databaseObject);
             case NamedObject.TABLESPACE:
                 return new CreateTablespacePanel(dc, null, databaseObject);
+            case NamedObject.JOB:
+                return new CreateJobPanel(dc, null, databaseObject);
             default:
                 return null;
         }
@@ -168,8 +173,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         topPanel = new JPanel(new GridBagLayout());
         topGbh = new GridBagHelper();
         topGbh.setDefaultsStatic().defaults();
-        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("connection"), connectionsCombo, null);
-        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("name"), nameField, null);
+        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("connection"), connectionsCombo, null, true, false);
+        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("name"), nameField, null, false);
         centralPanel = new JPanel();
 
         BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(parent != null && parent.isDialog());
@@ -347,13 +352,22 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     }
 
     protected void addCommentTab(DatabaseObject databaseObject) {
-        SimpleCommentPanel commentPanel = new SimpleCommentPanel(databaseObject);
-        tabbedPane.add(Bundles.getCommon("comment-field-label"), commentPanel.getCommentPanel());
+        simpleCommentPanel = new SimpleCommentPanel(databaseObject);
+        tabbedPane.add(Bundles.getCommon("comment-field-label"), simpleCommentPanel.getCommentPanel());
     }
 
     @Override
     public void cleanup() {
+        cleanupComponent(this);
+    }
 
+    protected void cleanupComponent(Component component) {
+        if (component instanceof SQLTextArea)
+            ((SQLTextArea) component).cleanup();
+        else if (component instanceof Container)
+            for (Component child : ((Container) component).getComponents()) {
+                cleanupComponent(child);
+            }
     }
 
     @Override
@@ -366,6 +380,11 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         return getEditTitle();
     }
 
+    protected void addLabelFieldPairToToolBar(JToolBar toolBar, String label, Component component) {
+        toolBar.add(new JLabel(label));
+        toolBar.addSeparator();
+        toolBar.add(component);
+    }
 
 
 }

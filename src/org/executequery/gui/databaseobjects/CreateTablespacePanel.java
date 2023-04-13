@@ -103,7 +103,7 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
 
     protected void reset() {
         nameField.setText(tablespace.getName());
-        fileField.setText(tablespace.getAttribute(DefaultDatabaseTablespace.FILE_NAME));
+        fileField.setText(tablespace.getFileName());
         generateSQL();
     }
 

@@ -32,7 +32,7 @@ public final class Printer {
 
     public void print(final PrintFunction printFunction) {
 
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("Printer") {
             public Object construct() {
 
                 return doPrint(printFunction);

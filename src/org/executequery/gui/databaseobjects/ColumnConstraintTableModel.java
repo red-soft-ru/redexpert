@@ -24,7 +24,6 @@ import org.executequery.Constants;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.databaseobjects.impl.TableColumnConstraint;
-import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 
@@ -43,7 +42,6 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
             "Name",
             "Type",
             "TableColumn",
-            "ReferenceSchema",
             "ReferenceTable",
             "ReferenceColumn",
             "Check",
@@ -216,24 +214,19 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
                 }
                 break;
             case 4:
-                tableConstraint.setReferencedSchema(_value);
-                tableConstraint.setReferencedTable(Constants.EMPTY);
-                tableConstraint.setReferencedColumn(Constants.EMPTY);
-                break;
-            case 5:
                 tableConstraint.setReferencedTable(_value);
                 tableConstraint.setReferencedColumn(Constants.EMPTY);
                 break;
-            case 6:
+            case 5:
                 tableConstraint.setReferencedColumn(_value);
                 break;
-            case 7:
+            case 6:
                 tableConstraint.setCheck(_value);
                 break;
-            case 8:
+            case 7:
                 tableConstraint.setUpdateRule(_value);
                 break;
-            case 9:
+            case 8:
                 tableConstraint.setDeleteRule(_value);
                 break;
         }
@@ -252,16 +245,14 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
             case 3:
                 return constraint.getColumnDisplayList();
             case 4:
-                return constraint.getReferencedSchema();
-            case 5:
                 return constraint.getReferencedTable();
-            case 6:
+            case 5:
                 return constraint.getReferenceColumnDisplayList();
-            case 7:
+            case 6:
                 return constraint.getCheck();
-            case 8:
+            case 7:
                 return constraint.getUpdateRule();
-            case 9:
+            case 8:
                 return constraint.getDeleteRule();
             default:
                 return null;

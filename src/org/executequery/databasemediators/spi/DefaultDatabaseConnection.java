@@ -38,10 +38,7 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.tree.TreeNode;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * <p>This class maintains the necessary information for each
@@ -205,6 +202,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     String[] dataTypesArray;
     int[] intDataTypesArray;
 
+
     @Override
     public boolean isNamesToUpperCase() {
         return namesToUpperCase;
@@ -241,16 +239,14 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
      */
     public DefaultDatabaseConnection(String name, String sourceName) {
 
-        this.name = name;
+        this(name);
         this.sourceName = sourceName;
-        transactionIsolation = -1;
+
     }
 
     public DefaultDatabaseConnection(String name, String sourceName, TemplateDatabaseConnection tdc) {
 
-        this.name = name;
-        this.sourceName = sourceName;
-        transactionIsolation = -1;
+       this(name,sourceName);
 
         this.userName = tdc.getUserName();
         this.password = tdc.getPassword();
@@ -801,6 +797,11 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
             intDataTypesArray = metaData.getIntDataTypesArray();
         }
         return intDataTypesArray;
+    }
+
+    @Override
+    public int getDriverMajorVersion() {
+        return getJDBCDriver().getMajorVersion();
     }
 
     public String getDBCharset() {

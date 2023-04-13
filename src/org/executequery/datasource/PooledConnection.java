@@ -113,7 +113,7 @@ public class PooledConnection implements Connection {
         timeoutShutdown = SystemProperties.getIntProperty("user", "connection.shutdown.timeout");
         this.realConnection = realConnection;
         this.closeOnReturn = closeOnReturn;
-        timer = new Timer();
+        timer = new Timer("check '"+databaseConnection.getName()+"' connection Timer");
         timerDelay = new Timer();
         task = new TimerTask() {
             @Override
@@ -261,7 +261,7 @@ public class PooledConnection implements Connection {
     public void checkConnectionToServer()
     {
         try {
-            IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(realConnection, "FBDatabasePerformanceImpl");
+            IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), realConnection, "FBDatabasePerformanceImpl");
             db.setConnection(realConnection);
             TimerTask task = new TimerTask() {
                 @Override
@@ -275,7 +275,7 @@ public class PooledConnection implements Connection {
                         timerDelay.cancel();
                 }
             };
-            timerDelay = new Timer();
+            timerDelay = new Timer("check "+databaseConnection.getName()+ "conToServer");
             /*StackTraceElement[] stack = Thread.currentThread().getStackTrace();
             Log.info("---------------------------------Start check----------------------------------\n\n\n");
             for (int i = 0; i < stack.length - 2; i++)

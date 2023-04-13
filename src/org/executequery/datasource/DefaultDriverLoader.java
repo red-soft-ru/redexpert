@@ -22,6 +22,8 @@ package org.executequery.datasource;
 
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.log.Log;
+import org.executequery.repository.DatabaseDriverRepository;
+import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
@@ -32,6 +34,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -151,6 +154,33 @@ public class DefaultDriverLoader implements DriverLoader {
         }
 
         throw new DataSourceException(message);
+    }
+
+    private static DatabaseDriver DEFAULT_DATABASE_DRIVER;
+
+    public static DatabaseDriver getDefaultDatabaseDriver() throws SQLException {
+        if (DEFAULT_DATABASE_DRIVER == null) {
+            List<DatabaseDriver> dds = driverRepository().findAll();
+            for (DatabaseDriver d : dds) {
+                if (d.getClassName().contains("FBDriver") && d.getMajorVersion() == 4) {
+                    DEFAULT_DATABASE_DRIVER = d;
+                    break;
+                }
+            }
+            if (DEFAULT_DATABASE_DRIVER == null) {
+                throw new SQLException("There are no drivers to initialize the user manager.");
+            }
+        }
+        return DEFAULT_DATABASE_DRIVER;
+    }
+
+    public static Driver getDefaultDriver() throws SQLException {
+        return getLoadedDrivers().get(getDefaultDatabaseDriver().getId() + "-" + getDefaultDatabaseDriver().getClassName());
+    }
+
+    private static DatabaseDriverRepository driverRepository() {
+        return (DatabaseDriverRepository) RepositoryCache.load(
+                DatabaseDriverRepository.REPOSITORY_ID);
     }
 
 }

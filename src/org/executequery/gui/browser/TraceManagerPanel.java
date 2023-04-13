@@ -6,7 +6,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.browser.managment.tracemanager.BuildConfigurationPanel;
@@ -36,6 +36,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -242,7 +243,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
             public void actionPerformed(ActionEvent e) {
                 int returnVal = fileChooser.showOpenDialog(openFileLog);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    SwingWorker sw = new SwingWorker() {
+                    SwingWorker sw = new SwingWorker("loadTraceFromFile") {
                         @Override
                         public Object construct() {
                             openFileLogField.setText(fileChooser.getSelectedFile().getAbsolutePath());
@@ -323,7 +324,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                                 GUIUtilities.displayErrorMessage("Please select configuration file");
                                 return;
                             }
-                            conf = traceManager.loadConfigurationFromFile(fileConfField.getText());
+                            conf = FileUtils.loadFile(fileConfField.getText());
                         } else conf = confPanel.getConfig();
                         traceManager.startTraceSession(sessionField.getText(), conf);
                         startStopSessionButton.setText(bundleString("Stop"));
@@ -332,7 +333,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                             connectionPanel.getComponents()[i].setEnabled(false);
                         }
                         logToFileBox.setEnabled(false);
-                        SwingWorker sw = new SwingWorker() {
+                        SwingWorker sw = new SwingWorker("TraceSession") {
                             @Override
                             public Object construct() {
                                 readFromBufferedReader(bufferedReader, false);
@@ -353,9 +354,10 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     }
                 } else try {
                     traceManager.stopTraceSession(currentSessionId);
-                    stopSession();
                 } catch (SQLException e1) {
                     GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1);
+                } finally {
+                    stopSession();
                 }
             }
         });
@@ -431,19 +433,12 @@ public class TraceManagerPanel extends JPanel implements TabView {
     }
 
     private void initTraceManager() {
-        DatabaseDriver dd = null;
-        List<DatabaseDriver> dds = driverRepository().findAll();
-        for (DatabaseDriver d : dds) {
-            if (d.getClassName().contains("FBDriver"))
-                dd = d;
-            break;
-        }
-        Object driver = null;
         try {
-            driver = DynamicLibraryLoader.loadingObjectFromClassLoader(dd, dd.getClassName(), dd.getPath());
-            traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+            Driver driver = DefaultDriverLoader.getDefaultDriver();
+            traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(),
+                    driver,
                     "FBTraceManagerImpl");
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
     }
@@ -507,7 +502,20 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 traceManager.stopTraceSession(traceManager.getSessionID(sessionField.getText()));
             } catch (SQLException e) {
                 GUIUtilities.displayExceptionErrorDialog("Error stop session", e);
+            } finally {
+                stopSession();
             }
+        inputStream = null;
+        outputStream = null;
+        fileLog = null;
+        confPanel = null;
+        openFileLog = null;
+        startStopSessionButton = null;
+        loggerPanel.cleanup();
+        loggerPanel = null;
+        tabPane.removeAll();
+        tabPane = null;
+        bufferedReader = null;
         return true;
     }
 
@@ -606,6 +614,11 @@ public class TraceManagerPanel extends JPanel implements TabView {
         public void write(int b) throws IOException {
             fileLog.write(b);
             super.write(b);
+        }
+
+        public void close() throws IOException {
+            fileLog.close();
+            super.close();
         }
     }
 }

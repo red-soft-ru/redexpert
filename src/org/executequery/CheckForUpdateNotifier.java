@@ -73,7 +73,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     public void startupCheckForUpdate() {
 
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("startupCheckUpdate") {
 
             public Object construct() {
                 startupCheck();
@@ -215,7 +215,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             resetLabel(listener);
 
-            worker = new org.underworldlabs.swing.util.SwingWorker() {
+            worker = new org.underworldlabs.swing.util.SwingWorker("downloadUpdate") {
 
                 public Object construct() {
 
@@ -324,7 +324,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             int yesNo = displayNewVersionMessage();
             if (yesNo == JOptionPane.YES_OPTION) {
 
-                worker = new SwingWorker() {
+                worker = new SwingWorker("displayReleaseNotes") {
 
                     public Object construct() {
 
@@ -418,7 +418,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     public void checkForUpdate(boolean monitorProgress) {
 
         this.monitorProgress = monitorProgress;
-        worker = new SwingWorker() {
+        worker = new SwingWorker("checkForUpdate") {
 
             public Object construct() {
 

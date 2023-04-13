@@ -70,7 +70,7 @@ public class ExportAsDBUnitWorker extends BaseImportExportWorker {
 
     protected void export() {
         
-        worker = new ThreadWorker() {
+        worker = new ThreadWorker(this.getClass().getName()) {
 
             public Object construct() {
                 

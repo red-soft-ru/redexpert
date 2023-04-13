@@ -103,7 +103,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         this.autocommit = autocommit;
         querySender.setCommitMode(autocommit);
         init();
-        SwingWorker sw = new SwingWorker() {
+        SwingWorker sw = new SwingWorker("ExecuteQueriesInDialog") {
             @Override
             public Object construct() {
                 execute();
@@ -319,7 +319,7 @@ public class ExecuteQueryDialog extends BaseDialog {
             String error = rs.getErrorMessage();
             if (!rs.isException()) {
                 commitResult = true;
-                super.finished();
+                finished();
             } else {
                 setOutputMessage(SqlMessages.ERROR_MESSAGE, error);
                 commitButton.setVisible(false);
@@ -336,10 +336,10 @@ public class ExecuteQueryDialog extends BaseDialog {
     private void rollback() {
         try {
             querySender.execute(QueryTypes.ROLLBACK, "rollback");
-            super.finished();
+            finished();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
-            super.finished();
+            finished();
 
         }
     }

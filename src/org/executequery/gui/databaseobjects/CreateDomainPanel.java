@@ -3,6 +3,7 @@ package org.executequery.gui.databaseobjects;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -11,26 +12,23 @@ import org.executequery.gui.text.SQLTextArea;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
-public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyListener {
+public class CreateDomainPanel extends AbstractCreateObjectPanel implements DocumentListener {
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.DOMAIN);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.DOMAIN);
     private ColumnData columnData;
     private String domain;
     private JScrollPane scrollDefaultValue;
     private JScrollPane scrollCheck;
-    private JScrollPane scrollDescription;
     private JScrollPane scrollSQL;
     private SQLTextArea defaultValueTextPane;
     private SQLTextArea checkTextPane;
     private SQLTextArea sqlTextPane;
-    private JTextPane descriptionTextPane;
     private JPanel defaultValuePanel;
     private JPanel checkPanel;
-    private JPanel descriptionPanel;
     private JPanel sqlPanel;
     private SelectTypePanel selectTypePanel;
     private JCheckBox notNullBox;
@@ -46,24 +44,19 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     protected void init() {
         defaultValuePanel = new JPanel();
         checkPanel = new JPanel();
-        descriptionPanel = new JPanel();
         sqlPanel = new JPanel();
         selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(), connection.getIntDataTypesArray(), columnData, false);
         notNullBox = new JCheckBox("Not Null");
         scrollDefaultValue = new JScrollPane();
         scrollCheck = new JScrollPane();
-        scrollDescription = new JScrollPane();
         scrollSQL = new JScrollPane();
         defaultValueTextPane = new SQLTextArea();
         checkTextPane = new SQLTextArea();
         sqlTextPane = new SQLTextArea();
-        descriptionTextPane = new JTextPane();
 
         scrollDefaultValue.setViewportView(defaultValueTextPane);
 
         scrollCheck.setViewportView(checkTextPane);
-
-        scrollDescription.setViewportView(descriptionTextPane);
 
         scrollSQL.setViewportView(sqlTextPane);
 
@@ -75,30 +68,23 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
                 generateSQL();
             }
         });
-        defaultValueTextPane.addKeyListener(this);
-        checkTextPane.addKeyListener(this);
-        descriptionTextPane.addKeyListener(this);
-
-        centralPanel.setLayout(new GridBagLayout());
-
-        centralPanel.add(notNullBox, new GridBagConstraints(0, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        defaultValueTextPane.getDocument().addDocumentListener(this);
+        checkTextPane.getDocument().addDocumentListener(this);
+        topPanel.add(notNullBox, topGbh.nextRowFirstCol().setLabelDefault().get());
         defaultValuePanel.setLayout(new GridBagLayout());
         checkPanel.setLayout(new GridBagLayout());
-        descriptionPanel.setLayout(new GridBagLayout());
         sqlPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbcFull = new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
         defaultValuePanel.add(scrollDefaultValue, gbcFull);
         checkPanel.add(scrollCheck, gbcFull);
-        descriptionPanel.add(scrollDescription, gbcFull);
         sqlPanel.add(scrollSQL, gbcFull);
         tabbedPane.add(bundleStaticString("type"), selectTypePanel);
         tabbedPane.add(bundleStaticString("default-value"), defaultValuePanel);
         tabbedPane.add(bundleStaticString("check"), checkPanel);
-        tabbedPane.add(bundleStaticString("description"), descriptionPanel);
+        addCommentTab(null);
+        simpleCommentPanel.getCommentField().getTextAreaComponent().getDocument().addDocumentListener(this);
         tabbedPane.add(bundleStaticString("SQL"), sqlPanel);
+        centralPanel.setVisible(false);
     }
 
     protected void initEdited() {
@@ -116,7 +102,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         columnData.setCheck(columnData.getDomainCheck());
         columnData.setNotNull(columnData.isDomainNotNull());
         columnData.setDefaultValue(columnData.getDomainDefault());
-        descriptionTextPane.setText(columnData.getDescription());
+        simpleCommentPanel.setDatabaseObject((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), domain));
         checkTextPane.setText(columnData.getCheck());
         defaultValueTextPane.setText(columnData.getDefaultValue().getValue());
         nameField.setText(columnData.getColumnName());
@@ -160,41 +146,42 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
 
     }
 
-    @Override
-    public void keyTyped(KeyEvent keyEvent) {
-
-    }
-
-    @Override
-    public void keyPressed(KeyEvent keyEvent) {
-
-    }
-
-    @Override
-    public void keyReleased(KeyEvent keyEvent) {
-
-        if (keyEvent.getSource() == defaultValueTextPane) {
-            columnData.setDefaultValue(defaultValueTextPane.getText());
-        } else if (keyEvent.getSource() == checkTextPane) {
-            columnData.setCheck(checkTextPane.getText());
-        } else if (keyEvent.getSource() == descriptionTextPane) {
-            columnData.setDescription(descriptionTextPane.getText());
-        } else if (keyEvent.getSource() == nameField) {
-            columnData.setColumnName(nameField.getText());
-        }
-
-    }
-
     private void generateSQL() {
         sqlTextPane.setText(generateQuery());
     }
 
     protected String generateQuery() {
-
         columnData.setColumnName(nameField.getText());
         if (editing)
             return SQLUtils.generateAlterDomain(columnData, domain);
         else
-            return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false);
+            return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false, true);
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        changed(e);
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        changed(e);
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        changed(e);
+    }
+
+    private void changed(DocumentEvent e) {
+        if (e.getDocument() == defaultValueTextPane.getDocument()) {
+            columnData.setDefaultValue(defaultValueTextPane.getText());
+        } else if (e.getDocument() == checkTextPane.getDocument()) {
+            columnData.setCheck(checkTextPane.getText());
+        } else if (e.getDocument() == simpleCommentPanel.getCommentField().getTextAreaComponent().getDocument()) {
+            columnData.setDescription(simpleCommentPanel.getComment());
+        } else if (e.getDocument() == nameField.getDocument()) {
+            columnData.setColumnName(nameField.getText());
+        }
     }
 }

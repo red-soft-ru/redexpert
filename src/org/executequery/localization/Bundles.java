@@ -29,6 +29,7 @@ import java.util.ResourceBundle;
 public final class Bundles {
 
     private static StringBundle stringBundle;
+    private static StringBundle engBundle;
 
     public static String get(String key) {
 
@@ -77,6 +78,16 @@ public final class Bundles {
         return bundle().getString(keyForClazz(clazz, key));
     }
 
+    public static String getEn(Class<?> clazz, String key) {
+
+        return englishBundle().getString(keyForClazz(clazz, key));
+    }
+
+    public static String getEn(Class<?> clazz, String key, Object... args) {
+
+        return englishBundle().getString(keyForClazz(clazz, key), args);
+    }
+
     public static String get(Class<?> clazz, String key, Object... args) {
 
         return bundle().getString(keyForClazz(clazz, key), args);
@@ -95,6 +106,20 @@ public final class Bundles {
         }
 
         return stringBundle;
+    }
+
+    private static StringBundle englishBundle() {
+
+        if (engBundle == null) {
+
+            String packageName = Bundles.class.getPackage().getName();
+            String path = packageName.replaceAll("\\.", "/") + "/resources";
+
+            ResourceBundle bundle = ResourceBundle.getBundle(path, Locale.ROOT);
+            engBundle = new StringBundle(bundle);
+        }
+
+        return engBundle;
     }
 
     private static String keyForClazz(Class<?> clazz, String key) {

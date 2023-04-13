@@ -2,7 +2,6 @@ package org.executequery.gui.browser.managment.tracemanager;
 
 import org.executequery.gui.browser.managment.tracemanager.net.TableCounter;
 
-import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,13 +13,8 @@ public class TableCounterModel extends AbstractTableModel {
     private List<TableCounter> rows = new ArrayList<>();
     private List<TableCounter> visibleRows = new ArrayList<>();
 
-    private JTable traceTable;
-    private final ResultSetDataModel traceModel;
 
-
-    public TableCounterModel(JTable traceTable) {
-        setTraceTable(traceTable);
-        traceModel = (ResultSetDataModel) traceTable.getModel();
+    public TableCounterModel() {
         buildHeaders();
         rebuildModel();
     }
@@ -105,9 +99,6 @@ public class TableCounterModel extends AbstractTableModel {
         return columnNames;
     }
 
-    public void setTraceTable(JTable traceTable) {
-        this.traceTable = traceTable;
-    }
 
     private void buildHeaders() {
         columnNames = new ArrayList<>();

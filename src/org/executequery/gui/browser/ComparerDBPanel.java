@@ -724,7 +724,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     public void recreateProgressBar(String label, String metaTag, int maxValue) {
         progressBar.setValue(0);
         progressBar.setMaximum(maxValue);
-        progressBar.setString(MiscUtils.isNull(metaTag) ? bundleString(label) : String.format(bundleString(label), metaTag));
+        progressBar.setString(MiscUtils.isNull(metaTag) ? bundleString(label) : String.format(bundleString(label), Bundles.get(NamedObject.class, metaTag)));
     }
 
     public void incrementProgressBarValue() {

@@ -214,11 +214,17 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             ResultSet rs = querySender.getResultSet(query).getResultSet();
             int i = 0;
 
+            ComparerDBPanel comparerDBPanel = null;
             if (thread != null) {
-                thread.recreateProgressBar(
-                        Bundles.get(ComparerDBPanel.class, "LoadingFullInfo"),
-                        this.getName(), rs.getFetchSize()
-                );
+                Object threadUserObject = thread.getUserObject();
+                if (threadUserObject instanceof ComparerDBPanel) {
+                    comparerDBPanel = ((ComparerDBPanel) threadUserObject);
+                    comparerDBPanel.recreateProgressBar(
+                            "LoadFullInfoForObjects",
+                            NamedObject.META_TYPES_FOR_BUNDLE[getSubType()],
+                            objects.size()
+                    );
+                }
             }
 
             while (rs.next()) {
@@ -235,14 +241,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     first = true;
                 }
 
-                if (first)
+                if (first) {
                     ((AbstractDatabaseObject) objects.get(i)).prepareLoadingInfo();
+                    if (comparerDBPanel != null)
+                        comparerDBPanel.incrementProgressBarValue();
+                }
+
                 ((AbstractDatabaseObject) objects.get(i)).setInfoFromSingleRowResultSet(rs, first);
                 first = false;
-
-                if (thread != null)
-                    thread.incrementProgressBarValue();
-
             }
 
             for (NamedObject namedObject : objects) {
@@ -282,11 +288,17 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             ResultSet rs = querySender.getResultSet(query).getResultSet();
             int i = 0;
 
+            ComparerDBPanel comparerDBPanel = null;
             if (thread != null) {
-                thread.recreateProgressBar(
-                        Bundles.get(ComparerDBPanel.class, "LoadColumnsForAllTables"),
-                        this.getName(), rs.getFetchSize()
-                );
+                Object threadUserObject = thread.getUserObject();
+                if (threadUserObject instanceof ComparerDBPanel) {
+                    comparerDBPanel = ((ComparerDBPanel) threadUserObject);
+                    comparerDBPanel.recreateProgressBar(
+                            "LoadColumnsForAllTables",
+                            NamedObject.META_TYPES_FOR_BUNDLE[getSubType()],
+                            objects.size()
+                    );
+                }
             }
 
             AbstractDatabaseObject previousObject = null;
@@ -319,14 +331,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                             previousObject.finishLoadColumns();
                             previousObject.setMarkedForReloadCols(false);
                         }
+                        if (comparerDBPanel != null)
+                            comparerDBPanel.incrementProgressBarValue();
                     }
                     ((AbstractDatabaseObject) objects.get(i)).addColumnFromResultSet(rs);
                     first = false;
                     previousObject = (AbstractDatabaseObject) objects.get(i);
                 }
-
-                if (thread != null)
-                    thread.incrementProgressBarValue();
             }
 
             if (previousObject != null) {

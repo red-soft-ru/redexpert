@@ -23,9 +23,11 @@ if ((Get-Service $SERVICE_NAME -ErrorAction SilentlyContinue) -eq $null) { die("
 
 echo "Downloading tests"
 git clone -q http://git.red-soft.biz/red-database/re-tests.git
+git clone -q http://git.red-soft.biz/red-database/python/lackey.git
 
 echo "Installing components"
 start-process "${PYTHON}" "-m pip install pytest" -wait -nonewwindow
+start-process "${PYTHON}" "-m pip install -e .\lackey" -wait -nonewwindow
 start-process "${PYTHON}" "-m pip install -e .\re-tests" -wait -nonewwindow
 
 echo "Start testing"

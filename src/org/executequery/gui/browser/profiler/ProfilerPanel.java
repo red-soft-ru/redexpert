@@ -37,6 +37,7 @@ public class ProfilerPanel extends JPanel
 
     private JTree profilerTree;
     private DefaultMutableTreeNode rootTreeNode;
+    private DefaultMutableTreeNode compactRootTreeNode;
 
     private JButton startButton;
     private JButton pauseButton;
@@ -259,8 +260,17 @@ public class ProfilerPanel extends JPanel
             }
         }
 
-        if (isCompactView)
-            compressNodes(rootTreeNode);
+
+        Enumeration<TreeNode> children = rootTreeNode.children();
+        while (children.hasMoreElements())
+            addNodesSelfTime((DefaultMutableTreeNode) children.nextElement());
+
+        if (isCompactView) {
+            if (compactRootTreeNode == null) {
+                compactRootTreeNode = (DefaultMutableTreeNode) rootTreeNode.clone();
+                compressNodes(compactRootTreeNode);
+            }
+        }
 
         profilerTree.setModel(new DefaultTreeModel(rootTreeNode));
     }
@@ -282,6 +292,24 @@ public class ProfilerPanel extends JPanel
         }
 
         return null;
+    }
+
+    private void addNodesSelfTime(DefaultMutableTreeNode node) {
+
+        ProfilerData nodeData = (ProfilerData) node.getUserObject();
+        long selfTime = nodeData.getTotalTime();
+
+        Enumeration<TreeNode> children = node.children();
+        while (children.hasMoreElements()) {
+
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+            selfTime -= ((ProfilerData) child.getUserObject()).getTotalTime();
+            if (child.getChildCount() > 0)
+                addNodesSelfTime(child);
+
+        }
+        node.add(new DefaultMutableTreeNode(new ProfilerData(-1, nodeData.getCallerId(), "Self Time", selfTime)));
+
     }
 
     private DefaultMutableTreeNode compressNodes(DefaultMutableTreeNode node) {

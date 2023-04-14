@@ -519,9 +519,11 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     }
 
                     int[] counter = comparer.getCounter();
+                    long elapsedTime = System.currentTimeMillis() - startTime;
+
                     GUIUtilities.displayInformationMessage(
                             String.format(bundleString("ComparingEnds"), counter[0], counter[1], counter[2]));
-                    Log.info(String.format("Comparing has been finished. Time elapsed: %d ms", System.currentTimeMillis() - startTime));
+                    Log.info(String.format("Comparing has been finished. Time elapsed: %d ms", elapsedTime));
                 }
 
                 return null;

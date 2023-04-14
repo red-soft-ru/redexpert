@@ -40,6 +40,8 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
             case SqlLexer.OPERATOR:
             case SqlLexer.UNARY_OPERATOR:
                 return Token.OPERATOR;
+            case SqlLexer.SEPARATOR:
+                return Token.SEPARATOR;
             case SqlLexer.STRING_LITERAL:
                 return Token.LITERAL_STRING_DOUBLE_QUOTE;
             case SqlLexer.PART_OBJECT:

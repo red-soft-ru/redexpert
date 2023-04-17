@@ -661,6 +661,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tableDataPanel.closeResultSet();
         referencesPanel.cleanup();
         EventMediator.deregisterListener(this);
+        alterSqlText.cleanup();
+        createSqlText.cleanup();
     }
 
     public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {

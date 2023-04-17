@@ -1,15 +1,11 @@
 package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.FunctionArgument;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.Parameter;
-import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.table.TableDefinitionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -910,8 +906,8 @@ public final class SQLUtils {
             for (String comparingColumn : comparingColumnsNames) {
                 if (Objects.equals(thisColumn, comparingColumn)) {
                     sb.append(generateAlterDefinitionColumn(
-                            new ColumnData(thisTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn)),
-                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn)),
+                            new ColumnData(thisTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn), false),
+                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn), false),
                             computed));
                     break;
 
@@ -928,7 +924,7 @@ public final class SQLUtils {
             if (!thisColumnsNames.contains(comparingColumn))
                 sb.append("\n\tADD ").append(generateDefinitionColumn(new ColumnData(
                                 comparingTable.getHost().getDatabaseConnection(),
-                                comparingTable.getColumn(comparingColumn)), computed, false, false))
+                                comparingTable.getColumn(comparingColumn), false), computed, false, false))
                         .append(COMMA);
 
         if (!Arrays.equals(constraints, new boolean[]{false, false, false, false})) {
@@ -1008,9 +1004,6 @@ public final class SQLUtils {
                 sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceFirstValue());
             if (thisSequence.getIncrement() != comparingSequence.getIncrement())
                 sb.append("\n\tINCREMENT BY ").append(comparingSequence.getIncrement());
-        } else {
-            if (thisSequence.getSequenceCurrentValue() != comparingSequence.getSequenceCurrentValue())
-                sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceCurrentValue());
         }
 
         if (noChangesCheckString.equals(sb.toString()))
@@ -1269,7 +1262,7 @@ public final class SQLUtils {
     }
 
     public static String generateCreateUDF(
-            String name, List<DefaultDatabaseUDF.UDFParameter> parameters, int returnArg,
+            String name, List<UDFParameter> parameters, int returnArg,
             String entryPoint, String moduleName, boolean freeIt) {
 
         int BY_VALUE = 0;

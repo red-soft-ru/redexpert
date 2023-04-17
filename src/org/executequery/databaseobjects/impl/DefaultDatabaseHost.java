@@ -32,7 +32,6 @@ import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.log.Log;
-import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
@@ -40,12 +39,8 @@ import org.underworldlabs.util.SystemProperties;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.*;
-
-import static org.executequery.databaseobjects.impl.AbstractDatabaseObject.*;
 
 /**
  * Default database host object implementation.
@@ -84,6 +79,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      */
     private List<DatabaseSchema> schemas;
     private DatabaseObject dependObject;
+    private boolean pauseLoadingTreeForSearch = false;
 
     /**
      * Creates a new instance of DefaultDatabaseHost with the
@@ -365,79 +361,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     }
 
-    /**
-     * Returns the tables hosted by this host of the specified type and
-     * belonging to the specified catalog and schema.
-     *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param type    the table type
-     * @return the hosted tables
-     */
-    public List<NamedObject> getTables(String catalog, String schema, String type)
-            throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
-
-            String tableName = null;
-            String typeName = null;
-
-            List<NamedObject> tables = new ArrayList<NamedObject>();
-
-            String[] types = null;
-            if (type != null) {
-
-                types = new String[]{type};
-            }
-
-            rs = dmd.getTables(_catalog, _schema, null, types);
-
-            // make sure type isn't null for compare
-            if (type == null) {
-                type = "";
-            }
-
-            while (rs.next()) {
-
-                tableName = rs.getString(3);
-                typeName = rs.getString(4);
-
-                // only include if the returned reported type matches
-                if (type.equalsIgnoreCase(typeName)) {
-
-                    DefaultDatabaseObject object = new DefaultDatabaseObject(this, type);
-                    object.setCatalogName(catalog);
-                    object.setSchemaName(schema);
-                    object.setName(tableName);
-                    object.setRemarks(rs.getString(5));
-                    tables.add(object);
-                }
-
-            }
-
-            return tables;
-
-        } catch (SQLException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.error("Tables not available for type "
-                        + type + " - driver returned: " + e.getMessage());
-            }
-
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            releaseResources(rs, null);
-        }
-
-    }
-
     private DatabaseSchema getSchema(String name) throws DataSourceException {
 
         if (name != null) {
@@ -550,11 +473,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     /**
      * Returns the table names hosted by this host of the specified type and
      * belonging to the specified catalog and schema.
-     *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param type    the table type
-     * @return the hosted tables
      */
     public List<String> getTableNames()
             throws DataSourceException {
@@ -581,8 +499,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     /**
      * Returns the column names of the specified database object.
      *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
      * @param table   the database object name
      * @return the column names
      */
@@ -688,293 +604,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 return ((AbstractTableObject) namedObject).getColumns();
         }
         return null;
-    }
-
-    public synchronized List<DatabaseColumn> getColumns(String table, boolean keepAlive)
-            throws DataSourceException {
-
-        ResultSet rs = null;
-
-        List<DatabaseColumn> columns = new ArrayList<DatabaseColumn>();
-
-        try {
-            if (querySender == null)
-                    querySender=new DefaultStatementExecutor();
-                if(querySender.getDatabaseConnection()!=getDatabaseConnection())
-                    querySender.setDatabaseConnection(getDatabaseConnection());
-
-
-                if(statementForColumns==null||statementForColumns.isClosed()) {
-                    SelectBuilder sb = new SelectBuilder();
-                    sb.setDistinct(true);
-                    Table relationFields = Table.createTable("RDB$RELATION_FIELDS", "RF");
-                    Table fields = Table.createTable("RDB$FIELDS", "F");
-                    Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CH");
-                    Table collations = Table.createTable("RDB$COLLATIONS", "CO");
-                    Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
-                    Table constraints1 = Table.createTable("RDB$RELATION_CONSTRAINTS", "RCO");
-                    Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT");
-                    Table refTable = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC_REF");
-                    Table refColumn = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT_REF");
-                    Table refCons = Table.createTable("RDB$REF_CONSTRAINTS", "REF_CONS");
-                    Field relName = Field.createField(relationFields, RELATION_NAME);
-                    sb.appendField(relName);
-                    Field fieldName = Field.createField(relationFields, FIELD_NAME);
-                    sb.appendField(fieldName);
-                    sb.appendField(Field.createField(fields, FIELD_TYPE));
-                    sb.appendField(Field.createField(fields, FIELD_SUB_TYPE));
-                    sb.appendField(Field.createField(fields, SEGMENT_LENGTH));
-                    sb.appendField(Field.createField(fields, FIELD_PRECISION));
-                    sb.appendField(Field.createField(fields, FIELD_SCALE));
-                    sb.appendField(Field.createField(fields, FIELD_LENGTH));
-                    sb.appendField(Field.createField(fields, "CHARACTER_LENGTH").setAlias(CHARACTER_LENGTH));
-                    sb.appendField(Field.createField(fields, DEFAULT_SOURCE).setAlias(DOMAIN_DEFAULT_SOURCE));
-                    sb.appendField(Field.createField(fields, NULL_FLAG).setAlias(DOMAIN_NULL_FLAG));
-                    sb.appendField(Field.createField(fields, COMPUTED_BLR));
-                    sb.appendField(Field.createField(fields, CHARACTER_SET_ID));
-                    sb.appendField(Field.createField(fields, COMPUTED_SOURCE));
-                    sb.appendField(Field.createField(charsets, CHARACTER_SET_NAME));
-                    sb.appendField(Field.createField(collations, COLLATION_NAME));
-                    sb.appendField(Field.createField(relationFields, DEFAULT_SOURCE));
-                    sb.appendField(Field.createField(relationFields, NULL_FLAG));
-                    Field fieldSource = Field.createField(relationFields, FIELD_SOURCE);
-                    sb.appendField(fieldSource);
-                    sb.appendField(Field.createField(relationFields, DESCRIPTION));
-                    sb.appendField(Field.createField(relationFields, IDENTITY_TYPE).setNull(getDatabaseMajorVersion() < 3));
-                    Field fieldPosition = Field.createField(relationFields, FIELD_POSITION);
-                    fieldPosition.setStatement(fieldPosition.getFieldTable() + " + 1");
-                    sb.appendField(fieldPosition);
-                    sb.appendField(Field.createField(constraints, CONSTRAINT_NAME));
-                    sb.appendField(Field.createField(constraints, CONSTRAINT_TYPE));
-                    Field keyPosition = Field.createField(indexSegments, FIELD_POSITION).setAlias(KEY_SEQ);
-                    keyPosition.setStatement(keyPosition.getFieldTable() + " + 1");
-                    sb.appendField(keyPosition);
-                    sb.appendField(Field.createField(refTable, relName.getAlias()).setAlias(REF_TABLE));
-                    sb.appendField(Field.createField(refColumn, fieldName.getAlias()).setAlias(REF_COLUMN));
-                    sb.appendField(Field.createField(refCons, UPDATE_RULE));
-                    sb.appendField(Field.createField(refCons, DELETE_RULE));
-
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField(constraints1, relName.getAlias())));
-                    sb.appendJoin(LeftJoin.createLeftJoin()
-                            .appendFields(Field.createField(constraints1, "INDEX_NAME"), Field.createField(indexSegments, "INDEX_NAME"))
-                            .appendFields(fieldName, Field.createField(indexSegments, fieldName.getAlias())));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(indexSegments, "INDEX_NAME"),
-                            Field.createField(constraints, "INDEX_NAME")));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(constraints, CONSTRAINT_NAME),
-                            Field.createField(refCons, CONSTRAINT_NAME)));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(refCons, "CONST_NAME_UQ"),
-                            Field.createField(refTable, CONSTRAINT_NAME)));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(refTable, "INDEX_NAME"),
-                            Field.createField(refColumn, "INDEX_NAME")));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID),
-                            Field.createField(charsets, CHARACTER_SET_ID)));
-                    sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID),
-                                    Field.createField(collations, CHARACTER_SET_ID))
-                            .appendFields(Field.createField(fields, "COLLATION_ID"),
-                                    Field.createField(collations, "COLLATION_ID")));
-
-                    sb.appendCondition(Condition.createCondition(relName, "=", "?"));
-                    sb.appendCondition(Condition.createCondition(fieldSource, "=", Field.createField(fields, FIELD_NAME).getFieldTable()));
-                    sb.setOrdering(fieldPosition.getFieldTable());
-
-                    String firebirdSql = sb.getSQLQuery();
-                    statementForColumns = (PooledStatement) querySender.getPreparedStatement(firebirdSql);
-                }
-                statementForColumns.setString(1,table);
-                rs = querySender.getResultSet(-1,statementForColumns).getResultSet();
-                columns = createColumns(rs, table);
-
-            return columns;
-
-        } catch (Exception e) {
-            if(!isConnected())
-                throw new DataSourceException(e);
-            else
-
-            Log.error("Error retrieving column data for table " + table
-                    + " using connection " + getDatabaseConnection(), e);
-            e.printStackTrace();
-
-            return columns;
-
-        }
-        finally {
-            if(!keepAlive)
-                releaseStatementForColumns();
-        }
-
-    }
-
-    private List<DatabaseColumn> createColumns (ResultSet rs, String table) throws SQLException {
-        List<DatabaseColumn> columns = new ArrayList<>();
-        DefaultDatabaseColumn previousColumn = null;
-        while (rs.next()) {
-            String colName = rs.getString(FIELD_NAME).trim();
-            if (previousColumn == null || !colName.equalsIgnoreCase(previousColumn.getName())) {
-                DefaultDatabaseColumn column = new DefaultDatabaseColumn();
-                previousColumn = column;
-                final short fieldType = rs.getShort(FIELD_TYPE);
-                final short fieldSubType = rs.getShort(FIELD_SUB_TYPE);
-                final short fieldScale = rs.getShort(FIELD_SCALE);
-                final int characterSetId = rs.getInt(CHARACTER_SET_ID);
-                final int dataType = getDataType(fieldType, fieldSubType, fieldScale, characterSetId);
-
-                column.setTypeInt(dataType);
-                column.setColumnSubtype(fieldSubType);
-                column.setColumnScale(fieldScale);
-                column.setName(colName);
-                column.setTypeName(DatabaseTypeConverter.getDataTypeName(fieldType, fieldSubType, fieldScale));
-                switch (dataType) {
-                    case Types.DECIMAL:
-                    case Types.NUMERIC:
-                        // TODO column precision
-                        column.setColumnScale(fieldScale * (-1));
-                        break;
-                    case Types.CHAR:
-                    case Types.VARCHAR:
-                    case Types.BINARY:
-                    case Types.VARBINARY:
-                        //valueBuilder.at(15).set(createInt(rs.getShort("FIELD_LENGTH")));
-                        column.setColumnSize(rs.getShort(FIELD_LENGTH));
-                        break;
-                    case Types.FLOAT:
-                        // TODO column precision
-//                    valueBuilder.at(6).set(FLOAT_PRECISION);
-                        break;
-                    case Types.DOUBLE:
-                        // TODO column precision
-//                    valueBuilder.at(6).set(DOUBLE_PRECISION);
-                        break;
-                    case Types.BIGINT:
-                        // TODO column precision
-//                    valueBuilder
-//                            .at(6).set(BIGINT_PRECISION)
-//                            .at(8).set(INT_ZERO);
-                        break;
-                    case Types.INTEGER:
-                        // TODO column precision
-//                    valueBuilder
-//                            .at(6).set(INTEGER_PRECISION)
-//                            .at(8).set(INT_ZERO);
-                        break;
-                    case Types.SMALLINT:
-                        // TODO column precision
-//                    valueBuilder
-//                            .at(6).set(SMALLINT_PRECISION)
-//                            .at(8).set(INT_ZERO);
-                        break;
-                    case Types.DATE:
-                        // TODO column precision
-//                    valueBuilder.at(6).set(DATE_PRECISION);
-                        break;
-                    case Types.TIME:
-                        // TODO column precision
-//                    valueBuilder.at(6).set(TIME_PRECISION);
-                        break;
-                    case Types.TIMESTAMP:
-                        // TODO column precision
-//                    valueBuilder.at(6).set(TIMESTAMP_PRECISION);
-                        break;
-                    case Types.BOOLEAN:
-                        // TODO column precision
-//                    valueBuilder
-//                            .at(6).set(BOOLEAN_PRECISION)
-//                            .at(9).set(RADIX_BINARY);
-                        break;
-                }
-                column.setColumnSize(rs.getInt(FIELD_LENGTH));
-                if (rs.getInt(FIELD_PRECISION) != 0)
-                    column.setColumnSize(rs.getInt(FIELD_PRECISION));
-                if (rs.getInt(CHARACTER_LENGTH) != 0)
-                    column.setColumnSize(rs.getInt(CHARACTER_LENGTH));
-
-                final short nullFlag = rs.getShort(NULL_FLAG);
-                final short sourceNullFlag = rs.getShort(DOMAIN_NULL_FLAG);
-                column.setRemarks(rs.getString(DESCRIPTION));
-                column.setRequired(nullFlag == 1);
-                column.setDomainNotNull(sourceNullFlag == 1);
-
-                String column_def = rs.getString(DEFAULT_SOURCE);
-                if (column_def != null) {
-                    // TODO This looks suspicious (what if it contains default)
-                    int defaultPos = column_def.toUpperCase().trim().indexOf("DEFAULT");
-                    if (defaultPos == 0)
-                        column_def = column_def.substring(7).trim();
-                    column.setDefaultValue(column_def);
-                }
-                column_def = rs.getString(DOMAIN_DEFAULT_SOURCE);
-                if (column_def != null) {
-                    // TODO This looks suspicious (what if it contains default)
-                    int defaultPos = column_def.toUpperCase().trim().indexOf("DEFAULT");
-                    if (defaultPos == 0)
-                        column_def = column_def.substring(7).trim();
-                    column.setDomainDefaultValue(column_def);
-                }
-                column.setIdentity(rs.getInt(IDENTITY_TYPE) == 1);
-                String charset = rs.getString(CHARACTER_SET_NAME);
-                String collate = rs.getString(COLLATION_NAME);
-                if (charset != null)
-                    charset = charset.trim();
-                if (collate != null)
-                    collate = collate.trim();
-                column.setCharset(charset);
-                column.setCollate(collate);
-                String domain = rs.getString(FIELD_SOURCE);
-                if (domain != null && !domain.isEmpty()) {
-                    column.setDomain(domain);
-                }
-                String computedSource = rs.getString(COMPUTED_SOURCE);
-                if (computedSource != null && !computedSource.isEmpty()) {
-                    column.setGenerated(true);
-                    if (computedSource.startsWith("(") && computedSource.endsWith(")"))
-                        computedSource = computedSource.substring(1, computedSource.length() - 1);
-                    column.setComputedSource(computedSource);
-                }
-                if (column.getTypeInt() == Types.LONGVARBINARY ||
-                        column.getTypeInt() == Types.LONGVARCHAR ||
-                        column.getTypeInt() == Types.BLOB) {
-                    column.setColumnSubtype(fieldSubType);
-                    column.setColumnSize(rs.getInt(SEGMENT_LENGTH));
-                }
-                columns.add(column);
-            }
-            String conType = rs.getString(CONSTRAINT_TYPE);
-            if (conType != null) {
-                conType = conType.trim();
-                switch (conType) {
-                    case "PRIMARY KEY":
-                        previousColumn.setPrimaryKey(true);
-                        TableColumnConstraint constraint = new TableColumnConstraint(null, ColumnConstraint.PRIMARY_KEY);
-                        constraint.setName(rs.getString(CONSTRAINT_NAME));
-                        previousColumn.addConstraint(constraint);
-                        break;
-                    case "UNIQUE":
-                        previousColumn.setUnique(true);
-                        constraint = new TableColumnConstraint(null, ColumnConstraint.UNIQUE_KEY);
-                        constraint.setName(rs.getString(CONSTRAINT_NAME));
-                        previousColumn.addConstraint(constraint);
-                        break;
-                    case "FOREIGN KEY":
-                        previousColumn.setForeignKey(true);
-                        constraint = new TableColumnConstraint(null, ColumnConstraint.FOREIGN_KEY);
-                        constraint.setName(rs.getString(CONSTRAINT_NAME));
-                        constraint.setReferencedTable(rs.getString(REF_TABLE));
-                        constraint.setReferencedColumn(rs.getString(REF_COLUMN));
-                        String rule = rs.getString(UPDATE_RULE);
-                        if (rule != null)
-                            constraint.setUpdateRule(rule.trim());
-                        rule = rs.getString(DELETE_RULE);
-                        if (rule != null)
-                            constraint.setDeleteRule(rule.trim());
-                        previousColumn.addConstraint(constraint);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        return columns;
     }
 
     private static final int smallint_type = 7;
@@ -1670,5 +1299,13 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     public NamedObject getDatabaseObjectFromTypeAndName(int type, String name) {
         return getDatabaseObjectFromMetaTagAndName(NamedObject.META_TYPES[type], name);
+    }
+
+    public boolean isPauseLoadingTreeForSearch() {
+        return pauseLoadingTreeForSearch;
+    }
+
+    public void setPauseLoadingTreeForSearch(boolean pauseLoadingTreeForSearch) {
+        this.pauseLoadingTreeForSearch = pauseLoadingTreeForSearch;
     }
 }

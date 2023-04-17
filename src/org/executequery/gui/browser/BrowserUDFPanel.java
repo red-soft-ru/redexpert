@@ -161,7 +161,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
 
     @Override
     public void cleanup() {
-
+        sqlPane.cleanup();
     }
 
     @Override

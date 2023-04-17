@@ -1,9 +1,11 @@
 package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
+import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.datasource.SimpleDataSource;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.editor.QueryEditor;
@@ -15,6 +17,7 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.BackgroundProgressDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -29,7 +32,7 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ComparerDBPanel extends JPanel {
+public class ComparerDBPanel extends JPanel implements TabView {
 
     public static final String TITLE = bundleString("ComparerDB");
     public static final String FRAME_ICON = "ComparerDB_16.png";
@@ -61,10 +64,10 @@ public class ComparerDBPanel extends JPanel {
     private JButton executeScriptButton;
     private JButton selectAllAttributesButton;
     private JButton selectAllPropertiesButton;
-    private static LoggingOutputPanel loggingOutputPanel;
+    private LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
-    private static JProgressBar progressBar;
-    private static BackgroundProgressDialog progressDialog;
+    private JProgressBar progressBar;
+    private BackgroundProgressDialog progressDialog;
 
     private Map<Integer, JCheckBox> attributesCheckBoxMap;
     private Map<Integer, JCheckBox> propertiesCheckBoxMap;
@@ -204,9 +207,9 @@ public class ComparerDBPanel extends JPanel {
         connectionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ConnectionsLabel")));
 
         gridBagHelper.addLabelFieldPair(connectionsPanel,
-                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
-        gridBagHelper.addLabelFieldPair(connectionsPanel,
                 bundleString("CompareDatabaseLabel"), dbCompareComboBox, null);
+        gridBagHelper.addLabelFieldPair(connectionsPanel,
+                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
         connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().get());
 
         // --- attributes panel ---
@@ -298,6 +301,7 @@ public class ComparerDBPanel extends JPanel {
     private boolean prepareComparer() {
 
         comparer = new Comparer(
+                this,
                 databaseConnectionList.get(dbCompareComboBox.getSelectedIndex()),
                 databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()),
                 new boolean[]{
@@ -340,17 +344,14 @@ public class ComparerDBPanel extends JPanel {
             return false;
         }
 
-        List<Integer> itemsList = attributesCheckBoxMap.keySet().stream()
-                .filter(i -> attributesCheckBoxMap.get(i).isSelected()).collect(Collectors.toList());
-        progressBar.setMaximum(comparer.getTotalIterationsCount(itemsList, propertiesCheckBoxMap.get(CHECK_CREATE).isSelected(),
-                propertiesCheckBoxMap.get(CHECK_DROP).isSelected(), propertiesCheckBoxMap.get(CHECK_ALTER).isSelected()));
-        progressBar.setValue(0);
-
         settingScriptProps = new StringBuilder();
         settingScriptProps.append("\n/* Setting properties */\n\n");
         settingScriptProps.append("SET NAMES ").append(getMasterDBCharset()).append(";\n");
         settingScriptProps.append("SET SQL DIALECT ").append(getMasterDBDialect()).append(";\n");
-        settingScriptProps.append("CONNECT '").append(comparer.getMasterConnection().getDatabaseConnection().getName());
+        settingScriptProps.append("CONNECT '").append(SimpleDataSource.generateUrl(
+                comparer.getMasterConnection().getDatabaseConnection(),
+                SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection().getDatabaseConnection()))
+        );
         settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getDatabaseConnection().getUserName());
         settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword());
         settingScriptProps.append("';\nSET AUTODDL ON;\n");
@@ -498,7 +499,7 @@ public class ComparerDBPanel extends JPanel {
         }
 
         progressDialog = new BackgroundProgressDialog(bundleString("Executing"));
-        SwingWorker worker = new SwingWorker("DBComparerProcess") {
+        SwingWorker worker = new SwingWorker("DBComparerProcess", this) {
 
             @Override
             public Object construct() {
@@ -512,15 +513,17 @@ public class ComparerDBPanel extends JPanel {
 
                     try {
                         compare();
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorOccurred"), e);
                         Log.error("Error occurred while comparing DBs", e);
                     }
 
                     int[] counter = comparer.getCounter();
+                    long elapsedTime = System.currentTimeMillis() - startTime;
+
                     GUIUtilities.displayInformationMessage(
                             String.format(bundleString("ComparingEnds"), counter[0], counter[1], counter[2]));
-                    Log.info(String.format("Comparing has been finished. Time elapsed: %d ms", System.currentTimeMillis() - startTime));
+                    Log.info(String.format("Comparing has been finished. Time elapsed: %d ms", elapsedTime));
                 }
 
                 return null;
@@ -540,6 +543,7 @@ public class ComparerDBPanel extends JPanel {
         progressDialog.run();
 
         if (progressDialog.isCancel()) {
+            worker.setCancel(true);
             compareButton.setText(bundleString("Canceling"));
             compareButton.setEnabled(false);
         }
@@ -554,6 +558,7 @@ public class ComparerDBPanel extends JPanel {
         compareButton.setEnabled(true);
         compareButton.setText(bundleString("CompareButton"));
         progressBar.setValue(progressBar.getMaximum());
+        progressBar.setString(bundleString("ProgressBarFinish"));
     }
 
     private void saveScript() {
@@ -639,6 +644,22 @@ public class ComparerDBPanel extends JPanel {
 
     }
 
+    @Override
+    public boolean tabViewClosing() {
+        sqlTextPanel.cleanup();
+        return true;
+    }
+
+    @Override
+    public boolean tabViewSelected() {
+        return true;
+    }
+
+    @Override
+    public boolean tabViewDeselected() {
+        return true;
+    }
+
     // ---
 
     public static class FileTypeFilter extends FileFilter {
@@ -702,15 +723,21 @@ public class ComparerDBPanel extends JPanel {
         return dialect;
     }
 
-    public static void incrementProgressBarValue() {
+    public void recreateProgressBar(String label, String metaTag, int maxValue) {
+        progressBar.setValue(0);
+        progressBar.setMaximum(maxValue);
+        progressBar.setString(MiscUtils.isNull(metaTag) ? bundleString(label) : String.format(bundleString(label), Bundles.get(NamedObject.class, metaTag)));
+    }
+
+    public void incrementProgressBarValue() {
         progressBar.setValue(progressBar.getValue() + 1);
     }
 
-    public static boolean isCanceled() {
+    public boolean isCanceled() {
         return progressDialog.isCancel() || !isComparing;
     }
 
-    public static void addToLog(String text) {
+    public void addToLog(String text) {
         loggingOutputPanel.append(text);
     }
 

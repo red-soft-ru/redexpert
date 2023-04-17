@@ -3,6 +3,7 @@ package org.executequery.gui.databaseobjects;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.UDFParameter;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
@@ -233,17 +234,17 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             parameterNumberField.setText(String.valueOf(returnArg));
             parameterBoxChanged();
         } else {
-            DefaultDatabaseUDF.UDFParameter udfParameter = editedUDF.getUDFParameters().get(0);
-            if (udfParameter.getFieldType() == 40) {// check for cstring type
+            UDFParameter udfParameter = editedUDF.getUDFParameters().get(0);
+            if (udfParameter.getDataType() == 40) {// check for cstring type
                 cstringBox.setSelected(true);
-                cstringLengthField.setText(String.valueOf(udfParameter.getFieldLength()));
+                cstringLengthField.setText(String.valueOf(udfParameter.getSize()));
                 cstringBoxChanged();
             } else {
-                returnsType.setColumnSize(udfParameter.getFieldLength());
-                returnsType.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(udfParameter.getFieldType(),
-                        udfParameter.getFieldSubType()));
-                returnsType.setColumnSubtype(udfParameter.getFieldSubType());
-                returnsType.setColumnScale(udfParameter.getFieldScale());
+                returnsType.setColumnSize(udfParameter.getSize());
+                returnsType.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(udfParameter.getDataType(),
+                        udfParameter.getSubType()));
+                returnsType.setColumnSubtype(udfParameter.getSubType());
+                returnsType.setColumnScale(udfParameter.getScale());
                 returnsType.setColumnType(udfParameter.getFieldStringType());
 
                 selectTypePanel.setColumnData(returnsType);
@@ -259,17 +260,17 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
         // remove first empty row
         parametersPanel.removeRow(0);
-        for (DefaultDatabaseUDF.UDFParameter parameter :
+        for (UDFParameter parameter :
                 editedUDF.getUDFParameters()) {
-            if (parameter.getArgPosition() == 0)
+            if (parameter.getPosition() == 0)
                 continue;
             ColumnData cd = new ColumnData(connection);
-            cd.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(parameter.getFieldType(),
-                    parameter.getFieldSubType()));
-            cd.setColumnSubtype(parameter.getFieldSubType());
-            cd.setColumnSize(parameter.getFieldLength());
-            cd.setColumnType(DatabaseTypeConverter.getDataTypeName(parameter.getFieldType(),
-                    parameter.getFieldSubType(), parameter.getFieldScale()));
+            cd.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(parameter.getDataType(),
+                    parameter.getSubType()));
+            cd.setColumnSubtype(parameter.getSubType());
+            cd.setColumnSize(parameter.getSize());
+            cd.setColumnType(DatabaseTypeConverter.getDataTypeName(parameter.getDataType(),
+                    parameter.getSubType(), parameter.getScale()));
             cd.setMechanism(parameter.getStringMechanism());
             cd.setCstring(parameter.isCString());
             cd.setNotNull(parameter.isNotNull());

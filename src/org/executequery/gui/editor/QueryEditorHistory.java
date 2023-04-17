@@ -259,6 +259,13 @@ public class QueryEditorHistory {
                             queryEditor,
                             null,
                             true);
+                } else {
+                    QueryEditor queryEditor = new QueryEditor("", copy.get(i).path);
+                    GUIUtilities.addCentralPane(QueryEditor.TITLE,
+                            QueryEditor.FRAME_ICON,
+                            queryEditor,
+                            null,
+                            true);
                 }
             } catch (IOException e) {
                 e.printStackTrace();

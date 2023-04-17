@@ -298,7 +298,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
     }
 
     public void cleanup() {
-
+        sqlText.cleanup();
         combosGroup.close();
 
         if (statusBar != null) {

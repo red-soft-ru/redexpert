@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
@@ -23,8 +24,6 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     int sqlType, sqlSubtype, sqlSize, sqlScale;
 
     private List<DatabaseColumn> columns;
-
-    private static final String NAME = "FIELD_NAME";
     private static final String TYPE = "FIELD_TYPE";
     private static final String SUB_TYPE = "FIELD_SUB_TYPE";
     private static final String FIELD_PRECISION = "FIELD_PRECISION";
@@ -33,8 +32,8 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     private static final String CHAR_LENGTH = "CH_LENGTH";
     private static final String DESCRIPTION = "DESCRIPTION";
     private static final String NULL_FLAG = "NULL_FLAG";
-    private static final String COMPUTED_BY = "COMPUTED_BY";
-    private static final String CHARSET = "CHARSET";
+    private static final String COMPUTED_BY = "COMPUTED_BLR";
+    private static final String CHARSET = "CHARACTER_SET_NAME";
     private static final String VALIDATION_SOURCE = "VALIDATION_SOURCE";
     private static final String DEFAULT_SOURCE = "DEFAULT_SOURCE";
     private static final String COMPUTED_SOURCE = "COMPUTED_SOURCE";
@@ -107,100 +106,119 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     @Override
-    protected String queryForInfo() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT \n")
-                .append("F.RDB$FIELD_TYPE AS ").append(TYPE).append(",\n")
-                .append("F.RDB$FIELD_SUB_TYPE AS ").append(SUB_TYPE).append(",\n")
-                .append("F.RDB$FIELD_PRECISION AS ").append(FIELD_PRECISION).append(",\n")
-                .append("F.RDB$FIELD_SCALE AS ").append(SCALE).append(",\n")
-                .append("F.RDB$FIELD_LENGTH AS ").append(FIELD_LENGTH).append(",\n")
-                .append("F.RDB$CHARACTER_LENGTH AS ").append(CHAR_LENGTH).append(",\n")
-                .append("F.RDB$DESCRIPTION AS ").append(DESCRIPTION).append(",\n")
-                .append("F.RDB$NULL_FLAG AS ").append(NULL_FLAG).append(",\n")
-                .append("F.RDB$COMPUTED_BLR AS ").append(COMPUTED_BY).append(",\n")
-                .append("C.RDB$CHARACTER_SET_NAME AS ").append(CHARSET).append(",\n")
-                .append("F.RDB$VALIDATION_SOURCE AS ").append(VALIDATION_SOURCE).append(",\n")
-                .append("F.RDB$DEFAULT_SOURCE AS ").append(DEFAULT_SOURCE).append(",\n")
-                .append("F.RDB$COMPUTED_SOURCE AS ").append(COMPUTED_SOURCE).append(",\n")
-                .append("F.RDB$SEGMENT_LENGTH AS ").append(SEGMENT_LENGTH).append(",\n")
-                .append("CO.RDB$COLLATION_NAME AS ").append(COLLATION_NAME).append("\n")
-                .append("FROM RDB$FIELDS F\n")
-                .append("LEFT JOIN RDB$CHARACTER_SETS AS C ON F.RDB$CHARACTER_SET_ID = C.RDB$CHARACTER_SET_ID\n")
-                .append("LEFT JOIN RDB$COLLATIONS CO ON ((F.RDB$COLLATION_ID = CO.RDB$COLLATION_ID) AND")
-                .append("(F.RDB$CHARACTER_SET_ID = CO.RDB$CHARACTER_SET_ID))\n")
-                .append("WHERE\n")
-                .append("TRIM(F.RDB$FIELD_NAME) = ?");
-        String query = sb.toString();
-        return query;
+    protected String getFieldName() {
+        return FIELD_NAME;
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+    protected Table getMainTable() {
+        return Table.createTable("RDB$FIELDS", "F");
+    }
+
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        Table fields = getMainTable();
+        Table charsets = Table.createTable("RDB$CHARACTER_SETS", "C");
+        Table collations = Table.createTable("RDB$COLLATIONS", "CO");
+        sb.appendFields(fields, FIELD_NAME, TYPE, SUB_TYPE, FIELD_PRECISION, SCALE, FIELD_LENGTH,
+                NULL_FLAG, COMPUTED_BY, VALIDATION_SOURCE, DEFAULT_SOURCE, COMPUTED_SOURCE, SEGMENT_LENGTH, DESCRIPTION);
+        sb.appendField(Field.createField(fields, "CHARACTER_LENGTH").setAlias(CHAR_LENGTH));
+        sb.appendField(Field.createField(charsets, CHARSET));
+        sb.appendField(Field.createField(collations, COLLATION_NAME));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, "CHARACTER_SET_ID"), Field.createField(charsets, "CHARACTER_SET_ID")));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, "COLLATION_ID"), Field.createField(collations, "COLLATION_ID"))
+                .appendFields(Field.createField(fields, "CHARACTER_SET_ID"), Field.createField(collations, "CHARACTER_SET_ID")));
+        sb.setOrdering("1");
+        return sb;
+    }
+
+    @Override
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
+        if (!isSystem())
+            sb.appendCondition(Condition.createCondition(getObjectField(), "STARTING  WITH ", "'RDB$'").setNot(true));
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        domainData.setDomainType(rs.getInt(TYPE));
+        domainData.setDomainSize(rs.getInt(FIELD_LENGTH));
+        if (rs.getInt(FIELD_PRECISION) != 0)
+            domainData.setDomainSize(rs.getInt(FIELD_PRECISION));
+        if (rs.getInt(CHAR_LENGTH) != 0)
+            domainData.setDomainSize(rs.getInt(CHAR_LENGTH));
+        if (rs.getInt(SEGMENT_LENGTH) != 0)
+            domainData.setDomainSize(rs.getInt(SEGMENT_LENGTH));
+        domainData.setDomainScale(Math.abs(rs.getInt(SCALE)));
+        domainData.setDomainSubType(rs.getInt(SUB_TYPE));
+        String domainCharset = rs.getString(CHARSET);
+        String domainCheck = rs.getString(VALIDATION_SOURCE);
+        domainData.setDomainDescription(rs.getString(DESCRIPTION));
+        domainData.setDomainNotNull(rs.getInt(NULL_FLAG) == 1);
+        domainData.setNotNull(domainData.isDomainNotNull());
+        domainData.setDomainDefault(rs.getString(DEFAULT_SOURCE));
+        domainData.setDomainComputedBy(rs.getString(COMPUTED_SOURCE));
+        String domainCollate = rs.getString(COLLATION_NAME);
+        domainData.setDomainType(DatabaseTypeConverter.getSqlTypeFromRDBType(domainData.getDomainType(), domainData.getDomainSubType()));
+        if (!MiscUtils.isNull(domainCheck)) {
+            domainCheck = domainCheck.trim();
+            if (domainCheck.toUpperCase().startsWith("CHECK"))
+                domainCheck = domainCheck.substring(5).trim();
+            if (domainCheck.startsWith("(") && domainCheck.endsWith(")")) {
+                domainCheck = domainCheck.substring(1, domainCheck.length() - 1);
+            }
+        }
+        domainData.setDomainCheck(domainCheck);
+        domainData.setDomainDefault(domainData.processedDefaultValue(domainData.getDomainDefault()));
+        if (MiscUtils.isNull(domainCharset)) {
+            domainCharset = "";
+        } else domainCharset = domainCharset.trim();
+        domainData.setDomainCharset(domainCharset);
+        if (MiscUtils.isNull(domainCollate)) {
+            domainCollate = "";
+        } else domainCollate = domainCollate.trim();
+        domainData.setDomainCollate(domainCollate);
+        domainData.setDomainTypeName(DatabaseTypeConverter.getDataTypeName(rs.getInt(TYPE), rs.getInt(SUB_TYPE), rs.getInt(SCALE)));
+
+        DefaultDatabaseColumn column = new DefaultDatabaseColumn();
+        column.setName(getName());
+        column.setTypeInt(rs.getInt(TYPE));
+        column.setTypeName(DatabaseTypeConverter.getDataTypeName(rs.getInt(TYPE), rs.getInt(SUB_TYPE), rs.getInt(SCALE)));
+        column.setColumnSize(rs.getInt(FIELD_LENGTH));
+        if (rs.getInt(FIELD_PRECISION) != 0)
+            column.setColumnSize(rs.getInt(FIELD_PRECISION));
+        if (rs.getInt(CHAR_LENGTH) != 0)
+            column.setColumnSize(rs.getInt(CHAR_LENGTH));
+        column.setColumnScale(Math.abs(rs.getInt(SCALE)));
+        column.setRequired(rs.getInt(NULL_FLAG) == DatabaseMetaData.columnNoNulls);
+        column.setRemarks(getFromResultSet(rs, DESCRIPTION));
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        column.setDefaultValue(COMPUTED_BY);
+
+        sqlType = rs.getInt(TYPE);
+        sqlSubtype = rs.getInt(SUB_TYPE);
+        sqlSize = column.getColumnSize();
+        sqlScale = rs.getInt(SCALE);
+
+        columns.add(column);
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
         columns = new ArrayList<>();
         domainData = new ColumnData(getHost().getDatabaseConnection());
         domainData.setColumnName(getName());
-        while (rs.next()) {
-            domainData.setDomainType(rs.getInt(TYPE));
-            domainData.setDomainSize(rs.getInt(FIELD_LENGTH));
-            if (rs.getInt(FIELD_PRECISION) != 0)
-                domainData.setDomainSize(rs.getInt(FIELD_PRECISION));
-            if (rs.getInt(CHAR_LENGTH) != 0)
-                domainData.setDomainSize(rs.getInt(CHAR_LENGTH));
-            if (rs.getInt(SEGMENT_LENGTH) != 0)
-                domainData.setDomainSize(rs.getInt(SEGMENT_LENGTH));
-            domainData.setDomainScale(Math.abs(rs.getInt(SCALE)));
-            domainData.setDomainSubType(rs.getInt(SUB_TYPE));
-            String domainCharset = rs.getString(CHARSET);
-            String domainCheck = rs.getString(VALIDATION_SOURCE);
-            domainData.setDomainDescription(rs.getString(DESCRIPTION));
-            domainData.setDomainNotNull(rs.getInt(NULL_FLAG) == 1);
-            domainData.setNotNull(domainData.isDomainNotNull());
-            domainData.setDomainDefault(rs.getString(DEFAULT_SOURCE));
-            domainData.setDomainComputedBy(rs.getString(COMPUTED_SOURCE));
-            String domainCollate = rs.getString(COLLATION_NAME);
-            domainData.setDomainType(DatabaseTypeConverter.getSqlTypeFromRDBType(domainData.getDomainType(), domainData.getDomainSubType()));
-            if (!MiscUtils.isNull(domainCheck)) {
-                domainCheck = domainCheck.trim();
-                if (domainCheck.toUpperCase().startsWith("CHECK"))
-                    domainCheck = domainCheck.substring(5).trim();
-                if (domainCheck.startsWith("(") && domainCheck.endsWith(")")) {
-                    domainCheck = domainCheck.substring(1, domainCheck.length() - 1);
-                }
-            }
-            domainData.setDomainCheck(domainCheck);
-            domainData.setDomainDefault(domainData.processedDefaultValue(domainData.getDomainDefault()));
-            if (MiscUtils.isNull(domainCharset)) {
-                domainCharset = "";
-            } else domainCharset = domainCharset.trim();
-            domainData.setDomainCharset(domainCharset);
-            if (MiscUtils.isNull(domainCollate)) {
-                domainCollate = "";
-            } else domainCollate = domainCollate.trim();
-            domainData.setDomainCollate(domainCollate);
-            domainData.setDomainTypeName(DatabaseTypeConverter.getDataTypeName(rs.getInt(TYPE), rs.getInt(SUB_TYPE), rs.getInt(SCALE)));
+    }
 
-            DefaultDatabaseColumn column = new DefaultDatabaseColumn();
-            column.setName(getName());
-            column.setTypeInt(rs.getInt(TYPE));
-            column.setTypeName(DatabaseTypeConverter.getDataTypeName(rs.getInt(TYPE), rs.getInt(SUB_TYPE), rs.getInt(SCALE)));
-            column.setColumnSize(rs.getInt(FIELD_LENGTH));
-            if (rs.getInt(FIELD_PRECISION) != 0)
-                column.setColumnSize(rs.getInt(FIELD_PRECISION));
-            if (rs.getInt(CHAR_LENGTH) != 0)
-                column.setColumnSize(rs.getInt(CHAR_LENGTH));
-            column.setColumnScale(Math.abs(rs.getInt(SCALE)));
-            column.setRequired(rs.getInt(NULL_FLAG) == DatabaseMetaData.columnNoNulls);
-            column.setRemarks(getFromResultSet(rs,DESCRIPTION));
-            setRemarks(getFromResultSet(rs,DESCRIPTION));
-            column.setDefaultValue(COMPUTED_BY);
+    @Override
+    public void finishLoadingInfo() {
 
-            sqlType = rs.getInt(TYPE);
-            sqlSubtype = rs.getInt(SUB_TYPE);
-            sqlSize = column.getColumnSize();
-            sqlScale = rs.getInt(SCALE);
+    }
 
-            columns.add(column);
-        }
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
     }
 }

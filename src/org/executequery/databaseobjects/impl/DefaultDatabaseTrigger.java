@@ -3,8 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.comparer.Comparer;
-import org.executequery.sql.sqlbuilder.SelectBuilder;
-import org.executequery.sql.sqlbuilder.Table;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
@@ -374,34 +373,80 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     protected static final String TRIGGER_TYPE = "TRIGGER_TYPE";
     protected static final String TRIGGER_INACTIVE = "TRIGGER_INACTIVE";
 
-    protected String queryForInfo() {
-        SelectBuilder sb = SelectBuilder.createSelectBuilder();
-        Table triggers = Table.createTable("RDB$TRIGGERS", "T");
-        sb.appendTable(triggers);
 
-        sb.appendFields(triggers, TRIGGER_SOURCE, RELATION_NAME, TRIGGER_SEQUENCE, TRIGGER_TYPE, TRIGGER_INACTIVE, DESCRIPTION);
-        sb.appendFields(triggers, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
-        sb.appendField(buildSqlSecurityField(triggers));
-        sb.appendCondition(buildNameCondition(triggers, "TRIGGER_NAME"));
-
-        String query = sb.getSQLQuery();
-        return query;
+    @Override
+    protected String getFieldName() {
+        return "TRIGGER_NAME";
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        if (rs.next()) {
-            setTableName(getFromResultSet(rs, RELATION_NAME));
-            setTriggerSequence(rs.getInt(TRIGGER_SEQUENCE));
-            setTriggerActive(rs.getInt(TRIGGER_INACTIVE) != 1);
-            setTriggerType(rs.getLong(TRIGGER_TYPE));
-            setTriggerSourceCode(getFromResultSet(rs, TRIGGER_SOURCE));
-            setRemarks(getFromResultSet(rs, DESCRIPTION));
-            setEngine(getFromResultSet(rs, ENGINE_NAME));
-            setEntryPoint(getFromResultSet(rs, ENTRYPOINT));
-            setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
-        }
+    protected Table getMainTable() {
+        return Table.createTable("RDB$TRIGGERS", "T");
     }
+
+
+    Condition checkTriggerType(long longTriggerType) {
+        return Condition.createCondition()
+                .setStatement(Function.createFunction("BIN_AND")
+                        .appendArgument(Field.createField(getMainTable(), TRIGGER_TYPE).getFieldTable())
+                        .appendArgument(DefaultDatabaseTrigger.RDB_TRIGGER_TYPE_MASK + "")
+                        .getStatement()
+                        + " = " + longTriggerType);
+    }
+
+    @Override
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
+        if (getType() == NamedObject.DDL_TRIGGER)
+            sb.appendCondition(checkTriggerType(TRIGGER_TYPE_DDL));
+        else if (getType() == NamedObject.DATABASE_TRIGGER)
+            sb.appendCondition(checkTriggerType(TRIGGER_TYPE_DB));
+        else if (getType() == NamedObject.TRIGGER)
+            sb.appendCondition(Condition.createCondition(Field.createField(getMainTable(), TRIGGER_TYPE), "<=", "114"));
+        return sb;
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = SelectBuilder.createSelectBuilder();
+        Table triggers = getMainTable();
+        sb.appendTable(triggers);
+        sb.appendFields(triggers, getFieldName(), TRIGGER_SOURCE, RELATION_NAME, TRIGGER_SEQUENCE, TRIGGER_TYPE, TRIGGER_INACTIVE, DESCRIPTION);
+        sb.appendFields(triggers, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
+        sb.appendField(buildSqlSecurityField(triggers));
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setTableName(getFromResultSet(rs, RELATION_NAME));
+        setTriggerSequence(rs.getInt(TRIGGER_SEQUENCE));
+        setTriggerActive(rs.getInt(TRIGGER_INACTIVE) != 1);
+        setTriggerType(rs.getLong(TRIGGER_TYPE));
+        setTriggerSourceCode(getFromResultSet(rs, TRIGGER_SOURCE));
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        setEngine(getFromResultSet(rs, ENGINE_NAME));
+        setEntryPoint(getFromResultSet(rs, ENTRYPOINT));
+        setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
+    }
+
 
     public void reset() {
         super.reset();

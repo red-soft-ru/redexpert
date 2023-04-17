@@ -23,6 +23,8 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.SystemFunctionMetaTag;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
@@ -149,14 +151,39 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
     }
 
     @Override
-    protected String queryForInfo() {
+    protected String getFieldName() {
         return null;
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) {
+    protected Table getMainTable() {
+        return null;
     }
 
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        return null;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
+    }
 }
 
 

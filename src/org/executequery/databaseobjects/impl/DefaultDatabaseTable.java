@@ -94,10 +94,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         this(object.getHost(), metaDataKey);
         setName(object.getName());
 
+
         if (object instanceof DefaultDatabaseObject) {
             DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
             setTypeTree(ddo.getTypeTree());
             setDependObject(ddo.getDependObject());
+            metaTagParent = ddo.getMetaTagParent();
 
         } else {
             typeTree = TreePanel.DEFAULT;
@@ -113,10 +115,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         this(object.getHost());
         setName(object.getName());
 
+
         if (object instanceof DefaultDatabaseObject) {
             DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
             setTypeTree(ddo.getTypeTree());
             setDependObject(ddo.getDependObject());
+            metaTagParent = ddo.getMetaTagParent();
 
         } else {
             typeTree = TreePanel.DEFAULT;
@@ -1121,9 +1125,34 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         this.adapter = adapter;
     }
 
-    @Override
-    protected String queryForInfo() {
+    protected TreeSet<String> conNames;
 
+    @Override
+    protected String getFieldName() {
+        return "RELATION_NAME";
+    }
+
+    @Override
+    protected Table getMainTable() {
+        return Table.createTable("RDB$RELATIONS", "R");
+    }
+
+    @Override
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
+        sb.appendCondition(Condition.createCondition(Field.createField(getMainTable(), "VIEW_BLR"), "IS", "NULL"));
+        if (getDatabaseMajorVersion() >= 2 && !(this instanceof DefaultTemporaryDatabaseTable)) {
+            sb.appendCondition(Condition.createCondition()
+                    .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "RELATION_TYPE"), "IS", "NULL"))
+                    .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "RELATION_TYPE"), "=", "0"))
+                    .appendCondition(Condition.createCondition(Field.createField(getMainTable(), "RELATION_TYPE"), "=", "2"))
+                    .setLogicOperator("OR"));
+        }
+        return sb;
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
         SelectBuilder sb = new SelectBuilder();
         sb.setDistinct(true);
         Table rels = Table.createTable("RDB$RELATIONS", "R");
@@ -1137,6 +1166,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 .appendArgument(conType.getFieldTable() + " <> 'CHECK'")
                 .appendArgument("NULL")
                 .appendArgument(conName.getFieldTable());
+        sb.appendField(getObjectField());
         sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conName.getAlias()));
         compareCheck.setArgument(2, conType.getFieldTable());
         sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conType.getAlias()));
@@ -1147,56 +1177,63 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         sb.appendField(Field.createField(rels, TABLESPACE + "_NAME").setAlias(TABLESPACE).
                 setNull(!tablespaceCheck()));
         sb.appendField(Field.createField(rels, DESCRIPTION));
-        Field relName = Field.createField(rels, "RELATION_NAME");
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField(relCons, relName.getAlias())));
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(getObjectField(), Field.createField(relCons, getObjectField().getAlias())));
         sb.appendJoin(LeftJoin.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
         sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
                 Field.createField(triggers, "TRIGGER_NAME")));
-        sb.appendCondition(Condition.createCondition(relName, "=", "?"));
 
         sb.appendCondition(Condition.createCondition()
                 .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "=", "1"))
                 .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "IS", "NULL"))
                 .setLogicOperator("OR"));
+        sb.setOrdering("1");
 
-        return sb.getSQLQuery();
+        return sb;
+    }
+
+    protected void addingConstraint(ResultSet rs) throws SQLException {
+        String conType = rs.getString(CONSTRAINT_TYPE);
+        if (conType != null) {
+            String name = rs.getString(CONSTRAINT_NAME).trim();
+            if (!conNames.contains(name)) {
+                ColumnConstraint constraint = new TableColumnConstraint(rs.getString(TRIGGER_SOURCE));
+                constraint.setName(name);
+                constraint.setTable(this);
+                checkConstraints.add(constraint);
+                conNames.add(name);
+            }
+        }
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) {
-        try {
-
-            boolean first = true;
-            checkConstraints = new ArrayList<>();
-            List<String> names = new ArrayList<>();
-            while (rs.next()) {
-
-                if (first) {
-                    setRemarks(getFromResultSet(rs, DESCRIPTION));
-                    setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
-                    setExternalFile(getFromResultSet(rs, EXTERNAL_FILE));
-                    setAdapter(getFromResultSet(rs, ADAPTER));
-                    setTablespace(getFromResultSet(rs, TABLESPACE));
-                }
-
-                first = false;
-                String conType = rs.getString(CONSTRAINT_TYPE);
-                if (conType != null) {
-                    String name = rs.getString(CONSTRAINT_NAME).trim();
-                    if (!names.contains(name)) {
-                        ColumnConstraint constraint = new TableColumnConstraint(rs.getString(TRIGGER_SOURCE));
-                        constraint.setName(name);
-                        constraint.setTable(this);
-                        checkConstraints.add(constraint);
-                        names.add(name);
-                    }
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        if (first) {
+            setRemarks(getFromResultSet(rs, DESCRIPTION));
+            setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+            setExternalFile(getFromResultSet(rs, EXTERNAL_FILE));
+            setAdapter(getFromResultSet(rs, ADAPTER));
+            setTablespace(getFromResultSet(rs, TABLESPACE));
         }
+        addingConstraint(rs);
+        return null;
     }
+
+    @Override
+    public void prepareLoadingInfo() {
+        checkConstraints = new ArrayList<>();
+        conNames = new TreeSet<>();
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return true;
+    }
+
 
     public String getTablespace() {
         checkOnReload(tablespace);

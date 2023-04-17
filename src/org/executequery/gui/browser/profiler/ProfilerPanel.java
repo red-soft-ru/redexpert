@@ -15,8 +15,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * @author Alexey Kozlov
@@ -304,7 +306,8 @@ public class ProfilerPanel extends JPanel
                 addNodesSelfTime(child);
 
         }
-        node.add(new DefaultMutableTreeNode(new ProfilerData(-1, nodeData.getCallerId(), "Self Time", selfTime)));
+        if (node.getChildCount() > 0)
+            node.add(new DefaultMutableTreeNode(new ProfilerData(-1, nodeData.getCallerId(), "Self Time", selfTime)));
 
     }
 
@@ -342,8 +345,11 @@ public class ProfilerPanel extends JPanel
         DefaultMutableTreeNode copyNode = new DefaultMutableTreeNode(originalNode.getUserObject());
 
         Enumeration<TreeNode> children = originalNode.children();
-        while (children.hasMoreElements())
-            copyNode.add(cloneNode((DefaultMutableTreeNode) children.nextElement()));
+        while (children.hasMoreElements()) {
+            DefaultMutableTreeNode childCopy = cloneNode((DefaultMutableTreeNode) children.nextElement());
+            childCopy.setUserObject(((ProfilerData) childCopy.getUserObject()).getCopy());
+            copyNode.add(cloneNode(childCopy));
+        }
 
         return copyNode;
     }

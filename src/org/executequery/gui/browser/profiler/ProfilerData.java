@@ -16,19 +16,14 @@ class ProfilerData {
     private long avgTime;
     private long callCount;
 
+    public ProfilerData(int id, int callerId, String packageName, String routineName, long totalTime) {
+        this(id, callerId, (packageName != null) ? (packageName.trim() + "::" + routineName.trim()) : routineName.trim(), totalTime);
+    }
+
     public ProfilerData(int id, int callerId, String processName, long totalTime) {
         this.id = id;
         this.callerId = callerId;
         this.processName = processName;
-        this.totalTime = totalTime;
-        this.avgTime = totalTime;
-        this.callCount = 1;
-    }
-
-    public ProfilerData(int id, int callerId, String packageName, String routineName, long totalTime) {
-        this.id = id;
-        this.callerId = callerId;
-        this.processName = (packageName != null) ? (packageName.trim() + "::" + routineName.trim()) : routineName.trim();
         this.totalTime = totalTime;
         this.avgTime = totalTime;
         this.callCount = 1;
@@ -68,6 +63,10 @@ class ProfilerData {
 
     public long getCallCount() {
         return callCount;
+    }
+
+    public ProfilerData getCopy() {
+        return new ProfilerData(id, callerId, processName, totalTime);
     }
 
 }

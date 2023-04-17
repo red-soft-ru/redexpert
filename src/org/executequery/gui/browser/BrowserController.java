@@ -186,6 +186,8 @@ public class BrowserController {
 
             GUIUtilities.setSelectedCentralPane(title);
         }
+        if (viewPanel.getCurrentView() != null)
+            viewPanel = null;
 
     }
 

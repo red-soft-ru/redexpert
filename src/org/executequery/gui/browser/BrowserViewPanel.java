@@ -103,7 +103,7 @@ public class BrowserViewPanel extends FormObjectViewContainer
         if (currentView instanceof ObjectDefinitionPanel)
             return ((ObjectDefinitionPanel) currentView).commitResultSet();
         currentView.cleanup();
-
+        cleanup();
         return true;
     }
 

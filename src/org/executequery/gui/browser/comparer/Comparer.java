@@ -892,10 +892,8 @@ public class Comparer {
         DefaultStatementExecutor executor =
                 new DefaultStatementExecutor(compareConnection.getDatabaseConnection(), true);
 
-        ListIterator<NamedObject> keyIterator = objectsList.listIterator();
-        ListIterator<NamedObject> valueIterator = objectsList.listIterator();
-        Map<String, NamedObject> objectMap = objectsList.stream().collect(
-                Collectors.toMap(key -> keyIterator.next().getName(), value -> valueIterator.next()));
+        Map<String, NamedObject> objectMap = new HashMap<>();
+        objectsList.forEach(obj -> objectMap.put(obj.getName(), obj));
 
         try {
 

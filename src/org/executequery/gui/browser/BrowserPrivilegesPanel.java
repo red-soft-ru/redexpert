@@ -8,7 +8,6 @@ import org.executequery.components.table.RoleTableModel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.datasource.ConnectionManager;
@@ -18,14 +17,10 @@ import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
-import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -198,11 +193,11 @@ public class BrowserPrivilegesPanel extends JPanel implements ActionListener {
     }
 
     private boolean isTable() {
-        return defaultDatabaseObject instanceof DatabaseTable || defaultDatabaseObject instanceof DefaultDatabaseView;
+        return defaultDatabaseObject instanceof AbstractTableObject || defaultDatabaseObject instanceof DefaultDatabaseObject;
     }
 
-    private boolean isProcedure() {
-        return defaultDatabaseObject instanceof DefaultDatabaseProcedure;
+    private boolean isProcedureOrFunction() {
+        return defaultDatabaseObject instanceof DefaultDatabaseExecutable;
     }
 
     private boolean isGeneratorOrException() {

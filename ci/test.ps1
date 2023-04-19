@@ -26,7 +26,8 @@ git clone -q http://git.red-soft.biz/red-database/re-tests.git
 git clone -q http://git.red-soft.biz/red-database/python/lackey.git
 
 echo "Installing components"
-start-process "${PYTHON}" "-m pip install pytest" -wait -nonewwindow
+start-process "${PYTHON}" "-m pip install pytest pyautogui" -wait -nonewwindow
+start-process "${PYTHON}" "-m pip install git+http://git.red-soft.biz/red-database/python/red-database-python-driver.git" -wait -nonewwindow
 start-process "${PYTHON}" "-m pip install -e .\lackey" -wait -nonewwindow
 start-process "${PYTHON}" "-m pip install -e .\re-tests" -wait -nonewwindow
 

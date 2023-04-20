@@ -351,6 +351,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         settingScriptProps.append("CONNECT '").append(SimpleDataSource.generateUrl(
                 comparer.getMasterConnection().getDatabaseConnection(),
                 SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection().getDatabaseConnection()))
+                .replace("jdbc:firebirdsql://", "")
         );
         settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getDatabaseConnection().getUserName());
         settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword());

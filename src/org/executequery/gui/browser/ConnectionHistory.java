@@ -202,7 +202,7 @@ public class ConnectionHistory extends AbstractXMLResourceReaderWriter<String[]>
 
   @Override
   public boolean canHandleEvent(ApplicationEvent event) {
-    return true;
+    return (event instanceof ConnectionEvent);
   }
 
   public class ConnectionHistoryXMLHandler extends AbstractXMLRepositoryHandler<String[]> {

@@ -40,6 +40,6 @@ public class GrantManagerConnectionListener implements ConnectionListener {
 
     @Override
     public boolean canHandleEvent(ApplicationEvent event) {
-        return true;
+        return (event instanceof ConnectionEvent);
     }
 }

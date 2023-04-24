@@ -20,12 +20,10 @@
 
 package org.executequery.gui.browser.tree;
 
-import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTreeCellRenderer;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.depend.DependPanel;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
@@ -51,7 +49,9 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 /**
  * @author Takis Diakoumis
@@ -73,7 +73,7 @@ public class SchemaTree extends DynamicTree
         addKeyListener(this);
 
 
-        DefaultTreeCellRenderer renderer = new BrowserTreeCellRenderer(loadIcons());
+        DefaultTreeCellRenderer renderer = new BrowserTreeCellRenderer();
         setCellRenderer(renderer);
 
         setEditable(!UserProperties.getInstance().getBooleanProperty("browser.double-click.to.connect"));
@@ -93,19 +93,7 @@ public class SchemaTree extends DynamicTree
 
     }
 
-    private Map<String, Icon> loadIcons() {
 
-        Map<String, Icon> icons = new HashMap<String, Icon>();
-        for (int i = 0; i < BrowserConstants.NODE_ICONS.length; i++) {
-            icons.put(BrowserConstants.NODE_ICONS[i],
-                    GUIUtilities.loadIcon(BrowserConstants.NODE_ICONS[i], true));
-        }
-
-        icons.put(BrowserConstants.DATABASE_OBJECT_IMAGE,
-                GUIUtilities.loadIcon(BrowserConstants.DATABASE_OBJECT_IMAGE, true));
-
-        return icons;
-    }
 
     public DefaultMutableTreeNode getConnectionsBranchNode() {
         return getRootNode();

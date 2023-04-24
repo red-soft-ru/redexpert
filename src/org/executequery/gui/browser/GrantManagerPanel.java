@@ -14,13 +14,22 @@ import org.executequery.components.table.RoleTableModel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
+import org.executequery.sql.SqlStatementResult;
+import org.executequery.sql.sqlbuilder.*;
+import org.japura.gui.event.ListCheckListener;
+import org.japura.gui.event.ListEvent;
+import org.underworldlabs.swing.EQCheckCombox;
+import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.util.IconUtilities;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 
@@ -30,10 +39,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * @author mikhan808
@@ -44,28 +51,25 @@ public class GrantManagerPanel extends JPanel implements TabView {
     public static final String FRAME_ICON = "grant_manager_16.png";
     public DatabaseConnection dbc;
     boolean connected;
-    List<DatabaseConnection> listConnections;
-    Connection con;
     DefaultListModel userlistModel;
     boolean enabled_dBox;
     boolean enableElements;
-    Vector<String> relName;
-    Vector<String> relType;
-    Vector<Boolean> relSystem;
-    Vector<Boolean> relGranted;
-    String grants = "SUDIXRGA";
-    String[] headers = {bundleString("Object"), "Select", "Update", "Delete", "Insert", "Execute", "References", "Usage"};
+    Vector<NamedObject> objectVector;
+    Map<NamedObject, Vector<Object>> tableMap;
+    Vector<DatabaseColumn> columnVector;
+    Map<DatabaseColumn, Vector<Object>> tableForColumnsMap;
+    String grants = "SUDIRXGA";
+    String[] headers = {bundleString("Object"), "Select", "Update", "Delete", "Insert", "References", "Execute", "Usage"};
+    int firstGrantColumn = 1;
     String[] headers2 = {bundleString("Field"), bundleString("Type"), "Update", "References"};
-    Icon gr, no, adm;
-    Vector<String> fieldName;
-    Vector<String> fieldType;
+    Icon gr, no, adm, fieldGr;
+    Icon[] icons;
     int obj_index;
     DefaultStatementExecutor querySender;
-    int col_execute = 5;
+    int col_execute = 6;
     int col_usage = 7;
     private JButton cancelButton;
-    // private JPanel interruptPanel;
-    private JComboBox<String> databaseBox;
+    String[] objectTypes;
     private JPanel downPanel;
     private JComboBox<String> filterBox;
     private JTextField filterField;
@@ -75,13 +79,12 @@ public class GrantManagerPanel extends JPanel implements TabView {
     private JScrollPane privilegesScroll;
     private JScrollPane privilegesForFieldScroll;
     private JTable privilegesForFieldTable;
-    private JPanel leftPanel;
-    private JComboBox<String> objectBox;
+    JToolBar grantFieldsToolbar;
     private JButton refreshButton;
     private JPanel rightPanel;
     private JCheckBox systemCheck;
     private JTable tablePrivileges;
-    private JComboBox<String> recipientsOfPrivilegesBox;
+    int act;
     private JList<String> userList;
     public static final int NO_GRANT_TO_ALL_OBJECTS = 0;
     public static final int NO_ALL_GRANTS_TO_OBJECT = 1;
@@ -94,6 +97,16 @@ public class GrantManagerPanel extends JPanel implements TabView {
     public static final int ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION = 8;
     public static final int CREATE_TABLE = 9;
     JToolBar grantToolbar;
+    // private JPanel interruptPanel;
+    private JComboBox<DatabaseConnection> databaseBox;
+    private EQCheckCombox objectBox;
+    private JComboBox<String> userTypeBox;
+    private boolean isClose = false;
+    private RolloverButton[] grantFieldButtons;
+    private RolloverButton[] grantButtons;
+    @SuppressWarnings("unchecked")
+
+    private int buttonSize = 20;
 
     /**
      * Creates new form GrantManagerPanel
@@ -102,15 +115,14 @@ public class GrantManagerPanel extends JPanel implements TabView {
         gr = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
         no = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
         adm = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+        fieldGr = GUIUtilities.loadIcon(BrowserConstants.FIELD_GRANT_IMAGE);
+        icons = new Icon[]{no, gr, adm, fieldGr};
         enableElements = true;
         enabled_dBox = false;
         initComponents();
-        relName = new Vector<>();
-        relType = new Vector<>();
-        relSystem = new Vector<Boolean>();
-        relGranted = new Vector<Boolean>();
-        fieldName = new Vector<>();
-        fieldType = new Vector<>();
+        objectVector = new Vector<>();
+        tableMap = new HashMap<>();
+        tableForColumnsMap = new HashMap<>();
         BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();
         tablePrivileges.setDefaultRenderer(Object.class, bctr);
         privilegesForFieldTable.setDefaultRenderer(Object.class, bctr);
@@ -119,47 +131,17 @@ public class GrantManagerPanel extends JPanel implements TabView {
         load_connections();
     }
 
-    private boolean isClose = false;
-    private String grantor;
-
-    private void userBoxActionPerformed(java.awt.event.ActionEvent evt) {
+    private void userBoxActionPerformed() {
         load_userList();
     }
 
-
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    private void cancelButtonActionPerformed() {
         setEnableElements(true);
     }
 
-    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    private void refreshButtonActionPerformed() {
         load_connections();
     }
-
-    JToolBar grantFieldsToolbar;
-
-    private void revoke_gActionPerformed(java.awt.event.ActionEvent evt) {
-        int row = tablePrivileges.getSelectedRow();
-        if (row >= 0) {
-            for (int col = 1; col < headers.length; col++) {
-                grant_on_role(0, row, col);
-            }
-        }
-    }
-
-    int act;
-    private JButton[] grantFieldButtons;
-
-    private void grant_gActionPerformed(java.awt.event.ActionEvent evt) {
-        int row = tablePrivileges.getSelectedRow();
-        if (row >= 0) {
-            for (int col = 1; col < headers.length; col++) {
-                grant_on_role(1, row, col);
-            }
-        }
-        querySender.releaseResources();
-    }
-
-    private JButton[] grantButtons;
 
     private void userListValueChanged() {
         if (userlistModel.size() > 0)
@@ -169,17 +151,36 @@ public class GrantManagerPanel extends JPanel implements TabView {
             }
     }
 
-    private void grant_option_gActionPerformed(java.awt.event.ActionEvent evt) {
+    private void revoke_gActionPerformed() {
         int row = tablePrivileges.getSelectedRow();
         if (row >= 0) {
-            for (int col = 1; col < headers.length; col++) {
-                grant_on_role(2, row, col);
+            for (int col = firstGrantColumn; col < headers.length; col++) {
+                grantOnRole(0, row, col);
+            }
+        }
+    }
+
+    private void grant_gActionPerformed() {
+        int row = tablePrivileges.getSelectedRow();
+        if (row >= 0) {
+            for (int col = firstGrantColumn; col < headers.length; col++) {
+                grantOnRole(1, row, col);
+            }
+        }
+        querySender.releaseResources();
+    }
+
+    private void grant_option_gActionPerformed() {
+        int row = tablePrivileges.getSelectedRow();
+        if (row >= 0) {
+            for (int col = firstGrantColumn; col < headers.length; col++) {
+                grantOnRole(2, row, col);
             }
             querySender.releaseResources();
         }
     }
 
-    private void objectBoxActionPerformed(java.awt.event.ActionEvent evt) {
+    private void objectBoxActionPerformed() {
         act = CREATE_TABLE;
         execute_thread();
     }
@@ -191,17 +192,18 @@ public class GrantManagerPanel extends JPanel implements TabView {
                 int col = tablePrivileges.getSelectedColumn();
                 if (col > 0) {
                     if (tablePrivileges.getValueAt(row, col).equals(gr)) {
-                        grant_on_role(2, row, col);
+                        grantOnRole(2, row, col);
                     } else if (tablePrivileges.getValueAt(row, col).equals(adm)) {
-                        grant_on_role(0, row, col);
+                        grantOnRole(0, row, col);
                     } else {
-                        grant_on_role(1, row, col);
+                        grantOnRole(1, row, col);
                     }
                 }
                 querySender.releaseResources();
             }
             if (row >= 0) {
-                setVisiblePanelOfTable(!relType.elementAt(row).equals(objectBox.getItemAt(3)));
+                setVisiblePanelOfTable(objectVector.elementAt(row).getType() >= NamedObject.TABLE && objectVector.elementAt(row).getType() <= NamedObject.VIEW
+                        || objectVector.elementAt(row).getType() >= NamedObject.SYSTEM_TABLE && objectVector.elementAt(row).getType() <= NamedObject.SYSTEM_VIEW);
             }
         }
     }
@@ -214,11 +216,11 @@ public class GrantManagerPanel extends JPanel implements TabView {
                 int col = privilegesForFieldTable.getSelectedColumn();
                 if (col > 1) {
                     if (privilegesForFieldTable.getValueAt(row2, col).equals(gr)) {
-                        grant_on_role(2, row, col, row2);
+                        grantOnRoleForCol(2, row, col, row2);
                     } else if (privilegesForFieldTable.getValueAt(row2, col).equals(adm)) {
-                        grant_on_role(0, row, col, row2);
+                        grantOnRoleForCol(0, row, col, row2);
                     } else {
-                        grant_on_role(1, row, col, row2);
+                        grantOnRoleForCol(1, row, col, row2);
                     }
                 }
             }
@@ -226,57 +228,57 @@ public class GrantManagerPanel extends JPanel implements TabView {
         }
     }
 
-    private void revoke_v1ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void revoke_v1ActionPerformed() {
         int col = privilegesForFieldTable.getSelectedColumn();
         int row2 = obj_index;
         if (col > 1)
-            for (int row = 0; row < fieldName.size(); row++) {
-                grant_on_role(0, row2, col, row);
+            for (int row = 0; row < columnVector.size(); row++) {
+                grantOnRoleForCol(0, row2, col, row);
             }
     }
 
-    private void revoke_g1ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void revoke_g1ActionPerformed() {
         int row = privilegesForFieldTable.getSelectedRow();
         int row2 = obj_index;
         if (row >= 0)
             for (int col = 2; col < 4; col++) {
-                grant_on_role(0, row2, col, row);
+                grantOnRoleForCol(0, row2, col, row);
             }
     }
 
-    private void grant_v1ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void grant_v1ActionPerformed() {
         int col = privilegesForFieldTable.getSelectedColumn();
         int row2 = obj_index;
         if (col > 1)
-            for (int row = 0; row < fieldName.size(); row++) {
-                grant_on_role(1, row2, col, row);
+            for (int row = 0; row < columnVector.size(); row++) {
+                grantOnRoleForCol(1, row2, col, row);
             }
     }
 
-    private void grant_g1ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void grant_g1ActionPerformed() {
         int row = privilegesForFieldTable.getSelectedRow();
         int row2 = obj_index;
         if (row >= 0)
             for (int col = 2; col < 4; col++) {
-                grant_on_role(1, row2, col, row);
+                grantOnRoleForCol(1, row2, col, row);
             }
     }
 
-    private void grant_option_v1ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void grant_option_v1ActionPerformed() {
         int col = privilegesForFieldTable.getSelectedColumn();
         int row2 = obj_index;
         if (col > 1)
-            for (int row = 0; row < fieldName.size(); row++) {
-                grant_on_role(2, row2, col, row);
+            for (int row = 0; row < columnVector.size(); row++) {
+                grantOnRoleForCol(2, row2, col, row);
             }
     }
 
-    private void grant_option_g1ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void grant_option_g1ActionPerformed() {
         int row = privilegesForFieldTable.getSelectedRow();
         int row2 = obj_index;
         if (row >= 0)
             for (int col = 2; col < 4; col++) {
-                grant_on_role(2, row2, col, row);
+                grantOnRoleForCol(2, row2, col, row);
             }
     }
 
@@ -284,23 +286,20 @@ public class GrantManagerPanel extends JPanel implements TabView {
         boolean selected = databaseBox.getSelectedIndex() >= 0;
         enabled_dBox = false;
         setEnableElements(true);
-        String item = "";
+        DatabaseConnection item = null;
         if (selected)
             item = databaseBox.getItemAt(databaseBox.getSelectedIndex());
-        selected = selected && item != "Item 1";
         databaseBox.removeAllItems();
         List<DatabaseConnection> cons;
-        listConnections = new ArrayList<DatabaseConnection>();
         cons = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
         connected = false;
         for (int i = 0; i < cons.size(); i++) {
             if (cons.get(i).isConnected()) {
                 connected = true;
-                databaseBox.addItem(cons.get(i).getName());
-                listConnections.add(cons.get(i));
+                databaseBox.addItem(cons.get(i));
                 enabled_dBox = true;
                 if (!selected) {
-                    item = cons.get(i).getName();
+                    item = cons.get(i);
                     selected = true;
                 }
             }
@@ -310,41 +309,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
             GUIUtilities.closeTab(TITLE);
         } else {
             databaseBox.setSelectedItem(item);
-        }
-    }
-
-    void load_userList() {
-        if (connected) {
-            userlistModel = new DefaultListModel();
-            userList.setModel(userlistModel);
-            int ind_userBox = recipientsOfPrivilegesBox.getSelectedIndex();
-            switch (ind_userBox) {
-                case 0:
-                    get_users();
-                    break;
-                case 1:
-                    get_roles();
-                    break;
-                case 2:
-                    get_views_for_userlist();
-                    break;
-                case 3:
-                    get_triggers_for_userlist();
-                    break;
-                case 4:
-                    get_procedures_for_userlist();
-                    break;
-                case 5:
-                    get_functions_for_userlist();
-                    break;
-                case 6:
-                    get_packages_for_userlist();
-                    break;
-                default:
-                    break;
-            }
-            if (userlistModel.size() > 0)
-                userList.setSelectedIndex(0);
         }
     }
 
@@ -410,223 +374,280 @@ public class GrantManagerPanel extends JPanel implements TabView {
         get_user_list(metatags);
     }
 
-    private String grant;
+    int getTypeFromUserBoxIndex(int indUserBox) {
+        switch (indUserBox) {
+            case 0:
+                return NamedObject.USER;
+            case 1:
+                return NamedObject.ROLE;
+            case 2:
+                return NamedObject.VIEW;
+            case 3:
+                return NamedObject.TRIGGER;
+            case 4:
+                return NamedObject.PROCEDURE;
+            case 5:
+                return NamedObject.FUNCTION;
+            case 6:
+                return NamedObject.PACKAGE;
+            default:
+                return -1;
+        }
+    }
 
-    void load_table2(String rname) {
-        privilegesForFieldTable.setModel(new RoleTableModel(headers2, 0));
-        fieldName = new Vector<>();
-        fieldType = new Vector<>();
-        try {
-            String query = "Select RF.RDB$FIELD_NAME,F.RDB$FIELD_TYPE\n" +
-                    "from RDB$RELATION_FIELDS AS RF left join RDB$FIELDS AS F\n" +
-                    "ON F.RDB$FIELD_NAME=RF.RDB$FIELD_SOURCE\n" +
-                    "WHERE RF.RDB$RELATION_NAME='" + rname + "'";
-            ResultSet rs = querySender.execute(QueryTypes.SELECT, query, -1).getResultSet();
-            while (rs.next()) {
-                String name = rs.getString(1).trim();
-                String type = getTypeField(rs.getInt(2));
-                fieldName.addElement(name);
-                fieldType.addElement(type);
+    void load_userList() {
+        if (connected) {
+            userlistModel = new DefaultListModel();
+            userList.setModel(userlistModel);
+            int ind_userBox = userTypeBox.getSelectedIndex();
+            switch (ind_userBox) {
+                case 0:
+                    get_users();
+                    break;
+                case 1:
+                    get_roles();
+                    break;
+                case 2:
+                    get_views_for_userlist();
+                    break;
+                case 3:
+                    get_triggers_for_userlist();
+                    break;
+                case 4:
+                    get_procedures_for_userlist();
+                    break;
+                case 5:
+                    get_functions_for_userlist();
+                    break;
+                case 6:
+                    get_packages_for_userlist();
+                    break;
+                default:
+                    break;
             }
-            rs.close();
-            querySender.releaseResources();
+            if (userlistModel.size() > 0)
+                userList.setSelectedIndex(0);
+        }
+    }
+
+    void loadTable2(NamedObject relation) {
+        privilegesForFieldTable.setModel(new RoleTableModel(headers2, 0));
+        columnVector = new Vector<>();
+        tableForColumnsMap.clear();
+        List<DatabaseColumn> cols = null;
+        try {
+            if (!(relation instanceof DefaultDatabaseObject))
+                return;
+            cols = ((DefaultDatabaseObject) relation).getColumns();
+            for (DatabaseColumn col : cols) {
+                Vector<Object> roleData = new Vector<Object>();
+                Object[] obj = {col, Color.BLACK};
+                if (relation.isSystem())
+                    obj[1] = Color.RED;
+                roleData.add(obj);
+                roleData.add(col.getFormattedDataType());
+                for (int k = 0; k < 2; k++)
+                    roleData.add(no);
+                tableForColumnsMap.put(col, roleData);
+                columnVector.add(col);
+            }
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
-        for (int i = 0; i < fieldName.size(); i++)
-            try {
-                String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
-                        "where (rdb$Relation_name='" + rname + "') and (rdb$user='" + userList.getSelectedValue().trim() + "') and\n" +
-                        "(RDB$FIELD_NAME='" + fieldName.elementAt(i) + "')";
-                ResultSet rs1 = querySender.execute(QueryTypes.SELECT, s, -1).getResultSet();
-                Vector<Object> roleData = new Vector<Object>();
-                roleData.add(fieldName.elementAt(i));
-                roleData.add(fieldType.elementAt(i));
-                for (int k = 0; k < 2; k++)
-                    roleData.add(no);
-                ((RoleTableModel) privilegesForFieldTable.getModel()).addRow(roleData);
-                while (rs1.next()) {
-                    String grant = rs1.getString(1).trim();
-                    int ind = grants.indexOf(grant);
-                    if (ind == 1)
-                        if (rs1.getObject(2).equals(0)) {
-                            privilegesForFieldTable.setValueAt(gr, i, 2);
-                        } else
-                            privilegesForFieldTable.getModel().setValueAt(adm, i, 2);
-                    if (ind == 5)
-                        if (rs1.getObject(2).equals(0)) {
-                            privilegesForFieldTable.setValueAt(gr, i, 3);
-                        } else
-                            privilegesForFieldTable.getModel().setValueAt(adm, i, 3);
-
-                }
-                rs1.close();
-                querySender.releaseResources();
-            } catch (Exception e) {
-                Log.error(e.getMessage());
+        try {
+            String query = buildQueryForPrivilegesByField(getTypeFromUserBoxIndex(userTypeBox.getSelectedIndex()), relation.getRDBType());
+            PreparedStatement statement = querySender.getPreparedStatement(query);
+            statement.setString(1, userList.getSelectedValue().trim());
+            statement.setString(2, relation.getName());
+            ResultSet rs = querySender.execute(QueryTypes.SELECT, statement).getResultSet();
+            while (rs.next()) {
+                DatabaseColumn currentCol = getColumnFromName(cols, rs.getString("RELATION_NAME"));
+                if (currentCol == null)
+                    continue;
+                Vector<Object> roleData = tableForColumnsMap.get(currentCol);
+                String grant = rs.getString("PRIVILEGE").trim();
+                int ind = grants.indexOf(grant);
+                Object gr_opt = rs.getObject("GRANT_OPTION");
+                if (gr_opt == null)
+                    gr_opt = 0;
+                if (ind == 1)
+                    if (gr_opt.equals(0)) {
+                        roleData.set(2, gr);
+                    } else
+                        roleData.set(2, adm);
+                if (ind == 4)
+                    if (gr_opt.equals(0)) {
+                        roleData.set(3, gr);
+                    } else
+                        roleData.set(3, adm);
             }
+
+            for (int i = 0; i < cols.size(); i++) {
+                Vector<Object> roleData = tableForColumnsMap.get(cols.get(i));
+                ((RoleTableModel) privilegesForFieldTable.getModel()).addRow(roleData);
+            }
+        } catch (Exception e) {
+            Log.error(e.getMessage());
+        } finally {
+            querySender.releaseResources();
+        }
     }
 
     void getTables() {
-        String query = "Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS" +
-                " WHERE RDB$RELATION_TYPE != 1 order by 1";
-        String type = objectBox.getItemAt(1);
-        add_relations(query, type);
+        addRelations(NamedObject.TABLE);
+        if (systemCheck.isSelected())
+            addRelations(NamedObject.SYSTEM_TABLE);
+    }
+
+    void getGlobalTemporaries() {
+        addRelations(NamedObject.GLOBAL_TEMPORARY);
     }
 
     void getViews() {
-        String query = "Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS" +
-                " WHERE RDB$RELATION_TYPE = 1 order by 1";
-        String type = objectBox.getItemAt(2);
-        add_relations(query, type);
+        addRelations(NamedObject.VIEW);
+        if (systemCheck.isSelected())
+            addRelations(NamedObject.SYSTEM_VIEW);
     }
 
     void getProcedures() {
-        String query = "Select RDB$PROCEDURE_NAME,RDB$SYSTEM_FLAG from RDB$PROCEDURES order by 1";
-        String type = objectBox.getItemAt(3);
-        add_relations(query, type);
+        addRelations(NamedObject.PROCEDURE);
     }
 
-    void removeRow(int i) {
-        relName.remove(i);
-        relType.remove(i);
-        relSystem.remove(i);
-        relGranted.remove(i);
+    void getFunctions() {
+        addRelations(NamedObject.FUNCTION);
+        if (systemCheck.isSelected())
+            addRelations(NamedObject.SYSTEM_FUNCTION);
     }
 
-    void addRow(String name, String type, boolean system_flag, boolean grant_flag) {
-        relName.add(name);
-        relType.add(type);
-        relSystem.add(system_flag);
-        relGranted.add(grant_flag);
+    void getPackages() {
+        addRelations(NamedObject.PACKAGE);
+        if (systemCheck.isSelected())
+            addRelations(NamedObject.SYSTEM_PACKAGE);
     }
 
-    void add_relations(String query, String type) {
-        Vector<String> rname = new Vector<>();
-        Vector<Boolean> sflag = new Vector<>();
+    void getExceptions() {
+        addRelations(NamedObject.EXCEPTION);
+    }
+
+    void getGenerators() {
+        addRelations(NamedObject.SEQUENCE);
+        if (systemCheck.isSelected())
+            addRelations(NamedObject.SYSTEM_SEQUENCE);
+    }
+
+    void removeRow(NamedObject relation) {
+        objectVector.remove(relation);
+    }
+
+    void addRow(NamedObject relation) {
+        objectVector.add(relation);
+        Vector<Object> roleData = new Vector<Object>();
+        Object[] obj = {relation, Color.BLACK};
+        if (relation.isSystem())
+            obj[1] = Color.RED;
+        roleData.add(obj);
+        for (int k = 0; k < 7; k++) {
+            if (relation instanceof DefaultDatabaseObject && k < col_execute - firstGrantColumn
+                    || relation instanceof DefaultDatabaseExecutable && k == col_execute - firstGrantColumn
+                    || (relation instanceof DefaultDatabaseException || relation instanceof DefaultDatabaseSequence) && k == col_usage - firstGrantColumn)
+                roleData.add(no);
+            else roleData.add("");
+        }
+
+        tableMap.put(relation, roleData);
+    }
+
+    void addRelations(int type) {
         try {
-            ResultSet rs = querySender.execute(QueryTypes.SELECT, query, -1).getResultSet();
-            while (rs.next()) {
-                String name = rs.getString(1).trim();
-                boolean system_flag = rs.getInt(2) == 1;
-                rname.addElement(name);
-                sflag.addElement(system_flag);
-            }
-            rs.close();
-            querySender.releaseResources();
-            for (int i = 0; i < rname.size(); i++) {
-                String name = rname.elementAt(i);
-                boolean system_flag = sflag.elementAt(i);
-                boolean granted_flag = false;
-                if (!system_flag || system_flag == systemCheck.isSelected()) {
-                    if (!invertFilterCheckBox.isSelected() == name.contains(filterField.getText()))
-                        addRow(name, type, system_flag, granted_flag);
+            List<NamedObject> objectList = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection((DatabaseConnection) databaseBox.getSelectedItem()).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+            List<NamedObject> resultList = new ArrayList<>();
+            if (objectList != null)
+                for (NamedObject relation : objectList) {
+                    if (!relation.isSystem() || relation.isSystem() == systemCheck.isSelected()) {
+                        if (!invertFilterCheckBox.isSelected() == relation.getName().contains(filterField.getText())) {
+                            addRow(relation);
+                            resultList.add(relation);
+                        }
+                    }
                 }
-            }
-        } catch (SQLException e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
-
+            addRelationsToTable(resultList);
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
+
         }
     }
 
-    private void filterFieldActionPerformed(java.awt.event.ActionEvent evt) {
+    private void filterFieldActionPerformed() {
         act = CREATE_TABLE;
         execute_thread();
     }
 
-    private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
+    private void databaseBoxActionPerformed() {
         if (enabled_dBox) {
-            querySender = new DefaultStatementExecutor(listConnections.get(databaseBox.getSelectedIndex()), true);
+            querySender = new DefaultStatementExecutor((DatabaseConnection) databaseBox.getSelectedItem(), true);
             querySender.setCloseConnectionAfterQuery(false);
             querySender.setCommitMode(false);
             querySender.setAutoddl(false);
-            dbc = listConnections.get(databaseBox.getSelectedIndex());
-            con = ConnectionManager.getTemporaryConnection(listConnections.get(databaseBox.getSelectedIndex()));
+            dbc = (DatabaseConnection) databaseBox.getSelectedItem();
             load_userList();
         }
     }
 
-    void load_table() {
-        tablePrivileges.setModel(new RoleTableModel(headers, 0));
-        relName.removeAllElements();
-        relType.removeAllElements();
-        relSystem.removeAllElements();
-        relGranted.removeAllElements();
-        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 1)
-            getTables();
-        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 2)
-            getViews();
-        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 3)
-            getProcedures();
-        jProgressBar1.setMaximum(relName.size());
-        long start = System.currentTimeMillis();
-        try {
-            String query = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION,RDB$FIELD_NAME from RDB$USER_PRIVILEGES\n" +
-                    "where (rdb$Relation_name=?) and (rdb$user='"
-                    + userList.getSelectedValue().trim() + "')";
-            PreparedStatement statement = querySender.getPreparedStatement(query);
-            for (int i = 0, g = 0; i < relName.size() && !enableElements; g++, i++) {
-                jProgressBar1.setValue(g);
-                statement.setString(1, relName.elementAt(i));
-                ResultSet rs1 = querySender.execute(QueryTypes.SELECT, statement).getResultSet();
-                Vector<Object> roleData = new Vector<Object>();
-                Object[] obj = {relName.elementAt(i), Color.BLACK};
-                if (relSystem.elementAt(i))
-                    obj[1] = Color.RED;
-                roleData.add(obj);
-                for (int k = 0; k < 7; k++)
-                    roleData.add(no);
-                boolean adding = true;
-                while (rs1.next()) {
-                    relGranted.set(i, true);
-                    if (filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == relGranted.elementAt(i)) {
-                        try {
-                            if (rs1.getString(3) == null) {
-                                String grant = rs1.getString(1).trim();
-                                int ind = grants.indexOf(grant);
-                                if (ind != 7) {
-                                    Object gr_opt = rs1.getObject(2);
-                                    if (gr_opt == null)
-                                        gr_opt = 0;
-                                    if (gr_opt.equals(0)) {
-                                        roleData.set(ind + 1, gr);
-                                    } else
-                                        roleData.set(ind + 1, adm);
-                                }
-                            }
-                        } catch (Exception e) {
-                            Log.error(e.getMessage());
-                        }
-                    } else {
-                        adding = false;
-                        break;
-                    }
-                }
-                rs1.close();
-                if (adding)
-                    adding = (filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == relGranted.elementAt(i));
-                if (adding)
-                    ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
-                else {
-                    removeRow(i);
-                    i--;
-                }
-
-
-            }
-            querySender.releaseResources();
-        } catch (NullPointerException e) {
-            Log.error(bundleString("connection.close"));
-        } catch (SQLException e) {
-            Log.error(e.getMessage());
-        } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
+    String buildQueryForPrivileges(int rdbTypeUser, int rdbTypeObject) {
+        SelectBuilder sb = new SelectBuilder();
+        Table userPrivileges = Table.createTable("RDB$USER_PRIVILEGES", "UP");
+        sb.appendTable(userPrivileges);
+        sb.appendFields(userPrivileges, "RELATION_NAME", "PRIVILEGE", "GRANT_OPTION", "FIELD_NAME");
+        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER_TYPE"), "=", rdbTypeUser + ""));
+        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER"), "=", "?"));
+        Condition rfbTypeCondition = Condition.createCondition()
+                .appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", rdbTypeObject + ""));
+        if (rdbTypeObject == 1) {
+            rfbTypeCondition.setLogicOperator("OR");
+            rfbTypeCondition.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", 0 + ""));
         }
-        setEnableElements(true);
-        setVisiblePanelOfTable(false);
+        sb.appendCondition(rfbTypeCondition);
+        sb.setOrdering(Field.createField(userPrivileges, "RELATION_NAME").getFieldTable() + "," + Field.createField(userPrivileges, "FIELD_NAME").getFieldTable());
+        return sb.getSQLQuery();
+    }
 
+    String buildQueryForPrivilegesByField(int rdbTypeUser, int rdbTypeObject) {
+        SelectBuilder sb = new SelectBuilder();
+        Table userPrivileges = Table.createTable("RDB$USER_PRIVILEGES", "UP");
+        sb.appendTable(userPrivileges);
+        sb.appendFields(userPrivileges, "RELATION_NAME", "PRIVILEGE", "GRANT_OPTION", "FIELD_NAME");
+        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER_TYPE"), "=", rdbTypeUser + ""));
+        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER"), "=", "?"));
+        Condition rfbTypeCondition = Condition.createCondition()
+                .appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", rdbTypeObject + ""));
+        if (rdbTypeObject == 1) {
+            rfbTypeCondition.setLogicOperator("OR");
+            rfbTypeCondition.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", 0 + ""));
+        }
+        sb.appendCondition(rfbTypeCondition);
+        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "RELATION_NAME"), "=", "?"));
+        sb.setOrdering(Field.createField(userPrivileges, "FIELD_NAME").getFieldTable());
+        return sb.getSQLQuery();
+    }
+
+    NamedObject getRelationFromName(List<NamedObject> list, String name) {
+        if (name == null)
+            return null;
+        name = name.trim();
+        for (NamedObject namedObject : list)
+            if (namedObject.getName().contentEquals(name))
+                return namedObject;
+        return null;
+    }
+
+    DatabaseColumn getColumnFromName(List<DatabaseColumn> list, String name) {
+        if (name == null)
+            return null;
+        name = name.trim();
+        for (DatabaseColumn namedObject : list)
+            if (namedObject.getName().contentEquals(name))
+                return namedObject;
+        return null;
     }
 
     private void systemCheckActionPerformed(java.awt.event.ActionEvent evt) {
@@ -648,74 +669,190 @@ public class GrantManagerPanel extends JPanel implements TabView {
             }
     }
 
-    private String getGrantQuery(String user, int typeGrant, int typeObject, String grantX, String relName) throws SQLException {
-        grant = grantX;
-        grantor = user;
-        String query = "";
-        switch (typeGrant) {
-            case 0:
-                if (typeObject == 0) {
-                    query = "REVOKE " + grant + " ON \"" + relName + "\" FROM \"" + grantor + "\";";
-                } else {
-                    query = "REVOKE EXECUTE ON PROCEDURE \"" + relName + "\" FROM \""
-                            + grantor + "\";";
+    void addRelationsToTable(List<NamedObject> list) {
+        if (list != null && list.size() > 0)
+            try {
+                int rdbTypeObject = list.get(0).getRDBType();
+                int rdbTypeUser = AbstractDatabaseObject.getRDBTypeFromType(getTypeFromUserBoxIndex(userTypeBox.getSelectedIndex()));
+                String query = buildQueryForPrivileges(rdbTypeUser, rdbTypeObject);
+                PreparedStatement statement = querySender.getPreparedStatement(query);
+                statement.setString(1, userList.getSelectedValue().trim());
+                ResultSet rs = querySender.execute(QueryTypes.SELECT, statement).getResultSet();
+                while (rs.next()) {
+                    NamedObject relation = getRelationFromName(list, rs.getString("RELATION_NAME"));
+                    if (relation == null)
+                        continue;
+                    Vector<Object> roleData = tableMap.get(relation);
+                    String grant = rs.getString("PRIVILEGE").trim();
+                    int ind = grants.indexOf(grant);
+                    Object gr_opt = rs.getObject("GRANT_OPTION");
+                    boolean fieldGrant = rs.getString("FIELD_NAME") != null;
+                    if (gr_opt == null)
+                        gr_opt = 0;
+                    if (ind != 7) {
+                        if (fieldGrant) {
+                            if (roleData.get(ind + firstGrantColumn).equals(no))
+                                roleData.set(ind + firstGrantColumn, fieldGr);
+                        } else if (gr_opt.equals(0)) {
+                            roleData.set(ind + firstGrantColumn, gr);
+                        } else
+                            roleData.set(ind + firstGrantColumn, adm);
+                    } else {
+                        for (int i = firstGrantColumn; i < firstGrantColumn + 5; i++) {
+                            if (gr_opt.equals(0)) {
+                                roleData.set(i, gr);
+                            } else
+                                roleData.set(i, adm);
+                        }
+                    }
                 }
-                break;
-            case 1:
-                if (typeObject == 0) {
-                    query = "GRANT " + grant + " ON \"" + relName + "\" TO \"" + grantor + "\";";
-                } else {
-                    query = "GRANT EXECUTE ON PROCEDURE \"" + relName + "\" TO \""
-                            + grantor + "\";";
+
+                for (int i = 0; i < list.size() && !enableElements; i++) {
+                    Vector<Object> roleData = tableMap.get(list.get(i));
+                    boolean granted = roleData.contains(gr) || roleData.contains(adm);
+                    boolean adding = (filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == granted);
+                    if (adding)
+                        ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
+                    else {
+                        removeRow(list.get(i));
+                    }
                 }
-                break;
-            case 2:
-                if (typeObject == 0) {
-                    query = "GRANT " + grant + " ON \"" + relName + "\" TO \"" + grantor + "\" WITH GRANT OPTION;";
-                } else {
-                    query = "GRANT EXECUTE ON PROCEDURE \"" + relName + "\" TO \""
-                            + grantor + "\" WITH GRANT OPTION;";
-                }
-        }
-        return query;
+
+            } catch (NullPointerException e) {
+                Log.error(bundleString("connection.close"));
+            } catch (SQLException e) {
+                Log.error(e.getMessage());
+            } catch (Exception e) {
+                GUIUtilities.displayErrorMessage(e.getMessage());
+            } finally {
+                querySender.releaseResources();
+            }
+    }
+
+    void loadTable() {
+        tablePrivileges.setModel(new RoleTableModel(headers, 0));
+        objectVector.removeAllElements();
+        tableMap.clear();
+        jProgressBar1.setMaximum(objectTypes.length);
+        int i = 0;
+        if (objectBox.getModel().isChecked(objectTypes[0]))
+            getTables();
+        jProgressBar1.setValue(i++);
+        if (objectBox.getModel().isChecked(objectTypes[1]))
+            getGlobalTemporaries();
+        jProgressBar1.setValue(i++);
+        if (objectBox.getModel().isChecked(objectTypes[2]))
+            getViews();
+        jProgressBar1.setValue(i++);
+        if (objectBox.getModel().isChecked(objectTypes[3]))
+            getProcedures();
+        jProgressBar1.setValue(i++);
+        if (objectBox.getModel().isChecked(objectTypes[4]))
+            getFunctions();
+        jProgressBar1.setValue(i++);
+        if (objectBox.getModel().isChecked(objectTypes[5]))
+            getPackages();
+        jProgressBar1.setValue(i++);
+        if (objectBox.getModel().isChecked(objectTypes[6]))
+            getGenerators();
+        jProgressBar1.setValue(i++);
+        if (objectBox.getModel().isChecked(objectTypes[7]))
+            getExceptions();
+        jProgressBar1.setValue(objectTypes.length);
+        setEnableElements(true);
+        setVisiblePanelOfTable(false);
 
     }
 
+    private String getGrantQuery(String grantor, int typeGrant, String grant, NamedObject relation) {
+        return getGrantQuery(grantor, typeGrant, grant, relation, null);
+
+    }
+
+    private String getGrantQuery(String grantor, int typeGrant, String grant, NamedObject relation, String... fields) {
+        GrantBuilder gb = new GrantBuilder();
+        gb.setGrantor(grantor).setRelation(relation.getName()).setGrantType(grant);
+        switch (typeGrant) {
+            case 0:
+                gb.setGrant(false);
+                break;
+            case 1:
+                gb.setGrant(true);
+                break;
+            case 2:
+                gb.setGrant(true);
+                gb.setGrantOption(true);
+        }
+        if (relation instanceof DefaultDatabaseObject)
+            gb.setRelationType("TABLE");
+        else
+            gb.setRelationType(relation.getMetaDataKey().replace("SYSTEM ", ""));
+        int ind_userBox = userTypeBox.getSelectedIndex();
+        switch (ind_userBox) {
+            case 0:
+                gb.setGrantorType("USER");
+                break;
+            case 1:
+                gb.setGrantorType("ROLE");
+                break;
+            case 2:
+                gb.setGrantorType("VIEW");
+                break;
+            case 3:
+                gb.setGrantorType("TRIGGER");
+                break;
+            case 4:
+                gb.setGrantorType("PROCEDURE");
+                break;
+            case 5:
+                gb.setGrantorType("FUNCTION");
+                break;
+            case 6:
+                gb.setGrantorType("PACKAGE");
+                break;
+            default:
+                break;
+        }
+        if (fields != null)
+            gb.appendFields(fields);
+        return gb.getSQLQuery();
+
+    }
 
     public void runToThread() {
         int col;
             switch (act) {
                 case CREATE_TABLE:
-                    load_table();
+                    loadTable();
                     break;
                 case ALL_GRANTS_TO_ALL_OBJECTS:
-                    jProgressBar1.setMaximum(relName.size());
-                    for (int row = 0; row < relName.size() && !enableElements; row++) {
+                    jProgressBar1.setMaximum(objectVector.size());
+                    for (int row = 0; row < objectVector.size() && !enableElements; row++) {
                         jProgressBar1.setValue(row);
                         isClose();
-                        grant_all_on_role(1, row);
+                        grantAllOnRole(1, row);
 
                     }
                     jProgressBar1.setValue(0);
                     setEnableElements(true);
                     break;
                 case ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION:
-                    jProgressBar1.setMaximum(relName.size());
-                    for (int row = 0; row < relName.size() && !enableElements; row++) {
+                    jProgressBar1.setMaximum(objectVector.size());
+                    for (int row = 0; row < objectVector.size() && !enableElements; row++) {
                         jProgressBar1.setValue(row);
                         isClose();
-                        grant_all_on_role(2, row);
+                        grantAllOnRole(2, row);
 
                     }
                     jProgressBar1.setValue(0);
                     setEnableElements(true);
                     break;
                 case NO_ALL_GRANTS_TO_ALL_OBJECTS:
-                    jProgressBar1.setMaximum(relName.size());
-                    for (int row = 0; row < relName.size() && !enableElements; row++) {
+                    jProgressBar1.setMaximum(objectVector.size());
+                    for (int row = 0; row < objectVector.size() && !enableElements; row++) {
                         jProgressBar1.setValue(row);
                         isClose();
-                        grant_all_on_role(0, row);
+                        grantAllOnRole(0, row);
 
                     }
                     jProgressBar1.setValue(0);
@@ -723,36 +860,36 @@ public class GrantManagerPanel extends JPanel implements TabView {
                     break;
                 case GRANT_TO_ALL_OBJECTS:
                     col = tablePrivileges.getSelectedColumn();
-                    jProgressBar1.setMaximum(relName.size());
+                    jProgressBar1.setMaximum(objectVector.size());
                     if (col > 0)
-                        for (int row = 0; row < relName.size() && !enableElements; row++) {
+                        for (int row = 0; row < objectVector.size() && !enableElements; row++) {
                             jProgressBar1.setValue(row);
                             isClose();
-                            grant_on_role(1, row, col);
+                            grantOnRole(1, row, col);
                         }
                     jProgressBar1.setValue(0);
                     setEnableElements(true);
                     break;
                 case GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION:
                     col = tablePrivileges.getSelectedColumn();
-                    jProgressBar1.setMaximum(relName.size());
+                    jProgressBar1.setMaximum(objectVector.size());
                     if (col > 0)
-                        for (int row = 0; row < relName.size() && !enableElements; row++) {
+                        for (int row = 0; row < objectVector.size() && !enableElements; row++) {
                             jProgressBar1.setValue(row);
                             isClose();
-                            grant_on_role(2, row, col);
+                            grantOnRole(2, row, col);
                         }
                     jProgressBar1.setValue(0);
                     setEnableElements(true);
                     break;
                 case NO_GRANT_TO_ALL_OBJECTS:
                     col = tablePrivileges.getSelectedColumn();
-                    jProgressBar1.setMaximum(relName.size());
+                    jProgressBar1.setMaximum(objectVector.size());
                     if (col > 0)
-                        for (int row = 0; row < relName.size() && !enableElements; row++) {
+                        for (int row = 0; row < objectVector.size() && !enableElements; row++) {
                             jProgressBar1.setValue(row);
                             isClose();
-                            grant_on_role(0, row, col);
+                            grantOnRole(0, row, col);
                         }
                     jProgressBar1.setValue(0);
                     setEnableElements(true);
@@ -761,9 +898,13 @@ public class GrantManagerPanel extends JPanel implements TabView {
             querySender.releaseResources();
     }
 
-    void grant_query(String query, Icon icon, int row, int col, JTable t) {
+    void grantQuery(String query, Icon icon, int row, int col, JTable t) {
         try {
-            querySender.execute(QueryTypes.GRANT, query);
+            SqlStatementResult result = querySender.execute(QueryTypes.GRANT, query);
+            if (result.isException()) {
+                Log.info("query=" + query);
+                throw result.getSqlException();
+            }
             t.setValueAt(icon, row, col);
         } catch (NullPointerException e) {
             Log.error(bundleString("connection.close"));
@@ -776,214 +917,45 @@ public class GrantManagerPanel extends JPanel implements TabView {
         }
     }
 
-    void revoke_execute(int row) {
-        try {
-            grant_query(getGrantQuery(userList.getSelectedValue(), 0, 1, "EXECUTE", relName.elementAt(row)), no, row, col_execute, tablePrivileges);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void grant_execute(int row) {
-        try {
-            grant_query(getGrantQuery(userList.getSelectedValue(), 1, 1, "EXECUTE", relName.elementAt(row)), gr, row, col_execute, tablePrivileges);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void grant_execute_admin(int row) {
-        try {
-            grant_query(getGrantQuery(userList.getSelectedValue(), 1, 1, "EXECUTE", relName.elementAt(row)), adm, row, col_execute, tablePrivileges);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void grant_all_query(String query, Icon icon, int row, int grantt) {
+    void grantAllQuery(String query, Icon icon, int row, int grant) {
         try {
             querySender.execute(QueryTypes.GRANT, query, -1);
-            for (int i = 1; i < headers.length; i++)
+            for (int i = firstGrantColumn; i < headers.length; i++)
                 if (i != col_execute && i != col_usage)
                     tablePrivileges.setValueAt(icon, row, i);
         } catch (Exception e) {
             Log.error(e.getMessage());
-            for (int i = 1; i < headers.length; i++) {
-                grant_case(grantt, row, i);
+            for (int i = firstGrantColumn; i < headers.length; i++) {
+                grantCase(grant, row, i);
             }
         } finally {
             querySender.releaseResourcesWithoutCommit();
         }
     }
 
-    void grant_case(int grantt, int row, int col) {
-        switch (grantt) {
-            case 0:
-                revoke(row, col);
-                break;
-            case 1:
-                grant(row, col);
-                break;
-            case 2:
-                grant_admin(row, col);
-                break;
-        }
+    void grantCase(int grant, int row, int col) {
+        grantOnRole(grant, row, col);
     }
 
-    void revoke_all(int row) {
-        try {
-            grant_all_query(getGrantQuery(userList.getSelectedValue(), 0, 0, "ALL", relName.elementAt(row)), no, row, 0);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    void grant_all(int row) {
-        try {
-            grant_all_query(getGrantQuery(userList.getSelectedValue(), 1, 0, "ALL", relName.elementAt(row)), gr, row, 1);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void grant_all_admin(int row) {
-        try {
-            grant_all_query(getGrantQuery(userList.getSelectedValue(), 2, 0, "ALL", relName.elementAt(row)), adm, row, 2);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void revoke(int row, int col) {
-        if (col > 0 && col < headers.length && col != col_execute && col != col_usage) {
-            try {
-                grant_query(getGrantQuery(userList.getSelectedValue(), 0, 0, headers[col], relName.elementAt(row)), no, row, col, tablePrivileges);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    void grant(int row, int col) {
-        if (col > 0 && col < headers.length && col != col_execute && col != col_usage) {
-            try {
-                grant_query(getGrantQuery(userList.getSelectedValue(), 1, 0, headers[col], relName.elementAt(row)), gr, row, col, tablePrivileges);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    void grant_admin(int row, int col) {
-        if (col > 0 && col < headers.length && col != col_execute && col != col_usage) {
-            try {
-                grant_query(getGrantQuery(userList.getSelectedValue(), 2, 0, headers[col], relName.elementAt(row)), adm, row, col, tablePrivileges);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    void grant_all_on_role(int grantt, int row) {
+    void grantAllOnRole(int grant, int row) {
         if (row < tablePrivileges.getRowCount()) {
-            switch (grantt) {
-                case 0:
-                    if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                        revoke_all(row);
-                    } else {
-                        revoke_execute(row);
-                    }
-                    break;
-                case 1:
-                    if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                        boolean containsAdm = false;
-                        for (int i = 0; i < headers.length; i++)
-                            if (tablePrivileges.getValueAt(row, i).equals(adm)) {
-                                containsAdm = true;
-                                break;
-                            }
-                        if (containsAdm)
-                            revoke_all(row);
-                        grant_all(row);
-                    } else {
-                        if (tablePrivileges.getValueAt(row, col_execute).equals(adm))
-                            revoke_execute(row);
-                        grant_execute(row);
-                    }
-
-                    break;
-                case 2:
-                    if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                        grant_all_admin(row);
-                    } else {
-                        grant_execute_admin(row);
-                    }
-                    break;
-            }
-        }
-    }
-
-    void grant_on_role(int grantt, int row, int col) {
-        if (row < tablePrivileges.getRowCount()) {
-            switch (grantt) {
-                case 0:
-                    if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                        revoke(row, col);
-                    } else if (headers[col].equals("Execute")) {
-                        revoke_execute(row);
-                    }
-                    break;
-                case 1:
-                    if (tablePrivileges.getValueAt(row, col).equals(adm)) {
-                        if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                            revoke(row, col);
-                        } else if (headers[col].equals("Execute")) {
-                            revoke_execute(row);
-                        }
-                    }
-                    if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                        grant(row, col);
-                    } else if (headers[col].equals("Execute")) {
-                        grant_execute(row);
-                    }
-                    break;
-                case 2:
-                    if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                        grant_admin(row, col);
-                    } else if (headers[col].equals("Execute")) {
-                        grant_execute_admin(row);
-                    }
-                    break;
-            }
-        }
-        querySender.releaseResourcesWithoutCommit();
-    }
-
-    void grant_on_role(int grantt, int row, int col, int row2) {
-        if (row < tablePrivileges.getRowCount()) {
-            try {
-                switch (grantt) {
-                    case 0:
-                        grant_query(getGrantQuery(userList.getSelectedValue(), 0, 0, headers[col], relName.elementAt(row)), no, row2, col, privilegesForFieldTable);
+            if (grant == 1) {
+                boolean containsAdm = false;
+                for (int i = firstGrantColumn; i < headers.length; i++)
+                    if (tablePrivileges.getValueAt(row, i).equals(adm)) {
+                        containsAdm = true;
                         break;
-                    case 1:
-                        if (privilegesForFieldTable.getValueAt(row2, col).equals(adm)) {
-                            grant_query(getGrantQuery(userList.getSelectedValue(), 0, 0, headers[col], relName.elementAt(row)), no, row2, col, privilegesForFieldTable);
-                        }
-                        grant_query(getGrantQuery(userList.getSelectedValue(), 1, 0, headers[col], relName.elementAt(row)), gr, row2, col, privilegesForFieldTable);
-
-                        break;
-                    case 2:
-                        grant_query(getGrantQuery(userList.getSelectedValue(), 2, 0, headers[col], relName.elementAt(row)), adm, row2, col, privilegesForFieldTable);
-                        break;
-                }
-                querySender.execute(QueryTypes.COMMIT, (String) null);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                querySender.releaseResources();
+                    }
+                if (containsAdm) grantAllOnRole(0, row);
             }
+
+            if (objectVector.elementAt(row) instanceof DefaultDatabaseObject)
+                grantAllQuery(getGrantQuery(userList.getSelectedValue(), grant, "ALL", objectVector.elementAt(row)), icons[grant], row, grant);
+            else if (objectVector.elementAt(row) instanceof DefaultDatabaseExecutable)
+                grantQuery(getGrantQuery(userList.getSelectedValue(), grant, "EXECUTE", objectVector.elementAt(row)), icons[grant], row, col_execute, tablePrivileges);
+            else
+                grantQuery(getGrantQuery(userList.getSelectedValue(), grant, "USAGE", objectVector.elementAt(row)), icons[grant], row, col_usage, tablePrivileges);
+
         }
     }
 
@@ -1012,44 +984,19 @@ public class GrantManagerPanel extends JPanel implements TabView {
         }
     }
 
-    void setVisiblePanelOfTable(boolean flag) {
-        if (flag) {
-            int row = tablePrivileges.getSelectedRow();
-            downPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ColumnsOf") + "[" + relName.elementAt(row) + "]"));
-            load_table2(relName.elementAt(row));
-            obj_index = row;
-        } else {
-            downPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ColumnsOf")));
-            privilegesForFieldTable.setModel(new RoleTableModel(headers2, 0));
-        }
-    }
-
-    String getTypeField(int type) {
-        switch (type) {
-            case 7:
-                return "SMALLINT";
-            case 8:
-                return "INTEGER";
-            case 10:
-                return "FLOAT";
-            case 12:
-                return "DATE";
-            case 13:
-                return "TIME";
-            case 14:
-                return "CHAR";
-            case 16:
-                return "BIGINT";
-            case 27:
-                return "DOUBLE PRECISION";
-            case 35:
-                return "TIMESTAMP";
-            case 37:
-                return "VARCHAR";
-            case 261:
-                return "BLOB";
-            default:
-                return "UNKNOWN";
+    void grantOnRole(int grant, int row, int col) {
+        if (row < tablePrivileges.getRowCount()) {
+            if (objectVector.elementAt(row) instanceof DefaultDatabaseExecutable && col != col_execute)
+                return;
+            else if (objectVector.elementAt(row) instanceof DefaultDatabaseObject && (col == col_execute || col == col_usage))
+                return;
+            else if ((objectVector.elementAt(row) instanceof DefaultDatabaseException
+                    || objectVector.elementAt(row) instanceof DefaultDatabaseSequence) && col != col_usage)
+                return;
+            if (grant == 1 && tablePrivileges.getValueAt(row, col).equals(adm))
+                grantOnRole(0, row, col);
+            grantQuery(getGrantQuery(userList.getSelectedValue(), grant, headers[col], objectVector.elementAt(row)), icons[grant], row, col, tablePrivileges);
+            querySender.releaseResourcesWithoutCommit();
         }
     }
 
@@ -1063,6 +1010,15 @@ public class GrantManagerPanel extends JPanel implements TabView {
                 key[i] = bundleString(key[i]);
         }
         return key;
+    }
+
+    void grantOnRoleForCol(int grant, int row, int col, int row2) {
+        if (row < tablePrivileges.getRowCount() && row2 < privilegesForFieldTable.getRowCount()) {
+            if (grant == 1 && privilegesForFieldTable.getValueAt(row2, col).equals(adm))
+                grantOnRoleForCol(0, row, col, row2);
+            grantQuery(getGrantQuery(userList.getSelectedValue(), grant, headers2[col], objectVector.elementAt(row), columnVector.elementAt(row2).getName()), icons[grant], row2, col, privilegesForFieldTable);
+            querySender.releaseResources();
+        }
     }
 
     @Override
@@ -1086,32 +1042,52 @@ public class GrantManagerPanel extends JPanel implements TabView {
         execute_thread();
     }
 
-    private void revoke_vActionPerformed(java.awt.event.ActionEvent evt) {
+    void setVisiblePanelOfTable(boolean flag) {
+        if (flag) {
+            int row = tablePrivileges.getSelectedRow();
+            downPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ColumnsOf") + "[" + objectVector.elementAt(row) + "]"));
+            loadTable2(objectVector.elementAt(row));
+            obj_index = row;
+        } else {
+            downPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ColumnsOf")));
+            privilegesForFieldTable.setModel(new RoleTableModel(headers2, 0));
+        }
+    }
+
+    public String[] bundleStringsOf(String... keys) {
+        for (int i = 0; i < keys.length; i++) {
+            if (keys.length > 0)
+                keys[i] = bundleString(keys[i]);
+        }
+        return keys;
+    }
+
+    private void revokeVertical() {
         act = NO_GRANT_TO_ALL_OBJECTS;
         execute_thread();
     }
 
-    private void revoke_allActionPerformed(java.awt.event.ActionEvent evt) {
+    private void revokeAll() {
         act = NO_ALL_GRANTS_TO_ALL_OBJECTS;
         execute_thread();
     }
 
-    private void grant_vActionPerformed(java.awt.event.ActionEvent evt) {
+    private void grantVertical() {
         act = GRANT_TO_ALL_OBJECTS;
         execute_thread();
     }
 
-    private void grant_allActionPerformed(java.awt.event.ActionEvent evt) {
+    private void grantAll() {
         act = ALL_GRANTS_TO_ALL_OBJECTS;
         execute_thread();
     }
 
-    private void grant_option_vActionPerformed(java.awt.event.ActionEvent evt) {
+    private void grantVerticalWithGrantOption() {
         act = GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION;
         execute_thread();
     }
 
-    private void grant_option_allActionPerformed(java.awt.event.ActionEvent evt) {
+    private void grantAllWithGrantOption() {
         act = ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION;
         execute_thread();
     }
@@ -1119,19 +1095,19 @@ public class GrantManagerPanel extends JPanel implements TabView {
     void get_users() {
         Connection connection = null;
         try {
-            connection = con.unwrap(Connection.class);
+            connection = ConnectionManager.getTemporaryConnection(dbc).unwrap(Connection.class);
         } catch (SQLException e) {
             Log.error("error get connection for getting users in grant manager:", e);
         }
 
         IFBUserManager userManager = null;
         try {
-            userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(listConnections.get(databaseBox.getSelectedIndex()).getDriverMajorVersion(), connection, "FBUserManagerImpl");
+            userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(((DatabaseConnection) databaseBox.getSelectedItem()).getDriverMajorVersion(), connection, "FBUserManagerImpl");
         } catch (ClassNotFoundException e) {
             Log.error("Error get users in Grant Manager:", e);
         }
         if (userManager != null) {
-            userManager = getUserManager(userManager, listConnections.get(databaseBox.getSelectedIndex()));
+            userManager = getUserManager(userManager, (DatabaseConnection) databaseBox.getSelectedItem());
             Map<String, IFBUser> users;
             try {
                 users = userManager.getUsers();
@@ -1146,57 +1122,51 @@ public class GrantManagerPanel extends JPanel implements TabView {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void initComponents() {
 
-        //upPanel = new JPanel();
-        //interruptPanel = new JPanel();
         databaseBox = new JComboBox<>();
         refreshButton = new JButton(bundleString("Refresh"));
-        leftPanel = new JPanel();
-        recipientsOfPrivilegesBox = new JComboBox<>();
+        userTypeBox = new JComboBox<>();
         recipientsOfPrivilegesScroll = new JScrollPane();
         userList = new JList<>();
         rightPanel = new JPanel();
-        /*revoke_v = new JButton();
-        revoke_h = new JButton();
-        revoke_all = new JButton();*/
-        grantFieldButtons = new JButton[6];
+        grantFieldButtons = new RolloverButton[6];
         for (int i = 0; i < grantFieldButtons.length; i++) {
-            grantFieldButtons[i] = new JButton();
+            grantFieldButtons[i] = new RolloverButton();
+            grantFieldButtons[i].setMouseEnteredContentAreaFill(false);
             switch (i) {
                 case 0:
-                    grantFieldButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png"))); // NOI18N
-                    grantFieldButtons[i].addActionListener(evt -> revoke_v1ActionPerformed(evt));
+                    grantFieldButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/no_grant_vertical.svg", buttonSize)); // NOI18N
+                    grantFieldButtons[i].addActionListener(evt -> revoke_v1ActionPerformed());
                     break;
                 case 1:
-                    grantFieldButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_gorisont.png"))); // NOI18N
-                    grantFieldButtons[i].addActionListener(evt -> revoke_g1ActionPerformed(evt));
+                    grantFieldButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/no_grant_gorisont.svg", buttonSize)); // NOI18N
+                    grantFieldButtons[i].addActionListener(evt -> revoke_g1ActionPerformed());
 
                     break;
                 case 2:
-                    grantFieldButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_vertical.png"))); // NOI18N
-                    grantFieldButtons[i].addActionListener(evt -> grant_v1ActionPerformed(evt));
+                    grantFieldButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/grant_vertical.svg", buttonSize)); // NOI18N
+                    grantFieldButtons[i].addActionListener(evt -> grant_v1ActionPerformed());
 
                     break;
                 case 3:
-                    grantFieldButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_gorisont.png"))); // NOI18N
-                    grantFieldButtons[i].addActionListener(evt -> grant_g1ActionPerformed(evt));
+                    grantFieldButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/grant_gorisont.svg", buttonSize)); // NOI18N
+                    grantFieldButtons[i].addActionListener(evt -> grant_g1ActionPerformed());
 
                     break;
                 case 4:
-                    grantFieldButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_vertical.png"))); // NOI18N
-                    grantFieldButtons[i].addActionListener(evt -> grant_option_v1ActionPerformed(evt));
+                    grantFieldButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/admin_option_vertical.svg", buttonSize)); // NOI18N
+                    grantFieldButtons[i].addActionListener(evt -> grant_option_v1ActionPerformed());
 
                     break;
                 case 5:
-                    grantFieldButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_gorisont.png"))); // NOI18N
-                    grantFieldButtons[i].addActionListener(evt -> grant_option_g1ActionPerformed(evt));
+                    grantFieldButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/admin_option_gorisont.svg", buttonSize)); // NOI18N
+                    grantFieldButtons[i].addActionListener(evt -> grant_option_g1ActionPerformed());
                     break;
             }
         }
 
-        objectBox = new JComboBox<>();
+        objectBox = new EQCheckCombox();
         filterBox = new JComboBox<>();
         filterField = new JTextField();
         invertFilterCheckBox = new JCheckBox();
@@ -1204,45 +1174,46 @@ public class GrantManagerPanel extends JPanel implements TabView {
         privilegesScroll = new JScrollPane();
         tablePrivileges = new JTable();
         downPanel = new JPanel();
-        grantButtons = new JButton[9];
+        grantButtons = new RolloverButton[9];
         for (int i = 0; i < grantButtons.length; i++) {
-            grantButtons[i] = new JButton();
+            grantButtons[i] = new RolloverButton();
+            grantButtons[i].setMouseEnteredContentAreaFill(false);
             switch (i) {
                 case 0:
-                    grantButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png")));
-                    grantButtons[i].addActionListener(evt -> revoke_vActionPerformed(evt));
+                    grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/no_grant_vertical.svg", buttonSize));
+                    grantButtons[i].addActionListener(evt -> revokeVertical());
                     break;
                 case 1:
-                    grantButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_gorisont.png")));
-                    grantButtons[i].addActionListener(evt -> revoke_gActionPerformed(evt));
+                    grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/no_grant_gorisont.svg", buttonSize));
+                    grantButtons[i].addActionListener(evt -> revoke_gActionPerformed());
                     break;
                 case 2:
-                    grantButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_all.png")));
-                    grantButtons[i].addActionListener(evt -> revoke_allActionPerformed(evt));
+                    grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/no_grant_all.svg", buttonSize));
+                    grantButtons[i].addActionListener(evt -> revokeAll());
                     break;
                 case 3:
-                    grantButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_vertical.png")));
-                    grantButtons[i].addActionListener(evt -> grant_vActionPerformed(evt));
+                    grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/grant_vertical.svg", buttonSize));
+                    grantButtons[i].addActionListener(evt -> grantVertical());
                     break;
                 case 4:
-                    grantButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_gorisont.png")));
-                    grantButtons[i].addActionListener(evt -> grant_gActionPerformed(evt));
+                    grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/grant_gorisont.svg", buttonSize));
+                    grantButtons[i].addActionListener(evt -> grant_gActionPerformed());
                     break;
                 case 5:
-                    grantButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_all.png")));
-                    grantButtons[i].addActionListener(evt -> grant_allActionPerformed(evt));
+                    grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/grant_all.svg", buttonSize));
+                    grantButtons[i].addActionListener(evt -> grantAll());
                     break;
                 case 6:
-                    grantButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_vertical.png")));
-                    grantButtons[i].addActionListener(evt -> grant_option_vActionPerformed(evt));
+                    grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/admin_option_vertical.svg", buttonSize));
+                    grantButtons[i].addActionListener(evt -> grantVerticalWithGrantOption());
                     break;
                 case 7:
-                    grantButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_gorisont.png")));
-                    grantButtons[i].addActionListener(evt -> grant_option_gActionPerformed(evt));
+                    grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/admin_option_gorisont.svg", buttonSize));
+                    grantButtons[i].addActionListener(evt -> grant_option_gActionPerformed());
                     break;
                 case 8:
-                    grantButtons[i].setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_all.png")));
-                    grantButtons[i].addActionListener(evt -> grant_option_allActionPerformed(evt));
+                    grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/admin_option_all.svg", buttonSize));
+                    grantButtons[i].addActionListener(evt -> grantAllWithGrantOption());
                     break;
             }
         }
@@ -1255,16 +1226,14 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
         grantFieldsToolbar = new JToolBar();
         grantFieldsToolbar.setFloatable(false);
-
-        databaseBox.setModel(new DefaultComboBoxModel<>(new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
-        databaseBox.addActionListener(evt -> databaseBoxActionPerformed(evt));
+        databaseBox.addActionListener(evt -> databaseBoxActionPerformed());
 
         refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.png", true));
-        refreshButton.addActionListener(evt -> refreshButtonActionPerformed(evt));
+        refreshButton.addActionListener(evt -> refreshButtonActionPerformed());
 
         String[] recipients = new String[]{"Users", "Roles", "Views", "Triggers", "Procedures", "Functions", "Packages"};
-        recipientsOfPrivilegesBox.setModel(new DefaultComboBoxModel<>(bundleStrings(recipients)));
-        recipientsOfPrivilegesBox.addActionListener(evt -> userBoxActionPerformed(evt));
+        userTypeBox.setModel(new DefaultComboBoxModel<>(bundleStrings(recipients)));
+        userTypeBox.addActionListener(evt -> userBoxActionPerformed());
 
         userList.addListSelectionListener(evt -> userListValueChanged());
         recipientsOfPrivilegesScroll.setViewportView(userList);
@@ -1274,18 +1243,32 @@ public class GrantManagerPanel extends JPanel implements TabView {
         splitPane.setDividerSize(6);
 
 
-        objectBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"AllObjects", "Tables", "Views", "Procedures"})));
-        objectBox.addActionListener(evt -> objectBoxActionPerformed(evt));
+        objectTypes = bundleStringsOf("Tables", "GlobalTemporaries", "Views", "Procedures", "Functions", "Packages", "Generators", "Exceptions");
+        for (String obj : objectTypes) {
+            objectBox.getModel().addElement(obj);
+            objectBox.getModel().addCheck(obj);
+        }
+        objectBox.getModel().addListCheckListener(new ListCheckListener() {
+            @Override
+            public void removeCheck(ListEvent listEvent) {
+                objectBoxActionPerformed();
+            }
+
+            @Override
+            public void addCheck(ListEvent listEvent) {
+                objectBoxActionPerformed();
+            }
+        });
 
         filterBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"DisplayAll", "GrantedOnly", "Non-grantedOnly"})));
         filterBox.addActionListener(evt -> filterBoxActionPerformed(evt));
 
-        filterField.addActionListener(evt -> filterFieldActionPerformed(evt));
+        filterField.addActionListener(evt -> filterFieldActionPerformed());
 
         invertFilterCheckBox.setText(bundleString("InvertFilter"));
         invertFilterCheckBox.addActionListener(evt -> jCheckBox1ActionPerformed(evt));
 
-        systemCheck.setText(bundleString("ShowSystemTables"));
+        systemCheck.setText(bundleString("ShowSystemObjects"));
         systemCheck.addActionListener(evt -> systemCheckActionPerformed(evt));
 
         tablePrivileges.setModel(new javax.swing.table.DefaultTableModel(
@@ -1318,7 +1301,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
         cancelButton.setText(bundleString("CancelFill"));
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
+                cancelButtonActionPerformed();
             }
         });
 
@@ -1346,7 +1329,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
         gbh.addLabelFieldPair(this, Bundles.getCommon("connection"), databaseBox, null);
 
-        gbh.addLabelFieldPair(this, bundleString("PrivelegesFor"), recipientsOfPrivilegesBox, null, true, false);
+        gbh.addLabelFieldPair(this, bundleString("PrivelegesFor"), userTypeBox, null, true, false);
 
         add(splitPane, gbh.nextCol().fillBoth().spanX().setMaxWeightY().setHeight(2).get());
 
@@ -1374,23 +1357,13 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
         rightPanel.add(privilegesScroll, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setMaxWeightY().setWidth(6).get());
 
-        GroupLayout downPanelLayout = new GroupLayout(downPanel);
-        downPanel.setLayout(downPanelLayout);
+        GridBagHelper gridBagHelper = new GridBagHelper();
+        gridBagHelper.setDefaultsStatic().defaults();
+        downPanel.setLayout(new GridBagLayout());
         for (int i = 0; i < grantFieldButtons.length; i++)
             grantFieldsToolbar.add(grantFieldButtons[i]);
-
-        downPanelLayout.setHorizontalGroup(
-                downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(grantFieldsToolbar)
-                        .addComponent(privilegesForFieldScroll, GroupLayout.Alignment.TRAILING)
-        );
-        downPanelLayout.setVerticalGroup(
-                downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(downPanelLayout.createSequentialGroup()
-                                .addComponent(grantFieldsToolbar)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(privilegesForFieldScroll, GroupLayout.PREFERRED_SIZE, 114, GroupLayout.PREFERRED_SIZE))
-        );
+        downPanel.add(grantFieldsToolbar, gridBagHelper.fillHorizontally().spanX().get());
+        downPanel.add(privilegesForFieldScroll, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
         splitPane.setTopComponent(rightPanel);
         splitPane.setBottomComponent(downPanel);
         splitPane.setResizeWeight(0.8);
@@ -1410,7 +1383,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
         for (int i = 0; i < grantFieldButtons.length; i++)
             grantFieldButtons[i].setEnabled(enable);
         systemCheck.setEnabled(enable);
-        recipientsOfPrivilegesBox.setEnabled(enable);
+        userTypeBox.setEnabled(enable);
         userList.setEnabled(enable);
         //cancelButton.setVisible(!enable);
         cancelButton.setEnabled(!enable);

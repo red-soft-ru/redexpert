@@ -245,6 +245,8 @@ public interface NamedObject extends Named, java.io.Serializable {
 
     boolean allowsChildren();
 
+    int getRDBType();
+
 }
 
 

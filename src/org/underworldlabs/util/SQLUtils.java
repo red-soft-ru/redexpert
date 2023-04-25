@@ -1032,14 +1032,25 @@ public final class SQLUtils {
     public static String generateAlterIndex(
             DefaultDatabaseIndex thisIndex, DefaultDatabaseIndex comparingIndex) {
 
-        if (thisIndex.isActive() == comparingIndex.isActive())
-            return "/* there are no changes */\n";
-
         StringBuilder sb = new StringBuilder();
-        String activeString = comparingIndex.isActive() ? " ACTIVE" : " INACTIVE";
-        sb.append("ALTER INDEX ").append(format(thisIndex.getName()));
-        sb.append(activeString).append(";\n");
-        return sb.toString();
+
+        String comparedIndexCreateQuery = comparingIndex.getCreateSQLText();
+        String thisIndexCreateQuery = thisIndex.getCreateSQLText();
+        if (!thisIndexCreateQuery.equals(comparedIndexCreateQuery) &&
+                (thisIndexCreateQuery.contains(" INACTIVE;") || comparedIndexCreateQuery.contains(" INACTIVE;"))) {
+
+            sb.append("ALTER INDEX ").append(format(thisIndex.getName()));
+            sb.append(comparingIndex.isActive() ? " ACTIVE" : " INACTIVE").append(";\n");
+            return sb.toString();
+        }
+
+        if (!thisIndexCreateQuery.equals(comparedIndexCreateQuery)) {
+            sb.append(generateDefaultDropQuery("INDEX", thisIndex.getName()));
+            sb.append(comparedIndexCreateQuery);
+            return sb.toString();
+        }
+
+        return "/* there are no changes */\n";
     }
 
     public static String generateAlterUser(DefaultDatabaseUser thisUser, DefaultDatabaseUser compareUser, boolean setComment) {

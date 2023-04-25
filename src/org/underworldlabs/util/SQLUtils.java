@@ -25,7 +25,7 @@ public final class SQLUtils {
     public static String generateCreateTable(
             String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,
             boolean existTable, boolean temporary, boolean constraints, boolean computed, boolean setComment,
-            String typeTemporary, String externalFile, String adapter, String sqlSecurity, String tablespace, String comment) {
+            String typeTemporary, String externalFile, String adapter, String sqlSecurity, String tablespace, String comment, String delimiter) {
 
         StringBuilder sb = new StringBuilder();
         StringBuilder sqlText = new StringBuilder();
@@ -86,14 +86,15 @@ public final class SQLUtils {
         if (temporary)
             sb.append("\n").append(typeTemporary);
 
-        sb.append(";\n");
+        sb.append(delimiter).append("\n");
 
         if (autoincrementSQLText != null)
             sb.append(autoincrementSQLText.toString().replace(TableDefinitionPanel.SUBSTITUTE_NAME, format(name))).append(NEW_LINE);
 
-        if (setComment && !MiscUtils.isNull(comment) && !comment.equals("")) {
-            sb.append(generateCommentForColumns(name, columnDataList, "COLUMN", "^"));
-            sb.append("COMMENT ON TABLE ").append(name).append(" IS '").append(comment).append("';\n");
+        if (setComment) {
+            sb.append(generateCommentForColumns(name, columnDataList, "COLUMN", delimiter));
+            if (!MiscUtils.isNull(comment) && !comment.equals(""))
+                sb.append("COMMENT ON TABLE ").append(name).append(" IS '").append(comment).append("'").append(delimiter).append("\n");
         }
 
         return sb.toString();
@@ -302,7 +303,7 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         if (comment != null && !comment.isEmpty()) {
-            sb.append("\nCOMMENT ON ").append(metaTag).append(" ");
+            sb.append("COMMENT ON ").append(metaTag).append(" ");
             if (nameAlreadyFormatted)
                 sb.append(name);
             else

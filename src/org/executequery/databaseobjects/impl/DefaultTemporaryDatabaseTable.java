@@ -42,7 +42,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, true, true, true, true,
-                getTypeTemporary(), getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+                getTypeTemporary(), getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
     }
 
     @Override
@@ -64,7 +64,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         return SQLUtils.generateCreateTable(
                 getName(), listCD, listCC, true, true, false, false,
                 Comparer.isCommentsNeed(), getTypeTemporary(), getExternalFile(),
-                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
     }
 
     @Override

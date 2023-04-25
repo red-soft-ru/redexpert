@@ -632,7 +632,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, true,
                 true, true, null, getExternalFile(),
-                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
     }
 
     @Override
@@ -651,7 +651,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, false,
                 false, Comparer.isCommentsNeed(), null, getExternalFile(),
-                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
     }
 
     @Override
@@ -781,7 +781,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         return SQLUtils.generateCreateTable(getName(), listCD, listCC,
                 true, false, true, true, true, null,
-                getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks());
+                getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
     }
 
     protected void updateListCD() {

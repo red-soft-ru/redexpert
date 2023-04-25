@@ -410,7 +410,11 @@ public class GrantManagerPanel extends JPanel implements TabView {
     }
 
     private void refreshButtonActionPerformed() {
-        load_connections();
+        if (userlistModel.size() > 0)
+            if (userList.getSelectedValue() != null) {
+                act = CREATE_TABLE;
+                execute_thread();
+            }
     }
 
     private void userListValueChanged() {

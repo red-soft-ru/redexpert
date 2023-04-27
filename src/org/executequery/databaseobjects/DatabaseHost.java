@@ -264,9 +264,9 @@ public interface DatabaseHost extends NamedObject {
 
     void incCountFinishedMetaTags();
 
-    public boolean isPauseLoadingTreeForSearch();
+    boolean isPauseLoadingTreeForSearch();
 
-    public void setPauseLoadingTreeForSearch(boolean pauseLoadingTreeForSearch);
+    void setPauseLoadingTreeForSearch(boolean pauseLoadingTreeForSearch);
 
 }
 

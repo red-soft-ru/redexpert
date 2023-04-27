@@ -179,7 +179,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         //tabbed panel
         tabPane = new JTabbedPane();
         tabPane.add(Bundles.getCommon("columns"), descBottomPanel);
-        addPrivilegesTab(tabPane);
+        addPrivilegesTab(tabPane, null);
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
         tabPane.add(Bundles.getCommon("SQL"), sqlPanel);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);

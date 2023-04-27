@@ -239,6 +239,8 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     protected void initEdited() {
         reset();
         addDependenciesTab(trigger);
+        if (parent == null)
+            addPrivilegesTab(tabbedPane, trigger);
         addCreateSqlTab(trigger);
     }
 

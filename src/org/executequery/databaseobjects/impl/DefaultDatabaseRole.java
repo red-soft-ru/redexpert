@@ -13,7 +13,7 @@ import java.sql.SQLException;
 /**
  * Created by vasiliy on 02.02.17.
  */
-public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
+public class DefaultDatabaseRole extends AbstractDatabaseObject {
     public String name;
 
     public DefaultDatabaseRole(DatabaseMetaTag metaTagParent, String name) {

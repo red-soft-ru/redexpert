@@ -219,6 +219,10 @@ public class BaseDatabaseObject implements NamedObject {
         return true;
     }
 
+    @Override
+    public int getRDBType() {
+        return -1;
+    }
 }
 
 

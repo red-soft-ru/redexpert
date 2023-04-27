@@ -1166,7 +1166,53 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         this.markedForReloadCols = markedForReloadCols;
     }
 
+    public static int getRDBTypeFromType(int type) {
+        switch (type) {
+            case NamedObject.TABLE:
+            case NamedObject.GLOBAL_TEMPORARY:
+            case NamedObject.SYSTEM_TABLE:
+                return 0;
+            case NamedObject.VIEW:
+            case NamedObject.SYSTEM_VIEW:
+                return 1;
+            case NamedObject.TRIGGER:
+            case NamedObject.DATABASE_TRIGGER:
+            case NamedObject.DDL_TRIGGER:
+            case NamedObject.SYSTEM_TRIGGER:
+                return 2;
+            case NamedObject.PROCEDURE:
+                return 5;
+            case NamedObject.EXCEPTION:
+                return 7;
+            case NamedObject.USER:
+                return 8;
+            case NamedObject.DOMAIN:
+                return 9;
+            case NamedObject.INDEX:
+                return 10;
+            case NamedObject.ROLE:
+            case NamedObject.SYSTEM_ROLE:
+                return 13;
+            case NamedObject.SEQUENCE:
+            case NamedObject.SYSTEM_SEQUENCE:
+                return 14;
+            case NamedObject.FUNCTION:
+            case NamedObject.UDF:
+            case NamedObject.SYSTEM_FUNCTION:
+                return 15;
+            case NamedObject.COLLATION:
+                return 17;
+            case NamedObject.PACKAGE:
+            case NamedObject.SYSTEM_PACKAGE:
+                return 18;
+            default:
+                return -1;
+        }
+    }
 
+    public int getRDBType() {
+        return getRDBTypeFromType(getType());
+    }
 }
 
 

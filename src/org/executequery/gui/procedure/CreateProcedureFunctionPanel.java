@@ -11,6 +11,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseExecutable;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.BaseDialog;
@@ -154,7 +155,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             sqlSecurityCombo.setSelectedItem(executable.getSqlSecurity());
         }
         topPanel.add(executeButton, topGbh.setLabelDefault().get());
-        addPrivilegesTab(tabbedPane);
+        addPrivilegesTab(tabbedPane, (AbstractDatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         simpleCommentPanel.setDatabaseObject((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         generateScript();

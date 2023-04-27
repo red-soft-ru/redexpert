@@ -85,7 +85,7 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
     }
 
     private JTabbedPane tabPaneWithPrivileges;
-    private ChangeListener privilegeListener;
+    protected ChangeListener privilegeListener;
 
     protected void addPrivilegesTab(JTabbedPane tabPane) {
         tabPaneWithPrivileges = tabPane;

@@ -173,6 +173,9 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
     @Override
     protected void initEdited() {
         reset();
+        tabbedPane.remove(sqlTextPanel);
+        if (parent == null)
+            addPrivilegesTab(tabbedPane);
         addCreateSqlTab(beginUser);
     }
 

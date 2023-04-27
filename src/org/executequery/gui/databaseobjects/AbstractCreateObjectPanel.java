@@ -82,6 +82,9 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                 return new CreateUDFPanel(dc, null, databaseObject);
             case NamedObject.USER:
                 return new CreateUserPanel(dc, null, (DefaultDatabaseUser) databaseObject);
+            case NamedObject.ROLE:
+            case NamedObject.SYSTEM_ROLE:
+                return new CreateRolePanel(dc, null, (DefaultDatabaseRole) databaseObject);
             case NamedObject.TABLESPACE:
                 return new CreateTablespacePanel(dc, null, databaseObject);
             case NamedObject.JOB:

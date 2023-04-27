@@ -921,7 +921,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         }
     }
 
-    boolean supportedObject(int type) throws Exception {
+    public boolean supportedObject(int type) throws Exception {
         if (typeTree == TreePanel.TABLESPACE) {
             return type == TABLE || type == INDEX;
         }

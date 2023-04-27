@@ -377,7 +377,16 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     List<TypeObject> createObjectTypes(int... types) {
         List<TypeObject> list = new ArrayList<>();
         for (int type : types) {
-            list.add(new TypeObject(type));
+            boolean supported = true;
+            if (type != NamedObject.USER) {
+                try {
+                    supported = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).supportedObject(type);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (supported)
+                list.add(new TypeObject(type));
         }
         return list;
     }

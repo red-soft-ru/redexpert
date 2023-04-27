@@ -39,7 +39,7 @@ public class CreateRolePanel extends AbstractCreateObjectPanel {
         nameField.setEnabled(false);
         addCreateSqlTab(role);
         if (parent == null) {
-            addPrivilegesTab(tabbedPane);
+            addPrivilegesTab(tabbedPane, role);
             //privilegeListener.stateChanged(null);
         }
         addCommentTab(role);

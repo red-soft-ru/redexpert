@@ -240,7 +240,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         reset();
         addDependenciesTab(trigger);
         if (parent == null)
-            addPrivilegesTab(tabbedPane);
+            addPrivilegesTab(tabbedPane, trigger);
         addCreateSqlTab(trigger);
     }
 

@@ -111,6 +111,25 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         this.grantManagerPanel = grantManagerPanel;
     }
 
+    boolean isFilledObjectBox = false;
+
+    public static boolean supportType(int metattype, DatabaseConnection databaseConnection) {
+        boolean supported = true;
+        if (metattype != NamedObject.USER) {
+            try {
+                supported = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).supportedObject(metattype);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (supported)
+                if (databaseConnection.getServerVersion() < 3) {
+                    if (metattype == NamedObject.SEQUENCE || metattype == NamedObject.EXCEPTION)
+                        return false;
+                }
+        }
+        return supported;
+    }
+
     public void setDatabaseObject(NamedObject databaseObject) {
         if (databaseObject != null) {
             if (typeTable == USER_OBJECTS)
@@ -123,6 +142,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             if (!inited)
                 initComponents();
             else {
+                fillObjectBox();
                 act = CREATE_TABLE;
                 execute_thread();
             }
@@ -154,25 +174,23 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             col_usage = -1;
         objectTypeBox = new EQCheckCombox();
 
-        if (typeTable == USER_OBJECTS)
-            objectTypes = createObjectTypes(NamedObject.TABLE, NamedObject.GLOBAL_TEMPORARY, NamedObject.VIEW, NamedObject.PROCEDURE, NamedObject.FUNCTION, NamedObject.PACKAGE, NamedObject.SEQUENCE, NamedObject.EXCEPTION);//"Tables", "GlobalTemporaries", "Views", "Procedures", "Functions", "Packages", "Generators", "Exceptions");
-        else
-            objectTypes = createObjectTypes(NamedObject.USER, NamedObject.ROLE, NamedObject.VIEW, NamedObject.TRIGGER, NamedObject.PROCEDURE, NamedObject.FUNCTION, NamedObject.PACKAGE);//"Users", "Roles", "Views", "Triggers", "Procedures", "Functions", "Packages");
-        for (TypeObject obj : objectTypes) {
-            objectTypeBox.getModel().addElement(obj);
-            objectTypeBox.getModel().addCheck(obj);
-        }
+        fillObjectBox();
+
         objectTypeBox.getModel().addListCheckListener(new ListCheckListener() {
             @Override
             public void removeCheck(ListEvent listEvent) {
-                act = CREATE_TABLE;
-                execute_thread();
+                if (!isFilledObjectBox) {
+                    act = CREATE_TABLE;
+                    execute_thread();
+                }
             }
 
             @Override
             public void addCheck(ListEvent listEvent) {
-                act = CREATE_TABLE;
-                execute_thread();
+                if (!isFilledObjectBox) {
+                    act = CREATE_TABLE;
+                    execute_thread();
+                }
             }
         });
         grantFieldButtons = new RolloverButton[iconNamesForFields.length];
@@ -374,21 +392,18 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         add(splitPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
     }
 
-    List<TypeObject> createObjectTypes(int... types) {
-        List<TypeObject> list = new ArrayList<>();
-        for (int type : types) {
-            boolean supported = true;
-            if (type != NamedObject.USER) {
-                try {
-                    supported = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).supportedObject(type);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            if (supported)
-                list.add(new TypeObject(type));
+    void fillObjectBox() {
+        isFilledObjectBox = true;
+        objectTypeBox.getModel().clear();
+        if (typeTable == USER_OBJECTS)
+            objectTypes = createObjectTypes(NamedObject.TABLE, NamedObject.GLOBAL_TEMPORARY, NamedObject.VIEW, NamedObject.PROCEDURE, NamedObject.FUNCTION, NamedObject.PACKAGE, NamedObject.SEQUENCE, NamedObject.EXCEPTION);//"Tables", "GlobalTemporaries", "Views", "Procedures", "Functions", "Packages", "Generators", "Exceptions");
+        else
+            objectTypes = createObjectTypes(NamedObject.USER, NamedObject.ROLE, NamedObject.VIEW, NamedObject.TRIGGER, NamedObject.PROCEDURE, NamedObject.FUNCTION, NamedObject.PACKAGE);//"Users", "Roles", "Views", "Triggers", "Procedures", "Functions", "Packages");
+        for (TypeObject obj : objectTypes) {
+            objectTypeBox.getModel().addElement(obj);
+            objectTypeBox.getModel().addCheck(obj);
         }
-        return list;
+        isFilledObjectBox = false;
     }
 
     void setEnableElements(boolean enable) {
@@ -685,6 +700,81 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         return null;
     }
 
+    List<TypeObject> createObjectTypes(int... types) {
+        List<TypeObject> list = new ArrayList<>();
+        for (int type : types) {
+
+            if (supportType(type, databaseConnection))
+                list.add(new TypeObject(type));
+        }
+        return list;
+    }
+
+    List<NamedObject> getNamedObjectsFromSomeTypes(int... types) {
+        List<NamedObject> resultList = new ArrayList<>();
+        for (int type : types) {
+            resultList.addAll(getRelationsFromType(type));
+        }
+        return resultList;
+    }
+
+    List<NamedObject> getUsers() {
+        List<NamedObject> users = new ArrayList<>();
+        if (databaseConnection.getServerVersion() >= 3)
+            users.addAll(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.USER]));
+        else {
+            Connection connection = null;
+            try {
+                connection = ConnectionManager.getTemporaryConnection(databaseConnection).unwrap(Connection.class);
+            } catch (SQLException e) {
+                Log.error("error get connection for getting users in grant manager:", e);
+            }
+
+            IFBUserManager userManager = null;
+            try {
+                userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader((databaseConnection).getDriverMajorVersion(), connection, "FBUserManagerImpl");
+            } catch (ClassNotFoundException e) {
+                Log.error("Error get users in Grant Manager:", e);
+            }
+            if (userManager != null) {
+                userManager = getUserManager(userManager, databaseConnection);
+                Map<String, IFBUser> userMap;
+                try {
+                    userMap = userManager.getUsers();
+                    for (IFBUser u : userMap.values()) {
+                        users.add(createUser(u.getUserName()));
+                    }
+
+                } catch (Exception e) {
+                    System.out.println(e);
+                    GUIUtilities.displayErrorMessage(e.toString());
+                }
+            }
+        }
+        users.add(createUser("PUBLIC"));
+        return users;
+    }
+
+    IFBUserManager getUserManager(IFBUserManager userManager, DatabaseConnection dc) {
+        userManager.setDatabase(dc.getSourceName());
+        userManager.setHost(dc.getHost());
+        userManager.setPort(dc.getPortInt());
+        userManager.setUser(dc.getUserName());
+        userManager.setPassword(dc.getUnencryptedPassword());
+        return userManager;
+    }
+
+    DefaultDatabaseUser createUser(String name) {
+        return new DefaultDatabaseUser(new DefaultDatabaseMetaTag(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection), null, null, NamedObject.META_TYPES[NamedObject.USER]), name);
+    }
+
+    List<NamedObject> getRelationsFromType(int type) {
+        if (type == NamedObject.USER) {
+            return getUsers();
+        } else
+            return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+    }
+
     void addRelationsToTable(List<NamedObject> list) {
         if (list != null && list.size() > 0)
             try {
@@ -703,7 +793,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
                 int lastIndex = 0;
                 progressBar.setMaximum(list.size());
                 progressBar.setString(Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[list.get(0).getType()]));
-                while (rs.next()) {
+                while (rs.next() && !enableElements) {
                     Vector<Object> roleData;
                     NamedObject currentObject;
                     if (typeTable == USER_OBJECTS) {
@@ -783,91 +873,6 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             } finally {
                 querySender.releaseResources();
             }
-    }
-
-    List<NamedObject> getNamedObjectsFromSomeTypes(int... types) {
-        List<NamedObject> resultList = new ArrayList<>();
-        for (int type : types) {
-            resultList.addAll(getRelationsFromType(type));
-        }
-        return resultList;
-    }
-
-    List<NamedObject> getUsers() {
-        List<NamedObject> users = new ArrayList<>();
-        if (databaseConnection.getServerVersion() >= 3)
-            users.addAll(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.USER]));
-        else {
-            Connection connection = null;
-            try {
-                connection = ConnectionManager.getTemporaryConnection(databaseConnection).unwrap(Connection.class);
-            } catch (SQLException e) {
-                Log.error("error get connection for getting users in grant manager:", e);
-            }
-
-            IFBUserManager userManager = null;
-            try {
-                userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader((databaseConnection).getDriverMajorVersion(), connection, "FBUserManagerImpl");
-            } catch (ClassNotFoundException e) {
-                Log.error("Error get users in Grant Manager:", e);
-            }
-            if (userManager != null) {
-                userManager = getUserManager(userManager, databaseConnection);
-                Map<String, IFBUser> userMap;
-                try {
-                    userMap = userManager.getUsers();
-                    for (IFBUser u : userMap.values()) {
-                        users.add(createUser(u.getUserName()));
-                    }
-
-                } catch (Exception e) {
-                    System.out.println(e);
-                    GUIUtilities.displayErrorMessage(e.toString());
-                }
-            }
-        }
-        users.add(createUser("PUBLIC"));
-        return users;
-    }
-
-    IFBUserManager getUserManager(IFBUserManager userManager, DatabaseConnection dc) {
-        userManager.setDatabase(dc.getSourceName());
-        userManager.setHost(dc.getHost());
-        userManager.setPort(dc.getPortInt());
-        userManager.setUser(dc.getUserName());
-        userManager.setPassword(dc.getUnencryptedPassword());
-        return userManager;
-    }
-
-    DefaultDatabaseUser createUser(String name) {
-        return new DefaultDatabaseUser(new DefaultDatabaseMetaTag(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection), null, null, NamedObject.META_TYPES[NamedObject.USER]), name);
-    }
-
-    List<NamedObject> getRelationsFromType(int type) {
-        if (type == NamedObject.USER) {
-            return getUsers();
-        } else
-            return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
-    }
-
-    void addRelations(List<NamedObject> objectList) {
-        try {
-
-            List<NamedObject> resultList = new ArrayList<>();
-            if (objectList != null)
-                for (NamedObject relation : objectList) {
-                    if (!relation.isSystem() || relation.isSystem() == systemCheck.isSelected()) {
-                        if (!invertFilterCheckBox.isSelected() == relation.getName().contains(filterField.getText())) {
-                            addRow(relation);
-                            resultList.add(relation);
-                        }
-                    }
-                }
-            addRelationsToTable(resultList);
-        } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
-
-        }
     }
 
     void loadTable() {
@@ -1063,6 +1068,26 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         return keys;
     }
 
+    void addRelations(List<NamedObject> objectList) {
+        try {
+
+            List<NamedObject> resultList = new ArrayList<>();
+            if (objectList != null)
+                for (NamedObject relation : objectList) {
+                    if (!relation.isSystem() || relation.isSystem() == systemCheck.isSelected()) {
+                        if (!invertFilterCheckBox.isSelected() == relation.getName().contains(filterField.getText())) {
+                            addRow(relation);
+                            resultList.add(relation);
+                        }
+                    }
+                }
+            if (!enableElements) addRelationsToTable(resultList);
+        } catch (Exception e) {
+            GUIUtilities.displayErrorMessage(e.getMessage());
+
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == cancelButton)
@@ -1070,8 +1095,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         else if (e.getSource() == refreshButton) {
             act = CREATE_TABLE;
             execute_thread();
-        }
-        if (e.getActionCommand() != null && e.getActionCommand().startsWith("field_")) {
+        } else if (e.getActionCommand() != null && e.getActionCommand().startsWith("field_")) {
             grantSomeForCol((RolloverButton) e.getSource());
         } else {
             if (e.getSource() instanceof RolloverButton)
@@ -1106,5 +1130,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         public String toString() {
             return Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]);
         }
+
+
     }
 }

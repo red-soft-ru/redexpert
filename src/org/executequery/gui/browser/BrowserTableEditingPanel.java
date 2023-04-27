@@ -422,7 +422,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("constraints"), constraintsPanel);
         tabPane.add(Bundles.getCommon("indexes"), indexesPanel);
         tabPane.add(Bundles.getCommon("triggers"), triggersPanel);
-        addPrivilegesTab(tabPane);
+        addPrivilegesTab(tabPane, null);
         tabPane.add(Bundles.getCommon("references"), referencesPanel);
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
         tabPane.add(Bundles.getCommon("SQL"), splitPane);

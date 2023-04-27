@@ -85,8 +85,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
         databaseBox.addActionListener(evt -> databaseBoxActionPerformed());
 
-        String[] recipients = new String[]{"Users", "Roles", "Views", "Triggers", "Procedures", "Functions", "Packages"};
-        userTypeBox.setModel(new DefaultComboBoxModel<>(bundleStrings(recipients)));
+        fillUserBox();
         userTypeBox.addActionListener(evt -> userBoxActionPerformed());
 
         userList.addListSelectionListener(evt -> userListValueChanged());
@@ -116,6 +115,22 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
         add(recipientsOfPrivilegesScroll, gbh.nextRowFirstCol().setWidth(2).setHeight(1).fillBoth().setMaxWeightY().setMaxWeightX().get());
 
+    }
+
+    private void fillUserBox() {
+        List<String> recipients = new ArrayList<>();
+        recipients.add("Users");
+        recipients.add("Roles");
+        recipients.add("Views");
+        recipients.add("Triggers");
+        recipients.add("Procedures");
+        if (databaseBox.getSelectedItem() != null)
+            if (((DatabaseConnection) (databaseBox.getSelectedItem())).getServerVersion() >= 3) {
+                recipients.add("Functions");
+                recipients.add("Packages");
+            }
+
+        userTypeBox.setModel(new DefaultComboBoxModel<>(bundleStrings(recipients)));
     }
 
     public void setEnableElements(boolean enable) {
@@ -346,6 +361,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
     private void databaseBoxActionPerformed() {
         if (enabled_dBox) {
             dbc = (DatabaseConnection) databaseBox.getSelectedItem();
+            fillUserBox();
             load_userList();
         }
     }
@@ -367,17 +383,23 @@ public class GrantManagerPanel extends JPanel implements TabView {
     }
 
 
-
     public String bundleString(String key) {
         return Bundles.get(GrantManagerPanel.class, key);
     }
 
     public String[] bundleStrings(String[] key) {
         for (int i = 0; i < key.length; i++) {
-            if (key.length > 0)
-                key[i] = bundleString(key[i]);
+            key[i] = bundleString(key[i]);
         }
         return key;
+    }
+
+    public String[] bundleStrings(List<String> keys) {
+        String[] result = new String[keys.size()];
+        for (int i = 0; i < keys.size(); i++) {
+            result[i] = bundleString(keys.get(i));
+        }
+        return result;
     }
 
 

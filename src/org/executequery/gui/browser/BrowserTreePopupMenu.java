@@ -248,6 +248,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                         recompileEnabled = nodeType == NamedObject.PROCEDURE
                                 || nodeType == NamedObject.FUNCTION
                                 || nodeType == NamedObject.PACKAGE
+                                || nodeType == NamedObject.VIEW
                                 || nodeType >= NamedObject.TRIGGER && nodeType <= NamedObject.DATABASE_TRIGGER;
                         reselectivityAll = nodeType == NamedObject.INDEX;
                     }

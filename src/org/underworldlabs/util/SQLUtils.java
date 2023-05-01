@@ -1119,12 +1119,16 @@ public final class SQLUtils {
             DefaultDatabaseTablespace thisTablespace, DefaultDatabaseTablespace comparingTablespace) {
 
         String comparingFileName = comparingTablespace.getFileName();
-        if (!Objects.equals(thisTablespace.getFileName(), comparingFileName))
-            return "/* there are no changes */\n";
 
+        return !Objects.equals(thisTablespace.getFileName(), comparingFileName) ?
+                "/* there are no changes */\n" :
+                generateAlterTablespace(thisTablespace.getName(), comparingFileName);
+    }
+
+    public static String generateAlterTablespace(String name, String file) {
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLESPACE ").append(format(thisTablespace.getName()));
-        sb.append(" SET FILE '").append(comparingFileName).append("';\n");
+        sb.append("ALTER TABLESPACE ").append(format(name));
+        sb.append(" SET FILE '").append(file).append("';\n");
         return sb.toString();
     }
 

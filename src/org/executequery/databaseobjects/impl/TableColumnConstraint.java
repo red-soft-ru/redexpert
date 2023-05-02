@@ -309,17 +309,23 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
      *
      * @param column parent column
      */
+    @Override
     public void setColumn(DatabaseTableColumn column) {
         this.column = column;
         if (column != null)
-            columnsDisplayList = column.getName();
+            columnsDisplayList = column.getName().trim();
     }
 
+    @Override
     public void addColumnToDisplayList(DatabaseTableColumn column) {
-        columnsDisplayList += ", " + column.getName();
+        if (!columnsDisplayList.contains(column.getName()))
+            columnsDisplayList += ", " + column.getName();
     }
+
+    @Override
     public void addReferenceColumnToDisplayList(DatabaseTableColumn column) {
-        referenceColumnsDisplayList += ", " + column.getName();
+        if (!referenceColumnsDisplayList.contains(column.getName()))
+            referenceColumnsDisplayList += ", " + column.getName().trim();
     }
 
     /**
@@ -361,7 +367,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     public void setReferencedColumn(String referencedColumn) {
         this.referencedColumn = referencedColumn;
         if (referencedColumn != null)
-            referenceColumnsDisplayList = referencedColumn;
+            referenceColumnsDisplayList = referencedColumn.trim();
     }
 
     public String getReferencedSchema() {

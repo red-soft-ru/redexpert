@@ -14,6 +14,7 @@ import org.executequery.log.Log;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
@@ -79,8 +80,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         if (tss != null)
             for (NamedObject namedObject : tss)
                 tablespaceBox.addItem(namedObject);
-
-        tablespaceBox.addItemListener(e -> changed = true);
 
         uniqueBox = new JCheckBox(bundleString("unique"));
         computedBox = new JCheckBox(bundleStaticString("computed"));
@@ -315,54 +314,30 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         }
 
         String query = "";
+        DefaultDatabaseTablespace tablespace = (DefaultDatabaseTablespace) tablespaceBox.getSelectedItem();
+
         if (editing && !changed) {
 
-            if (activeBox.isSelected() != databaseIndex.isActive()) {
-                String act = activeBox.isSelected() ? "ACTIVE" : "INACTIVE";
-                query = "ALTER INDEX " + getFormattedName() + " " + act + ";";
-            }
+            Boolean isActive = (activeBox.isSelected() != databaseIndex.isActive()) ? activeBox.isSelected() : null;
+            String stringTablespace = null;
+            if (tablespace != null) {
+                if (!Objects.equals(databaseIndex.getTablespace(), tablespace.getName()))
+                    stringTablespace = tablespace.getName();
+            } else if (!Objects.equals(databaseIndex.getTablespace(), "PRIMARY"))
+                stringTablespace = "PRIMARY";
+
+            query = SQLUtils.generateAlterIndex(nameField.getText(), isActive, stringTablespace);
 
         } else {
 
             if (editing)
-                query = "DROP INDEX " + getFormattedName() + ";";
+                query = SQLUtils.generateDefaultDropQuery("INDEX", nameField.getText());
 
-            query += "CREATE ";
-            if (uniqueBox.isSelected())
-                query += "UNIQUE ";
-
-            if (sortingBox.getSelectedIndex() == 1)
-                query += "DESCENDING ";
-
-            query += "INDEX " + getFormattedName() +
-                    " ON " + MiscUtils.getFormattedObject(((String) Objects.requireNonNull(tableName.getSelectedItem())).trim()) + " ";
-
-            if (computedBox.isSelected()) {
-                query += "COMPUTED BY (" + computedPanel.getSQLText() + ")";
-
-            } else {
-
-                query += "(";
-                StringBuilder fields = new StringBuilder();
-                boolean first = true;
-                for (int i = 0; i < fieldsPanel.getSelectedValues().size(); i++) {
-                    if (!first)
-                        fields.append(",");
-                    first = false;
-                    fields.append(MiscUtils.getFormattedObject((String) fieldsPanel.getSelectedValues().get(i)));
-                }
-                query += fields + ")";
-
-            }
-            if (tablespaceBox.getSelectedItem() != null)
-                query += "\nTABLESPACE " + MiscUtils.getFormattedObject(((DefaultDatabaseTablespace) tablespaceBox.getSelectedItem()).getName());
-            query += ";";
-            if (!activeBox.isSelected())
-                query += "ALTER INDEX " + getFormattedName() + " INACTIVE;";
+            query += SQLUtils.generateCreateIndex(nameField.getText(), sortingBox.getSelectedIndex(), uniqueBox.isSelected(),
+                    tableName.getSelectedItem() != null ? tableName.getSelectedItem().toString() : "",
+                    computedPanel.getSQLText(), null, fieldsPanel.getSelectedValues(),
+                    tablespace != null ? tablespace.getName() : null, activeBox.isSelected(), simpleCommentPanel.getComment());
         }
-
-        if (!MiscUtils.isNull(simpleCommentPanel.getComment()))
-            query += "COMMENT ON INDEX " + getFormattedName() + " IS '" + simpleCommentPanel.getComment() + "'";
 
         return query;
     }

@@ -1344,7 +1344,7 @@ public final class SQLUtils {
 
     public static String generateCreateIndex(
             String name, int type, boolean isUnique, String tableName, String expression, String condition,
-            List<DefaultDatabaseIndex.DatabaseIndexColumn> indexColumns, String tablespace, boolean isActive, String comment) {
+            List indexColumns, String tablespace, boolean isActive, String comment) {
 
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE ");
@@ -1363,12 +1363,21 @@ public final class SQLUtils {
         } else {
 
             boolean first = true;
+            int columnType = -1;
             StringBuilder fields = new StringBuilder();
-            for (DefaultDatabaseIndex.DatabaseIndexColumn indexColumn : indexColumns) {
-                if (!first)
+
+            for (Object indexColumn : indexColumns) {
+
+                if (first)
+                    columnType = (indexColumn instanceof DefaultDatabaseIndex.DatabaseIndexColumn) ? 0 : 1;
+                else
                     fields.append(COMMA);
                 first = false;
-                fields.append(format(indexColumn.getFieldName()));
+
+                if (columnType == 0)
+                    fields.append(format(((DefaultDatabaseIndex.DatabaseIndexColumn)indexColumn).getFieldName()));
+                else
+                    fields.append(format((String) indexColumn));
             }
 
             sb.append(B_OPEN).append(fields).append(B_CLOSE);
@@ -1385,6 +1394,18 @@ public final class SQLUtils {
             sb.append("ALTER INDEX ").append(format(name)).append(" INACTIVE;");
         if (!MiscUtils.isNull(comment))
             sb.append("COMMENT ON INDEX ").append(format(name)).append(" IS '").append(comment).append("';");
+
+        return sb.toString();
+    }
+
+    public static String generateAlterIndex(String name, Boolean isActive, String tablespace) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if (isActive != null)
+            sb.append("ALTER INDEX ").append(format(name)).append(isActive ? " ACTIVE" : " INACTIVE").append(";\n");
+        if (tablespace != null)
+            sb.append("ALTER INDEX ").append(format(name)).append(" SET TABLESPACE TO ").append(tablespace).append(";\n");
 
         return sb.toString();
     }

@@ -121,7 +121,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
 
         interruptibleProgressDialog = new InterruptibleProgressDialog(GUIUtilities.getParentFrame(), "Applying changes", "Please wait...", this);
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("applyChangesIn "+table()!=null?table().getName():"") {
 
             @Override
             public Object construct() {
@@ -182,7 +182,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
 
         interruptibleProgressDialog = new InterruptibleProgressDialog(GUIUtilities.getParentFrame(), "Applying changes", "Please wait...", this);
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("applyChangesIn "+tableObject()!=null?tableObject().getName():"") {
 
             @Override
             public Object construct() {
@@ -237,7 +237,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
 
         interruptibleProgressDialog = new InterruptibleProgressDialog(GUIUtilities.getParentFrame(), "Applying changes", "Please wait...", this);
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("applyChangesIn "+table()!=null?table().getName():"") {
 
             @Override
             public Object construct() {

@@ -167,7 +167,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
         metaData = new MetaDataValues(databaseConnection, true);
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker(ErdGenerateProgressDialog.class.getSimpleName()) {
             public Object construct() {
                 return doWork();
             }

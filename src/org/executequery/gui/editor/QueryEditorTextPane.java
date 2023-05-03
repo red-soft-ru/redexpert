@@ -57,8 +57,7 @@ import java.util.Map;
 public class QueryEditorTextPane extends SQLTextArea
         implements UndoableComponent,
         CaretListener,
-        FocusListener,
-        DocumentListener {
+        FocusListener{
 
     private static final int DEFAULT_CARET_BLINK_RATE = 500;
 
@@ -72,10 +71,7 @@ public class QueryEditorTextPane extends SQLTextArea
      */
     private final QueryEditorTextPanel editorPanel;
 
-    /**
-     * To display line numbers
-     */
-    private LineNumber lineBorder;
+
 
     private Map<String, EditorSQLShortcut> editorShortcuts;
 
@@ -422,16 +418,12 @@ public class QueryEditorTextPane extends SQLTextArea
 
             setEditorPreferences();
         }
-
-        // add the line number border and caret listener
-        lineBorder = new LineNumber(this);
         addCaretListener(this);
 
         // undo functionality
         undoManager.setLimit(userProperties().getIntProperty("editor.undo.count"));
 
-        if (document!=null)
-        document.addDocumentListener(this);
+
         addFocusListener(this);
 
         setDragEnabled(true);
@@ -451,9 +443,7 @@ public class QueryEditorTextPane extends SQLTextArea
         return UserProperties.getInstance();
     }
 
-    public void showLineNumbers(boolean show) {
-        lineBorder.getParent().setVisible(show);
-    }
+
 
     public void disableUpdates(boolean disable) {
 
@@ -617,7 +607,7 @@ public class QueryEditorTextPane extends SQLTextArea
     }
 
     private void fireTextUpdateFinished() {
-        updateLineBorder();
+        //updateLineBorder();
         reinstallListeners();
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -627,7 +617,7 @@ public class QueryEditorTextPane extends SQLTextArea
      */
     public void setText(String text) {
         super.setText(text);
-        updateLineBorder();
+        //updateLineBorder();
     }
 
     /**
@@ -708,10 +698,6 @@ public class QueryEditorTextPane extends SQLTextArea
 
     public SQLTextArea getQueryArea() {
         return this;
-    }
-
-    public JComponent getLineBorder() {
-        return lineBorder;
     }
 
     public void goToRow(int row) {
@@ -854,8 +840,7 @@ public class QueryEditorTextPane extends SQLTextArea
     /**
      * Does nothing.
      */
-    public void changedUpdate(DocumentEvent e) {
-    }
+
 
     /**
      * Notifies the parent QueryPanel that the text content
@@ -865,28 +850,9 @@ public class QueryEditorTextPane extends SQLTextArea
      */
     public void insertUpdate(DocumentEvent e) {
         editorPanel.setContentChanged(true);
-        lineBorder.resetExecutingLine();
+        super.insertUpdate(e);
     }
 
-    /**
-     * Notifies the parent QueryPanel that the text content
-     * has changed and resets the line number border panel.
-     *
-     * @param the event object
-     */
-    public void removeUpdate(DocumentEvent e) {
-        insertUpdate(e);
-    }
-
-    // ----------------------------------------
-
-    /**
-     * Resets the executing line within the line
-     * number border panel.
-     */
-    public void resetExecutingLine() {
-        lineBorder.resetExecutingLine();
-    }
 
     public QueryWithPosition getQueryAtCursor() {
 
@@ -1095,7 +1061,7 @@ public class QueryEditorTextPane extends SQLTextArea
         }
 
         super.processKeyEvent(e);
-        updateLineBorder();
+        //updateLineBorder();
     }
 
     private void checkForShortcutText() {
@@ -1157,18 +1123,12 @@ public class QueryEditorTextPane extends SQLTextArea
     /**
      * the last element count for line border updates
      */
-    private int lastElementCount;
+
 
     /**
      * Updates the line border values.
      */
-    private void updateLineBorder() {
-        int elementCount = document.getDefaultRootElement().getElementCount();
-        if (elementCount != lastElementCount) {
-            lineBorder.setRowCount(elementCount);
-            lastElementCount = elementCount;
-        }
-    }
+
 
 
     /**
@@ -1176,7 +1136,7 @@ public class QueryEditorTextPane extends SQLTextArea
      */
     public void undo() {
         undoManager.undo();
-        updateLineBorder();
+        //updateLineBorder();
     }
 
     /**
@@ -1184,7 +1144,7 @@ public class QueryEditorTextPane extends SQLTextArea
      */
     public void redo() {
         undoManager.redo();
-        updateLineBorder();
+        //updateLineBorder();
     }
 
     // ----------------------------------------

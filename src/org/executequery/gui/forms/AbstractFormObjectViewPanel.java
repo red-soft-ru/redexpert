@@ -24,6 +24,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.gui.browser.BrowserPrivilegesPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.managment.grantmanager.PrivilegesTablePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.GradientLabel;
@@ -85,20 +86,23 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
     }
 
     private JTabbedPane tabPaneWithPrivileges;
-    private ChangeListener privilegeListener;
+    protected ChangeListener privilegeListener;
 
-    protected void addPrivilegesTab(JTabbedPane tabPane) {
+
+    protected void addPrivilegesTab(JTabbedPane tabPane, AbstractDatabaseObject databaseObject) {
         tabPaneWithPrivileges = tabPane;
         privilegesPanel = new BrowserPrivilegesPanel();
-        tabPane.add(Bundles.getCommon("privileges"), privilegesPanel);
-        privilegeListener = new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                if (tabPane.getSelectedComponent() == privilegesPanel)
-                    privilegesPanel.setValues((AbstractDatabaseObject) getDatabaseObjectNode().getDatabaseObject());
-            }
-        };
-        tabPane.addChangeListener(privilegeListener);
+        if (databaseObject == null || PrivilegesTablePanel.supportType(databaseObject.getType(), databaseObject.getHost().getDatabaseConnection())) {
+            tabPane.add(Bundles.getCommon("privileges"), privilegesPanel);
+            privilegeListener = new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (tabPane.getSelectedComponent() == privilegesPanel)
+                        privilegesPanel.setValues((AbstractDatabaseObject) getDatabaseObjectNode().getDatabaseObject());
+                }
+            };
+            tabPane.addChangeListener(privilegeListener);
+        }
     }
 
     protected void removePrivilegesTab() {

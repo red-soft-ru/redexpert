@@ -118,7 +118,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
         tabs.add(Bundles.getCommon("description"), splitPane);
-        addPrivilegesTab(tabs);
+       // addPrivilegesTab(tabs);
 
         JPanel sqlPanel = new JPanel(new BorderLayout());
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -192,6 +192,8 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
     }
 
     public void cleanup() {
+        sourceTextPane.cleanup();
+        createSqlPane.cleanup();
     }
 
     public JTable getTable() {

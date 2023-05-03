@@ -20,10 +20,7 @@
 
 package org.executequery.actions.databasecommands;
 
-import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
-import org.executequery.gui.BaseDialog;
-import org.executequery.gui.databaseobjects.CreateTablePanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
 import java.awt.event.ActionEvent;
@@ -45,7 +42,7 @@ public class CreateTableCommand extends OpenFrameCommand
      */
     public void execute(ActionEvent e) {
 
-        if (!isConnected()) {
+        /*if (!isConnected()) {
             return;
         }
 
@@ -66,7 +63,7 @@ public class CreateTableCommand extends OpenFrameCommand
             } finally {
                 GUIUtilities.showNormalCursor();
             }
-        }
+        }*/
     }
 
 }

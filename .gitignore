@@ -22,6 +22,8 @@ lib/fbplugin\.jar
 
 lib/fbplugin-impl\.jar
 
+lib/fbplugin-impl5\.jar
+
 lib/jdbc-logger\.jar
 
 lib/jaybird-full\.jar
@@ -30,13 +32,19 @@ lib/jaybird-cryptoapi\.jar
 
 lib/fbclient-4\.jar
 
+lib/fbclient-5\.jar
+
 lib/jaybird-3\.jar
 
 lib/jaybird-4\.jar
 
+lib/jaybird-5\.jar
+
 lib/jaybird-cryptoapi-3\.jar
 
 lib/jaybird-cryptoapi-4\.jar
+
+lib/jaybird-cryptoapi-5\.jar
 
 sql.log
 
@@ -67,3 +75,9 @@ src/org/underworldlabs/procedureParser/ProcedureParserVisitor.java
 /src/org/underworldlabs/traceparser/SessionInfoListener.java
 /src/org/underworldlabs/traceparser/SessionInfoParser.java
 /src/org/underworldlabs/traceparser/SessionInfoVisitor.java
+
+/guide/RedExpert_Guide-ru.aux
+/guide/RedExpert_Guide-ru.log
+/guide/RedExpert_Guide-ru.pdf
+/guide/RedExpert_Guide-ru.synctex.gz
+/guide/RedExpert_Guide-ru.toc

@@ -20,18 +20,14 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
-import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.SQLUtils;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -71,16 +67,6 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     }
 
     @Override
-    public String queryGetDescription() {
-        return "select\n" +
-                "p.rdb$description \n" +
-                "from rdb$procedures p\n" +
-                "where p.rdb$procedure_name = '" +
-                this.procedure +
-                "'";
-    }
-
-    @Override
     protected String getFullSourceBody() {
         DatabaseHost host = null;
         String fullProcedureBody = null;
@@ -89,24 +75,15 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                     (DatabaseConnection) connectionsCombo.getSelectedItem();
             host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
             DatabaseMetaData dmd = host.getDatabaseMetaData();
-            List<ProcedureParameter> parameters = new ArrayList<>();
-
-
             PooledDatabaseMetaData poolMetaData = (PooledDatabaseMetaData) dmd;
             DatabaseMetaData dMetaData = poolMetaData.getInner();
-            URL[] urls;
-            Class clazzdb;
-            Object odb;
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, dMetaData.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBDatabaseMetadataImpl");
-            odb = clazzdb.newInstance();
-            IFBDatabaseMetadata db = (IFBDatabaseMetadata) odb;
+            IFBDatabaseMetadata db = (IFBDatabaseMetadata) DynamicLibraryLoader.loadingObjectFromClassLoader(connection.getDriverMajorVersion(), dMetaData, "FBDatabaseMetadataImpl");
 
             fullProcedureBody = db.getProcedureSourceCode(dMetaData, this.procedure);
 
 
-        } catch (IllegalAccessException | InstantiationException | MalformedURLException | ClassNotFoundException | SQLException e) {
+        } catch (ClassNotFoundException |
+                 SQLException e) {
             e.printStackTrace();
         } finally {
             if (host != null)
@@ -148,7 +125,12 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         Vector<ColumnData> vars = new Vector<>();
         vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
         vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
-        return SQLUtils.generateCreateProcedure(nameField.getText(), externalField.getText(), engineField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(), outputParametersPanel.getProcedureParameterModel().getTableVector(), vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(), sqlBodyText.getSQLText(), descriptionArea.getTextAreaComponent().getText());
+        return SQLUtils.generateCreateProcedure(
+                nameField.getText(), externalField.getText(), engineField.getText(),
+                inputParametersPanel.getProcedureParameterModel().getTableVector(),
+                outputParametersPanel.getProcedureParameterModel().getTableVector(),
+                vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
+                sqlBodyText.getSQLText(), simpleCommentPanel.getComment(), false, true);
     }
 
 
@@ -216,6 +198,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
      */
     public void cleanup() {
         EventMediator.deregisterListener(this);
+        super.cleanup();
     }
 
     /**
@@ -236,8 +219,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
     private void createProcedure() {
         try {
-            String querys = getSQLText();
-            displayExecuteQueryDialog(querys, "^");
+            String queries = getSQLText();
+            displayExecuteQueryDialog(queries, "^");
 
         } catch (Exception exc) {
             GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);

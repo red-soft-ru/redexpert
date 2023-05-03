@@ -104,7 +104,7 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
 
         progressDialog = new ConnectionProgressDialog(this);
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("Connection to "+databaseConnection.getName()) {
             public Object construct() {
                 try {
                     createDataSource();
@@ -123,7 +123,6 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
 
             }
         };
-
         worker.start();
         progressDialog.run();
 

@@ -34,7 +34,9 @@ public enum AutoCompleteListItemType {
     DATABASE_PROCEDURE,
     SYSTEM_FUNCTION,
     NOTHING_PROPOSED,
-    GENERATING_LIST;
+    GENERATING_LIST,
+    VARIABLE,
+    PARAMETER;
 
     public boolean isKeyword() {
 

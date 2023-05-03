@@ -22,13 +22,11 @@ package org.executequery.components.table;
 
 import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
-import org.executequery.gui.browser.BrowserConstants;
-import org.executequery.gui.browser.nodes.DatabaseHostNode;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
@@ -39,7 +37,6 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.util.Enumeration;
-import java.util.Map;
 
 /**
  * Tree cell renderer or the database browser.
@@ -51,7 +48,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
     /**
      * Icon collection for nodes
      */
-    private final Map<String, Icon> icons;
+
 
     private final Color textForeground;
     private final Color selectedTextForeground;
@@ -63,8 +60,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
     /**
      * Constructs a new instance and initialises any variables
      */
-    public BrowserTreeCellRenderer(Map<String, Icon> icons) {
-        this.icons = icons;
+    public BrowserTreeCellRenderer() {
 
         textForeground = UIManager.getColor("Tree.textForeground");
         selectedTextForeground = UIManager.getColor("Tree.selectionForeground");
@@ -126,315 +122,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
         String label = node.getDisplayName();
         NamedObject databaseObject = node.getDatabaseObject();
 
-        switch (type) {
-
-            case NamedObject.ROOT:
-                setIcon(icons.get(
-                        BrowserConstants.CONNECTIONS_IMAGE));
-                break;
-
-            case NamedObject.BRANCH_NODE:
-                setIcon(icons.get(
-                        BrowserConstants.CONNECTIONS_FOLDER_IMAGE));
-                break;
-
-            case NamedObject.HOST:
-                DatabaseHostNode _node = (DatabaseHostNode) node;
-
-                if (_node.isConnected()) {
-                    setIcon(icons.get(
-                            BrowserConstants.HOST_CONNECTED_IMAGE));
-                } else {
-                    setIcon(icons.get(
-                            BrowserConstants.HOST_NOT_CONNECTED_IMAGE));
-                }
-
-                break;
-
-            case NamedObject.CATALOG:
-                setIcon(icons.get(BrowserConstants.CATALOG_IMAGE));
-                break;
-
-            case NamedObject.SCHEMA:
-                setIcon(icons.get(BrowserConstants.SCHEMA_IMAGE));
-                break;
-
-            case NamedObject.META_TAG:
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("index") == 0) {
-                    setIcon(icons.get(BrowserConstants.INDEXES_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("procedure") == 0) {
-                    setIcon(icons.get(BrowserConstants.PROCEDURES_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system table") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_TABLES_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("table") == 0) {
-                    setIcon(icons.get(BrowserConstants.TABLES_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("view") == 0) {
-                    setIcon(icons.get(BrowserConstants.VIEWS_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("trigger") == 0) {
-                    setIcon(icons.get(BrowserConstants.TABLE_TRIGGER_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("ddl trigger") == 0) {
-                    setIcon(icons.get(BrowserConstants.DDL_TRIGGER_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("global temporary") == 0) {
-                    setIcon(icons.get(BrowserConstants.GLOBAL_TABLES_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system functions") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("sequence") == 0) {
-                    setIcon(icons.get(BrowserConstants.SEQUENCES_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system sequence") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_SEQUENCES_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("domain") == 0) {
-                    setIcon(icons.get(BrowserConstants.DOMAIN_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("role") == 0) {
-                    setIcon(icons.get(BrowserConstants.ROLE_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system role") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_ROLE_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("user") == 0) {
-                    setIcon(icons.get(BrowserConstants.USER_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("tablespace") == 0) {
-                    setIcon(icons.get(BrowserConstants.TABLESPACE_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("exception") == 0) {
-                    setIcon(icons.get(BrowserConstants.EXCEPTION_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("external function") == 0) {
-                    setIcon(icons.get(BrowserConstants.UDF_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system domain") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_DOMAIN_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system index") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_INDEX_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system trigger") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_TRIGGER_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("database trigger") == 0) {
-                    setIcon(icons.get(BrowserConstants.DB_TRIGGER_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("package") == 0) {
-                    setIcon(icons.get(BrowserConstants.PACKAGE_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system package") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_PACKAGE_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("function") == 0) {
-                    setIcon(icons.get(BrowserConstants.FUNCTIONS_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system view") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_VIEWS_IMAGE));
-                    break;
-                }
-
-                setIcon(icons.get(BrowserConstants.DATABASE_OBJECT_IMAGE));
-                break;
-
-            case NamedObject.SYSTEM_FUNCTION:
-
-            case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
-            case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
-            case NamedObject.SYSTEM_STRING_FUNCTIONS:
-                setIcon(icons.get(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE));
-                break;
-
-            case NamedObject.FUNCTION:
-                setIcon(icons.get(BrowserConstants.FUNCTIONS_IMAGE));
-                break;
-
-            case NamedObject.INDEX:
-            case NamedObject.TABLE_INDEX:
-                setIcon(icons.get(BrowserConstants.INDEXES_IMAGE));
-                break;
-
-            case NamedObject.PROCEDURE:
-                setIcon(icons.get(BrowserConstants.PROCEDURES_IMAGE));
-                break;
-
-            case NamedObject.SEQUENCE:
-                setIcon(icons.get(BrowserConstants.SEQUENCES_IMAGE));
-                break;
-
-            case NamedObject.SYSTEM_SEQUENCE:
-                setIcon(icons.get(BrowserConstants.SYSTEM_SEQUENCES_IMAGE));
-                break;
-
-            case NamedObject.SYNONYM:
-                setIcon(icons.get(BrowserConstants.SYNONYMS_IMAGE));
-                break;
-
-            case NamedObject.VIEW:
-                setIcon(icons.get(BrowserConstants.VIEWS_IMAGE));
-                break;
-
-            case NamedObject.SYSTEM_VIEW:
-                setIcon(icons.get(BrowserConstants.SYSTEM_VIEWS_IMAGE));
-                break;
-
-            case NamedObject.SYSTEM_TABLE:
-                setIcon(icons.get(BrowserConstants.SYSTEM_TABLES_IMAGE));
-                break;
-
-            case NamedObject.TRIGGER:
-                setIcon(icons.get(BrowserConstants.TABLE_TRIGGER_IMAGE));
-                break;
-
-            case NamedObject.DDL_TRIGGER:
-                setIcon(icons.get(BrowserConstants.DDL_TRIGGER_IMAGE));
-                break;
-
-            case NamedObject.PACKAGE:
-                setIcon(icons.get(BrowserConstants.PACKAGE_IMAGE));
-                break;
-
-            case NamedObject.SYSTEM_PACKAGE:
-                setIcon(icons.get(BrowserConstants.SYSTEM_PACKAGE_IMAGE));
-                break;
-
-            case NamedObject.DOMAIN:
-                setIcon(icons.get(BrowserConstants.DOMAIN_IMAGE));
-                break;
-            case NamedObject.ROLE:
-                setIcon(icons.get(BrowserConstants.ROLE_IMAGE));
-                break;
-
-            case NamedObject.SYSTEM_ROLE:
-                setIcon(icons.get(BrowserConstants.SYSTEM_ROLE_IMAGE));
-                break;
-
-            case NamedObject.USER:
-                setIcon(icons.get(BrowserConstants.USER_IMAGE));
-                break;
-
-            case NamedObject.TABLESPACE:
-                setIcon(icons.get(BrowserConstants.TABLESPACE_IMAGE));
-                break;
-
-
-            case NamedObject.EXCEPTION:
-                setIcon(icons.get(BrowserConstants.EXCEPTION_IMAGE));
-                break;
-
-            case NamedObject.UDF:
-                setIcon(icons.get(BrowserConstants.UDF_IMAGE));
-                break;
-
-            case NamedObject.TABLE:
-                setIcon(icons.get(BrowserConstants.TABLES_IMAGE));
-                break;
-
-            case NamedObject.GLOBAL_TEMPORARY:
-                setIcon(icons.get(BrowserConstants.GLOBAL_TABLES_IMAGE));
-                break;
-
-            case NamedObject.FOREIGN_KEYS_FOLDER_NODE:
-                setIcon(icons.get(BrowserConstants.FOLDER_FOREIGN_KEYS_IMAGE));
-                break;
-
-            case NamedObject.PRIMARY_KEYS_FOLDER_NODE:
-                setIcon(icons.get(BrowserConstants.FOLDER_PRIMARY_KEYS_IMAGE));
-                break;
-
-            case NamedObject.COLUMNS_FOLDER_NODE:
-                setIcon(icons.get(BrowserConstants.FOLDER_COLUMNS_IMAGE));
-                break;
-
-            case NamedObject.INDEXES_FOLDER_NODE:
-                setIcon(icons.get(BrowserConstants.FOLDER_INDEXES_IMAGE));
-                break;
-
-            case NamedObject.DATABASE_TRIGGER:
-                setIcon(icons.get(BrowserConstants.DB_TRIGGER_IMAGE));
-                break;
-
-            case NamedObject.SYSTEM_TRIGGER:
-                setIcon(icons.get(BrowserConstants.SYSTEM_TRIGGER_IMAGE));
-                break;
-
-            case NamedObject.SYSTEM_INDEX:
-                setIcon(icons.get(BrowserConstants.SYSTEM_INDEX_IMAGE));
-                break;
-
-            case NamedObject.SYSTEM_DOMAIN:
-                setIcon(icons.get(BrowserConstants.SYSTEM_DOMAIN_IMAGE));
-                break;
-
-
-
-            case NamedObject.TABLE_COLUMN:
-
-                DatabaseColumn databaseColumn = (DatabaseColumn) databaseObject;
-
-                if (databaseColumn.isPrimaryKey()) {
-
-                    setIcon(icons.get(BrowserConstants.PRIMARY_COLUMNS_IMAGE));
-
-                } else if (databaseColumn.isForeignKey()) {
-
-                    setIcon(icons.get(BrowserConstants.FOREIGN_COLUMNS_IMAGE));
-
-                } else {
-
-                    setIcon(icons.get(BrowserConstants.COLUMNS_IMAGE));
-                }
-
-                break;
-
-            case NamedObject.PRIMARY_KEY:
-                setIcon(icons.get(BrowserConstants.PRIMARY_COLUMNS_IMAGE));
-                break;
-
-            case NamedObject.FOREIGN_KEY:
-                setIcon(icons.get(BrowserConstants.FOREIGN_COLUMNS_IMAGE));
-                break;
-
-            case NamedObject.UNIQUE_KEY:
-                setIcon(icons.get(BrowserConstants.COLUMNS_IMAGE));
-                break;
-
-            default:
-                setIcon(icons.get(BrowserConstants.DATABASE_OBJECT_IMAGE));
-                break;
-
-        }
+        setIcon(IconManager.getInstance().getIconFromNode(node));
 
         if (type == NamedObject.HOST) {
 

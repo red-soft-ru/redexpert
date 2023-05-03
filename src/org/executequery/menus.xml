@@ -416,7 +416,8 @@
 
         <menu-item id="scratch-pad-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
+        <menu-item id="manage-shortcuts-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <menu-item id="user-keywords-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <menu-item id="user-manager-command"
@@ -427,10 +428,10 @@
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <menu-item id="generator-test-data-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
-        <!--<menu-item id="comparerDB-command"
+        <menu-item id="comparerDB-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-        <menu-item id="separator"/>
+        <!--<menu-item id="separator"/>
 
         <menu name="Import Data"
               key="menu.tools.import-data"

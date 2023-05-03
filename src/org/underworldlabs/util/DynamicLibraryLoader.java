@@ -81,10 +81,10 @@ public class DynamicLibraryLoader extends URLClassLoader {
 
     }
 
-    public static Object loadingObjectFromClassLoader(Object unwrapObject, String shortClassName)
+    public static Object loadingObjectFromClassLoader(int jaybirdVesion, Object unwrapObject, String shortClassName)
             throws ClassNotFoundException {
         return loadingObjectFromClassLoader(unwrapObject, "biz.redsoft."
-                + shortClassName, "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
+                + shortClassName, getFbPluginImplPath(jaybirdVesion));
     }
 
     public static Object loadingObjectFromClassLoader(Object unwrapObject, String className, String jarPath)
@@ -110,10 +110,17 @@ public class DynamicLibraryLoader extends URLClassLoader {
         return odb;
     }
 
-    public static Object loadingObjectFromClassLoaderWithParams(Object unwrapObject, String shortClassName, Parameter... params)
+    public static Object loadingObjectFromClassLoaderWithParams(int jaybirdVersion, Object unwrapObject, String shortClassName, Parameter... params)
             throws ClassNotFoundException {
         return loadingObjectFromClassLoaderWithParams(unwrapObject, "biz.redsoft."
-                + shortClassName, "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar", params);
+                + shortClassName, getFbPluginImplPath(jaybirdVersion), params);
+    }
+
+    public static String getFbPluginImplPath(int jaybirdVersion) {
+        String jarPath = "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar";
+        if (jaybirdVersion >= 5)
+            jarPath = "./lib/fbplugin-impl5.jar;../lib/fbplugin-impl5.jar";
+        return jarPath;
     }
 
     public static Object loadingObjectFromClassLoaderWithParams(Object unwrapObject, String className, String jarPath, Parameter... params)

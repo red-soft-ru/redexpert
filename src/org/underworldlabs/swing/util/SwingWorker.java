@@ -37,20 +37,20 @@ import javax.swing.*;
 public abstract class SwingWorker {
 
     private Object value;  // see getValue(), setValue()
-    private Thread thread;
+    private String name;
 
     /**
      * Class to maintain reference to current worker thread
      * under separate synchronization control.
      */
     private static class ThreadVar {
-        private Thread thread;
+        private InterruptibleThread thread;
 
-        ThreadVar(Thread t) {
+        ThreadVar(InterruptibleThread t) {
             thread = t;
         }
 
-        synchronized Thread get() {
+        synchronized InterruptibleThread get() {
             return thread;
         }
 
@@ -86,6 +86,13 @@ public abstract class SwingWorker {
      * after the <code>construct</code> method has returned.
      */
     public void finished() {
+    }
+
+    /**
+     * Sets canceled flag for thread
+     */
+    public void setCancel(boolean canceled) {
+        threadVar.thread.setCanceled(canceled);
     }
 
     /**
@@ -127,27 +134,44 @@ public abstract class SwingWorker {
      * Start a thread that will call the <code>construct</code> method
      * and then exit.
      */
-    public SwingWorker() {
-        final Runnable doFinished = new Runnable() {
-            public void run() {
-                finished();
+    public SwingWorker(String name) {
+
+        this.name = name;
+        final Runnable doFinished = this::finished;
+
+        Runnable doConstruct = () -> {
+            try {
+                setValue(construct());
+            } finally {
+                threadVar.clear();
             }
+            SwingUtilities.invokeLater(doFinished);
         };
 
-        Runnable doConstruct = new Runnable() {
-            public void run() {
-                try {
-                    setValue(construct());
-                } finally {
-                    threadVar.clear();
-                }
-
-                SwingUtilities.invokeLater(doFinished);
-            }
-        };
-
-        Thread t = new Thread(doConstruct);
+        InterruptibleThread t = new InterruptibleThread(doConstruct);
+        t.setName(this.name);
         threadVar = new ThreadVar(t);
+
+    }
+
+    public SwingWorker (String name, Object userObject) {
+
+        this.name = name;
+        final Runnable doFinished = this::finished;
+
+        Runnable doConstruct = () -> {
+            try {
+                setValue(construct());
+            } finally {
+                threadVar.clear();
+            }
+            SwingUtilities.invokeLater(doFinished);
+        };
+
+        InterruptibleThread t = new InterruptibleThread(doConstruct, userObject);
+        t.setName(this.name);
+        threadVar = new ThreadVar(t);
+
     }
 
     /**

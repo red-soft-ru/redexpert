@@ -153,16 +153,6 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
     }
 
     /**
-     * Returns the tables belonging to this source.
-     *
-     * @return the hosted tables
-     */
-    public List<NamedObject> getTables() throws DataSourceException {
-
-        return getHost().getTables(getCatalogName(), getName(), "TABLE");
-    }
-
-    /**
      * Returns the parent catalog object.
      *
      * @return the parent object

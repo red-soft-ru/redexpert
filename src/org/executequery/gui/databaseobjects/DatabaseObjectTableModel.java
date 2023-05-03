@@ -129,9 +129,9 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
             case 4:
                 return Integer.valueOf(column.getColumnScale());
             case 5:
-                return Boolean.valueOf(column.isRequired());
+                return Boolean.valueOf(column.isRequired()) || Boolean.valueOf(column.isDomainNotNull());
             case 6:
-                return column.getDefaultValue();
+                return column.getDefaultValue() != null ? column.getDefaultValue() : column.getDomainDefaultValue();
             case 7:
                 return column.getComputedSource();
             case 8:

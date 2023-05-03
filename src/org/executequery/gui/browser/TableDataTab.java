@@ -260,7 +260,7 @@ public class TableDataTab extends JPanel
                 worker.interrupt();
             }
 
-            worker = new SwingWorker() {
+            worker = new SwingWorker("buildResultSetTable") {
 
                 public Object construct() {
                     try {
@@ -1076,7 +1076,7 @@ public class TableDataTab extends JPanel
                             cancel();
                             worker.interrupt();
                         }
-                        worker = new SwingWorker() {
+                        worker = new SwingWorker("fetchMoreData") {
 
                             public Object construct() {
                                 try {
@@ -1187,7 +1187,7 @@ public class TableDataTab extends JPanel
             worker.interrupt();
         }
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("cancelStatement") {
             @Override
             public Object construct() {
 

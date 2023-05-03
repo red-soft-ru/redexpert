@@ -104,9 +104,14 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
         popup = new SimpleTextComponentPopUpMenu(textPane);
 
-        sqlScroller = new JScrollPane(textPane);
+        sqlScroller = new JScrollPane();
+        sqlScroller.getViewport().add(textPane, BorderLayout.CENTER);
+        sqlScroller.setRowHeaderView(textPane.getLineBorder());
+        sqlScroller.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        //sqlScroller.setBorder(new QueryEditorTextPanel.EditorScrollerBorder());
         defaultBorder = sqlScroller.getBorder();
         add(sqlScroller, BorderLayout.CENTER);
+        add(textPane.getCaretPositionLabel(),BorderLayout.SOUTH);
     }
 
     public JPopupMenu getPopup() {
@@ -267,6 +272,10 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     public boolean contentCanBeSaved() {
 
         return true;
+    }
+
+    public void cleanup() {
+        textPane.cleanup();
     }
 
 }

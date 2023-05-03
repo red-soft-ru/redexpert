@@ -82,7 +82,7 @@
                     <name>${project.shortName}</name>
                     <platforms>all</platforms>
                     <exec>${installdir}/bin/${execute_file}</exec>
-                    <path>${installdir}</path>
+                    <path>${installdir}/bin</path>
                     <icon>${installdir}/red_expert.png</icon>
                     <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
                     <windowsPath>${installdir}/bin/</windowsPath>
@@ -193,7 +193,7 @@
                     <name>${project.shortName}</name>
                     <platforms>linux</platforms>
                     <exec>${installdir}/bin/${execute_file}</exec>
-                    <path>${installdir}</path>
+                    <path>${installdir}/bin</path>
                     <icon>${installdir}/red_expert.png</icon>
                     <runAsAdmin>0</runAsAdmin>
                 </shortcut>
@@ -230,6 +230,7 @@ GenericName=${project.shortName}
 Comment=${project.shortName}
 Exec=${installdir}/bin/${execute_file}
 Icon=${installdir}/red_expert.png
+Path=/home/alexey/snap/RedExpert/bin
 Terminal=false
 Type=Application
 Categories=Application;Utility;TextEditor;

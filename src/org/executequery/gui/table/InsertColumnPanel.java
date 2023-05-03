@@ -22,6 +22,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -163,7 +164,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     @Override
     public void createObject() {
         generateSQL();
-        displayExecuteQueryDialog(sqlPanel.getSQLText(), ";");
+        displayExecuteQueryDialog(sqlPanel.getSQLText(), "^");
     }
 
     @Override
@@ -311,13 +312,13 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             columnData.getAutoincrement().setStartValue(autoIncrementPanel.getStartValue());
             columnData.setColumnName(nameField.getText());
             sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()));
-            sb.append("\n\tADD ").append(SQLUtils.generateDefinitionColumn(columnData, false));
+            sb.append("\n\tADD ").append(SQLUtils.generateDefinitionColumn(columnData, true, false, false));
         }
 
         if (columnData.getDescription() != null && !Objects.equals(columnData.getDescription(), ""))
-            sb.append(";\nCOMMENT ON COLUMN").append(MiscUtils.getFormattedObject(columnData.getTableName()))
+            sb.append("^\nCOMMENT ON COLUMN").append(MiscUtils.getFormattedObject(columnData.getTableName()))
                     .append(".").append(columnData.getFormattedColumnName())
-                    .append(" IS '").append(columnData.getDescription()).append("';\n");
+                    .append(" IS '").append(columnData.getDescription()).append("'^\n");
 
         return sb.toString();
     }
@@ -347,38 +348,40 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
             if (column.isRequired()) {
 
-                sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
-                        " ALTER COLUMN " + columnData.getFormattedColumnName() + " SET NOT NULL;\n");
+                sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()))
+                        .append(" ALTER COLUMN ").append(columnData.getFormattedColumnName()).append(" SET NOT NULL;\n");
 
             } else {
 
-                sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
-                        " ALTER COLUMN " + columnData.getFormattedColumnName() + " DROP NOT NULL;\n");
+                sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()))
+                        .append(" ALTER COLUMN ").append(columnData.getFormattedColumnName()).append(" DROP NOT NULL;\n");
             }
 
         }
 
         if (column.isDefaultValueChanged()) {
 
-            sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
-                    " ALTER COLUMN " + columnData.getFormattedColumnName() + " SET " + MiscUtils.formattedDefaultValue(columnData.getDefaultValue(), columnData.getSQLType()
-            ) + ";\n");
+            sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()))
+                    .append(" ALTER COLUMN ").append(columnData.getFormattedColumnName()).append(" SET ")
+                    .append(MiscUtils.formattedDefaultValue(columnData.getDefaultValue(), columnData.getSQLType())).append(";\n");
         }
 
         if (column.isComputedChanged()) {
-            sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
-                    "\nALTER COLUMN " + columnData.getFormattedColumnName() + " COMPUTED BY " + column.getComputedSource() + ";\n");
+            sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()))
+                    .append("\nALTER COLUMN ").append(columnData.getFormattedColumnName())
+                    .append(" COMPUTED BY ").append(column.getComputedSource()).append(";\n");
         }
 
         if (column.isDescriptionChanged()) {
-            sb.append("COMMENT ON COLUMN " + MiscUtils.getFormattedObject(table.getName()) + "."
-                    + columnData.getFormattedColumnName() +
-                    " IS '" + column.getColumnDescription() + "';\n");
+            sb.append("COMMENT ON COLUMN ").append(MiscUtils.getFormattedObject(table.getName())).append(".")
+                    .append(columnData.getFormattedColumnName()).append(" IS '")
+                    .append(column.getColumnDescription()).append("';\n");
         }
 
         if (column.isDomainChanged() && !column.isGenerated()) {
-            sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
-                    "\nALTER COLUMN " + columnData.getFormattedColumnName() + " TYPE " + columnData.getFormattedDomain() + ";\n");
+            sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()))
+                    .append("\nALTER COLUMN ").append(columnData.getFormattedColumnName())
+                    .append(" TYPE ").append(columnData.getFormattedDomain()).append(";\n");
         }
 
         return sb.toString();

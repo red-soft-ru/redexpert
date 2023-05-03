@@ -64,15 +64,15 @@ public class DatabaseTypeConverter {
             case timestamp_type:
                 return "TIMESTAMP";
             case timestamp_with_timezone:
-                return "TIMESTAMP WITH TIMEZONE";
+                return "TIMESTAMP WITH TIME ZONE";
             case timestamp_without_timezone:
-                return "TIMESTAMP WITHOUT TIMEZONE";
+                return "TIMESTAMP WITHOUT TIME ZONE";
             case time_type:
                 return "TIME";
             case time_with_timezone:
-                return "TIME WITH TIMEZONE";
+                return "TIME WITH TIME ZONE";
             case time_without_timezone:
-                return "TIME WITHOUT TIMEZONE";
+                return "TIME WITHOUT TIME ZONE";
             case date_type:
                 return "DATE";
             case int64_type:
@@ -141,15 +141,15 @@ public class DatabaseTypeConverter {
             case timestamp_type:
                 return "TIMESTAMP";
             case timestamp_with_timezone:
-                return "TIMESTAMP WITH TIMEZONE";
+                return "TIMESTAMP WITH TIME ZONE";
             case timestamp_without_timezone:
-                return "TIMESTAMP WITHOUT TIMEZONE";
+                return "TIMESTAMP WITHOUT TIME ZONE";
             case time_type:
                 return "TIME";
             case time_with_timezone:
-                return "TIME WITH TIMEZONE";
+                return "TIME WITH TIME ZONE";
             case time_without_timezone:
-                return "TIME WITHOUT TIMEZONE";
+                return "TIME WITHOUT TIME ZONE";
             case date_type:
                 return "DATE";
             case int64_type:
@@ -216,14 +216,14 @@ public class DatabaseTypeConverter {
             case "DATE":
                 return Types.DATE;
             case "TIME":
-            case "TIME WITHOUT TIMEZONE":
+            case "TIME WITHOUT TIME ZONE":
                 return Types.TIME;
-            case "TIME WITH TIMEZONE":
+            case "TIME WITH TIME ZONE":
                 return Types.TIME_WITH_TIMEZONE;
             case "TIMESTAMP":
-            case "TIMESTAMP WITHOUT TIMEZONE":
+            case "TIMESTAMP WITHOUT TIME ZONE":
                 return Types.TIMESTAMP;
-            case "TIMESTAMP WITH TIMEZONE":
+            case "TIMESTAMP WITH TIME ZONE":
                 return Types.TIMESTAMP_WITH_TIMEZONE;
             case "ARRAY":
                 return Types.OTHER;

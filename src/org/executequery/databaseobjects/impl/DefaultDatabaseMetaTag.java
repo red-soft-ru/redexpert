@@ -25,10 +25,12 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledResultSet;
+import org.executequery.gui.browser.ComparerDBPanel;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.util.InterruptibleThread;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
@@ -166,6 +168,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 || type == SYSTEM_PACKAGE
                 || type == ROLE
                 || type == TABLESPACE
+                || type == JOB
         )
             if (typeTree == TreePanel.DEPENDENT || typeTree == TreePanel.DEPENDED_ON) {
                 return new ArrayList<NamedObject>();
@@ -189,6 +192,170 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return children;
     }
 
+    @Override
+    public void loadFullInfoForObjects() {
+
+        getHost().setPauseLoadingTreeForSearch(true);
+        List<NamedObject> objects = getObjects();
+        boolean first = true;
+
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+
+        if (objects.size() == 0)
+            return;
+
+        String query = ((AbstractDatabaseObject) objects.get(0)).queryForInfoAllObjects();
+        try {
+
+            InterruptibleThread thread = null;
+            if (Thread.currentThread() instanceof InterruptibleThread)
+                thread = (InterruptibleThread) Thread.currentThread();
+
+            ResultSet rs = querySender.getResultSet(query).getResultSet();
+            int i = 0;
+
+            ComparerDBPanel comparerDBPanel = null;
+            if (thread != null) {
+                Object threadUserObject = thread.getUserObject();
+                if (threadUserObject instanceof ComparerDBPanel) {
+                    comparerDBPanel = ((ComparerDBPanel) threadUserObject);
+                    comparerDBPanel.recreateProgressBar(
+                            "LoadFullInfoForObjects",
+                            NamedObject.META_TYPES_FOR_BUNDLE[getSubType()],
+                            objects.size()
+                    );
+                }
+            }
+
+            while (rs.next()) {
+
+                if (thread != null && thread.isCanceled()) {
+                    querySender.releaseResources();
+                    return;
+                }
+
+                while (!objects.get(i).getName().contentEquals(rs.getString(1).trim())) {
+                    i++;
+                    if (i >= objects.size())
+                        throw new DataSourceException("Error load info for" + metaDataKey);
+                    first = true;
+                }
+
+                if (first) {
+                    ((AbstractDatabaseObject) objects.get(i)).prepareLoadingInfo();
+                    if (comparerDBPanel != null)
+                        comparerDBPanel.incrementProgressBarValue();
+                }
+
+                ((AbstractDatabaseObject) objects.get(i)).setInfoFromSingleRowResultSet(rs, first);
+                first = false;
+            }
+
+            for (NamedObject namedObject : objects) {
+                ((AbstractDatabaseObject) namedObject).finishLoadingInfo();
+                ((AbstractDatabaseObject) namedObject).setMarkedForReload(false);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+
+        } finally {
+            if (querySender != null)
+                querySender.releaseResources();
+            getHost().setPauseLoadingTreeForSearch(false);
+        }
+
+    }
+
+    @Override
+    public void loadColumnsForAllTables() {
+
+        List<NamedObject> objects = getObjects();
+        boolean first = true;
+
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+
+        if (objects.size() == 0)
+            return;
+
+        String query = ((AbstractDatabaseObject) objects.get(0)).getBuilderLoadColsForAllTables().getSQLQuery();
+        try {
+
+            InterruptibleThread thread = null;
+            if (Thread.currentThread() instanceof InterruptibleThread)
+                thread = (InterruptibleThread) Thread.currentThread();
+
+            ResultSet rs = querySender.getResultSet(query).getResultSet();
+            int i = 0;
+
+            ComparerDBPanel comparerDBPanel = null;
+            if (thread != null) {
+                Object threadUserObject = thread.getUserObject();
+                if (threadUserObject instanceof ComparerDBPanel) {
+                    comparerDBPanel = ((ComparerDBPanel) threadUserObject);
+                    comparerDBPanel.recreateProgressBar(
+                            "LoadColumnsForAllTables",
+                            NamedObject.META_TYPES_FOR_BUNDLE[getSubType()],
+                            objects.size()
+                    );
+                }
+            }
+
+            AbstractDatabaseObject previousObject = null;
+            while (rs.next()) {
+
+                if (thread != null && thread.isCanceled()) {
+                    querySender.releaseResources();
+                    return;
+                }
+
+                while (getHost().isPauseLoadingTreeForSearch() && Thread.currentThread().getName().contentEquals("loadingTreeForSearch")) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                while (!objects.get(i).getName().contentEquals(rs.getString(1).trim())) {
+                    i++;
+                    if (i >= objects.size())
+                        throw new DataSourceException("Error load columns for " + metaDataKey);
+                    first = true;
+                }
+
+                if (((AbstractDatabaseObject) objects.get(i)).isMarkedForReloadCols()) {
+                    if (first) {
+                        ((AbstractDatabaseObject) objects.get(i)).prepareLoadColumns();
+                        if (previousObject != null) {
+                            previousObject.finishLoadColumns();
+                            previousObject.setMarkedForReloadCols(false);
+                        }
+                        if (comparerDBPanel != null)
+                            comparerDBPanel.incrementProgressBarValue();
+                    }
+                    ((AbstractDatabaseObject) objects.get(i)).addColumnFromResultSet(rs);
+                    first = false;
+                    previousObject = (AbstractDatabaseObject) objects.get(i);
+                }
+            }
+
+            if (previousObject != null) {
+                previousObject.finishLoadColumns();
+                previousObject.setMarkedForReloadCols(false);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+
+        } finally {
+            if (querySender != null)
+                querySender.releaseResources();
+            getHost().setPauseLoadingTreeForSearch(false);
+        }
+
+    }
+
     private void addAsParentToObjects(List<NamedObject> children) {
 
         if (children != null) {
@@ -206,13 +373,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
 
                 String tableName = rs.getString(1);
-                DefaultDatabaseObject object = new DefaultDatabaseObject(this.getHost(), metaDataKey);
+        DefaultDatabaseObject object = new DefaultDatabaseObject(this, metaDataKey);
                 object.setName(tableName);
                 if (typeTree == DEFAULT) {
-                    object.setCatalogName("");
-                    object.setSchemaName("");
-                    object.setRemarks(rs.getString(2));
-                    object.setSource(rs.getString(3));
                 } else {
                     object.setTypeTree(typeTree);
                     object.setDependObject(dependedObject);
@@ -259,6 +422,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 return getIndicesResultSet();
             case TABLESPACE:
                 return getTablespacesResultSet();
+            case JOB:
+                return getJobsResultSet();
+            case COLLATION:
+                return getCollationsResultSet();
             case SYSTEM_DOMAIN:
                 return getSystemDomainResultSet();
             case SYSTEM_TRIGGER:
@@ -343,7 +510,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         case TABLESPACE:
                             namedObject = getTablespace(rs);
                             break;
-
+                        case JOB:
+                            namedObject = getJob(rs);
+                            break;
+                        case COLLATION:
+                            namedObject = getCollation(rs);
+                            break;
                     }
                     if (namedObject != null) {
                         if (type >= SYSTEM_DOMAIN)
@@ -363,8 +535,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             logThrowable(e);
             return new ArrayList<NamedObject>(0);
 
-        }
-        finally {
+        } finally {
 
             try {
                 releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
@@ -378,13 +549,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      * Loads the database functions.
      */
     private AbstractDatabaseObject getFunction(ResultSet rs) throws SQLException {
-                    if (typeTree == TreePanel.DEFAULT) {
-                        DefaultDatabaseFunction function = new DefaultDatabaseFunction(this, rs.getString(3));
-                        function.setRemarks(rs.getString(4));
-                        return function;
-                    } else {
-                        return new DefaultDatabaseFunction(this, rs.getString(1));
-                    }
+        if (typeTree == TreePanel.DEFAULT) {
+            DefaultDatabaseFunction function = new DefaultDatabaseFunction(this, rs.getString(3));
+            function.setRemarks(rs.getString(4));
+            return function;
+        } else {
+            return new DefaultDatabaseFunction(this, rs.getString(1));
+        }
     }
 
     /**
@@ -486,6 +657,18 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
+    private AbstractDatabaseObject getJob(ResultSet rs) throws SQLException {
+
+        return new DefaultDatabaseJob(this, rs.getObject(1).toString());
+
+    }
+
+    private AbstractDatabaseObject getCollation(ResultSet rs) throws SQLException {
+
+        return new DefaultDatabaseCollation(this, rs.getObject(1).toString());
+
+    }
+
     private AbstractDatabaseObject getRole(ResultSet rs) throws SQLException {
         return new DefaultDatabaseRole(this, rs.getObject(1).toString());
     }
@@ -545,7 +728,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             Connection fbConn = realConnection.unwrap(Connection.class);
             IFBDatabaseConnection db = null;
             try {
-                db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(fbConn, "FBDatabaseConnectionImpl");
+                db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(getHost().getDatabaseConnection().getDriverMajorVersion(), fbConn, "FBDatabaseConnectionImpl");
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -690,6 +873,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return getResultSetFromQuery(query);
     }
 
+    private ResultSet getJobsResultSet() throws SQLException {
+        String query = "SELECT RDB$JOB_NAME FROM RDB$JOBS ORDER BY 1";
+        return getResultSetFromQuery(query);
+    }
+
+    private ResultSet getCollationsResultSet() throws SQLException {
+        String query = "SELECT RDB$COLLATION_NAME FROM RDB$COLLATIONS WHERE RDB$SYSTEM_FLAG=0 OR RDB$SYSTEM_FLAG IS NULL ORDER BY 1";
+        return getResultSetFromQuery(query);
+    }
+
     private ResultSet getExceptionResultSet() throws SQLException {
         String query = "select RDB$EXCEPTION_NAME, " +
                 "RDB$DESCRIPTION\n" +
@@ -722,8 +915,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     query = getDependentQuery(15);
                 resultSet = getResultSetFromQuery(query);
                 break;
-            case 3:
-            case 4:
+            default:
                 query = "select RDB$FUNCTION_NAME,\n" +
                         "RDB$DESCRIPTION,\n" +
                         "RDB$MODULE_NAME,\n" +
@@ -797,13 +989,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getTablesResultSet(String metaDataKey, boolean repeat) throws SQLException {
         ResultSet resultSet = null;
-        if (metaDataKey.equals("TABLE")) {
+        if (metaDataKey.equals(NamedObject.META_TYPES[TABLE])) {
             String rel_type = " and (rdb$relation_type=0 or rdb$relation_type=2 or rdb$relation_type is NULL)";
             if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() < 2 || repeat)
                 rel_type = "";
-            String query = "select rdb$relation_name, \n" +
-                    "rdb$description,\n" +
-                    "rdb$view_source\n" +
+            String query = "select rdb$relation_name \n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is null \n" +
                     "and (rdb$system_flag is null or rdb$system_flag = 0)" +
@@ -816,19 +1006,15 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             else if (typeTree == TreePanel.TABLESPACE)
                 query = ((DefaultDatabaseTablespace) dependedObject).getTablesQuery();
             resultSet = getResultSetFromQuery(query);
-        } else if (metaDataKey.equals("SYSTEM TABLE")) {
-            String query = "select rdb$relation_name, \n" +
-                    "rdb$description,\n" +
-                    "rdb$view_source\n" +
+        } else if (metaDataKey.equals(NamedObject.META_TYPES[SYSTEM_TABLE])) {
+            String query = "select rdb$relation_name \n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is null \n" +
                     "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +
                     "order by rdb$relation_name";
             resultSet = getResultSetFromQuery(query);
-        } else if (metaDataKey.equals("VIEW")) {
-            String query = "select rdb$relation_name, \n" +
-                    "rdb$description,\n" +
-                    "rdb$view_source\n" +
+        } else if (metaDataKey.equals(NamedObject.META_TYPES[VIEW])) {
+            String query = "select rdb$relation_name \n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is not null \n" +
                     "and (rdb$system_flag is null or rdb$system_flag = 0) \n" +
@@ -838,19 +1024,15 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             else if (typeTree == TreePanel.DEPENDENT)
                 query = getDependentQuery(1);
             resultSet = getResultSetFromQuery(query);
-        } else if (metaDataKey.equals("SYSTEM VIEW")) {
-            String query = "select rdb$relation_name, \n" +
-                    "rdb$description,\n" +
-                    "rdb$view_source\n" +
+        } else if (metaDataKey.equals(NamedObject.META_TYPES[SYSTEM_VIEW])) {
+            String query = "select rdb$relation_name \n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is not null \n" +
                     "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +
                     "order by rdb$relation_name";
             resultSet = getResultSetFromQuery(query);
-        } else if (metaDataKey.equals("GLOBAL TEMPORARY")) {
-            String query = "select r.rdb$relation_name, \n" +
-                    "r.rdb$description,\n" +
-                    "rdb$view_source\n" +
+        } else if (metaDataKey.equals(NamedObject.META_TYPES[GLOBAL_TEMPORARY])) {
+            String query = "select r.rdb$relation_name \n" +
                     "from rdb$relations r\n" +
                     "join rdb$types t on r.rdb$relation_type = t.rdb$type \n" +
                     "where\n" +

@@ -125,6 +125,10 @@ public interface DatabaseColumn extends DatabaseObjectElement {
 
     void setDomain(String domain);
 
+    String getDomainDefaultValue();
+
+    boolean isDomainNotNull();
+
     void setComputedSource(String source);
 
     /**

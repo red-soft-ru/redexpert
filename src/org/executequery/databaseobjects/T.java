@@ -10,9 +10,9 @@ public interface T {
     String CHAR = "CHAR";
     String VARCHAR = "VARCHAR";
     String TIME = "TIME";
-    String TIME_WITH_TIMEZONE = "TIME WITH TIMEZONE";
+    String TIME_WITH_TIMEZONE = "TIME WITH TIME ZONE";
     String TIMESTAMP = "TIMESTAMP";
-    String TIMESTAMP_WITH_TIMEZONE = "TIMESTAMP WITH TIMEZONE";
+    String TIMESTAMP_WITH_TIMEZONE = "TIMESTAMP WITH TIME ZONE";
     String DATE = "DATE";
     String BIGINT = "BIGINT";
     String BLOB = "BLOB";

@@ -3,8 +3,10 @@ package org.executequery.gui;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
+import org.executequery.databaseobjects.impl.LoadingObjectsHelper;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.sql.SqlMessages;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -41,7 +43,7 @@ public class AnaliseRecompileDialog extends BaseDialog {
         panel.add(logPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
         setPreferredSize(new Dimension(500, 500));
         setContentPane(panel);
-        SwingWorker sw = new SwingWorker() {
+        SwingWorker sw = new SwingWorker("loadingDataForRecompile") {
             @Override
             public Object construct() {
                 executeAnalise();
@@ -72,21 +74,28 @@ public class AnaliseRecompileDialog extends BaseDialog {
         if (databaseObjectNode != null) {
 
             List<DatabaseObjectNode> childs = databaseObjectNode.getChildObjects();
-
+            DefaultDatabaseMetaTag metaTag = (DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject();
+            long start = System.currentTimeMillis();
             if (childs != null) {
                 progressBar.setMaximum(childs.size());
-                if (((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType() == NamedObject.PACKAGE)
+                if (metaTag.getSubType() == NamedObject.PACKAGE)
                     sb.append("set term ; ^");
+                LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(childs.size());
                 for (int i = 0; i < childs.size(); i++) {
                     progressBar.setValue(i);
                     AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) childs.get(i).getDatabaseObject();
                     addOutputMessage(SqlMessages.PLAIN_MESSAGE, bundleString("generateScript", databaseObject.getName()));
+                    loadingObjectsHelper.preparingLoadForObject(databaseObject);
                     String s = databaseObject.getCreateSQLText();
+                    loadingObjectsHelper.postProcessingLoadForObject(databaseObject);
                     sb.append(s);
                     if (!sb.toString().trim().endsWith("^"))
                         sb.append("^");
                 }
+                loadingObjectsHelper.releaseResources();
+
             }
+            Log.info("Analise time = "+(System.currentTimeMillis()-start));
         }
 
     }

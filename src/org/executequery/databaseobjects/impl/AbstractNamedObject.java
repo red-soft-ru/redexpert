@@ -54,7 +54,7 @@ public abstract class AbstractNamedObject implements NamedObject,
      */
     private NamedObject parent;
 
-    private boolean keepAlive;
+    private final boolean keepAlive;
 
     private boolean isSystem;
 
@@ -317,6 +317,10 @@ public abstract class AbstractNamedObject implements NamedObject,
         isSystem = flag;
     }
 
+    @Override
+    public int getRDBType() {
+        return -1;
+    }
 }
 
 

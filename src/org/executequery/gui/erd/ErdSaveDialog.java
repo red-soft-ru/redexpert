@@ -731,7 +731,7 @@ public class ErdSaveDialog extends AbstractBaseDialog
     }
 
     private void doSave(final String path, final int fileFormat) {
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("saveERD") {
             public Object construct() {
                 try {
                     setVisible(false);

@@ -10,7 +10,6 @@ import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.print.Printable;
 
@@ -46,11 +45,11 @@ public class BrowserTablespacePanel extends AbstractFormObjectViewPanel {
         gbh.addLabelFieldPair(this, Bundles.getCommon("file"), new DisabledField(tablespace.getFileName()), null);
         gbh.nextRowFirstCol();
         JCheckBox offlineBox = new JCheckBox("Offline");
-        offlineBox.setSelected(Boolean.parseBoolean(tablespace.getAttribute(DefaultDatabaseTablespace.OFFLINE).trim()));
+        offlineBox.setSelected(tablespace.isOffline());
         offlineBox.setEnabled(false);
         add(offlineBox, gbh.setLabelDefault().get());
         JCheckBox readOnlyBox = new JCheckBox("Read-only");
-        readOnlyBox.setSelected(Boolean.parseBoolean(tablespace.getAttribute(DefaultDatabaseTablespace.READ_ONLY).trim()));
+        readOnlyBox.setSelected(tablespace.isReadOnly());
         readOnlyBox.setEnabled(false);
         add(readOnlyBox, gbh.nextCol().setLabelDefault().get());
         JTabbedPane tabPane = new JTabbedPane();
@@ -88,37 +87,5 @@ public class BrowserTablespacePanel extends AbstractFormObjectViewPanel {
     @Override
     public String getLayoutName() {
         return null;
-    }
-
-    class TablespaceModel extends DefaultTableModel {
-        @Override
-        public String getColumnName(int column) {
-            return DefaultDatabaseTablespace.COLUMNS[column];
-        }
-
-        @Override
-        public Object getValueAt(int row, int column) {
-            return tablespace.getAttribute(column);
-        }
-
-        @Override
-        public int getColumnCount() {
-            return DefaultDatabaseTablespace.COLUMNS.length;
-        }
-
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return false;
-        }
-
-        @Override
-        public int getRowCount() {
-            return 2;
-        }
-
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return String.class;
-        }
     }
 }

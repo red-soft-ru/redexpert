@@ -6,7 +6,8 @@
     <properties>
         <antlr.version>4.7</antlr.version>
         <jaybird3.version>3.0.35</jaybird3.version>
-        <jaybird4.version>4.0.23</jaybird4.version>
+        <jaybird4.version>4.0.26</jaybird4.version>
+        <jaybird5.version>5.0.6</jaybird5.version>
     </properties>
     <groupId>org.executequery</groupId>
     <artifactId>RedExpert-parent</artifactId>
@@ -15,6 +16,7 @@
     <modules>
         <module>modules/plugins/fbplugin</module>
         <module>modules/plugins/fbplugin-impl</module>
+        <module>modules/plugins/fbplugin-impl5</module>
         <module>modules/plugins/sql-parser</module>
         <module>modules/plugins/sqlLexer</module>
         <module>modules/plugins/trace-parser</module>

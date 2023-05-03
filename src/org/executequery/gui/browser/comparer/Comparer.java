@@ -887,8 +887,9 @@ public class Comparer {
         if (objectsList.size() < 1)
             return null;
 
-        String templateQuery =
-                "SELECT RDB$DEPENDENT_NAME FROM RDB$DEPENDENCIES WHERE RDB$DEPENDED_ON_NAME = ?;";
+        String templateQuery = "SELECT DISTINCT D.RDB$DEPENDENT_NAME FROM RDB$DEPENDENCIES D " +
+                "WHERE D.RDB$DEPENDENT_TYPE = D.RDB$DEPENDED_ON_TYPE AND D.RDB$DEPENDED_ON_NAME = ?";
+
         DefaultStatementExecutor executor =
                 new DefaultStatementExecutor(compareConnection.getDatabaseConnection(), true);
 

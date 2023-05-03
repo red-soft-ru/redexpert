@@ -2,10 +2,12 @@ package org.underworldlabs.swing.cron;
 
 import com.github.lgooddatepicker.zinternaltools.ExtraDateStrings;
 import org.executequery.localization.Bundles;
-import org.japura.gui.CheckComboBox;
 import org.japura.gui.event.ListCheckListener;
 import org.japura.gui.event.ListEvent;
-import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.CheckBoxPanel;
+import org.underworldlabs.swing.EQCheckCombox;
+import org.underworldlabs.swing.EQDatePicker;
+import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
@@ -19,8 +21,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.text.DateFormatSymbols;
 import java.time.LocalDate;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class WindowsSchedulerPanel extends JPanel {
     ButtonGroup radioButtons;
@@ -63,13 +65,13 @@ public class WindowsSchedulerPanel extends JPanel {
         oneTimeButton = new JRadioButton(bundleString("once"));
         oneTimeButton.addItemListener(itemListener);
         radioButtons.add(oneTimeButton);
-        everyDayButton = new JRadioButton(bundleString("EveryUnit",bundleString("Day")));
+        everyDayButton = new JRadioButton(bundleString("EveryDay"));
         everyDayButton.addItemListener(itemListener);
         radioButtons.add(everyDayButton);
-        everyWeekDayButton = new JRadioButton(bundleString("EveryUnit",bundleString("Week")));
+        everyWeekDayButton = new JRadioButton(bundleString("EveryWeek"));
         everyWeekDayButton.addItemListener(itemListener);
         radioButtons.add(everyWeekDayButton);
-        everyMonthButton = new JRadioButton(bundleString("EveryUnit",bundleString("Month")));
+        everyMonthButton = new JRadioButton(bundleString("EveryMonth"));
         everyMonthButton.addItemListener(itemListener);
         radioButtons.add(everyMonthButton);
 

@@ -314,7 +314,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
                 nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
                 false, this instanceof CreateGlobalTemporaryTable, true, true, true,
                 "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
-                externalFile, adapter, (String) sqlSecurityCombo.getSelectedItem(), tablespace, comment);
+                externalFile, adapter, (String) sqlSecurityCombo.getSelectedItem(), tablespace, comment, "^");
     }
 
     private void externalTablePropsChanged() {

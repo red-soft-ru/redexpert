@@ -219,7 +219,7 @@ public class SqlParser {
             boolean contains = false;
             Parameter old = null;
             for (int g = 0; g < parameters.size(); g++) {
-                if (parameters.get(g).getName().contentEquals(name)) {
+                if (parameters.get(g).getName().equalsIgnoreCase(name)) {
                     contains = true;
                     old = parameters.get(g);
                     break;

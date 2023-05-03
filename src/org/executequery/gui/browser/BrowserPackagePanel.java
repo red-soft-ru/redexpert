@@ -86,7 +86,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
 
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
 
-        addPrivilegesTab(tabs);
+        //addPrivilegesTab(tabs);
 
         tabs.add("Description", descriptionPanel);
 

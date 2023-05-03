@@ -5,6 +5,7 @@ import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.SimpleDataSource;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.comparer.Comparer;
@@ -14,6 +15,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.BackgroundProgressDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -30,7 +32,6 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ComparerDBPanel extends JPanel implements TabView {
 
@@ -58,7 +59,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     // --- panel components ---
 
     private JComboBox dbMasterComboBox;
-    private JComboBox dbCompareComboBox;
+    private JComboBox dbTargetComboBox;
     private JButton compareButton;
     private JButton saveScriptButton;
     private JButton executeScriptButton;
@@ -85,11 +86,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
                         RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
 
         for (DatabaseConnection dc : connections) {
-            if (dc.isConnected()) {
-                databaseConnectionList.add(dc);
-                dbCompareComboBox.addItem(dc.getName());
-                dbMasterComboBox.addItem(dc.getName());
-            }
+            databaseConnectionList.add(dc);
+            dbTargetComboBox.addItem(dc.getName());
+            dbMasterComboBox.addItem(dc.getName());
         }
 
     }
@@ -172,10 +171,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- comboBoxes defining ---
 
-        dbCompareComboBox = new JComboBox();
-        dbCompareComboBox.removeAllItems();
+        dbTargetComboBox = new JComboBox<DatabaseConnection>();
+        dbTargetComboBox.removeAllItems();
 
-        dbMasterComboBox = new JComboBox();
+        dbMasterComboBox = new JComboBox<DatabaseConnection>();
         dbMasterComboBox.removeAllItems();
 
         // --- other components ---
@@ -207,7 +206,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         connectionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ConnectionsLabel")));
 
         gridBagHelper.addLabelFieldPair(connectionsPanel,
-                bundleString("CompareDatabaseLabel"), dbCompareComboBox, null);
+                bundleString("CompareDatabaseLabel"), dbTargetComboBox, null);
         gridBagHelper.addLabelFieldPair(connectionsPanel,
                 bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
         connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().get());
@@ -300,10 +299,23 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     private boolean prepareComparer() {
 
+        DatabaseConnection masterConnection = databaseConnectionList.get(dbMasterComboBox.getSelectedIndex());
+        DatabaseConnection targetConnection = databaseConnectionList.get(dbTargetComboBox.getSelectedIndex());
+
+        try {
+
+            if (!masterConnection.isConnected())
+                ConnectionManager.createDataSource(masterConnection);
+            if (!targetConnection.isConnected())
+                ConnectionManager.createDataSource(targetConnection);
+
+        } catch (DataSourceException e) {
+            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
+            return false;
+        }
+
         comparer = new Comparer(
-                this,
-                databaseConnectionList.get(dbCompareComboBox.getSelectedIndex()),
-                databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()),
+                this, targetConnection, masterConnection,
                 new boolean[]{
                         !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
                         !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
@@ -320,7 +332,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         try {
 
-            if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 3 ||
+            if (new DefaultDatabaseHost(databaseConnectionList.get(dbTargetComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 3 ||
                     new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 3) {
 
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("USER")).setSelected(false);
@@ -331,7 +343,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
                 loggingOutputPanel.append(bundleString("RDBVersionBelow3"));
 
-            } else if (new DefaultDatabaseHost(databaseConnectionList.get(dbCompareComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||
+            } else if (new DefaultDatabaseHost(databaseConnectionList.get(dbTargetComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||
                     new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4) {
 
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
@@ -351,6 +363,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         settingScriptProps.append("CONNECT '").append(SimpleDataSource.generateUrl(
                 comparer.getMasterConnection().getDatabaseConnection(),
                 SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection().getDatabaseConnection()))
+                .replace("jdbc:firebirdsql://", "")
         );
         settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getDatabaseConnection().getUserName());
         settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword());
@@ -477,7 +490,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         }
 
         if (databaseConnectionList.size() < 2 ||
-                dbCompareComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
+                dbTargetComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
             GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
             return;
         }
@@ -551,7 +564,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     private void finishCompare() {
 
-        for (int i = 0; i < comparer.getScript().size(); i++)
+        for (int i = 0; comparer != null && i < comparer.getScript().size(); i++)
             sqlTextPanel.getTextPane().append(comparer.getScript(i));
 
         isComparing = false;

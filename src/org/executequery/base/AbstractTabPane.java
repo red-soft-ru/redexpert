@@ -546,7 +546,8 @@ public abstract class AbstractTabPane extends JPanel
          */
         TabComponent tabComponent = (TabComponent)e.getSource();
         if (tabComponent.getComponent() instanceof BrowserViewPanel) {
-            ((BrowserViewPanel)tabComponent.getComponent()).getCurrentView().cleanup();
+            if (((BrowserViewPanel) tabComponent.getComponent()).getCurrentView() != null)
+                ((BrowserViewPanel) tabComponent.getComponent()).getCurrentView().cleanup();
         }
         parent.fireTabClosed(e);
     }

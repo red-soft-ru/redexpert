@@ -534,9 +534,8 @@ public class QueryDispatcher {
      */
     private Object executeSQL(String sql, boolean executeAsBlock) {
 
-        IFBPerformanceInfo before, after;
+        IFBPerformanceInfo before;
         before = null;
-        after = null;
 
         waiting = false;
         long totalDuration = 0l;
@@ -760,7 +759,7 @@ public class QueryDispatcher {
 
                     }
 
-                    printExecutionPlan(before, after);
+                        printExecutionPlan(before);
 
                     setOutputMessage(SqlMessages.ERROR_MESSAGE,
                             message, true);
@@ -772,10 +771,10 @@ public class QueryDispatcher {
 
                     printPlan(rset);
 
-                    printExecutionPlan(before, after);
+                        setResultSet(rset, query.getOriginalQuery());
 
-                    setResultSet(rset, query.getOriginalQuery());
-                }
+                        printExecutionPlan(before);
+                    }
 
                 end = System.currentTimeMillis();
 
@@ -789,7 +788,7 @@ public class QueryDispatcher {
                     int updateCount = result.getUpdateCount();
                     if (updateCount == -1) {
 
-                        printExecutionPlan(before, after);
+                            printExecutionPlan(before);
 
                         setOutputMessage(SqlMessages.ERROR_MESSAGE,
                                 result.getErrorMessage(), true);
@@ -799,7 +798,7 @@ public class QueryDispatcher {
 
                         if (result.isException()) {
 
-                            printExecutionPlan(before, after);
+                                printExecutionPlan(before);
 
                             setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true);
                         } else {
@@ -826,7 +825,7 @@ public class QueryDispatcher {
                                 setStatusMessage(" " + result.getMessage());
                             }
 
-                            printExecutionPlan(before, after);
+                                printExecutionPlan(before);
 
                         }
                     }
@@ -838,14 +837,14 @@ public class QueryDispatcher {
 
                     if (results == null) {
 
-                        printExecutionPlan(before, after);
+                            printExecutionPlan(before);
 
                         setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true);
                         setStatusMessage(ERROR_EXECUTING);
 
                     } else {
 
-                        printExecutionPlan(before, after);
+                            printExecutionPlan(before);
 
                         setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Call executed successfully.");
                         int updateCount = result.getUpdateCount();
@@ -1069,7 +1068,7 @@ public class QueryDispatcher {
 
                             }
 
-                            printExecutionPlan(before, after);
+                            printExecutionPlan(before);
 
                             setOutputMessage(SqlMessages.ERROR_MESSAGE,
                                     message, true);
@@ -1084,7 +1083,7 @@ public class QueryDispatcher {
 
                             setResultSet(rset, query.getOriginalQuery());
 
-                            printExecutionPlan(before, after);
+                            printExecutionPlan(before);
                         }
 
                         end = System.currentTimeMillis();
@@ -1127,7 +1126,7 @@ public class QueryDispatcher {
                                         setStatusMessage(" " + result.getMessage());
                                     }
 
-                                    printExecutionPlan(before, after);
+                                    printExecutionPlan(before);
 
                                 }
                             }
@@ -1147,7 +1146,7 @@ public class QueryDispatcher {
 
                             } else {
 
-                                printExecutionPlan(before, after);
+                                printExecutionPlan(before);
 
                                 setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Call executed successfully.");
                                 int updateCount = result.getUpdateCount();
@@ -1355,10 +1354,9 @@ public class QueryDispatcher {
         return statement;
     }
 
-    private void printExecutionPlan(IFBPerformanceInfo before, IFBPerformanceInfo after) {
+    private void printExecutionPlan(IFBPerformanceInfo before) {
         // Trying to get execution plan of firebird statement
         DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-        DefaultDriverLoader driverLoader = new DefaultDriverLoader();
         Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
         DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
@@ -1371,6 +1369,7 @@ public class QueryDispatcher {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+            IFBPerformanceInfo after = null;
             try {
                 IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabasePerformanceImpl");
                 db.setConnection(connection);
@@ -1382,7 +1381,6 @@ public class QueryDispatcher {
 
             if (before != null && after != null) {
                 IFBPerformanceInfo resultPerfomanceInfo = after.processInfo(before, after);
-
                 setOutputMessage(SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo());
             }
         }
@@ -1392,7 +1390,6 @@ public class QueryDispatcher {
     private void printPlan(ResultSet rs) {
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-            DefaultDriverLoader driverLoader = new DefaultDriverLoader();
             Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
             DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
             Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());

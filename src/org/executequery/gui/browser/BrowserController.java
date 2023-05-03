@@ -186,6 +186,8 @@ public class BrowserController {
 
             GUIUtilities.setSelectedCentralPane(title);
         }
+        if (viewPanel.getCurrentView() != null)
+            viewPanel = null;
 
     }
 
@@ -374,6 +376,8 @@ public class BrowserController {
                 case NamedObject.JOB:
                 case NamedObject.EXCEPTION:
                 case NamedObject.UDF:
+                case NamedObject.ROLE:
+                case NamedObject.SYSTEM_ROLE:
                     AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel.getEditPanelFromType(type, connection, node.getDatabaseObject(), null);
                     if (!viewPanel.containsPanel(objectPanel.getLayoutName())) {
                         viewPanel.addToLayout(objectPanel);
@@ -460,8 +464,8 @@ public class BrowserController {
 
                     domainSPanel.setValues((DefaultDatabaseDomain) databaseObject);
                     return domainSPanel;
-                case NamedObject.ROLE:
-                case NamedObject.SYSTEM_ROLE:
+                // case NamedObject.ROLE:
+               /* case NamedObject.SYSTEM_ROLE:
                     BrowserRolePanel rolePanel = null;
                     if (!viewPanel.containsPanel(BrowserRolePanel.NAME)) {
                         rolePanel = new BrowserRolePanel(this);
@@ -471,7 +475,7 @@ public class BrowserController {
                                 getFormObjectView(BrowserRolePanel.NAME);
                     }
                     rolePanel.setValues((DefaultDatabaseRole) databaseObject, this);
-                    return rolePanel;
+                    return rolePanel;*/
 
                 case NamedObject.INDEX:
                     try {

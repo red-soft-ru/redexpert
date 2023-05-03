@@ -296,13 +296,13 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         });
 
         refreshButton = new RolloverButton(/*bundleString("Refresh")*/);
-        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.png", true));
+        refreshButton.setIcon(IconUtilities.loadIcon("/org/executequery/icons/Refresh16.svg", buttonSize));
         refreshButton.setMouseEnteredContentAreaFill(false);
         refreshButton.addActionListener(this);
 
         cancelButton = new RolloverButton();
         //cancelButton.setText(bundleString("CancelFill"));
-        cancelButton.setIcon(GUIUtilities.loadIcon("Stop16.png"));
+        cancelButton.setIcon(IconUtilities.loadIcon("/org/executequery/icons/Stop16.svg", buttonSize));
         cancelButton.setMouseEnteredContentAreaFill(false);
         cancelButton.addActionListener(this);
 

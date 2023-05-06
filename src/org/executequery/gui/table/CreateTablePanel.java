@@ -49,10 +49,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -133,7 +130,10 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     }
 
     protected void init() {
+
         initSQLSecurity(false);
+        sqlSecurityCombo.addActionListener(actionEvent -> setSQLText());
+
         connectionsCombo.addItemListener(this);
         colTools = new CreateTableToolBar(this);
         conTools = new CreateTableToolBar(this);
@@ -159,7 +159,22 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         constraintsPanel.add(consPanel, gbh.nextCol().fillBoth().spanX().spanY().get());
 
         tabbedPane.add(bundledString("Constraints"), constraintsPanel);
+
         addCommentTab(null);
+        simpleCommentPanel.getCommentField().getTextAreaComponent().addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                setSQLText();
+            }
+            @Override
+            public void keyPressed(KeyEvent e) {
+                setSQLText();
+            }
+            @Override
+            public void keyReleased(KeyEvent e) {
+                setSQLText();
+            }
+        });
 
         sqlText = new SimpleSqlTextPanel();
 
@@ -198,6 +213,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         if (!(this instanceof CreateGlobalTemporaryTable))
             topGbh.addLabelFieldPair(topPanel, bundledString("Tablespace"), tablespacesCombo, null, false);
         tablespacesCombo.setToolTipText(Bundles.get(TableDefinitionPanel.class, "Tablespace"));
+        tablespacesCombo.addActionListener(actionEvent -> setSQLText());
         if (this instanceof CreateGlobalTemporaryTable) {
             topGbh.addLabelFieldPair(topPanel, bundledString("TypeTemporaryTable"), typeTemporaryBox, null, false);
         }

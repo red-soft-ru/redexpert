@@ -123,7 +123,7 @@ public final class SQLUtils {
             }
 
             if (!MiscUtils.isNull(cd.getDefaultValue().getValue()))
-                sb.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
+                sb.append(format(cd.getDefaultValue(), cd.getSQLType()));
 
             sb.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
             if (!MiscUtils.isNull(cd.getCheck()))
@@ -423,6 +423,54 @@ public final class SQLUtils {
         return sb.toString();
     }
 
+    public static String generateAlterDefinitionColumn(
+            DatabaseTableColumn column, ColumnData columnData, String tableName, String delimiter) {
+
+        StringBuilder sb = new StringBuilder();
+        StringBuilder alterTableTemplate = new StringBuilder()
+                .append("ALTER TABLE ").append(format(tableName)).append("\n\tALTER COLUMN ");
+
+        if (column.isNameChanged())
+            sb.append(alterTableTemplate).append(format(column.getOriginalColumn().getName()))
+                    .append(" TO ").append(columnData.getFormattedColumnName())
+                    .append(delimiter).append("\n");
+
+        alterTableTemplate.append(columnData.getFormattedColumnName());
+
+        if (column.isDataTypeChanged() && !column.isDomainChanged() && !column.isGenerated())
+            sb.append(alterTableTemplate)
+                    .append(" TYPE ").append(columnData.getFormattedDataType())
+                    .append(delimiter).append("\n");
+
+        if (column.isRequiredChanged())
+            sb.append(alterTableTemplate)
+                    .append(column.isRequired() ? " SET NOT NULL" : " DROP NOT NULL")
+                    .append(delimiter).append("\n");;
+
+        if (column.isDefaultValueChanged())
+            sb.append(alterTableTemplate)
+                    .append(" SET ").append(format(columnData.getDefaultValue(), columnData.getSQLType()))
+                    .append(delimiter).append("\n");;
+
+        if (column.isComputedChanged())
+            sb.append(alterTableTemplate)
+                    .append(" COMPUTED BY ").append(column.getComputedSource())
+                    .append(delimiter).append("\n");;
+
+        if (column.isDomainChanged() && !column.isGenerated())
+            sb.append(alterTableTemplate)
+                    .append(" TYPE ").append(columnData.getFormattedDomain())
+                    .append(delimiter).append("\n");;
+
+        if (column.isDescriptionChanged())
+            sb.append("COMMENT ON COLUMN ")
+                    .append(format(tableName)).append(".").append(columnData.getFormattedColumnName())
+                    .append(" IS '").append(column.getColumnDescription()).append("'")
+                    .append(delimiter).append("\n");;
+
+        return sb.toString();
+    }
+
     public static String generateAlterDefinitionColumn(ColumnData thisCD, ColumnData comparingCD, boolean computedNeed) {
 
         StringBuilder sb = new StringBuilder();
@@ -564,7 +612,7 @@ public final class SQLUtils {
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
             if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue().getValue())) {
-                sb.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
+                sb.append(format(cd.getDefaultValue(), cd.getSQLType()));
             }
             if (!MiscUtils.isNull(cd.getCheck())) {
                 sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
@@ -719,7 +767,7 @@ public final class SQLUtils {
 
         sb.append("\n");
         if (!MiscUtils.isNull(columnData.getDefaultValue().getValue()))
-            sb.append(MiscUtils.formattedDefaultValue(columnData.getDefaultValue(), columnData.getSQLType()));
+            sb.append(format(columnData.getDefaultValue(), columnData.getSQLType()));
         sb.append(columnData.isRequired() ? " NOT NULL" : "");
         if (!MiscUtils.isNull(columnData.getCheck()))
             sb.append(" CHECK (").append(columnData.getCheck()).append(")");
@@ -1662,6 +1710,10 @@ public final class SQLUtils {
 
     private static String format(String object) {
         return MiscUtils.getFormattedObject(object);
+    }
+
+    private static String format(ColumnData.DefaultValue defaultValue, int type) {
+        return MiscUtils.formattedDefaultValue(defaultValue, type);
     }
 
 }

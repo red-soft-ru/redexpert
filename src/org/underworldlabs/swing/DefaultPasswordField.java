@@ -21,7 +21,7 @@
 package org.underworldlabs.swing;
 
 import org.executequery.gui.GUIConstants;
-import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
+import org.underworldlabs.swing.menu.PasswordTextComponentPopUpMenu;
 
 import javax.swing.*;
 import javax.swing.text.Document;
@@ -71,7 +71,7 @@ public class DefaultPasswordField extends JPasswordField {
     }
     private void addPopupMenu() {
 
-        new SimpleTextComponentPopUpMenu(this);
+        new PasswordTextComponentPopUpMenu(this);
     }
 
 }

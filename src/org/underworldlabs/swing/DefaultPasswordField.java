@@ -21,6 +21,7 @@
 package org.underworldlabs.swing;
 
 import org.executequery.gui.GUIConstants;
+import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
 
 import javax.swing.*;
 import javax.swing.text.Document;
@@ -31,26 +32,32 @@ public class DefaultPasswordField extends JPasswordField {
     public DefaultPasswordField() {
 
         super();
+        addPopupMenu();
+
     }
 
     public DefaultPasswordField(Document doc, String txt, int columns) {
 
         super(doc, txt, columns);
+        addPopupMenu();
     }
 
     public DefaultPasswordField(int columns) {
 
         super(columns);
+        addPopupMenu();
     }
 
     public DefaultPasswordField(String text, int columns) {
 
         super(text, columns);
+        addPopupMenu();
     }
 
     public DefaultPasswordField(String text) {
 
         super(text);
+        addPopupMenu();
     }
 
     public Insets getMargin() {
@@ -61,6 +68,10 @@ public class DefaultPasswordField extends JPasswordField {
     public int getHeight() {
 
         return Math.max(super.getHeight(), GUIConstants.DEFAULT_FIELD_HEIGHT);
+    }
+    private void addPopupMenu() {
+
+        new SimpleTextComponentPopUpMenu(this);
     }
 
 }

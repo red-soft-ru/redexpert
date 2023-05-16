@@ -1,5 +1,7 @@
 package org.underworldlabs.swing.menu;
 
+import org.executequery.gui.editor.QueryEditor;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 
@@ -27,7 +29,7 @@ public class PasswordTextComponentPopUpMenu extends JPopupMenu {
         textComponent.addMouseListener(new PopupListener(this));
 
         // the menu label text
-        String[] menuLabels = {"Paste"};
+        String[] menuLabels = {Bundles.get(SimpleTextComponentPopUpMenu.class, "Paste")};
 
         // cached actions from which to retrieve common accels and mnemonics
         String[] actionNames = {"paste-command"};

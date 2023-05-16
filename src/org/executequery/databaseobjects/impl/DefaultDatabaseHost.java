@@ -1112,6 +1112,11 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return getDatabaseMetaData().getDatabaseMajorVersion();
     }
 
+    @Override
+    public int getDatabaseMinorVersion() throws SQLException {
+        return getDatabaseMetaData().getDatabaseMinorVersion();
+    }
+
     public boolean isConnected() {
 
         try {

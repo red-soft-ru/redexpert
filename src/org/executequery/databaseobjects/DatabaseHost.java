@@ -211,6 +211,8 @@ public interface DatabaseHost extends NamedObject {
 
     int getDatabaseMajorVersion() throws SQLException;
 
+    int getDatabaseMinorVersion() throws SQLException;
+
     /**
      * Returns the default prefix name value for objects from this host.
      * ie. default catalog or schema name - with schema taking precedence.

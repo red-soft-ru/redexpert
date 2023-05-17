@@ -1,26 +1,6 @@
-/*
- * SimpleTextComponentPopUpMenu.java
- *
- * Copyright (C) 2002-2017 Takis Diakoumis
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
 package org.underworldlabs.swing.menu;
 
-import org.executequery.gui.AboutPanel;
+import org.executequery.gui.editor.QueryEditor;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
@@ -31,16 +11,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-/**
- * The text utilities popup menu function
- *
- * @author Takis Diakoumis
- */
-public class SimpleTextComponentPopUpMenu extends JPopupMenu {
 
-    /**
-     * the action listener
-     */
+public class PasswordTextComponentPopUpMenu extends JPopupMenu {
     private ReflectiveAction reflectiveAction;
 
     /**
@@ -48,7 +20,7 @@ public class SimpleTextComponentPopUpMenu extends JPopupMenu {
      */
     private JTextComponent textComponent;
 
-    public SimpleTextComponentPopUpMenu(JTextComponent textComponent) {
+    public PasswordTextComponentPopUpMenu(JTextComponent textComponent) {
 
         // create the listener
         reflectiveAction = new ReflectiveAction(this);
@@ -57,35 +29,19 @@ public class SimpleTextComponentPopUpMenu extends JPopupMenu {
         textComponent.addMouseListener(new PopupListener(this));
 
         // the menu label text
-        String[] menuLabels = {bundledString("Cut"),
-                bundledString("Copy"),
-                bundledString("Paste")};
+        String[] menuLabels = {Bundles.get(SimpleTextComponentPopUpMenu.class, "Paste")};
 
         // cached actions from which to retrieve common accels and mnemonics
-        String[] actionNames = {"cut-command", "copy-command", "paste-command"};
+        String[] actionNames = {"paste-command"};
 
         // action command settings to map to method names in this class
-        String[] actionCommands = {"cut", "copy", "paste"};
+        String[] actionCommands = {"paste"};
 
         for (int i = 0; i < menuLabels.length; i++) {
 
             add(createMenuItem(menuLabels[i], actionNames[i], actionCommands[i]));
         }
 
-    }
-
-    /**
-     * Executes the cut action on the registered text component.
-     */
-    public void cut(ActionEvent e) {
-        textComponent.cut();
-    }
-
-    /**
-     * Executes the copy action on the registered text component.
-     */
-    public void copy(ActionEvent e) {
-        textComponent.copy();
     }
 
     /**
@@ -139,15 +95,5 @@ public class SimpleTextComponentPopUpMenu extends JPopupMenu {
             }
         }
 
-    } // class PopupListener
-    public static String bundledString(String key) {
-        return Bundles.get(SimpleTextComponentPopUpMenu.class, key);
     }
 }
-
-
-
-
-
-
-

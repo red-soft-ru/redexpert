@@ -9,6 +9,8 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.treetable.ProfilerTreeTable;
+import org.underworldlabs.swing.treetable.ProfilerTreeTableModel;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -37,7 +39,7 @@ public class ProfilerPanel extends JPanel
     private JComboBox<?> connectionsComboBox;
     private JCheckBox compactViewCheckBox;
 
-    private JTree profilerTree;
+    private ProfilerTreeTable profilerTree;
     private DefaultMutableTreeNode rootTreeNode;
     private DefaultMutableTreeNode compactRootTreeNode;
 
@@ -80,7 +82,7 @@ public class ProfilerPanel extends JPanel
         compactViewCheckBox.addActionListener(e -> updateTreeDisplay());
 
         rootTreeNode = new DefaultMutableTreeNode("root");
-        profilerTree = new JTree(new DefaultTreeModel(rootTreeNode));
+        profilerTree = new ProfilerTreeTable(new TreeTableModel(rootTreeNode),true,false,new int[4]);
         profilerTree.setCellRenderer(new ProfilerTreeCellRenderer());
 
         startButton = new JButton(bundleString("Start"));
@@ -357,8 +359,8 @@ public class ProfilerPanel extends JPanel
     // ---
 
     private void updateTreeDisplay() {
-        profilerTree.setModel(new DefaultTreeModel(
-                compactViewCheckBox.isSelected() ? compactRootTreeNode : rootTreeNode));
+        /*profilerTree.setModel(new DefaultTreeModel(
+                compactViewCheckBox.isSelected() ? compactRootTreeNode : rootTreeNode));*/
     }
 
     private void switchSessionState(int state) {
@@ -405,6 +407,90 @@ public class ProfilerPanel extends JPanel
 
     private static String bundleString(String key) {
         return Bundles.get(ProfilerPanel.class, key);
+    }
+
+    private class TreeTableModel extends ProfilerTreeTableModel.Abstract {
+
+        TreeTableModel(TreeNode root) {
+            super(root);
+        }
+
+        public String getColumnName(int columnIndex) {
+            if (columnIndex<0) columnIndex++;
+
+            if (columnIndex == 1) {
+                return "COLUMN_NAME";
+            } else if (columnIndex == 2) {
+                return "COLUMN_TOTALTIME";
+            } else if (columnIndex == 3) {
+                return "COLUMN_TOTALTIME_CPU";
+            } else if (columnIndex == 4) {
+                return "";
+                //return sampled ? COLUMN_HITS : COLUMN_INVOCATIONS;
+            } else if (columnIndex == 0) {
+                return "COLUMN_SELECTED";
+            }
+            return null;
+        }
+
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex<0) columnIndex++;
+
+            if (columnIndex == 1) {
+                return JTree.class;
+            } else if (columnIndex == 4) {
+                return Integer.class;
+            } else if (columnIndex == 0) {
+                return Boolean.class;
+            } else {
+                return Long.class;
+            }
+        }
+
+        public int getColumnCount() {
+            return  4 ;
+        }
+
+        public Object getValueAt(TreeNode node, int columnIndex) {
+            /*PrestimeCPUCCTNode cpuNode = (PrestimeCPUCCTNode)node;
+
+            if (selection == null) columnIndex++;
+
+            if (columnIndex == 1) {
+                return cpuNode.getNodeName();
+            } else if (columnIndex == 2) {
+                return cpuNode.getTotalTime0();
+            } else if (columnIndex == 3) {
+                return twoTimeStamps ? cpuNode.getTotalTime1() : 0;
+            } else if (columnIndex == 4) {
+                return cpuNode.getNCalls();
+            } else if (columnIndex == 0) {
+                if (selection.isEmpty()) return Boolean.FALSE;
+                return selection.contains(idMap.get(cpuNode.getMethodId()));
+            }*/
+
+            return null;
+        }
+
+        public void setValueAt(Object aValue, TreeNode node, int columnIndex) {
+           /* if (selection == null) columnIndex++;
+
+            if (columnIndex == 0) {
+                PrestimeCPUCCTNode cpuNode = (PrestimeCPUCCTNode)node;
+                int methodId = cpuNode.getMethodId();
+                if (Boolean.TRUE.equals(aValue)) selection.add(idMap.get(methodId));
+                else selection.remove(idMap.get(methodId));
+            }*/
+        }
+
+        public boolean isCellEditable(TreeNode node, int columnIndex) {
+            return false;
+            /*
+            if (selection == null) columnIndex++;
+            if (columnIndex != 0) return false;
+            return (isSelectable((PrestimeCPUCCTNode)node));*/
+        }
+
     }
 
 }

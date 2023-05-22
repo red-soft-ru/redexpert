@@ -44,9 +44,12 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
         return sb.toString();
     }
 
+    @Override
     protected void reset() {
         nameField.setText(databasePackage.getName().trim());
         simpleCommentPanel.setDatabaseObject(databasePackage);
+        headerPanel.setSQLText(databasePackage.getHeaderSource());
+        bodyPanel.setSQLText(databasePackage.getBodySource());
     }
 
     @Override

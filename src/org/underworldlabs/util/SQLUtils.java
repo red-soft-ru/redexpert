@@ -94,7 +94,7 @@ public final class SQLUtils {
         if (setComment) {
             sb.append(generateCommentForColumns(name, columnDataList, "COLUMN", delimiter));
             if (!MiscUtils.isNull(comment) && !comment.equals(""))
-                sb.append("COMMENT ON TABLE ").append(name).append(" IS '").append(comment).append("'").append(delimiter).append("\n");
+                sb.append("COMMENT ON TABLE ").append(format(name)).append(" IS '").append(comment).append("'").append(delimiter).append("\n");
         }
 
         return sb.toString();

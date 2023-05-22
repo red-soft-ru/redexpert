@@ -20,6 +20,8 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.gui.text.SQLTextArea;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -98,6 +100,20 @@ public abstract class AbstractBaseDialog extends JDialog {
                 dispose();
             }
         };
+    }
+
+    public void dispose() {
+        cleanupComponent(rootPane);
+        super.dispose();
+    }
+
+    protected void cleanupComponent(Component component) {
+        if (component instanceof SQLTextArea)
+            ((SQLTextArea) component).cleanup();
+        else if (component instanceof Container)
+            for (Component child : ((Container) component).getComponents()) {
+                cleanupComponent(child);
+            }
     }
 
 }

@@ -84,13 +84,6 @@ public class RolloverButton extends JButton
         setButtonSize(h, w);
     }
 
-    /**
-     * Creates a new RolloverButton with an associated image
-     * and tool tip.
-     *
-     * @param label the button's label
-     * @param tip   the button's tool tip
-     */
     public RolloverButton(ImageIcon img, String tip, int h, int w) {
         super(img);
         toolTip = tip;
@@ -185,6 +178,8 @@ public class RolloverButton extends JButton
         return selectionEnabled;
     }
 
+    boolean mouseEnteredContentAreaFill = true;
+
     /**
      * Paints the button's borders as the mouse pointer enters.
      *
@@ -193,8 +188,13 @@ public class RolloverButton extends JButton
     public void mouseEntered(MouseEvent e) {
         if (isEnabled() && isSelectionRolloverEnabled()) {
             setBorderPainted(true);
-            setContentAreaFilled(true);
+            if (mouseEnteredContentAreaFill)
+                setContentAreaFilled(true);
         }
+    }
+
+    public void setMouseEnteredContentAreaFill(boolean mouseEnteredContentAreaFill) {
+        this.mouseEnteredContentAreaFill = mouseEnteredContentAreaFill;
     }
 
     /**

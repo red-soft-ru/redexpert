@@ -3,6 +3,7 @@ package org.executequery.gui.table;
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
@@ -285,10 +286,16 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
         }
 
         if (typeBox.getSelectedItem() == TableColumnConstraint.FOREIGN) {
-            referenceTable.setSelectedItem(constraint.getReferencedTable());
+
+            NamedObject foreignTable = null;
+            for (int typeTable = NamedObject.TABLE; typeTable <= NamedObject.VIEW && foreignTable == null; typeTable++)
+                foreignTable = ConnectionsTreePanel.getNamedObjectFromHost(table.getHost().getDatabaseConnection(), typeTable, constraint.getReferencedTable().trim());
+            if (foreignTable == null)
+                foreignTable = ConnectionsTreePanel.getNamedObjectFromHost(table.getHost().getDatabaseConnection(), NamedObject.SYSTEM_TABLE, constraint.getReferencedTable().trim());
+
+            referenceTable.setSelectedItem(foreignTable);
 
             try {
-
                 String tablespace_query = "";
                 if (tss != null)
                     tablespace_query = ", I.RDB$TABLESPACE_NAME";

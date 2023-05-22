@@ -200,7 +200,7 @@ public final class DerivedQuery {
         objectName = query.substring(0, ind);
         objectName = objectName.trim();
         if (objectName.startsWith("\"") && objectName.length() > 2) {
-            objectName = objectName.substring(0, objectName.length() - 2);
+            objectName = objectName.substring(1, objectName.length() - 1);
         }
     }
 

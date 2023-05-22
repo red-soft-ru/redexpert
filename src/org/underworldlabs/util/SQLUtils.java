@@ -1,15 +1,11 @@
 package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.FunctionArgument;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.Parameter;
-import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.table.TableDefinitionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -29,7 +25,7 @@ public final class SQLUtils {
     public static String generateCreateTable(
             String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,
             boolean existTable, boolean temporary, boolean constraints, boolean computed, boolean setComment,
-            String typeTemporary, String externalFile, String adapter, String sqlSecurity, String tablespace, String comment) {
+            String typeTemporary, String externalFile, String adapter, String sqlSecurity, String tablespace, String comment, String delimiter) {
 
         StringBuilder sb = new StringBuilder();
         StringBuilder sqlText = new StringBuilder();
@@ -90,14 +86,15 @@ public final class SQLUtils {
         if (temporary)
             sb.append("\n").append(typeTemporary);
 
-        sb.append(";\n");
+        sb.append(delimiter).append("\n");
 
         if (autoincrementSQLText != null)
             sb.append(autoincrementSQLText.toString().replace(TableDefinitionPanel.SUBSTITUTE_NAME, format(name))).append(NEW_LINE);
 
-        if (setComment && !MiscUtils.isNull(comment) && !comment.equals("")) {
-            sb.append(generateCommentForColumns(name, columnDataList, "COLUMN", "^"));
-            sb.append("COMMENT ON TABLE ").append(name).append(" IS '").append(comment).append("';\n");
+        if (setComment) {
+            sb.append(generateCommentForColumns(name, columnDataList, "COLUMN", delimiter));
+            if (!MiscUtils.isNull(comment) && !comment.equals(""))
+                sb.append("COMMENT ON TABLE ").append(name).append(" IS '").append(comment).append("'").append(delimiter).append("\n");
         }
 
         return sb.toString();
@@ -126,7 +123,7 @@ public final class SQLUtils {
             }
 
             if (!MiscUtils.isNull(cd.getDefaultValue().getValue()))
-                sb.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
+                sb.append(format(cd.getDefaultValue(), cd.getSQLType()));
 
             sb.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
             if (!MiscUtils.isNull(cd.getCheck()))
@@ -306,7 +303,7 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         if (comment != null && !comment.isEmpty()) {
-            sb.append("\nCOMMENT ON ").append(metaTag).append(" ");
+            sb.append("COMMENT ON ").append(metaTag).append(" ");
             if (nameAlreadyFormatted)
                 sb.append(name);
             else
@@ -422,6 +419,54 @@ public final class SQLUtils {
 
         if (setTerm)
             sb.append("SET TERM ;^\n");
+
+        return sb.toString();
+    }
+
+    public static String generateAlterDefinitionColumn(
+            DatabaseTableColumn column, ColumnData columnData, String tableName, String delimiter) {
+
+        StringBuilder sb = new StringBuilder();
+        StringBuilder alterTableTemplate = new StringBuilder()
+                .append("ALTER TABLE ").append(format(tableName)).append("\n\tALTER COLUMN ");
+
+        if (column.isNameChanged())
+            sb.append(alterTableTemplate).append(format(column.getOriginalColumn().getName()))
+                    .append(" TO ").append(columnData.getFormattedColumnName())
+                    .append(delimiter).append("\n");
+
+        alterTableTemplate.append(columnData.getFormattedColumnName());
+
+        if (column.isDataTypeChanged() && !column.isDomainChanged() && !column.isGenerated())
+            sb.append(alterTableTemplate)
+                    .append(" TYPE ").append(columnData.getFormattedDataType())
+                    .append(delimiter).append("\n");
+
+        if (column.isRequiredChanged())
+            sb.append(alterTableTemplate)
+                    .append(column.isRequired() ? " SET NOT NULL" : " DROP NOT NULL")
+                    .append(delimiter).append("\n");;
+
+        if (column.isDefaultValueChanged())
+            sb.append(alterTableTemplate)
+                    .append(" SET ").append(format(columnData.getDefaultValue(), columnData.getSQLType()))
+                    .append(delimiter).append("\n");;
+
+        if (column.isComputedChanged())
+            sb.append(alterTableTemplate)
+                    .append(" COMPUTED BY ").append(column.getComputedSource())
+                    .append(delimiter).append("\n");;
+
+        if (column.isDomainChanged() && !column.isGenerated())
+            sb.append(alterTableTemplate)
+                    .append(" TYPE ").append(columnData.getFormattedDomain())
+                    .append(delimiter).append("\n");;
+
+        if (column.isDescriptionChanged())
+            sb.append("COMMENT ON COLUMN ")
+                    .append(format(tableName)).append(".").append(columnData.getFormattedColumnName())
+                    .append(" IS '").append(column.getColumnDescription()).append("'")
+                    .append(delimiter).append("\n");;
 
         return sb.toString();
     }
@@ -567,7 +612,7 @@ public final class SQLUtils {
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
             if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue().getValue())) {
-                sb.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
+                sb.append(format(cd.getDefaultValue(), cd.getSQLType()));
             }
             if (!MiscUtils.isNull(cd.getCheck())) {
                 sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
@@ -722,7 +767,7 @@ public final class SQLUtils {
 
         sb.append("\n");
         if (!MiscUtils.isNull(columnData.getDefaultValue().getValue()))
-            sb.append(MiscUtils.formattedDefaultValue(columnData.getDefaultValue(), columnData.getSQLType()));
+            sb.append(format(columnData.getDefaultValue(), columnData.getSQLType()));
         sb.append(columnData.isRequired() ? " NOT NULL" : "");
         if (!MiscUtils.isNull(columnData.getCheck()))
             sb.append(" CHECK (").append(columnData.getCheck()).append(")");
@@ -910,8 +955,8 @@ public final class SQLUtils {
             for (String comparingColumn : comparingColumnsNames) {
                 if (Objects.equals(thisColumn, comparingColumn)) {
                     sb.append(generateAlterDefinitionColumn(
-                            new ColumnData(thisTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn)),
-                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn)),
+                            new ColumnData(thisTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn), false),
+                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn), false),
                             computed));
                     break;
 
@@ -928,7 +973,7 @@ public final class SQLUtils {
             if (!thisColumnsNames.contains(comparingColumn))
                 sb.append("\n\tADD ").append(generateDefinitionColumn(new ColumnData(
                                 comparingTable.getHost().getDatabaseConnection(),
-                                comparingTable.getColumn(comparingColumn)), computed, false, false))
+                                comparingTable.getColumn(comparingColumn), false), computed, false, false))
                         .append(COMMA);
 
         if (!Arrays.equals(constraints, new boolean[]{false, false, false, false})) {
@@ -1008,9 +1053,6 @@ public final class SQLUtils {
                 sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceFirstValue());
             if (thisSequence.getIncrement() != comparingSequence.getIncrement())
                 sb.append("\n\tINCREMENT BY ").append(comparingSequence.getIncrement());
-        } else {
-            if (thisSequence.getSequenceCurrentValue() != comparingSequence.getSequenceCurrentValue())
-                sb.append("\n\tRESTART WITH ").append(comparingSequence.getSequenceCurrentValue());
         }
 
         if (noChangesCheckString.equals(sb.toString()))
@@ -1038,14 +1080,25 @@ public final class SQLUtils {
     public static String generateAlterIndex(
             DefaultDatabaseIndex thisIndex, DefaultDatabaseIndex comparingIndex) {
 
-        if (thisIndex.isActive() == comparingIndex.isActive())
-            return "/* there are no changes */\n";
-
         StringBuilder sb = new StringBuilder();
-        String activeString = comparingIndex.isActive() ? " ACTIVE" : " INACTIVE";
-        sb.append("ALTER INDEX ").append(format(thisIndex.getName()));
-        sb.append(activeString).append(";\n");
-        return sb.toString();
+
+        String comparedIndexCreateQuery = comparingIndex.getCreateSQLText();
+        String thisIndexCreateQuery = thisIndex.getCreateSQLText();
+        if (!thisIndexCreateQuery.equals(comparedIndexCreateQuery) &&
+                (thisIndexCreateQuery.contains(" INACTIVE;") || comparedIndexCreateQuery.contains(" INACTIVE;"))) {
+
+            sb.append("ALTER INDEX ").append(format(thisIndex.getName()));
+            sb.append(comparingIndex.isActive() ? " ACTIVE" : " INACTIVE").append(";\n");
+            return sb.toString();
+        }
+
+        if (!thisIndexCreateQuery.equals(comparedIndexCreateQuery)) {
+            sb.append(generateDefaultDropQuery("INDEX", thisIndex.getName()));
+            sb.append(comparedIndexCreateQuery);
+            return sb.toString();
+        }
+
+        return "/* there are no changes */\n";
     }
 
     public static String generateAlterUser(DefaultDatabaseUser thisUser, DefaultDatabaseUser compareUser, boolean setComment) {
@@ -1114,12 +1167,16 @@ public final class SQLUtils {
             DefaultDatabaseTablespace thisTablespace, DefaultDatabaseTablespace comparingTablespace) {
 
         String comparingFileName = comparingTablespace.getFileName();
-        if (!Objects.equals(thisTablespace.getFileName(), comparingFileName))
-            return "/* there are no changes */\n";
 
+        return !Objects.equals(thisTablespace.getFileName(), comparingFileName) ?
+                "/* there are no changes */\n" :
+                generateAlterTablespace(thisTablespace.getName(), comparingFileName);
+    }
+
+    public static String generateAlterTablespace(String name, String file) {
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLESPACE ").append(format(thisTablespace.getName()));
-        sb.append(" SET FILE '").append(comparingFileName).append("';\n");
+        sb.append("ALTER TABLESPACE ").append(format(name));
+        sb.append(" SET FILE '").append(file).append("';\n");
         return sb.toString();
     }
 
@@ -1269,7 +1326,7 @@ public final class SQLUtils {
     }
 
     public static String generateCreateUDF(
-            String name, List<DefaultDatabaseUDF.UDFParameter> parameters, int returnArg,
+            String name, List<UDFParameter> parameters, int returnArg,
             String entryPoint, String moduleName, boolean freeIt) {
 
         int BY_VALUE = 0;
@@ -1335,7 +1392,7 @@ public final class SQLUtils {
 
     public static String generateCreateIndex(
             String name, int type, boolean isUnique, String tableName, String expression, String condition,
-            List<DefaultDatabaseIndex.DatabaseIndexColumn> indexColumns, String tablespace, boolean isActive, String comment) {
+            List indexColumns, String tablespace, boolean isActive, String comment) {
 
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE ");
@@ -1354,12 +1411,21 @@ public final class SQLUtils {
         } else {
 
             boolean first = true;
+            int columnType = -1;
             StringBuilder fields = new StringBuilder();
-            for (DefaultDatabaseIndex.DatabaseIndexColumn indexColumn : indexColumns) {
-                if (!first)
+
+            for (Object indexColumn : indexColumns) {
+
+                if (first)
+                    columnType = (indexColumn instanceof DefaultDatabaseIndex.DatabaseIndexColumn) ? 0 : 1;
+                else
                     fields.append(COMMA);
                 first = false;
-                fields.append(format(indexColumn.getFieldName()));
+
+                if (columnType == 0)
+                    fields.append(format(((DefaultDatabaseIndex.DatabaseIndexColumn)indexColumn).getFieldName()));
+                else
+                    fields.append(format((String) indexColumn));
             }
 
             sb.append(B_OPEN).append(fields).append(B_CLOSE);
@@ -1376,6 +1442,18 @@ public final class SQLUtils {
             sb.append("ALTER INDEX ").append(format(name)).append(" INACTIVE;");
         if (!MiscUtils.isNull(comment))
             sb.append("COMMENT ON INDEX ").append(format(name)).append(" IS '").append(comment).append("';");
+
+        return sb.toString();
+    }
+
+    public static String generateAlterIndex(String name, Boolean isActive, String tablespace) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if (isActive != null)
+            sb.append("ALTER INDEX ").append(format(name)).append(isActive ? " ACTIVE" : " INACTIVE").append(";\n");
+        if (tablespace != null)
+            sb.append("ALTER INDEX ").append(format(name)).append(" SET TABLESPACE TO ").append(tablespace).append(";\n");
 
         return sb.toString();
     }
@@ -1632,6 +1710,10 @@ public final class SQLUtils {
 
     private static String format(String object) {
         return MiscUtils.getFormattedObject(object);
+    }
+
+    private static String format(ColumnData.DefaultValue defaultValue, int type) {
+        return MiscUtils.formattedDefaultValue(defaultValue, type);
     }
 
 }

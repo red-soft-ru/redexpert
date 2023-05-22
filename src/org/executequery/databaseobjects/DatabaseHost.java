@@ -95,27 +95,10 @@ public interface DatabaseHost extends NamedObject {
     List<DatabaseSchema> getSchemas() throws DataSourceException;
 
     /**
-     * Returns the tables hosted by this host of the specified type and
-     * belonging to the specified catalog and schema.
-     *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param type    the table type
-     * @return the hosted tables
-     */
-    List<NamedObject> getTables(String catalog, String schema, String type)
-            throws DataSourceException;
-
-    /**
      * Returns the columns of the specified database object.
      *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param table   the database object name
      * @return the columns
      */
-    List<DatabaseColumn> getColumns( String table,boolean keepAlive)
-            throws DataSourceException;
 
     List<DatabaseColumn> getColumns( String table);
 
@@ -178,8 +161,6 @@ public interface DatabaseHost extends NamedObject {
     /**
      * Returns the column names of the specified database object.
      *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
      * @param table   the database object name
      * @return the column names
      */
@@ -190,9 +171,6 @@ public interface DatabaseHost extends NamedObject {
      * Returns the table names hosted by this host of the specified type and
      * belonging to the specified catalog and schema.
      *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param type    the table type
      * @return the hosted tables
      */
     List<String> getTableNames()
@@ -232,6 +210,8 @@ public interface DatabaseHost extends NamedObject {
     String getDatabaseProductVersion();
 
     int getDatabaseMajorVersion() throws SQLException;
+
+    int getDatabaseMinorVersion() throws SQLException;
 
     /**
      * Returns the default prefix name value for objects from this host.
@@ -285,6 +265,10 @@ public interface DatabaseHost extends NamedObject {
     int countFinishedMetaTags();
 
     void incCountFinishedMetaTags();
+
+    boolean isPauseLoadingTreeForSearch();
+
+    void setPauseLoadingTreeForSearch(boolean pauseLoadingTreeForSearch);
 
 }
 

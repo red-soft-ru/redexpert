@@ -359,7 +359,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
     @Override
     public void cleanup() {
-
+        sqlText.cleanup();
         combosGroup.close();
 
         if (statusBar != null) {

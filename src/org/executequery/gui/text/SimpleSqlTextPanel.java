@@ -24,7 +24,6 @@ import org.executequery.Constants;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
-import org.executequery.gui.editor.QueryEditorTextPanel;
 import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
 
 import javax.swing.*;
@@ -273,6 +272,10 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     public boolean contentCanBeSaved() {
 
         return true;
+    }
+
+    public void cleanup() {
+        textPane.cleanup();
     }
 
 }

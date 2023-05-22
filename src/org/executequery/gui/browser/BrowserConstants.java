@@ -187,9 +187,10 @@ public class BrowserConstants {
     public static final String JOB_IMAGE = "job16.png";
 
 
-    public static final String GRANT_IMAGE = "grant.png";
-    public static final String NO_GRANT_IMAGE = "no_grant.png";
-    public static final String ADMIN_OPTION_IMAGE = "admin_option.png";
+    public static final String GRANT_IMAGE = "grant.svg";
+    public static final String NO_GRANT_IMAGE = "no_grant.svg";
+    public static final String ADMIN_OPTION_IMAGE = "admin_option.svg";
+    public static final String FIELD_GRANT_IMAGE = "grantPart.svg";
 
 
     public static final String[] NODE_ICONS = {CONNECTIONS_IMAGE,

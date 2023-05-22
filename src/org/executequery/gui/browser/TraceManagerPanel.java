@@ -48,7 +48,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     public static final String TITLE = Bundles.get(TraceManagerPanel.class, "title");
     private IFBTraceManager traceManager;
     private TablePanel loggerPanel;
-    private OutputStream fileLog;
+    private FileOutputStream fileLog;
     private PipedOutputStream outputStream;
 
     private PipedInputStream inputStream;
@@ -123,16 +123,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         e1.printStackTrace();
                     }
                 }
-                if (logToFileBox.isSelected()) {
-                    if (!fileLogField.getText().isEmpty()) {
-                        File file = new File(fileLogField.getText());
-                        try {
-                            fileLog = new FileOutputStream(file, true);
-                        } catch (FileNotFoundException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                }
             }
         });
         hostField = new JTextField("127.0.0.1");
@@ -202,7 +192,9 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     fileLogField.setText(file.getAbsolutePath());
                     try {
                         fileLog = new FileOutputStream(file, false);
-                    } catch (FileNotFoundException e1) {
+                        fileLog.close();
+                        fileLog = null;
+                    } catch (IOException e1) {
                         e1.printStackTrace();
                     }
                 }
@@ -290,6 +282,16 @@ public class TraceManagerPanel extends JPanel implements TabView {
             public void actionPerformed(ActionEvent e) {
                 if (startStopSessionButton.getText().toUpperCase().contentEquals(bundleString("Start").toUpperCase())) {
                     if (logToFileBox.isSelected()) {
+                        if (logToFileBox.isSelected()) {
+                            if (!fileLogField.getText().isEmpty()) {
+                                File file = new File(fileLogField.getText());
+                                try {
+                                    fileLog = new FileOutputStream(file, true);
+                                } catch (FileNotFoundException e1) {
+                                    e1.printStackTrace();
+                                }
+                            }
+                        }
                         if (fileLog != null) {
                             outputStream = new TraceOutputStream();
                         } else {
@@ -505,8 +507,17 @@ public class TraceManagerPanel extends JPanel implements TabView {
             } finally {
                 stopSession();
             }
-
-
+        inputStream = null;
+        outputStream = null;
+        fileLog = null;
+        confPanel = null;
+        openFileLog = null;
+        startStopSessionButton = null;
+        loggerPanel.cleanup();
+        loggerPanel = null;
+        tabPane.removeAll();
+        tabPane = null;
+        bufferedReader = null;
         return true;
     }
 

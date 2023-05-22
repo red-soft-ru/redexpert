@@ -1,5 +1,6 @@
 package org.executequery.gui.browser;
 
+import org.executequery.gui.DefaultNumberTextField;
 import biz.redsoft.IFBCreateDatabase;
 import biz.redsoft.IFBCryptoPluginInit;
 import org.apache.commons.lang.StringUtils;
@@ -194,17 +195,17 @@ public class CreateDatabasePanel extends ActionPanel
         // create the basic props panel
 
         // initialise the fields
-        nameField = createTextField();
+        nameField = new DefaultTextField();
         nameField.setName("nameField");
-        passwordField = createPasswordField();
+        passwordField = new DefaultPasswordField();
         passwordField.setName("passwordField");
-        hostField = createTextField();
+        hostField = new DefaultTextField();
         hostField.setName("hostField");
-        portField = createNumberTextField();
+        portField = new DefaultNumberTextField();
         portField.setName("portField");
         sourceField = createMatchedWidthTextField();
         sourceField.setName("sourceField");
-        userField = createTextField();
+        userField = new DefaultTextField();
         userField.setName("userField");
 
         hostField.setText("localhost");

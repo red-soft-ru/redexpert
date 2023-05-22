@@ -4,6 +4,9 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.sql.sqlbuilder.Field;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
@@ -33,50 +36,88 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     @Override
-    protected String queryForInfo() {
-        return "select * from SEC$USERS where SEC$USER_NAME = ?";
+    protected String getFieldName() {
+        return "USER_NAME";
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet result) throws SQLException {
-        if (result.next()) {
-            try {
-                setFirstName(result.getString(2).trim());
-            } catch (NullPointerException e) {
-                setFirstName("");
-            }
-            try {
-                setMiddleName(result.getString(3).trim());
-            } catch (NullPointerException e) {
-                setMiddleName("");
-            }
-            try {
-                setLastName(result.getString(4).trim());
-            } catch (NullPointerException e) {
-                setLastName("");
-            }
-            try {
-                setActive(result.getBoolean(5));
-            } catch (NullPointerException e) {
-                setActive(false);
-            }
-            try {
-                setAdministrator(result.getBoolean(6));
-            } catch (NullPointerException e) {
-                setAdministrator(false);
-            }
-            try {
-                setComment(result.getString(7));
-            } catch (NullPointerException e) {
-                setComment("");
-            }
-            try {
-                setPlugin(result.getString(8).trim());
-            } catch (NullPointerException e) {
-                setPlugin("");
-            }
-        }
+    protected Table getMainTable() {
+        return Table.createTable("SEC$USERS", "U");
     }
+
+    protected Field getObjectField() {
+        return Field.createField(getMainTable(), getFieldName()).setName("SEC$" + getFieldName());
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        Table table = getMainTable();
+        sb.appendTable(table);
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
+    }
+
+    @Override
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        return commonBuilder;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        try {
+            setFirstName(rs.getString(2).trim());
+        } catch (NullPointerException e) {
+            setFirstName("");
+        }
+        try {
+            setMiddleName(rs.getString(3).trim());
+        } catch (NullPointerException e) {
+            setMiddleName("");
+        }
+        try {
+            setLastName(rs.getString(4).trim());
+        } catch (NullPointerException e) {
+            setLastName("");
+        }
+        try {
+            setActive(rs.getBoolean(5));
+        } catch (NullPointerException e) {
+            setActive(false);
+        }
+        try {
+            setAdministrator(rs.getBoolean(6));
+        } catch (NullPointerException e) {
+            setAdministrator(false);
+        }
+        try {
+            setComment(rs.getString(7));
+        } catch (NullPointerException e) {
+            setComment("");
+        }
+        try {
+            setPlugin(rs.getString(8).trim());
+        } catch (NullPointerException e) {
+            setPlugin("");
+        }
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
+    }
+
 
     @Override
     public int getType() {

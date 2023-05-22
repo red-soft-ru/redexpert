@@ -21,6 +21,9 @@
 package org.executequery.gui;
 
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
+
+import java.awt.*;
 
 import java.awt.*;
 
@@ -29,11 +32,18 @@ public class DefaultNumberTextField extends NumberTextField {
     public DefaultNumberTextField() {
 
         super();
+        addPopupMenu();
     }
 
     public DefaultNumberTextField(int digits) {
 
         super(digits);
+        addPopupMenu();
+    }
+
+    private void addPopupMenu() {
+
+        new SimpleTextComponentPopUpMenu(this);
     }
 
     public Insets getMargin() {

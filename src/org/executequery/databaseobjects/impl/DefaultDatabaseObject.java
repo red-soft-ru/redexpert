@@ -20,15 +20,15 @@
 
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.tree.TreePanel;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,39 +72,17 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     /**
      * Creates a new instance of DefaultDatabaseObject
      */
+    public DefaultDatabaseObject(DatabaseMetaTag metaTagParent, String metaDataKey) {
+        this(metaTagParent.getHost(), metaDataKey);
+        this.metaTagParent = metaTagParent;
+    }
+
     public DefaultDatabaseObject(DatabaseHost host, String metaDataKey) {
         super(host);
         typeTree = TreePanel.DEFAULT;
         dependObject = null;
         this.metaDataKey = metaDataKey;
         setSystemFlag(false);
-    }
-
-    public DefaultDatabaseObject(DatabaseHost host, String metaDataKey, int typeTree, DatabaseObject dependObject) {
-        this(host, metaDataKey);
-        this.typeTree = typeTree;
-        this.dependObject = dependObject;
-    }
-
-    @Override
-    protected String queryForInfo() {
-
-        String query = "select r.rdb$description as DESCRIPTION\n" +
-                "from rdb$relations r\n" +
-                "where r.rdb$relation_name = ?";
-
-        return query;
-    }
-
-    @Override
-    protected void setInfoFromResultSet(ResultSet rs) {
-        try {
-            if (rs.next())
-                setRemarks(getFromResultSet(rs, "DESCRIPTION"));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public int getTypeTree() {
@@ -152,6 +130,47 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
         }
 
         return null;
+    }
+
+    @Override
+    protected String getFieldName() {
+        return "RELATION_NAME";
+    }
+
+    @Override
+    protected Table getMainTable() {
+        return Table.createTable("RDB$RELATIONS", "R");
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        Table table = getMainTable();
+        sb.appendFields(table, getFieldName(), DESCRIPTION);
+        sb.appendTable(table);
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
     }
 
     @Override

@@ -1,4 +1,39 @@
 --- RedExpert  - RELEASE NOTES -
+Major changes - v2023.05
+----------------------------------------
+Added:
+1.	Scheduler support
+2.	Database metadata comparison
+3.	Jaybird 5 support
+4.	Ability to recompile all views
+5.	Autocomplete for variables and parameters when working with procedures and functions
+6.	Highlighting paired brackets
+7.	Line number and cursor position in each SQL field
+8.	Ability to set font size greater than 16 pt. in the Query Editor
+9.	DDL tab for exceptions
+Fixed:
+1.	The arrangement of elements on the panels for creating and editing objects has been redesigned
+2.	Reduced connection time to the database
+3.	Reduced metadata loading time for object recompilation
+4.	Generation CREATE and ALTER SQL-scripts for some objects
+5.	Error opening triggers, procedures and functions in Firebird
+6.	Memory leaks after closing objects
+7.	Trace parsing
+8.	Parameters were case-sensitive in the Query Editor
+9.	Working with object privileges
+10.	Problem with restarting RedExpert after installing an update on Linux systems
+11.	Incorrect display (spelling) of the keyword "TIME ZONE"
+12.	Behavior of the "Execute" button in the Query Editor (Now when you click on it, the script is executed as a whole block and isn't divided into several queries in accordance with the delimiters. To execute an SQL-script from several queries, you need to use the "Execute SQL-script" button)
+13.	Buttons tooltips in the Query Editor and in the create (edit) table panel
+14.	Error while editing tables foreign keys (the reference table name and its fields were not substituted into SQL-query)
+
+Major changes - v2023.02
+----------------------------------------
+Fixed:
+1. Bug in developer feedback module (request for new features, bug reports, comments)
+2. Clearing a list of triggers on a "Triggers" tab in a table after opening one of them
+3. Restoring to default settings for query editor colors
+
 Major changes - v2023.01
 ----------------------------------------
 Added:

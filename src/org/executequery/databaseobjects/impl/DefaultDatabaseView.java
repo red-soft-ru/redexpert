@@ -26,11 +26,14 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.TokenizingFormatter;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DefaultDatabaseView extends AbstractTableObject
@@ -39,36 +42,67 @@ public class DefaultDatabaseView extends AbstractTableObject
     public DefaultDatabaseView(DatabaseObject object) {
 
         this(object.getHost());
-
+        metaTagParent = ((DefaultDatabaseObject) object).getMetaTagParent();
         setCatalogName(object.getCatalogName());
         setSchemaName(object.getSchemaName());
         setName(object.getName());
     }
 
+    private List<String> fields;
+
     private static final String DESCRIPTION = "DESCRIPTION";
-    private static final String SOURCE = "SOURCE";
+    private static final String SOURCE = "VIEW_SOURCE";
 
-    protected String queryForInfo() {
-
-        String query = "select r.rdb$description as " + DESCRIPTION + ",\n" +
-                "r.rdb$view_source as " + SOURCE + "\n" +
-                "from rdb$relations r\n" +
-                "where r.rdb$relation_name = ?";
-
-        return query;
+    @Override
+    protected String getFieldName() {
+        return "RELATION_NAME";
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) {
-        try {
-            if (rs.next()) {
-                setRemarks(getFromResultSet(rs, DESCRIPTION));
-                setSource(getFromResultSet(rs, SOURCE));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    protected Table getMainTable() {
+        return Table.createTable("RDB$RELATIONS", "R");
+    }
 
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        Table rels = getMainTable();
+        Table rf = Table.createTable("RDB$RELATION_FIELDS", "RF");
+        sb.appendFields(rels, getFieldName(), SOURCE, DESCRIPTION);
+        sb.appendFields(rf, FIELD_NAME);
+        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(getObjectField(), Field.createField(rf, getFieldName())));
+        sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(rf, FIELD_POSITION).getFieldTable());
+        return sb;
+    }
+
+    @Override
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        return super.builderForInfoAllObjects(commonBuilder).appendCondition(Condition.createCondition(Field.createField(getMainTable(), "VIEW_BLR"), "IS", "NOT NULL"));
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        if (first) {
+            setRemarks(getFromResultSet(rs, DESCRIPTION));
+            setSource(getFromResultSet(rs, SOURCE));
+        }
+        fields.add(rs.getString(FIELD_NAME).trim());
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+        fields = new ArrayList<>();
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return true;
     }
 
     public DefaultDatabaseView(DatabaseHost host) {
@@ -160,11 +194,11 @@ public class DefaultDatabaseView extends AbstractTableObject
 
         try {
 
-            List<DatabaseColumn> columns = getColumns();
+            List<String> columns = getFields();
             for (int i = 0, n = columns.size(); i < n; i++) {
 
-                settings += columns.get(i).getName() + " = :" +
-                        toCamelCase(columns.get(i).getName());
+                settings += columns.get(i) + " = :" +
+                        toCamelCase(columns.get(i));
                 if (i < n - 1)
                     settings += ", ";
 
@@ -201,18 +235,19 @@ public class DefaultDatabaseView extends AbstractTableObject
 
         try {
 
-            List<DatabaseColumn> columns = getColumns();
+            List<String> columns = getFields();
             if (columns != null) {
                 fields = "";
 
                 for (int i = 0; i < columns.size(); i++) {
-                    fields += MiscUtils.getFormattedObject(columns.get(i).getName());
+                    fields += MiscUtils.getFormattedObject(columns.get(i));
                     if (i != columns.size() - 1)
                         fields += ", ";
                 }
             }
 
         } catch (Exception ignored) {
+            ignored.printStackTrace();
         }
 
         return fields;
@@ -226,6 +261,10 @@ public class DefaultDatabaseView extends AbstractTableObject
         return true;
     }
 
+    public List<String> getFields() {
+        checkOnReload(fields);
+        return fields;
+    }
 }
 
 

@@ -64,6 +64,8 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
     @Override
     protected void initEdited() {
         reset();
+        if (parent == null)
+            addPrivilegesTab(tabbedPane, exception);
         addCreateSqlTab(exception);
     }
 

@@ -4,6 +4,10 @@ package org.executequery.components.table;
 
 //import sun.swing.DefaultLookup;
 
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.IconManager;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -337,10 +341,19 @@ public class BrowserTableCellRenderer extends JLabel
      */
     protected void setValue(Object value) {
 
-        if (!value.getClass().equals(String.class)) {
+        if (value instanceof Icon) {
             setText("");
             setIcon((Icon) value);
             setHorizontalAlignment(JLabel.CENTER);
+        } else if (value instanceof DatabaseColumn) {
+            setIcon(IconManager.getInstance().getTableColumnIcon(((DatabaseColumn) value)));
+            setText(((NamedObject) value).getName());
+            setHorizontalAlignment(JLabel.LEFT);
+
+        } else if (value instanceof NamedObject) {
+            setIcon(IconManager.getInstance().getIconFromType(((NamedObject) value).getType()));
+            setText(((NamedObject) value).getName());
+            setHorizontalAlignment(JLabel.LEFT);
         } else {
             setIcon(null);
             setText((String) value);

@@ -29,7 +29,8 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     @Override
     protected void initEdited() {
         reset();
-        addPrivilegesTab(tabbedPane);
+        if (parent == null)
+            addPrivilegesTab(tabbedPane, databasePackage);
         addDependenciesTab(databasePackage);
         addCreateSqlTab(databasePackage);
     }

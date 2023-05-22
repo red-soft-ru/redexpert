@@ -191,7 +191,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
     @Override
     public void cleanup() {
-
+        sqlPane.cleanup();
     }
 
     @Override

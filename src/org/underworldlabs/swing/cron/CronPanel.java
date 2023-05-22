@@ -26,7 +26,7 @@ public class CronPanel extends JPanel {
       cronField = new JTextField("* * * * *");
       cronField.setColumns(15);
       windowsSchedulerPanel = new WindowsSchedulerPanel(cronField);
-      advancedCheckBox = new JCheckBox(Bundles.getCommon("Advanced"));
+      advancedCheckBox = new JCheckBox(Bundles.getCommon("advanced"));
       advancedCheckBox.addItemListener(new ItemListener() {
          @Override
          public void itemStateChanged(ItemEvent e) {

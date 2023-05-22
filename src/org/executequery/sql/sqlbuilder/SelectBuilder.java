@@ -3,9 +3,8 @@ package org.executequery.sql.sqlbuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectBuilder {
-
-    public static final String PREFIX = "RDB$";
+public class
+SelectBuilder extends SQLBuilder {
 
     boolean distinct = false;
     List<Table> tables;
@@ -125,7 +124,7 @@ public class SelectBuilder {
         sb.append("SELECT ");
         if (distinct)
             sb.append("DISTINCT ");
-        if (fields != null) {
+        if (fields != null && fields.size() > 0) {
             boolean first = true;
             for (Field field : fields) {
                 if (!first)
@@ -138,8 +137,8 @@ public class SelectBuilder {
                 else sb.append(field.getFieldTable());
                 sb.append(" AS ").append(field.alias);
             }
-            sb.append("\n");
-        }
+        } else sb.append("*");
+        sb.append("\n");
         sb.append("FROM ");
         if (tables != null) {
             boolean first = true;
@@ -201,6 +200,10 @@ public class SelectBuilder {
         return sb.toString();
 
 
+    }
+
+    public String toString() {
+        return getSQLQuery();
     }
 
 }

@@ -2,6 +2,8 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
@@ -11,7 +13,7 @@ import java.sql.SQLException;
 /**
  * Created by vasiliy on 02.02.17.
  */
-public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
+public class DefaultDatabaseRole extends AbstractDatabaseObject {
     public String name;
 
     public DefaultDatabaseRole(DatabaseMetaTag metaTagParent, String name) {
@@ -39,23 +41,44 @@ public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
     }
 
     @Override
-    protected String queryForInfo() {
-
-        String query = "select r.rdb$description as DESCRIPTION\n" +
-                "from rdb$roles r\n" +
-                "where r.rdb$role_name = ?'";
-
-        return query;
+    protected String getFieldName() {
+        return "ROLE_NAME";
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        try {
-            if (rs.next())
-                setRemarks(getFromResultSet(rs, "DESCRIPTION"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    protected Table getMainTable() {
+        return Table.createTable("RDB$ROLES", "R");
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder();
+        Table table = getMainTable();
+        sb.appendFields(table, getFieldName(), DESCRIPTION);
+        sb.appendTable(table);
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
     }
 
     @Override

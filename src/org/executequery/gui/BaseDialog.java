@@ -133,6 +133,7 @@ public class BaseDialog extends AbstractBaseDialog
         if (contentPanel instanceof ActiveComponent) {
             ((ActiveComponent) contentPanel).cleanup();
         }
+        cleanupComponent(contentPanel);
         contentPanel = null;
         GUIUtilities.deregisterDialog(this);
         GUIUtils.scheduleGC();

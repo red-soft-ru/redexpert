@@ -3,21 +3,25 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
+import org.executequery.sql.sqlbuilder.Field;
+import org.executequery.sql.sqlbuilder.LeftJoin;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by vasiliy on 15.02.17.
@@ -271,13 +275,23 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     @Override
-    protected String queryForInfo() {
+    protected String getFieldName() {
+        return "INDEX_NAME";
+    }
 
+    @Override
+    protected Table getMainTable() {
+        return Table.createTable("RDB$INDICES", "I");
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
         SelectBuilder sb = new SelectBuilder();
-        Table indicies = Table.createTable("RDB$INDICES", "I");
+        Table indicies = getMainTable();
         Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
         Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT");
 
+        sb.appendField(Field.createField(indicies, getFieldName()));
         sb.appendField(Field.createField(indicies, RELATION_NAME));
         sb.appendField(Field.createField(indicies, INDEX_TYPE));
         sb.appendField(Field.createField(indicies, UNIQUE_FLAG));
@@ -286,53 +300,55 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         sb.appendField(Field.createField(indicies, EXPRESSION_SOURCE));
         sb.appendField(Field.createField(indicies, DESCRIPTION));
         sb.appendField(Field.createField(indicies, CONDITION_SOURCE).setNull(getDatabaseMajorVersion() < 5));
-        sb.appendField(Field.createField(indicies, TABLESPACE_NAME).setNull(!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase")
-                || getDatabaseMajorVersion() < 4));
+        sb.appendField(Field.createField(indicies, TABLESPACE_NAME).setNull(!tablespaceCheck()));
         sb.appendField(Field.createField(constraints, CONSTRAINT_TYPE));
         sb.appendField(Field.createField(indexSegments, FIELD_NAME));
         sb.appendField(Field.createField(indexSegments, FIELD_POSITION));
         Field indexName = Field.createField(indicies, "INDEX_NAME");
         sb.appendJoin(LeftJoin.createLeftJoin().appendFields(indexName, Field.createField(constraints, indexName.getAlias())));
         sb.appendJoin(LeftJoin.createLeftJoin().appendFields(indexName, Field.createField(indexSegments, indexName.getAlias())));
-
-        sb.appendCondition(Condition.createCondition(indexName, "=", "?"));
-        sb.setOrdering(Field.createField(indexSegments, FIELD_POSITION).getFieldTable());
-
-        return sb.getSQLQuery();
+        sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(indexSegments, FIELD_POSITION).getFieldTable());
+        return sb;
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) {
-        try {
-            boolean first = true;
-            List<DefaultDatabaseIndex.DatabaseIndexColumn> columns = new ArrayList<>();
-            while (rs.next()) {
-                if (first) {
-                    setTableName(getFromResultSet(rs, RELATION_NAME));
-                    setIndexType(rs.getInt(INDEX_TYPE));
-                    setActive(rs.getInt(INDEX_INACTIVE) != 1);
-                    setUnique(rs.getInt(UNIQUE_FLAG) == 1);
-                    setRemarks(getFromResultSet(rs, DESCRIPTION));
-                    setConstraint_type(getFromResultSet(rs, CONSTRAINT_TYPE));
-                    setExpression(getFromResultSet(rs, EXPRESSION_SOURCE));
-                    setTablespace(getFromResultSet(rs, TABLESPACE_NAME));
-                    setCondition(getFromResultSet(rs, CONDITION_SOURCE));
-                }
-                first = false;
-                DefaultDatabaseIndex.DatabaseIndexColumn column = new DefaultDatabaseIndex.DatabaseIndexColumn();
-                String name = rs.getString(FIELD_NAME);
-                if (name != null)
-                    column.setFieldName(name.trim());
-                column.setSelectivity(rs.getDouble(STATISTICS));
-                column.setFieldPosition(rs.getInt(FIELD_POSITION));
-                columns.add(column);
-            }
-            setIndexColumns(columns);
-
-        } catch (Exception e) {
-            e.printStackTrace();
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        if (first) {
+            setTableName(getFromResultSet(rs, RELATION_NAME));
+            setIndexType(rs.getInt(INDEX_TYPE));
+            setActive(rs.getInt(INDEX_INACTIVE) != 1);
+            setUnique(rs.getInt(UNIQUE_FLAG) == 1);
+            setRemarks(getFromResultSet(rs, DESCRIPTION));
+            setConstraint_type(getFromResultSet(rs, CONSTRAINT_TYPE));
+            setExpression(getFromResultSet(rs, EXPRESSION_SOURCE));
+            setTablespace(getFromResultSet(rs, TABLESPACE_NAME));
+            setCondition(getFromResultSet(rs, CONDITION_SOURCE));
         }
+        DefaultDatabaseIndex.DatabaseIndexColumn column = new DefaultDatabaseIndex.DatabaseIndexColumn();
+        String name = rs.getString(FIELD_NAME);
+        if (name != null)
+            column.setFieldName(name.trim());
+        column.setSelectivity(rs.getDouble(STATISTICS));
+        column.setFieldPosition(rs.getInt(FIELD_POSITION));
+        columns.add(column);
+        return null;
     }
+
+    @Override
+    public void prepareLoadingInfo() {
+        columns = new ArrayList<>();
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return true;
+    }
+
 
     @Override
     public int getType() {

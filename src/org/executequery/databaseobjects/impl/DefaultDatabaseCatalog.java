@@ -111,15 +111,6 @@ public class DefaultDatabaseCatalog extends AbstractDatabaseSource
     }
 
     /**
-     * Returns the tables belonging to this source.
-     *
-     * @return the hosted tables
-     */
-    public List<NamedObject> getTables() throws DataSourceException {
-        return getHost().getTables(getName(), null, "TABLE");
-    }
-
-    /**
      * Returns the database object type.
      *
      * @return the object type

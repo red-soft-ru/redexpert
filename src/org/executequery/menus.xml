@@ -416,7 +416,8 @@
 
         <menu-item id="scratch-pad-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
+        <menu-item id="manage-shortcuts-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <menu-item id="user-keywords-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <menu-item id="user-manager-command"

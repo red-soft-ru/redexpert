@@ -20,7 +20,10 @@
 
 package org.underworldlabs.swing.util;
 
+import org.underworldlabs.swing.plaf.SVGImage;
+
 import javax.swing.*;
+import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +56,15 @@ public class IconUtilities {
         return loadIcon(name, false);
     }
 
+    public static ImageIcon loadIcon(String name, int iconSize) {
+        return loadIcon(name, false, iconSize, iconSize);
+    }
+
     public static ImageIcon loadIcon(String name, boolean store) {
+        return loadIcon(name, store, -1, -1);
+    }
+
+    public static ImageIcon loadIcon(String name, boolean store, int width, int height) {
         ImageIcon icon = null;
 
         if (icons.containsKey(name)) {
@@ -64,7 +75,18 @@ public class IconUtilities {
 
             URL url = IconUtilities.class.getResource(name);
             if (url != null) {
-                icon = new ImageIcon(url);
+                if (url.getPath().endsWith(".svg")) {
+                    try {
+                        BufferedImage image = SVGImage.fromSvg(url, width, height);
+                        icon = new ImageIcon(image);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                } else
+                    icon = new ImageIcon(url);
+
             }
             // try the default resource path
             else {

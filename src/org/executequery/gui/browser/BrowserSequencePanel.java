@@ -87,7 +87,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         descPanel.setLayout(new BorderLayout());
         descPanel.add(descriptionPane);
         DatabaseObjectNode don = getDatabaseObjectNode();
-        addPrivilegesTab(tabs);
+        //addPrivilegesTab(tabs);
         tabs.add(Bundles.getCommon("description"), descPanel);
 
         JPanel sqlPanel = new JPanel(new BorderLayout());
@@ -158,7 +158,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
     @Override
     public void cleanup() {
-
+        sqlPane.cleanup();
     }
 
     @Override

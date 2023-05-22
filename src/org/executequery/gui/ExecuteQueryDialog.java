@@ -509,7 +509,7 @@ public class ExecuteQueryDialog extends BaseDialog {
                     nameOperation = "DROP " + q.getMetaName();
                     break;
                 case QueryTypes.COMMENT:
-                    nameOperation = "ADD DESCRIPTION";
+                    nameOperation = "ADD COMMENT";
                     break;
                 case QueryTypes.CREATE_OBJECT:
                     nameOperation = "CREATE " + q.getMetaName();

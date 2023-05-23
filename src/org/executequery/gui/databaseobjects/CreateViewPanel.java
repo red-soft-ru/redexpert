@@ -140,20 +140,16 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
     @Override
     protected String generateQuery() {
 
-        String fields = null;
         String query = "";
 
+        StringBuilder fields = new StringBuilder();
         try {
 
             List<DatabaseColumn> columns = view.getColumns();
             if (columns != null) {
-                fields = "";
-
-                for (int i = 0; i < columns.size(); i++) {
-                    fields += " " + MiscUtils.getFormattedObject(columns.get(i).getName());
-                    if (i != columns.size() - 1)
-                        fields += ",\n";
-                }
+                for (DatabaseColumn column : columns)
+                    fields.append(" ").append(MiscUtils.getFormattedObject(column.getName())).append(", ");
+                fields.deleteCharAt(fields.lastIndexOf(","));
             }
 
         } catch (Exception ignored) {
@@ -161,11 +157,8 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
 
         try {
 
-            String selectStatement = "SELECT _fields_ FROM _table_ WHERE _conditions_";
-            if (view != null)
-                selectStatement = view.getSource();
-
-            query = SQLUtils.generateCreateView(nameField.getText(), fields, selectStatement,
+            String selectStatement = (view != null) ? view.getSource() : "SELECT _fields_ FROM _table_ WHERE _conditions_";
+            query = SQLUtils.generateCreateView(nameField.getText(), fields.toString(), selectStatement,
                     simpleCommentPanel.getComment(), getDatabaseVersion(), editing);
 
         } catch (Exception e) {

@@ -9,74 +9,19 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public abstract class AbstractToolBarForTableIndexes extends JPanel {
-    private final String toolTipInsert;
-    private final String toolTipDelete;
-    private final String toolTipRefresh;
-    private final String toolTipReselectivityAllIndicies;
+public abstract class AbstractToolBarForTableIndexes extends AbstractToolBarForTable {
+    private final String toolTipReselectivityAllIndexes;
 
-    public AbstractToolBarForTableIndexes(String toolTipInsert, String toolTipDelete, String toolTipRefresh, String toolTipReselectivityAllIndicies) {
-        this.toolTipInsert = toolTipInsert;
-        this.toolTipDelete = toolTipDelete;
-        this.toolTipRefresh = toolTipRefresh;
-        this.toolTipReselectivityAllIndicies = toolTipReselectivityAllIndicies;
-        init();
+    public AbstractToolBarForTableIndexes(String toolTipInsert, String toolTipDelete, String toolTipRefresh, String toolTipReselectivityAllIndexes) {
+        super(toolTipInsert, toolTipDelete, toolTipRefresh);
+        this.toolTipReselectivityAllIndexes = toolTipReselectivityAllIndexes;
+        RolloverButton reselectivityAllIndexes = new RolloverButton();
+        reselectivityAllIndexes.setIcon(GUIUtilities.loadIcon("reselectivityAllIndicies16.png"));
+        reselectivityAllIndexes.setToolTipText(toolTipReselectivityAllIndexes);
+        reselectivityAllIndexes.addActionListener(this::reselectivity);
+        bar.add(reselectivityAllIndexes);
     }
 
-    private void init() {
-        setLayout(new GridBagLayout());
-        PanelToolBar bar = new PanelToolBar();
-        RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
-        addRolloverButton.setToolTipText(toolTipInsert);
-        addRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                insert(actionEvent);
-            }
-        });
-        bar.add(addRolloverButton);
-        RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
-        deleteRolloverButton.setToolTipText(toolTipDelete);
-        deleteRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                delete(actionEvent);
-            }
-        });
-        bar.add(deleteRolloverButton);
-        RolloverButton refreshRolloverButton = new RolloverButton();
-        refreshRolloverButton.setIcon(GUIUtilities.loadIcon("Refresh16.png"));
-        refreshRolloverButton.setToolTipText(toolTipRefresh);
-        refreshRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                refresh(actionEvent);
-            }
-        });
-        bar.add(refreshRolloverButton);
-        RolloverButton reselectivityAllIndiciesRolloverButton = new RolloverButton();
-        reselectivityAllIndiciesRolloverButton.setIcon(GUIUtilities.loadIcon("reselectivityAllIndicies16.png"));
-        reselectivityAllIndiciesRolloverButton.setToolTipText(toolTipRefresh);
-        reselectivityAllIndiciesRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                reselectivityAllIndicies(actionEvent);
-            }
-        });
-        bar.add(reselectivityAllIndiciesRolloverButton);
-        GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
-                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
-        add(bar, gbc3);
-    }
-
-    public abstract void insert(ActionEvent e);
-
-    public abstract void delete(ActionEvent e);
-
-    public abstract void refresh(ActionEvent e);
-
-    public abstract void reselectivityAllIndicies(ActionEvent e);
+    public abstract void reselectivity(ActionEvent e);
 
 }

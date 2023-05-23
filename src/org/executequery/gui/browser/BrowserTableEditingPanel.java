@@ -62,7 +62,6 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumnModel;
-import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.Printable;
@@ -1221,21 +1220,16 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     }
 
-    public void reselectivityAll(){
-        DatabaseConnection dc = getDatabaseConnection();
-        DatabaseObjectNode databaseObjectNode = new DatabaseObjectNode();
-        if (databaseObjectNode != null)
-            if (databaseObjectNode.getType() != NamedObject.META_TAG)
-                databaseObjectNode = (DatabaseObjectNode) databaseObjectNode.getParent();
-        if (databaseObjectNode != null && GUIUtilities.displayConfirmDialog(bundledString("recompute-message")) == JOptionPane.YES_OPTION) {
-            StringBuilder sb = new StringBuilder();
-            for (DatabaseObjectNode node : databaseObjectNode.getChildObjects()) {
-                sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName())).append(";\n");
-                node.getDatabaseObject().reset();
-            }
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), sb.toString(), dc, true, ";", true, false);
-            eqd.display();
+    public void reselectivityAllIndexes() {
+        DatabaseConnection dc = table.getHost().getDatabaseConnection();
+        StringBuilder sb = new StringBuilder();
+        List<DefaultDatabaseIndex> indexes = table.getIndexes();
+        for (DefaultDatabaseIndex node : indexes) {
+            sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName())).append(";\n");
+            node.reset();
         }
+        ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), sb.toString(), dc, true, ";", true, false);
+        eqd.display();
     }
 
     public void setSQLText() {
@@ -1402,7 +1396,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         bar.add(addRolloverButton);
         RolloverButton deleteRolloverButton = new RolloverButton();
         deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
-        deleteRolloverButton.setToolTipText("Delete column");
+        deleteRolloverButton.setToolTipText("Delete constraint");
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -1446,7 +1440,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     private void createButtonsEditingIndexesPanel() {
-        buttonsEditingIndexesPanel = new AbstractToolBarForTableIndexes("Create Index", "Delete Index", "Refresh", "Reselectivity All Indicies") {
+        buttonsEditingIndexesPanel = new AbstractToolBarForTableIndexes("Create Index", "Delete Index", "Refresh", "Reselectivity") {
+
             @Override
             public void insert(ActionEvent e) {
                 insertAfter();
@@ -1464,8 +1459,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 loadIndexes();
             }
 
-            public void reselectivityAllIndicies(ActionEvent e){
-                reselectivityAll();
+            @Override
+            public void reselectivity(ActionEvent e) {
+                reselectivityAllIndexes();
             }
         };
 

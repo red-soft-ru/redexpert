@@ -11,20 +11,21 @@ import java.awt.event.ActionListener;
 
 public abstract class AbstractToolBarForTable extends JPanel {
 
-    private final String toolTipInsert;
-    private final String toolTipDelete;
-    private final String toolTipRefresh;
+    protected PanelToolBar bar;
+    protected String toolTipInsert;
+    protected String toolTipDelete;
+    protected String toolTipRefresh;
 
     public AbstractToolBarForTable(String toolTipInsert, String toolTipDelete, String toolTipRefresh) {
+        bar = new PanelToolBar();
         this.toolTipInsert = toolTipInsert;
         this.toolTipDelete = toolTipDelete;
         this.toolTipRefresh = toolTipRefresh;
         init();
     }
 
-    private void init() {
+    protected void init() {
         setLayout(new GridBagLayout());
-        PanelToolBar bar = new PanelToolBar();
         RolloverButton addRolloverButton = new RolloverButton();
         addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
         addRolloverButton.setToolTipText(toolTipInsert);

@@ -20,6 +20,8 @@
 
 package org.executequery.gui.browser;
 
+import com.github.vertical_blank.sqlformatter.SqlFormatter;
+import com.github.vertical_blank.sqlformatter.languages.Dialect;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -41,7 +43,6 @@ import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
-import org.executequery.sql.SQLFormatter;
 import org.underworldlabs.Constants;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
@@ -437,9 +438,9 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     }
 
     private void formatSql() {
-        if (StringUtils.isNotEmpty(sqlTextPanel.getSQLText())) {
-            String sqlText = sqlTextPanel.getSQLText();
-            sqlTextPanel.setSQLText(new SQLFormatter(sqlText).format());
+        String sqlText = sqlTextPanel.getSQLText();
+        if (StringUtils.isNotEmpty(sqlText)) {
+            sqlTextPanel.setSQLText(SqlFormatter.of(Dialect.StandardSql).format(sqlText));
         }
     }
 

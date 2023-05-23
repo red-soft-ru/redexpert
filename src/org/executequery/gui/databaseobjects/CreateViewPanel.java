@@ -1,5 +1,7 @@
 package org.executequery.gui.databaseobjects;
 
+import com.github.vertical_blank.sqlformatter.SqlFormatter;
+import com.github.vertical_blank.sqlformatter.languages.Dialect;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -11,7 +13,6 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
-import org.executequery.sql.SQLFormatter;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
@@ -193,7 +194,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
     private void formatSql() {
         String sqlText = sqlTextPanel.getSQLText();
         if (StringUtils.isNotEmpty(sqlText))
-            sqlTextPanel.setSQLText(new SQLFormatter(sqlText).format());
+            sqlTextPanel.setSQLText(SqlFormatter.of(Dialect.StandardSql).format(sqlText));
     }
 
     // --- KeyListener ---

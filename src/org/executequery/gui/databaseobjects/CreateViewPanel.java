@@ -186,7 +186,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
 
     private void changeComment() {
 
-        String sqlText = sqlTextPanel.getSQLText().trim().replaceAll("\nCOMMENT ON VIEW \"?.*\"? IS '.*';", "") +
+        String sqlText = sqlTextPanel.getSQLText().trim().replaceAll("COMMENT ON VIEW \"?.*\"? IS '.*';", "") +
                 SQLUtils.generateComment(nameField.getText(), "VIEW", simpleCommentPanel.getComment().trim(), ";", false);
         sqlTextPanel.setSQLText(sqlText);
     }

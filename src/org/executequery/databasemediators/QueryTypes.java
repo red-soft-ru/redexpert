@@ -178,6 +178,9 @@ public final class QueryTypes {
             case QueryTypes.ALTER_OBJECT:
                 rText = metaName + " " + objectName + " altered";
                 break;
+            case QueryTypes.SET_STATISTICS:
+                rText = "Statement executed successfully.";
+                break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:
                 if (result > -1) {

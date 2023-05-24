@@ -424,8 +424,7 @@ public class ErdViewerPanel extends DefaultTabView
                 lastWidth = width;
 
             // add to the vector
-            tables.add(table);
-            table.setTitleBarBgColor((tables.size() - 1) % TITLE_COLORS.length);
+            addTableToList(table);
 
 
         }
@@ -749,8 +748,7 @@ public class ErdViewerPanel extends DefaultTabView
             if (table.getTableName().contentEquals(newTable.getTableName()))
                 return false;
         }
-        tables.add(newTable);
-        newTable.setTitleBarBgColor((tables.size() - 1) % TITLE_COLORS.length);
+        addTableToList(newTable);
 
         // place the new table in the center of the canvas
         newTable.setBounds((layeredPane.getWidth() - newTable.getWidth()) / 2,
@@ -1017,8 +1015,7 @@ public class ErdViewerPanel extends DefaultTabView
             table.setTableBackground(fileData[i].getTableBackground());
 
             layeredPane.add(table);
-            tables.add(table);
-            table.setTitleBarBgColor(tables.size() - 1 % TITLE_COLORS.length);
+            addTableToList(table);
             table.toFront();
         }
 
@@ -1056,6 +1053,13 @@ public class ErdViewerPanel extends DefaultTabView
         dependsPanel.setTableDependencies(buildTableRelationships());
         resizeCanvas();
         layeredPane.validate();
+    }
+
+    void addTableToList(ErdTable table) {
+        if (table == null)
+            tables = new Vector<>();
+        tables.add(table);
+        table.setTitleBarBgColor((tables.size() - 1) % TITLE_COLORS.length);
     }
 
     public boolean hasOpenFile() {

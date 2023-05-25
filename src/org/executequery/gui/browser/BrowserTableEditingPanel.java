@@ -25,17 +25,17 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
-import org.executequery.gui.BaseDialog;
-import org.executequery.gui.DefaultPanelButton;
-import org.executequery.gui.DefaultTable;
-import org.executequery.gui.ExecuteQueryDialog;
+import org.executequery.gui.*;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
+import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
@@ -48,6 +48,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.executequery.toolbars.AbstractToolBarForTable;
+import org.executequery.toolbars.AbstractToolBarForTableIndexes;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -1219,6 +1220,18 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     }
 
+    public void reselectivityAllIndexes() {
+        DatabaseConnection dc = table.getHost().getDatabaseConnection();
+        StringBuilder sb = new StringBuilder();
+        List<DefaultDatabaseIndex> indexes = table.getIndexes();
+        for (DefaultDatabaseIndex node : indexes) {
+            sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName())).append(";\n");
+            node.reset();
+        }
+        ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), sb.toString(), dc, true, ";", true, false);
+        eqd.display();
+    }
+
     public void setSQLText() {
 
         sbTemp.setLength(0);
@@ -1383,7 +1396,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         bar.add(addRolloverButton);
         RolloverButton deleteRolloverButton = new RolloverButton();
         deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
-        deleteRolloverButton.setToolTipText("Delete column");
+        deleteRolloverButton.setToolTipText("Delete constraint");
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -1427,7 +1440,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     private void createButtonsEditingIndexesPanel() {
-        buttonsEditingIndexesPanel = new AbstractToolBarForTable("Create Index", "Delete Index", "Refresh") {
+        buttonsEditingIndexesPanel = new AbstractToolBarForTableIndexes("Create Index", "Delete Index", "Refresh", "Reselectivity") {
+
             @Override
             public void insert(ActionEvent e) {
                 insertAfter();
@@ -1443,6 +1457,11 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 if (table instanceof DefaultDatabaseTable)
                     ((DefaultDatabaseTable) table).clearIndexes();
                 loadIndexes();
+            }
+
+            @Override
+            public void reselectivity(ActionEvent e) {
+                reselectivityAllIndexes();
             }
         };
 
@@ -1486,6 +1505,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             e.printStackTrace();
         }
         return true;
+    }
+
+    public static String bundledString(String key) {
+        return Bundles.get(BrowserTableEditingPanel.class, key);
     }
 
 }

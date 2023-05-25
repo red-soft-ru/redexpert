@@ -317,7 +317,10 @@ public final class DerivedQuery {
 
             type = QueryTypes.SET_AUTODDL_OFF;
 
-        } else {
+        } else if (query.indexOf("SET STATISTICS") == 0){
+            type = QueryTypes.SET_STATISTICS;
+        }
+        else {
 
             type = QueryTypes.UNKNOWN;
         }

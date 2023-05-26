@@ -39,6 +39,7 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.print.Printable;
@@ -91,10 +92,12 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         addSeparator();
         add(create(bundleString("SelectRow"), "selectRow"));
         add(create(bundleString("SelectColumn"), "selectColumn"));
-
+        JMenuItem menuItem = create(bundleString("AutoWidthForCols"), "autoWidthForCols");
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, KeyEvent.CTRL_DOWN_MASK));
+        add(menuItem);
         if (resultSetTableContainer.isTransposeAvailable()) {
 
-            add(create("Transpose Row", "transposeRow"));
+            add(create(bundleString("TransposeRow"), "transposeRow"));
         }
         addSeparator();
         add(create(bundleString("SetNull"), "setNull"));
@@ -118,6 +121,18 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     public void setLastPopupPoint(Point lastPopupPoint) {
 
         this.lastPopupPoint = lastPopupPoint;
+    }
+
+    public void autoWidthForCols(ActionEvent e) {
+        if(table.getAutoResizeMode()!=JTable.AUTO_RESIZE_ALL_COLUMNS) {
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            ((JMenuItem)e.getSource()).setText(bundleString("ColumnWidthByContent"));
+        }
+        else {
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            ((JMenuItem)e.getSource()).setText(bundleString("AutoWidthForCols"));
+        }
+
     }
 
     public void setNull(ActionEvent e) {

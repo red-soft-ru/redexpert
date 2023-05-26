@@ -20,6 +20,7 @@ import java.util.EventObject;
 public class DateTimeCellEditor extends AbstractCellEditor implements TableCellEditor, TableCellRenderer {
 
     private boolean autoAdjustMinimumTableRowHeight;
+    private final boolean autoAdjustMinimumTableColWidth;
     public int clickCountToEdit;
     private boolean matchTableBackgroundColor;
     private boolean matchTableSelectionBackgroundColor;
@@ -27,13 +28,16 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
     private final Border borderUnfocusedCell;
     private final EQDateTimePicker dateTimePicker;
     private final int minimumRowHeightInPixels;
+    private final int minimumColWidthInPixels;
+
 
     public DateTimeCellEditor() {
         this(true, true, true);
     }
 
     public DateTimeCellEditor(boolean autoAdjustMinimumTableRowHeight, boolean matchTableBackgroundColor, boolean matchTableSelectionBackgroundColor) {
-        this.autoAdjustMinimumTableRowHeight = true;
+        this.autoAdjustMinimumTableRowHeight =true;
+        this.autoAdjustMinimumTableColWidth = true;
         this.clickCountToEdit = 1;
         this.matchTableBackgroundColor = true;
         this.matchTableSelectionBackgroundColor = true;
@@ -44,6 +48,8 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
         this.borderFocusedCell = exampleDefaultRenderer.getBorder();
         this.borderUnfocusedCell = new EmptyBorder(1, 1, 1, 1);
         this.dateTimePicker = new EQDateTimePicker();
+        dateTimePicker.setVisibleNullBox(true);
+        dateTimePicker.setVisibleTimeZone(true);
         this.dateTimePicker.setBorder(this.borderUnfocusedCell);
         this.dateTimePicker.setBackground(Color.white);
         this.dateTimePicker.datePicker.setBackground(Color.white);
@@ -54,6 +60,8 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
         dateSettings.setSizeTextFieldMinimumWidthDefaultOverride(false);
         dateSettings.setSizeTextFieldMinimumWidth(Integer.valueOf(20));
         this.minimumRowHeightInPixels = this.dateTimePicker.getPreferredSize().height + 1;
+        this.minimumColWidthInPixels = this.dateTimePicker.getPreferredSize().width + 1
+        ;
     }
 
     public Object getCellEditorValue() {
@@ -80,6 +88,7 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         this.setCellEditorValue(value);
         this.zAdjustTableRowHeightIfNeeded(table);
+        this.zAdjustTableColWidthIfNeeded(table,column);
         this.dateTimePicker.datePicker.getComponentDateTextField().setScrollOffset(0);
         this.dateTimePicker.timePicker.setMinimumSize(new Dimension(0, 0));
         return this.dateTimePicker;
@@ -121,6 +130,7 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
         }
 
         this.zAdjustTableRowHeightIfNeeded(table);
+        this.zAdjustTableColWidthIfNeeded(table,column);
         this.dateTimePicker.datePicker.getComponentDateTextField().setScrollOffset(0);
         return this.dateTimePicker;
     }
@@ -178,6 +188,16 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
         if (this.autoAdjustMinimumTableRowHeight) {
             if (table.getRowHeight() < this.minimumRowHeightInPixels) {
                 table.setRowHeight(this.minimumRowHeightInPixels);
+            }
+
+        }
+    }
+
+    private void zAdjustTableColWidthIfNeeded(JTable table,int col) {
+        if (this.autoAdjustMinimumTableColWidth) {
+            if (table.getColumnModel().getColumn(col).getWidth() < this.minimumColWidthInPixels) {
+                table.getColumnModel().getColumn(col).setWidth(this.minimumColWidthInPixels);
+                table.getColumnModel().getColumn(col).setPreferredWidth(this.minimumColWidthInPixels);
             }
 
         }

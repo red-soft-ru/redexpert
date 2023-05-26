@@ -1209,6 +1209,7 @@ public class TableDataTab extends JPanel
         }
 
         table.applyUserPreferences();
+        table.setTableColumnWidthFromContents();
         table.setCellSelectionEnabled(false);
 
         tableModel.setMaxRecords(SystemProperties.getIntProperty("user", "browser.max.records"));

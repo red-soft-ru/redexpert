@@ -676,6 +676,7 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.SMALLINT:
                 return smallintCellEditor;
             case Types.DATE:
+                //setTableColumnWidth();
                 return dateEditor;
             case Types.TIMESTAMP:
                 dateTimeCellEditor.getDateTimePicker().setVisibleTimeZone(false);
@@ -723,6 +724,32 @@ public class ResultSetTable extends JTable implements StandardTable {
                 col.setPreferredWidth(columnWidth);
             }
 
+        }
+    }
+
+    public void setTableColumnWidthFromContents() {
+            if(getModel() instanceof ResultSetTableModel) {
+                ResultSetTableModel tableModel = (ResultSetTableModel) getModel();
+                setColWidthFromContents(tableModel);
+            } else if(getModel() instanceof TableSorter)
+            {
+                if(((TableSorter) getModel()).getTableModel() instanceof ResultSetTableModel)
+                {
+                    ResultSetTableModel tableModel = (ResultSetTableModel) ((TableSorter) getModel()).getTableModel();
+                    setColWidthFromContents(tableModel);
+                }
+            }
+    }
+
+    private void setColWidthFromContents(ResultSetTableModel tableModel)
+    {
+        TableColumnModel tcm = getColumnModel();
+        TableColumn col = null;
+        for (int i=0;i<tcm.getColumnCount();i++ ) {
+            ResultSetColumnHeader header = tableModel.getColumnHeaders().get(i);
+            col = tcm.getColumn(i);
+            col.setWidth(header.getColWidth());
+            col.setPreferredWidth(header.getColWidth());
         }
     }
 

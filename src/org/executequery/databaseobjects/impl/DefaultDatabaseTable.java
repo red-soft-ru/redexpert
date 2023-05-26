@@ -198,7 +198,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
      * @return the column constraints
      */
     @Override
-    public List<ColumnConstraint> getConstraints() throws DataSourceException {
+    public synchronized List<ColumnConstraint> getConstraints() throws DataSourceException {
 
         if (constraints == null) {
             if (getColumns() != null) {

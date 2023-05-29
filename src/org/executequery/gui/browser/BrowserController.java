@@ -159,35 +159,19 @@ public class BrowserController {
      */
     protected void checkBrowserPanel() {
 
-        // check we have the browser view panel
-//        if (viewPanel == null) {
-//
-//            viewPanel = new BrowserViewPanel(this);
-//        }
-
         // check the panel is in the pane
         if (viewPanel == null)
             viewPanel = new BrowserViewPanel(this);
-        String title = viewPanel.getNameObject();
-        if (title == null)
-            title = BrowserViewPanel.TITLE;
+
+        String title = (viewPanel.getNameObject() != null) ? viewPanel.getNameObject() : BrowserViewPanel.TITLE;
         JPanel _viewPanel = GUIUtilities.getCentralPane(title);
 
         if (_viewPanel == null) {
-
-            GUIUtilities.addCentralPane(title,
-                    BrowserViewPanel.FRAME_ICON,
-                    viewPanel,
-                    title,
-                    true);
+            GUIUtilities.addCentralPane(title, BrowserViewPanel.FRAME_ICON, viewPanel, title, true);
             ConnectionHistory.add(viewPanel.getCurrentView());
 
-        } else {
-
+        } else
             GUIUtilities.setSelectedCentralPane(title);
-        }
-        if (viewPanel.getCurrentView() != null)
-            viewPanel = null;
 
     }
 
@@ -256,35 +240,45 @@ public class BrowserController {
      */
 
 
-   /** This void has been moved in BrowserTreePopupMenuActionListener */
+    /**
+     * This void has been moved in BrowserTreePopupMenuActionListener
+     */
 
-   public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
-       treePanel.setInProcess(true);
+    public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
+        treePanel.setInProcess(true);
 
-       try {
+        try {
 
-           FormObjectView panel = buildPanelView(node);
-           if (panel == null)
-               return;
-           panel.setDatabaseObjectNode(node);
-           String type = "";
-           if (node.getType() < NamedObject.META_TYPES.length)
-               type = NamedObject.META_TYPES[node.getType()];
-           if (connection == null)
-               connection = getDatabaseConnection();
-           if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
-               panel.setObjectName(null);
-           else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
-           panel.setDatabaseConnection(connection);
-               viewPanel.setView(panel);
-               checkBrowserPanel();
+            FormObjectView panel = buildPanelView(node);
+            if (panel == null)
+                return;
 
-       } finally {
+            panel.setDatabaseObjectNode(node);
+            String type = "";
 
-           treePanel.setInProcess(false);
-       }
+            if (node.getType() < NamedObject.META_TYPES.length)
+                type = NamedObject.META_TYPES[node.getType()];
 
-   }
+            if (connection == null)
+                connection = getDatabaseConnection();
+
+            if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
+                panel.setObjectName(null);
+            else
+                panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
+
+            panel.setDatabaseConnection(connection);
+            viewPanel.setView(panel);
+            checkBrowserPanel();
+
+            if (viewPanel.getCurrentView() != null)
+                viewPanel = null;
+
+        } finally {
+            treePanel.setInProcess(false);
+        }
+
+    }
 
     /**
      * Determines and builds the object view panel to be
@@ -589,26 +583,41 @@ public class BrowserController {
      * Displays the root main view panel.
      */
     protected void displayConnectionList(ConnectionsFolder folder) {
+
         viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
         checkBrowserPanel();
         viewPanel.displayConnectionList(folder);
+
+        if (viewPanel.getCurrentView() != null)
+            viewPanel = null;
+
     }
 
     /**
      * Displays the root main view panel.
      */
     protected void displayConnectionList() {
+
         viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
         checkBrowserPanel();
         viewPanel.displayConnectionList();
+
+        if (viewPanel.getCurrentView() != null)
+            viewPanel = null;
+
     }
 
     /**
      * Displays the root main view panel.
      */
     protected void displayRootPanel(RootDatabaseObjectNode node) {
+
         checkBrowserPanel();
         viewPanel.displayConnectionList();
+
+        if (viewPanel.getCurrentView() != null)
+            viewPanel = null;
+
     }
 
     /**

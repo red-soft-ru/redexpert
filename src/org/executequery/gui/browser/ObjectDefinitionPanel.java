@@ -21,7 +21,6 @@
 package org.executequery.gui.browser;
 
 import com.github.vertical_blank.sqlformatter.SqlFormatter;
-import com.github.vertical_blank.sqlformatter.languages.Dialect;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -440,7 +439,9 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     private void formatSql() {
         String sqlText = sqlTextPanel.getSQLText();
         if (StringUtils.isNotEmpty(sqlText)) {
-            sqlTextPanel.setSQLText(SqlFormatter.of(Dialect.StandardSql).format(sqlText));
+            sqlTextPanel.setSQLText(SqlFormatter
+                    .extend(cfg -> cfg.plusSpecialWordChars("$"))
+                    .format(sqlText));
         }
     }
 

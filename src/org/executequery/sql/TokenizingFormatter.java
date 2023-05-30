@@ -21,7 +21,6 @@
 package org.executequery.sql;
 
 import com.github.vertical_blank.sqlformatter.SqlFormatter;
-import com.github.vertical_blank.sqlformatter.languages.Dialect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,10 +66,13 @@ public class TokenizingFormatter {
 
     private List<String> formatQueries(List<DerivedQuery> queries) {
 
-        List<String> formattedQueries = new ArrayList<String>(queries.size());
+        List<String> formattedQueries = new ArrayList<>(queries.size());
 
         for (DerivedQuery query : queries)
-            formattedQueries.add(SqlFormatter.of(Dialect.StandardSql).format(query.getOriginalQuery()));
+            formattedQueries.add(SqlFormatter
+                    .extend(cfg -> cfg.plusSpecialWordChars("$"))
+                    .format(query.getOriginalQuery())
+            );
 
         return formattedQueries;
     }

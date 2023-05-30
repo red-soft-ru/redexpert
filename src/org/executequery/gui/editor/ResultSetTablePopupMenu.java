@@ -105,8 +105,10 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         add(create(bundleString("ExportSelection"), "exportSelection"));
         add(create(bundleString("ExportTable"), "exportTable"));
         addSeparator();
-        add(createFromAction("editor-show-hide-rs-columns-command", "Show/hide result set columns"));
-        addSeparator();
+        if (resultSetTableContainer.isTransposeAvailable()) {
+            add(createFromAction("editor-show-hide-rs-columns-command", "Show/hide result set columns"));
+            addSeparator();
+        }
         add(create(bundleString("View"), "openDataItemViewer"));
         add(printMenu);
         addSeparator();

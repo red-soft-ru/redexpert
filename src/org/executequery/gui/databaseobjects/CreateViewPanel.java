@@ -12,6 +12,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
+import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
@@ -186,10 +187,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
     private void formatSql() {
         String sqlText = sqlTextPanel.getSQLText();
         if (StringUtils.isNotEmpty(sqlText))
-            sqlTextPanel.setSQLText(SqlFormatter
-                    .extend(cfg -> cfg.plusSpecialWordChars("$"))
-                    .format(sqlText)
-            );
+            sqlTextPanel.setSQLText(new TokenizingFormatter().format(sqlText));
     }
 
     // --- KeyListener ---

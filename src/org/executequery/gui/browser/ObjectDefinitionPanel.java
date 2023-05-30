@@ -42,6 +42,7 @@ import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
+import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.Constants;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
@@ -439,9 +440,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     private void formatSql() {
         String sqlText = sqlTextPanel.getSQLText();
         if (StringUtils.isNotEmpty(sqlText)) {
-            sqlTextPanel.setSQLText(SqlFormatter
-                    .extend(cfg -> cfg.plusSpecialWordChars("$"))
-                    .format(sqlText));
+            sqlTextPanel.setSQLText(new TokenizingFormatter().format(sqlText));
         }
     }
 

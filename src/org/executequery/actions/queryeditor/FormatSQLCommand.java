@@ -33,7 +33,7 @@ public class FormatSQLCommand extends AbstractQueryEditorCommand {
 
         if (isQueryEditorTheCentralPanel()) {
 
-            queryEditor().formatSQLtext();
+            queryEditor().formatSQLText();
         }
 
     }

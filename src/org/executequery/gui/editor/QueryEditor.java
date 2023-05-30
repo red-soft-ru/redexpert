@@ -1679,15 +1679,15 @@ public class QueryEditor extends DefaultTabView
         int start = editorPanel.getSelectionStart();
         int end = editorPanel.getSelectionEnd();
 
-        String text = getSelectedText();
-        if (text == null) {
-
-            QueryWithPosition queryAtCursor = getQueryAtCursor();
-            start = queryAtCursor.getStart();
-            end = queryAtCursor.getEnd();
-            text = getQueryAtCursor().getQuery();
-
+        // if there is no selection, then select all text
+        if (start == end) {
+            start = 0;
+            end = editorPanel.getQueryAreaText().length();
         }
+
+        String text = getSelectedText();
+        if (text == null)
+            text = editorPanel.getQueryAreaText();
 
         String formattedText = formatter.format(text);
         editorPanel.replaceRegion(start, end, formattedText);

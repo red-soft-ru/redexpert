@@ -115,6 +115,7 @@ public class QueryTokenizer {
 
         int index = 0;
         int lastIndex = 0;
+        boolean setTermToSet = false;
 
         List<DerivedQuery> queries = new ArrayList<>();
 
@@ -151,17 +152,18 @@ public class QueryTokenizer {
                         throw new RuntimeException("Delimiter cannot be empty:\n" + substring);
 
                     lastIndex = index + (oldDelimiter.length());
+                    setTermToSet = !setTermToSet;
                     continue;
                 }
 
-                queries.add(new DerivedQuery(substring));
+                queries.add(new DerivedQuery(substring, null, queryDelimiter, setTermToSet));
                 lastIndex = index + queryDelimiter.length();
             }
 
         }
 
         if (queries.isEmpty())
-            queries.add(new DerivedQuery(query));
+            queries.add(new DerivedQuery(query, null, queryDelimiter, setTermToSet));
 
         return queries;
     }

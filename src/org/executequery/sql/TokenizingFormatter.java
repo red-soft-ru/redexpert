@@ -33,8 +33,6 @@ import java.util.List;
  */
 public class TokenizingFormatter {
 
-    private static final String DELIMITER = ";";
-
     private QueryTokenizer queryTokenizer;
 
     public String format(String text) {
@@ -49,17 +47,8 @@ public class TokenizingFormatter {
 
         StringBuilder sb = new StringBuilder();
 
-        for (String query : formattedQueries) {
-
-            sb.append(query.trim());
-
-            if (!query.endsWith(DELIMITER)) {
-
-                sb.append(DELIMITER);
-            }
-
-            sb.append("\n");
-        }
+        for (String query : formattedQueries)
+            sb.append(query.trim()).append("\n");
 
         return sb.toString();
     }
@@ -68,22 +57,31 @@ public class TokenizingFormatter {
 
         List<String> formattedQueries = new ArrayList<>(queries.size());
 
-        for (DerivedQuery query : queries)
-            formattedQueries.add(SqlFormatter
+        for (DerivedQuery query : queries) {
+
+            String formattedQuery = SqlFormatter
                     .extend(cfg -> cfg.plusSpecialWordChars("$"))
-                    .format(query.getOriginalQuery())
-            );
+                    .format(query.getOriginalQuery());
+
+            if (!formattedQuery.endsWith(query.getEndDelimiter()))
+                formattedQuery += query.getEndDelimiter();
+
+            if (query.isSetTerm()) {
+                formattedQuery = "\nSET TERM " + query.getEndDelimiter() + ";\n" +
+                        formattedQuery + "\nSET TERM ;" + query.getEndDelimiter() + "\n";
+            }
+
+            formattedQueries.add(formattedQuery);
+
+        }
 
         return formattedQueries;
     }
 
     private QueryTokenizer queryTokenizer() {
 
-        if (queryTokenizer == null) {
-
+        if (queryTokenizer == null)
             queryTokenizer = new QueryTokenizer();
-        }
-
         return queryTokenizer;
     }
 

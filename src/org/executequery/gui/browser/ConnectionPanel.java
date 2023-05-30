@@ -755,6 +755,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
                         if (driverCombo.getSelectedIndex() >= 0)
                             driverCombo.setBorder(null);
                         else driverCombo.setBorder(redBorder);
+                        setNewAPI();
                     }
                 }
             });

@@ -430,7 +430,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         mainPanel.add(urlLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         jdbcUrlComponents.add(urlLabel);
 
-        mainPanel.add(urlField, gbh.nextCol().spanX().get());
+        mainPanel.add(urlField, gbh.nextCol().fillHorizontally().spanX().get());
         jdbcUrlComponents.add(urlField);
         orderList.add(urlField);
 

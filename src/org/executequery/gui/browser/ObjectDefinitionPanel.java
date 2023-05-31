@@ -20,7 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import com.github.vertical_blank.sqlformatter.SqlFormatter;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -385,7 +384,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         sqlTextPanel.setSQLText(Constants.EMPTY);
 
         simpleCommentPanel = new SimpleCommentPanel(currentObjectView);
-        simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> {
+        simpleCommentPanel.addActionForCommentUpdateButton(e -> {
             sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText());
         });
         tabPane.setComponentAt(6, simpleCommentPanel.getCommentPanel());

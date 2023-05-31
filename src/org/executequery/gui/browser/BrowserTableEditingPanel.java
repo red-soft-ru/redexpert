@@ -25,17 +25,17 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
-import org.executequery.gui.*;
-import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.DefaultPanelButton;
+import org.executequery.gui.DefaultTable;
+import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.databaseobjects.*;
-import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
@@ -936,8 +936,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         }
 
         simpleCommentPanel = new SimpleCommentPanel(table);
-        simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> {
+        simpleCommentPanel.addActionForCommentUpdateButton(action -> {
             createSqlText.setSQLText(createTableStatementFormatted());
+            setValues(table);
         });
         tabPane.setComponentAt(10, simpleCommentPanel.getCommentPanel());
 

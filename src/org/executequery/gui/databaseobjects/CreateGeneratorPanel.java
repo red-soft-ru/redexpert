@@ -142,7 +142,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
 
     protected void reset() {
         nameField.setText(generator.getName().trim());
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         if (getDatabaseVersion() >= 3)
             startValueText.setLongValue(generator.getSequenceFirstValue());
         currentValueText.setLongValue(generator.getSequenceCurrentValue());

@@ -36,7 +36,7 @@ public class CreateRolePanel extends AbstractCreateObjectPanel {
     protected void initEdited() {
         tabbedPane.removeAll();
         nameField.setText(role.getName());
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         addCreateSqlTab(role);
         if (parent == null) {
             addPrivilegesTab(tabbedPane, role);

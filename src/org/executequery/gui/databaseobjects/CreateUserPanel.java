@@ -181,7 +181,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
 
     protected void reset() {
         nameField.setText(beginUser.getName());
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         firstNameField.setText(beginUser.getFirstName());
         middleNameField.setText(beginUser.getMiddleName());
         lastNameField.setText(beginUser.getLastName());

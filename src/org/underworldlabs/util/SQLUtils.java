@@ -94,7 +94,7 @@ public final class SQLUtils {
         if (setComment) {
             sb.append(generateCommentForColumns(name, columnDataList, "COLUMN", delimiter));
             if (!MiscUtils.isNull(comment) && !comment.equals(""))
-                sb.append("COMMENT ON TABLE ").append(format(name)).append(" IS '").append(comment).append("'").append(delimiter).append("\n");
+                sb.append(generateComment(name, "TABLE", comment, delimiter, false));
         }
 
         return sb.toString();
@@ -303,12 +303,16 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         if (comment != null && !comment.isEmpty()) {
+
+            if (comment.startsWith("'") && comment.endsWith("'"))
+                comment = comment.substring(1, comment.length() - 1);
+
+            comment = comment.replace("'", "''");
+
             sb.append("COMMENT ON ").append(metaTag).append(" ");
-            if (nameAlreadyFormatted)
-                sb.append(name);
-            else
-                sb.append(format(name));
+            sb.append(nameAlreadyFormatted ? name : format(name));
             sb.append(" IS ");
+
             if (!comment.equals("NULL"))
                 sb.append("'").append(comment).append("'");
             else

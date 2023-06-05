@@ -8,6 +8,7 @@ stages:
   - sources
   - build_docs
   - build
+  - test
   - repackage
   - deploy
 
@@ -207,6 +208,55 @@ build:windows:
       - ARCH: x86
         QMAKE: c:\Qt\Qt5.6.3_x86\5.6.3\msvc2013\bin\qmake.exe
 
+.test_template:
+  stage: test
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - test-results/
+  except:
+    variables:
+      - $SKIP_TESTS == "1"
+
+test:windows:
+  extends: .test_template
+  tags:
+    - windows
+    - proxmox
+    - tester
+  variables:
+    PROXMOX_TEMPLATE: template-testing-re-windows-7
+    JAVA_HOME: c:\Program Files\Java\jdk8
+    ErrorActionPreference: STOP
+    DIST: ${CI_PROJECT_DIR}\dist\windows-${ARCH}
+    PYTHON: c:\Python38\python.exe
+    WORKSPACE: ${CI_PROJECT_DIR}
+    DISTRO: red-expert-tests
+  parallel:
+    matrix:
+      - ARCH: x86_64
+      - ARCH: x86
+  before_script:
+   - $TEST_DIR = New-TempDirectory -Prefix 'test_re_'
+   - cd $TEST_DIR
+   - unzip -q ${CI_PROJECT_DIR}\dist-src\RedExpert-$env:VERSION-src.zip
+   - cd $DIST\bin
+   - |
+      if ($env:ARCH -eq "x86_64")
+      {
+        start-process .\RedExpert64.exe
+      }
+      else
+      {
+        start-process .\RedExpert.exe
+      }
+  script:
+   - cd $TEST_DIR\RedExpert-$env:VERSION\ci
+   - powershell -ExecutionPolicy ByPass -file test.ps1
+  dependencies: ["prepare", "sources", "build:windows"]
+  needs: ["prepare", "sources", "build:windows"]
+  
+
 repackage:
   tags:
     - docker
@@ -231,6 +281,15 @@ deploy:
   stage: deploy
   image: registry.red-soft.biz:5000/utils/red-release-manager/client:master
   script:
+    - test -d test-results && for f in $(find test-results -name \*.xml); do printf "testpack $(basename ${f/.xml})\nfile $f\nend\n"; done >> .ci/artifacts || true
+    - |
+      for d in $(find test-results/* -maxdepth 1 -type d | sed 's/test-results\///'); do
+        printf "testpack $d\n";
+        for t in $(find test-results/$d -name \*.xml); do
+          printf "file $t\n";
+        done;
+        printf "end\n";
+      done >> .ci/artifacts || true
     - relmanager_client deploy ${RELEASE_HUB_PROJECT} ${VERSION} --artifacts .ci/artifacts --ci_url ${CI_URL} --context ${CONTEXT} --branch ${BRANCH} --commit ${CI_COMMIT_SHA} --stage ${STAGE}
   only:
     variables:

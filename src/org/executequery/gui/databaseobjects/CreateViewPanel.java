@@ -1,5 +1,6 @@
 package org.executequery.gui.databaseobjects;
 
+import com.github.vertical_blank.sqlformatter.SqlFormatter;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -11,7 +12,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
-import org.executequery.sql.SQLFormatter;
+import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
@@ -21,18 +22,23 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.List;
 
-public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusListener, KeyListener {
+public class CreateViewPanel extends AbstractCreateObjectPanel
+        implements FocusListener, KeyListener {
+
     public static final String TITLE = getCreateTitle(NamedObject.VIEW);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.VIEW);
 
     private SimpleSqlTextPanel sqlTextPanel;
-    private JButton formatSqlButton;
-    private static final String replacing_name = "<view_name>";
-    String notChangedText;
     private DefaultDatabaseView view;
+
+    private String notChangedText;
+    private boolean released = true;
 
     public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);
@@ -42,36 +48,27 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
         super(dc, dialog, view);
     }
 
-    boolean released = true;
-
     @Override
     protected void initEdited() {
         nameField.setText(view.getName());
         simpleCommentPanel.setDatabaseObject(view);
     }
 
+    @Override
     protected void init() {
-        formatSqlButton = WidgetFactory.createButton(Bundles.getCommon("FormatSQL"));
+
+        JButton formatSqlButton = WidgetFactory.createButton(Bundles.getCommon("FormatSQL"));
         formatSqlButton.addActionListener(e -> formatSql());
 
         sqlTextPanel = new SimpleSqlTextPanel();
         sqlTextPanel.getTextPane().setDatabaseConnection(connection);
-//        sqlTextPanel.addFocusListener(this);
-//        sqlTextPanel.getTextPane().addKeyListener(this);
-
-        JPanel sqlPanel = new JPanel(new GridBagLayout());
 
         GridBagHelper gridBagHelper = new GridBagHelper();
-        sqlPanel.add(formatSqlButton,
-                gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillNone().get());
-        sqlPanel.add(sqlTextPanel,
-                gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest();
 
-        connectionsCombo.addItemListener(event -> {
-            if (event.getStateChange() == ItemEvent.DESELECTED) {
-                return;
-            }
-        });
+        JPanel sqlPanel = new JPanel(new GridBagLayout());
+        sqlPanel.add(formatSqlButton, gridBagHelper.fillNone().get());
+        sqlPanel.add(sqlTextPanel, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
         nameField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -90,8 +87,6 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
             }
         });
 
-
-        //create location elements
         tabbedPane.add(bundleStaticString("SQL"), sqlPanel);
         addCommentTab(null);
 
@@ -114,6 +109,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
 
         sqlTextPanel.setSQLText(generateQuery());
         centralPanel.setVisible(false);
+
     }
 
     @Override
@@ -137,41 +133,32 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     }
 
     @Override
-    public void setParameters(Object[] params) {}
-
-    @Override
-    public void focusGained(FocusEvent focusEvent) {
-        if (focusEvent.getSource() != sqlTextPanel)
-            GUIUtils.requestFocusInWindow(sqlTextPanel);
+    public void createObject() {
+        displayExecuteQueryDialog(sqlTextPanel.getSQLText(), ";");
     }
 
+    @Override
     protected String generateQuery() {
 
-        String fields = null;
         String query = "";
 
+        StringBuilder fields = new StringBuilder();
         try {
 
             List<DatabaseColumn> columns = view.getColumns();
             if (columns != null) {
-                fields = "";
-
-                for (int i = 0; i < columns.size(); i++) {
-                    fields += " " + MiscUtils.getFormattedObject(columns.get(i).getName());
-                    if (i != columns.size() - 1)
-                        fields += ",\n";
-                }
+                for (DatabaseColumn column : columns)
+                    fields.append(" ").append(MiscUtils.getFormattedObject(column.getName())).append(", ");
+                fields.deleteCharAt(fields.lastIndexOf(","));
             }
 
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         try {
 
-            String selectStatement = "SELECT _fields_ FROM _table_ WHERE _conditions_";
-            if (view != null)
-                selectStatement = view.getSource();
-
-            query = SQLUtils.generateCreateView(nameField.getText(), fields, selectStatement,
+            String selectStatement = (view != null) ? view.getSource() : "SELECT _fields_ FROM _table_ WHERE _conditions_";
+            query = SQLUtils.generateCreateView(nameField.getText(), fields.toString(), selectStatement,
                     simpleCommentPanel.getComment(), getDatabaseVersion(), editing);
 
         } catch (Exception e) {
@@ -184,29 +171,26 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
 
     private void changeName() {
 
-        String sqlText = sqlTextPanel.getSQLText().trim()
-                .replaceAll("VIEW ((\".*\")|(\\w*\\b)|)", "VIEW " + format(nameField.getText().trim()));
+        String sqlText = sqlTextPanel.getSQLText().trim().replaceAll(
+                "VIEW ((\".*\")|(\\w*\\b)|)",
+                "VIEW " + MiscUtils.getFormattedObject(nameField.getText()));
         sqlTextPanel.setSQLText(sqlText);
     }
 
     private void changeComment() {
 
-        String sqlText = sqlTextPanel.getSQLText().trim().replaceAll("\nCOMMENT ON VIEW \"?.*\"? IS '.*';", "") +
-                SQLUtils.generateComment(nameField.getText().trim(), "VIEW",
-                        simpleCommentPanel.getComment().trim(), ";", false);
+        String sqlText = sqlTextPanel.getSQLText().trim().replaceAll("COMMENT ON VIEW \"?.*\"? IS '.*';", "") +
+                SQLUtils.generateComment(nameField.getText(), "VIEW", simpleCommentPanel.getComment().trim(), ";", false);
         sqlTextPanel.setSQLText(sqlText);
     }
 
-    @Override
-    public void createObject() {
-        displayExecuteQueryDialog(sqlTextPanel.getSQLText(), ";");
+    private void formatSql() {
+        String sqlText = sqlTextPanel.getSQLText();
+        if (StringUtils.isNotEmpty(sqlText))
+            sqlTextPanel.setSQLText(new TokenizingFormatter().format(sqlText));
     }
 
-    @Override
-    public void focusLost(FocusEvent focusEvent) {}
-
-    @Override
-    public void keyTyped(KeyEvent e) {}
+    // --- KeyListener ---
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -220,22 +204,35 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     @Override
     public void keyReleased(KeyEvent e) {
         SQLTextArea textPane = (SQLTextArea) e.getSource();
-        if (!textPane.getText().contains(" " + replacing_name + "\n") && !editing)
+        if (!textPane.getText().contains(" <view_name>\n") && !editing)
             textPane.setText(notChangedText);
         released = true;
     }
 
-    private void formatSql() {
-        if (StringUtils.isNotEmpty(sqlTextPanel.getSQLText())) {
-            String sqlText = sqlTextPanel.getSQLText();
-            sqlTextPanel.setSQLText(new SQLFormatter(sqlText).format());
-        }
+    @Override
+    public void keyTyped(KeyEvent e) {
     }
 
-    protected void reset() {}
+    // --- FocusListener ---
 
-    private static String format(String object) {
-        return MiscUtils.getFormattedObject(object);
+    @Override
+    public void focusGained(FocusEvent focusEvent) {
+        if (focusEvent.getSource() != sqlTextPanel)
+            GUIUtils.requestFocusInWindow(sqlTextPanel);
+    }
+
+    @Override
+    public void focusLost(FocusEvent focusEvent) {
+    }
+
+    // ---
+
+    @Override
+    public void setParameters(Object[] params) {
+    }
+
+    @Override
+    protected void reset() {
     }
 
 }

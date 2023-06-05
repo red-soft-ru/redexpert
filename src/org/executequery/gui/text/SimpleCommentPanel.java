@@ -14,6 +14,9 @@ import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.function.Consumer;
 
 public class SimpleCommentPanel {
 
@@ -37,6 +40,10 @@ public class SimpleCommentPanel {
      * update comment button
      */
     private RolloverButton rollbackCommentButton;
+    /**
+     * update button action listener
+     */
+    private ActionListener updateButtonActionListener;
 
     public SimpleCommentPanel(DatabaseObject object) {
         currentDatabaseObject = object;
@@ -47,12 +54,12 @@ public class SimpleCommentPanel {
     private void init() {
 
         commentField = new SimpleTextArea();
+        updateButtonActionListener = e -> updateComment();
 
         updateCommentButton = new RolloverButton();
         updateCommentButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
-        updateCommentButton.addActionListener(e -> updateComment());
+        updateCommentButton.addActionListener(updateButtonActionListener);
         updateCommentButton.setEnabled(currentDatabaseObject != null);
-
 
         rollbackCommentButton = new RolloverButton();
         rollbackCommentButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
@@ -132,10 +139,6 @@ public class SimpleCommentPanel {
         return commentPanel;
     }
 
-    public RolloverButton getCommentUpdateButton() {
-        return updateCommentButton;
-    }
-
     public void updateComment() {
         saveComment();
     }
@@ -148,6 +151,18 @@ public class SimpleCommentPanel {
         this.currentDatabaseObject = databaseObject;
         updateCommentButton.setEnabled(currentDatabaseObject != null);
         resetComment();
+    }
+
+    public void addActionForCommentUpdateButton(Consumer<ActionEvent> additionalAction) {
+
+        updateCommentButton.removeActionListener(updateButtonActionListener);
+
+        updateButtonActionListener = e -> {
+            updateComment();
+            additionalAction.accept(e);
+        };
+
+        updateCommentButton.addActionListener(updateButtonActionListener);
     }
 
     public String getComment() {

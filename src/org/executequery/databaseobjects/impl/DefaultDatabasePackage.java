@@ -43,8 +43,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         if (isMarkedForReload())
             getObjectInfo();
 
-        return "create or alter package  " + getName() +
-                "\nas\n" + this.headerSource;
+        return "CREATE OR ALTER PACKAGE  " + getName() +
+                "\nAS\n" + this.headerSource;
     }
 
     public void setHeaderSource(String headerSource) {
@@ -53,8 +53,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     public String getBodySource() {
 
-        return "recreate package body " + getName() +
-                "\nas\n" + this.bodySource;
+        return "RECREATE PACKAGE BODY " + getName() +
+                "\nAS\n" + this.bodySource;
     }
 
     public void setBodySource(String bodySource) {
@@ -87,7 +87,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), getDescription());
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), getRemarks());
     }
 
     @Override

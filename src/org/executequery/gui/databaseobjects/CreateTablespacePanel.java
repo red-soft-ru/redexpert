@@ -69,17 +69,30 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
         centralPanel.add(fileField, gbh.nextCol().setMaxWeightX().fillHorizontally().get());
         centralPanel.add(fileButton, gbh.nextCol().setLabelDefault().get());
         tabbedPane.add("SQL", sqlTextPanel);
+
+        nameField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                generateSQL();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                generateSQL();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                generateSQL();
+            }
+        });
         fileField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 generateSQL();
             }
-
             @Override
             public void removeUpdate(DocumentEvent e) {
                 generateSQL();
             }
-
             @Override
             public void changedUpdate(DocumentEvent e) {
                 generateSQL();
@@ -92,7 +105,7 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
     @Override
     protected void initEdited() {
         reset();
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         DependPanel tablesIndexesPanel = new DependPanel(TreePanel.TABLESPACE);
         tablesIndexesPanel.setDatabaseObject(tablespace);
         tablesIndexesPanel.setDatabaseConnection(tablespace.getHost().getDatabaseConnection());
@@ -107,16 +120,11 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
         generateSQL();
     }
 
+    @Override
     protected String generateQuery() {
-        if (editing) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("ALTER");
-            sb.append(" TABLESPACE ").append(MiscUtils.getFormattedObject(nameField.getText()));
-            sb.append(" SET FILE '").append(fileField.getText()).append("'");
-            sb.append(";\n");
-            return sb.toString();
-        } else
-            return SQLUtils.generateCreateTablespace(nameField.getText(), fileField.getText());
+        return editing ?
+                SQLUtils.generateAlterTablespace(nameField.getText(), fileField.getText()) :
+                SQLUtils.generateCreateTablespace(nameField.getText(), fileField.getText());
     }
 
     private void generateSQL() {

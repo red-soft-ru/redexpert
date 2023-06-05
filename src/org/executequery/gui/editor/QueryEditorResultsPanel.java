@@ -383,11 +383,14 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
                 resultSetTableColumnResizingManager.suspend(table);
 
                 panel.setResultSet(model, showRowNumber);
-                double thisWidth = getParent().getParent().getSize().getWidth();
+                /*double thisWidth = getParent().getParent().getSize().getWidth();
                 int colWidth = SystemProperties.getIntProperty("user", "results.table.column.width");
                 if (thisWidth / table.getColumnCount() < colWidth)
                     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-                else table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                else table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);*/
+                table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+                table.setTableColumnWidthFromContents();
                 resultSetTableColumnResizingManager.setColumnWidthsForTable(table);
 
             } finally {

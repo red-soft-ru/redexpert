@@ -25,6 +25,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledResultSet;
+import org.executequery.gui.browser.ComparerDBPanel;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -191,24 +192,46 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return children;
     }
 
+    @Override
     public void loadFullInfoForObjects() {
+
         getHost().setPauseLoadingTreeForSearch(true);
         List<NamedObject> objects = getObjects();
         boolean first = true;
+
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+
         if (objects.size() == 0)
             return;
+
         String query = ((AbstractDatabaseObject) objects.get(0)).queryForInfoAllObjects();
         try {
+
+            InterruptibleThread thread = null;
+            if (Thread.currentThread() instanceof InterruptibleThread)
+                thread = (InterruptibleThread) Thread.currentThread();
+
             ResultSet rs = querySender.getResultSet(query).getResultSet();
             int i = 0;
+
+            ComparerDBPanel comparerDBPanel = null;
+            if (thread != null) {
+                Object threadUserObject = thread.getUserObject();
+                if (threadUserObject instanceof ComparerDBPanel) {
+                    comparerDBPanel = ((ComparerDBPanel) threadUserObject);
+                    comparerDBPanel.recreateProgressBar(
+                            "LoadFullInfoForObjects",
+                            NamedObject.META_TYPES_FOR_BUNDLE[getSubType()],
+                            objects.size()
+                    );
+                }
+            }
+
             while (rs.next()) {
 
-                if (Thread.currentThread() instanceof InterruptibleThread) {
-                    if (((InterruptibleThread) Thread.currentThread()).isCanceled()) {
-                        querySender.releaseResources();
-                        return;
-                    }
+                if (thread != null && thread.isCanceled()) {
+                    querySender.releaseResources();
+                    return;
                 }
 
                 while (!objects.get(i).getName().contentEquals(rs.getString(1).trim())) {
@@ -217,17 +240,25 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         throw new DataSourceException("Error load info for" + metaDataKey);
                     first = true;
                 }
-                if (first)
+
+                if (first) {
                     ((AbstractDatabaseObject) objects.get(i)).prepareLoadingInfo();
+                    if (comparerDBPanel != null)
+                        comparerDBPanel.incrementProgressBarValue();
+                }
+
                 ((AbstractDatabaseObject) objects.get(i)).setInfoFromSingleRowResultSet(rs, first);
                 first = false;
             }
+
             for (NamedObject namedObject : objects) {
                 ((AbstractDatabaseObject) namedObject).finishLoadingInfo();
                 ((AbstractDatabaseObject) namedObject).setMarkedForReload(false);
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
+
         } finally {
             if (querySender != null)
                 querySender.releaseResources();
@@ -236,19 +267,48 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
+    @Override
     public void loadColumnsForAllTables() {
+
         List<NamedObject> objects = getObjects();
         boolean first = true;
+
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+
         if (objects.size() == 0)
             return;
 
         String query = ((AbstractDatabaseObject) objects.get(0)).getBuilderLoadColsForAllTables().getSQLQuery();
         try {
+
+            InterruptibleThread thread = null;
+            if (Thread.currentThread() instanceof InterruptibleThread)
+                thread = (InterruptibleThread) Thread.currentThread();
+
             ResultSet rs = querySender.getResultSet(query).getResultSet();
             int i = 0;
+
+            ComparerDBPanel comparerDBPanel = null;
+            if (thread != null) {
+                Object threadUserObject = thread.getUserObject();
+                if (threadUserObject instanceof ComparerDBPanel) {
+                    comparerDBPanel = ((ComparerDBPanel) threadUserObject);
+                    comparerDBPanel.recreateProgressBar(
+                            "LoadColumnsForAllTables",
+                            NamedObject.META_TYPES_FOR_BUNDLE[getSubType()],
+                            objects.size()
+                    );
+                }
+            }
+
             AbstractDatabaseObject previousObject = null;
             while (rs.next()) {
+
+                if (thread != null && thread.isCanceled()) {
+                    querySender.releaseResources();
+                    return;
+                }
+
                 while (getHost().isPauseLoadingTreeForSearch() && Thread.currentThread().getName().contentEquals("loadingTreeForSearch")) {
                     try {
                         Thread.sleep(100);
@@ -256,12 +316,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         throw new RuntimeException(e);
                     }
                 }
+
                 while (!objects.get(i).getName().contentEquals(rs.getString(1).trim())) {
                     i++;
                     if (i >= objects.size())
                         throw new DataSourceException("Error load columns for " + metaDataKey);
                     first = true;
                 }
+
                 if (((AbstractDatabaseObject) objects.get(i)).isMarkedForReloadCols()) {
                     if (first) {
                         ((AbstractDatabaseObject) objects.get(i)).prepareLoadColumns();
@@ -269,18 +331,23 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                             previousObject.finishLoadColumns();
                             previousObject.setMarkedForReloadCols(false);
                         }
+                        if (comparerDBPanel != null)
+                            comparerDBPanel.incrementProgressBarValue();
                     }
                     ((AbstractDatabaseObject) objects.get(i)).addColumnFromResultSet(rs);
                     first = false;
                     previousObject = (AbstractDatabaseObject) objects.get(i);
                 }
             }
+
             if (previousObject != null) {
                 previousObject.finishLoadColumns();
                 previousObject.setMarkedForReloadCols(false);
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
+
         } finally {
             if (querySender != null)
                 querySender.releaseResources();

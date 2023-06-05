@@ -173,12 +173,15 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
     @Override
     protected void initEdited() {
         reset();
+        tabbedPane.remove(sqlTextPanel);
+        if (parent == null)
+            addPrivilegesTab(tabbedPane, beginUser);
         addCreateSqlTab(beginUser);
     }
 
     protected void reset() {
         nameField.setText(beginUser.getName());
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         firstNameField.setText(beginUser.getFirstName());
         middleNameField.setText(beginUser.getMiddleName());
         lastNameField.setText(beginUser.getLastName());

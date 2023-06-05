@@ -29,7 +29,8 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     @Override
     protected void initEdited() {
         reset();
-        addPrivilegesTab(tabbedPane);
+        if (parent == null)
+            addPrivilegesTab(tabbedPane, databasePackage);
         addDependenciesTab(databasePackage);
         addCreateSqlTab(databasePackage);
     }
@@ -43,9 +44,12 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
         return sb.toString();
     }
 
+    @Override
     protected void reset() {
         nameField.setText(databasePackage.getName().trim());
         simpleCommentPanel.setDatabaseObject(databasePackage);
+        headerPanel.setSQLText(databasePackage.getHeaderSource());
+        bodyPanel.setSQLText(databasePackage.getBodySource());
     }
 
     @Override

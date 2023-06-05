@@ -149,6 +149,7 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
 
 
     public String getModuleName() {
+        checkOnReload(moduleName);
         return moduleName;
     }
 
@@ -165,10 +166,12 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
     }
 
     public String getReturnMechanism() {
+        checkOnReload(returnMechanism);
         return returnMechanism;
     }
 
     public String getReturns() {
+        checkOnReload(returns);
         return returns;
     }
 
@@ -222,7 +225,6 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
         Table arguments = Table.createTable("RDB$FUNCTION_ARGUMENTS", "FA");
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CR");
         sb.appendFields(functions, getFieldName(), DESCRIPTION, RETURN_ARGUMENT, MODULE_NAME, ENTRYPOINT);
-        sb.appendFields(functions, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
         sb.appendField(buildSqlSecurityField(functions));
         sb.appendFields(arguments, PARAMETER_NUMBER, FIELD_TYPE, FIELD_SCALE, FIELD_LENGTH, FIELD_SUB_TYPE, FIELD_PRECISION, PARAMETER_MECHANISM);
         sb.appendField(Field.createField(arguments, NULL_FLAG).setNull(getDatabaseMajorVersion() < 3));
@@ -255,6 +257,13 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
             udfParameter.setNotNull(nullFlag != 0);
         udfParameter.setEncoding(rs.getString(CHARACTER_SET_NAME));
         parameters.add(udfParameter);
+        if (first) {
+            setRemarks(getFromResultSet(rs, DESCRIPTION));
+            setReturnArg(rs.getInt(RETURN_ARGUMENT));
+            setModuleName(getFromResultSet(rs, MODULE_NAME));
+            setEntryPoint(getFromResultSet(rs, ENTRYPOINT));
+        }
+
         return null;
     }
 

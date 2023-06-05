@@ -239,6 +239,8 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     protected void initEdited() {
         reset();
         addDependenciesTab(trigger);
+        if (parent == null)
+            addPrivilegesTab(tabbedPane, trigger);
         addCreateSqlTab(trigger);
     }
 
@@ -260,7 +262,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     protected void reset() {
         typeTriggerCombo.setEnabled(false);
         nameField.setText(trigger.getName());
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         simpleCommentPanel.setDatabaseObject(trigger);
         activeBox.setSelected(trigger.isTriggerActive());
         positionField.setValue(trigger.getTriggerSequence());

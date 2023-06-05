@@ -921,7 +921,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         }
     }
 
-    boolean supportedObject(int type) throws Exception {
+    public boolean supportedObject(int type) throws Exception {
         if (typeTree == TreePanel.TABLESPACE) {
             return type == TABLE || type == INDEX;
         }
@@ -1110,6 +1110,11 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     @Override
     public int getDatabaseMajorVersion() throws SQLException {
         return getDatabaseMetaData().getDatabaseMajorVersion();
+    }
+
+    @Override
+    public int getDatabaseMinorVersion() throws SQLException {
+        return getDatabaseMetaData().getDatabaseMinorVersion();
     }
 
     public boolean isConnected() {

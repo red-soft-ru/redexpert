@@ -48,6 +48,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.executequery.toolbars.AbstractToolBarForTable;
+import org.executequery.toolbars.AbstractToolBarForTableIndexes;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -422,7 +423,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("constraints"), constraintsPanel);
         tabPane.add(Bundles.getCommon("indexes"), indexesPanel);
         tabPane.add(Bundles.getCommon("triggers"), triggersPanel);
-        addPrivilegesTab(tabPane);
+        addPrivilegesTab(tabPane, null);
         tabPane.add(Bundles.getCommon("references"), referencesPanel);
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
         tabPane.add(Bundles.getCommon("SQL"), splitPane);
@@ -935,8 +936,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         }
 
         simpleCommentPanel = new SimpleCommentPanel(table);
-        simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> {
+        simpleCommentPanel.addActionForCommentUpdateButton(action -> {
             createSqlText.setSQLText(createTableStatementFormatted());
+            setValues(table);
         });
         tabPane.setComponentAt(10, simpleCommentPanel.getCommentPanel());
 
@@ -1219,6 +1221,18 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     }
 
+    public void reselectivityAllIndexes() {
+        DatabaseConnection dc = table.getHost().getDatabaseConnection();
+        StringBuilder sb = new StringBuilder();
+        List<DefaultDatabaseIndex> indexes = table.getIndexes();
+        for (DefaultDatabaseIndex node : indexes) {
+            sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName())).append(";\n");
+            node.reset();
+        }
+        ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), sb.toString(), dc, true, ";", true, false);
+        eqd.display();
+    }
+
     public void setSQLText() {
 
         sbTemp.setLength(0);
@@ -1383,7 +1397,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         bar.add(addRolloverButton);
         RolloverButton deleteRolloverButton = new RolloverButton();
         deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
-        deleteRolloverButton.setToolTipText("Delete column");
+        deleteRolloverButton.setToolTipText("Delete constraint");
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -1427,7 +1441,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     private void createButtonsEditingIndexesPanel() {
-        buttonsEditingIndexesPanel = new AbstractToolBarForTable("Create Index", "Delete Index", "Refresh") {
+        buttonsEditingIndexesPanel = new AbstractToolBarForTableIndexes("Create Index", "Delete Index", "Refresh", "Reselectivity") {
+
             @Override
             public void insert(ActionEvent e) {
                 insertAfter();
@@ -1443,6 +1458,11 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 if (table instanceof DefaultDatabaseTable)
                     ((DefaultDatabaseTable) table).clearIndexes();
                 loadIndexes();
+            }
+
+            @Override
+            public void reselectivity(ActionEvent e) {
+                reselectivityAllIndexes();
             }
         };
 
@@ -1486,6 +1506,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             e.printStackTrace();
         }
         return true;
+    }
+
+    public static String bundledString(String key) {
+        return Bundles.get(BrowserTableEditingPanel.class, key);
     }
 
 }

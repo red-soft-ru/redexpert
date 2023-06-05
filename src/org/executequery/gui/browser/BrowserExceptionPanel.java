@@ -98,7 +98,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
         tabPane = new JTabbedPane(JTabbedPane.TOP);
         tabPane.add(bundleString("Exception"), descPanel);
 
-        addPrivilegesTab(tabPane);
+        //addPrivilegesTab(tabPane);
         JPanel descriptionPanel = new JPanel(new BorderLayout());
 
         descriptionPanel.setBorder(BorderFactory.createEtchedBorder());

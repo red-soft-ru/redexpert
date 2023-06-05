@@ -20,6 +20,8 @@
 
 package org.underworldlabs.swing.menu;
 
+import org.executequery.gui.AboutPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 
@@ -55,7 +57,9 @@ public class SimpleTextComponentPopUpMenu extends JPopupMenu {
         textComponent.addMouseListener(new PopupListener(this));
 
         // the menu label text
-        String[] menuLabels = {"Cut", "Copy", "Paste"};
+        String[] menuLabels = {bundledString("Cut"),
+                bundledString("Copy"),
+                bundledString("Paste")};
 
         // cached actions from which to retrieve common accels and mnemonics
         String[] actionNames = {"cut-command", "copy-command", "paste-command"};
@@ -136,7 +140,9 @@ public class SimpleTextComponentPopUpMenu extends JPopupMenu {
         }
 
     } // class PopupListener
-
+    public static String bundledString(String key) {
+        return Bundles.get(SimpleTextComponentPopUpMenu.class, key);
+    }
 }
 
 

@@ -18,6 +18,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * Panel for creating and editing function
@@ -114,8 +115,11 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     }
 
     protected String generateQuery() {
+        Vector<ColumnData> vars = new Vector<>();
+        vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
+        vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
         return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
-                variablesPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
+                vars, returnType, sqlBodyText.getSQLText(),
                 externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
                 simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected());
     }

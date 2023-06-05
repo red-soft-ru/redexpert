@@ -221,7 +221,6 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         if (host != null) {
             try {
 
-                List<DatabaseColumn> _columns = null;
                 if (typeTree == TreePanel.DEFAULT) {
                     fullLoadCols = loadForAllTables;
                     loadColumns();
@@ -246,8 +245,11 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
             } finally {
                 setMarkedForReload(false);
             }
-
         }
+
+        if (columns == null)
+            columns = databaseColumnListWithSize(0);
+
         return columns;
     }
 

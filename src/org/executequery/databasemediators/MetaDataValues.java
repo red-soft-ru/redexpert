@@ -21,6 +21,7 @@
 package org.executequery.databasemediators;
 
 import org.executequery.EventMediator;
+import org.executequery.databaseobjects.T;
 import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.datasource.ConnectionManager;
@@ -1168,7 +1169,7 @@ public class MetaDataValues implements ConnectionListener {
             List<String> _dataTypes = new ArrayList<String>();
             while (rs.next()) {
                 String type = rs.getString(1);
-                if (!type.startsWith(underscore)) {
+                if (!type.startsWith(underscore)&&!type.equalsIgnoreCase(T.ARRAY)) {
                     _dataTypes.add(type);
                 }
             }

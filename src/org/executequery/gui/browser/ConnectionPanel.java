@@ -31,6 +31,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.*;
+import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
@@ -223,7 +224,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         });
 
         // initialise the fields
-        nameField = createTextField();
+        nameField = new DefaultTextField();
         addCheckEmptyField(nameField);
         nameField.addFocusListener(new FocusListener() {
             @Override
@@ -236,18 +237,18 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 checkNameUpdate();
             }
         });
-        passwordField = createPasswordField();
+        passwordField = new DefaultPasswordField();
         passwordDocumentListener = addCheckEmptyField(passwordField);
-        hostField = createTextField();
+        hostField = new DefaultTextField();
         addCheckEmptyField(hostField);
         hostField.setText("localhost");
-        portField = createNumberTextField();
+        portField = new DefaultNumberTextField();
         addCheckEmptyField(portField);
         portField.setText("3050");
         sourceField = createMatchedWidthTextField();
         addCheckEmptyField(sourceField);
-        roleField = createTextField();
-        userField = createTextField();
+        roleField = new DefaultTextField();
+        userField = new DefaultTextField();
         userNameDocumentListener = addCheckEmptyField(userField);
         urlField = createMatchedWidthTextField();
         nameField.setPreferredSize(hostField.getPreferredSize());
@@ -429,7 +430,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         mainPanel.add(urlLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         jdbcUrlComponents.add(urlLabel);
 
-        mainPanel.add(urlField, gbh.nextCol().spanX().get());
+        mainPanel.add(urlField, gbh.nextCol().fillHorizontally().spanX().get());
         jdbcUrlComponents.add(urlField);
         orderList.add(urlField);
 
@@ -668,7 +669,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private JTextField createMatchedWidthTextField() {
 
-        JTextField textField = new JTextField() {
+        JTextField textField = new DefaultTextField() {
             public Dimension getPreferredSize() {
                 return nameField.getPreferredSize();
             }
@@ -754,6 +755,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
                         if (driverCombo.getSelectedIndex() >= 0)
                             driverCombo.setBorder(null);
                         else driverCombo.setBorder(redBorder);
+                        setNewAPI();
                     }
                 }
             });

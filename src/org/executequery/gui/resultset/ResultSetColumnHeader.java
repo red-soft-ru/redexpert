@@ -22,6 +22,7 @@ package org.executequery.gui.resultset;
 
 import org.apache.commons.lang.StringUtils;
 
+import javax.swing.*;
 import java.util.UUID;
 
 public class ResultSetColumnHeader {
@@ -34,6 +35,7 @@ public class ResultSetColumnHeader {
     private int dataType;
     private String dataTypeName;
     private boolean editable;
+    private int  colWidth;
 
     public ResultSetColumnHeader(int index, String label) {
         this(index, label, label);
@@ -52,6 +54,7 @@ public class ResultSetColumnHeader {
         this.dataTypeName = dataTypeName;
         this.visible = true;
         this.editable = true;
+        this.colWidth=(int) (new JLabel(label).getPreferredSize().getWidth()+30);
     }
 
     public String getId() {
@@ -103,6 +106,13 @@ public class ResultSetColumnHeader {
         return label + " [ " + name + " ]";
     }
 
+    public int getColWidth() {
+        return colWidth;
+    }
+
+    public void setColWidth(int colWidth) {
+        this.colWidth = colWidth;
+    }
 }
 
 

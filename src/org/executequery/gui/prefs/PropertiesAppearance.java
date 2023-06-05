@@ -140,6 +140,8 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
         if (!lafChangeWarningShown && e.getStateChange() == ItemEvent.DESELECTED) {
 
             GUIUtilities.displayInformationMessage(bundleString("ChangingTheme.Information"));
+            new PropertiesEditorColours().restoreDefaults();
+            new PropertiesResultSetTableColours().restoreDefaults();
             lafChangeWarningShown = true;
         }
         

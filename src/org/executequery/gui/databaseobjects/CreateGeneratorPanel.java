@@ -11,8 +11,6 @@ import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
-import javax.swing.*;
-import java.awt.*;
 import java.sql.SQLException;
 
 public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
@@ -34,7 +32,8 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
 
     protected void initEdited() {
         reset();
-        addPrivilegesTab(tabbedPane);
+        if (parent == null)
+            addPrivilegesTab(tabbedPane, generator);
         addDependenciesTab(generator);
         addCreateSqlTab(generator);
     }
@@ -143,7 +142,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
 
     protected void reset() {
         nameField.setText(generator.getName().trim());
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         if (getDatabaseVersion() >= 3)
             startValueText.setLongValue(generator.getSequenceFirstValue());
         currentValueText.setLongValue(generator.getSequenceCurrentValue());

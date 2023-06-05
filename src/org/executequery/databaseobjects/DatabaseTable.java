@@ -182,6 +182,12 @@ public interface DatabaseTable extends DatabaseTableObject {
 
     List<ColumnConstraint> getUniqueKeys();
 
+    List<DatabaseColumn> getPrimaryKeysColumns();
+
+    List<DatabaseColumn> getForeignKeysColumns();
+
+    List<DatabaseColumn> getUniqueKeysColumns();
+
     String getAlterSQLTextForUniqueKeys();
 
     String getAlterSQLTextForPrimaryKeys();

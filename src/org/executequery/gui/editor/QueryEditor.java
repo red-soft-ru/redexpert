@@ -131,10 +131,9 @@ public class QueryEditor extends DefaultTabView
      */
     private JCheckBox maxRowCountCheckBox;
 
-    /**
-     * The max row count returned field
-     */
     private JCheckBox stopOnErrorCheckBox;
+
+    private JCheckBox lineWrapperCheckBox;
 
     /**
      * The max row count returned field
@@ -287,6 +286,10 @@ public class QueryEditor extends DefaultTabView
         stopOnErrorCheckBox.addChangeListener(e -> SystemProperties.setBooleanProperty(
                 "user", "editor.stop.on.error", stopOnErrorCheckBox.isSelected()));
 
+        lineWrapperCheckBox = new JCheckBox(bundleString("LineWrapper"));
+        lineWrapperCheckBox.setToolTipText(bundleString("LineWrapper.tool-tip"));
+        lineWrapperCheckBox.addChangeListener(e -> switchLineWrapping());
+
         maxRowCountField = new MaxRowCountField(this);
 
         toolsPanel = new JPanel(new GridBagLayout());
@@ -364,6 +367,12 @@ public class QueryEditor extends DefaultTabView
         gbc.insets.left = 10;
         toolsPanel.add(stopOnErrorCheckBox, gbc);
 
+        gbc.gridx++;
+        gbc.weightx = 0;
+        gbc.insets.top = 5;
+        gbc.insets.left = 10;
+        toolsPanel.add(lineWrapperCheckBox, gbc);
+
         splitPane.setBorder(BorderFactory.createEmptyBorder(0, 3, 3, 3));
 
         JPanel base = new JPanel(new BorderLayout());
@@ -416,6 +425,10 @@ public class QueryEditor extends DefaultTabView
         filterTextField.addActionListener(e -> resultsPanel.filter(filterTextField.getText()));
 
         return filterTextField;
+    }
+
+    private void switchLineWrapping() {
+        editorPanel.getQueryArea().setLineWrap(!editorPanel.getQueryArea().getLineWrap());
     }
 
     private void maxRowCountCheckBoxSelected() {

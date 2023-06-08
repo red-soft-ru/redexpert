@@ -29,12 +29,10 @@ import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.sql.Types;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 // much of this from the article Christmas Tree Applications at
 // http://java.sun.com/products/jfc/tsc/articles/ChristmasTree
@@ -48,24 +46,16 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
     private Color background;
     private Color foreground;
-
-    private Color selectionForeground;
-    private Color selectionBackground;
-
-    private Color tableForeground;
     private Color tableBackground;
 
-    private Color editableForeground;
-    private Color editableBackground;
-
-    private Border focusBorder;
-
-    private DateTimeFormatter dateFormat;
-    private DateTimeFormatter timeFormat;
-    private DateTimeFormatter timestampFormat;
+    private final Color selectionForeground;
+    private final Color selectionBackground;
+    private final Color tableForeground;
+    private final Color editableForeground;
+    private final Color editableBackground;
+    private final Border focusBorder;
 
     private String nullValueDisplayString;
-
     private Color nullValueDisplayColor;
     private Color nullValueAddDisplayColor;
     private Color nullValueDeleteDisplayColor;
@@ -78,12 +68,15 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private Color changedValueDisplayColor;
     private Color deletedValueDisplayColor;
     private Color newValueDisplayColor;
-    private boolean otherColorForNull;
     private Color focusRowBackground;
-
     private Color alternatingRowBackground;
 
+    private boolean otherColorForNull;
     private boolean rightAlignNumeric;
+
+    private DateTimeFormatter dateFormat;
+    private DateTimeFormatter timeFormat;
+    private DateTimeFormatter timestampFormat;
 
     ResultSetTableCellRenderer() {
 
@@ -105,68 +98,11 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         return UIManager.getColor(key);
     }
 
-    public Component getTableCellRendererComponent(
-            JTable table, Object value,
-            boolean isSelected, boolean hasFocus,
-            int row, int column) {
-
-        if (isSelected) {
-
-            setForeground(selectionForeground);
-            setBackground(selectionBackground);
-
-        } else if (row == table.getSelectedRow()) {
-            setBackground(focusRowBackground);
-        } else {
-
-            if (tableBackground == null) {
-
-                tableBackground = table.getBackground();
-            }
-
-            setForeground(tableForeground);
-            if (row % 2 > 0) {
-
-                setBackground(alternatingRowBackground);
-
-            } else {
-
-                setBackground(tableBackground);
-            }
-        }
-
-        if (hasFocus) {
-
-            setBorder(focusBorder);
-
-            if (table.isCellEditable(row, column)) {
-
-                setForeground(editableForeground);
-                setBackground(editableBackground);
-            }
-
-        } else {
-
-            setBorder(noFocusBorder);
-        }
-        isSelected = isSelected || row == table.getSelectedRow();
-        formatValueForDisplay(value, isSelected);
-        if (rightAlignNumeric) {
-
-            alignNumeric(value);
-        }
-
-
-        return this;
-    }
-
     private void alignNumeric(Object value) {
 
         RecordDataItem recordDataItem = (RecordDataItem) value;
-        if (recordDataItem == null || recordDataItem.isDisplayValueNull()) {
-
+        if (recordDataItem == null || recordDataItem.isDisplayValueNull())
             return;
-        }
 
         int sqlType = recordDataItem.getDataType();
         switch (sqlType) {
@@ -193,48 +129,35 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private void formatValueForDisplay(Object value, boolean isSelected) {
 
         if (value != null) {
-
             if (value instanceof RecordDataItem) {
 
                 RecordDataItem recordDataItem = (RecordDataItem) value;
-                if (recordDataItem.isDisplayValueNull()) {
-
+                if (recordDataItem.isDisplayValueNull())
                     formatForNullValue(isSelected, recordDataItem.isChanged(), recordDataItem.isDeleted(), recordDataItem.isNew());
-                    return;
-
-                } else {
-
+                else
                     formatForDataItem(recordDataItem, isSelected);
-                    return;
-                }
 
-            } else {
-
+            } else
                 formatForOther(value, isSelected);
-            }
-
-        } else {
-
+        } else
             formatForNullValue(isSelected, false, false, false);
-        }
 
     }
 
     private void formatForOther(Object value, boolean isSelected) {
 
-        if (!isSelected) {
-
+        if (!isSelected)
             setBackground(otherValueDisplayColor);
-        }
-
         setValue(value);
     }
 
     private void formatForDataItem(RecordDataItem recordDataItem, boolean isSelected) {
 
-        boolean isDateValue = false;
         int sqlType = recordDataItem.getDataType();
+        Object value = recordDataItem.getDisplayValue();
+
         Color color;
+        boolean isDateValue = false;
 
         if (recordDataItem.isNew() && newValueDisplayColor.getRGB() != tableBackground.getRGB()) {
             color = newValueDisplayColor;
@@ -246,7 +169,6 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
             color = changedValueDisplayColor;
 
         } else {
-
             switch (sqlType) {
 
                 case Types.LONGVARCHAR:
@@ -289,13 +211,12 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 case Types.BLOB:
                     color = blobValueDisplayColor;
                     break;
+
                 default:
                     color = otherValueDisplayColor;
 
             }
         }
-
-        Object value = recordDataItem.getDisplayValue();
 
         if (isDateValue) {
 
@@ -313,14 +234,10 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         if (!isSelected) {
 
-//            if (color.getRGB() != Color.WHITE.getRGB()) {
-            if (color.getRGB() != tableBackground.getRGB()) {
-
-                // if its not the bg, apply the bg otherwise run 
-                // with alternating bg alreday set 
-
+            // if it's not the bg, apply the bg otherwise run
+            // with alternating bg already set
+            if (color.getRGB() != tableBackground.getRGB())
                 setBackground(color);
-            }
 
         }
 
@@ -330,22 +247,18 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         setValue(nullValueDisplayString);
         setHorizontalAlignment(SwingConstants.CENTER);
+
         if (!isSelected) {
+
             if (!deleted || deletedValueDisplayColor.getRGB() == tableBackground.getRGB()) {
-                if (!newValue || newValueDisplayColor.getRGB() == tableBackground.getRGB()) {
-                    if (!changed)
-                        setBackground(nullValueDisplayColor);
-                    else setBackground(changedValueDisplayColor);
-                } else if (otherColorForNull) {
-                    setBackground(nullValueAddDisplayColor);
-                } else {
-                    setBackground(newValueDisplayColor);
-                }
-            } else if (otherColorForNull) {
-                setBackground(nullValueDeleteDisplayColor);
-            } else {
-                setBackground(deletedValueDisplayColor);
-            }
+
+                if (!newValue || newValueDisplayColor.getRGB() == tableBackground.getRGB())
+                    setBackground(changed ? changedValueDisplayColor : nullValueDisplayColor);
+                else
+                    setBackground(otherColorForNull ? nullValueAddDisplayColor : newValueDisplayColor);
+
+            } else
+                setBackground(otherColorForNull ? nullValueDeleteDisplayColor : deletedValueDisplayColor);
         }
 
     }
@@ -354,15 +267,15 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         String datePattern = SystemProperties.getProperty(
                 Constants.USER_PROPERTIES_KEY, "results.date.pattern");
-        dateFormat = !MiscUtils.isNull(datePattern) ?  DateTimeFormatter.ofPattern(datePattern) : null;
+        dateFormat = !MiscUtils.isNull(datePattern) ? DateTimeFormatter.ofPattern(datePattern) : null;
 
         String timePattern = SystemProperties.getProperty(
                 Constants.USER_PROPERTIES_KEY, "results.time.pattern");
-        timeFormat = !MiscUtils.isNull(timePattern) ?  DateTimeFormatter.ofPattern(timePattern) : null;
+        timeFormat = !MiscUtils.isNull(timePattern) ? DateTimeFormatter.ofPattern(timePattern) : null;
 
         String timestampPattern = SystemProperties.getProperty(
                 Constants.USER_PROPERTIES_KEY, "results.timestamp.pattern");
-        timestampFormat = !MiscUtils.isNull(timestampPattern) ?  DateTimeFormatter.ofPattern(timestampPattern) : null;
+        timestampFormat = !MiscUtils.isNull(timestampPattern) ? DateTimeFormatter.ofPattern(timestampPattern) : null;
 
         rightAlignNumeric = SystemProperties.getBooleanProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.right.align.numeric");
@@ -414,6 +327,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         focusRowBackground = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.focus.row.background.colour");
+
     }
 
     private String dateFormatted(LocalDate date) {
@@ -429,48 +343,76 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     }
 
     public void setTableBackground(Color c) {
-
         this.tableBackground = c;
     }
 
-    public void setBackground(Color c) {
+    @Override
+    public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
+        if (isSelected) {
+            setForeground(selectionForeground);
+            setBackground(selectionBackground);
+
+        } else if (row == table.getSelectedRow()) {
+            setBackground(focusRowBackground);
+
+        } else {
+
+            if (tableBackground == null)
+                tableBackground = table.getBackground();
+
+            setForeground(tableForeground);
+            setBackground((row % 2 > 0) ? alternatingRowBackground : tableBackground);
+        }
+
+        if (hasFocus) {
+
+            setBorder(focusBorder);
+            if (table.isCellEditable(row, column)) {
+                setForeground(editableForeground);
+                setBackground(editableBackground);
+            }
+
+        } else
+            setBorder(noFocusBorder);
+
+        isSelected = isSelected || row == table.getSelectedRow();
+        formatValueForDisplay(value, isSelected);
+
+        if (rightAlignNumeric)
+            alignNumeric(value);
+
+        return this;
+    }
+
+    @Override
+    public void setBackground(Color c) {
         this.background = c;
     }
 
+    @Override
     public Color getBackground() {
-
         return background;
     }
 
+    @Override
     public void setForeground(Color c) {
-
         this.foreground = c;
     }
 
+    @Override
     public Color getForeground() {
-
         return foreground;
     }
 
+    @Override
     public boolean isOpaque() {
-
         return background != null;
     }
 
-    public void invalidate() {
-    }
-
-    public void repaint() {
-    }
-
-    public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
-    }
-
+    @Override
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
     }
 
-
 }
-
-

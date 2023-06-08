@@ -30,6 +30,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 // much of this from the article Christmas Tree Applications at
@@ -56,7 +60,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
     private Border focusBorder;
 
-    private SimpleDateFormat dateFormat;
+    private DateTimeFormatter dateFormat;
+    private DateTimeFormatter timeFormat;
+    private DateTimeFormatter timestampFormat;
 
     private String nullValueDisplayString;
 
@@ -227,15 +233,19 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private void formatForDataItem(RecordDataItem recordDataItem, boolean isSelected) {
 
         boolean isDateValue = false;
-        Color color = tableBackground;
+        int sqlType = recordDataItem.getDataType();
+        Color color;
+
         if (recordDataItem.isNew() && newValueDisplayColor.getRGB() != tableBackground.getRGB()) {
             color = newValueDisplayColor;
+
         } else if (recordDataItem.isDeleted() && deletedValueDisplayColor.getRGB() != tableBackground.getRGB()) {
             color = deletedValueDisplayColor;
+
         } else if (recordDataItem.isChanged() && changedValueDisplayColor.getRGB() != tableBackground.getRGB()) {
             color = changedValueDisplayColor;
+
         } else {
-            int sqlType = recordDataItem.getDataType();
 
             switch (sqlType) {
 
@@ -287,23 +297,19 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         Object value = recordDataItem.getDisplayValue();
 
-        if (!isDateValue) {
+        if (isDateValue) {
 
-            setValue(value);
-
-        } else {
-
-            // account for possible dump on parse conversion
-            if (value instanceof Date) {
-
-                setValue(dateFormatted((Date) value));
-
-            } else {
-
+            if (value instanceof LocalDate)
+                setValue(dateFormatted((LocalDate) value));
+            else if (value instanceof LocalTime)
+                setValue(timeFormatted((LocalTime) value));
+            else if (value instanceof LocalDateTime)
+                setValue(timestampFormatted((LocalDateTime) value));
+            else
                 setValue(value);
-            }
 
-        }
+        } else
+            setValue(value);
 
         if (!isSelected) {
 
@@ -347,16 +353,16 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     public void applyUserPreferences() {
 
         String datePattern = SystemProperties.getProperty(
-                Constants.USER_PROPERTIES_KEY, "resuts.date.pattern");
+                Constants.USER_PROPERTIES_KEY, "results.date.pattern");
+        dateFormat = !MiscUtils.isNull(datePattern) ?  DateTimeFormatter.ofPattern(datePattern) : null;
 
-        if (!MiscUtils.isNull(datePattern)) {
+        String timePattern = SystemProperties.getProperty(
+                Constants.USER_PROPERTIES_KEY, "results.time.pattern");
+        timeFormat = !MiscUtils.isNull(timePattern) ?  DateTimeFormatter.ofPattern(timePattern) : null;
 
-            dateFormat = new SimpleDateFormat(datePattern);
-
-        } else {
-
-            dateFormat = null;
-        }
+        String timestampPattern = SystemProperties.getProperty(
+                Constants.USER_PROPERTIES_KEY, "results.timestamp.pattern");
+        timestampFormat = !MiscUtils.isNull(timestampPattern) ?  DateTimeFormatter.ofPattern(timestampPattern) : null;
 
         rightAlignNumeric = SystemProperties.getBooleanProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.right.align.numeric");
@@ -410,16 +416,16 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 Constants.USER_PROPERTIES_KEY, "results.table.focus.row.background.colour");
     }
 
-    private String dateFormatted(Date date) {
+    private String dateFormatted(LocalDate date) {
+        return (dateFormat != null) ? dateFormat.format(date) : date.toString();
+    }
 
-        if (dateFormat != null) {
+    private String timeFormatted(LocalTime date) {
+        return (timeFormat != null) ? timeFormat.format(date) : date.toString();
+    }
 
-            return dateFormat.format(date);
-
-        } else {
-
-            return date.toString();
-        }
+    private String timestampFormatted(LocalDateTime date) {
+        return (timestampFormat != null) ? timestampFormat.format(date) : date.toString();
     }
 
     public void setTableBackground(Color c) {

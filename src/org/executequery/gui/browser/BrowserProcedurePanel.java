@@ -173,7 +173,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         //base.add(schemaNameField, gbc);
 
         setHeaderText(bundleString("procedure"));
-        setHeaderIcon(GUIUtilities.loadIcon("Procedure24.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("Procedure24.svg", true));
         setContentPanel(base);
         cache = new HashMap();
 
@@ -219,31 +219,31 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
             case NamedObject.FUNCTION:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("function"));
-                setHeaderIcon(GUIUtilities.loadIcon("Function24.png", true));
+                setHeaderIcon(GUIUtilities.loadIcon("Function24.svg", true));
                 break;
 
             case NamedObject.PROCEDURE:
                 objectNameLabel.setText(bundleString("procedure-name"));
                 setHeaderText(bundleString("procedure"));
-                setHeaderIcon(GUIUtilities.loadIcon("Procedure24.png", true));
+                setHeaderIcon(GUIUtilities.loadIcon("Procedure24.svg", true));
                 break;
 
             case NamedObject.SYSTEM_STRING_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-string-function"));
-                setHeaderIcon(GUIUtilities.loadIcon("SystemFunction24.png", true));
+                setHeaderIcon(GUIUtilities.loadIcon("SystemFunction24.svg", true));
                 break;
 
             case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-numeric-function"));
-                setHeaderIcon(GUIUtilities.loadIcon("SystemFunction24.png", true));
+                setHeaderIcon(GUIUtilities.loadIcon("SystemFunction24.svg", true));
                 break;
 
             case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-date-function"));
-                setHeaderIcon(GUIUtilities.loadIcon("SystemFunction24.png", true));
+                setHeaderIcon(GUIUtilities.loadIcon("SystemFunction24.svg", true));
                 break;
         }
 
@@ -278,31 +278,31 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
             case NamedObject.FUNCTION:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("function"));
-                setHeaderIcon("Function24.png");
+                setHeaderIcon("Function24.svg");
                 break;
 
             case NamedObject.PROCEDURE:
                 objectNameLabel.setText(bundleString("procedure-name"));
                 setHeaderText(bundleString("procedure"));
-                setHeaderIcon("Procedure24.png");
+                setHeaderIcon("Procedure24.svg");
                 break;
 
             case NamedObject.SYSTEM_STRING_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-string-function"));
-                setHeaderIcon("SystemFunction24.png");
+                setHeaderIcon("SystemFunction24.svg");
                 break;
 
             case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-numeric-function"));
-                setHeaderIcon("SystemFunction24.png");
+                setHeaderIcon("SystemFunction24.svg");
                 break;
 
             case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-date-function"));
-                setHeaderIcon("SystemFunction24.png");
+                setHeaderIcon("SystemFunction24.svg");
                 break;
         }
 

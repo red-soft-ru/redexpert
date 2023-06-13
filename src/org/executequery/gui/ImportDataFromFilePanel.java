@@ -48,7 +48,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         implements NamedView, ConnectionListener {
 
     public static final String TITLE = bundledString("Title");
-    public static final String FRAME_ICON = "ImportDelimited16.png";
+    public static final String FRAME_ICON = "ImportDelimited16.svg";
 
     private static final int PREVIEW_ROWS_COUNT = 50;
     private static final int MIN_COLUMN_WIDTH = 100;

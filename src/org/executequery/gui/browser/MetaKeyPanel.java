@@ -78,7 +78,7 @@ public class MetaKeyPanel extends BrowserNodeBasePanel {
         // add the mouse listener
         table().addMouseListener(new MouseHandler());
 
-        setHeaderIcon(GUIUtilities.loadIcon("DatabaseObject24.png"));
+        setHeaderIcon(GUIUtilities.loadIcon("DatabaseObject24.svg"));
 
         cache = new HashMap();
     }

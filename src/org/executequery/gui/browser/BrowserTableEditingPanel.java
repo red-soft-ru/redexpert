@@ -511,7 +511,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         sbTemp = new StringBuffer(100);
 
         setContentPanel(base);
-        setHeaderIcon(GUIUtilities.loadIcon("DatabaseTable24.png"));
+        setHeaderIcon(GUIUtilities.loadIcon("DatabaseTable24.svg"));
         setHeaderText(bundleString("db-table"));
 
         // register for keyword changes
@@ -1328,7 +1328,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         buttonsEditingColumnPanel = new JPanel(new GridBagLayout());
         PanelToolBar bar = new PanelToolBar();
         RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.svg"));
         addRolloverButton.setToolTipText("Insert column");
         addRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1338,7 +1338,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         });
         bar.add(addRolloverButton);
         RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.svg"));
         deleteRolloverButton.setToolTipText("Delete column");
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1348,7 +1348,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         });
         bar.add(deleteRolloverButton);
         RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.svg"));
         commitRolloverButton.setToolTipText("Commit");
         commitRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1367,7 +1367,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         });
         bar.add(commitRolloverButton);
         RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
+        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.svg"));
         rollbackRolloverButton.setToolTipText("Rollback");
         rollbackRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1386,7 +1386,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         buttonsEditingConstraintPanel = new JPanel(new GridBagLayout());
         PanelToolBar bar = new PanelToolBar();
         RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.svg"));
         addRolloverButton.setToolTipText("Insert constraint");
         addRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1396,7 +1396,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         });
         bar.add(addRolloverButton);
         RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.svg"));
         deleteRolloverButton.setToolTipText("Delete constraint");
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1406,7 +1406,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         });
         bar.add(deleteRolloverButton);
         RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.svg"));
         commitRolloverButton.setToolTipText("Commit");
         commitRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1425,7 +1425,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         });
         bar.add(commitRolloverButton);
         RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
+        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.svg"));
         rollbackRolloverButton.setToolTipText("Rollback");
         rollbackRolloverButton.addActionListener(new ActionListener() {
             @Override

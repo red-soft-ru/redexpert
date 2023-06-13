@@ -108,7 +108,7 @@ public class UserDefinedWordsPanel extends DefaultActionButtonsPanel
         userPanel.setPreferredSize(dim);
 
         deleteButton = new RolloverButton(
-                GUIUtilities.loadIcon("Delete16.png"), "Delete selection");
+                GUIUtilities.loadIcon("Delete16.svg"), "Delete selection");
         actionToButton(deleteButton, "deleteWord");
 
         GridBagConstraints gbc = new GridBagConstraints();

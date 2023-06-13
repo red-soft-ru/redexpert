@@ -134,8 +134,8 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         outputTextPane = new LoggingOutputPanel();
         outputTextPane.setBorder(null);
 
-        outputTabIcon = GUIUtilities.loadIcon("SystemOutput.png", true);
-        resultSetTabIcon = GUIUtilities.loadIcon("FrameIcon16.png", true);
+        outputTabIcon = GUIUtilities.loadIcon("SystemOutput.svg", true);
+        resultSetTabIcon = GUIUtilities.loadIcon("FrameIcon16.svg", true);
 
         addTextOutputTab();
 
@@ -719,7 +719,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
             // otherwise add it
             insertTab(ResultSetMetaDataPanel.TITLE,
-                    GUIUtilities.loadIcon("RSMetaData16.png", true),
+                    GUIUtilities.loadIcon("RSMetaData16.svg", true),
                     metaDataPanel,
                     getToolTipTextAt(index),
                     index + 1);

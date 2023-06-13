@@ -556,15 +556,15 @@ public class ExecuteQueryDialog extends BaseDialog {
             switch (col) {
                 case EXECUTED:
                     if (action.executed)
-                        return GUIUtilities.loadIcon("grant.png");
-                    else return GUIUtilities.loadIcon("no_grant.png");
+                        return GUIUtilities.loadIcon("grant.svg");
+                    else return GUIUtilities.loadIcon("no_grant.svg");
                 case NAME_OPERATION:
                     return action.nameOperation;
                 case STATUS:
                     return action.status;
                 case COPY:
                     if (action.copyScript)
-                        return GUIUtilities.loadIcon("CloseDockable.png");
+                        return GUIUtilities.loadIcon("CloseDockable.svg");
                     else return "";
                 default:
                     return "";

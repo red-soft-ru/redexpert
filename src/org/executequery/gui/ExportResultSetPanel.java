@@ -69,7 +69,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         TextEditorContainer {
 
     public static final String TITLE = "Export Result Set ";
-    public static final String FRAME_ICON = "ExportDelimited16.png";
+    public static final String FRAME_ICON = "ExportDelimited16.svg";
 
     private JComboBox connectionsCombo;
 

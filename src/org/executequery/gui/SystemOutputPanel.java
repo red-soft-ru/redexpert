@@ -86,7 +86,7 @@ public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnl
 
     public Icon getIcon() {
 
-        return GUIUtilities.loadIcon("SystemOutput.png");
+        return GUIUtilities.loadIcon("SystemOutput.svg");
     }
 
     public String toString() {

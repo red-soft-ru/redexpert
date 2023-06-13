@@ -59,7 +59,7 @@ public class JobsLogPanel extends JPanel implements TabView {
         startDatePicker = new EQDateTimePicker();
         endDatePicker = new EQDateTimePicker();
         refreshButton = new JButton();
-        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.png"));
+        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.svg"));
         refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

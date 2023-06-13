@@ -149,7 +149,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 0;
 
         setHeaderText("Database UDF");
-        setHeaderIcon(GUIUtilities.loadIcon("udf16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("udf16.svg", true));
         setContentPanel(base);
         cache = new HashMap();
 
@@ -180,7 +180,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText(bundleString("UDFName"));
         setHeaderText(bundleString("DatabaseUDF"));
-        setHeaderIcon(GUIUtilities.loadIcon("udf16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("udf16.svg", true));
 
         try {
             udfNameField.setText(udf.getName());
@@ -201,7 +201,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText(bundleString("UDFName"));
         setHeaderText(bundleString("DatabaseUDF"));
-        setHeaderIcon("udf16.png");
+        setHeaderIcon("udf16.svg");
 
         if (udf != null) {
             udfNameField.setText(udf.getName());

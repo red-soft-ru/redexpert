@@ -179,7 +179,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 0;
 
         setHeaderText(Bundles.get(BrowserDomainPanel.class, "DatabaseDomain"));
-        setHeaderIcon(GUIUtilities.loadIcon("domain16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("domain16.svg", true));
         setContentPanel(base);
         cache = new HashMap();
 
@@ -214,7 +214,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(currentObjectView);
         objectNameLabel.setText(bundleString("DomainName"));
         setHeaderText(bundleString("DatabaseDomain"));
-        setHeaderIcon(GUIUtilities.loadIcon("domain16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("domain16.svg", true));
 
         try {
             domainNameField.setText(domain.getName());
@@ -236,7 +236,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText("Domain Name:");
         setHeaderText("Database Domain");
-        setHeaderIcon("domain16.png");
+        setHeaderIcon("domain16.svg");
 
         if (domain != null) {
             domainNameField.setText(domain.getName());

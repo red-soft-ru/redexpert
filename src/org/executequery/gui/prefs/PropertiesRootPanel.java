@@ -40,11 +40,11 @@ public class PropertiesRootPanel extends JPanel
         lightColour = new Color(187, 209, 236);
 
         ImageIcon icon = new ImageIcon(getClass().getResource(
-                "/org/executequery/images/AboutText.png"));
+                "/org/executequery/images/AboutText.svg"));
         preferencesImage = icon.getImage();
 
         icon = new ImageIcon(getClass().getResource(
-                "/org/executequery/images/PreferencesText.png"));
+                "/org/executequery/images/PreferencesText.svg"));
         textImage = icon.getImage();
     }
 

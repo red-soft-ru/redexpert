@@ -80,41 +80,41 @@ public class ErdToolBarPalette extends PanelToolBar
 
     private void jbInit() {
 
-        dropTableButton = new RolloverButton("/org/executequery/icons/DropTable16.png",
+        dropTableButton = new RolloverButton("/org/executequery/icons/DropTable16.svg",
                 bundleString("dropTable"));
 
-//        commitButton = new RolloverButton("/org/executequery/icons/Commit16.png",
+//        commitButton = new RolloverButton("/org/executequery/icons/Commit16.svg",
 //                                         "Commit any schema changes");
 
-        relationButton = new RolloverButton("/org/executequery/icons/TableRelationship16.png",
+        relationButton = new RolloverButton("/org/executequery/icons/TableRelationship16.svg",
                 bundleString("relation"));
 
         deleteRelationButton = new RolloverButton(
-                "/org/executequery/icons/TableRelationshipDelete16.png",
+                "/org/executequery/icons/TableRelationshipDelete16.svg",
                 bundleString("deleteRelation"));
 
-        genScriptsButton = new RolloverButton("/org/executequery/icons/CreateScripts16.png",
+        genScriptsButton = new RolloverButton("/org/executequery/icons/CreateScripts16.svg",
                 bundleString("genScripts"));
 
-        fontStyleButton = new RolloverButton("/org/executequery/icons/FontStyle16.png",
+        fontStyleButton = new RolloverButton("/org/executequery/icons/FontStyle16.svg",
                 bundleString("fontStyle"));
 
-        lineStyleButton = new RolloverButton("/org/executequery/icons/LineStyle16.png",
+        lineStyleButton = new RolloverButton("/org/executequery/icons/LineStyle16.svg",
                 bundleString("lineStyle"));
 
-        createTableButton = new RolloverButton("/org/executequery/icons/NewTable16.png",
+        createTableButton = new RolloverButton("/org/executequery/icons/NewTable16.svg",
                 bundleString("createTable"));
 
-        addTableButton = new RolloverButton("/org/executequery/icons/AddTable16.png",
+        addTableButton = new RolloverButton("/org/executequery/icons/AddTable16.svg",
                 "Add tables from an existing schema");
 
-        canvasBgButton = new RolloverButton("/org/executequery/icons/ErdBackground16.png",
+        canvasBgButton = new RolloverButton("/org/executequery/icons/ErdBackground16.svg",
                 bundleString("canvasBg"));
 
-        canvasFgButton = new RolloverButton("/org/executequery/icons/ErdForeground16.png",
+        canvasFgButton = new RolloverButton("/org/executequery/icons/ErdForeground16.svg",
                 bundleString("canvasFg"));
 
-        erdTitleButton = new RolloverButton("/org/executequery/icons/ErdTitle16.png",
+        erdTitleButton = new RolloverButton("/org/executequery/icons/ErdTitle16.svg",
                 bundleString("erdTitle"));
 
         genScriptsButton.addActionListener(this);
@@ -151,9 +151,9 @@ public class ErdToolBarPalette extends PanelToolBar
         scaleCombo.setLightWeightPopupEnabled(false);
         scaleCombo.setSelectedIndex(3);
 
-        zoomInButton = new RolloverButton("/org/executequery/icons/ZoomIn16.png",
+        zoomInButton = new RolloverButton("/org/executequery/icons/ZoomIn16.svg",
                 bundleString("zoomIn"));
-        zoomOutButton = new RolloverButton("/org/executequery/icons/ZoomOut16.png",
+        zoomOutButton = new RolloverButton("/org/executequery/icons/ZoomOut16.svg",
                 bundleString("zoomOut"));
 
         zoomInButton.addActionListener(this);

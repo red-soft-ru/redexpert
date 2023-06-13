@@ -68,7 +68,7 @@ public class HeapMemoryStatusSnippet extends JPanel
         memProgress = new JProgressBar(progModel);
         memProgress.addMouseListener(new ProgressMouseAdapter());
 
-        JButton gcButton = new NoFocusButton("GcDelete16.png", "GcDeletePressed16.png");
+        JButton gcButton = new NoFocusButton("GcDelete16.svg", "GcDeletePressed16.svg");
         gcButton.addActionListener(this);
 
         memProgress.setBorder(null);

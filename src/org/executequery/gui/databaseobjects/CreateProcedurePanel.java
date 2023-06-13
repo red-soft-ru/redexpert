@@ -49,7 +49,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     /**
      * This objects icon as an internal frame
      */
-    public static final String FRAME_ICON = "NewProcedure16.png";
+    public static final String FRAME_ICON = "NewProcedure16.svg";
 
 
     /**

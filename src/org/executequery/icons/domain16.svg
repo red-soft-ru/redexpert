@@ -1,0 +1,14 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="2" y="1.5" width="12" height="4" rx="1" fill="#91BAE1"/>
+<rect x="2" y="6" width="12" height="4" rx="1" fill="#91BAE1"/>
+<rect x="2" y="10.5" width="12" height="4" rx="1" fill="#91BAE1"/>
+<rect x="10.334" y="7" width="1.33333" height="1.66667" rx="0.4" fill="#F8F8F8"/>
+<rect x="13.3574" y="7.69995" width="1.33333" height="1.66667" rx="0.4" transform="rotate(45 13.3574 7.69995)" fill="#F8F8F8"/>
+<rect x="14.3008" y="13.3569" width="1.33333" height="1.66667" rx="0.4" transform="rotate(135 14.3008 13.3569)" fill="#F8F8F8"/>
+<rect x="9.81836" y="8.87866" width="1.33333" height="1.66667" rx="0.4" transform="rotate(135 9.81836 8.87866)" fill="#F8F8F8"/>
+<rect x="8.87891" y="12.1785" width="1.33333" height="1.66667" rx="0.4" transform="rotate(45 8.87891 12.1785)" fill="#F8F8F8"/>
+<rect x="9" y="10.3333" width="1.33333" height="2" rx="0.4" transform="rotate(90 9 10.3333)" fill="#F8F8F8"/>
+<rect x="15" y="10.3333" width="1.33333" height="2" rx="0.4" transform="rotate(90 15 10.3333)" fill="#F8F8F8"/>
+<rect x="10.334" y="13.3333" width="1.33333" height="1.66667" rx="0.4" fill="#F8F8F8"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M11 14C12.6569 14 14 12.6569 14 11C14 9.34315 12.6569 8 11 8C9.34315 8 8 9.34315 8 11C8 12.6569 9.34315 14 11 14ZM10.9996 12.3334C11.736 12.3334 12.333 11.7364 12.333 11C12.333 10.2637 11.736 9.66671 10.9996 9.66671C10.2632 9.66671 9.66629 10.2637 9.66629 11C9.66629 11.7364 10.2632 12.3334 10.9996 12.3334Z" fill="#F8F8F8"/>
+</svg>

@@ -67,7 +67,7 @@ public class SchemaPanel extends BrowserNodeBasePanel {
 
         tablePanel().setBorder(BorderFactory.createTitledBorder("Available Objects"));
         setHeaderText("Database Schema");
-        setHeaderIcon(GUIUtilities.loadIcon("User24.png"));
+        setHeaderIcon(GUIUtilities.loadIcon("User24.svg"));
     }
 
     protected String getPrintablePrefixLabel() {

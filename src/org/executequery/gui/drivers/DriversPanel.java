@@ -60,7 +60,7 @@ public class DriversPanel extends AbstractFormObjectViewPanel
 
     public static final String TITLE = Bundles.getCommon("drivers");
 
-    public static final String FRAME_ICON = "DatabaseDrivers16.png";
+    public static final String FRAME_ICON = "DatabaseDrivers16.svg";
 
     private JTextField nameField;
     private JTextField descField;
@@ -199,7 +199,7 @@ public class DriversPanel extends AbstractFormObjectViewPanel
         base.add(findButton, gbc);
 
         setHeaderText("Database Driver");
-        setHeaderIcon(GUIUtilities.loadIcon("DatabaseDriver24.png"));
+        setHeaderIcon(GUIUtilities.loadIcon("DatabaseDriver24.svg"));
         setContentPanel(base);
     }
 

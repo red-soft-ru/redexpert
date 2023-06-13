@@ -118,7 +118,7 @@ public class TableColumnPanel extends AbstractFormObjectViewPanel {
 
         setContentPanel(base);
         setHeaderText(DEFAULT_HEADER_TEXT);
-        setHeaderIcon(GUIUtilities.loadIcon("TableColumn24.png"));
+        setHeaderIcon(GUIUtilities.loadIcon("TableColumn24.svg"));
 
     }
 

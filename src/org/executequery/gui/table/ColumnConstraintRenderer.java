@@ -46,8 +46,8 @@ public class ColumnConstraintRenderer extends DefaultTableCellRenderer {
      * Creates a new instance of ColumnConstraintRenderer
      */
     public ColumnConstraintRenderer() {
-        deleteImage = GUIUtilities.loadIcon("MarkDeleted16.png", true);
-        newImage = GUIUtilities.loadIcon("MarkNew16.png", true);
+        deleteImage = GUIUtilities.loadIcon("MarkDeleted16.svg", true);
+        newImage = GUIUtilities.loadIcon("MarkNew16.svg", true);
     }
 
     public Component getTableCellRendererComponent(JTable table,

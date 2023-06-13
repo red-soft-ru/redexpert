@@ -13,8 +13,8 @@
     <action id="new-command"
             name="New..."
             mnemonic="N"
-            small-icon="/org/executequery/icons/New16.png"
-            large-icon="/org/executequery/icons/New24.png"
+            small-icon="/org/executequery/icons/New16.svg"
+            large-icon="/org/executequery/icons/New24.svg"
             accel-key="shift F12"
             accel-editable="true"
             description="Open a New Editor"
@@ -23,8 +23,8 @@
     <action id="open-command"
             name="Open..."
             mnemonic="O"
-            small-icon="/org/executequery/icons/Open16.png"
-            large-icon="/org/executequery/icons/Open24.png"
+            small-icon="/org/executequery/icons/Open16.svg"
+            large-icon="/org/executequery/icons/Open24.svg"
             accel-key="control L"
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.OpenCommand"/>
@@ -78,8 +78,8 @@
     <action id="save-command"
             name="Save"
             mnemonic="S"
-            small-icon="/org/executequery/icons/Save16.png"
-            large-icon="/org/executequery/icons/Save24.png"
+            small-icon="/org/executequery/icons/Save16.svg"
+            large-icon="/org/executequery/icons/Save24.svg"
             accel-key="control S"
             accel-editable="true"
             description="Save an open document"
@@ -104,8 +104,8 @@
             mnemonic="A"
             accel-editable="true"
             accel-key="control shift S"
-            small-icon="/org/executequery/icons/SaveAs16.png"
-            large-icon="/org/executequery/icons/SaveAs24.png"
+            small-icon="/org/executequery/icons/SaveAs16.svg"
+            large-icon="/org/executequery/icons/SaveAs24.svg"
             execute-class="org.executequery.actions.filecommands.SaveAsCommand"/>
 
     <action id="exit-program-command"
@@ -118,8 +118,8 @@
     <action id="print-command"
             name="Print"
             mnemonic="P"
-            small-icon="/org/executequery/icons/Print16.png"
-            large-icon="/org/executequery/icons/Print24.png"
+            small-icon="/org/executequery/icons/Print16.svg"
+            large-icon="/org/executequery/icons/Print24.svg"
             accel-key="control P"
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.PrintCommand"/>
@@ -128,16 +128,16 @@
             name="Print Preview"
             mnemonic="v"
             accel-editable="true"
-            small-icon="/org/executequery/icons/PrintPreview16.png"
-            large-icon="/org/executequery/icons/PrintPreview24.png"
+            small-icon="/org/executequery/icons/PrintPreview16.svg"
+            large-icon="/org/executequery/icons/PrintPreview24.svg"
             execute-class="org.executequery.actions.filecommands.PrintPreviewCommand"/>
 
     <action id="page-setup-command"
             name="Page Setup"
             mnemonic="u"
             accel-editable="true"
-            small-icon="/org/executequery/icons/PageSetup16.png"
-            large-icon="/org/executequery/icons/PageSetup24.png"
+            small-icon="/org/executequery/icons/PageSetup16.svg"
+            large-icon="/org/executequery/icons/PageSetup24.svg"
             execute-class="org.executequery.actions.filecommands.PageSetupCommand"/>
 
     <action id="to-upper-case-command"
@@ -169,8 +169,8 @@
     <action id="cut-command"
             name="Cut"
             mnemonic="T"
-            small-icon="/org/executequery/icons/Cut16.png"
-            large-icon="/org/executequery/icons/Cut24.png"
+            small-icon="/org/executequery/icons/Cut16.svg"
+            large-icon="/org/executequery/icons/Cut24.svg"
             accel-key="control X"
             accel-editable="false"
             execute-class="org.executequery.actions.editcommands.CutCommand"/>
@@ -178,8 +178,8 @@
     <action id="copy-command"
             name="Copy"
             mnemonic="C"
-            small-icon="/org/executequery/icons/Copy16.png"
-            large-icon="/org/executequery/icons/Copy24.png"
+            small-icon="/org/executequery/icons/Copy16.svg"
+            large-icon="/org/executequery/icons/Copy24.svg"
             accel-key="control C"
             accel-editable="false"
             execute-class="org.executequery.actions.editcommands.CopyCommand"/>
@@ -187,8 +187,8 @@
     <action id="paste-command"
             name="Paste"
             mnemonic="P"
-            small-icon="/org/executequery/icons/Paste16.png"
-            large-icon="/org/executequery/icons/Paste24.png"
+            small-icon="/org/executequery/icons/Paste16.svg"
+            large-icon="/org/executequery/icons/Paste24.svg"
             accel-key="control V"
             accel-editable="false"
             execute-class="org.executequery.actions.editcommands.PasteCommand"/>
@@ -196,8 +196,8 @@
     <action id="redo-command"
             name="Redo"
             mnemonic="R"
-            small-icon="/org/executequery/icons/Redo16.png"
-            large-icon="/org/executequery/icons/Redo24.png"
+            small-icon="/org/executequery/icons/Redo16.svg"
+            large-icon="/org/executequery/icons/Redo24.svg"
             accel-key="control Y"
             accel-editable="false"
             description="Redo the last action"
@@ -206,8 +206,8 @@
     <action id="undo-command"
             name="Undo"
             mnemonic="U"
-            small-icon="/org/executequery/icons/Undo16.png"
-            large-icon="/org/executequery/icons/Undo24.png"
+            small-icon="/org/executequery/icons/Undo16.svg"
+            large-icon="/org/executequery/icons/Undo24.svg"
             accel-key="control Z"
             accel-editable="false"
             description="Undo the last action"
@@ -216,16 +216,16 @@
     <action id="find-command"
             name="Find..."
             mnemonic="F"
-            small-icon="/org/executequery/icons/Find16.png"
-            large-icon="/org/executequery/icons/Find24.png"
+            small-icon="/org/executequery/icons/Find16.svg"
+            large-icon="/org/executequery/icons/Find24.svg"
             accel-key="control F"
             execute-class="org.executequery.actions.searchcommands.FindCommand"/>
 
     <action id="find-next-command"
             name="Find Next"
             mnemonic="N"
-            small-icon="/org/executequery/icons/FindAgain16.png"
-            large-icon="/org/executequery/icons/FindAgain24.png"
+            small-icon="/org/executequery/icons/FindAgain16.svg"
+            large-icon="/org/executequery/icons/FindAgain24.svg"
             accel-key="F3"
             accel-editable="true"
             execute-class="org.executequery.actions.searchcommands.FindNextCommand"/>
@@ -233,13 +233,13 @@
     <action id="find-in-files"
             name="Search Files"
             mnemonic="L"
-            small-icon="/org/executequery/icons/FindInFiles16.png"
+            small-icon="/org/executequery/icons/FindInFiles16.svg"
             execute-class="org.executequery.actions.searchcommands.FindInFilesCommand"/>
 
     <action id="find-previous-command"
             name="Find Previous"
             mnemonic="P"
-            large-icon="/org/executequery/icons/FindPrevious24.png"
+            large-icon="/org/executequery/icons/FindPrevious24.svg"
             accel-key="shift F3"
             accel-editable="true"
             execute-class="org.executequery.actions.searchcommands.FindPreviousCommand"/>
@@ -247,8 +247,8 @@
     <action id="replace-command"
             name="Replace..."
             mnemonic="E"
-            small-icon="/org/executequery/icons/Replace16.png"
-            large-icon="/org/executequery/icons/Replace24.png"
+            small-icon="/org/executequery/icons/Replace16.svg"
+            large-icon="/org/executequery/icons/Replace24.svg"
             accel-key="control R"
             accel-editable="true"
             execute-class="org.executequery.actions.searchcommands.ReplaceCommand"/>
@@ -256,15 +256,15 @@
     <action id="replace-next-command"
             name="Replace Next"
             mnemonic="X"
-            small-icon="/org/executequery/icons/FindAgain16.png"
-            large-icon="/org/executequery/icons/FindAgain24.png"
+            small-icon="/org/executequery/icons/FindAgain16.svg"
+            large-icon="/org/executequery/icons/FindAgain24.svg"
             execute-class="org.executequery.actions.searchcommands.ReplaceNextCommand"/>
 
     <action id="goto-command"
             name="Go To..."
             mnemonic="G"
-            small-icon="/org/executequery/icons/GoTo16.png"
-            large-icon="/org/executequery/icons/GoTo24.png"
+            small-icon="/org/executequery/icons/GoTo16.svg"
+            large-icon="/org/executequery/icons/GoTo24.svg"
             accel-key="control G"
             accel-editable="true"
             description="Go to line number..."
@@ -275,8 +275,8 @@
               name="Database Properties"
               mnemonic="P"
               accel-editable="true"
-              small-icon="/org/executequery/icons/Database16.png"
-              large-icon="/org/executequery/icons/Database24.png"
+              small-icon="/org/executequery/icons/Database16.svg"
+              large-icon="/org/executequery/icons/Database24.svg"
               description="Displays the open connection's properties"
               execute-class="org.executequery.actions.databasecommands.DatabasePropertiesCommand"/>
     -->
@@ -284,8 +284,8 @@
             name="Create Database"
             mnemonic="control C"
             accel-editable="true"
-            small-icon="/org/executequery/icons/create_database16.png"
-            large-icon="/org/executequery/icons/create_database32.png"
+            small-icon="/org/executequery/icons/create_database16.svg"
+            large-icon="/org/executequery/icons/create_database32.svg"
             description="Create Database"
             execute-class="org.executequery.actions.databasecommands.CreateDatabaseCommand"/>
 
@@ -293,7 +293,7 @@
             name="Close Connection"
             mnemonic="C"
             accel-editable="true"
-            large-icon="/org/executequery/icons/DatabaseDisconnect24.png"
+            large-icon="/org/executequery/icons/DatabaseDisconnect24.svg"
             description="Close the database connection associated with the current selection"
             execute-class="org.executequery.actions.databasecommands.DisconnectCommand"/>
 
@@ -301,16 +301,16 @@
             name="Create New ERD"
             mnemonic="N"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ErdPanel16.png"
-            large-icon="/org/executequery/icons/NewErd24.png"
+            small-icon="/org/executequery/icons/ErdPanel16.svg"
+            large-icon="/org/executequery/icons/NewErd24.svg"
             execute-class="org.executequery.actions.databasecommands.CreateErdCommand"/>
 
     <action id="map-erd-command"
             name="Map Existing Database"
             mnemonic="M"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ErdPanel16.png"
-            large-icon="/org/executequery/icons/NewErd24.png"
+            small-icon="/org/executequery/icons/ErdPanel16.svg"
+            large-icon="/org/executequery/icons/NewErd24.svg"
             execute-class="org.executequery.actions.databasecommands.CreateErdFromDatabaseCommand"/>
 
 
@@ -318,8 +318,8 @@
             name="Execute"
             accel-key="control shift ENTER"
             accel-editable="true"
-            small-icon="/org/executequery/icons/Execute16.png"
-            large-icon="/org/executequery/icons/Execute24.png"
+            small-icon="/org/executequery/icons/Execute16.svg"
+            large-icon="/org/executequery/icons/Execute24.svg"
             execute-class="org.executequery.actions.queryeditor.ExecuteCommand"/>
 
     <action id="execute-as-block-command"
@@ -333,21 +333,21 @@
             name=" Query Editor Refresh Autocomplete List"
             accel-key="shift alt R"
             accel-editable="true"
-            small-icon="/org/executequery/icons/TableRefresh16.png"
+            small-icon="/org/executequery/icons/TableRefresh16.svg"
             execute-class="org.executequery.actions.queryeditor.RefreshAutocompleteListCommand"/>
 
     <action id="editor-format-sql-command"
             name="Format SQL"
             accel-key="control shift F"
             accel-editable="true"
-            small-icon="/org/executequery/icons/FormatSql16.png"
+            small-icon="/org/executequery/icons/FormatSql16.svg"
             execute-class="org.executequery.actions.queryeditor.FormatSQLCommand"/>
 
     <action id="editor-add-user-keyword"
             name="Add to User Defined Keywords"
             accel-key="control shift K"
             accel-editable="true"
-            small-icon="/org/executequery/icons/Keywords16.png"
+            small-icon="/org/executequery/icons/Keywords16.svg"
             execute-class="org.executequery.actions.queryeditor.AddToUserDefinedKeywordsCommand"/>
 
     <action id="manage-shortcuts-command"
@@ -355,7 +355,7 @@
             mnemonic="S"
             accel-key=""
             accel-editable="false"
-            small-icon="/org/executequery/icons/Shortcut16.png"
+            small-icon="/org/executequery/icons/Shortcut16.svg"
             execute-class="org.executequery.actions.queryeditor.ManageShortcutsCommand"/>
 
     <action id="manage-bookmarks-command"
@@ -381,42 +381,42 @@
             name="Execute Selection"
             accel-key="F9"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ExecuteSelection16.png"
+            small-icon="/org/executequery/icons/ExecuteSelection16.svg"
             execute-class="org.executequery.actions.queryeditor.ExecuteSelectionCommand"/>
 
     <action id="execute-script-command"
             name="Execute Script"
             accel-key="F10"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ExecuteSqlScript16.png"
+            small-icon="/org/executequery/icons/ExecuteSqlScript16.svg"
             execute-class="org.executequery.actions.queryeditor.ExecuteScriptCommand"/>
 
     <action id="print-plan-command"
             name="Print Plan"
             accel-key="control shift P"
             accel-editable="true"
-            small-icon="/org/executequery/icons/plan.png"
+            small-icon="/org/executequery/icons/plan.svg"
             execute-class="org.executequery.actions.queryeditor.PrintPlanCommand"/>
 
     <action id="print-explained-plan-command"
             name="Print Explained Plan"
             accel-key="control alt P"
             accel-editable="true"
-            small-icon="/org/executequery/icons/explained_plan.png"
+            small-icon="/org/executequery/icons/explained_plan.svg"
             execute-class="org.executequery.actions.queryeditor.PrintExplainedPlanCommand"/>
 
     <action id="shift-text-right-command"
             name="Shift Text Right"
             accel-key="control shift T"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ShiftTextRight16.png"
+            small-icon="/org/executequery/icons/ShiftTextRight16.svg"
             execute-class="org.executequery.actions.queryeditor.ShiftTextRightCommand"/>
 
     <action id="shift-text-left-command"
             name="Shift Text Left"
             accel-key="control shift D"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ShiftTextLeft16.png"
+            small-icon="/org/executequery/icons/ShiftTextLeft16.svg"
             execute-class="org.executequery.actions.queryeditor.ShiftTextLeftCommand"/>
 
     <action id="move-row-up-command"
@@ -446,71 +446,71 @@
     <action id="toggle-autocommit-command"
             name="Toggle Auto-Commit"
             accel-editable="false"
-            small-icon="/org/executequery/icons/AutoCommit16.png"
+            small-icon="/org/executequery/icons/AutoCommit16.svg"
             execute-class="org.executequery.actions.queryeditor.AutoCommitCommand"/>
 
     <action id="clear-editor-output-command"
             name="Clear Output Log"
             accel-editable="true"
             accel-key="control shift BACK_SPACE"
-            small-icon="/org/executequery/icons/ClearOutput16.png"
+            small-icon="/org/executequery/icons/ClearOutput16.svg"
             execute-class="org.executequery.actions.queryeditor.ClearEditorCommand"/>
 
     <action id="editor-next-command"
             name="Next Statement"
             accel-editable="true"
             accel-key="control shift UP"
-            small-icon="/org/executequery/icons/Forward16.png"
+            small-icon="/org/executequery/icons/Forward16.svg"
             execute-class="org.executequery.actions.queryeditor.NextCommand"/>
 
     <action id="editor-previous-command"
             name="Previous Statement"
             accel-editable="true"
             accel-key="control shift DOWN"
-            small-icon="/org/executequery/icons/Previous16.png"
+            small-icon="/org/executequery/icons/Previous16.svg"
             execute-class="org.executequery.actions.queryeditor.PrevCommand"/>
 
     <action id="editor-stop-command"
             name="Cancel Executing Statement"
             accel-editable="false"
-            small-icon="/org/executequery/icons/Stop16.png"
+            small-icon="/org/executequery/icons/Stop16.svg"
             execute-class="org.executequery.actions.queryeditor.StopCommand"/>
 
     <action id="editor-export-command"
             name="Export Result Set"
             accel-editable="false"
-            small-icon="/org/executequery/icons/ExportDelimited16.png"
+            small-icon="/org/executequery/icons/ExportDelimited16.svg"
             execute-class="org.executequery.actions.othercommands.ExportResultsTableCommand"/>
 
     <action id="editor-show-hide-rs-columns-command"
             name="Visible Result Set Columns"
             accel-editable="false"
-            small-icon="/org/executequery/icons/TableColumn16.png"
+            small-icon="/org/executequery/icons/TableColumn16.svg"
             execute-class="org.executequery.actions.othercommands.ShowHideResultSetColumnsCommand"/>
 
     <action id="toggle-editor-output-command"
             name="Show/Hide Editor Output"
             accel-editable="false"
-            small-icon="/org/executequery/icons/ToggleEditorOutput16.png"
+            small-icon="/org/executequery/icons/ToggleEditorOutput16.svg"
             execute-class="org.executequery.actions.queryeditor.ToggleEditorOutputCommand"/>
 
     <action id="editor-rs-metadata-command"
             name="Result Meta Data"
             accel-editable="false"
-            small-icon="/org/executequery/icons/RSMetaData16.png"
+            small-icon="/org/executequery/icons/RSMetaData16.svg"
             execute-class="org.executequery.actions.queryeditor.ResultSetMetaDataCommand"/>
 
     <action id="editor-conn-change-command"
             name="Recycle Editor Connection"
             accel-editable="false"
-            small-icon="/org/executequery/icons/RecycleConnection16.png"
+            small-icon="/org/executequery/icons/RecycleConnection16.svg"
             execute-class="org.executequery.actions.queryeditor.ChangeEditorConnectionCommand"/>
 
     <action id="comment-lines-command"
             name="Comment/Uncomment"
             accel-key="control SLASH"
             accel-editable="true"
-            small-icon="/org/executequery/icons/AddComment16.png"
+            small-icon="/org/executequery/icons/AddComment16.svg"
             execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
 
     <!--
@@ -518,7 +518,7 @@
               name="Uncomment"
               accel-key="control SLASH"
               accel-editable="true"
-              small-icon="/org/executequery/icons/RemoveComment16.png"
+              small-icon="/org/executequery/icons/RemoveComment16.svg"
               execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
     -->
 
@@ -526,16 +526,16 @@
             name="Commit"
             accel-key="control shift C"
             accel-editable="true"
-            small-icon="/org/executequery/icons/Commit16.png"
-            large-icon="/org/executequery/icons/Commit24.png"
+            small-icon="/org/executequery/icons/Commit16.svg"
+            large-icon="/org/executequery/icons/Commit24.svg"
             execute-class="org.executequery.actions.queryeditor.CommitCommand"/>
 
     <action id="rollback-command"
             name="Rollback"
             accel-key="control shift R"
             accel-editable="true"
-            small-icon="/org/executequery/icons/Rollback16.png"
-            large-icon="/org/executequery/icons/Rollback24.png"
+            small-icon="/org/executequery/icons/Rollback16.svg"
+            large-icon="/org/executequery/icons/Rollback24.svg"
             execute-class="org.executequery.actions.queryeditor.RollbackCommand"/>
 
     <action id="sql-history-command"
@@ -543,31 +543,31 @@
             accel-key="control shift H"
             accel-editable="true"
             mnemonic="H"
-            small-icon="/org/executequery/icons/History16.png"
-            large-icon="/org/executequery/icons/History16.png"
+            small-icon="/org/executequery/icons/History16.svg"
+            large-icon="/org/executequery/icons/History16.svg"
             execute-class="org.executequery.actions.queryeditor.HistoryCommand"/>
 
     <action id="execute-at-cursor-command"
             name="Execute at Cursor"
             accel-key="control ENTER"
             accel-editable="true"
-            small-icon="/org/executequery/icons/PartialExecute16.png"
-            large-icon="/org/executequery/icons/PartialExecute24.png"
+            small-icon="/org/executequery/icons/PartialExecute16.svg"
+            large-icon="/org/executequery/icons/PartialExecute24.svg"
             execute-class="org.executequery.actions.queryeditor.PartialExecuteCommand"/>
 
     <action id="change-split-orientation-command"
             name="Change Split Orientation"
             accel-key="control alt Q"
             accel-editable="true"
-            small-icon="/org/executequery/icons/split.png"
+            small-icon="/org/executequery/icons/split.svg"
             execute-class="org.executequery.actions.queryeditor.ChangeSplitOrientationCommand"/>
 
     <action id="create-index-command"
             name="Create Index"
             mnemonic="I"
             accel-editable="true"
-            small-icon="/org/executequery/icons/NewIndex16.png"
-            large-icon="/org/executequery/icons/NewIndex24.png"
+            small-icon="/org/executequery/icons/NewIndex16.svg"
+            large-icon="/org/executequery/icons/NewIndex24.svg"
             description="Create a new database table index"
             execute-class="org.executequery.actions.databasecommands.CreateIndexCommand"/>
 
@@ -575,8 +575,8 @@
             name="Create Table"
             mnemonic="T"
             accel-editable="true"
-            small-icon="/org/executequery/icons/NewTable16.png"
-            large-icon="/org/executequery/icons/NewTable24.png"
+            small-icon="/org/executequery/icons/NewTable16.svg"
+            large-icon="/org/executequery/icons/NewTable24.svg"
             description="Create a new database table"
             execute-class="org.executequery.actions.databasecommands.CreateTableCommand"/-->
 
@@ -591,16 +591,16 @@
             name="Generate SQL Scripts"
             mnemonic="S"
             accel-editable="true"
-            small-icon="/org/executequery/icons/CreateScripts16.png"
-            large-icon="/org/executequery/icons/CreateScripts24.png"
+            small-icon="/org/executequery/icons/CreateScripts16.svg"
+            large-icon="/org/executequery/icons/CreateScripts24.svg"
             description="Generates SQL CREATE TABLE scripts"
             execute-class="org.executequery.actions.databasecommands.GenerateScriptsCommand"/>
 
     <action id="help-command"
             name="Help Topics"
             mnemonic="H"
-            small-icon="/org/executequery/icons/Help16.png"
-            large-icon="/org/executequery/icons/Help24.png"
+            small-icon="/org/executequery/icons/Help16.svg"
+            large-icon="/org/executequery/icons/Help24.svg"
             accel-key="F1"
             accel-editable="true"
             description="Displays the help topics"
@@ -610,14 +610,14 @@
             name="About"
             mnemonic="A"
             accel-editable="true"
-            small-icon="/org/executequery/icons/Information16.png"
-            large-icon="/org/executequery/icons/Information24.png"
+            small-icon="/org/executequery/icons/Information16.svg"
+            large-icon="/org/executequery/icons/Information24.svg"
             execute-class="org.executequery.actions.helpcommands.AboutCommand"/>
 
     <action id="visit-eq-command"
             name="Visit red-soft.biz online"
             mnemonic="V"
-            small-icon="/org/executequery/icons/WebComponent16.png"
+            small-icon="/org/executequery/icons/WebComponent16.svg"
             accel-editable="false"
             description="Opens executequery.org in a browser window"
             execute-class="org.executequery.actions.helpcommands.VisitOnlineCommand"/>
@@ -638,16 +638,16 @@
             name="Query Editor"
             mnemonic="Q"
             accel-editable="true"
-            small-icon="/org/executequery/icons/Edit16.png"
-            large-icon="/org/executequery/icons/Edit24.png"
+            small-icon="/org/executequery/icons/Edit16.svg"
+            large-icon="/org/executequery/icons/Edit24.svg"
             execute-class="org.executequery.actions.toolscommands.EditorCommand"/>
     <!--
       <action id="browser-command"
               name="Database Browser"
               mnemonic="B"
               accel-editable="true"
-              small-icon="/org/executequery/icons/DBmag16.png"
-              large-icon="/org/executequery/icons/DBmag24.png"
+              small-icon="/org/executequery/icons/DBmag16.svg"
+              large-icon="/org/executequery/icons/DBmag24.svg"
               execute-class="org.executequery.actions.toolscommands.BrowserCommand"/>
     -->
     <action id="scratch-pad-command"
@@ -655,22 +655,22 @@
             mnemonic="P"
             accel-editable="true"
             small-icon="/org/executequery/icons/ScratchPad16"
-            large-icon="/org/executequery/icons/ScratchPad24.png"
+            large-icon="/org/executequery/icons/ScratchPad24.svg"
             execute-class="org.executequery.actions.toolscommands.ScratchPadCommand"/>
 
     <action id="user-keywords-command"
             name="User Defined Keywords"
             mnemonic="K"
             accel-editable="true"
-            small-icon="/org/executequery/icons/Keywords16.png"
-            large-icon="/org/executequery/icons/KeyWords24.png"
+            small-icon="/org/executequery/icons/Keywords16.svg"
+            large-icon="/org/executequery/icons/KeyWords24.svg"
             execute-class="org.executequery.actions.toolscommands.KeyWordsCommand"/>
 
     <action id="heap-memory-command"
             name="Heap Memory Status"
             mnemonic="M"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ResourceHeap16.png"
+            small-icon="/org/executequery/icons/ResourceHeap16.svg"
             description="Virtual machine heap size"
             execute-class="org.executequery.actions.toolscommands.HeapStatusCommand"/>
 
@@ -678,16 +678,16 @@
             name="Import from Delimited File"
             mnemonic="D"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ImportDelimited16.png"
-            large-icon="/org/executequery/icons/ImportDelimited24.png"
+            small-icon="/org/executequery/icons/ImportDelimited16.svg"
+            large-icon="/org/executequery/icons/ImportDelimited24.svg"
             execute-class="org.executequery.actions.toolscommands.ImportDelimitedCommand"/>
 
     <action id="export-delimited-command"
             name="Export to Delimited File"
             mnemonic="D"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ExportDelimited16.png"
-            large-icon="/org/executequery/icons/ExportDelimited24.png"
+            small-icon="/org/executequery/icons/ExportDelimited16.svg"
+            large-icon="/org/executequery/icons/ExportDelimited24.svg"
             execute-class="org.executequery.actions.toolscommands.ExportDelimitedCommand"/>
 
     <action id="export-resultset-command"
@@ -695,8 +695,8 @@
             description="Execute SQL SELECT statements writing results direct to file"
             mnemonic="X"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ExportDelimited16.png"
-            large-icon="/org/executequery/icons/ExportDelimited24.png"
+            small-icon="/org/executequery/icons/ExportDelimited16.svg"
+            large-icon="/org/executequery/icons/ExportDelimited24.svg"
             execute-class="org.executequery.actions.databasecommands.ExportResultSetCommand"/>
 
     <action id="import-data-from-file-command"
@@ -709,15 +709,15 @@
             mnemonic="S"
             description="Open and execute an SQL script"
             accel-editable="false"
-            small-icon="/org/executequery/icons/ExecuteSqlScript16.png"
+            small-icon="/org/executequery/icons/ExecuteSqlScript16.svg"
             execute-class="org.executequery.actions.databasecommands.ExecuteSqlScriptCommand"/>
 
     <action id="execute-object"
             name="Execute Stored Objects"
             mnemonic="B"
             accel-editable="true"
-            small-icon="/org/executequery/icons/Procedure16.png"
-            large-icon="/org/executequery/icons/Procedure24.png"
+            small-icon="/org/executequery/icons/Procedure16.svg"
+            large-icon="/org/executequery/icons/Procedure24.svg"
             description="View and execute stored procedures and functions"
             execute-class="org.executequery.actions.databasecommands.ExecuteStoredObjectCommand"/>
 
@@ -725,7 +725,7 @@
             name="Compare Data Types"
             mnemonic="D"
             accel-editable="true"
-            small-icon="/org/executequery/icons/CompareDataTypes16.png"
+            small-icon="/org/executequery/icons/CompareDataTypes16.svg"
             description="Compare data types across different database products"
             execute-class="org.executequery.actions.databasecommands.CompareDataTypesCommand"/>
 
@@ -733,24 +733,24 @@
             name="Import from XML"
             mnemonic="X"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ImportXml16.png"
-            large-icon="/org/executequery/icons/ImportXML24.png"
+            small-icon="/org/executequery/icons/ImportXml16.svg"
+            large-icon="/org/executequery/icons/ImportXML24.svg"
             execute-class="org.executequery.actions.toolscommands.ImportXMLCommand"/>
 
     <action id="export-xml-command"
             name="Export to XML"
             mnemonic="X"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ExportXml16.png"
-            large-icon="/org/executequery/icons/ExportXML24.png"
+            small-icon="/org/executequery/icons/ExportXml16.svg"
+            large-icon="/org/executequery/icons/ExportXML24.svg"
             execute-class="org.executequery.actions.toolscommands.ExportXMLCommand"/>
 
     <action id="preferences-command"
             name="Preferences"
             mnemonic="P"
             accel-editable="true"
-            small-icon="/org/executequery/icons/Preferences16.png"
-            large-icon="/org/executequery/icons/Preferences24.png"
+            small-icon="/org/executequery/icons/Preferences16.svg"
+            large-icon="/org/executequery/icons/Preferences24.svg"
             execute-class="org.executequery.actions.toolscommands.PreferencesCommand"/>
 
     <action id="connect-command"
@@ -758,73 +758,73 @@
             mnemonic="N"
             accel-editable="true"
             accel-key="control shift N"
-            small-icon="/org/executequery/icons/DatabaseConnect16.png"
-            large-icon="/org/executequery/icons/DatabaseConnect24.png"
+            small-icon="/org/executequery/icons/DatabaseConnect16.svg"
+            large-icon="/org/executequery/icons/DatabaseConnect24.svg"
             execute-class="org.executequery.actions.databasecommands.ConnectCommand"/>
 
     <action id="import-connections-from-file-command"
             name="Import Connections"
             mnemonic="m"
-            small-icon="/org/executequery/icons/ImportConnections16.png"
+            small-icon="/org/executequery/icons/ImportConnections16.svg"
             execute-class="org.executequery.actions.databasecommands.ImportConnectionsCommand"/>
 
     <action id="import-connections-from-DB-command"
             name="Import Connections"
             mnemonic="m"
-            small-icon="/org/executequery/icons/ImportConnections16.png"
+            small-icon="/org/executequery/icons/ImportConnections16.svg"
             execute-class="org.executequery.actions.databasecommands.ImportConnectionsFromDBCommand"/>
 
     <action id="export-connections-command"
             name="Export Connections"
             mnemonic="x"
-            small-icon="/org/executequery/icons/ExportConnections16.png"
+            small-icon="/org/executequery/icons/ExportConnections16.svg"
             execute-class="org.executequery.actions.databasecommands.ExportConnectionsCommand"/>
 
     <action id="console-command"
             name="System Console Window"
             mnemonic="N"
             accel-editable="true"
-            small-icon="/org/executequery/icons/SystemConsole16.png"
-            large-icon="/org/executequery/icons/SystemConsole24.png"
+            small-icon="/org/executequery/icons/SystemConsole16.svg"
+            large-icon="/org/executequery/icons/SystemConsole24.svg"
             execute-class="org.executequery.actions.toolscommands.ConsoleCommand"/>
 
     <action id="export-excel-command"
             name="Export to Excel Spreadsheet"
             mnemonic="S"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ExportExcel16.png"
+            small-icon="/org/executequery/icons/ExportExcel16.svg"
             execute-class="org.executequery.actions.toolscommands.ExportExcelCommand"/>
   <action id="export-dbunit-command"
           name="Export as DBUnit Dataset"
           mnemonic="Q"
           accel-editable="true"
-          small-icon="/org/executequery/icons/ExportXML16.png"
+          small-icon="/org/executequery/icons/ExportXML16.svg"
           execute-class="org.executequery.actions.toolscommands.ExportDBUnitCommand"/>
 
     <action id="export-sql-command"
             name="Export as SQL"
             mnemonic="Q"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ExportSQL16.png"
+            small-icon="/org/executequery/icons/ExportSQL16.svg"
             execute-class="org.executequery.actions.toolscommands.ExportSQLCommand"/>
 
     <action id="insert-row-command"
             name="Create a new table column after the current selection"
             accel-editable="false"
-            small-icon="/org/executequery/icons/ColumnInsert16.png"
+            small-icon="/org/executequery/icons/ColumnInsert16.svg"
             execute-class="org.executequery.actions.othercommands.InsertRowAfterCommand"/>
 
     <action id="delete-row-command"
             name="Drop the selected table column"
             accel-editable="false"
-            small-icon="/org/executequery/icons/ColumnDelete16.png"
+            small-icon="/org/executequery/icons/ColumnDelete16.svg"
             execute-class="org.executequery.actions.othercommands.DeleteColumnCommand"/>
 
     <action id="drop-object-command"
             name="Drop the selected object"
             accel-editable="false"
-            small-icon="/org/executequery/icons/DropTable16.png"
-            large-icon="/org/executequery/icons/DropTable24.png"
+            small-icon="/org/executequery/icons/DropTable16.svg"
+            large-icon="/org/executequery/icons/DropTable24.svg"
             execute-class="org.executequery.actions.othercommands.DropDatabaseObjectCommand"/>
 
     <action id="select-editor-connection-combo-command"
@@ -869,8 +869,8 @@
             name="User Manager"
             mnemonic="U"
             accel-editable="true"
-            small-icon="/org/executequery/icons/user_manager_16.png"
-            large-icon="/org/executequery/icons/user_manager_32.png"
+            small-icon="/org/executequery/icons/user_manager_16.svg"
+            large-icon="/org/executequery/icons/user_manager_32.svg"
             description="User Manager"
             execute-class="org.executequery.actions.toolscommands.UserManagerCommands"/>
 
@@ -878,8 +878,8 @@
             name="Grant Manager"
             mnemonic="GM"
             accel-editable="true"
-            small-icon="/org/executequery/icons/grant_manager_16.png"
-            large-icon="/org/executequery/icons/grant_manager_32.png"
+            small-icon="/org/executequery/icons/grant_manager_16.svg"
+            large-icon="/org/executequery/icons/grant_manager_32.svg"
             description="Grant Manager"
             execute-class="org.executequery.actions.toolscommands.GrantManagerCommands"/>
 
@@ -894,8 +894,8 @@
             name="Comparer DB"
             mnemonic="CDB"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ComparerDB_16.png"
-            large-icon="/org/executequery/icons/ComparerDB_32.png"
+            small-icon="/org/executequery/icons/ComparerDB_16.svg"
+            large-icon="/org/executequery/icons/ComparerDB_32.svg"
             description="Comparer DB"
             execute-class="org.executequery.actions.toolscommands.ComparerDBCommands"/>
 

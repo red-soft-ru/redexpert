@@ -32,7 +32,7 @@ import java.awt.event.ActionEvent;
  */
 public class InsertRowBeforeCommand extends AbstractBaseCommand {
 
-    private static final String ICON = "RowInsertBefore24.png";
+    private static final String ICON = "RowInsertBefore24.svg";
 
     public static final int CREATE_TABLE = 0;
 

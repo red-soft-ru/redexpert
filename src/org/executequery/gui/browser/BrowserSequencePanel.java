@@ -139,7 +139,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 0;
 
         setHeaderText(bundleString("DatabaseSequence"));
-        setHeaderIcon(GUIUtilities.loadIcon("Sequence24.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("Sequence24.svg", true));
         setContentPanel(base);
         cache = new HashMap();
 
@@ -170,7 +170,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(sequence);
         objectNameLabel.setText(bundleString("SequenceName"));
         setHeaderText(bundleString("DatabaseSequence"));
-        setHeaderIcon(GUIUtilities.loadIcon("Sequence16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("Sequence16.svg", true));
 
         try {
             sequenceNameField.setText(sequence.getName());
@@ -192,7 +192,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText("Sequence Name:");
         setHeaderText("Database Sequence");
-        setHeaderIcon("Sequence16.png");
+        setHeaderIcon("Sequence16.svg");
 
         if (sequence != null) {
             sequenceNameField.setText(sequence.getName());

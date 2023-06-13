@@ -1,0 +1,12 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="1" y="1" width="8" height="14" rx="1" fill="#2B2B2B"/>
+<rect x="4.5" y="10" width="1" height="1" rx="0.5" fill="#DEDEDE"/>
+<rect x="4.5" y="12" width="1" height="1" rx="0.5" fill="#DEDEDE"/>
+<rect x="2" y="6" width="6" height="2" rx="1" fill="#DEDEDE"/>
+<rect x="2" y="3" width="6" height="2" rx="1" fill="#DEDEDE"/>
+<ellipse cx="11" cy="6.6" rx="4" ry="1.6" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M15 7.3999H7V13.7999C7 14.6836 8.79086 15.3999 11 15.3999C13.2091 15.3999 15 14.6836 15 13.7999V7.3999Z" fill="#264006"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M15 9H7V11.3999C7 11.3999 7 11.4 7 11.4C7.00013 12.2836 8.79094 12.9999 11 12.9999C13.2091 12.9999 14.9999 12.2836 15 11.4C15 11.4 15 11.3999 15 11.3999V9Z" fill="#4A7A0D"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M15 6.59985H7V8.99985C7 8.99987 7 8.99989 7 8.9999C7 9.88356 8.79086 10.5999 11 10.5999C13.2091 10.5999 15 9.88356 15 8.9999C15 8.99989 15 8.99987 15 8.99985V6.59985Z" fill="#64A70E"/>
+<ellipse cx="11" cy="6.6" rx="4" ry="1.6" fill="#7DCD17"/>
+</svg>

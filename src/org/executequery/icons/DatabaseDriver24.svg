@@ -1,0 +1,16 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<ellipse cx="12" cy="6" rx="7.5" ry="3" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 7.5H4.5V19.5C4.5 21.1569 7.85786 22.5 12 22.5C16.1421 22.5 19.5 21.1569 19.5 19.5V7.5Z" fill="#404040"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 10.5H4.5V15C4.5 16.6569 7.85786 18 12 18C16.1421 18 19.5 16.6569 19.5 15V10.5Z" fill="#808080"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 6H4.5V10.5C4.5 12.1569 7.85786 13.5 12 13.5C16.1421 13.5 19.5 12.1569 19.5 10.5V6Z" fill="#BFBFBF"/>
+<ellipse cx="12" cy="6" rx="7.5" ry="3" fill="white"/>
+<rect x="15.834" y="10" width="2.33333" height="2.91667" rx="0.7" fill="#F8F8F8"/>
+<rect x="21.125" y="11.2251" width="2.33333" height="2.91667" rx="0.7" transform="rotate(45 21.125 11.2251)" fill="#F8F8F8"/>
+<rect x="22.7754" y="21.1248" width="2.33333" height="2.91667" rx="0.7" transform="rotate(135 22.7754 21.1248)" fill="#F8F8F8"/>
+<rect x="14.9336" y="13.2876" width="2.33333" height="2.91667" rx="0.7" transform="rotate(135 14.9336 13.2876)" fill="#F8F8F8"/>
+<rect x="13.2871" y="19.0623" width="2.33333" height="2.91667" rx="0.7" transform="rotate(45 13.2871 19.0623)" fill="#F8F8F8"/>
+<rect x="13.5" y="15.8333" width="2.33333" height="3.5" rx="0.7" transform="rotate(90 13.5 15.8333)" fill="#F8F8F8"/>
+<rect x="24" y="15.8333" width="2.33333" height="3.5" rx="0.7" transform="rotate(90 24 15.8333)" fill="#F8F8F8"/>
+<rect x="15.834" y="21.0833" width="2.33333" height="2.91667" rx="0.7" fill="#F8F8F8"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M17 22.25C19.8995 22.25 22.25 19.8995 22.25 17C22.25 14.1005 19.8995 11.75 17 11.75C14.1005 11.75 11.75 14.1005 11.75 17C11.75 19.8995 14.1005 22.25 17 22.25ZM16.9986 19.3335C18.2873 19.3335 19.3319 18.2888 19.3319 17.0002C19.3319 15.7115 18.2873 14.6668 16.9986 14.6668C15.7099 14.6668 14.6653 15.7115 14.6653 17.0002C14.6653 18.2888 15.7099 19.3335 16.9986 19.3335Z" fill="#F8F8F8"/>
+</svg>

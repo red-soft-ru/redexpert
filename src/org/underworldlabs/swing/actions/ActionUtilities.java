@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing.actions;
 
+import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.DefaultToolbarButton;
 import org.underworldlabs.swing.util.IconUtilities;
@@ -112,7 +113,7 @@ public class ActionUtilities {
                                 JButton item) {
 
         if (icon != null) {
-            item.setIcon(IconUtilities.loadIcon(icon));
+            item.setIcon(IconUtilities.loadIcon(icon, UserProperties.getInstance().getIntProperty("icons.size")));
             item.setMargin(new Insets(1, 1, 1, 1));
         }
 
@@ -135,7 +136,7 @@ public class ActionUtilities {
         item.setActionCommand(command);
 
         if (icon != null) {
-            item.setIcon(IconUtilities.loadIcon(icon));
+            item.setIcon(IconUtilities.loadIcon(icon,UserProperties.getInstance().getIntProperty("icons.size")));
         }
 
         if (iconOnly) {

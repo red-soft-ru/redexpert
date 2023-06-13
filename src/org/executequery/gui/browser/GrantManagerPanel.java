@@ -36,7 +36,7 @@ import java.util.Map;
 public class GrantManagerPanel extends JPanel implements TabView {
 
     public static final String TITLE = Bundles.get(GrantManagerPanel.class, "GrantManager");
-    public static final String FRAME_ICON = "grant_manager_16.png";
+    public static final String FRAME_ICON = "grant_manager_16.svg";
     public DatabaseConnection dbc;
     boolean connected;
     DefaultListModel userlistModel;

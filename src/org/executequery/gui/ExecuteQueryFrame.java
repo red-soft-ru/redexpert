@@ -45,7 +45,7 @@ public class ExecuteQueryFrame extends JFrame
 
     public static final String TITLE = "Red Expert";
 
-    private static final String APPLICATION_ICON = "ApplicationIcon48.png";
+    private static final String APPLICATION_ICON = "ApplicationIcon16.svg";
 
     private static final String WINDOW_POSITION_KEY = "window.position";
 
@@ -61,12 +61,12 @@ public class ExecuteQueryFrame extends JFrame
         super(TITLE);
 /*
         String[] icons = {
-                "ApplicationIcon256.png",
-                "ApplicationIcon128.png",
-                "ApplicationIcon48.png",
-                "ApplicationIcon32.png",
-                "ApplicationIcon24.png",
-                "ApplicationIcon16.png"
+                "ApplicationIcon256.svg",
+                "ApplicationIcon128.svg",
+                "ApplicationIcon48.svg",
+                "ApplicationIcon32.svg",
+                "ApplicationIcon24.svg",
+                "ApplicationIcon16.svg"
         };
             
         List<Image> images = new ArrayList<Image>();

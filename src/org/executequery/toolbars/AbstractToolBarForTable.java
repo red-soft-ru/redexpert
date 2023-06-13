@@ -27,7 +27,7 @@ public abstract class AbstractToolBarForTable extends JPanel {
     protected void init() {
         setLayout(new GridBagLayout());
         RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.svg"));
         addRolloverButton.setToolTipText(toolTipInsert);
         addRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -37,7 +37,7 @@ public abstract class AbstractToolBarForTable extends JPanel {
         });
         bar.add(addRolloverButton);
         RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.svg"));
         deleteRolloverButton.setToolTipText(toolTipDelete);
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -47,7 +47,7 @@ public abstract class AbstractToolBarForTable extends JPanel {
         });
         bar.add(deleteRolloverButton);
         RolloverButton refreshRolloverButton = new RolloverButton();
-        refreshRolloverButton.setIcon(GUIUtilities.loadIcon("Refresh16.png"));
+        refreshRolloverButton.setIcon(GUIUtilities.loadIcon("Refresh16.svg"));
         refreshRolloverButton.setToolTipText(toolTipRefresh);
         refreshRolloverButton.addActionListener(new ActionListener() {
             @Override

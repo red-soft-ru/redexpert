@@ -86,19 +86,19 @@ public class CreateProcedureToolBar extends JPanel
 
         insertAfterButton = ActionUtilities.createToolbarButton(
                 this,
-                GUIUtilities.getAbsoluteIconPath("ColumnInsertAfter16.png"),
+                GUIUtilities.getAbsoluteIconPath("ColumnInsertAfter16.svg"),
                 "Insert a value after the current selection", 
                 null);
 
         insertBeforeButton = ActionUtilities.createToolbarButton(
                 this,
-                GUIUtilities.getAbsoluteIconPath("ColumnInsertBefore16.png"),
+                GUIUtilities.getAbsoluteIconPath("ColumnInsertBefore16.svg"),
                 "Insert a value before the current selection",
                 null);
 
         deleteRowButton = ActionUtilities.createToolbarButton(
                 this,
-                GUIUtilities.getAbsoluteIconPath("ColumnDelete16.png"),
+                GUIUtilities.getAbsoluteIconPath("ColumnDelete16.svg"),
                 "Delete the selected value",
                 null);
 
@@ -114,13 +114,13 @@ public class CreateProcedureToolBar extends JPanel
         if (canMove) {
             moveUpButton = ActionUtilities.createToolbarButton(
                     this,
-                    "Up16.png",
+                    "Up16.svg",
                     "Move the selection up",
                     null);
 
             moveDownButton = ActionUtilities.createToolbarButton(
                     this,
-                    "Down16.png",
+                    "Down16.svg",
                     "Move the selection down",
                     null);
             add(moveUpButton, gbh.nextRow().get());

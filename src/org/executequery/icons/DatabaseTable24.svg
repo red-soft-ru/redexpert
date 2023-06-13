@@ -1,0 +1,17 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="1.5" y="1.5" width="21" height="21" fill="#5284C3"/>
+<rect x="3" y="3" width="18" height="18" fill="#F5F5F5"/>
+<rect x="4.5" y="4.5" width="15" height="3" fill="#355783"/>
+<rect x="4.5" y="9" width="15" height="1.5" fill="#4474B1"/>
+<rect x="4.5" y="12" width="15" height="1.5" fill="#4474B1"/>
+<rect x="4.5" y="15" width="15" height="1.5" fill="#4474B1"/>
+<rect x="4.5" y="18" width="15" height="1.5" fill="#4474B1"/>
+<rect x="6" y="9" width="10.5" height="1.5" transform="rotate(90 6 9)" fill="#4474B1"/>
+<rect x="10.5" y="9" width="10.5" height="1.5" transform="rotate(90 10.5 9)" fill="#4474B1"/>
+<rect x="19.5" y="9" width="10.5" height="1.5" transform="rotate(90 19.5 9)" fill="#4474B1"/>
+<rect x="15" y="9" width="10.5" height="1.5" transform="rotate(90 15 9)" fill="#4474B1"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M23.3846 11.1155H11V21.0231C11 21.0231 11 21.0231 11 21.0231C11 22.3911 13.7724 23.5 17.1923 23.5C20.6122 23.5 23.3846 22.3911 23.3846 21.0231C23.3846 21.0231 23.3846 21.0231 23.3846 21.0231V11.1155Z" fill="#404040"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M23.3846 13.5925H11V17.3076C11 17.3077 11 17.3078 11 17.3079C11.0004 18.6757 13.7726 19.7846 17.1923 19.7846C20.612 19.7846 23.3842 18.6757 23.3846 17.3079C23.3846 17.3078 23.3846 17.3077 23.3846 17.3076V13.5925Z" fill="#808080"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M23.3846 9.87695H11V13.5923C11 13.5924 11 13.5924 11 13.5924C11 14.9604 13.7724 16.0694 17.1923 16.0694C20.6122 16.0694 23.3846 14.9604 23.3846 13.5924C23.3846 13.5924 23.3846 13.5924 23.3846 13.5923V9.87695Z" fill="#BFBFBF"/>
+<ellipse cx="17.1923" cy="9.87706" rx="6.19229" ry="2.47692" fill="white"/>
+</svg>

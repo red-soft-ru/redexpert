@@ -77,53 +77,53 @@ class ConnectionsTreeToolBar extends PanelToolBar {
 
 
         connectButton = addButton(treePanel, "connectDisconnect",
-                GUIUtilities.getAbsoluteIconPath("Connected.png"),
+                GUIUtilities.getAbsoluteIconPath("Connected.svg"),
                 Bundles.get("action.connect-to-database-command"));
 
         newConnectionButton = addButton(
                 treePanel, "newConnection",
-                GUIUtilities.getAbsoluteIconPath("NewConnection16.png"),
+                GUIUtilities.getAbsoluteIconPath("NewConnection16.svg"),
                 Bundles.getCommon("newConnection.button"));
 
         addButton(
                 treePanel, "newFolder",
-                GUIUtilities.getAbsoluteIconPath("NewFolder16.png"),
+                GUIUtilities.getAbsoluteIconPath("NewFolder16.svg"),
                 bundleString("newFolder"));
 
         deleteConnectionButton = addButton(
                 treePanel, "deleteConnection",
-                GUIUtilities.getAbsoluteIconPath("Delete16.png"),
+                GUIUtilities.getAbsoluteIconPath("Delete16.svg"),
                 Bundles.getCommon("delete.button"));
 
         upButton = addButton(
                 treePanel, "moveConnectionUp",
-                GUIUtilities.getAbsoluteIconPath("Up16.png"),
+                GUIUtilities.getAbsoluteIconPath("Up16.svg"),
                 bundleString("moveConnectionUp"));
 
         downButton = addButton(
                 treePanel, "moveConnectionDown",
-                GUIUtilities.getAbsoluteIconPath("Down16.png"),
+                GUIUtilities.getAbsoluteIconPath("Down16.svg"),
                 bundleString("moveConnectionDown"));
 
         reloadButton = addButton(
                 treePanel, "reloadSelection",
-//                GUIUtilities.getAbsoluteIconPath("Reload16.png"), 
-                GUIUtilities.getAbsoluteIconPath("Refresh16.png"),
+//                GUIUtilities.getAbsoluteIconPath("Reload16.svg"), 
+                GUIUtilities.getAbsoluteIconPath("Refresh16.svg"),
                 bundleString("reloadSelection"));
 
         addButton(
                 treePanel, "sortConnections",
-                GUIUtilities.getAbsoluteIconPath("SortAtoZ16.png"),
+                GUIUtilities.getAbsoluteIconPath("SortAtoZ16.svg"),
                 bundleString("sortConnections"));
 
         addButton(treePanel.getTreeFindAction());
 
         addButton(
                 treePanel, "collapseAll",
-                GUIUtilities.getAbsoluteIconPath("Collapse16.png"),
+                GUIUtilities.getAbsoluteIconPath("Collapse16.svg"),
                 bundleString("collapseAll"));
-        connectedIcon = GUIUtilities.loadIcon("Connected.png");
-        disconnectedIcon = GUIUtilities.loadIcon("Disconnected.png");
+        connectedIcon = GUIUtilities.loadIcon("Connected.svg");
+        disconnectedIcon = GUIUtilities.loadIcon("Disconnected.svg");
 
     }
 

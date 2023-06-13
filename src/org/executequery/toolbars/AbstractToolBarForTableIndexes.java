@@ -16,7 +16,7 @@ public abstract class AbstractToolBarForTableIndexes extends AbstractToolBarForT
         super(toolTipInsert, toolTipDelete, toolTipRefresh);
         this.toolTipReselectivityAllIndexes = toolTipReselectivityAllIndexes;
         RolloverButton reselectivityAllIndexes = new RolloverButton();
-        reselectivityAllIndexes.setIcon(GUIUtilities.loadIcon("reselectivityAllIndicies16.png"));
+        reselectivityAllIndexes.setIcon(GUIUtilities.loadIcon("reselectivityAllIndicies16.svg"));
         reselectivityAllIndexes.setToolTipText(toolTipReselectivityAllIndexes);
         reselectivityAllIndexes.addActionListener(this::reselectivity);
         bar.add(reselectivityAllIndexes);

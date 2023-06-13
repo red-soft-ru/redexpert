@@ -987,7 +987,7 @@ public class TableDataTab extends JPanel
         buttonsEditingPanel = new JPanel(new GridBagLayout());
         PanelToolBar bar = new PanelToolBar();
         RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("add_16.png"));
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("add_16.svg"));
         addRolloverButton.setToolTipText(bundleString("InsertRecord"));
         addRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1002,7 +1002,7 @@ public class TableDataTab extends JPanel
         bar.add(addRolloverButton);
         tableButtons.add(addRolloverButton);
         RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("delete_16.png"));
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("delete_16.svg"));
         deleteRolloverButton.setToolTipText(bundleString("DeleteRecord"));
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1024,7 +1024,7 @@ public class TableDataTab extends JPanel
         bar.add(deleteRolloverButton);
         tableButtons.add(deleteRolloverButton);
         RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.svg"));
         commitRolloverButton.setToolTipText(bundleString("Commit"));
         commitRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1045,7 +1045,7 @@ public class TableDataTab extends JPanel
         bar.add(commitRolloverButton);
         tableButtons.add(commitRolloverButton);
         RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
+        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.svg"));
         rollbackRolloverButton.setToolTipText(bundleString("Rollback"));
         rollbackRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1115,7 +1115,7 @@ public class TableDataTab extends JPanel
         });
         bar.add(fetchAllRolloverButton);
         RolloverButton refreshButton = new RolloverButton();
-        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.png"));
+        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.svg"));
         refreshButton.setToolTipText(bundleString("ReloadData"));
         refreshButton.addActionListener(new ActionListener() {
             @Override
@@ -1126,7 +1126,7 @@ public class TableDataTab extends JPanel
         bar.add(refreshButton);
 
         RolloverButton switchAutoresizeModeButton = new RolloverButton();
-        switchAutoresizeModeButton.setIcon(GUIUtilities.loadIcon("Zoom16.png"));
+        switchAutoresizeModeButton.setIcon(GUIUtilities.loadIcon("Zoom16.svg"));
         switchAutoresizeModeButton.setToolTipText(bundleString("SwitchTableAutoresizeMode"));
         switchAutoresizeModeButton.setMnemonic(KeyEvent.VK_ADD);
         switchAutoresizeModeButton.addActionListener(new ActionListener() {

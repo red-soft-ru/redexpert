@@ -693,7 +693,7 @@ public class ErdSaveDialog extends AbstractBaseDialog
             if ((fileFormat == EQ_FORMAT && !path.endsWith(".eqd")) ||
                     (fileFormat == JPEG_FORMAT && !path.endsWith(".jpeg")) ||
                     (fileFormat == SVG_FORMAT && !path.endsWith(".svg")) ||
-                    (fileFormat == PNG_FORMAT && !path.endsWith(".png")) ||
+                    (fileFormat == PNG_FORMAT && !path.endsWith(".svg")) ||
                     (fileFormat == GIF_FORMAT && !path.endsWith(".gif"))) {
                 GUIUtilities.displayErrorMessage("Invalid file extension for selected file type");
                 return;

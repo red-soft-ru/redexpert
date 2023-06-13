@@ -52,7 +52,7 @@ public class UserManagerPanel extends JPanel {
     }
 
     public static final String TITLE = Bundles.get(UserManagerPanel.class, "UserManager");
-    public static final String FRAME_ICON = "user_manager_16.png";
+    public static final String FRAME_ICON = "user_manager_16.svg";
     public IFBUserManager userManager;
     public BrowserController controller;
     public IFBUser userAdd;

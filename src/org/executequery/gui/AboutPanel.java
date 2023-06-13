@@ -408,10 +408,10 @@ public class AboutPanel extends BaseDialog
 
         protected AboutImagePanel() {
 
-            ImageIcon icon = GUIUtilities.loadImage("AboutText.png");
+            ImageIcon icon = GUIUtilities.loadImage("AboutText.svg");
             eqImage = icon.getImage();
 
-            ImageIcon backgroundIcon = GUIUtilities.loadImage("AboutBackground.png");
+            ImageIcon backgroundIcon = GUIUtilities.loadImage("AboutBackground.svg");
             background = backgroundIcon.getImage();
 
             final Runnable fader = new Runnable() {

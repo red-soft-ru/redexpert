@@ -55,7 +55,7 @@ public class GenerateScriptsWizard extends WizardProcessPanel
         ItemSelectionListener {
 
     public static final String TITLE = "Generate SQL Scripts";
-    public static final String FRAME_ICON = "CreateScripts16.png";
+    public static final String FRAME_ICON = "CreateScripts16.svg";
 
     /**
      * script type identifier for DROP TABLE

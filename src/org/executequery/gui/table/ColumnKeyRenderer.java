@@ -59,11 +59,11 @@ public class ColumnKeyRenderer extends DefaultTableCellRenderer {
     private ImageIcon newImage;
 
     public ColumnKeyRenderer() {
-        deleteImage = GUIUtilities.loadIcon("MarkDeleted16.png", true);
-        newImage = GUIUtilities.loadIcon("MarkNew16.png", true);
-        fkImage = GUIUtilities.loadIcon("ForeignKeyImage.png", true);
-        pkImage = GUIUtilities.loadIcon("PrimaryKeyImage.png", true);
-        pkfkImage = GUIUtilities.loadIcon("PrimaryForeignKeyImage.png", true);
+        deleteImage = GUIUtilities.loadIcon("MarkDeleted16.svg", true);
+        newImage = GUIUtilities.loadIcon("MarkNew16.svg", true);
+        fkImage = GUIUtilities.loadIcon("ForeignKeyImage.svg", true);
+        pkImage = GUIUtilities.loadIcon("PrimaryKeyImage.svg", true);
+        pkfkImage = GUIUtilities.loadIcon("PrimaryForeignKeyImage.svg", true);
     }
 
     public Component getTableCellRendererComponent(JTable table,

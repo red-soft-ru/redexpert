@@ -55,9 +55,9 @@ public class KeywordCellRenderer extends JLabel
     public KeywordCellRenderer() {
         sb = new StringBuffer();
         setFont(new Font("Dialog", Font.PLAIN, 11));
-        sql92 = GUIUtilities.loadIcon("Sql92.png", true);
-        userDefined = GUIUtilities.loadIcon("User16.png", true);
-        databaseSpecific = GUIUtilities.loadIcon("DatabaseKeyword16.png", true);
+        sql92 = GUIUtilities.loadIcon("Sql92.svg", true);
+        userDefined = GUIUtilities.loadIcon("User16.svg", true);
+        databaseSpecific = GUIUtilities.loadIcon("DatabaseKeyword16.svg", true);
     }
 
     public Component getTableCellRendererComponent(JTable table,

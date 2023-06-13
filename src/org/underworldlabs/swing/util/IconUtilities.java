@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing.util;
 
+import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.plaf.SVGImage;
 
 import javax.swing.*;
@@ -61,7 +62,7 @@ public class IconUtilities {
     }
 
     public static ImageIcon loadIcon(String name, boolean store) {
-        return loadIcon(name, store, -1, -1);
+        return loadIcon(name, store, UserProperties.getInstance().getIntProperty("icons.size"),UserProperties.getInstance().getIntProperty("icons.size"));
     }
 
     public static ImageIcon loadIcon(String name, boolean store, int width, int height) {

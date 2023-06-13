@@ -157,7 +157,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 0;
 
         setHeaderText("DatabaseException");
-        setHeaderIcon(GUIUtilities.loadIcon("exception16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("exception16.svg", true));
         setContentPanel(base);
         cache = new HashMap();
 
@@ -190,7 +190,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(currentObjectView);
         objectNameLabel.setText(bundleString("ExceptionName"));
         setHeaderText(bundleString("DatabaseException"));
-        setHeaderIcon(GUIUtilities.loadIcon("exception16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("exception16.svg", true));
 
         try {
             exceptionNameField.setText(exception.getName());
@@ -213,7 +213,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText("Exception Name:");
         setHeaderText(bundleString("DatabaseException"));
-        setHeaderIcon("exception16.png");
+        setHeaderIcon("exception16.svg");
 
         if (exception != null) {
             exceptionNameField.setText(exception.getName());

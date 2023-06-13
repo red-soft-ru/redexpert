@@ -129,7 +129,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         enableConnectionTabs(false);*/
 
         setHeaderText(bundleString("DatabaseConnection"));
-        setHeaderIcon(GUIUtilities.loadIcon("Database24.png"));
+        setHeaderIcon(GUIUtilities.loadIcon("Database24.svg"));
         setContentPanel(connectionPanel);
 
         // register with the event listener

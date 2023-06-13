@@ -83,13 +83,13 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
 
         moveUpButton = ActionUtilities.createButton(
                 action,
-                GUIUtilities.loadIcon("Up16.png", true),
+                GUIUtilities.loadIcon("Up16.svg", true),
                 null,
                 "moveUp");
 
         moveDownButton = ActionUtilities.createButton(
                 action,
-                GUIUtilities.loadIcon("Down16.png", true),
+                GUIUtilities.loadIcon("Down16.svg", true),
                 null,
                 "moveDown");
 

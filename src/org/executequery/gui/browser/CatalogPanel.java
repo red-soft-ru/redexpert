@@ -68,7 +68,7 @@ public class CatalogPanel extends BrowserNodeBasePanel {
         tablePanel().setBorder(BorderFactory.createTitledBorder("Available Schemas"));
 
         setHeaderText(bundleString("DatabaseCatalog"));
-        setHeaderIcon(GUIUtilities.loadIcon("DBImage24.png"));
+        setHeaderIcon(GUIUtilities.loadIcon("DBImage24.svg"));
     }
 
     public String getLayoutName() {

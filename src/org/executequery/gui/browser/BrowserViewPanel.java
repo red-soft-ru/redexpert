@@ -51,7 +51,7 @@ public class BrowserViewPanel extends FormObjectViewContainer
     /**
      * The icon to be applied to the <code>JInternalFrame</code>
      */
-    public static final String FRAME_ICON = "DBmag16.png";
+    public static final String FRAME_ICON = "DBmag16.svg";
 
     /**
      * the browser's control object

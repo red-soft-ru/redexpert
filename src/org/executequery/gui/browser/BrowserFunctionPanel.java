@@ -145,7 +145,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         //base.add(schemaNameField, gbc);
 
         setHeaderText(bundleString("procedure"));
-        setHeaderIcon(GUIUtilities.loadIcon("Procedure24.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("Procedure24.svg", true));
         setContentPanel(base);
         cache = new HashMap();
 
@@ -184,7 +184,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(defaultDatabaseFunction);
         objectNameLabel.setText(bundleString("function-name"));
         setHeaderText(bundleString("function"));
-        setHeaderIcon(GUIUtilities.loadIcon("Function24.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("Function24.svg", true));
 
         try {
             funcNameField.setText(defaultDatabaseFunction.getName());
@@ -209,31 +209,31 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
             case NamedObject.FUNCTION:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("function"));
-                setHeaderIcon("Function24.png");
+                setHeaderIcon("Function24.svg");
                 break;
 
             case NamedObject.PROCEDURE:
                 objectNameLabel.setText(bundleString("procedure-name"));
                 setHeaderText(bundleString("procedure"));
-                setHeaderIcon("Procedure24.png");
+                setHeaderIcon("Procedure24.svg");
                 break;
 
             case NamedObject.SYSTEM_STRING_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-string-function"));
-                setHeaderIcon("SystemFunction24.png");
+                setHeaderIcon("SystemFunction24.svg");
                 break;
 
             case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-numeric-function"));
-                setHeaderIcon("SystemFunction24.png");
+                setHeaderIcon("SystemFunction24.svg");
                 break;
 
             case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
                 objectNameLabel.setText(bundleString("function-name"));
                 setHeaderText(bundleString("system-date-function"));
-                setHeaderIcon("SystemFunction24.png");
+                setHeaderIcon("SystemFunction24.svg");
                 break;
         }
 

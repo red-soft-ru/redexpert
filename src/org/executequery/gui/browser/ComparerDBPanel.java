@@ -36,7 +36,7 @@ import java.util.*;
 public class ComparerDBPanel extends JPanel implements TabView {
 
     public static final String TITLE = bundleString("ComparerDB");
-    public static final String FRAME_ICON = "ComparerDB_16.png";
+    public static final String FRAME_ICON = "ComparerDB_16.svg";
 
     private static final int CHECK_CREATE = 0;
     private static final int CHECK_ALTER = 1;

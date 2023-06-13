@@ -36,7 +36,7 @@ public class ConsolePanel extends DefaultTabView
         NamedView {
 
     public static final String TITLE = "System Console ";
-    public static final String FRAME_ICON = "SystemConsole16.png";
+    public static final String FRAME_ICON = "SystemConsole16.svg";
 
     private Console console;
 

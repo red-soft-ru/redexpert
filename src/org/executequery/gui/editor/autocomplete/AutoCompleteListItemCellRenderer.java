@@ -47,19 +47,19 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
     private static final ImageIcon databaseTableView;
 
     static {
-        sql92Keyword = GUIUtilities.loadIcon("Sql92.png", true);
+        sql92Keyword = GUIUtilities.loadIcon("Sql92.svg", true);
         animatedSpinner = GUIUtilities.loadIcon("AnimatedSpinner16.gif", true);
-        userDefinedKeyword = GUIUtilities.loadIcon("User16.png", true);
-        databaseSpecificKeyword = GUIUtilities.loadIcon("DatabaseKeyword16.png", true);
-        nothingFound = GUIUtilities.loadIcon("Warning16.png", true);
-        databaseTable = GUIUtilities.loadIcon("PlainTable16.png", true);
-        databaseTableColumn = GUIUtilities.loadIcon("TableColumn16.png", true);
-        databaseTableView = GUIUtilities.loadIcon("TableView16.png", true);
-        systemFunction = GUIUtilities.loadIcon("SystemFunction16.png", true);
-        databaseFunction = GUIUtilities.loadIcon("Function16.png", true);
-        databaseProcedure = GUIUtilities.loadIcon("Procedure16.png", true);
-        variable = GUIUtilities.loadIcon("Variable16.png",true);
-        parameter = GUIUtilities.loadIcon("Argument16.png",true);
+        userDefinedKeyword = GUIUtilities.loadIcon("User16.svg", true);
+        databaseSpecificKeyword = GUIUtilities.loadIcon("DatabaseKeyword16.svg", true);
+        nothingFound = GUIUtilities.loadIcon("Warning16.svg", true);
+        databaseTable = GUIUtilities.loadIcon("PlainTable16.svg", true);
+        databaseTableColumn = GUIUtilities.loadIcon("TableColumn16.svg", true);
+        databaseTableView = GUIUtilities.loadIcon("TableView16.svg", true);
+        systemFunction = GUIUtilities.loadIcon("SystemFunction16.svg", true);
+        databaseFunction = GUIUtilities.loadIcon("Function16.svg", true);
+        databaseProcedure = GUIUtilities.loadIcon("Procedure16.svg", true);
+        variable = GUIUtilities.loadIcon("Variable16.svg",true);
+        parameter = GUIUtilities.loadIcon("Argument16.svg",true);
     }
 
 

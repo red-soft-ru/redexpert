@@ -131,7 +131,7 @@ public class DriverListPanel extends AbstractFormObjectViewPanel
         panel.add(tablePanel, gbc);
 
         setHeaderText("JDBC Drivers");
-        setHeaderIcon(GUIUtilities.loadIcon("DatabaseDriver24.png"));
+        setHeaderIcon(GUIUtilities.loadIcon("DatabaseDriver24.svg"));
         setContentPanel(panel);
     }
 

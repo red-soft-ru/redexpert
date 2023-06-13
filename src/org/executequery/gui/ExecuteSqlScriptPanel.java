@@ -72,7 +72,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         ConnectionListener {
 
     public static final String TITLE = Bundles.get(ExecuteSqlScriptPanel.class, "title");
-    public static final String FRAME_ICON = "ExecuteSqlScript16.png";
+    public static final String FRAME_ICON = "ExecuteSqlScript16.svg";
     public static final int MAX_LENGTH_TEXT_PANE = 1000000;
 
     private JComboBox connectionsCombo;

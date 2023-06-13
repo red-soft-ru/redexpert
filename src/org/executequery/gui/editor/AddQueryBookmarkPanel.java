@@ -39,7 +39,7 @@ public class AddQueryBookmarkPanel extends DefaultActionButtonsPanel
         implements FocusComponentPanel {
 
     public static final String TITLE = "Add Query Bookmark";
-    public static final String FRAME_ICON = "Bookmarks16.png";
+    public static final String FRAME_ICON = "Bookmarks16.svg";
 
     private static final String SAVE_COMMAND_NAME = "save";
     private static final String CANCEL_COMMAND_NAME = "cancel";

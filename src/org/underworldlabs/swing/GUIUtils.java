@@ -363,7 +363,7 @@ public class GUIUtils {
                 if (parent == null) {
                     frame = new JFrame("My dialog asks....");
                     frame.setUndecorated(true);
-                    frame.setIconImage(GUIUtilities.loadIcon("ApplicationIcon48.png", true).getImage());
+                    frame.setIconImage(GUIUtilities.loadIcon("ApplicationIcon48.svg", true).getImage());
                     frame.setVisible( true );
                     frame.setLocationRelativeTo( null );
                     dialog = pane.createDialog(frame, title);

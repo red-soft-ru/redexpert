@@ -167,10 +167,10 @@ public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
 
         Boolean is3D = Boolean.TRUE;
 
-        Object errorIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-error.png");
-        Object informationIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-information.png");
-        Object helpIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-help.png");
-        Object warningIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-warning.png");
+        Object errorIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-error.svg");
+        Object informationIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-information.svg");
+        Object helpIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-help.svg");
+        Object warningIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-warning.svg");
 
         Object[] defaults = {
                 //"CheckBoxMenuItem.checkIcon",	checkBoxMenuItemIcon,
@@ -185,14 +185,14 @@ public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
                 "OptionPane.questionIcon", helpIcon,
                 "OptionPane.warningIcon", warningIcon,
 
-                "FileView.computerIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Computer16.png"),
-                "FileView.directoryIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Folder16.png"),
-                "FileView.fileIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/File16.png"),
-                "FileView.floppyDriveIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FloppyDisk16.png"),
-                "FileView.hardDriveIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/HardDrive16.png"),
-                "FileChooser.homeFolderIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Home16.png"),
-                "FileChooser.newFolderIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FolderNew16.png"),
-                "FileChooser.upFolderIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FolderUp16.png"),
+                "FileView.computerIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Computer16.svg"),
+                "FileView.directoryIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Folder16.svg"),
+                "FileView.fileIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/File16.svg"),
+                "FileView.floppyDriveIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FloppyDisk16.svg"),
+                "FileView.hardDriveIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/HardDrive16.svg"),
+                "FileChooser.homeFolderIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Home16.svg"),
+                "FileChooser.newFolderIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FolderNew16.svg"),
+                "FileChooser.upFolderIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FolderUp16.svg"),
 
 //            "FileView.computerIcon",		makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Computer.gif"),
 //            "FileView.directoryIcon",		makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/TreeClosed.gif"),
@@ -234,10 +234,10 @@ public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
                 "RootPane.warningDialogBorder", SmoothGradientBorders.getWarningDialogBorder()
                  */
 
-//            Object errorIcon       = makeIcon(getClass(), iconPrefix + "dialog-error.png");
-//            Object informationIcon = makeIcon(getClass(), iconPrefix + "dialog-information.png");
-//            Object helpIcon        = makeIcon(getClass(), iconPrefix + "dialog-help.png");
-//            Object warningIcon     = makeIcon(getClass(), iconPrefix + "dialog-warning.png");
+//            Object errorIcon       = makeIcon(getClass(), iconPrefix + "dialog-error.svg");
+//            Object informationIcon = makeIcon(getClass(), iconPrefix + "dialog-information.svg");
+//            Object helpIcon        = makeIcon(getClass(), iconPrefix + "dialog-help.svg");
+//            Object warningIcon     = makeIcon(getClass(), iconPrefix + "dialog-warning.svg");
 
 
         };

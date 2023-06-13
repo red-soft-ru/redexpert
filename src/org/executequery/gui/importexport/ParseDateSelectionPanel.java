@@ -97,7 +97,7 @@ public class ParseDateSelectionPanel extends ComponentTitledPanel
         dateFormatLabel.setEnabled(false);
 
         helpButton = new RolloverButton(
-                "/org/executequery/icons/TipOfTheDay16.png", "Date/time format masks");
+                "/org/executequery/icons/TipOfTheDay16.svg", "Date/time format masks");
         helpButton.addActionListener(this);
         helpButton.setEnabled(false);
         helpButton.addMouseListener(new HelpPopupAdapter());

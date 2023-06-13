@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing.toolbar;
 
+import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.util.IconUtilities;
@@ -48,7 +49,7 @@ public class PanelToolBar extends AbstractToolBarPanel {
 
         if (icon != null) {
 
-            button.setIcon(IconUtilities.loadIcon(icon));
+            button.setIcon(IconUtilities.loadIcon(icon, UserProperties.getInstance().getIntProperty("icons.size")));
         }
 
         button.setText(null);

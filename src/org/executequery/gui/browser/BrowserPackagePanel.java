@@ -137,7 +137,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 0;
 
         setHeaderText("Database Package");
-        setHeaderIcon(GUIUtilities.loadIcon("package16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("package16.svg", true));
         setContentPanel(base);
         cache = new HashMap();
 
@@ -166,7 +166,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(databasePackage);
         objectNameLabel.setText("Package Name:");
         setHeaderText("Database Package");
-        setHeaderIcon(GUIUtilities.loadIcon("package16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon("package16.svg", true));
 
         try {
             packageNameField.setText(databasePackage.getName());
@@ -190,7 +190,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText("Package Name:");
         setHeaderText("Database Package");
-        setHeaderIcon("package16.png");
+        setHeaderIcon("package16.svg");
 
         if (databasePackage != null) {
             packageNameField.setText(databasePackage.getName());

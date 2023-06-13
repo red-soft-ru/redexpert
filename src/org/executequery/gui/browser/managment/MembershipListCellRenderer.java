@@ -17,8 +17,8 @@ public class MembershipListCellRenderer extends RowHeaderRenderer {
      */
     public MembershipListCellRenderer(JTable table) {
         super(table);
-        roleIcon = GUIUtilities.loadIcon("user_manager_16.png");
-        userIcon = GUIUtilities.loadIcon("User16.png");
+        roleIcon = GUIUtilities.loadIcon("user_manager_16.svg");
+        userIcon = GUIUtilities.loadIcon("User16.svg");
     }
 
     protected void setValue(Object value) {

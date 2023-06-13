@@ -152,15 +152,15 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
         showSysTablesCheckBox.setText(Bundles.get(BrowserRolePanel.class,"ShowSystemTables"));
         showSysTablesCheckBox.addActionListener(e -> showSysTablesAction());
 
-        grantAllToAllButton.setIcon(GUIUtilities.loadIcon("grant_all.png"));
+        grantAllToAllButton.setIcon(GUIUtilities.loadIcon("grant_all.svg"));
         grantAllToAllButton.addActionListener(e -> grantAllToAll());
         grantAllToAllButton.setToolTipText("GRANT ALL TO ALL");
 
-        grantAllToAllWithGrantButton.setIcon(GUIUtilities.loadIcon("admin_option_all.png"));
+        grantAllToAllWithGrantButton.setIcon(GUIUtilities.loadIcon("admin_option_all.svg"));
         grantAllToAllWithGrantButton.addActionListener(e -> grantAllToAllWithGrant());
         grantAllToAllWithGrantButton.setToolTipText("GRANT ALL TO ALL WITH GRANT_OPTION");
 
-        revokeAllFromAllButton.setIcon(GUIUtilities.loadIcon("no_grant_all.png"));
+        revokeAllFromAllButton.setIcon(GUIUtilities.loadIcon("no_grant_all.svg"));
         revokeAllFromAllButton.addActionListener(e -> revokeAllFromAll());
         revokeAllFromAllButton.setToolTipText("REVOKE ALL FROM ALL");
 
@@ -168,27 +168,27 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
         objectBox.addActionListener(e -> objectBoxAction());
         objectBox.setToolTipText("Select type of objects");
 
-        allUsersGrantButton.setIcon(GUIUtilities.loadIcon("grant_vertical.png"));
+        allUsersGrantButton.setIcon(GUIUtilities.loadIcon("grant_vertical.svg"));
         allUsersGrantButton.addActionListener(e -> allUsersGrantButtonAction());
         allUsersGrantButton.setToolTipText("GRANT TO ALL OBJECTS");
 
-        allUsersAdminOptionButton.setIcon(GUIUtilities.loadIcon("admin_option_vertical.png"));
+        allUsersAdminOptionButton.setIcon(GUIUtilities.loadIcon("admin_option_vertical.svg"));
         allUsersAdminOptionButton.addActionListener(e -> allUsersAdminOptionAction());
         allAdminOptionButton.setToolTipText("GRANT TO ALL OBJECTS WITH GRANT OPTION");
 
-        allRolesNoGrantButton.setIcon(GUIUtilities.loadIcon("no_grant_vertical.png"));
+        allRolesNoGrantButton.setIcon(GUIUtilities.loadIcon("no_grant_vertical.svg"));
         allRolesNoGrantButton.addActionListener(e -> allRolesNoGrantAction());
         allRolesNoGrantButton.setToolTipText("REVOKE FROM ALL OBJECTS");
 
-        allGrantsButton.setIcon(GUIUtilities.loadIcon("grant_gorisont.png"));
+        allGrantsButton.setIcon(GUIUtilities.loadIcon("grant_gorisont.svg"));
         allGrantsButton.addActionListener(e -> allGrantsButtonAction());
         allGrantsButton.setToolTipText("ALL GRANTS TO OBJECT");
 
-        allAdminOptionButton.setIcon(GUIUtilities.loadIcon("admin_option_gorisont.png"));
+        allAdminOptionButton.setIcon(GUIUtilities.loadIcon("admin_option_gorisont.svg"));
         allAdminOptionButton.addActionListener(e -> allAdminOptionButtonAction());
         allAdminOptionButton.setToolTipText("ALL GRANTS TO OBJECT WITH GRANT OPTION");
 
-        noAllGrantsButton.setIcon(GUIUtilities.loadIcon("no_grant_gorisont.png"));
+        noAllGrantsButton.setIcon(GUIUtilities.loadIcon("no_grant_gorisont.svg"));
         noAllGrantsButton.addActionListener(e -> noAllGrantsButtonAction());
         noAllGrantsButton.setToolTipText("REVOKE ALL FROM OBJECT");
 

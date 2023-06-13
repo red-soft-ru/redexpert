@@ -111,27 +111,27 @@ public class ListSelectionPanel extends ActionPanel
         JButton selectOneButton = ActionUtilities.createButton(
                 this,
                 "selectOneAction",
-//                    IconUtilities.loadDefaultIconResource("SelectOne16.png", true),
-                IconUtilities.loadDefaultIconResource("Forward16.png", true),
+//                    IconUtilities.loadDefaultIconResource("SelectOne16.svg", true),
+                IconUtilities.loadDefaultIconResource("Forward16.svg", true),
                 bundleString("selectOneAction"));
 
         JButton selectAllButton = ActionUtilities.createButton(
                 this,
                 "selectAllAction",
-                IconUtilities.loadDefaultIconResource("SelectAll16.png", true),
+                IconUtilities.loadDefaultIconResource("SelectAll16.svg", true),
                 bundleString("selectAllAction"));
 
         JButton removeOneButton = ActionUtilities.createButton(
                 this,
                 "removeOneAction",
-//                    IconUtilities.loadDefaultIconResource("RemoveOne16.png", true),
-                IconUtilities.loadDefaultIconResource("Previous16.png", true),
+//                    IconUtilities.loadDefaultIconResource("RemoveOne16.svg", true),
+                IconUtilities.loadDefaultIconResource("Previous16.svg", true),
                 bundleString("removeOneAction"));
 
         JButton removeAllButton = ActionUtilities.createButton(
                 this,
                 "removeAllAction",
-                IconUtilities.loadDefaultIconResource("RemoveAll16.png", true),
+                IconUtilities.loadDefaultIconResource("RemoveAll16.svg", true),
                 bundleString("removeAllAction"));
 
         // reset the button insets
@@ -145,26 +145,26 @@ public class ListSelectionPanel extends ActionPanel
 
         JButton moveUpButton = ActionUtilities.createButton(
                 this,
-                "Up16.png",
+                "Up16.svg",
                 bundleString("moveSelectionUp"),
                 "moveSelectionUp");
 
         JButton movePageUpButton = ActionUtilities.createButton(
                 this,
-                "UpUp16.png",
+                "UpUp16.svg",
                 bundleString("moveSelectionPageUp"),
                 "moveSelectionPageUp");
 
         JButton moveDownButton = ActionUtilities.createButton(
                 this,
-                "Down16.png",
+                "Down16.svg",
                 bundleString("moveSelectionDown"),
                 "moveSelectionDown");
 
 
         JButton movePageDownButton = ActionUtilities.createButton(
                 this,
-                "DownDown16.png",
+                "DownDown16.svg",
                 bundleString("moveSelectionPageDown"),
                 "moveSelectionPageDown");
 

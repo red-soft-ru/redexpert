@@ -8,7 +8,7 @@
     <fullName>Red Expert</fullName>
     <version>${VERSION}</version>
     <licenseFile>${redexpert_dir}/LICENSE.txt</licenseFile>
-    <logoImage>logos/red_expert.svg</logoImage>
+    <logoImage>logos/red_expert.png</logoImage>
     <allowLanguageSelection>1</allowLanguageSelection>
     <customLanguageFileList>
         <language>
@@ -83,7 +83,7 @@
                     <platforms>all</platforms>
                     <exec>${installdir}/bin/${execute_file}</exec>
                     <path>${installdir}/bin</path>
-                    <icon>${installdir}/red_expert.svg</icon>
+                    <icon>${installdir}/red_expert.png</icon>
                     <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
                     <windowsPath>${installdir}/bin/</windowsPath>
                     <windowsExecArgs></windowsExecArgs>
@@ -108,7 +108,7 @@
                     <platforms>all</platforms>
                     <exec>${installdir}/bin/${execute_file}</exec>
                     <path>${installdir}/bin/</path>
-                    <icon>${installdir}/red_expert.svg</icon>
+                    <icon>${installdir}/red_expert.png</icon>
                     <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
                     <windowsPath>${installdir}/bin/</windowsPath>
                     <windowsExecArgs></windowsExecArgs>
@@ -194,7 +194,7 @@
                     <platforms>linux</platforms>
                     <exec>${installdir}/bin/${execute_file}</exec>
                     <path>${installdir}/bin</path>
-                    <icon>${installdir}/red_expert.svg</icon>
+                    <icon>${installdir}/red_expert.png</icon>
                     <runAsAdmin>0</runAsAdmin>
                 </shortcut>
             </shortcutList>
@@ -229,7 +229,7 @@ Name=${project.shortName}
 GenericName=${project.shortName}
 Comment=${project.shortName}
 Exec=${installdir}/bin/${execute_file}
-Icon=${installdir}/red_expert.svg
+Icon=${installdir}/red_expert.png
 Path=/home/alexey/snap/RedExpert/bin
 Terminal=false
 Type=Application
@@ -243,7 +243,7 @@ MimeType=application/firebird-x-fdb
                 </runProgram>
                 <runProgram>
                     <program>xdg-icon-resource</program>
-                    <programArguments>install --context mimetypes --size 64 ${installdir}/red_expert.svg application-firebird-x-fdb
+                    <programArguments>install --context mimetypes --size 64 ${installdir}/red_expert.png application-firebird-x-fdb
                     </programArguments>
                 </runProgram>
             </actionList>

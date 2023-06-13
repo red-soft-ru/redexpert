@@ -1,4 +1,4 @@
-![image](red_expert.svg)
+![image](red_expert.png)
 
 RedExpert
 ============
@@ -28,7 +28,7 @@ Unfortunately [documentation](http://reddatabase.ru/documentation/) is now avail
 Cross platform installer was built with [InstallBuilder](https://installbuilder.bitrock.com/) provided
 by [BitRock](https://bitrock.com/).
 
-[![image](installer/logos/installersby_tiny.svg)](https://installbuilder.bitrock.com/)
+[![image](installer/logos/installersby_tiny.png)](https://installbuilder.bitrock.com/)
 
 ## Download RedExpert
 

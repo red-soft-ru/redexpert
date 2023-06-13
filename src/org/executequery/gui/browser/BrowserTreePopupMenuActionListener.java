@@ -20,15 +20,14 @@
 
 package org.executequery.gui.browser;
 
-import biz.redsoft.IFBMaintenanceManager;
 import org.executequery.GUIUtilities;
+import org.executequery.actions.databasecommands.TableValidationCommand;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
-import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.AnaliseRecompileDialog;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -45,7 +44,6 @@ import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
-import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -53,8 +51,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
-import java.io.ByteArrayOutputStream;
-import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Objects;
 
@@ -1140,49 +1136,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     }
 
     public void onlineTableValidation(ActionEvent e) {
-
-        IFBMaintenanceManager maintenanceManager = getMaintenanceManager();
-        if (maintenanceManager == null)
-            return;
-
-        try {
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            maintenanceManager.setLogger(outputStream);
-            maintenanceManager.validateTable(getSelectedTable().getName());
-            GUIUtilities.displayInformationMessage(outputStream.toString());
-
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            GUIUtilities.displayExceptionErrorDialog("Unable run database validation", ex);
-        }
-
-    }
-
-    private IFBMaintenanceManager getMaintenanceManager() {
-
-        try {
-
-            DatabaseConnection dc = currentSelection;
-            Driver driver = DefaultDriverLoader.getDefaultDriver();
-
-            IFBMaintenanceManager maintenanceManager = (IFBMaintenanceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(
-                    driver.getMajorVersion(), driver, "FBMaintenanceManagerImpl");
-
-            maintenanceManager.setUser(dc.getUserName());
-            maintenanceManager.setPassword(dc.getUnencryptedPassword());
-            maintenanceManager.setDatabase(dc.getSourceName());
-            maintenanceManager.setHost(dc.getHost());
-            maintenanceManager.setPort(dc.getPortInt());
-
-            return maintenanceManager;
-
-        } catch (ClassNotFoundException | SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog(
-                    "Unable to init IFBMaintenanceManager instance", e);
-        }
-
-        return null;
+        new TableValidationCommand().validateTableAndShowResult(currentSelection, getSelectedTable().getName());
     }
 
 }

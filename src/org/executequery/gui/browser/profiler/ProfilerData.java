@@ -16,6 +16,10 @@ class ProfilerData {
     private long avgTime;
     private long callCount;
 
+    public ProfilerData() {
+        this(-1, -1, "ROOT NODE", 0);
+    }
+
     public ProfilerData(int id, int callerId, String packageName, String routineName, long totalTime) {
         this(id, callerId, (packageName != null) ? (packageName.trim() + "::" + routineName.trim()) : routineName.trim(), totalTime);
     }

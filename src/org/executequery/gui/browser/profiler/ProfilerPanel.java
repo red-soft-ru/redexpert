@@ -9,18 +9,15 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.treetable.CCTNode;
 import org.underworldlabs.swing.treetable.ProfilerTreeTable;
 import org.underworldlabs.swing.treetable.ProfilerTreeTableModel;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
-import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * @author Alexey Kozlov
@@ -40,8 +37,8 @@ public class ProfilerPanel extends JPanel
     private JCheckBox compactViewCheckBox;
 
     private ProfilerTreeTable profilerTree;
-    private DefaultMutableTreeNode rootTreeNode;
-    private DefaultMutableTreeNode compactRootTreeNode;
+    private ProfilerTreeTableNode rootTreeNode;
+    private ProfilerTreeTableNode compactRootTreeNode;
 
     private JButton startButton;
     private JButton pauseButton;
@@ -81,9 +78,8 @@ public class ProfilerPanel extends JPanel
         compactViewCheckBox = new JCheckBox(bundleString("compactViewCheckBox"));
         compactViewCheckBox.addActionListener(e -> updateTreeDisplay());
 
-        rootTreeNode = new DefaultMutableTreeNode("root");
-        profilerTree = new ProfilerTreeTable(new TreeTableModel(rootTreeNode),true,false,new int[4]);
-        profilerTree.setCellRenderer(new ProfilerTreeCellRenderer());
+        rootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
+        profilerTree = new ProfilerTreeTable(new TreeTableModel(rootTreeNode), false, false, new int[4]);
 
         startButton = new JButton(bundleString("Start"));
         startButton.addActionListener(e -> startSession());
@@ -253,40 +249,40 @@ public class ProfilerPanel extends JPanel
         rootTreeNode.removeAllChildren();
         for (ProfilerData data : profilerDataList) {
             if (data.getCallerId() == 0) {
-                rootTreeNode.add(new DefaultMutableTreeNode(data));
+                rootTreeNode.add(new ProfilerTreeTableNode(data));
 
             } else {
-                DefaultMutableTreeNode node = getParenNode(data.getCallerId(), rootTreeNode);
+                ProfilerTreeTableNode node = getParenNode(data.getCallerId(), rootTreeNode);
                 if (node != null)
-                    node.add(new DefaultMutableTreeNode(data));
+                    node.add(new ProfilerTreeTableNode(data));
                 else
-                    rootTreeNode.add(new DefaultMutableTreeNode(data));
+                    rootTreeNode.add(new ProfilerTreeTableNode(data));
             }
         }
 
 
-        Enumeration<TreeNode> children = rootTreeNode.children();
+        Enumeration<CCTNode> children = rootTreeNode.children();
         while (children.hasMoreElements())
-            addNodesSelfTime((DefaultMutableTreeNode) children.nextElement());
+            addNodesSelfTime((ProfilerTreeTableNode) children.nextElement());
 
         compactRootTreeNode = cloneNode(rootTreeNode);
         compressNodes(compactRootTreeNode);
 
-        updateTreeDisplay();
+//        updateTreeDisplay();
     }
 
-    private DefaultMutableTreeNode getParenNode(int id, DefaultMutableTreeNode node) {
+    private ProfilerTreeTableNode getParenNode(int id, ProfilerTreeTableNode node) {
 
-        Enumeration<TreeNode> children = node.children();
+        Enumeration<CCTNode> children = node.children();
         while (children.hasMoreElements()) {
 
-            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
-            ProfilerData childData = (ProfilerData) child.getUserObject();
+            ProfilerTreeTableNode child = (ProfilerTreeTableNode) children.nextElement();
+            ProfilerData childData = child.getData();
 
             if (childData.getId() == id)
                 return child;
 
-            DefaultMutableTreeNode returnNode = getParenNode(id, child);
+            ProfilerTreeTableNode returnNode = getParenNode(id, child);
             if (returnNode != null)
                 return returnNode;
         }
@@ -294,33 +290,33 @@ public class ProfilerPanel extends JPanel
         return null;
     }
 
-    private void addNodesSelfTime(DefaultMutableTreeNode node) {
+    private void addNodesSelfTime(ProfilerTreeTableNode node) {
 
-        ProfilerData nodeData = (ProfilerData) node.getUserObject();
+        ProfilerData nodeData = node.getData();
         long selfTime = nodeData.getTotalTime();
 
-        Enumeration<TreeNode> children = node.children();
+        Enumeration<CCTNode> children = node.children();
         while (children.hasMoreElements()) {
 
-            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
-            selfTime -= ((ProfilerData) child.getUserObject()).getTotalTime();
+            ProfilerTreeTableNode child = (ProfilerTreeTableNode) children.nextElement();
+            selfTime -= child.getData().getTotalTime();
             if (child.getChildCount() > 0)
                 addNodesSelfTime(child);
 
         }
         if (node.getChildCount() > 0)
-            node.add(new DefaultMutableTreeNode(new ProfilerData(-1, nodeData.getCallerId(), "Self Time", selfTime)));
+            node.add(new ProfilerTreeTableNode(new ProfilerData(-1, nodeData.getCallerId(), "Self Time", selfTime)));
 
     }
 
-    private DefaultMutableTreeNode compressNodes(DefaultMutableTreeNode node) {
+    private ProfilerTreeTableNode compressNodes(ProfilerTreeTableNode node) {
 
-        List<DefaultMutableTreeNode> childrenList = new LinkedList<>();
+        List<ProfilerTreeTableNode> childrenList = new LinkedList<>();
 
-        Enumeration<TreeNode> children = node.children();
+        Enumeration<CCTNode> children = node.children();
         while (children.hasMoreElements()) {
 
-            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+            ProfilerTreeTableNode child = (ProfilerTreeTableNode) children.nextElement();
             if (child.getChildCount() > 0)
                 childrenList.add(compressNodes(child));
             else
@@ -329,8 +325,8 @@ public class ProfilerPanel extends JPanel
 
         for (int i = 0, activeNodeIndex = 0; i < childrenList.size() - 1; i++) {
 
-            ProfilerData data_1 = (ProfilerData) childrenList.get(activeNodeIndex).getUserObject();
-            ProfilerData data_2 = (ProfilerData) childrenList.get(i + 1).getUserObject();
+            ProfilerData data_1 = childrenList.get(activeNodeIndex).getData();
+            ProfilerData data_2 = childrenList.get(i + 1).getData();
 
             if (data_1.compareAndMergeData(data_2))
                 node.remove(childrenList.get(i + 1));
@@ -342,14 +338,14 @@ public class ProfilerPanel extends JPanel
         return node;
     }
 
-    public DefaultMutableTreeNode cloneNode(DefaultMutableTreeNode originalNode) {
+    public ProfilerTreeTableNode cloneNode(ProfilerTreeTableNode originalNode) {
 
-        DefaultMutableTreeNode copyNode = new DefaultMutableTreeNode(originalNode.getUserObject());
+        ProfilerTreeTableNode copyNode = new ProfilerTreeTableNode(originalNode.getData());
 
-        Enumeration<TreeNode> children = originalNode.children();
+        Enumeration<CCTNode> children = originalNode.children();
         while (children.hasMoreElements()) {
-            DefaultMutableTreeNode childCopy = cloneNode((DefaultMutableTreeNode) children.nextElement());
-            childCopy.setUserObject(((ProfilerData) childCopy.getUserObject()).getCopy());
+            ProfilerTreeTableNode childCopy = cloneNode((ProfilerTreeTableNode) children.nextElement());
+            childCopy.setData(childCopy.getData().getCopy());
             copyNode.add(cloneNode(childCopy));
         }
 
@@ -359,8 +355,8 @@ public class ProfilerPanel extends JPanel
     // ---
 
     private void updateTreeDisplay() {
-        /*profilerTree.setModel(new DefaultTreeModel(
-                compactViewCheckBox.isSelected() ? compactRootTreeNode : rootTreeNode));*/
+//        profilerTree = new ProfilerTreeTable(
+//                new TreeTableModel(compactRootTreeNode), false, false, new int[4]);
     }
 
     private void switchSessionState(int state) {
@@ -409,86 +405,64 @@ public class ProfilerPanel extends JPanel
         return Bundles.get(ProfilerPanel.class, key);
     }
 
-    private class TreeTableModel extends ProfilerTreeTableModel.Abstract {
+
+    /**
+     * Profiler Tree Table Model class
+     */
+    public static class TreeTableModel extends ProfilerTreeTableModel.Abstract {
+
+        private static final List<String> columnNames =
+                Arrays.asList("PROCESS NAME", "TOTAL TIME (ns)", "AVERAGE TIME (ns)", "CALLS COUNT");
+        private static final List<Class<?>> columnClasses =
+                Arrays.asList(JTree.class, Long.class, Long.class, Integer.class);
 
         TreeTableModel(TreeNode root) {
             super(root);
         }
 
+        @Override
         public String getColumnName(int columnIndex) {
-            if (columnIndex<0) columnIndex++;
 
-            if (columnIndex == 1) {
-                return "COLUMN_NAME";
-            } else if (columnIndex == 2) {
-                return "COLUMN_TOTALTIME";
-            } else if (columnIndex == 3) {
-                return "COLUMN_TOTALTIME_CPU";
-            } else if (columnIndex == 4) {
-                return "";
-                //return sampled ? COLUMN_HITS : COLUMN_INVOCATIONS;
-            } else if (columnIndex == 0) {
-                return "COLUMN_SELECTED";
-            }
-            return null;
+            if (columnIndex < 0)
+                columnIndex++;
+
+            return columnNames.get(columnIndex);
         }
 
+        @Override
         public Class<?> getColumnClass(int columnIndex) {
-            if (columnIndex<0) columnIndex++;
 
-            if (columnIndex == 1) {
-                return JTree.class;
-            } else if (columnIndex == 4) {
-                return Integer.class;
-            } else if (columnIndex == 0) {
-                return Boolean.class;
-            } else {
-                return Long.class;
-            }
+            if (columnIndex < 0)
+                columnIndex++;
+
+            return columnClasses.get(columnIndex);
         }
 
+        @Override
         public int getColumnCount() {
-            return  4 ;
+            return columnNames.size();
         }
 
+        @Override
         public Object getValueAt(TreeNode node, int columnIndex) {
-            /*PrestimeCPUCCTNode cpuNode = (PrestimeCPUCCTNode)node;
 
-            if (selection == null) columnIndex++;
+            ProfilerTreeTableNode profilerNode = (ProfilerTreeTableNode) node;
 
-            if (columnIndex == 1) {
-                return cpuNode.getNodeName();
-            } else if (columnIndex == 2) {
-                return cpuNode.getTotalTime0();
-            } else if (columnIndex == 3) {
-                return twoTimeStamps ? cpuNode.getTotalTime1() : 0;
-            } else if (columnIndex == 4) {
-                return cpuNode.getNCalls();
-            } else if (columnIndex == 0) {
-                if (selection.isEmpty()) return Boolean.FALSE;
-                return selection.contains(idMap.get(cpuNode.getMethodId()));
-            }*/
+            if (columnIndex == 0) return profilerNode.getProcessName();
+            if (columnIndex == 1) return profilerNode.getTotalTime();
+            if (columnIndex == 2) return profilerNode.getAvgTime();
+            if (columnIndex == 3) return profilerNode.getCallCount();
 
             return null;
         }
 
+        @Override
         public void setValueAt(Object aValue, TreeNode node, int columnIndex) {
-           /* if (selection == null) columnIndex++;
-
-            if (columnIndex == 0) {
-                PrestimeCPUCCTNode cpuNode = (PrestimeCPUCCTNode)node;
-                int methodId = cpuNode.getMethodId();
-                if (Boolean.TRUE.equals(aValue)) selection.add(idMap.get(methodId));
-                else selection.remove(idMap.get(methodId));
-            }*/
         }
 
+        @Override
         public boolean isCellEditable(TreeNode node, int columnIndex) {
             return false;
-            /*
-            if (selection == null) columnIndex++;
-            if (columnIndex != 0) return false;
-            return (isSelectable((PrestimeCPUCCTNode)node));*/
         }
 
     }

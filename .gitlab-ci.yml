@@ -120,7 +120,7 @@ build:linux:
     - builder
     - x86_64
   variables:
-    MAVEN_VERSION: 3.9.2;
+    MAVEN_VERSION: 3.9.2
     M2_HOME: /opt/apache-maven-${MAVEN_VERSION}/
     QMAKE: qmake-qt4
     DIST: ${CI_PROJECT_DIR}/dist/linux-${ARCH}

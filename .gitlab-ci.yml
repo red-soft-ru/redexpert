@@ -8,6 +8,7 @@ stages:
   - sources
   - build_docs
   - build
+  - test
   - repackage
   - deploy
 
@@ -119,7 +120,8 @@ build:linux:
     - builder
     - x86_64
   variables:
-    M2_HOME: /opt/apache-maven-3.5.4/
+    MAVEN_VERSION: 3.9.2
+    M2_HOME: /opt/apache-maven-${MAVEN_VERSION}/
     QMAKE: qmake-qt4
     DIST: ${CI_PROJECT_DIR}/dist/linux-${ARCH}
   before_script:
@@ -128,8 +130,8 @@ build:linux:
     - yum group install -y "Development Tools"
     - yum install -y ca-certificates
     - cd /opt
-    - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
-    - tar xzf apache-maven-3.5.4-bin.tar.gz
+    - wget http://www.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
+    - tar xzf apache-maven-${MAVEN_VERSION}-bin.tar.gz
     - export PATH=${M2_HOME}/bin:${PATH}
     - export JAVA_HOME=`java -XshowSettings:properties -version 2>&1|grep "java.home"|cut -d "=" -f 2|tr -d " "|rev | cut -c 4- | rev`
   script:
@@ -207,6 +209,55 @@ build:windows:
       - ARCH: x86
         QMAKE: c:\Qt\Qt5.6.3_x86\5.6.3\msvc2013\bin\qmake.exe
 
+.test_template:
+  stage: test
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - test-results/
+  except:
+    variables:
+      - $SKIP_TESTS == "1"
+
+test:windows:
+  extends: .test_template
+  tags:
+    - windows
+    - proxmox
+    - tester
+  variables:
+    PROXMOX_TEMPLATE: template-testing-re-windows-7
+    JAVA_HOME: c:\Program Files\Java\jdk8
+    ErrorActionPreference: STOP
+    DIST: ${CI_PROJECT_DIR}\dist\windows-${ARCH}
+    PYTHON: c:\Python38\python.exe
+    WORKSPACE: ${CI_PROJECT_DIR}
+    DISTRO: red-expert-tests
+  parallel:
+    matrix:
+      - ARCH: x86_64
+      - ARCH: x86
+  before_script:
+   - $TEST_DIR = New-TempDirectory -Prefix 'test_re_'
+   - cd $TEST_DIR
+   - unzip -q ${CI_PROJECT_DIR}\dist-src\RedExpert-$env:VERSION-src.zip
+   - cd $DIST\bin
+   - |
+      if ($env:ARCH -eq "x86_64")
+      {
+        start-process .\RedExpert64.exe
+      }
+      else
+      {
+        start-process .\RedExpert.exe
+      }
+  script:
+   - cd $TEST_DIR\RedExpert-$env:VERSION\ci
+   - powershell -ExecutionPolicy ByPass -file test.ps1
+  dependencies: ["prepare", "sources", "build:windows"]
+  needs: ["prepare", "sources", "build:windows"]
+  
+
 repackage:
   tags:
     - docker
@@ -231,6 +282,15 @@ deploy:
   stage: deploy
   image: registry.red-soft.biz:5000/utils/red-release-manager/client:master
   script:
+    - test -d test-results && for f in $(find test-results -name \*.xml); do printf "testpack $(basename ${f/.xml})\nfile $f\nend\n"; done >> .ci/artifacts || true
+    - |
+      for d in $(find test-results/* -maxdepth 1 -type d | sed 's/test-results\///'); do
+        printf "testpack $d\n";
+        for t in $(find test-results/$d -name \*.xml); do
+          printf "file $t\n";
+        done;
+        printf "end\n";
+      done >> .ci/artifacts || true
     - relmanager_client deploy ${RELEASE_HUB_PROJECT} ${VERSION} --artifacts .ci/artifacts --ci_url ${CI_URL} --context ${CONTEXT} --branch ${BRANCH} --commit ${CI_COMMIT_SHA} --stage ${STAGE}
   only:
     variables:

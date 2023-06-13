@@ -1126,7 +1126,7 @@ public class ColumnData implements Serializable {
         this.selectOperator = selectOperator;
     }
 
-    public class DefaultValue {
+    public class DefaultValue implements Serializable {
         String originOperator;
         String value;
         boolean useQuotes = false;

@@ -105,7 +105,7 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
     @Override
     protected void initEdited() {
         reset();
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         DependPanel tablesIndexesPanel = new DependPanel(TreePanel.TABLESPACE);
         tablesIndexesPanel.setDatabaseObject(tablespace);
         tablesIndexesPanel.setDatabaseConnection(tablespace.getHost().getDatabaseConnection());

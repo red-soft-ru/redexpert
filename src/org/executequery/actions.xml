@@ -710,6 +710,11 @@
             description="Import data into database from local files (*.csv, *.xlsx, ...)"
             execute-class="org.executequery.actions.databasecommands.ImportDataFromFileCommand"/>
 
+    <action id="table-validation-command"
+            name="Table Validation"
+            description="Allows online validation of DB tables"
+            execute-class="org.executequery.actions.databasecommands.TableValidationCommand"/>
+
     <action id="execute-sql-script-command"
             name="Execute SQL Script"
             mnemonic="S"

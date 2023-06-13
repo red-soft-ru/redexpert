@@ -43,6 +43,9 @@ public final class DerivedQuery {
 
     private List<QueryTable> queryTables;
 
+    private String endDelimiter;
+    private boolean isSetTerm;
+
     static {
 
         defaultDerivedTableStrategy = new DefaultDerivedTableStrategy();
@@ -56,14 +59,19 @@ public final class DerivedQuery {
     }
 
     public DerivedQuery(String originalQuery) {
-        super();
-        this.originalQuery = originalQuery;
-        this.derivedQuery = originalQuery;
+        this(originalQuery, null, ";", false);
     }
 
     public DerivedQuery(String originalQuery, String queryWithoutComments) {
-        this(originalQuery);
+        this(originalQuery, queryWithoutComments, ";", false);
+    }
+
+    public DerivedQuery(String originalQuery, String queryWithoutComments, String endDelimiter, boolean isSetTerm) {
+        this.originalQuery = originalQuery;
+        this.derivedQuery = originalQuery;
         this.queryWithoutComments = queryWithoutComments;
+        this.endDelimiter = endDelimiter;
+        this.isSetTerm = isSetTerm;
     }
 
     public String getOriginalQuery() {
@@ -317,12 +325,23 @@ public final class DerivedQuery {
 
             type = QueryTypes.SET_AUTODDL_OFF;
 
-        } else {
+        } else if (query.indexOf("SET STATISTICS") == 0){
+            type = QueryTypes.SET_STATISTICS;
+        }
+        else {
 
             type = QueryTypes.UNKNOWN;
         }
 
         return type;
+    }
+
+    public String getEndDelimiter() {
+        return endDelimiter;
+    }
+
+    public boolean isSetTerm() {
+        return isSetTerm;
     }
 
     public String getQueryWithoutComments() {

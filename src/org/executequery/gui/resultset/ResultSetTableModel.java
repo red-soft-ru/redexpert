@@ -42,6 +42,8 @@ import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -103,6 +105,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     DefaultStatementExecutor executor;
 
+    private JTable fakeTable;
+
     public ResultSetTableModel(boolean isTable) throws SQLException {
 
         this(null, -1, isTable);
@@ -129,6 +133,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         tableData = new ArrayList<List<RecordDataItem>>();
         recordDataItemFactory = new RecordDataItemFactory();
 
+        fakeTable=new JTable();
         holdMetaData = UserProperties.getInstance().getBooleanProperty("editor.results.metadata");
 
         if (resultSet != null) {
@@ -271,6 +276,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     private boolean fetchAll = false;
     private boolean cancelled = false;
+
+
 
     public synchronized void getDataForTable(ResultSet resultSet, int count, List<ColumnData> columnDataList) throws SQLException, InterruptedException {
         recordCount = 0;
@@ -677,6 +684,11 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 }
 
                 rowData.add(value);
+                if(value.getDisplayValue()!=null) {
+                    int width = fakeTable.getFontMetrics(fakeTable.getFont()).stringWidth(value.getDisplayValue().toString());
+                    if(width>header.getColWidth())
+                        header.setColWidth(width+5);
+                }
             }
 
             tableData.add(rowData);

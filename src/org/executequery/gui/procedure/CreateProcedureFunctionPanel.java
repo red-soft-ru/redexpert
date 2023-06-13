@@ -647,7 +647,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     protected void reset() {
         nameField.setText(this.procedure);
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         loadParameters();
         loadVariables();
         simpleCommentPanel.resetComment();

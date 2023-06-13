@@ -95,6 +95,18 @@ public class ResultSetTableColumnResizingManager {
 
         return SystemProperties.getBooleanProperty("user", STORING_RESIZED_COLUMNS_PROPERTY_KEY);
     }
+     void saveWidthCol(TableColumnModel columnModel)
+     {
+
+         int count = 0;
+         columnWidths = new int[columnModel.getColumnCount()];
+
+         for (Enumeration<TableColumn> i = columnModel.getColumns(); i.hasMoreElements(); ) {
+
+             TableColumn tableColumn = i.nextElement();
+             columnWidths[count++] = tableColumn.getWidth();
+         }
+     }
 
     class ResultSetTableColumnResizeListener implements TableColumnModelListener {
 
@@ -105,14 +117,7 @@ public class ResultSetTableColumnResizingManager {
 
                 TableColumnModel columnModel = (TableColumnModel) source;
 
-                int count = 0;
-                columnWidths = new int[columnModel.getColumnCount()];
-
-                for (Enumeration<TableColumn> i = columnModel.getColumns(); i.hasMoreElements(); ) {
-
-                    TableColumn tableColumn = i.nextElement();
-                    columnWidths[count++] = tableColumn.getWidth();
-                }
+               saveWidthCol(columnModel);
 
             }
 

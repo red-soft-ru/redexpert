@@ -34,7 +34,7 @@ public class EQDateTimePicker extends JPanel {
                 new Insets(0, 0, 0, 0), 0, 0));
         gbh.defaults();
         add(datePicker, gbh.setMaxWeightX().get());
-        add(timePicker, gbh.nextCol().get());
+        add(timePicker, gbh.nextCol().setLabelDefault().get());
     }
 
     public String getStringValue() {

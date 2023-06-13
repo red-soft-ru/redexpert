@@ -72,15 +72,6 @@ public class TreeFindAction extends FindAction<TreePath> {
             prefix = prefix.toUpperCase();
         }
 
-        boolean wildcardStart = prefix.startsWith("*");
-        if (wildcardStart) {
-
-            prefix = prefix.substring(1);
-
-        } else {
-
-            prefix = "^" + prefix;
-        }
         prefix = prefix.replaceAll("\\*", ".*");
 
         Matcher matcher = Pattern.compile(prefix).matcher("");

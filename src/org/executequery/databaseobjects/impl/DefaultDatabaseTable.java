@@ -198,7 +198,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
      * @return the column constraints
      */
     @Override
-    public List<ColumnConstraint> getConstraints() throws DataSourceException {
+    public synchronized List<ColumnConstraint> getConstraints() throws DataSourceException {
 
         if (constraints == null) {
             if (getColumns() != null) {
@@ -707,6 +707,19 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
+    public List<DatabaseColumn> getPrimaryKeysColumns() {
+
+        List<DatabaseColumn> primaryKeys = new ArrayList<>();
+        List<DatabaseColumn> _cols = getColumns();
+
+        for (DatabaseColumn column : _cols)
+            if (column.isPrimaryKey())
+                primaryKeys.add(column);
+
+        return primaryKeys;
+    }
+
+    @Override
     public List<ColumnConstraint> getForeignKeys() {
 
         List<ColumnConstraint> foreignKeys = new ArrayList<>();
@@ -720,6 +733,19 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
+    public List<DatabaseColumn> getForeignKeysColumns() {
+
+        List<DatabaseColumn> keys = new ArrayList<>();
+        List<DatabaseColumn> _cols = getColumns();
+
+        for (DatabaseColumn column : _cols)
+            if (column.isForeignKey())
+                keys.add(column);
+
+        return keys;
+    }
+
+    @Override
     public List<ColumnConstraint> getUniqueKeys() {
 
         List<ColumnConstraint> uniqueKeys = new ArrayList<>();
@@ -730,6 +756,19 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 uniqueKeys.add(columnConstraint);
 
         return uniqueKeys;
+    }
+
+    @Override
+    public List<DatabaseColumn> getUniqueKeysColumns() {
+
+        List<DatabaseColumn> keys = new ArrayList<>();
+        List<DatabaseColumn> _cols = getColumns();
+
+        for (DatabaseColumn column : _cols)
+            if (column.isUnique())
+                keys.add(column);
+
+        return keys;
     }
 
     @Override
@@ -1088,12 +1127,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public List<String> getPrimaryKeyColumnNames() {
-        return namesFromConstraints(getPrimaryKeys());
+        return namesFromColumns(getPrimaryKeysColumns());
     }
 
     @Override
     public List<String> getForeignKeyColumnNames() {
-        return namesFromConstraints(getForeignKeys());
+        return namesFromColumns(getForeignKeysColumns());
     }
 
     private List<String> namesFromConstraints(List<ColumnConstraint> constraints) {
@@ -1101,6 +1140,15 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         List<String> names = new ArrayList<>();
         for (ColumnConstraint constraint : constraints)
             names.add(constraint.getColumnName());
+
+        return names;
+    }
+
+    private List<String> namesFromColumns(List<DatabaseColumn> columns) {
+
+        List<String> names = new ArrayList<>();
+        for (DatabaseColumn column : columns)
+            names.add(column.getName());
 
         return names;
     }

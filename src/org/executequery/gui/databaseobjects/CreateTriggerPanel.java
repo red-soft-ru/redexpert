@@ -262,7 +262,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     protected void reset() {
         typeTriggerCombo.setEnabled(false);
         nameField.setText(trigger.getName());
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         simpleCommentPanel.setDatabaseObject(trigger);
         activeBox.setSelected(trigger.isTriggerActive());
         positionField.setValue(trigger.getTriggerSequence());

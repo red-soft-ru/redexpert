@@ -21,6 +21,7 @@
 package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
+import org.executequery.actions.databasecommands.TableValidationCommand;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -1133,4 +1134,9 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             eqd.display();
         }
     }
+
+    public void onlineTableValidation(ActionEvent e) {
+        new TableValidationCommand().validateTableAndShowResult(currentSelection, getSelectedTable().getName());
+    }
+
 }

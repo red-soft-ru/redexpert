@@ -52,13 +52,31 @@ public class ProfilerTreeTable extends ProfilerTable {
 
     private static final boolean DISABLE_TREEUI_FIX = Boolean.getBoolean("ProfilerTreeTable.disableTreeUIFix"); // NOI18N
 
-    private final TableModelImpl model;
-    private final ProfilerTreeTableTree tree;
+    private TableModelImpl model;
+    private ProfilerTreeTableTree tree;
 
 
     public ProfilerTreeTable(ProfilerTreeTableModel model, boolean sortable,
                              boolean hideableColums, int[] scrollableColumns) {
         super(new TableModelImpl(model), sortable, hideableColums, scrollableColumns);
+
+        this.model = (TableModelImpl)getModel();
+        tree = this.model.getTree();
+
+        Adapter adapter = new Adapter();
+        tree.addTreeSelectionListener(adapter);
+        tree.addTreeExpansionListener(adapter);
+        tree.addTreeWillExpandListener(adapter);
+        tree.getModel().addTreeModelListener(adapter);
+        getSelectionModel().addListSelectionListener(adapter);
+
+        tree.setRowHeight(rowHeight);
+        tree.setCellRenderer(new ProfilerTreeCellRenderer());
+        setDefaultRenderer(JTree.class, tree);
+    }
+
+    public void setTreeTableModel(ProfilerTreeTableModel model) {
+        setModel(new TableModelImpl(model));
 
         this.model = (TableModelImpl)getModel();
         tree = this.model.getTree();

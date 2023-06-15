@@ -37,7 +37,7 @@ public class ProfilerPanel extends JPanel
     private JCheckBox compactViewCheckBox;
 
     private ProfilerTreeTable profilerTree;
-    private ProfilerTreeTableNode rootTreeNode;
+    private ProfilerTreeTableNode fullRootTreeNode;
     private ProfilerTreeTableNode compactRootTreeNode;
 
     private JButton startButton;
@@ -78,8 +78,8 @@ public class ProfilerPanel extends JPanel
         compactViewCheckBox = new JCheckBox(bundleString("compactViewCheckBox"));
         compactViewCheckBox.addActionListener(e -> updateTreeDisplay());
 
-        rootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
-        profilerTree = new ProfilerTreeTable(new TreeTableModel(rootTreeNode), false, false, new int[4]);
+        fullRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
+        profilerTree = new ProfilerTreeTable(new TreeTableModel(fullRootTreeNode), false, false, new int[4]);
 
         startButton = new JButton(bundleString("Start"));
         startButton.addActionListener(e -> startSession());
@@ -246,29 +246,29 @@ public class ProfilerPanel extends JPanel
             return;
         }
 
-        rootTreeNode.removeAllChildren();
+        fullRootTreeNode.removeAllChildren();
         for (ProfilerData data : profilerDataList) {
             if (data.getCallerId() == 0) {
-                rootTreeNode.add(new ProfilerTreeTableNode(data));
+                fullRootTreeNode.add(new ProfilerTreeTableNode(data));
 
             } else {
-                ProfilerTreeTableNode node = getParenNode(data.getCallerId(), rootTreeNode);
+                ProfilerTreeTableNode node = getParenNode(data.getCallerId(), fullRootTreeNode);
                 if (node != null)
                     node.add(new ProfilerTreeTableNode(data));
                 else
-                    rootTreeNode.add(new ProfilerTreeTableNode(data));
+                    fullRootTreeNode.add(new ProfilerTreeTableNode(data));
             }
         }
 
 
-        Enumeration<CCTNode> children = rootTreeNode.children();
+        Enumeration<CCTNode> children = fullRootTreeNode.children();
         while (children.hasMoreElements())
             addNodesSelfTime((ProfilerTreeTableNode) children.nextElement());
 
-        compactRootTreeNode = cloneNode(rootTreeNode);
+        compactRootTreeNode = cloneNode(fullRootTreeNode);
         compressNodes(compactRootTreeNode);
 
-//        updateTreeDisplay();
+        updateTreeDisplay();
     }
 
     private ProfilerTreeTableNode getParenNode(int id, ProfilerTreeTableNode node) {
@@ -355,8 +355,8 @@ public class ProfilerPanel extends JPanel
     // ---
 
     private void updateTreeDisplay() {
-//        profilerTree = new ProfilerTreeTable(
-//                new TreeTableModel(compactRootTreeNode), false, false, new int[4]);
+        profilerTree.setTreeTableModel(new TreeTableModel(
+                compactViewCheckBox.isSelected() ? compactRootTreeNode : fullRootTreeNode));
     }
 
     private void switchSessionState(int state) {

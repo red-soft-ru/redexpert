@@ -18,6 +18,7 @@ class ProfilerData {
 
     public ProfilerData() {
         this(-1, -1, "ROOT NODE", 0);
+        this.callCount = 0;
     }
 
     public ProfilerData(int id, int callerId, String packageName, String routineName, long totalTime) {

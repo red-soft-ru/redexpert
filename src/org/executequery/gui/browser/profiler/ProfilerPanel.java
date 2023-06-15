@@ -79,7 +79,9 @@ public class ProfilerPanel extends JPanel
         compactViewCheckBox.addActionListener(e -> updateTreeDisplay());
 
         fullRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
-        profilerTree = new ProfilerTreeTable(new TreeTableModel(fullRootTreeNode), false, false, new int[4]);
+        profilerTree = new ProfilerTreeTable(
+                new TreeTableModel(fullRootTreeNode), false, false, new int[4]);
+        profilerTree.setDefaultColumnWidth(200);
 
         startButton = new JButton(bundleString("Start"));
         startButton.addActionListener(e -> startSession());

@@ -23,6 +23,8 @@ package org.underworldlabs.swing.actions;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.executequery.util.UserProperties;
+import org.underworldlabs.swing.plaf.SVGImage;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.xml.sax.Attributes;
@@ -34,6 +36,7 @@ import javax.swing.*;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -238,8 +241,18 @@ public final class ActionBuilder {
 
             URL url = ActionHandler.class.getResource(path);
             if (url != null) {
+                if (url.getPath().endsWith(".svg")) {
+                    try {
+                        BufferedImage image = SVGImage.fromSvg(url, UserProperties.getInstance().getIntProperty("icons.size"),UserProperties.getInstance().getIntProperty("icons.size"));
+                        return new ImageIcon(image);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
-                return new ImageIcon(url);
+
+                } else
+                    return new ImageIcon(url);
+
             }
 
             return null;

@@ -81,7 +81,6 @@ public class ProfilerPanel extends JPanel
         fullRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
         profilerTree = new ProfilerTreeTable(
                 new TreeTableModel(fullRootTreeNode), false, false, new int[4]);
-        profilerTree.setDefaultColumnWidth(200);
 
         startButton = new JButton(bundleString("Start"));
         startButton.addActionListener(e -> startSession());
@@ -359,6 +358,7 @@ public class ProfilerPanel extends JPanel
     private void updateTreeDisplay() {
         profilerTree.setTreeTableModel(new TreeTableModel(
                 compactViewCheckBox.isSelected() ? compactRootTreeNode : fullRootTreeNode));
+        profilerTree.setDefaultColumnWidth(200);
     }
 
     private void switchSessionState(int state) {

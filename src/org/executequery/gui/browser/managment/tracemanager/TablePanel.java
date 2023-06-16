@@ -32,6 +32,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.List;
 
 public class TablePanel extends JPanel {
 
@@ -301,6 +302,11 @@ public class TablePanel extends JPanel {
 
         add(bigSplit, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
+    }
+
+    public List<LogMessage> getTableRows()
+    {
+        return dataModel.getRows();
     }
 
     private void fillTableCounters(int row) {

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-class ResultSetDataModel extends AbstractTableModel {
+public class ResultSetDataModel extends AbstractTableModel {
 
     private List<String> columnNames = new ArrayList<>();
     private List<String> visibleColumnNames = new ArrayList<>();
@@ -70,6 +70,7 @@ class ResultSetDataModel extends AbstractTableModel {
             }
         }
     }
+
 
     @Override
     public int getRowCount() {

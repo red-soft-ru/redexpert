@@ -48,6 +48,10 @@ public class ProfilerTreeTableNode extends CCTNode {
         return data.getProcessName();
     }
 
+    public Object getProcessType() {
+        return data.getProcessType();
+    }
+
     public Object getTotalTime() {
         return data.getTotalTime();
     }

@@ -12,28 +12,30 @@ class ProfilerData {
     private final int id;
     private final int callerId;
     private final String processName;
+    private final String processType;
     private long totalTime;
     private double totalTimePercentage;
     private long avgTime;
     private long callCount;
 
     public ProfilerData() {
-        this(-1, -1, "ROOT NODE", 0, 0);
+        this(-1, -1, "ROOT NODE", "ROOT", 0, 0);
         this.callCount = 0;
     }
 
-    public ProfilerData(int id, int callerId, String packageName, String routineName, long totalTime) {
-        this(id, callerId, (packageName != null) ? (packageName.trim() + "::" + routineName.trim()) : routineName.trim(), totalTime);
+    public ProfilerData(int id, int callerId, String packageName, String routineName, String processType, long totalTime) {
+        this(id, callerId, (packageName != null) ? (packageName.trim() + "::" + routineName.trim()) : routineName.trim(), processType, totalTime);
     }
 
-    public ProfilerData(int id, int callerId, String processName, long totalTime) {
-        this(id, callerId, processName, totalTime, 100);
+    public ProfilerData(int id, int callerId, String processName, String processType, long totalTime) {
+        this(id, callerId, processName, processType, totalTime, 100);
     }
 
-    public ProfilerData(int id, int callerId, String processName, long totalTime, double totalTimePercentage) {
+    public ProfilerData(int id, int callerId, String processName, String processType, long totalTime, double totalTimePercentage) {
         this.id = id;
         this.callerId = callerId;
         this.processName = processName;
+        this.processType = processType;
         this.totalTime = totalTime;
         this.avgTime = totalTime;
         this.totalTimePercentage = totalTimePercentage;
@@ -69,6 +71,10 @@ class ProfilerData {
         return processName;
     }
 
+    public String getProcessType() {
+        return processType;
+    }
+
     public long getTotalTime() {
         return totalTime;
     }
@@ -86,7 +92,7 @@ class ProfilerData {
     }
 
     public ProfilerData getCopy() {
-        return new ProfilerData(id, callerId, processName, totalTime, totalTimePercentage);
+        return new ProfilerData(id, callerId, processName, processType, totalTime, totalTimePercentage);
     }
 
 }

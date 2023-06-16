@@ -310,7 +310,8 @@ public class ProfilerPanel extends JPanel
 
         }
         if (node.getChildCount() > 0)
-            node.add(new ProfilerTreeTableNode(new ProfilerData(-1, nodeData.getCallerId(), "Self Time", selfTime)));
+            node.add(new ProfilerTreeTableNode(
+                    new ProfilerData(-1, nodeData.getCallerId(), "Self Time", "SELF_TIME", selfTime)));
 
     }
 

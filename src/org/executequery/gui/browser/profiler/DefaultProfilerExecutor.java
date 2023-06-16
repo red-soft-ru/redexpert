@@ -114,6 +114,7 @@ public class DefaultProfilerExecutor {
                 "STA.PACKAGE_NAME,\n" +
                 "STA.ROUTINE_NAME,\n" +
                 "STA.SQL_TEXT,\n" +
+                "STA.STATEMENT_TYPE,\n" +
                 "REQ.TOTAL_ELAPSED_TIME TOTAL_TIME\n" +
                 "FROM PLG$PROF_REQUESTS REQ\n" +
                 "LEFT OUTER JOIN PLG$PROF_STATEMENTS STA USING (PROFILE_ID, STATEMENT_ID)\n" +
@@ -135,11 +136,12 @@ public class DefaultProfilerExecutor {
                 String packageName = rs.getNString(3);
                 String routineName = rs.getNString(4);
                 String sqlText = rs.getNString(5);
-                long totalTime = rs.getLong(6);
+                String statementType = rs.getNString(6);
+                long totalTime = rs.getLong(7);
 
                 ProfilerData data = sqlText != null ?
-                        new ProfilerData(id, callerId, sqlText, totalTime) :
-                        new ProfilerData(id, callerId, packageName, routineName, totalTime);
+                        new ProfilerData(id, callerId, sqlText, statementType, totalTime) :
+                        new ProfilerData(id, callerId, packageName, routineName, statementType, totalTime);
 
                 profilerDataList.add(data);
 

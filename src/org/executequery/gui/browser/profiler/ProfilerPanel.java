@@ -266,6 +266,10 @@ public class ProfilerPanel extends JPanel
         while (children.hasMoreElements())
             addNodesSelfTime((ProfilerTreeTableNode) children.nextElement());
 
+        children = fullRootTreeNode.children();
+        while (children.hasMoreElements())
+            calculatePercentage((ProfilerTreeTableNode) children.nextElement());
+
         compactRootTreeNode = cloneNode(fullRootTreeNode);
         compressNodes(compactRootTreeNode);
 
@@ -307,6 +311,22 @@ public class ProfilerPanel extends JPanel
         }
         if (node.getChildCount() > 0)
             node.add(new ProfilerTreeTableNode(new ProfilerData(-1, nodeData.getCallerId(), "Self Time", selfTime)));
+
+    }
+
+    private void calculatePercentage(ProfilerTreeTableNode node) {
+
+        Enumeration<CCTNode> children = node.children();
+        long totalTime = (long) node.getTotalTime();
+
+        while (children.hasMoreElements()) {
+
+            ProfilerTreeTableNode child = (ProfilerTreeTableNode) children.nextElement();
+            child.getData().setTotalTimePercentage((double) ((long) child.getTotalTime() * 100) / totalTime);
+            if (child.getChildCount() > 0)
+                calculatePercentage(child);
+
+        }
 
     }
 
@@ -416,7 +436,7 @@ public class ProfilerPanel extends JPanel
         private static final List<String> columnNames =
                 Arrays.asList("PROCESS NAME", "TOTAL TIME (ns)", "AVERAGE TIME (ns)", "CALLS COUNT");
         private static final List<Class<?>> columnClasses =
-                Arrays.asList(JTree.class, Long.class, Long.class, Integer.class);
+                Arrays.asList(JTree.class, String.class, Long.class, Integer.class);
 
         TreeTableModel(TreeNode root) {
             super(root);
@@ -451,7 +471,8 @@ public class ProfilerPanel extends JPanel
             ProfilerTreeTableNode profilerNode = (ProfilerTreeTableNode) node;
 
             if (columnIndex == 0) return profilerNode.getProcessName();
-            if (columnIndex == 1) return profilerNode.getTotalTime();
+            if (columnIndex == 1) return profilerNode.getTotalTime().toString() + " [" +
+                    String.format("%.2f", (double) profilerNode.getTotalTimePercentage()).replace(",", ".") + "%]";
             if (columnIndex == 2) return profilerNode.getAvgTime();
             if (columnIndex == 3) return profilerNode.getCallCount();
 

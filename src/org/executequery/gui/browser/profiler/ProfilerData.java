@@ -13,11 +13,12 @@ class ProfilerData {
     private final int callerId;
     private final String processName;
     private long totalTime;
+    private double totalTimePercentage;
     private long avgTime;
     private long callCount;
 
     public ProfilerData() {
-        this(-1, -1, "ROOT NODE", 0);
+        this(-1, -1, "ROOT NODE", 0, 0);
         this.callCount = 0;
     }
 
@@ -26,11 +27,16 @@ class ProfilerData {
     }
 
     public ProfilerData(int id, int callerId, String processName, long totalTime) {
+        this(id, callerId, processName, totalTime, 100);
+    }
+
+    public ProfilerData(int id, int callerId, String processName, long totalTime, double totalTimePercentage) {
         this.id = id;
         this.callerId = callerId;
         this.processName = processName;
         this.totalTime = totalTime;
         this.avgTime = totalTime;
+        this.totalTimePercentage = totalTimePercentage;
         this.callCount = 1;
     }
 
@@ -40,10 +46,15 @@ class ProfilerData {
             this.callCount++;
             this.avgTime = (this.avgTime + comparingData.avgTime) / 2;
             this.totalTime += comparingData.totalTime;
+            this.totalTimePercentage += comparingData.totalTimePercentage;
             return true;
         }
 
         return false;
+    }
+
+    public void setTotalTimePercentage(double totalTimePercentage) {
+        this.totalTimePercentage = totalTimePercentage;
     }
 
     public int getId() {
@@ -62,6 +73,10 @@ class ProfilerData {
         return totalTime;
     }
 
+    public double getTotalTimePercentage() {
+        return totalTimePercentage;
+    }
+
     public long getAvgTime() {
         return avgTime;
     }
@@ -71,7 +86,7 @@ class ProfilerData {
     }
 
     public ProfilerData getCopy() {
-        return new ProfilerData(id, callerId, processName, totalTime);
+        return new ProfilerData(id, callerId, processName, totalTime, totalTimePercentage);
     }
 
 }

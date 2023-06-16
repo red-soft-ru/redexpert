@@ -52,6 +52,10 @@ public class ProfilerTreeTableNode extends CCTNode {
         return data.getTotalTime();
     }
 
+    public Object getTotalTimePercentage() {
+        return data.getTotalTimePercentage();
+    }
+
     public Object getAvgTime() {
         return data.getAvgTime();
     }

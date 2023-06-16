@@ -77,6 +77,7 @@ public class ProfilerPanel extends JPanel
 
         compactViewCheckBox = new JCheckBox(bundleString("compactViewCheckBox"));
         compactViewCheckBox.addActionListener(e -> updateTreeDisplay());
+        compactViewCheckBox.setSelected(true);
 
         fullRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
         profilerTree = new ProfilerTreeTable(

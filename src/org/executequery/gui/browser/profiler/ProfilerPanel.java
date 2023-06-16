@@ -26,7 +26,7 @@ public class ProfilerPanel extends JPanel
         implements TabView {
 
     public final static String TITLE = bundleString("title");
-
+    private final static boolean SORTABLE = true;
     private static final int ACTIVE = 0;
     private static final int PAUSED = ACTIVE + 1;
     private static final int INACTIVE = PAUSED + 1;
@@ -80,7 +80,7 @@ public class ProfilerPanel extends JPanel
 
         fullRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
         profilerTree = new ProfilerTreeTable(
-                new TreeTableModel(fullRootTreeNode), false, false, new int[4]);
+                new TreeTableModel(fullRootTreeNode), SORTABLE, false, new int[4]);
 
         startButton = new JButton(bundleString("Start"));
         startButton.addActionListener(e -> startSession());
@@ -378,7 +378,7 @@ public class ProfilerPanel extends JPanel
 
     private void updateTreeDisplay() {
         profilerTree.setTreeTableModel(new TreeTableModel(
-                compactViewCheckBox.isSelected() ? compactRootTreeNode : fullRootTreeNode));
+                compactViewCheckBox.isSelected() ? compactRootTreeNode : fullRootTreeNode), SORTABLE);
         profilerTree.setDefaultColumnWidth(200);
     }
 

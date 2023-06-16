@@ -75,8 +75,13 @@ public class ProfilerTreeTable extends ProfilerTable {
         setDefaultRenderer(JTree.class, tree);
     }
 
-    public void setTreeTableModel(ProfilerTreeTableModel model) {
+    public void setTreeTableModel(ProfilerTreeTableModel model, boolean sortable) {
+
+        setRowSorter(null);
+
         setModel(new TableModelImpl(model));
+        setupModels(sortable);
+        setupAppearance();
 
         this.model = (TableModelImpl)getModel();
         tree = this.model.getTree();
@@ -595,6 +600,7 @@ public class ProfilerTreeTable extends ProfilerTable {
         ProfilerTreeTableSorter(TableModel model) {
             super(model);
             this.model = (TableModelImpl)model;
+            this.sortKeys = new ArrayList<>();
         }
 
         public int convertRowIndexToModel(int index) {

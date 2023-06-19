@@ -3,5 +3,5 @@
 <path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 7.5H4.5V19.5C4.5 21.1569 7.85786 22.5 12 22.5C16.1421 22.5 19.5 21.1569 19.5 19.5V7.5Z" fill="#404040"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 10.5H4.5V15C4.5 16.6569 7.85786 18 12 18C16.1421 18 19.5 16.6569 19.5 15V10.5Z" fill="#808080"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 6H4.5V10.5C4.5 12.1569 7.85786 13.5 12 13.5C16.1421 13.5 19.5 12.1569 19.5 10.5V6Z" fill="#BFBFBF"/>
-<ellipse cx="12" cy="6" rx="7.5" ry="3" fill="white"/>
+<ellipse cx="12" cy="6" rx="7.5" ry="3" fill="#E3E3E3"/>
 </svg>

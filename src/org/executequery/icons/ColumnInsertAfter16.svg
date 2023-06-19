@@ -1,16 +1,23 @@
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="1" y="1" width="14" height="14" fill="#5284C3"/>
-<rect x="2" y="2" width="12" height="12" fill="#F5F5F5"/>
-<rect x="3" y="3" width="10" height="2" fill="#355783"/>
-<rect x="3" y="6" width="10" height="1" fill="#4474B1"/>
-<rect x="3" y="8" width="10" height="1" fill="#4474B1"/>
-<rect x="3" y="10" width="10" height="1" fill="#4474B1"/>
-<rect x="3" y="12" width="10" height="1" fill="#4474B1"/>
-<rect x="4" y="6" width="7" height="1" transform="rotate(90 4 6)" fill="#4474B1"/>
-<rect x="7" y="6" width="7" height="1" transform="rotate(90 7 6)" fill="#4474B1"/>
-<rect x="13" y="6" width="7" height="1" transform="rotate(90 13 6)" fill="#4474B1"/>
-<rect x="10" y="6" width="7" height="1" transform="rotate(90 10 6)" fill="#4474B1"/>
-<rect x="10" y="7" width="4" height="9" fill="#3ADD31"/>
-<path d="M12 1L15.4641 5.5H8.5359L12 1Z" fill="#3ADD31"/>
-<rect x="11" y="8" width="2" height="7" fill="#D2FF99"/>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_311_2145)">
+<rect x="2" y="2" width="28" height="28" fill="#5284C3"/>
+<rect x="4" y="4" width="24" height="24" fill="#F5F5F5"/>
+<rect x="6" y="6" width="20" height="4" fill="#355783"/>
+<rect x="6" y="12" width="20" height="2" fill="#4474B1"/>
+<rect x="6" y="16" width="20" height="2" fill="#4474B1"/>
+<rect x="6" y="20" width="20" height="2" fill="#4474B1"/>
+<rect x="6" y="24" width="20" height="2" fill="#4474B1"/>
+<rect x="8" y="12" width="14" height="2" transform="rotate(90 8 12)" fill="#4474B1"/>
+<rect x="14" y="12" width="14" height="2" transform="rotate(90 14 12)" fill="#4474B1"/>
+<rect x="26" y="12" width="14" height="2" transform="rotate(90 26 12)" fill="#4474B1"/>
+<rect x="20" y="12" width="14" height="2" transform="rotate(90 20 12)" fill="#4474B1"/>
+<rect x="20" y="14" width="8" height="18" fill="#3ADD31"/>
+<path d="M24 2L30.9282 11H17.0718L24 2Z" fill="#3ADD31"/>
+<rect x="22" y="16" width="4" height="14" fill="#D2FF99"/>
+</g>
+<defs>
+<clipPath id="clip0_311_2145">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
 </svg>

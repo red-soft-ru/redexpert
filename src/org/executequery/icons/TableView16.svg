@@ -1,27 +1,34 @@
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="1" y="1" width="14" height="14" fill="#5284C3"/>
-<rect x="2" y="2" width="12" height="12" fill="#F5F5F5"/>
-<rect x="3" y="3" width="10" height="2" fill="#355783"/>
-<rect x="3" y="6" width="10" height="1" fill="#4474B1"/>
-<rect x="3" y="8" width="10" height="1" fill="#4474B1"/>
-<rect x="3" y="10" width="10" height="1" fill="#4474B1"/>
-<rect x="3" y="12" width="10" height="1" fill="#4474B1"/>
-<rect x="4" y="6" width="7" height="1" transform="rotate(90 4 6)" fill="#4474B1"/>
-<rect x="7" y="6" width="7" height="1" transform="rotate(90 7 6)" fill="#4474B1"/>
-<rect x="13" y="6" width="7" height="1" transform="rotate(90 13 6)" fill="#4474B1"/>
-<rect x="10" y="6" width="7" height="1" transform="rotate(90 10 6)" fill="#4474B1"/>
-<rect x="10.3" y="10.3" width="2.4" height="1.4" fill="#6D859E" stroke="#404A56" stroke-width="0.6"/>
-<mask id="path-13-inside-1_256_734" fill="white">
-<path d="M9 7H11V10H9V7Z"/>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_311_1938)">
+<rect x="2" y="2" width="28" height="28" fill="#5284C3"/>
+<rect x="4" y="4" width="24" height="24" fill="#F5F5F5"/>
+<rect x="6" y="6" width="20" height="4" fill="#355783"/>
+<rect x="6" y="12" width="20" height="2" fill="#4474B1"/>
+<rect x="6" y="16" width="20" height="2" fill="#4474B1"/>
+<rect x="6" y="20" width="20" height="2" fill="#4474B1"/>
+<rect x="6" y="24" width="20" height="2" fill="#4474B1"/>
+<rect x="8" y="12" width="14" height="2" transform="rotate(90 8 12)" fill="#4474B1"/>
+<rect x="14" y="12" width="14" height="2" transform="rotate(90 14 12)" fill="#4474B1"/>
+<rect x="26" y="12" width="14" height="2" transform="rotate(90 26 12)" fill="#4474B1"/>
+<rect x="20" y="12" width="14" height="2" transform="rotate(90 20 12)" fill="#4474B1"/>
+<rect x="20.6" y="20.6" width="4.8" height="2.8" fill="#6D859E" stroke="#404A56" stroke-width="1.2"/>
+<mask id="path-13-inside-1_311_1938" fill="white">
+<path d="M18 14H22V20H18V14Z"/>
 </mask>
-<path d="M9 7H11V10H9V7Z" fill="#6D859E"/>
-<path d="M9 7V6.4H8.4V7H9ZM11 7H11.6V6.4H11V7ZM11 10V10.6H11.6V10H11ZM9 10H8.4V10.6H9V10ZM9 7.6H11V6.4H9V7.6ZM10.4 7V10H11.6V7H10.4ZM11 9.4H9V10.6H11V9.4ZM9.6 10V7H8.4V10H9.6Z" fill="#404A56" mask="url(#path-13-inside-1_256_734)"/>
-<mask id="path-15-inside-2_256_734" fill="white">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M14 7H12V10H14V7ZM11 9H8V12H11V9Z"/>
+<path d="M18 14H22V20H18V14Z" fill="#6D859E"/>
+<path d="M18 14V12.8H16.8V14H18ZM22 14H23.2V12.8H22V14ZM22 20V21.2H23.2V20H22ZM18 20H16.8V21.2H18V20ZM18 15.2H22V12.8H18V15.2ZM20.8 14V20H23.2V14H20.8ZM22 18.8H18V21.2H22V18.8ZM19.2 20V14H16.8V20H19.2Z" fill="#404A56" mask="url(#path-13-inside-1_311_1938)"/>
+<mask id="path-15-inside-2_311_1938" fill="white">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M27.9994 14H23.9994V20H27.9994V14ZM22 18H16V24H22V18Z"/>
 </mask>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M14 7H12V10H14V7ZM11 9H8V12H11V9Z" fill="#6D859E"/>
-<path d="M12 7V6.4H11.4V7H12ZM14 7H14.6V6.4H14V7ZM12 10H11.4V10.6H12V10ZM14 10V10.6H14.6V10H14ZM8 9V8.4H7.4V9H8ZM11 9H11.6V8.4H11V9ZM8 12H7.4V12.6H8V12ZM11 12V12.6H11.6V12H11ZM12 7.6H14V6.4H12V7.6ZM12.6 10V7H11.4V10H12.6ZM14 9.4H12V10.6H14V9.4ZM13.4 7V10H14.6V7H13.4ZM8 9.6H11V8.4H8V9.6ZM8.6 12V9H7.4V12H8.6ZM11 11.4H8V12.6H11V11.4ZM10.4 9V12H11.6V9H10.4Z" fill="#404A56" mask="url(#path-15-inside-2_256_734)"/>
-<rect x="12.25" y="9.25" width="2.5" height="2.5" fill="#6D859E" stroke="#404A56" stroke-width="0.5"/>
-<rect x="12.3" y="11.3" width="3.4" height="4.4" fill="#6D859E" stroke="#404A56" stroke-width="0.6"/>
-<rect x="7.3" y="11.3" width="3.4" height="4.4" fill="#6D859E" stroke="#404A56" stroke-width="0.6"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M27.9994 14H23.9994V20H27.9994V14ZM22 18H16V24H22V18Z" fill="#6D859E"/>
+<path d="M23.9994 14V12.8H22.7994V14H23.9994ZM27.9994 14H29.1994V12.8H27.9994V14ZM23.9994 20H22.7994V21.2H23.9994V20ZM27.9994 20V21.2H29.1994V20H27.9994ZM16 18V16.8H14.8V18H16ZM22 18H23.2V16.8H22V18ZM16 24H14.8V25.2H16V24ZM22 24V25.2H23.2V24H22ZM23.9994 15.2H27.9994V12.8H23.9994V15.2ZM25.1994 20V14H22.7994V20H25.1994ZM27.9994 18.8H23.9994V21.2H27.9994V18.8ZM26.7994 14V20H29.1994V14H26.7994ZM16 19.2H22V16.8H16V19.2ZM17.2 24V18H14.8V24H17.2ZM22 22.8H16V25.2H22V22.8ZM20.8 18V24H23.2V18H20.8Z" fill="#404A56" mask="url(#path-15-inside-2_311_1938)"/>
+<rect x="24.5" y="18.5" width="5" height="5" fill="#6D859E" stroke="#404A56"/>
+<rect x="24.6" y="22.6" width="6.8" height="8.8" fill="#6D859E" stroke="#404A56" stroke-width="1.2"/>
+<rect x="14.6" y="22.6" width="6.8" height="8.8" fill="#6D859E" stroke="#404A56" stroke-width="1.2"/>
+</g>
+<defs>
+<clipPath id="clip0_311_1938">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
 </svg>

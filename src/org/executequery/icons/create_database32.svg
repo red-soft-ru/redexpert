@@ -3,7 +3,7 @@
 <path fill-rule="evenodd" clip-rule="evenodd" d="M26 10H6V26C6 28.2091 10.4772 30 16 30C21.5228 30 26 28.2091 26 26V10Z" fill="#404040"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M26 14H6V20C6 22.2091 10.4772 24 16 24C21.5228 24 26 22.2091 26 20V14Z" fill="#808080"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M26 8H6V14C6 16.2091 10.4772 18 16 18C21.5228 18 26 16.2091 26 14V8Z" fill="#BFBFBF"/>
-<ellipse cx="16" cy="8" rx="10" ry="4" fill="white"/>
+<ellipse cx="16" cy="8" rx="10" ry="4" fill="#E3E3E3"/>
 <circle cx="24" cy="24" r="8" fill="#7DCD17"/>
 <rect x="23" y="20" width="2" height="8" fill="white"/>
 <rect x="28" y="23" width="2" height="8" transform="rotate(90 28 23)" fill="white"/>

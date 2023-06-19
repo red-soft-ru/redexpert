@@ -107,6 +107,7 @@ public class Comparer {
 
             if (!sqlScript.contains("Will be created with constraint defining")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.CREATE, type, obj.getName());
                 panel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[0]++;
@@ -151,6 +152,7 @@ public class Comparer {
 
             if (!sqlScript.contains("Remove with table constraint")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.DROP, type, obj.getName());
                 panel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[1] ++;
@@ -207,6 +209,7 @@ public class Comparer {
 
             if (!sqlScript.contains("there are no changes")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, type, obj.getName());
                 panel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[2]++;

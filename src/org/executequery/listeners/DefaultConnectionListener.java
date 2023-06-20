@@ -36,6 +36,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.tree.TreeNode;
 import java.util.Enumeration;
@@ -45,6 +46,7 @@ public class DefaultConnectionListener implements ConnectionListener {
     public void connected(ConnectionEvent connectionEvent) {
 
         updateStatusBarDataSourceCounter();
+        searchInCols = SystemProperties.getBooleanProperty("user", "browser.search.in.columns");
         SwingWorker worker = new SwingWorker("loadingTreeForSearch") {
             @Override
             public Object construct() {
@@ -52,7 +54,8 @@ public class DefaultConnectionListener implements ConnectionListener {
                 DatabaseObjectNode hostNode = panel.getHostNode(connectionEvent.getDatabaseConnection());
                 try {
                     populate(hostNode);
-                    populateCols(hostNode);
+                    if (searchInCols)
+                        populateCols(hostNode);
                 } catch (DataSourceException e) {
                     if (e.wasConnectionClosed())
                         Log.info("Connection was closed");

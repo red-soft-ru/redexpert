@@ -414,7 +414,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      */
     @Override
     public ResultSet getData() throws DataSourceException {
-        return executeQuery(recordsQueryString());
+        String query = recordsQueryString();
+        return executeQuery(query);
     }
 
     /**
@@ -566,7 +567,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     private String quotedDatabaseObjectName(String name) {
         String quoteString = getIdentifierQuoteString();
-        return quoteString + name + quoteString;
+        return quoteString + name.replace(quoteString,quoteString+quoteString) + quoteString;
     }
 
     protected boolean isMixedCase(String value) {

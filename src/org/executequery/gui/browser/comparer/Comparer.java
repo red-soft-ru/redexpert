@@ -964,7 +964,7 @@ public class Comparer {
         );
 
         for (NamedObject obj : stubsList) {
-            script.add("\n/* " + obj.getName() + " */");
+            script.add("\n/* " + obj.getName() + " (STUB) */");
             script.add("\n" + SQLUtils.generateCreateDefaultStub(obj));
             panel.incrementProgressBarValue();
         }

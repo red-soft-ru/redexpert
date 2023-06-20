@@ -27,7 +27,10 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -36,6 +39,8 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ComparerDBPanel extends JPanel implements TabView {
 
@@ -69,9 +74,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private JButton executeScriptButton;
     private JButton selectAllAttributesButton;
     private JButton selectAllPropertiesButton;
+
+    private JTabbedPane tabPane;
     private LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
-
     private JTree dbComponentsTree;
     private ComparerTreeNode rootTreeNode;
 
@@ -190,6 +196,29 @@ public class ComparerDBPanel extends JPanel implements TabView {
         rootTreeNode = new ComparerTreeNode(bundleString("DatabaseChanges"));
         dbComponentsTree = new JTree(new DefaultTreeModel(rootTreeNode));
         dbComponentsTree.setCellRenderer(new ComparerTreeCellRenderer());
+        dbComponentsTree.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() > 1)
+                    goToScript();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+        });
 
         // --- other components ---
 
@@ -283,7 +312,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- tabbed pane ---
 
-        JTabbedPane tabPane = new JTabbedPane();
+        tabPane = new JTabbedPane();
 
         tabPane.add(bundleString("OutputLabel"), loggingOutputPanel);
         tabPane.add(bundleString("TreeView"), dbComponentsTreePanel);
@@ -434,7 +463,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.CREATE))
                             .add(new ComparerTreeNode(ComparerTreeNode.CREATE, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), false));
 
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
@@ -464,7 +493,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.ALTER))
                             .add(new ComparerTreeNode(ComparerTreeNode.ALTER, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), false));
 
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to ALTER  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
@@ -494,7 +523,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.DROP))
                             .add(new ComparerTreeNode(ComparerTreeNode.DROP, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), false));
 
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to DROP  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
@@ -769,6 +798,30 @@ public class ComparerDBPanel extends JPanel implements TabView {
         progressBar.setValue(progressBar.getValue() + 1);
     }
 
+    public void goToScript() {
+
+        TreePath selectionPath = dbComponentsTree.getSelectionPath();
+        if (selectionPath != null) {
+
+            ComparerTreeNode node = (ComparerTreeNode) selectionPath.getLastPathComponent();
+            if (node.isComponent) {
+                tabPane.setSelectedIndex(2);
+
+                String searchText = "/\\* " + node.name + " \\*/";
+                Pattern pattern = Pattern.compile(searchText);
+                Matcher matcher = pattern.matcher(sqlTextPanel.getSQLText());
+
+                if (matcher.find()) {
+                    int start = matcher.start();
+                    int end = matcher.end();
+                    sqlTextPanel.getTextPane().select(start, end);
+                }
+
+            }
+        }
+
+    }
+
     public void addTreeComponent(int action, int type, String name) {
 
         ComparerTreeNode actionNode = (ComparerTreeNode) rootTreeNode.getChildByAction(action);
@@ -776,7 +829,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
             ComparerTreeNode typeNode = (ComparerTreeNode) actionNode.getChildByType(type);
             if (typeNode != null)
-                typeNode.add(new ComparerTreeNode(action, type, name));
+                typeNode.add(new ComparerTreeNode(action, type, name, true));
         }
 
     }
@@ -839,23 +892,25 @@ public class ComparerDBPanel extends JPanel implements TabView {
         public static final int ALTER = CREATE + 1;
         public static final int DROP = ALTER + 1;
 
+        private final boolean isComponent;
         private final int action;
         private final int type;
         private final String name;
 
         public ComparerTreeNode(String name) {
-            this(-1, -1, name);
+            this(-1, -1, name, false);
         }
 
         public ComparerTreeNode(int action, String name) {
-            this(action, -1, name);
+            this(action, -1, name, false);
         }
 
-        public ComparerTreeNode(int action, int type, String name) {
+        public ComparerTreeNode(int action, int type, String name, boolean isComponent) {
             super();
             this.action = action;
             this.type = type;
             this.name = name;
+            this.isComponent = isComponent;
         }
 
         public TreeNode getChildByAction(int type) {

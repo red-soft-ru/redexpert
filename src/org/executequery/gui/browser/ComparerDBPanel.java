@@ -18,12 +18,19 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.BackgroundProgressDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,6 +39,8 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ComparerDBPanel extends JPanel implements TabView {
 
@@ -65,8 +74,13 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private JButton executeScriptButton;
     private JButton selectAllAttributesButton;
     private JButton selectAllPropertiesButton;
+
+    private JTabbedPane tabPane;
     private LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
+    private JTree dbComponentsTree;
+    private ComparerTreeNode rootTreeNode;
+
     private JProgressBar progressBar;
     private BackgroundProgressDialog progressDialog;
 
@@ -177,6 +191,35 @@ public class ComparerDBPanel extends JPanel implements TabView {
         dbMasterComboBox = new JComboBox<DatabaseConnection>();
         dbMasterComboBox.removeAllItems();
 
+        // --- db components tree view ---
+
+        rootTreeNode = new ComparerTreeNode(bundleString("DatabaseChanges"));
+        dbComponentsTree = new JTree(new DefaultTreeModel(rootTreeNode));
+        dbComponentsTree.setCellRenderer(new ComparerTreeCellRenderer());
+        dbComponentsTree.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() > 1)
+                    goToScript();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+        });
+
         // --- other components ---
 
         loggingOutputPanel = new LoggingOutputPanel();
@@ -261,11 +304,18 @@ public class ComparerDBPanel extends JPanel implements TabView {
         sqlPanel.add(executeScriptButton, gridBagHelper.nextCol().get());
         sqlPanel.add(new JPanel(), gridBagHelper.nextCol().get());
 
+        // --- dbComponentsTree panel ---
+
+        JScrollPane dbComponentsTreePanel = new JScrollPane(dbComponentsTree,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
         // --- tabbed pane ---
 
-        JTabbedPane tabPane = new JTabbedPane();
+        tabPane = new JTabbedPane();
 
         tabPane.add(bundleString("OutputLabel"), loggingOutputPanel);
+        tabPane.add(bundleString("TreeView"), dbComponentsTreePanel);
         tabPane.add("SQL", sqlPanel);
 
         // --- compare panel ---
@@ -361,8 +411,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
         settingScriptProps.append("SET NAMES ").append(getMasterDBCharset()).append(";\n");
         settingScriptProps.append("SET SQL DIALECT ").append(getMasterDBDialect()).append(";\n");
         settingScriptProps.append("CONNECT '").append(SimpleDataSource.generateUrl(
-                comparer.getMasterConnection().getDatabaseConnection(),
-                SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection().getDatabaseConnection()))
+                        comparer.getMasterConnection().getDatabaseConnection(),
+                        SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection().getDatabaseConnection()))
                 .replace("jdbc:firebirdsql://", "")
         );
         settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getDatabaseConnection().getUserName());
@@ -382,7 +432,11 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 propertiesCheckBoxMap.get(CHECK_DROP).isSelected(),
                 propertiesCheckBoxMap.get(CHECK_ALTER).isSelected());
 
+        rootTreeNode.removeAllChildren();
+
         if (propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() && !isCanceled()) {
+
+            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.CREATE, bundleString("CreateObjects")));
 
             if (isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = false;
@@ -407,6 +461,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.CREATE))
+                            .add(new ComparerTreeNode(ComparerTreeNode.CREATE, type,
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), false));
+
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     comparer.createObjects(type);
@@ -415,6 +473,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
         }
 
         if (propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() && !isCanceled()) {
+
+            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.ALTER, bundleString("AlterObjects")));
 
             if (isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = false;
@@ -431,6 +491,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.ALTER))
+                            .add(new ComparerTreeNode(ComparerTreeNode.ALTER, type,
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), false));
+
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to ALTER  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     comparer.alterObjects(type);
@@ -439,6 +503,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
         }
 
         if (propertiesCheckBoxMap.get(CHECK_DROP).isSelected() && !isCanceled()) {
+
+            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.DROP, bundleString("DropObjects")));
 
             if (!isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = true;
@@ -454,6 +520,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     continue;
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
+
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.DROP))
+                            .add(new ComparerTreeNode(ComparerTreeNode.DROP, type,
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), false));
 
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to DROP  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
@@ -572,6 +642,11 @@ public class ComparerDBPanel extends JPanel implements TabView {
         compareButton.setText(bundleString("CompareButton"));
         progressBar.setValue(progressBar.getMaximum());
         progressBar.setString(bundleString("ProgressBarFinish"));
+
+        for (int i = 0; i < rootTreeNode.getChildCount(); i++)
+            sortTreeNodes(rootTreeNode.getChildAt(i));
+
+        dbComponentsTree.setModel(new DefaultTreeModel(rootTreeNode));
     }
 
     private void saveScript() {
@@ -675,29 +750,6 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     // ---
 
-    public static class FileTypeFilter extends FileFilter {
-
-        private final String extension;
-        private final String description;
-
-        public FileTypeFilter(String extension, String description) {
-            this.extension = extension;
-            this.description = description;
-        }
-
-        public boolean accept(File file) {
-            if (file.isDirectory())
-                return true;
-
-            return file.getName().endsWith(extension);
-        }
-
-        public String getDescription() {
-            return description + String.format(" (*%s)", extension);
-        }
-
-    }
-
     private String getMasterDBCharset() {
 
         String charset = "";
@@ -746,6 +798,59 @@ public class ComparerDBPanel extends JPanel implements TabView {
         progressBar.setValue(progressBar.getValue() + 1);
     }
 
+    public void goToScript() {
+
+        TreePath selectionPath = dbComponentsTree.getSelectionPath();
+        if (selectionPath != null) {
+
+            ComparerTreeNode node = (ComparerTreeNode) selectionPath.getLastPathComponent();
+            if (node.isComponent) {
+                tabPane.setSelectedIndex(2);
+
+                String searchText = "/\\* " + node.name + " \\*/";
+                Pattern pattern = Pattern.compile(searchText);
+                Matcher matcher = pattern.matcher(sqlTextPanel.getSQLText());
+
+                if (matcher.find()) {
+                    int start = matcher.start();
+                    int end = matcher.end();
+                    sqlTextPanel.getTextPane().select(start, end);
+                }
+
+            }
+        }
+
+    }
+
+    public void addTreeComponent(int action, int type, String name) {
+
+        ComparerTreeNode actionNode = (ComparerTreeNode) rootTreeNode.getChildByAction(action);
+        if (actionNode != null) {
+
+            ComparerTreeNode typeNode = (ComparerTreeNode) actionNode.getChildByType(type);
+            if (typeNode != null)
+                typeNode.add(new ComparerTreeNode(action, type, name, true));
+        }
+
+    }
+
+    private void sortTreeNodes(TreeNode node) {
+
+        ComparerTreeNode comparerTreeNode = (ComparerTreeNode) node;
+        Map<Integer, ComparerTreeNode> childrenMap = new HashMap<>();
+
+        Enumeration<TreeNode> childrenEnumeration = comparerTreeNode.children();
+        while (childrenEnumeration.hasMoreElements()) {
+            ComparerTreeNode child = (ComparerTreeNode) childrenEnumeration.nextElement();
+            childrenMap.put(child.type, child);
+        }
+        comparerTreeNode.removeAllChildren();
+
+        for (int type = 0; type < NamedObject.SYSTEM_DOMAIN; type++)
+            comparerTreeNode.add(childrenMap.get(type));
+
+    }
+
     public boolean isCanceled() {
         return progressDialog.isCancel() || !isComparing;
     }
@@ -756,6 +861,177 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     public static String bundleString(String key) {
         return Bundles.get(ComparerDBPanel.class, key);
+    }
+
+    private static class FileTypeFilter extends FileFilter {
+
+        private final String extension;
+        private final String description;
+
+        public FileTypeFilter(String extension, String description) {
+            this.extension = extension;
+            this.description = description;
+        }
+
+        public boolean accept(File file) {
+            if (file.isDirectory())
+                return true;
+
+            return file.getName().endsWith(extension);
+        }
+
+        public String getDescription() {
+            return description + String.format(" (*%s)", extension);
+        }
+
+    }
+
+    public static class ComparerTreeNode extends DefaultMutableTreeNode {
+
+        public static final int CREATE = 0;
+        public static final int ALTER = CREATE + 1;
+        public static final int DROP = ALTER + 1;
+
+        private final boolean isComponent;
+        private final int action;
+        private final int type;
+        private final String name;
+
+        public ComparerTreeNode(String name) {
+            this(-1, -1, name, false);
+        }
+
+        public ComparerTreeNode(int action, String name) {
+            this(action, -1, name, false);
+        }
+
+        public ComparerTreeNode(int action, int type, String name, boolean isComponent) {
+            super();
+            this.action = action;
+            this.type = type;
+            this.name = name;
+            this.isComponent = isComponent;
+        }
+
+        public TreeNode getChildByAction(int type) {
+
+            for (Object child : children) {
+                ComparerTreeNode comparerTreeNode = (ComparerTreeNode) child;
+                if (comparerTreeNode.action == type)
+                    return comparerTreeNode;
+            }
+
+            return null;
+        }
+
+        public TreeNode getChildByType(int type) {
+
+            for (Object child : children) {
+                ComparerTreeNode comparerTreeNode = (ComparerTreeNode) child;
+                if (comparerTreeNode.type == type)
+                    return comparerTreeNode;
+            }
+
+            return null;
+        }
+
+    }
+
+    private static class ComparerTreeCellRenderer extends AbstractTreeCellRenderer {
+
+        @Override
+        public Component getTreeCellRendererComponent(
+                JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+
+            ComparerTreeNode treeNode = (ComparerTreeNode) value;
+            switch (treeNode.type) {
+
+                case NamedObject.DOMAIN:
+                    setIcon(GUIUtilities.loadIcon("domain16.png"));
+                    break;
+
+                case NamedObject.TABLE:
+                    setIcon(GUIUtilities.loadIcon("PlainTable16.png"));
+                    break;
+
+                case NamedObject.GLOBAL_TEMPORARY:
+                    setIcon(GUIUtilities.loadIcon("GlobalTable16.png"));
+                    break;
+
+                case NamedObject.VIEW:
+                    setIcon(GUIUtilities.loadIcon("TableView16.png"));
+                    break;
+
+                case NamedObject.PROCEDURE:
+                    setIcon(GUIUtilities.loadIcon("Procedure16.png"));
+                    break;
+
+                case NamedObject.FUNCTION:
+                    setIcon(GUIUtilities.loadIcon("Function16.png"));
+                    break;
+
+                case NamedObject.PACKAGE:
+                    setIcon(GUIUtilities.loadIcon("package16.png"));
+                    break;
+
+                case NamedObject.TRIGGER:
+                    setIcon(GUIUtilities.loadIcon("Trigger.png"));
+                    break;
+
+                case NamedObject.DDL_TRIGGER:
+                    setIcon(GUIUtilities.loadIcon("TriggerDDL.png"));
+                    break;
+
+                case NamedObject.DATABASE_TRIGGER:
+                    setIcon(GUIUtilities.loadIcon("TriggerDB.png"));
+                    break;
+
+                case NamedObject.SEQUENCE:
+                    setIcon(GUIUtilities.loadIcon("Sequence16.png"));
+                    break;
+
+                case NamedObject.EXCEPTION:
+                    setIcon(GUIUtilities.loadIcon("exception16.png"));
+                    break;
+
+                case NamedObject.UDF:
+                    setIcon(GUIUtilities.loadIcon("udf16.png"));
+                    break;
+
+                case NamedObject.USER:
+                    setIcon(GUIUtilities.loadIcon("User16.png"));
+                    break;
+
+                case NamedObject.ROLE:
+                    setIcon(GUIUtilities.loadIcon("user_manager_16.png"));
+                    break;
+
+                case NamedObject.INDEX:
+                    setIcon(GUIUtilities.loadIcon("TableIndex16.png"));
+                    break;
+
+                case NamedObject.TABLESPACE:
+                    setIcon(GUIUtilities.loadIcon("tablespace16.png"));
+                    break;
+
+                case NamedObject.JOB:
+                    setIcon(GUIUtilities.loadIcon("job16.png"));
+                    break;
+
+                case NamedObject.COLLATION:
+                    setIcon(GUIUtilities.loadIcon("XmlFile16.png"));
+                    break;
+
+                default:
+                    setIcon(getDefaultOpenIcon());
+                    break;
+
+            }
+            setText(treeNode.name);
+
+            return this;
+        }
+
     }
 
 }

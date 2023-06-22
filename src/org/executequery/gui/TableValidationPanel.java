@@ -29,7 +29,7 @@ import java.util.*;
 public class TableValidationPanel extends JPanel implements TabView {
 
     public static final String TITLE = bundledString("Title");
-    public static final String FRAME_ICON = "JDBCDriver16.png";
+    public static final String FRAME_ICON = "JDBCDriver16.svg";
 
     private List<DatabaseConnection> databaseConnections;
     private DatabaseConnection selectedConnection;

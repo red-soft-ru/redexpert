@@ -49,7 +49,7 @@ public class AboutPanel extends BaseDialog
         ActionListener {
 
     public static final String TITLE = bundledString("Title");
-    public static final String FRAME_ICON = "Information16.png";
+    public static final String FRAME_ICON = "Information16.svg";
 
     private JTabbedPane tabPane;
     private HeapMemoryPanel heapPanel;
@@ -261,9 +261,9 @@ public class AboutPanel extends BaseDialog
 
         private Timer timer;
 
-        private Font nameFont;
+        private final Font nameFont;
 
-        private Font titleFont;
+        private final Font titleFont;
 
         private String[] names;
 
@@ -392,9 +392,9 @@ public class AboutPanel extends BaseDialog
         private static final int HEIGHT = 206;
         private static final int WIDTH = 720;
 
-        private Timer timer;
-        private Image eqImage;
-        private Image background;
+        private final Timer timer;
+        private final Image eqImage;
+        private final Image background;
 
         // background and logo fade
         boolean stageOneComplete;

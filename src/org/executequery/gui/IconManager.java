@@ -204,6 +204,9 @@ public class IconManager {
             case NamedObject.UNIQUE_KEY:
                 return (icons.get(BrowserConstants.COLUMNS_IMAGE));
 
+            case NamedObject.COLLATION:
+                return icons.get(BrowserConstants.COLLATION_IMAGE);
+
 
             default:
                 return (icons.get(BrowserConstants.DATABASE_OBJECT_IMAGE));

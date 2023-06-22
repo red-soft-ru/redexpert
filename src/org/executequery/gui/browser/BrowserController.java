@@ -29,6 +29,7 @@ import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
 import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
@@ -167,7 +168,7 @@ public class BrowserController {
         JPanel _viewPanel = GUIUtilities.getCentralPane(title);
 
         if (_viewPanel == null) {
-            GUIUtilities.addCentralPane(title, BrowserViewPanel.FRAME_ICON, viewPanel, title, true);
+            GUIUtilities.addCentralPane(title, viewPanel.getIcon(), viewPanel, title, true);
             ConnectionHistory.add(viewPanel.getCurrentView());
 
         } else
@@ -269,6 +270,7 @@ public class BrowserController {
 
             panel.setDatabaseConnection(connection);
             viewPanel.setView(panel);
+            viewPanel.setIcon(IconManager.getInstance().getIconFromNode(node));
             checkBrowserPanel();
 
             if (viewPanel.getCurrentView() != null)

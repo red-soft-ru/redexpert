@@ -21,6 +21,7 @@
 package org.executequery.gui.browser;
 
 import org.executequery.EventMediator;
+import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.event.ConnectionRepositoryEvent;
@@ -31,6 +32,7 @@ import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.localization.Bundles;
 import org.executequery.print.PrintFunction;
 
+import javax.swing.*;
 import java.awt.print.Printable;
 
 /**
@@ -208,6 +210,15 @@ public class BrowserViewPanel extends FormObjectViewContainer
         return (currentView != null) ? currentView.getPrintable() : null;
     }
 
+    Icon icon = GUIUtilities.loadIcon(FRAME_ICON);
+
+    public Icon getIcon() {
+        return icon;
+    }
+
+    public void setIcon(Icon icon) {
+        this.icon = icon;
+    }
 }
 
 

@@ -194,7 +194,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- db components tree view ---
 
-        rootTreeNode = new ComparerTreeNode(-1, NamedObject.BRANCH_NODE, bundleString("DatabaseChanges"), false);
+        rootTreeNode = new ComparerTreeNode(-1, NamedObject.BRANCH_NODE, bundleString("DatabaseChanges"), ComparerTreeNode.ROOT);
         dbComponentsTree = new JTree(new DefaultTreeModel(rootTreeNode));
         dbComponentsTree.setCellRenderer(new ComparerTreeCellRenderer());
         dbComponentsTree.addMouseListener(new MouseListener() {
@@ -473,7 +473,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.CREATE))
                             .add(new ComparerTreeNode(ComparerTreeNode.CREATE, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), false));
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
 
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
@@ -503,7 +503,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.ALTER))
                             .add(new ComparerTreeNode(ComparerTreeNode.ALTER, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), false));
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
 
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to ALTER  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
@@ -533,7 +533,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.DROP))
                             .add(new ComparerTreeNode(ComparerTreeNode.DROP, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), false));
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
 
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to DROP  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
@@ -839,7 +839,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
             ComparerTreeNode typeNode = (ComparerTreeNode) actionNode.getChildByType(type);
             if (typeNode != null)
-                typeNode.add(new ComparerTreeNode(action, type, name, true));
+                typeNode.add(new ComparerTreeNode(action, type, name, ComparerTreeNode.COMPONENT));
         }
 
     }
@@ -857,11 +857,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
         comparerTreeNode.removeAllChildren();
 
         for (int type = 0; type < NamedObject.SYSTEM_DOMAIN; type++) {
-            try {
-                comparerTreeNode.add(childrenMap.get(type));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
+            ComparerTreeNode child = childrenMap.get(type);
+            if (child != null)
+                comparerTreeNode.add(child);
         }
 
     }
@@ -903,29 +902,41 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     public static class ComparerTreeNode extends DefaultMutableTreeNode {
 
+        // --- Action constraints ---
+
         public static final int CREATE = 0;
         public static final int ALTER = CREATE + 1;
         public static final int DROP = ALTER + 1;
 
+        // --- Level constraints ---
+
+        public static final int ROOT = 0;
+        public static final int TYPE_FOLDER = ROOT + 1;
+        public static final int COMPONENT = TYPE_FOLDER + 1;
+
+        // ---
+
         private final boolean isComponent;
+        private final int level;
         private final int action;
         private final int type;
         private final String name;
 
         public ComparerTreeNode(String name) {
-            this(-1, -1, name, false);
+            this(-1, -1, name, ROOT);
         }
 
         public ComparerTreeNode(int action, String name) {
-            this(action, -1, name, false);
+            this(action, -1, name, ROOT);
         }
 
-        public ComparerTreeNode(int action, int type, String name, boolean isComponent) {
+        public ComparerTreeNode(int action, int type, String name, int level) {
             super();
             this.action = action;
             this.type = type;
             this.name = name;
-            this.isComponent = isComponent;
+            this.level = level;
+            this.isComponent = (level == COMPONENT);
         }
 
         public TreeNode getChildByAction(int type) {
@@ -969,10 +980,20 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 icon = getDefaultOpenIcon();
             setIcon(icon);
             setText(treeNode.name);
+            Font font = getFont();
+            if (treeNode.level == ComparerTreeNode.TYPE_FOLDER && treeNode.getChildCount() > 0) {
+                setText(treeNode.name + " (" + treeNode.getChildCount() + ")");
+                if (font != null)
+                    setFont(font.deriveFont(Font.BOLD));
+
+            } else {
+                setText(treeNode.name);
+                if (font != null)
+                    setFont(font.deriveFont(Font.PLAIN));
+            }
             return this;
         }
 
     }
-
 
 }

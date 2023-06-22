@@ -383,8 +383,18 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         try {
 
-            if (new DefaultDatabaseHost(databaseConnectionList.get(dbTargetComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 3 ||
-                    new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 3) {
+            DefaultDatabaseHost masterHost = new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()));
+            DefaultDatabaseHost slaveHost = new DefaultDatabaseHost(databaseConnectionList.get(dbTargetComboBox.getSelectedIndex()));
+
+            if (!slaveHost.getDatabaseProductName().toLowerCase().contains("reddatabase") ||
+                    !masterHost.getDatabaseProductName().toLowerCase().contains("reddatabase")) {
+
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
+                loggingOutputPanel.append(bundleString("FDBCompared"));
+            }
+
+            if (slaveHost.getDatabaseMajorVersion() < 3 || masterHost.getDatabaseMajorVersion() < 3) {
 
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("USER")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("PACKAGE")).setSelected(false);
@@ -394,8 +404,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
                 loggingOutputPanel.append(bundleString("RDBVersionBelow3"));
 
-            } else if (new DefaultDatabaseHost(databaseConnectionList.get(dbTargetComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4 ||
-                    new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex())).getDatabaseMajorVersion() < 4) {
+            } else if (slaveHost.getDatabaseMajorVersion() < 4 || masterHost.getDatabaseMajorVersion() < 4) {
 
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);

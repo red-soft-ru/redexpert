@@ -446,7 +446,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         if (propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() && !isCanceled()) {
 
-            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.CREATE, NamedObject.BRANCH_NODE, bundleString("CreateObjects"), false));
+            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.CREATE, NamedObject.BRANCH_NODE, bundleString("CreateObjects"), ComparerTreeNode.ROOT));
 
             if (isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = false;
@@ -484,7 +484,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         if (propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() && !isCanceled()) {
 
-            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.ALTER, NamedObject.BRANCH_NODE, bundleString("AlterObjects"), false));
+            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.ALTER, NamedObject.BRANCH_NODE, bundleString("AlterObjects"), ComparerTreeNode.ROOT));
 
             if (isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = false;
@@ -514,7 +514,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         if (propertiesCheckBoxMap.get(CHECK_DROP).isSelected() && !isCanceled()) {
 
-            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.DROP, NamedObject.BRANCH_NODE, bundleString("DropObjects"), false));
+            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.DROP, NamedObject.BRANCH_NODE, bundleString("DropObjects"), ComparerTreeNode.ROOT));
 
             if (!isScriptGeneratorOrderReversed) {
                 isScriptGeneratorOrderReversed = true;

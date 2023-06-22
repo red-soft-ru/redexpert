@@ -855,8 +855,12 @@ public class ComparerDBPanel extends JPanel implements TabView {
         }
         comparerTreeNode.removeAllChildren();
 
-        for (int type = 0; type < NamedObject.SYSTEM_DOMAIN; type++)
-            comparerTreeNode.add(childrenMap.get(type));
+        for (int type = 0; type < NamedObject.SYSTEM_DOMAIN; type++) {
+
+            ComparerTreeNode child = childrenMap.get(type);
+            if (child != null)
+                comparerTreeNode.add(child);
+        }
 
     }
 

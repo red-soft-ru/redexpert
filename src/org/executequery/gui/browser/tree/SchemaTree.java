@@ -386,34 +386,19 @@ public class SchemaTree extends DynamicTree
 
             if (paths != null) {
 
-                DefaultMutableTreeNode node = asTreeNode(paths[0].getLastPathComponent());
-                if (!canDrag(node) || isExpanded(paths[0]))
-                    return null;
-
-                // Make up a node array of copies for transfer and
-                // another for/of the nodes that will be removed in
-                // exportDone after a successful drop.
                 List<DefaultMutableTreeNode> copies = new ArrayList<>();
                 List<DefaultMutableTreeNode> toRemove = new ArrayList<>();
-                DefaultMutableTreeNode copy = ((DatabaseObjectNode) node).copy();
 
-                copies.add(copy);
-                toRemove.add(node);
+                for (TreePath path : paths) {
 
-                for (int i = 1; i < paths.length; i++) {
+                    DefaultMutableTreeNode node = asTreeNode(path.getLastPathComponent());
+                    if (!canDrag(node) || isExpanded(path))
+                        return null;
 
-                    // Do not allow higher level nodes to be added to list.
-                    DefaultMutableTreeNode next = asTreeNode(paths[i].getLastPathComponent());
-                    if (next.getLevel() < node.getLevel()) {
-                        break;
+                    DefaultMutableTreeNode copy = ((DatabaseObjectNode) node).copy();
+                    copies.add(copy);
+                    toRemove.add(node);
 
-                    } else if (next.getLevel() > node.getLevel()) {
-                        copy.add(copy(next));
-
-                    } else {
-                        copies.add(copy(next));
-                        toRemove.add(next);
-                    }
 
                 }
 

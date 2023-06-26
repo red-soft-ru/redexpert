@@ -156,7 +156,7 @@ build:linux:
     - ./ci/build_installer.sh
   parallel:
     matrix:
-      - BUILD_IMAGE: amd64/centos:7
+      - BUILD_IMAGE: oraclelinux:7
         ARCH: x86_64
       - BUILD_IMAGE: i386/centos:7
         ARCH: x86

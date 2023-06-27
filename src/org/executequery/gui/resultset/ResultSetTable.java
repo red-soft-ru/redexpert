@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.gui.StandardTable;
 import org.underworldlabs.swing.DateCellEditor;
 import org.underworldlabs.swing.DateTimeCellEditor;
+import org.underworldlabs.swing.ForeignKeyCellEditor;
 import org.underworldlabs.swing.TimeCellEditor;
 import org.underworldlabs.swing.table.MultiLineStringCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
@@ -34,8 +35,6 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -415,70 +414,15 @@ public class ResultSetTable extends JTable implements StandardTable {
     @Override
     public TableCellEditor getCellEditor(int row, int column) {
 
-        int columnIndex = 0;
-        for (int i = 0; i < foreignIndex.size(); i++)
-            if (foreignIndex.get(i) == column)
-                columnIndex = i;
-
-        ArrayList<DefaultTableModel> rowTableModelsList = new ArrayList<>();
-        class ComboBoxRenderer extends JTable implements ListCellRenderer {
-            @Override
-            public Component getListCellRendererComponent(
-                    JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-
-                setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
-                setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
-
-                if (index == 0)
-                    setBackground(list.getSelectionBackground());
-
-                setFont(list.getFont());
-                setModel(rowTableModelsList.get(index));
-
-                return this;
-            }
-        }
-
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
         if (isComboColumn(column)) {
 
-            ScrolledComboBox scrolledComboBox = new ScrolledComboBox();
-            scrolledComboBox.setEditable(true);
+            int columnIndex = 0;
+            for (int i = 0; i < foreignIndex.size(); i++)
+                if (foreignIndex.get(i) == column)
+                    columnIndex = i;
 
-            scrolledComboBox.addItem(foreignKeys.get(columnIndex).get(0));
-
-            for (int i = -1; i < dtm.get(columnIndex).getRowCount(); i++) {
-
-                DefaultTableModel rowTableModel = new DefaultTableModel();
-
-                for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++)
-                    rowTableModel.addColumn("");
-
-                rowTableModel.insertRow(0, new Object[]{});
-
-                for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++)
-                    if (i != -1)
-                        rowTableModel.setValueAt(dtm.get(columnIndex).getValueAt(i, j), 0, j);
-                    else
-                        rowTableModel.setValueAt(dtm.get(columnIndex).getColumnName(j), 0, j);
-
-                rowTableModelsList.add(rowTableModel);
-
-                if (i != -1)
-                    scrolledComboBox.addItem(foreignKeys.get(columnIndex).get(i));
-            }
-
-            ComboBoxRenderer renderer = new ComboBoxRenderer();
-            scrolledComboBox.setRenderer(renderer);
-
-            TableCellEditor editor = new DefaultCellEditor(scrolledComboBox);
-
-            if (value.getValue() == null)
-                scrolledComboBox.setSelectedIndex(0);
-            else
-                scrolledComboBox.setSelectedItem(value.getValue());
-
-            return editor;
+            return new ForeignKeyCellEditor(dtm, value.getValue(), columnIndex);
         }
 
         int sqlType = value.getDataType();
@@ -647,77 +591,6 @@ public class ResultSetTable extends JTable implements StandardTable {
         }
 
     } // class ResultsTableColumnModel
-
-    static class ScrolledComboBox extends JComboBox {
-
-        ScrolledComboBox() {
-            super();
-            this.addPopupMenuListener(this.getPopupMenuListener());
-            this.adjustScrollBar();
-        }
-
-        private void adjustPopupWidth() {
-
-            if (getItemCount() == 0)
-                return;
-
-            Object comp = getUI().getAccessibleChild(this, 0);
-            if (!(comp instanceof JPopupMenu))
-                return;
-
-            JPopupMenu popup = (JPopupMenu) comp;
-            JScrollPane scrollPane = (JScrollPane) popup.getComponent(0);
-            Object value = getItemAt(0);
-            Component rendererComp = getRenderer().getListCellRendererComponent(
-                    new JList(), value, 0, false, false);
-
-            if (rendererComp instanceof JTable)
-                scrollPane.setColumnHeaderView(((JTable) rendererComp).getTableHeader());
-
-            Dimension prefSize = rendererComp.getPreferredSize();
-            Dimension size = scrollPane.getPreferredSize();
-            size.width = Math.max(size.width, prefSize.width);
-            scrollPane.setPreferredSize(size);
-            scrollPane.setMaximumSize(size);
-            scrollPane.revalidate();
-
-        }
-
-        private void adjustScrollBar() {
-
-            if (getItemCount() == 0)
-                return;
-
-            Object comp = getUI().getAccessibleChild(this, 0);
-            if (!(comp instanceof JPopupMenu))
-                return;
-
-            JPopupMenu popup = (JPopupMenu) comp;
-            JScrollPane scrollPane = (JScrollPane) popup.getComponent(0);
-            scrollPane.setHorizontalScrollBar(new JScrollBar(JScrollBar.HORIZONTAL));
-            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-
-        }
-
-        private PopupMenuListener getPopupMenuListener() {
-            return new PopupMenuListener() {
-                @Override
-                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                    //adjustPopupWidth();
-                    adjustScrollBar();
-                }
-
-                @Override
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                }
-
-                @Override
-                public void popupMenuCanceled(PopupMenuEvent e) {
-                }
-            };
-        }
-
-    } // class SampleJComboBoxWithScrollBar
 
     static class ComboBoxRenderer extends JTable implements ListCellRenderer {
 

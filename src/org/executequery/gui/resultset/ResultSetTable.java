@@ -26,10 +26,10 @@ import org.executequery.gui.StandardTable;
 import org.underworldlabs.swing.DateCellEditor;
 import org.underworldlabs.swing.DateTimeCellEditor;
 import org.underworldlabs.swing.TimeCellEditor;
-import org.underworldlabs.swing.table.ValidatedNumberCellEditor;
 import org.underworldlabs.swing.table.MultiLineStringCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.swing.table.TableSorter;
+import org.underworldlabs.swing.table.ValidatedNumberCellEditor;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -52,86 +52,81 @@ import java.util.Vector;
 public class ResultSetTable extends JTable implements StandardTable {
 
     private DefaultCellEditor defaultCellEditor;
-
     private DefaultCellEditor bigintCellEditor;
-
     private DefaultCellEditor integerCellEditor;
-
     private DefaultCellEditor smallintCellEditor;
-
     private DefaultCellEditor multiLineCellEditor;
-
     private DateCellEditor dateEditor;
-
     private DateTimeCellEditor dateTimeCellEditor;
-
     private TimeCellEditor timeCellEditor;
 
-    List<Integer> comboboxColumns;
-
-
-    private ResultsTableColumnModel columnModel;
-
-    private ResultSetTableCellRenderer cellRenderer;
-
     private boolean isAutoResizeable;
-
+    private List<Integer> comboBoxColumns;
+    private ResultsTableColumnModel columnModel;
+    private ResultSetTableCellRenderer cellRenderer;
     private final TableColumn dummyColumn = new TableColumn();
 
-    public DefaultTableModel myTableModel = new DefaultTableModel();
+    private final ArrayList<DefaultTableModel> dtm = new ArrayList<>();
+    private final ArrayList<Integer> foreignIndex = new ArrayList<>();
+    private final ArrayList<Vector<Object>> foreignKeys = new ArrayList<>();
 
     public ResultSetTable() {
 
         super();
         setDefaultOptions();
 
-        // ---
+        // --- stringCellEditor ---
 
         final StringCellEditor stringCellEditor = new StringCellEditor();
         stringCellEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
         defaultCellEditor = new DefaultCellEditor(stringCellEditor) {
+            @Override
             public Object getCellEditorValue() {
                 return stringCellEditor.getValue();
             }
         };
 
-        // ---
+        // --- multiLineStringCellEditor ---
+
+        final MultiLineStringCellEditor multiLineStringCellEditor = new MultiLineStringCellEditor();
+        multiLineStringCellEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+        multiLineCellEditor = new DefaultCellEditor(multiLineStringCellEditor) {
+            @Override
+            public Object getCellEditorValue() {
+                return multiLineStringCellEditor.getValue();
+            }
+        };
+
+        // --- bigintEditor ---
 
         final ValidatedNumberCellEditor bigintEditor = new ValidatedNumberCellEditor(Types.BIGINT);
         bigintEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
         bigintCellEditor = new DefaultCellEditor(bigintEditor) {
+            @Override
             public Object getCellEditorValue() {
                 return bigintEditor.getValue();
             }
         };
 
-        // ---
+        // --- integerEditor ---
 
         final ValidatedNumberCellEditor integerEditor = new ValidatedNumberCellEditor(Types.INTEGER);
         integerEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
         integerCellEditor = new DefaultCellEditor(integerEditor) {
+            @Override
             public Object getCellEditorValue() {
                 return integerEditor.getValue();
             }
         };
 
-        // ---
+        // --- smallintEditor ---
 
         final ValidatedNumberCellEditor smallintEditor = new ValidatedNumberCellEditor(Types.SMALLINT);
         smallintEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
         smallintCellEditor = new DefaultCellEditor(smallintEditor) {
+            @Override
             public Object getCellEditorValue() {
                 return smallintEditor.getValue();
-            }
-        };
-
-        // ---
-
-        final MultiLineStringCellEditor multiLineStringCellEditor = new MultiLineStringCellEditor();
-        multiLineStringCellEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-        multiLineCellEditor = new DefaultCellEditor(multiLineStringCellEditor) {
-            public Object getCellEditorValue() {
-                return multiLineStringCellEditor.getValue();
             }
         };
 
@@ -142,25 +137,16 @@ public class ResultSetTable extends JTable implements StandardTable {
         timeCellEditor = new TimeCellEditor();
 
         isAutoResizeable = false;
-
     }
 
     public ResultSetTable(TableModel model) {
-
         super(model);
         setDefaultOptions();
 
         isAutoResizeable = false;
     }
 
-    public void setModel(TableModel model) {
-        super.setModel(model);
-        setDefaultColumnOptions();
-
-    }
-
     private void setDefaultOptions() {
-
 
         setColumnSelectionAllowed(true);
         columnModel = new ResultsTableColumnModel();
@@ -175,22 +161,24 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     private void setDefaultColumnOptions() {
 
-        comboboxColumns = new ArrayList<>();
+        comboBoxColumns = new ArrayList<>();
         int cols = dataModel.getColumnCount();
-        if (columnModel != null) {
-            columnModel.init_tcs(cols);
-        }
-
-        /*cellRenderer = new ResultSetTableCellRenderer();
-        cellRenderer.setFont(getFont());*/
-
+        if (columnModel != null)
+            columnModel.initTCS(cols);
 
     }
 
-    protected JTableHeader createDefaultTableHeader() {
+    @Override
+    public void setModel(TableModel model) {
+        super.setModel(model);
+        setDefaultColumnOptions();
+    }
 
+    @Override
+    protected JTableHeader createDefaultTableHeader() {
         return new JTableHeader(columnModel) {
 
+            @Override
             public String getToolTipText(MouseEvent e) {
 
                 if (getModel() instanceof TableSorter) {
@@ -210,7 +198,6 @@ public class ResultSetTable extends JTable implements StandardTable {
 
                 return super.getToolTipText(e);
             }
-
         };
     }
 
@@ -224,11 +211,7 @@ public class ResultSetTable extends JTable implements StandardTable {
     }
 
     public boolean hasMultipleColumnAndRowSelections() {
-
-        int cols = getSelectedColumnCount();
-        int rows = getSelectedRowCount();
-
-        return (cols > 1 || rows > 1);
+        return (getSelectedColumnCount() > 1 || getSelectedRowCount() > 1);
     }
 
     public void selectRow(Point point) {
@@ -250,7 +233,6 @@ public class ResultSetTable extends JTable implements StandardTable {
                 int row = rowAtPoint(point);
                 setRowSelectionInterval(row, row);
             }
-
         }
 
     }
@@ -274,99 +256,47 @@ public class ResultSetTable extends JTable implements StandardTable {
                 int column = columnAtPoint(point);
                 setColumnSelectionInterval(column, column);
             }
-
         }
 
     }
 
     public void copySelectedCells() {
-
         copySelectedCells('\t', false, false);
-
-        /*
-
-        StringBuilder sb = new StringBuilder();
-
-        int cols = getSelectedColumnCount();
-        int rows = getSelectedRowCount();
-
-        if (cols == 0 && rows == 0) {
-
-            return;
-        }
-
-        int[] selectedRows = getSelectedRows();
-        int[] selectedCols = getSelectedColumns();
-
-        for (int i = 0; i < rows; i++) {
-
-            for (int j = 0; j < cols; j++) {
-
-                sb.append(getValueAt(selectedRows[i], selectedCols[j]));
-
-                if (j < cols - 1) {
-
-                    sb.append('\t');
-                }
-
-            }
-
-            if (i < rows - 1) {
-
-                sb.append('\n');
-            }
-
-        }
-
-        GUIUtilities.copyToClipBoard(sb.toString());
-
-        */
     }
 
     public void copySelectedCellsAsCSV() {
-
         copySelectedCells(',', false, false);
     }
 
     public void copySelectedCellsAsCSVWithNames() {
-
         copySelectedCells(',', false, true);
     }
 
     public void copySelectedCellsAsCSVQuoted() {
-
         copySelectedCells(',', true, false);
     }
 
     public void copySelectedCellsAsCSVQuotedWithNames() {
-
         copySelectedCells(',', true, true);
     }
 
     private void copySelectedCells(char delimiter, boolean quoted, boolean withNames) {
 
         StringBuilder sb = new StringBuilder();
-
         int cols = getSelectedColumnCount();
         int rows = getSelectedRowCount();
 
-        if (cols == 0 && rows == 0) {
-
+        if (cols == 0 && rows == 0)
             return;
-        }
 
         int[] selectedRows = getSelectedRows();
         int[] selectedCols = getSelectedColumns();
 
         if (withNames) {
-
             sb.append("#");
-            List<String> list = new ArrayList<String>();
-            for (int j = 0; j < cols; j++) {
-
+            List<String> list = new ArrayList<>();
+            for (int j = 0; j < cols; j++)
                 list.add(getColumnName(selectedCols[j]));
-            }
-
             sb.append(StringUtils.join(list, delimiter)).append('\n');
         }
 
@@ -374,48 +304,33 @@ public class ResultSetTable extends JTable implements StandardTable {
         for (int i = 0; i < rows; i++) {
 
             for (int j = 0; j < cols; j++) {
-
                 sb.append(quote);
                 sb.append(getValueAt(selectedRows[i], selectedCols[j]));
                 sb.append(quote);
                 sb.append(delimiter);
             }
 
-            if (cols > 1) {
-
+            if (cols > 1)
                 sb.deleteCharAt(sb.length() - 1);
-            }
-
-            if (i < rows - 1) {
-
+            if (i < rows - 1)
                 sb.append('\n');
-            }
-
         }
 
-        if (cols == 1) {
-
+        if (cols == 1)
             sb.deleteCharAt(sb.length() - 1);
-        }
 
         GUIUtilities.copyToClipBoard(sb.toString());
     }
 
     public Object valueAtPoint(Point point) {
-
-        int row = rowAtPoint(point);
-        int col = columnAtPoint(point);
-
-        return getValueAt(row, col);
+        return getValueAt(rowAtPoint(point), columnAtPoint(point));
     }
 
     public int[] getSelectedCellsRowsIndexes() {
-
         return getSelectedRows();
     }
 
     public int[] getSelectedCellsColumnsIndexes() {
-
         return getSelectedColumns();
     }
 
@@ -424,9 +339,8 @@ public class ResultSetTable extends JTable implements StandardTable {
         int cols = getSelectedColumnCount();
         int rows = getSelectedRowCount();
 
-        if (cols == 0 && rows == 0) {
+        if (cols == 0 && rows == 0)
             return null;
-        }
 
         int[] selectedRows = getSelectedRows();
         int[] selectedCols = getSelectedColumns();
@@ -437,16 +351,11 @@ public class ResultSetTable extends JTable implements StandardTable {
         for (int i = 0; i < rows; i++) {
 
             Vector rowVector = new Vector(cols);
-
             for (int j = 0; j < cols; j++) {
 
                 rowVector.add(getValueAt(selectedRows[i], selectedCols[j]));
-
-                if (i == 0) {
-
+                if (i == 0)
                     columns.add(getColumnName(selectedCols[j]));
-                }
-
             }
 
             data.add(rowVector);
@@ -480,181 +389,94 @@ public class ResultSetTable extends JTable implements StandardTable {
         cellRenderer.applyUserPreferences();
     }
 
-    public void resetTableColumnWidth() {
-        setTableColumnWidth(getUserPreferredColumnWidth());
-    }
-
+    @Override
     public void setBackground(Color background) {
-        if (cellRenderer != null) {
+        if (cellRenderer != null)
             cellRenderer.setTableBackground(background);
-        }
         super.setBackground(background);
     }
 
+    @Override
     public void setFont(Font font) {
         super.setFont(font);
-        if (cellRenderer != null) {
+        if (cellRenderer != null)
             cellRenderer.setFont(font);
-        }
     }
 
-    public Boolean isComboColumn(int index) {
-        return comboboxColumns.contains(index);
-    }
-
+    @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
         return cellRenderer;
     }
 
-    private final ArrayList<DefaultTableModel> dtm = new ArrayList<DefaultTableModel>();
-    private final ArrayList<Integer> foreignIndex = new ArrayList<Integer>();
-    private final ArrayList<Vector<Object>> foreignKeys = new ArrayList<Vector<Object>>();
+    public Boolean isComboColumn(int index) {
+        return comboBoxColumns.contains(index);
+    }
 
-
+    @Override
     public TableCellEditor getCellEditor(int row, int column) {
 
         int columnIndex = 0;
-
-
-        for (int i = 0; i < foreignIndex.size(); i++) {
-            if (foreignIndex.get(i) == column) {
+        for (int i = 0; i < foreignIndex.size(); i++)
+            if (foreignIndex.get(i) == column)
                 columnIndex = i;
-            }
-        }
 
-        ArrayList<DefaultTableModel> rowTabelModelsList = new ArrayList<DefaultTableModel>();
-
+        ArrayList<DefaultTableModel> rowTableModelsList = new ArrayList<>();
         class ComboBoxRenderer extends JTable implements ListCellRenderer {
             @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (isSelected) {
-                    setBackground(list.getSelectionBackground());
-                    setForeground(list.getSelectionForeground());
-                } else {
-                    setBackground(list.getBackground());
-                    setForeground(list.getForeground());
-                }
+            public Component getListCellRendererComponent(
+                    JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
-                if (index == 0) {
+                setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+                setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+
+                if (index == 0)
                     setBackground(list.getSelectionBackground());
-                }
 
                 setFont(list.getFont());
-                setModel(rowTabelModelsList.get(index));
+                setModel(rowTableModelsList.get(index));
+
                 return this;
             }
         }
 
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
         if (isComboColumn(column)) {
-            class SampleJComboBoxWithScrollBar extends JComboBox {
 
-                SampleJComboBoxWithScrollBar() {
-                    super();
-                    this.addPopupMenuListener(this.getPopupMenuListener());
-                    this.adjustScrollBar();
-                }
+            ScrolledComboBox scrolledComboBox = new ScrolledComboBox();
+            scrolledComboBox.setEditable(true);
 
-                private void adjustPopupWidth() {
-                    if (getItemCount() == 0) {
-                        return;
-                    }
-                    Object comp = getUI().getAccessibleChild(this, 0);
-                    if (!(comp instanceof JPopupMenu)) {
-                        return;
-                    }
-                    JPopupMenu popup = (JPopupMenu) comp;
-                    JScrollPane scrollPane = (JScrollPane) popup.getComponent(0);
-                    Object value = getItemAt(0);
-                    Component rendererComp = getRenderer().getListCellRendererComponent(new JList(), value, 0, false, false);
-                    if (rendererComp instanceof JTable) {
-                        scrollPane.setColumnHeaderView(((JTable) rendererComp).getTableHeader());
-                    }
-                    Dimension prefSize = rendererComp.getPreferredSize();
-                    Dimension size = scrollPane.getPreferredSize();
-                    size.width = Math.max(size.width, prefSize.width);
-                    scrollPane.setPreferredSize(size);
-                    scrollPane.setMaximumSize(size);
-                    scrollPane.revalidate();
-                }
-
-                private void adjustScrollBar() {
-                    if (getItemCount() == 0) {
-                        return;
-                    }
-                    Object comp = getUI().getAccessibleChild(this, 0);
-                    if (!(comp instanceof JPopupMenu)) {
-                        return;
-                    }
-                    JPopupMenu popup = (JPopupMenu) comp;
-                    JScrollPane scrollPane = (JScrollPane) popup.getComponent(0);
-                    scrollPane.setHorizontalScrollBar(new JScrollBar(JScrollBar.HORIZONTAL));
-                    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                }
-
-                private PopupMenuListener getPopupMenuListener() {
-
-                    return new PopupMenuListener() {
-
-                        @Override
-                        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                            //adjustPopupWidth();
-                            adjustScrollBar();
-                        }
-
-                        @Override
-                        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                        }
-
-                        @Override
-                        public void popupMenuCanceled(PopupMenuEvent e) {
-                        }
-                    };
-                }
-            }
-
-            SampleJComboBoxWithScrollBar comboBox = new SampleJComboBoxWithScrollBar();
-            comboBox.setEditable(true);
-
-            comboBox.addItem(foreignKeys.get(columnIndex).get(0));
+            scrolledComboBox.addItem(foreignKeys.get(columnIndex).get(0));
 
             for (int i = -1; i < dtm.get(columnIndex).getRowCount(); i++) {
+
                 DefaultTableModel rowTableModel = new DefaultTableModel();
-                for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
+
+                for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++)
                     rowTableModel.addColumn("");
-                }
-                rowTableModel.insertRow(0, new Object[] {});
-                if (i != -1) {
-                    for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
+
+                rowTableModel.insertRow(0, new Object[]{});
+
+                for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++)
+                    if (i != -1)
                         rowTableModel.setValueAt(dtm.get(columnIndex).getValueAt(i, j), 0, j);
-                    }
-                }
-                else {
-                    for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
+                    else
                         rowTableModel.setValueAt(dtm.get(columnIndex).getColumnName(j), 0, j);
-                    }
-                }
 
-                rowTabelModelsList.add(rowTableModel);
+                rowTableModelsList.add(rowTableModel);
 
-                if (i == -1) {
-                    continue;
-                }
-
-                comboBox.addItem(foreignKeys.get(columnIndex).get(i));
-
-
+                if (i != -1)
+                    scrolledComboBox.addItem(foreignKeys.get(columnIndex).get(i));
             }
 
             ComboBoxRenderer renderer = new ComboBoxRenderer();
-            comboBox.setRenderer(renderer);
+            scrolledComboBox.setRenderer(renderer);
 
-            TableCellEditor editor = new DefaultCellEditor(comboBox);
+            TableCellEditor editor = new DefaultCellEditor(scrolledComboBox);
 
             if (value.getValue() == null)
-                comboBox.setSelectedIndex(0);
+                scrolledComboBox.setSelectedIndex(0);
             else
-                comboBox.setSelectedItem(value.getValue());
+                scrolledComboBox.setSelectedItem(value.getValue());
 
             return editor;
         }
@@ -669,39 +491,48 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.VARCHAR:
             case Types.NVARCHAR:
                 return multiLineCellEditor;
+
             case Types.BIGINT:
                 return bigintCellEditor;
+
             case Types.INTEGER:
                 return integerCellEditor;
+
             case Types.SMALLINT:
                 return smallintCellEditor;
+
             case Types.DATE:
-                //setTableColumnWidth();
                 return dateEditor;
+
             case Types.TIMESTAMP:
                 dateTimeCellEditor.getDateTimePicker().setVisibleTimeZone(false);
                 return dateTimeCellEditor;
+
             case Types.TIMESTAMP_WITH_TIMEZONE:
                 dateTimeCellEditor.getDateTimePicker().setVisibleTimeZone(true);
                 return dateTimeCellEditor;
+
             case Types.TIME_WITH_TIMEZONE:
                 timeCellEditor.getPicker().setVisibleTimeZone(true);
                 return timeCellEditor;
+
             case Types.TIME:
                 timeCellEditor.getPicker().setVisibleTimeZone(false);
                 return timeCellEditor;
+
             case Types.BOOLEAN:
-                JComboBox comboBox1 = new JComboBox(new String[]{"true", "false", "null"});
+                JComboBox comboBox = new JComboBox(new String[]{"true", "false", "null"});
                 String booleanValue = String.valueOf(value.getValue());
+
                 if (MiscUtils.isNull(booleanValue))
-                    comboBox1.setSelectedItem(2);
+                    comboBox.setSelectedItem(2);
                 else if (booleanValue.equalsIgnoreCase("true"))
-                    comboBox1.setSelectedIndex(0);
+                    comboBox.setSelectedIndex(0);
                 else if (booleanValue.equalsIgnoreCase("false"))
-                    comboBox1.setSelectedIndex(1);
+                    comboBox.setSelectedIndex(1);
                 else
-                    comboBox1.setSelectedItem(2);
-                return new DefaultCellEditor(comboBox1);
+                    comboBox.setSelectedItem(2);
+                return new DefaultCellEditor(comboBox);
 
         }
 
@@ -712,124 +543,70 @@ public class ResultSetTable extends JTable implements StandardTable {
         return SystemProperties.getIntProperty("user", "results.table.column.width");
     }
 
+    @Override
     public void setTableColumnWidth(int columnWidth) {
 
         TableColumnModel tcm = getColumnModel();
         if (columnWidth != 75) {
 
-            TableColumn col = null;
+            TableColumn col;
             for (Enumeration<TableColumn> i = tcm.getColumns(); i.hasMoreElements(); ) {
                 col = i.nextElement();
                 col.setWidth(columnWidth);
                 col.setPreferredWidth(columnWidth);
             }
-
         }
+
     }
 
     public void setTableColumnWidthFromContents() {
-            if(getModel() instanceof ResultSetTableModel) {
-                ResultSetTableModel tableModel = (ResultSetTableModel) getModel();
+
+        if (getModel() instanceof ResultSetTableModel) {
+            ResultSetTableModel tableModel = (ResultSetTableModel) getModel();
+            setColWidthFromContents(tableModel);
+
+        } else if (getModel() instanceof TableSorter) {
+            if (((TableSorter) getModel()).getTableModel() instanceof ResultSetTableModel) {
+                ResultSetTableModel tableModel = (ResultSetTableModel) ((TableSorter) getModel()).getTableModel();
                 setColWidthFromContents(tableModel);
-            } else if(getModel() instanceof TableSorter)
-            {
-                if(((TableSorter) getModel()).getTableModel() instanceof ResultSetTableModel)
-                {
-                    ResultSetTableModel tableModel = (ResultSetTableModel) ((TableSorter) getModel()).getTableModel();
-                    setColWidthFromContents(tableModel);
-                }
             }
+        }
     }
 
-    private void setColWidthFromContents(ResultSetTableModel tableModel)
-    {
+    private void setColWidthFromContents(ResultSetTableModel tableModel) {
+
         TableColumnModel tcm = getColumnModel();
-        TableColumn col = null;
-        for (int i=0;i<tcm.getColumnCount();i++ ) {
+        TableColumn col;
+
+        for (int i = 0; i < tcm.getColumnCount(); i++) {
             ResultSetColumnHeader header = tableModel.getColumnHeaders().get(i);
             col = tcm.getColumn(i);
             col.setWidth(header.getColWidth());
             col.setPreferredWidth(header.getColWidth());
         }
+
     }
 
-    public void setComboboxColumn(int ind, Vector<Object> items) {
-        comboboxColumns.add(ind);
-        TableColumn column = new TableColumn();
-        JComboBox comboBox = new JComboBox();
-        comboBox.setModel(new DefaultComboBoxModel(items));
-        column.setCellEditor(new DefaultCellEditor(comboBox));
-        columnModel.setColumn(column, ind);
-    }
+    public void setComboBoxTable(int ind, DefaultTableModel defaultTableModel, Vector<Object> items) {
 
-    public void setComboboxTable(int ind, DefaultTableModel defaultTableModel, Vector<Object> items) {
-        comboboxColumns.add(ind);
+        comboBoxColumns.add(ind);
+
         TableColumn column = new TableColumn();
         JComboBox comboBox = new JComboBox();
+
         dtm.add(defaultTableModel);
         foreignIndex.add(ind);
         foreignKeys.add(items);
-        class ComboBoxRenderer extends JTable implements ListCellRenderer {
-            public DefaultTableModel rowTabelModel;
 
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                setModel(rowTabelModel);
-                return this;
-            }
-        }
         ComboBoxRenderer renderer = new ComboBoxRenderer();
         comboBox.setRenderer(renderer);
+
         column.setCellEditor(new DefaultCellEditor(comboBox));
         columnModel.setColumn(column, ind);
-    }
-
-    class ResultsTableColumnModel extends DefaultTableColumnModel {
-        Vector<TableColumn> tcs;
-
-        // dumb work-around for update issue noted
-        public void init_tcs(int cols) {
-            tcs = new Vector<TableColumn>();
-            for (int i = 0; i < cols; i++) {
-                tcs.add(new TableColumn());
-            }
-        }
-
-        public TableColumn getColumn(int columnIndex) {
-            try {
-                return super.getColumn(columnIndex);
-            } catch (Exception e) {
-                return dummyColumn;
-            }
-        }
-
-        public TableColumn getComboColumn(int columnIndex) {
-            try {
-                return tcs.elementAt(columnIndex);
-            } catch (Exception e) {
-                return dummyColumn;
-            }
-        }
-
-        public void setColumn(TableColumn column, int index) {
-            tcs.set(index, column);
-        }
-
-    } // class ResultsTableColumnModel
-
-
-    class ResultSetTableHeader extends JTableHeader {
-
-        @Override
-        public String getToolTipText(MouseEvent event) {
-
-            return super.getToolTipText(event);
-        }
 
     }
 
     public void columnVisibilityChanged() {
-
         ResultSetTableModel model = (ResultSetTableModel) ((TableSorter) getModel()).getTableModel();
         model.fireTableStructureChanged();
         applyUserPreferences();
@@ -845,5 +622,113 @@ public class ResultSetTable extends JTable implements StandardTable {
         setAutoResizeMode(isAutoResizeable ? JTable.AUTO_RESIZE_ALL_COLUMNS : JTable.AUTO_RESIZE_OFF);
     }
 
-}
+    class ResultsTableColumnModel extends DefaultTableColumnModel {
 
+        Vector<TableColumn> tcs;
+
+        // dumb work-around for update issue noted
+        public void initTCS(int cols) {
+            tcs = new Vector<>();
+            for (int i = 0; i < cols; i++)
+                tcs.add(new TableColumn());
+        }
+
+        @Override
+        public TableColumn getColumn(int columnIndex) {
+            try {
+                return super.getColumn(columnIndex);
+            } catch (Exception e) {
+                return dummyColumn;
+            }
+        }
+
+        public void setColumn(TableColumn column, int index) {
+            tcs.set(index, column);
+        }
+
+    } // class ResultsTableColumnModel
+
+    static class ScrolledComboBox extends JComboBox {
+
+        ScrolledComboBox() {
+            super();
+            this.addPopupMenuListener(this.getPopupMenuListener());
+            this.adjustScrollBar();
+        }
+
+        private void adjustPopupWidth() {
+
+            if (getItemCount() == 0)
+                return;
+
+            Object comp = getUI().getAccessibleChild(this, 0);
+            if (!(comp instanceof JPopupMenu))
+                return;
+
+            JPopupMenu popup = (JPopupMenu) comp;
+            JScrollPane scrollPane = (JScrollPane) popup.getComponent(0);
+            Object value = getItemAt(0);
+            Component rendererComp = getRenderer().getListCellRendererComponent(
+                    new JList(), value, 0, false, false);
+
+            if (rendererComp instanceof JTable)
+                scrollPane.setColumnHeaderView(((JTable) rendererComp).getTableHeader());
+
+            Dimension prefSize = rendererComp.getPreferredSize();
+            Dimension size = scrollPane.getPreferredSize();
+            size.width = Math.max(size.width, prefSize.width);
+            scrollPane.setPreferredSize(size);
+            scrollPane.setMaximumSize(size);
+            scrollPane.revalidate();
+
+        }
+
+        private void adjustScrollBar() {
+
+            if (getItemCount() == 0)
+                return;
+
+            Object comp = getUI().getAccessibleChild(this, 0);
+            if (!(comp instanceof JPopupMenu))
+                return;
+
+            JPopupMenu popup = (JPopupMenu) comp;
+            JScrollPane scrollPane = (JScrollPane) popup.getComponent(0);
+            scrollPane.setHorizontalScrollBar(new JScrollBar(JScrollBar.HORIZONTAL));
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        }
+
+        private PopupMenuListener getPopupMenuListener() {
+            return new PopupMenuListener() {
+                @Override
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                    //adjustPopupWidth();
+                    adjustScrollBar();
+                }
+
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                }
+
+                @Override
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                }
+            };
+        }
+
+    } // class SampleJComboBoxWithScrollBar
+
+    static class ComboBoxRenderer extends JTable implements ListCellRenderer {
+
+        public DefaultTableModel rowTableModel;
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            setModel(rowTableModel);
+            return this;
+        }
+
+    } // class ComboBoxRenderer
+
+}

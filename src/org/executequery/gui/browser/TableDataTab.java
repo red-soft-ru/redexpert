@@ -539,7 +539,7 @@ public class TableDataTab extends JPanel
 
                         int columnIndex = tableModel.getColumnIndex(key.getColumnName());
                         if (columnIndex > -1)
-                            table.setComboboxTable(columnIndex, defaultTableModel, items);
+                            table.setComboBoxTable(columnIndex, defaultTableModel, items);
                     }
 
 

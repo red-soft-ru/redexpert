@@ -205,8 +205,8 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
 
     public void restoreDefaults() {
 
-        editorColoursPreferencesTableModel.restoreDefaults();
-        syntaxColoursTableModel.restoreDefaults();
+        editorColoursPreferencesTableModel.restoreAllDefaults();
+        syntaxColoursTableModel.restoreAllDefaults();
     }
 
     public void save() {
@@ -379,7 +379,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
 
         }
 
-        public void restoreDefaults() {
+        public void restoreAllDefaults() {
 
             Properties defaults = defaultsForTheme();
             for (int i = 0; i < SYNTAX_TYPES.length; i++) {
@@ -390,6 +390,14 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
                 syntaxColoursTableModel.setValueAt(
                         styleNameForValue(Integer.parseInt(defaults.getProperty(STYLE_NAME_PREFIX + SYNTAX_TYPES[i]))), i, 2);
             }
+
+        }
+
+        public void restoreSingleDefault(int row) {
+
+            Properties defaults = defaultsForTheme();
+            syntaxColoursTableModel.setValueAt(asColour(defaults.getProperty(STYLE_COLOUR_PREFIX + SYNTAX_TYPES[row])), row, 1);
+            fireTableDataChanged();
 
         }
 
@@ -581,25 +589,33 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         }
     } // ColorRenderer
 
-    class MouseHandler extends MouseAdapter {
+    static class MouseHandler extends MouseAdapter {
 
-        private JTable table;
+        private final JTable table;
 
         public MouseHandler(JTable table) {
-
             this.table = table;
         }
 
+        @Override
         public void mouseClicked(MouseEvent evt) {
 
             int row = table.rowAtPoint(evt.getPoint());
-            if (row == -1) {
+            int col = table.columnAtPoint(evt.getPoint());
 
+            if (row == -1)
                 return;
-            }
+
+            if (evt.getButton() == MouseEvent.BUTTON1)  // left mouse button
+                leftButtonAction(col, row);
+            else if (evt.getButton() == MouseEvent.BUTTON3 && col == 1) // right mouse button
+                rightButtonAction(col, row, evt);
+
+        }
+
+        private void leftButtonAction(int col, int row) {
 
             TableModel model = table.getModel();
-            int col = table.columnAtPoint(evt.getPoint());
             if (col == 1) {
 
                 Color color = JColorChooser.showDialog(
@@ -607,17 +623,37 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
                         "Select Colour",
                         (Color) model.getValueAt(row, 1));
 
-                if (color != null) {
-
+                if (color != null)
                     model.setValueAt(color, row, 1);
-                }
 
-            } else if (col == 2) {
-
+            } else if (col == 2)
                 model.setValueAt(model.getValueAt(row, col), row, 2);
-            }
+        }
+
+        private void rightButtonAction(int col, int row, MouseEvent evt) {
+
+            JPopupMenu popupMenu = new JPopupMenu();
+
+            JMenuItem editButton = new JMenuItem("Edit");
+            editButton.addActionListener(e -> leftButtonAction(col, row));
+            popupMenu.add(editButton);
+
+            JMenuItem resetButton = new JMenuItem("Default");
+            resetButton.addActionListener(e -> resetColour(table.getModel(), row));
+            popupMenu.add(resetButton);
+
+            popupMenu.show(table, evt.getX(), evt.getY());
+        }
+
+        private void resetColour(TableModel model, int row) {
+
+            if (model instanceof EditorColourPreferencesTableModel)
+                ((EditorColourPreferencesTableModel) model).restoreSingleDefault(row);
+            else if (model instanceof SyntaxColorTableModel)
+                ((SyntaxColorTableModel) model).restoreSingleDefault(row);
 
         }
+
     } // MouseHandler
 
 
@@ -675,14 +711,22 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
             return column == 1;
         }
 
-        public void restoreDefaults() {
+        public void restoreAllDefaults() {
 
             Properties defaults = defaultsForTheme();
-            for (UserPreference userPreference : editorColoursPreferences) {
-
+            for (UserPreference userPreference : editorColoursPreferences)
                 userPreference.setValue(asColour(defaults.getProperty(userPreference.getKey())));
-            }
             fireTableDataChanged();
+
+        }
+
+        public void restoreSingleDefault(int row) {
+
+            Properties defaults = defaultsForTheme();
+            UserPreference userPreference = editorColoursPreferences.get(row);
+            userPreference.setValue(asColour(defaults.getProperty(userPreference.getKey())));
+            fireTableDataChanged();
+
         }
 
         public void save() {

@@ -25,6 +25,7 @@ import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.CategoryHeaderCellRenderer;
 import org.executequery.components.table.FileSelectionTableCell;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.swing.table.*;
@@ -394,11 +395,11 @@ public class SimplePreferencesPanel extends JPanel
 
         JPopupMenu popupMenu = new JPopupMenu();
 
-        JMenuItem editButton = new JMenuItem("Edit");
+        JMenuItem editButton = new JMenuItem(Bundles.get("common.edit"));
         editButton.addActionListener(e -> leftButtonAction(col, row, valueColumn));
         popupMenu.add(editButton);
 
-        JMenuItem resetButton = new JMenuItem("Default");
+        JMenuItem resetButton = new JMenuItem(Bundles.get("common.default"));
         resetButton.addActionListener(e -> resetColour(tableModel, row, col));
         popupMenu.add(resetButton);
 

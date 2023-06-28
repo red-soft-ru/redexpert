@@ -23,6 +23,7 @@ package org.executequery.gui.prefs;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.ColourTableCellRenderer;
@@ -605,11 +606,11 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
 
             JPopupMenu popupMenu = new JPopupMenu();
 
-            JMenuItem editButton = new JMenuItem("Edit");
+            JMenuItem editButton = new JMenuItem(Bundles.get("common.edit"));
             editButton.addActionListener(e -> leftButtonAction(col, row));
             popupMenu.add(editButton);
 
-            JMenuItem resetButton = new JMenuItem("Default");
+            JMenuItem resetButton = new JMenuItem(Bundles.get("common.default"));
             resetButton.addActionListener(e -> resetColour(table.getModel(), row));
             popupMenu.add(resetButton);
 

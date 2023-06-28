@@ -69,4 +69,20 @@ public class Field {
     public String getFieldTable() {
         return table.getAlias() + "." + name;
     }
+
+    public String getFieldForQuery() {
+        StringBuilder sb = new StringBuilder();
+        if (isNull)
+            sb.append("NULL");
+        else if (statement != null)
+            sb.append(statement);
+        else sb.append(getFieldTable());
+        sb.append(" AS ").append(alias);
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return getFieldForQuery();
+    }
 }

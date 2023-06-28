@@ -186,13 +186,13 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         sb.appendField(Field.createField(collations1, COLLATION_NAME).setAlias("CO1_" + COLLATION_NAME));
         sb.appendField(Field.createField(collations2, COLLATION_NAME).setAlias("CO2_" + COLLATION_NAME));
 
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(functions, getFieldName()),
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(functions, getFieldName()),
                 Field.createField(arguments, getFieldName())).setCondition(Condition.createCondition(Field.createField(arguments, "PACKAGE_NAME"), "IS", "NULL")));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(arguments, FIELD_SOURCE), Field.createField(fields, FIELD_NAME)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, "COLLATION_ID"), Field.createField(collations1, "COLLATION_ID"))
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, FIELD_SOURCE), Field.createField(fields, FIELD_NAME)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, "COLLATION_ID"), Field.createField(collations1, "COLLATION_ID"))
                 .appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(collations1, CHARACTER_SET_ID)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(arguments, "COLLATION_ID"), Field.createField(collations2, "COLLATION_ID"))
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, "COLLATION_ID"), Field.createField(collations2, "COLLATION_ID"))
                 .appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(collations2, CHARACTER_SET_ID)));
         sb.appendCondition(Condition.createCondition(Field.createField(functions, "PACKAGE_NAME"), "IS", "NULL"));
         sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(arguments, PARAMETER_NUMBER).getFieldTable());

@@ -3,7 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.sql.sqlbuilder.Field;
-import org.executequery.sql.sqlbuilder.LeftJoin;
+import org.executequery.sql.sqlbuilder.Join;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -82,7 +82,7 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CH");
         sb.appendFields(collates, getFieldName(), BASE_COLLATE, ATTRIBUTES, DESCRIPTION, COLLATION_ATTRIBUTES);
         sb.appendFields(charsets, CHARACTER_SET_NAME);
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(collates, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(collates, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
         sb.setOrdering(getObjectField().getFieldTable());
         return sb;
     }

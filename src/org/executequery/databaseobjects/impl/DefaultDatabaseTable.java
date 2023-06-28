@@ -1225,9 +1225,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         sb.appendField(Field.createField(rels, TABLESPACE + "_NAME").setAlias(TABLESPACE).
                 setNull(!tablespaceCheck()));
         sb.appendField(Field.createField(rels, DESCRIPTION));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(getObjectField(), Field.createField(relCons, getObjectField().getAlias())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
+        sb.appendJoin(Join.createLeftJoin().appendFields(getObjectField(), Field.createField(relCons, getObjectField().getAlias())));
+        sb.appendJoin(Join.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
                 Field.createField(triggers, "TRIGGER_NAME")));
 
         sb.appendCondition(Condition.createCondition()

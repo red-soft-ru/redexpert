@@ -149,16 +149,16 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         sb.appendField(Field.createField(collations1, COLLATION_NAME).setAlias("CO1_" + COLLATION_NAME));
         sb.appendField(Field.createField(collations2, COLLATION_NAME).setAlias("CO2_" + COLLATION_NAME));
         sb.appendFields(PP, parameters, !moreOrEqualsVersionCheck(2, 5), PARAMETER_MECHANISM, DEFAULT_SOURCE, RELATION_NAME, FIELD_NAME, NULL_FLAG);
-        LeftJoin procParamJoin = LeftJoin.createLeftJoin().appendFields(Field.createField(procedures, "PROCEDURE_NAME"),
+        Join procParamJoin = Join.createLeftJoin().appendFields(Field.createField(procedures, "PROCEDURE_NAME"),
                 Field.createField(parameters, "PROCEDURE_NAME"));
         if (getDatabaseMajorVersion() > 2)
             procParamJoin.setCondition(Condition.createCondition(Field.createField(parameters, "PACKAGE_NAME"), "IS", "NULL"));
         sb.appendJoin(procParamJoin);
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(parameters, FIELD_SOURCE), Field.createField(fields, FIELD_NAME)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, "COLLATION_ID"), Field.createField(collations1, "COLLATION_ID"))
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(parameters, FIELD_SOURCE), Field.createField(fields, FIELD_NAME)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, "COLLATION_ID"), Field.createField(collations1, "COLLATION_ID"))
                 .appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(collations1, CHARACTER_SET_ID)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(parameters, "COLLATION_ID"), Field.createField(collations2, "COLLATION_ID"))
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(parameters, "COLLATION_ID"), Field.createField(collations2, "COLLATION_ID"))
                 .appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(collations2, CHARACTER_SET_ID)));
         if (getDatabaseMajorVersion() > 2)
             sb.appendCondition(Condition.createCondition(Field.createField(procedures, "PACKAGE_NAME"), "IS", "NULL"));

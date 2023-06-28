@@ -25,6 +25,7 @@ import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.CategoryHeaderCellRenderer;
 import org.executequery.components.table.FileSelectionTableCell;
+import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.swing.table.*;
 import org.underworldlabs.util.FileUtils;
@@ -41,8 +42,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Properties panel base.
@@ -490,7 +491,14 @@ public class SimplePreferencesPanel extends JPanel
 
             Properties defaults = defaultsForTheme();
             UserPreference userPreference = preferences[row];
-            setValueAt(new Color(Integer.parseInt(defaults.getProperty(userPreference.getKey()))), row, col);
+            String property = defaults.getProperty(userPreference.getKey());
+
+            try {
+                setValueAt(new Color(Integer.parseInt(property)), row, col);
+
+            } catch (NumberFormatException e) {
+                Log.error("Unable to set up default color, loaded property [" + property + "] could not convert to Integer");
+            }
         }
 
         protected Properties defaultsForTheme() {

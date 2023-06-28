@@ -23,6 +23,7 @@ package org.executequery.gui.prefs;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.ColourTableCellRenderer;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
@@ -390,8 +391,14 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         public void restoreSingleDefault(int row) {
 
             Properties defaults = defaultsForTheme();
-            syntaxColoursTableModel.setValueAt(asColour(
-                    defaults.getProperty(STYLE_COLOUR_PREFIX + SYNTAX_TYPES[row])), row, 1);
+            String property = defaults.getProperty(STYLE_COLOUR_PREFIX + SYNTAX_TYPES[row]);
+
+            try {
+                syntaxColoursTableModel.setValueAt(asColour(property), row, 1);
+
+            } catch (NumberFormatException e) {
+                Log.error("Unable to set up default color, loaded property [" + property + "] could not convert to Integer");
+            }
             fireTableDataChanged();
         }
 
@@ -685,7 +692,14 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
 
             Properties defaults = defaultsForTheme();
             UserPreference userPreference = editorColoursPreferences.get(row);
-            userPreference.setValue(asColour(defaults.getProperty(userPreference.getKey())));
+            String property = defaults.getProperty(userPreference.getKey());
+
+            try {
+                userPreference.setValue(asColour(property));
+
+            } catch (NumberFormatException e) {
+                Log.error("Unable to set up default color, loaded property [" + property + "] could not convert to Integer");
+            }
             fireTableDataChanged();
         }
 

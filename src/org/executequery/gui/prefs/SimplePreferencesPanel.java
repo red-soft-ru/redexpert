@@ -20,11 +20,14 @@
 
 package org.executequery.gui.prefs;
 
+import org.executequery.ApplicationException;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.CategoryHeaderCellRenderer;
 import org.executequery.components.table.FileSelectionTableCell;
+import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.swing.table.*;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -33,13 +36,13 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.IOException;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Properties panel base.
@@ -365,18 +368,12 @@ public class SimplePreferencesPanel extends JPanel
 
     }
 
-    public void mouseClicked(MouseEvent evt) {
-        int valueColumn = 2;
-        int row = table.rowAtPoint(evt.getPoint());
-        int col = table.columnAtPoint(evt.getPoint());
-
-        if (row == -1) {
-            return;
-        }
+    private void leftButtonAction(int col, int row, int valueColumn) {
 
         if (col == valueColumn) {
 
             if (preferences[row].getType() == UserPreference.COLOUR_TYPE) {
+
                 Color oldColor = (Color) preferences[row].getValue();
                 Color newColor = JColorChooser.showDialog(
                         GUIUtilities.getInFocusDialogOrWindow(),
@@ -387,42 +384,87 @@ public class SimplePreferencesPanel extends JPanel
                     tableModel.setValueAt(newColor, row, valueColumn);
                     firePropertyChange(Constants.COLOUR_PREFERENCE, oldColor, newColor);
                 }
-
             }
-
         }
 
     }
 
+    private void rightButtonAction(int col, int row, int valueColumn, MouseEvent evt) {
+
+        JPopupMenu popupMenu = new JPopupMenu();
+
+        JMenuItem editButton = new JMenuItem("Edit");
+        editButton.addActionListener(e -> leftButtonAction(col, row, valueColumn));
+        popupMenu.add(editButton);
+
+        JMenuItem resetButton = new JMenuItem("Default");
+        resetButton.addActionListener(e -> resetColour(tableModel, row, col));
+        popupMenu.add(resetButton);
+
+        popupMenu.show(table, evt.getX(), evt.getY());
+    }
+
+    private void resetColour(TableModel model, int row, int col) {
+
+        if (model instanceof PreferencesTableModel)
+            ((PreferencesTableModel) model).restoreSingleDefault(row, col);
+
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent evt) {
+
+        int valueColumn = 2;
+        int row = table.rowAtPoint(evt.getPoint());
+        int col = table.columnAtPoint(evt.getPoint());
+
+        if (row == -1)
+            return;
+
+        if (evt.getButton() == MouseEvent.BUTTON1)  // left mouse button
+            leftButtonAction(col, row, valueColumn);
+        else if (evt.getButton() == MouseEvent.BUTTON3 && col == 2) // right mouse button
+            rightButtonAction(col, row, valueColumn, evt);
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
 
     class PreferencesTableModel extends AbstractTableModel {
 
+        @Override
         public void setValueAt(Object value, int row, int column) {
             UserPreference preference = preferences[row];
             preference.setValue(value);
             fireTableCellUpdated(row, column);
         }
 
+        @Override
         public int getRowCount() {
             return preferences.length;
         }
 
+        @Override
         public int getColumnCount() {
             return 3;
         }
 
+        @Override
         public Object getValueAt(int row, int column) {
             UserPreference preference = preferences[row];
 
@@ -437,10 +479,38 @@ public class SimplePreferencesPanel extends JPanel
 
         }
 
+        @Override
         public boolean isCellEditable(int row, int column) {
             UserPreference preference = preferences[row];
             return (preference.getType() != UserPreference.CATEGORY_TYPE)
                     && (column == 2);
+        }
+
+        public void restoreSingleDefault(int row, int col) {
+
+            Properties defaults = defaultsForTheme();
+            UserPreference userPreference = preferences[row];
+            setValueAt(new Color(Integer.parseInt(defaults.getProperty(userPreference.getKey()))), row, col);
+        }
+
+        protected Properties defaultsForTheme() {
+
+            try {
+
+                Properties defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.default.profile");
+                if (currentlySavedLookAndFeel().isDarkTheme())
+                    defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.dark.profile");
+
+                return defaults;
+
+            } catch (IOException e) {
+                throw new ApplicationException(e);
+            }
+        }
+
+        private LookAndFeelType currentlySavedLookAndFeel() {
+            String lookAndFeel = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.lookandfeel");
+            return LookAndFeelType.valueOf(lookAndFeel);
         }
 
     } // class PreferencesTableModel

@@ -5,6 +5,7 @@ import org.executequery.gui.resultset.RecordDataItem;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.util.Vector;
 
@@ -18,9 +19,20 @@ public class ForeignKeyCellEditor extends AbstractCellEditor
     private final int minimumRowHeight;
     private final int minimumColWidth;
 
-    public ForeignKeyCellEditor(DefaultTableModel defaultTableModel, Vector<Object> items, Object selectedValue) {
+    private final TableModel resultSetTableModel;
+    private final int[] childColumnIndices;
+    private final int selectedRow;
 
-        picker = new ForeignKeyPicker(defaultTableModel, items, selectedValue);
+    public ForeignKeyCellEditor(TableModel resultSetTableModel, DefaultTableModel defaultTableModel,
+                                Vector<Vector<Object>> foreignKeysItems, Object selectedValue, int selectedRow,
+                                int[] childColumnIndices) {
+
+        picker = new ForeignKeyPicker(defaultTableModel, foreignKeysItems, selectedValue);
+
+        this.resultSetTableModel = resultSetTableModel;
+        this.selectedRow = selectedRow;
+        this.childColumnIndices = childColumnIndices;
+
         this.minimumRowHeight = picker.getPreferredSize().height + 1;
         this.minimumColWidth = picker.getPreferredSize().width + 1;
     }
@@ -55,6 +67,15 @@ public class ForeignKeyCellEditor extends AbstractCellEditor
 
     @Override
     public Object getCellEditorValue() {
+
+        if (childColumnIndices.length > 0)
+            for (int i = 0; i < childColumnIndices.length; i++) {
+
+                String newValue = picker.getValueAt(i);
+                if (newValue != null)
+                    resultSetTableModel.setValueAt(newValue, selectedRow, childColumnIndices[i]);
+            }
+
         return picker.getText();
     }
 

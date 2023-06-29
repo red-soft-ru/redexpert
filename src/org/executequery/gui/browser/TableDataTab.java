@@ -352,6 +352,31 @@ public class TableDataTab extends JPanel
         return items;
     }
 
+    Vector<Vector<Object>> allItemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+
+        String query = "SELECT " + key.getReferenceColumnDisplayList() +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
+
+        Vector<Vector<Object>> items = new Vector<>();
+        for (int i = 0; i < key.getReferenceColumnDisplayList().split(",").length; i++)
+            items.add(new Vector<>());
+
+        try {
+            ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
+            while (rs.next())
+                for (int i = 0; i < items.size(); i++)
+                    items.get(i).add(rs.getObject(i + 1));
+
+        } catch (Exception e) {
+            Log.error("Error get Foreign keys:" + e.getMessage());
+
+        } finally {
+            querySender.releaseResources();
+        }
+
+        return items;
+    }
+
     private Object setTableResultsPanel(DatabaseObject databaseObject) {
         querySender = new DefaultStatementExecutor(databaseObject.getHost().getDatabaseConnection(), true);
         tableDataChanges.clear();
@@ -539,7 +564,7 @@ public class TableDataTab extends JPanel
 
                     int columnIndex = tableModel.getColumnIndex(key.getColumnName());
                     if (columnIndex > -1)
-                        table.setForeignKeyTable(columnIndex, tableForeign(key), itemsForeign(key));
+                        table.setForeignKeyTable(columnIndex, tableForeign(key), allItemsForeign(key), tableForeignChildren(key));
                 }
             }
 
@@ -948,15 +973,23 @@ public class TableDataTab extends JPanel
     }
 
     public DefaultTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String checked_column = "select R.RDB$FIELD_NAME from RDB$FIELDS F, RDB$RELATION_FIELDS R where (F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE) and (R.RDB$SYSTEM_FLAG = 0) and (R.RDB$RELATION_NAME = " + "'" + key.getReferencedTable() + "'" + ") and (NOT F.RDB$FIELD_NAME IN (select RDB$FIELD_NAME from RDB$FIELD_DIMENSIONS))";
-        ArrayList<String> checked_column_list = new ArrayList<String>();
+
+        String checked_column = "select R.RDB$FIELD_NAME " +
+                "from RDB$FIELDS F, RDB$RELATION_FIELDS R " +
+                "where (F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE) " +
+                "and (R.RDB$SYSTEM_FLAG = 0) " +
+                "and (R.RDB$RELATION_NAME = " + "'" + key.getReferencedTable() + "'" + ") " +
+                "and (NOT F.RDB$FIELD_NAME IN (select RDB$FIELD_NAME from RDB$FIELD_DIMENSIONS))";
+
+        ArrayList<String> checked_column_list = new ArrayList<>();
         try {
             ResultSet checked_column_rs = querySender.execute(QueryTypes.SELECT, checked_column).getResultSet();
-            while (checked_column_rs.next()) {
+            while (checked_column_rs.next())
                 checked_column_list.add(checked_column_rs.getObject(1).toString());
-            }
+
         } catch (Exception e) {
             Log.error("Error get Foreign keys:" + e.getMessage());
+
         } finally {
             querySender.releaseResources();
         }
@@ -964,22 +997,36 @@ public class TableDataTab extends JPanel
         String checkedColumns = "";
         for (int i = 0; i < checked_column_list.size(); i++) {
             checkedColumns += MiscUtils.getFormattedObject(checked_column_list.get(i));
-            if (i < checked_column_list.size() - 1) {
+            if (i < checked_column_list.size() - 1)
                 checkedColumns += " , ";
-            }
         }
 
-        String query = "SELECT " + checkedColumns + " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
+        String query = "SELECT " + checkedColumns +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
+
         DefaultTableModel defaultTableModel = new DefaultTableModel();
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
             defaultTableModel = buildTableModel(rs);
+
         } catch (Exception e) {
             Log.error("Error get Foreign keys:" + e.getMessage());
+
         } finally {
             querySender.releaseResources();
         }
+
         return defaultTableModel;
+    }
+
+    private int[] tableForeignChildren(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+
+        List<Integer> indexes = new ArrayList<>();
+        for (int i = 0; i < tableModel.getColumnCount(); i++)
+            if (key.getColumnDisplayList().contains(tableModel.getColumnName(i)))
+                indexes.add(i);
+
+        return indexes.stream().mapToInt(Integer::intValue).toArray();
     }
 
     private void createButtonsEditingPanel() {

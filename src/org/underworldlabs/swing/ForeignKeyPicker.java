@@ -22,19 +22,21 @@ import java.util.Vector;
 public class ForeignKeyPicker extends JPanel
         implements DefaultDataPicker {
 
-    private final ForeignKeyTableModel defaultTableModel;
-    private final Vector<Object> items;
+    private final ForeignKeyTableModel foreignKeyTableModel;
+    private final Vector<Vector<Object>> foreignKeysItems;
+
     private Object selectedValue;
+    private int selectedIndex;
 
     private CustomPopup popup;
     private JPanel editorPanel;
     private JTextField textField;
     private JButton toggleButton;
 
-    public ForeignKeyPicker(DefaultTableModel defaultTableModel, Vector<Object> items, Object selectedValue) {
+    public ForeignKeyPicker(DefaultTableModel foreignKeysTableModel, Vector<Vector<Object>> foreignKeysItems, Object selectedValue) {
 
-        this.defaultTableModel = new ForeignKeyTableModel(defaultTableModel);
-        this.items = items;
+        this.foreignKeyTableModel = new ForeignKeyTableModel(foreignKeysTableModel);
+        this.foreignKeysItems = foreignKeysItems;
 
         initCell();
         setText((selectedValue != null) ? selectedValue.toString() : "");
@@ -95,7 +97,7 @@ public class ForeignKeyPicker extends JPanel
 
     private Component getCreateTable() {
 
-        JTable table = new JTable(defaultTableModel);
+        JTable table = new JTable(foreignKeyTableModel);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         for (int column = 0; column < table.getColumnCount(); column++) {
@@ -119,26 +121,25 @@ public class ForeignKeyPicker extends JPanel
             table.getColumnModel().getColumn(column).setPreferredWidth(preferredWidth);
         }
 
-        int rowIndex = -1;
         for (int row = 0; row < table.getRowCount(); row++) {
             String value = table.getValueAt(row, 0).toString();
 
             if (value.equals(selectedValue)) {
-                rowIndex = row;
+                selectedIndex = row;
                 break;
             }
         }
 
-        if (rowIndex > -1)
-            table.setRowSelectionInterval(rowIndex, rowIndex);
+        if (selectedIndex > -1)
+            table.setRowSelectionInterval(selectedIndex, selectedIndex);
 
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() > 1) {
-                    int selectedRow = table.getSelectedRow();
-                    if (selectedRow > 0) {
-                        setText(items.get(selectedRow - 1).toString());
+                    selectedIndex = table.getSelectedRow();
+                    if (selectedIndex > 0) {
+                        setText(foreignKeysItems.get(0).get(selectedIndex - 1).toString());
                         closePopup();
                     }
                 }
@@ -146,6 +147,14 @@ public class ForeignKeyPicker extends JPanel
         });
 
         return table;
+    }
+
+    public int getSelectedIndex() {
+        return selectedValue != null ? selectedIndex : -1;
+    }
+
+    public String getValueAt(int col) {
+        return (selectedValue != null && selectedIndex > 0) ? foreignKeysItems.get(col).get(selectedIndex - 1).toString() : null;
     }
 
     @Override
@@ -192,7 +201,7 @@ public class ForeignKeyPicker extends JPanel
 
     @Override
     public String getText() {
-        return selectedValue == null ? "" : selectedValue.toString();
+        return selectedValue != null ? selectedValue.toString() : "";
     }
 
     @Override

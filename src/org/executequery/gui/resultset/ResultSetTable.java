@@ -424,9 +424,11 @@ public class ResultSetTable extends JTable implements StandardTable {
             }
 
             return new ForeignKeyCellEditor(
+                    getModel(),
                     foreignColumnsData.get(columnIndex).getTableModel(),
                     foreignColumnsData.get(columnIndex).getItems(),
-                    value.getValue());
+                    value.getValue(), row,
+                    foreignColumnsData.get(columnIndex).getChildColumnIndexes());
         }
 
         int sqlType = value.getDataType();
@@ -535,9 +537,9 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     }
 
-    public void setForeignKeyTable(int ind, DefaultTableModel defaultTableModel, Vector<Object> items) {
+    public void setForeignKeyTable(int ind, DefaultTableModel defaultTableModel, Vector<Vector<Object>> items, int[] childColumnIndexes) {
         foreignColumnsIndexes.add(ind);
-        foreignColumnsData.add(new ForeignData(ind, defaultTableModel, items));
+        foreignColumnsData.add(new ForeignData(ind, defaultTableModel, items, childColumnIndexes));
         columnModel.setColumn(new TableColumn(), ind);
     }
 
@@ -598,13 +600,15 @@ public class ResultSetTable extends JTable implements StandardTable {
     private static class ForeignData {
 
         private final int columnIndex;
+        private final int[] childColumnIndexes;
         private final DefaultTableModel tableModel;
-        private final Vector<Object> items;
+        private final Vector<Vector<Object>> items;
 
-        public ForeignData(int columnIndex, DefaultTableModel tableModel, Vector<Object> items) {
+        public ForeignData(int columnIndex, DefaultTableModel tableModel, Vector<Vector<Object>> items, int[] childColumnIndexes) {
             this.columnIndex = columnIndex;
             this.tableModel = tableModel;
             this.items = items;
+            this.childColumnIndexes = childColumnIndexes;
         }
 
         public int getColumnIndex() {
@@ -615,8 +619,12 @@ public class ResultSetTable extends JTable implements StandardTable {
             return tableModel;
         }
 
-        public Vector<Object> getItems() {
+        public Vector<Vector<Object>> getItems() {
             return items;
+        }
+
+        public int[] getChildColumnIndexes() {
+            return childColumnIndexes;
         }
 
     } // class ForeignData

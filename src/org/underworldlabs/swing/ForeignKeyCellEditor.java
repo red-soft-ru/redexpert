@@ -6,7 +6,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * @author Alexey Kozlov
@@ -18,9 +18,9 @@ public class ForeignKeyCellEditor extends AbstractCellEditor
     private final int minimumRowHeight;
     private final int minimumColWidth;
 
-    public ForeignKeyCellEditor(ArrayList<DefaultTableModel> defaultTableModels, Object selectedValue, int columnIndex) {
+    public ForeignKeyCellEditor(DefaultTableModel defaultTableModel, Vector<Object> items, Object selectedValue) {
 
-        picker = new ForeignKeyPicker(defaultTableModels, selectedValue, columnIndex);
+        picker = new ForeignKeyPicker(defaultTableModel, items, selectedValue);
         this.minimumRowHeight = picker.getPreferredSize().height + 1;
         this.minimumColWidth = picker.getPreferredSize().width + 1;
     }

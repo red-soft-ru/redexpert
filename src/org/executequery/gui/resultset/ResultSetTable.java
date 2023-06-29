@@ -60,14 +60,12 @@ public class ResultSetTable extends JTable implements StandardTable {
     private TimeCellEditor timeCellEditor;
 
     private boolean isAutoResizeable;
-    private List<Integer> comboBoxColumns;
+    private List<Integer> foreignColumnsIndexes;
     private ResultsTableColumnModel columnModel;
     private ResultSetTableCellRenderer cellRenderer;
-    private final TableColumn dummyColumn = new TableColumn();
 
-    private final ArrayList<DefaultTableModel> dtm = new ArrayList<>();
-    private final ArrayList<Integer> foreignIndex = new ArrayList<>();
-    private final ArrayList<Vector<Object>> foreignKeys = new ArrayList<>();
+    private final TableColumn dummyColumn = new TableColumn();
+    private final ArrayList<ForeignData> foreignColumnsData = new ArrayList<>();
 
     public ResultSetTable() {
 
@@ -160,7 +158,7 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     private void setDefaultColumnOptions() {
 
-        comboBoxColumns = new ArrayList<>();
+        foreignColumnsIndexes = new ArrayList<>();
         int cols = dataModel.getColumnCount();
         if (columnModel != null)
             columnModel.initTCS(cols);
@@ -408,7 +406,7 @@ public class ResultSetTable extends JTable implements StandardTable {
     }
 
     public Boolean isComboColumn(int index) {
-        return comboBoxColumns.contains(index);
+        return foreignColumnsIndexes.contains(index);
     }
 
     @Override
@@ -418,11 +416,17 @@ public class ResultSetTable extends JTable implements StandardTable {
         if (isComboColumn(column)) {
 
             int columnIndex = 0;
-            for (int i = 0; i < foreignIndex.size(); i++)
-                if (foreignIndex.get(i) == column)
+            for (int i = 0; i < foreignColumnsData.size(); i++) {
+                if (foreignColumnsData.get(i).getColumnIndex() == column) {
                     columnIndex = i;
+                    break;
+                }
+            }
 
-            return new ForeignKeyCellEditor(dtm, value.getValue(), columnIndex);
+            return new ForeignKeyCellEditor(
+                    foreignColumnsData.get(columnIndex).getTableModel(),
+                    foreignColumnsData.get(columnIndex).getItems(),
+                    value.getValue());
         }
 
         int sqlType = value.getDataType();
@@ -531,23 +535,10 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     }
 
-    public void setComboBoxTable(int ind, DefaultTableModel defaultTableModel, Vector<Object> items) {
-
-        comboBoxColumns.add(ind);
-
-        TableColumn column = new TableColumn();
-        JComboBox comboBox = new JComboBox();
-
-        dtm.add(defaultTableModel);
-        foreignIndex.add(ind);
-        foreignKeys.add(items);
-
-        ComboBoxRenderer renderer = new ComboBoxRenderer();
-        comboBox.setRenderer(renderer);
-
-        column.setCellEditor(new DefaultCellEditor(comboBox));
-        columnModel.setColumn(column, ind);
-
+    public void setForeignKeyTable(int ind, DefaultTableModel defaultTableModel, Vector<Object> items) {
+        foreignColumnsIndexes.add(ind);
+        foreignColumnsData.add(new ForeignData(ind, defaultTableModel, items));
+        columnModel.setColumn(new TableColumn(), ind);
     }
 
     public void columnVisibilityChanged() {
@@ -603,5 +594,31 @@ public class ResultSetTable extends JTable implements StandardTable {
         }
 
     } // class ComboBoxRenderer
+
+    private static class ForeignData {
+
+        private final int columnIndex;
+        private final DefaultTableModel tableModel;
+        private final Vector<Object> items;
+
+        public ForeignData(int columnIndex, DefaultTableModel tableModel, Vector<Object> items) {
+            this.columnIndex = columnIndex;
+            this.tableModel = tableModel;
+            this.items = items;
+        }
+
+        public int getColumnIndex() {
+            return columnIndex;
+        }
+
+        public DefaultTableModel getTableModel() {
+            return tableModel;
+        }
+
+        public Vector<Object> getItems() {
+            return items;
+        }
+
+    } // class ForeignData
 
 }

@@ -14,7 +14,7 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * @author Alexey Kozlov
@@ -22,22 +22,22 @@ import java.util.ArrayList;
 public class ForeignKeyPicker extends JPanel
         implements DefaultDataPicker {
 
+    private final ForeignKeyTableModel defaultTableModel;
+    private final Vector<Object> items;
     private Object selectedValue;
-    private DefaultTableModel defaultTableModel;
-    private final ArrayList<DefaultTableModel> defaultTableModels;
 
     private CustomPopup popup;
     private JPanel editorPanel;
     private JTextField textField;
     private JButton toggleButton;
 
-    public ForeignKeyPicker(ArrayList<DefaultTableModel> defaultTableModels, Object selectedValue, int columnIndex) {
+    public ForeignKeyPicker(DefaultTableModel defaultTableModel, Vector<Object> items, Object selectedValue) {
 
-        this.defaultTableModels = defaultTableModels;
+        this.defaultTableModel = new ForeignKeyTableModel(defaultTableModel);
+        this.items = items;
 
         initCell();
-        initPopup(columnIndex);
-        setText(selectedValue.toString());
+        setText((selectedValue != null) ? selectedValue.toString() : "");
     }
 
     private void initCell() {
@@ -62,30 +62,6 @@ public class ForeignKeyPicker extends JPanel
         this.setLayout(new FormLayout("pref:grow, [3px,pref], [26px,pref]", "fill:pref:grow"));
         this.add(this.textField, CC.xy(1, 1));
         this.add(toggleButton, CC.xy(3, 1));
-    }
-
-    private void initPopup(int columnIndex) {
-
-        defaultTableModel = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        for (int j = 0; j < defaultTableModels.get(columnIndex).getColumnCount(); j++)
-            defaultTableModel.addColumn("");
-
-        for (int i = -1; i < defaultTableModels.get(columnIndex).getRowCount(); i++) {
-
-            defaultTableModel.addRow(new Object[]{});
-            for (int j = 0; j < defaultTableModels.get(columnIndex).getColumnCount(); j++)
-                if (i != -1)
-                    defaultTableModel.setValueAt(defaultTableModels.get(columnIndex).getValueAt(i, j), defaultTableModel.getRowCount() - 1, j);
-                else
-                    defaultTableModel.setValueAt(defaultTableModels.get(columnIndex).getColumnName(j), defaultTableModel.getRowCount() - 1, j);
-        }
-
     }
 
     private void setPopupLocation(CustomPopup popup, int defaultX, int defaultY,
@@ -162,7 +138,7 @@ public class ForeignKeyPicker extends JPanel
                 if (e.getClickCount() > 1) {
                     int selectedRow = table.getSelectedRow();
                     if (selectedRow > 0) {
-                        setText(table.getValueAt(selectedRow, 0).toString());
+                        setText(items.get(selectedRow - 1).toString());
                         closePopup();
                     }
                 }
@@ -237,5 +213,31 @@ public class ForeignKeyPicker extends JPanel
         popup = null;
         editorPanel = null;
     }
+
+    private static class ForeignKeyTableModel extends DefaultTableModel {
+
+        protected ForeignKeyTableModel(DefaultTableModel defaultTableModel) {
+
+            for (int j = 0; j < defaultTableModel.getColumnCount(); j++)
+                addColumn("");
+
+            for (int i = -1; i < defaultTableModel.getRowCount(); i++) {
+
+                addRow(new Object[]{});
+                for (int j = 0; j < defaultTableModel.getColumnCount(); j++)
+                    if (i != -1)
+                        setValueAt(defaultTableModel.getValueAt(i, j), getRowCount() - 1, j);
+                    else
+                        setValueAt(defaultTableModel.getColumnName(j), getRowCount() - 1, j);
+            }
+
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+
+    } // class ForeignKeyTableModel
 
 }

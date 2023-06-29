@@ -331,20 +331,24 @@ public class TableDataTab extends JPanel
         tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
     }
 
-    Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String query = "SELECT " + key.getReferencedColumn() + " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
-        Vector items = new Vector();
+    Vector<Object> itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+
+        String query = "SELECT " + key.getReferencedColumn() +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
+
+        Vector<Object> items = new Vector<>();
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
+            while (rs.next())
                 items.add(rs.getObject(1));
-            }
+
         } catch (Exception e) {
             Log.error("Error get Foreign keys:" + e.getMessage());
+
         } finally {
             querySender.releaseResources();
         }
-        items.add(null);
+
         return items;
     }
 
@@ -530,18 +534,14 @@ public class TableDataTab extends JPanel
             }
 
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            if (foreigns != null)
-                if (foreigns.size() > 0)
-                    for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
-                        Vector items = itemsForeign(key);
-                        DefaultTableModel defaultTableModel = tableForeign(key);
-                        //table.setComboboxColumn(tableModel.getColumnIndex(key.getColumnName()), items);
+            if (foreigns != null && foreigns.size() > 0) {
+                for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
 
-                        int columnIndex = tableModel.getColumnIndex(key.getColumnName());
-                        if (columnIndex > -1)
-                            table.setComboBoxTable(columnIndex, defaultTableModel, items);
-                    }
-
+                    int columnIndex = tableModel.getColumnIndex(key.getColumnName());
+                    if (columnIndex > -1)
+                        table.setForeignKeyTable(columnIndex, tableForeign(key), itemsForeign(key));
+                }
+            }
 
             scroller.getViewport().add(table);
             if (scroller.getVerticalScrollBar().getAdjustmentListeners().length < 1)

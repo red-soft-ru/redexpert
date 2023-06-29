@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -48,7 +49,7 @@ import java.util.regex.Pattern;
  * @author Santhosh Kumar, Takis Diakoumis
  */
 public class TreeFindAction extends FindAction<TreePath> {
-    private boolean searchInCols;
+    private final boolean searchInCols;
     public TreeFindAction() {
 
         super();
@@ -124,7 +125,7 @@ public class TreeFindAction extends FindAction<TreePath> {
         Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-            String text = node.getName().trim();
+            String text = MiscUtils.trimEnd(node.getName());
             if (ignoreCase()) {
 
                 text = text.toUpperCase();

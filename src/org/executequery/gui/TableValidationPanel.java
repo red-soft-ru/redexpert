@@ -15,6 +15,7 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -150,11 +151,11 @@ public class TableValidationPanel extends JPanel implements TabView {
             return;
         }
 
-        selectedTableValues.forEach(item -> preparedTableParameter.append(((NamedObject) item).getName().trim()).append("|"));
+        selectedTableValues.forEach(item -> preparedTableParameter.append(MiscUtils.trimEnd(((NamedObject) item).getName())).append("|"));
         preparedTableParameter.deleteCharAt(preparedTableParameter.lastIndexOf("|"));
 
         if (!selectedIndexValues.isEmpty()) {
-            selectedIndexValues.forEach(item -> preparedIndexParameter.append(((NamedObject) item).getName().trim()).append("|"));
+            selectedIndexValues.forEach(item -> preparedIndexParameter.append(MiscUtils.trimEnd(((NamedObject) item).getName())).append("|"));
             preparedIndexParameter.deleteCharAt(preparedIndexParameter.lastIndexOf("|"));
         }
 

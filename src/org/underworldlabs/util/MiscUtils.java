@@ -563,16 +563,15 @@ public final class MiscUtils {
        */
 
         //build "hh:mm:ss.SSS"
-        StringBuilder buffer = new StringBuilder(" ");
-        buffer.append(oneDigitFormat.format(result[3]));
-        buffer.append(':');
-        buffer.append(twoDigitFormat.format(result[2]));
-        buffer.append(':');
-        buffer.append(twoDigitFormat.format(result[1]));
-        buffer.append('.');
-        buffer.append(twoDigitFormat.format(result[0]));
+        String buffer = " " + oneDigitFormat.format(result[3]) +
+                ':' +
+                twoDigitFormat.format(result[2]) +
+                ':' +
+                twoDigitFormat.format(result[1]) +
+                '.' +
+                twoDigitFormat.format(result[0]);
 
-        return buffer.toString();
+        return buffer;
     }
 
     public static boolean getBooleanValue(String value) {
@@ -630,7 +629,7 @@ public final class MiscUtils {
      *
      * @return the Java VM version
      */
-    public static final String getVMVersionFull() {
+    public static String getVMVersionFull() {
         return System.getProperty("java.version");
     }
 
@@ -640,7 +639,7 @@ public final class MiscUtils {
      *
      * @return the Java VM version
      */
-    public static final double getVMVersion() {
+    public static double getVMVersion() {
         String property = System.getProperty("java.version");
         return Double.parseDouble(property.length() >= 3 ? property.substring(0,3) : property);
     }
@@ -769,17 +768,24 @@ public final class MiscUtils {
 
     public final static String LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB = "([A-Za-z]+[$_0-9A-Za-z\\.]*)";
 
-    public static boolean isLatinOrDigitOrSpecSymbolRDB(String obj)
-    {
+    public static boolean isLatinOrDigitOrSpecSymbolRDB(String obj) {
         return obj.matches(LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB);
+    }
+
+    public static String trimEnd(String str) {
+        return str.replaceAll("\\s+$", "");
     }
 
     public static String getFormattedObject(String obj) {
         if (obj != null) {
-            obj = obj.trim();
-            if (isLatinOrDigitOrSpecSymbolRDB(obj) && checkAllUpperCase(obj) && !checkKeyword(obj) || obj.startsWith("\"") && obj.endsWith("\""))
+            obj = trimEnd(obj);
+
+            if (isLatinOrDigitOrSpecSymbolRDB(obj) && checkAllUpperCase(obj) && !checkKeyword(obj))
                 return obj;
-            else return MiscUtils.wordInQuotes(obj);
+            else {
+                obj = obj.replace("\"", "\"\"");
+                return MiscUtils.wordInQuotes(obj);
+            }
         }
         return "";
     }

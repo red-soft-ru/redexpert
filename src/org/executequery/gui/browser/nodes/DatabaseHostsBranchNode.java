@@ -21,6 +21,7 @@
 package org.executequery.gui.browser.nodes;
 
 import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.tree.MutableTreeNode;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class DatabaseHostsBranchNode extends DatabaseObjectNode {
 
     private final String name;
 
-    private List<DatabaseHostNode> hostNodes = new ArrayList<DatabaseHostNode>();
+    private final List<DatabaseHostNode> hostNodes = new ArrayList<DatabaseHostNode>();
 
     public DatabaseHostsBranchNode(String name) {
 
@@ -80,7 +81,7 @@ public class DatabaseHostsBranchNode extends DatabaseObjectNode {
     }
 
     public String getShortName() {
-        return getName().trim();
+        return MiscUtils.trimEnd(getName());
     }
 
     /**

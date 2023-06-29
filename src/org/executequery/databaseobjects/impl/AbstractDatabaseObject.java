@@ -29,6 +29,7 @@ import org.executequery.datasource.PooledStatement;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.Log;
+import org.underworldlabs.util.MiscUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -905,8 +906,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
 
     public void addColumnFromResultSet(ResultSet rs) throws SQLException {
-        String colName = rs.getString(FIELD_NAME).trim();
-        if (previousColumn == null || !colName.equalsIgnoreCase(previousColumn.getName())) {
+        String colName = MiscUtils.trimEnd(rs.getString(FIELD_NAME));
+        if (previousColumn == null || !colName.contentEquals(previousColumn.getName())) {
             DefaultDatabaseColumn column = new DefaultDatabaseColumn();
             previousColumn = column;
             final short fieldType = rs.getShort(FIELD_TYPE);

@@ -816,7 +816,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             if (node.isComponent) {
                 tabPane.setSelectedIndex(2);
 
-                String searchText = "/\\* " + node.name + " \\*/";
+                String searchText = "/\\* " + node.name.replace("$", "\\$") + " \\*/";
                 Pattern pattern = Pattern.compile(searchText);
                 Matcher matcher = pattern.matcher(sqlTextPanel.getSQLText());
 

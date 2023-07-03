@@ -51,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -62,6 +63,8 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
         DatabaseDriverListener {
 
     public static final String TITLE = Bundles.getCommon("drivers");
+    public static final String MENU_ITEM_KEY = "viewDrivers";
+    public static final String PROPERTY_KEY = "system.display.drivers";
 
     /**
      * the tree display
@@ -88,18 +91,7 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
      */
     private boolean reloadView;
 
-    // -------------------------------------
-    // tool bar buttons
-
-    /**
-     * move connection up button
-     */
-    private JButton upButton;
-
-    /**
-     * move connection down button
-     */
-    private JButton downButton;
+    // --- tool bar buttons ---
 
     /**
      * new connection button
@@ -112,13 +104,20 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
      */
     private JButton deleteDriverButton;
 
-    // -------------------------------------
+    /**
+     * move connection up button
+     */
+    private JButton upButton;
+
+    /**
+     * move connection down button
+     */
+    private JButton downButton;
+
+    // ---
 
     private DatabaseDriverFactory databaseDriverFactory;
 
-    /**
-     * Creates a new instance of DriversTreePanel
-     */
     public DriversTreePanel() {
         super(new BorderLayout());
         init();
@@ -129,20 +128,18 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
         drivers = loadDrivers();
 
         DefaultMutableTreeNode root = new DefaultTreeRootNode(bundleString("jdbcDrivers"));
-        for (int i = 0, k = drivers.size(); i < k; i++) {
-            // add the driver to the root node
-            root.add(new DatabaseDriverNode(drivers.get(i)));
-            // add to the cache
-        }
+        for (DatabaseDriver driver : drivers)
+            root.add(new DatabaseDriverNode(driver));
 
-        // init the tree
+        // --- tree ---
+
         tree = new DynamicTree(root);
         tree.setCellRenderer(new DriversTreeCellRenderer());
         tree.addTreeSelectionListener(this);
         tree.addMouseListener(new MouseHandler());
 
-        // ---------------------------------------
-        // the tool bar
+        // --- tool bar ---
+
         PanelToolBar tools = new PanelToolBar();
         newDriverButton = tools.addButton(
                 this, "newDriver",
@@ -161,34 +158,31 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
                 GUIUtilities.getAbsoluteIconPath("Down16.png"),
                 bundleString("moveDriverDown"));
 
-        // add the tools and tree to the panel
+        // ---
+
         add(tools, BorderLayout.NORTH);
         add(new JScrollPane(tree), BorderLayout.CENTER);
 
         enableButtons(false);
-
         EventMediator.registerListener(this);
-
         tree.setRowHeight(20);
 
-        // make sure we have a display panel
-        //checkDriversPanel();
     }
 
     private DatabaseDriverFactory databaseDriverFactory() {
 
-        if (databaseDriverFactory == null) {
-
+        if (databaseDriverFactory == null)
             databaseDriverFactory = new DatabaseDriverFactoryImpl();
-        }
 
         return databaseDriverFactory;
     }
 
     private List<DatabaseDriver> loadDrivers() {
 
-        return ((DatabaseDriverRepository) RepositoryCache.load(
-                DatabaseDriverRepository.REPOSITORY_ID)).findAll();
+        DatabaseDriverRepository repository = (DatabaseDriverRepository)
+                RepositoryCache.load(DatabaseDriverRepository.REPOSITORY_ID);
+
+        return repository != null ? repository.findAll() : new ArrayList<>();
     }
 
     private void enableButtons(boolean enable) {
@@ -197,23 +191,26 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
         deleteDriverButton.setEnabled(enable);
     }
 
-    public void moveDriverUp() {
-        tree.moveSelectionUp();
-        Object object = tree.getLastPathComponent();
-        moveNode((DatabaseDriverNode) object, DynamicTree.MOVE_UP);
-    }
-
-    public void moveDriverDown() {
-        tree.moveSelectionDown();
-        // adjust the position of the connection
-        Object object = tree.getLastPathComponent();
-        moveNode((DatabaseDriverNode) object, DynamicTree.MOVE_DOWN);
-    }
-
     public void newDriver() {
-
         String name = buildDriverName(bundleString("newDriver"));
         newDriver(databaseDriverFactory().create(System.currentTimeMillis(), name));
+    }
+
+    @SuppressWarnings("unused")
+    public void deleteDriver() {
+        deleteDriver(null);
+    }
+
+    @SuppressWarnings("unused")
+    public void moveDriverUp() {
+        tree.moveSelectionUp();
+        moveNode((DatabaseDriverNode) tree.getLastPathComponent(), DynamicTree.MOVE_UP);
+    }
+
+    @SuppressWarnings("unused")
+    public void moveDriverDown() {
+        tree.moveSelectionDown();
+        moveNode((DatabaseDriverNode) tree.getLastPathComponent(), DynamicTree.MOVE_DOWN);
     }
 
     /**
@@ -225,67 +222,42 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
     public void newDriver(DatabaseDriver driver) {
 
         if (driver == null) {
-
             String name = buildDriverName(bundleString("newDriver"));
             driver = databaseDriverFactory().create(System.currentTimeMillis(), name);
         }
 
         drivers.add(driver);
-
-        addDriverToTree(driver);
-    }
-
-    private void addDriverToTree(DatabaseDriver driver) {
-
-        DatabaseDriverNode node = createNodeForDriver(driver);
-
-        tree.addToRoot(node);
+        tree.addToRoot(createNodeForDriver(driver));
     }
 
     private DatabaseDriverNode createNodeForDriver(DatabaseDriver driver) {
         return new DatabaseDriverNode(driver);
     }
 
-    public void deleteDriver() {
-
-        deleteDriver(null);
-    }
-
     public void deleteDriver(DatabaseDriverNode node) {
 
         boolean isSelectedNode = false;
-
         if (node == null) {
 
             Object object = tree.getLastPathComponent();
             node = (DatabaseDriverNode) object;
             isSelectedNode = true;
 
-        } else {
-
-            if (tree.getLastPathComponent() == node) {
-
-                isSelectedNode = true;
-            }
-
-        }
+        } else if (tree.getLastPathComponent() == node)
+            isSelectedNode = true;
 
         DatabaseDriver driver = node.getDriver();
 
-        // check if they're trying to delete the ODBC driver
         if (driver.isDefaultSunOdbc()) {
-
             GUIUtilities.displayErrorMessage(bundleString("notRemoveDefaultDriver"));
-
             return;
         }
 
-        int yesNo = GUIUtilities.displayConfirmCancelDialog(
+        int confirmationResult = GUIUtilities.displayConfirmCancelDialog(
                 String.format(bundleString("confirmRemoving"), driver));
 
-        if (yesNo != JOptionPane.YES_OPTION) {
+        if (confirmationResult != JOptionPane.YES_OPTION)
             return;
-        }
 
         // the next selection index will be the index of
         // the one being removed - (index - 1)
@@ -294,22 +266,17 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
         // remove from the connections
         drivers.remove(index);
 
-        if (index > drivers.size() - 1) {
-
+        if (index > drivers.size() - 1)
             index = drivers.size() - 1;
-        }
 
         if (isSelectedNode) {
 
             String prefix = drivers.get(index).getName();
             tree.removeSelection(prefix);
 
-        } else {
-
+        } else
             tree.removeNode(node);
-        }
 
-        // save the drivers
         driversPanel.saveDrivers();
     }
 
@@ -319,22 +286,20 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
      * @param driver - the driver to select
      */
     public void setSelectedDriver(DatabaseDriver driver) {
-        DefaultMutableTreeNode node = null;
 
-        // retrieve the root node and loop through
-        DefaultMutableTreeNode root = tree.getRootNode();
+        DefaultMutableTreeNode node = null;
+        DefaultMutableTreeNode root = tree.getRootNode(); // retrieve the root node and loop through
+
         for (Enumeration<?> i = root.children(); i.hasMoreElements(); ) {
 
-            DefaultMutableTreeNode _node = (DefaultMutableTreeNode) i.nextElement();
-            Object userObject = _node.getUserObject();
+            DefaultMutableTreeNode tempNode = (DefaultMutableTreeNode) i.nextElement();
+            Object userObject = tempNode.getUserObject();
 
-            // make sure its a connection object
+            // make sure it's a connection object
             if (userObject == driver) {
-
-                node = _node;
+                node = tempNode;
                 break;
             }
-
         }
 
         // select the node path
@@ -347,45 +312,35 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
             if (reloadView) {
 
                 Object object = tree.getLastPathComponent();
-
                 if (object instanceof DatabaseDriverNode) {
-
                     checkDriversPanel();
                     DatabaseDriverNode _node = (DatabaseDriverNode) object;
                     driversPanel.valueChanged(_node);
                 }
-
             }
-
         }
     }
 
     private void moveNode(DatabaseDriverNode node, int direction) {
+
         DatabaseDriver driver = node.getDriver();
 
         int currentIndex = drivers.indexOf(driver);
-        if (currentIndex == 0 && direction == DynamicTree.MOVE_UP) {
-
+        if (currentIndex == 0 && direction == DynamicTree.MOVE_UP)
             return;
-        }
 
-        int newIndex = -1;
+        int newIndex;
         if (direction == DynamicTree.MOVE_UP) {
-
             newIndex = currentIndex - 1;
+
         } else {
-
             newIndex = currentIndex + 1;
-            if (newIndex > (drivers.size() - 1)) {
-
+            if (newIndex > (drivers.size() - 1))
                 return;
-            }
         }
 
         drivers.remove(currentIndex);
         drivers.add(newIndex, driver);
-
-        // save the drivers
         driversPanel.saveDrivers();
     }
 
@@ -396,31 +351,20 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
     protected void nodeNameValueChanged(DatabaseDriver driver) {
 
         TreeNode node = tree.getNodeFromRoot(driver);
-
-        if (node != null) {
-
+        if (node != null)
             tree.nodeChanged(node);
-        }
-
     }
 
 
     private void checkDriversPanel() {
-
-        // check we have a drivers panel
-        if (driversPanel == null) {
-
+        if (driversPanel == null)
             driversPanel = new DriverViewPanel(this);
-        }
-
-        // check the panel is in the pane
-
     }
 
     private void getDriverPanelFromBrowser() {
-        JPanel _viewPanel = GUIUtilities.getCentralPane(DriverPanel.TITLE);
 
-        if (_viewPanel == null) {
+        JPanel viewPanel = GUIUtilities.getCentralPane(DriverPanel.TITLE);
+        if (viewPanel == null) {
 
             GUIUtilities.addCentralPane(DriverPanel.TITLE,
                     DriverPanel.FRAME_ICON,
@@ -428,45 +372,37 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
                     bundleString("jdbcDrivers"),
                     true);
 
-        } else {
-
+        } else
             GUIUtilities.setSelectedCentralPane(DriverPanel.TITLE);
-        }
     }
 
+    @Override
     public void valueChanged(final TreeSelectionEvent e) {
 
-        ThreadUtils.startWorker(new Runnable() {
+        ThreadUtils.startWorker(() -> {
 
-            public void run() {
+            GUIUtilities.showWaitCursor();
+            try {
 
-                GUIUtilities.showWaitCursor();
-                try {
+                Object object = e.getPath().getLastPathComponent();
+                if (object instanceof DatabaseDriverNode) {
 
-                    Object object = e.getPath().getLastPathComponent();
-                    if (object instanceof DatabaseDriverNode) {
+                    enableButtons(true);
+                    checkDriversPanel();
+                    DatabaseDriverNode node = (DatabaseDriverNode) object;
+                    driversPanel.valueChanged(node);
 
-                        enableButtons(true);
-                        checkDriversPanel();
-                        DatabaseDriverNode node = (DatabaseDriverNode) object;
-                        driversPanel.valueChanged(node);
+                } else if (object == tree.getRootNode()) {
 
-                    } else if (object == tree.getRootNode()) {
+                    checkDriversPanel();
+                    driversPanel.displayRootPanel();
+                    enableButtons(false);
 
-                        checkDriversPanel();
-                        driversPanel.displayRootPanel();
-                        enableButtons(false);
+                } else
+                    enableButtons(false);
 
-                    } else {
-
-                        enableButtons(false);
-                    }
-
-                } finally {
-
-                    GUIUtilities.showNormalCursor();
-                }
-
+            } finally {
+                GUIUtilities.showNormalCursor();
             }
         });
 
@@ -478,7 +414,6 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
      * @return the driver properties object
      */
     protected DatabaseDriver getDriverAt(Point point) {
-
         return getDriverAt(tree.getPathForLocation(point.x, point.y));
     }
 
@@ -488,12 +423,14 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
      * @return the driver properties object
      */
     protected DatabaseDriver getDriverAt(TreePath path) {
+
         if (path != null) {
+
             Object object = path.getLastPathComponent();
-            if (object instanceof DatabaseDriverNode) {
+            if (object instanceof DatabaseDriverNode)
                 return ((DatabaseDriverNode) object).getDriver();
-            }
         }
+
         return null;
     }
 
@@ -504,38 +441,28 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
      * @param name - the name of the driver
      */
     private String buildDriverName(String name) {
+
         int count = 0;
-        for (int i = 0, n = drivers.size(); i < n; i++) {
-            DatabaseDriver driver = drivers.get(i);
-            if (driver.getName().startsWith(name)) {
+        for (DatabaseDriver driver : drivers)
+            if (driver.getName().startsWith(name))
                 count++;
-            }
-        }
 
         if (count > 0) {
             count++;
             name += " " + count;
         }
+
         return name;
     }
 
-    public String toString() {
-        return TITLE;
-    }
-
-    // ----------------------------------------
-    // DockedTabView Implementation
-    // ----------------------------------------
-
-    public static final String MENU_ITEM_KEY = "viewDrivers";
-
-    public static final String PROPERTY_KEY = "system.display.drivers";
+    // --- DockedTabView Implementation ---
 
     /**
      * Returns the display title for this view.
      *
      * @return the title displayed for this view
      */
+    @Override
     public String getTitle() {
         return TITLE;
     }
@@ -545,6 +472,7 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
      *
      * @return the key
      */
+    @Override
     public String getPropertyKey() {
         return PROPERTY_KEY;
     }
@@ -555,21 +483,50 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
      *
      * @return the preferences key
      */
+    @Override
     public String getMenuItemKey() {
         return MENU_ITEM_KEY;
     }
 
-    private class DriversTreeCellRenderer extends AbstractTreeCellRenderer {
+    // ---
 
-        private Color textBackground;
-        private Color textForeground;
-        private Color selectedBackground;
-        private Color selectedTextForeground;
+    @Override
+    public void driversUpdated(DatabaseDriverEvent databaseDriverEvent) {
 
-        private ImageIcon driverImage;
-        private ImageIcon driverRootImage;
+        if (databaseDriverEvent.getSource() instanceof DatabaseDriver) {
+            DatabaseDriver driver = (DatabaseDriver) databaseDriverEvent.getSource();
+            DatabaseDriverNode node = createNodeForDriver(driver);
+            tree.addToRoot(node, false);
+        }
+    }
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return event instanceof DatabaseDriverEvent;
+    }
+
+    @Override
+    public String toString() {
+        return TITLE;
+    }
+
+    @Override
+    public String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
+
+    private static class DriversTreeCellRenderer extends AbstractTreeCellRenderer {
+
+        private final Color textBackground;
+        private final Color textForeground;
+        private final Color selectedBackground;
+        private final Color selectedTextForeground;
+
+        private final ImageIcon driverImage;
+        private final ImageIcon driverRootImage;
 
         public DriversTreeCellRenderer() {
+
             driverRootImage = GUIUtilities.loadIcon("DatabaseDrivers16.png", true);
             driverImage = GUIUtilities.loadIcon("JDBCDriver16.png", true);
 
@@ -578,42 +535,27 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
             selectedBackground = UIManager.getColor("Tree.selectionBackground");
             selectedTextForeground = UIManager.getColor("Tree.selectionForeground");
 
-            if (UIUtils.isGtkLookAndFeel()) {
+            if (UIUtils.isGtkLookAndFeel())
                 setBorderSelectionColor(null);
-            }
 
-            //setFont(new Font("Dialog", Font.PLAIN, 11));
         }
 
-        public Component getTreeCellRendererComponent(JTree tree,
-                                                      Object value, boolean bSelected, boolean bExpanded,
-                                                      boolean bLeaf, int iRow, boolean bHasFocus) {
+        @Override
+        public Component getTreeCellRendererComponent(
+                JTree tree, Object value, boolean bSelected, boolean bExpanded, boolean bLeaf, int iRow, boolean bHasFocus) {
+
+            if (value instanceof DefaultTreeRootNode)
+                setIcon(driverRootImage);
+            else if (value instanceof DatabaseDriverNode)
+                setIcon(driverImage);
 
             String labelText = value.toString();
-            if (value instanceof DefaultTreeRootNode) {
-
-                setIcon(driverRootImage);
-
-            } else if (value instanceof DatabaseDriverNode) {
-
-                setIcon(driverImage);
-            }
-
-            // Add the text to the cell
             setText(labelText);
-
-            // Add a tool tip displaying the name
             setToolTipText(labelText);
 
             this.selected = bSelected;
-
-            if (!selected) {
-                setBackground(textBackground);
-                setForeground(textForeground);
-            } else {
-                setBackground(selectedBackground);
-                setForeground(selectedTextForeground);
-            }
+            setBackground(selected ? selectedBackground : textBackground);
+            setForeground(selected ? selectedTextForeground : textForeground);
 
             return this;
         }
@@ -621,20 +563,18 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
 
     } // class DriversTreeCellRenderer
 
-    /**
-     * The tree's popup menu function
-     */
     private class PopMenu extends JPopupMenu implements ActionListener {
 
-        private JMenuItem duplicate;
-        private JMenuItem delete;
-        private JMenuItem properties;
-        private JMenuItem addNewDriver;
+        private final JMenuItem addNewDriver;
+        private final JMenuItem delete;
+        private final JMenuItem duplicate;
+        private final JMenuItem properties;
 
         protected TreePath popupPath;
         protected DatabaseDriver hover;
 
         public PopMenu() {
+
             addNewDriver = MenuItemFactory.createMenuItem(bundleString("newDriver"));
             addNewDriver.addActionListener(this);
 
@@ -663,14 +603,17 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
+
             try {
+
                 Object source = e.getSource();
-                if (source == duplicate) {
+                if (source.equals(duplicate)) {
+
                     if (hover != null) {
 
                         String name = buildDriverName(hover.getName() + " (" + bundleString("copy")) + ")";
-
                         DatabaseDriver dd = databaseDriverFactory().create(name);
 
                         dd.setClassName(hover.getClassName());
@@ -682,20 +625,24 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
 
                         newDriver(dd);
                     }
-                } else if (source == delete) {
+
+                } else if (source.equals(delete)) {
+
                     if (popupPath != null) {
-                        DatabaseDriverNode node =
-                                (DatabaseDriverNode) popupPath.getLastPathComponent();
+                        DatabaseDriverNode node = (DatabaseDriverNode) popupPath.getLastPathComponent();
                         deleteDriver(node);
                     }
-                } else if (source == properties) {
+
+                } else if (source.equals(properties)) {
+
                     reloadView = true;
                     setSelectedDriver(hover);
                     checkDriversPanel();
                     getDriverPanelFromBrowser();
-                } else if (source == addNewDriver) {
+
+                } else if (source.equals(addNewDriver))
                     newDriver();
-                }
+
             } finally {
                 reloadView = false;
                 hover = null;
@@ -703,81 +650,62 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
             }
 
         }
+
     } // class PopMenu
 
     private class MouseHandler extends MouseAdapter {
 
-        public MouseHandler() {
-        }
-
+        @Override
         public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() < 2) {
+
+            if (e.getClickCount() < 2)
                 return;
-            }
+
             TreePath path = tree.getPathForLocation(e.getX(), e.getY());
             if (path == tree.getSelectionPath()) {
                 checkDriversPanel();
                 getDriverPanelFromBrowser();
-                //valueChanged(new TreeSelectionEvent(
-                //tree, path, true, path, path));
             }
+
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             maybeShowPopup(e);
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             maybeShowPopup(e);
         }
 
         private void maybeShowPopup(MouseEvent e) {
+
             if (e.isPopupTrigger()) {
 
-                if (popupMenu == null) {
+                if (popupMenu == null)
                     popupMenu = new PopMenu();
-                }
 
                 Point point = new Point(e.getX(), e.getY());
                 popupMenu.popupPath = tree.getPathForLocation(point.x, point.y);
-                // get the connection at this point
                 popupMenu.hover = getDriverAt(point);
+
                 if (popupMenu.hover != null) {
+
                     try {
                         tree.removeTreeSelectionListener(DriversTreePanel.this);
                         popupMenu.setMenuItemsText();
                         tree.setSelectionPath(popupMenu.popupPath);
+
                     } finally {
                         tree.addTreeSelectionListener(DriversTreePanel.this);
                     }
+
                     popupMenu.show(e.getComponent(), point.x, point.y);
                 }
             }
         }
 
     } // class MouseHandler
-
-    public void driversUpdated(DatabaseDriverEvent databaseDriverEvent) {
-
-        if (databaseDriverEvent.getSource() instanceof DatabaseDriver) {
-
-            DatabaseDriver driver = (DatabaseDriver) databaseDriverEvent.getSource();
-
-            DatabaseDriverNode node = createNodeForDriver(driver);
-
-            tree.addToRoot(node, false);
-        }
-
-    }
-
-    public boolean canHandleEvent(ApplicationEvent event) {
-
-        return (event instanceof DatabaseDriverEvent);
-    }
-
-    @Override
-    public String bundleString(String key) {
-        return Bundles.get(getClass(), key);
-    }
 
 }

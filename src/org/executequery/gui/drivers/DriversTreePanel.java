@@ -128,7 +128,7 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
 
         drivers = loadDrivers();
 
-        DefaultMutableTreeNode root = new DefaultTreeRootNode("JDBC Drivers");
+        DefaultMutableTreeNode root = new DefaultTreeRootNode(bundleString("jdbcDrivers"));
         for (int i = 0, k = drivers.size(); i < k; i++) {
             // add the driver to the root node
             root.add(new DatabaseDriverNode(drivers.get(i)));
@@ -147,19 +147,19 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
         newDriverButton = tools.addButton(
                 this, "newDriver",
                 GUIUtilities.getAbsoluteIconPath("NewJDBCDriver16.png"),
-                "New JDBC driver");
+                bundleString("newDriver"));
         deleteDriverButton = tools.addButton(
                 this, "deleteDriver",
                 GUIUtilities.getAbsoluteIconPath("Delete16.png"),
-                "Remove driver");
+                bundleString("deleteDriver"));
         upButton = tools.addButton(
                 this, "moveDriverUp",
                 GUIUtilities.getAbsoluteIconPath("Up16.png"),
-                "Move up");
+                bundleString("moveDriverUp"));
         downButton = tools.addButton(
                 this, "moveDriverDown",
                 GUIUtilities.getAbsoluteIconPath("Down16.png"),
-                "Move down");
+                bundleString("moveDriverDown"));
 
         // add the tools and tree to the panel
         add(tools, BorderLayout.NORTH);
@@ -212,7 +212,7 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
 
     public void newDriver() {
 
-        String name = buildDriverName("New Driver");
+        String name = buildDriverName(bundleString("newDriver"));
         newDriver(databaseDriverFactory().create(System.currentTimeMillis(), name));
     }
 
@@ -226,7 +226,7 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
 
         if (driver == null) {
 
-            String name = buildDriverName("New Driver");
+            String name = buildDriverName(bundleString("newDriver"));
             driver = databaseDriverFactory().create(System.currentTimeMillis(), name);
         }
 
@@ -275,15 +275,13 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
         // check if they're trying to delete the ODBC driver
         if (driver.isDefaultSunOdbc()) {
 
-            GUIUtilities.displayErrorMessage(
-                    "The ODBC driver definition is a built-in and can not be removed");
+            GUIUtilities.displayErrorMessage(bundleString("notRemoveDefaultDriver"));
 
             return;
         }
 
         int yesNo = GUIUtilities.displayConfirmCancelDialog(
-                "Are you sure you want to delete the driver " +
-                        driver + " ?");
+                String.format(bundleString("confirmRemoving"), driver));
 
         if (yesNo != JOptionPane.YES_OPTION) {
             return;
@@ -427,7 +425,7 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
             GUIUtilities.addCentralPane(DriverPanel.TITLE,
                     DriverPanel.FRAME_ICON,
                     driversPanel,
-                    "JDBC Drivers",
+                    bundleString("jdbcDrivers"),
                     true);
 
         } else {
@@ -637,16 +635,16 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
         protected DatabaseDriver hover;
 
         public PopMenu() {
-            addNewDriver = MenuItemFactory.createMenuItem("New Driver");
+            addNewDriver = MenuItemFactory.createMenuItem(bundleString("newDriver"));
             addNewDriver.addActionListener(this);
 
-            duplicate = MenuItemFactory.createMenuItem("Duplicate");
+            duplicate = MenuItemFactory.createMenuItem(bundleString("duplicate"));
             duplicate.addActionListener(this);
 
-            delete = MenuItemFactory.createMenuItem("Remove");
+            delete = MenuItemFactory.createMenuItem(bundleString("remove"));
             delete.addActionListener(this);
 
-            properties = MenuItemFactory.createMenuItem("Driver Properties");
+            properties = MenuItemFactory.createMenuItem(bundleString("driverProperties"));
             properties.addActionListener(this);
 
             add(addNewDriver);
@@ -660,8 +658,8 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
         protected void setMenuItemsText() {
             if (hover != null) {
                 String name = hover.getName();
-                delete.setText("Remove Driver " + name);
-                duplicate.setText("Create Duplicate of Driver " + name);
+                delete.setText(bundleString("deleteDriver") + " " + name);
+                duplicate.setText(String.format(bundleString("duplicateLabel"), name));
             }
         }
 
@@ -671,7 +669,7 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
                 if (source == duplicate) {
                     if (hover != null) {
 
-                        String name = buildDriverName(hover.getName() + " (Copy") + ")";
+                        String name = buildDriverName(hover.getName() + " (" + bundleString("copy")) + ")";
 
                         DatabaseDriver dd = databaseDriverFactory().create(name);
 
@@ -777,11 +775,9 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
         return (event instanceof DatabaseDriverEvent);
     }
 
+    @Override
+    public String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
+
 }
-
-
-
-
-
-
-

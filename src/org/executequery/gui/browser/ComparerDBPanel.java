@@ -12,6 +12,7 @@ import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -665,6 +666,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return;
         }
 
+        LocaleManager.setLocaleFor(LocaleManager.FILE_CHOOSER);
         JFileChooser fileSave = new JFileChooser("C:\\");
 
         FileFilter sqlFilter = new FileTypeFilter(".sql", "SQL files");
@@ -674,7 +676,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         fileSave.addChoosableFileFilter(txtFilter);
         fileSave.setAcceptAllFileFilterUsed(false);
 
-        int ret = fileSave.showDialog(null, "Save Script");
+        int ret = fileSave.showDialog(null, bundleString("SaveScriptButton"));
 
         if (ret == JFileChooser.APPROVE_OPTION) {
 

@@ -24,6 +24,7 @@ package org.executequery.gui.prefs;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.ColourTableCellRenderer;
@@ -589,9 +590,10 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
             TableModel model = table.getModel();
             if (col == 1) {
 
+                LocaleManager.setLocaleFor(LocaleManager.COLOR_CHOOSER);
                 Color color = JColorChooser.showDialog(
                         GUIUtilities.getInFocusDialogOrWindow(),
-                        "Select Colour",
+                        Bundles.get("LocaleManager.ColorChooser.title"),
                         (Color) model.getValueAt(row, 1)
                 );
 

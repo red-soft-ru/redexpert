@@ -26,6 +26,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.table.CategoryHeaderCellRenderer;
 import org.executequery.components.table.FileSelectionTableCell;
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.swing.table.*;
@@ -377,9 +378,10 @@ public class SimplePreferencesPanel extends JPanel
             if (preferences[row].getType() == UserPreference.COLOUR_TYPE) {
 
                 Color oldColor = (Color) preferences[row].getValue();
+                LocaleManager.setLocaleFor(LocaleManager.COLOR_CHOOSER);
                 Color newColor = JColorChooser.showDialog(
                         GUIUtilities.getInFocusDialogOrWindow(),
-                        "Select Colour",
+                        Bundles.get("LocaleManager.ColorChooser.title"),
                         (Color) tableModel.getValueAt(row, valueColumn));
 
                 if (newColor != null) {

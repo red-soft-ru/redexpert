@@ -78,6 +78,15 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
         JButton selectAllCheck = new JButton(bundleString("selectAll"));
         selectAllCheck.addActionListener(e -> selectAll(fullList));
 
+        JTextField searchField = new JTextField();
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (searchField.getText() != null)
+                    highlightMatching(searchField.getText().toLowerCase());
+            }
+        });
+
         // --- checkBoxPanel ---
 
         JPanel checkBoxPanel = new JPanel(new GridBagLayout());
@@ -86,6 +95,7 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
         gridBagHelper = new GridBagHelper();
         gridBagHelper.setInsets(7, 10, 5, 5).anchorNorthWest();
 
+        gridBagHelper.addLabelFieldPair(checkBoxPanel, bundleString("searchLabel"), searchField, null, false, false);
         checkBoxPanel.add(selectAllCheck, gridBagHelper.nextCol().setMinWeightX().get());
         checkBoxPanel.add(new JScrollPane(fullList), gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
@@ -152,6 +162,34 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
             column.visible = !curFlag;
 
         list.repaint();
+    }
+
+    private void highlightMatching(String searchText) {
+
+        try {
+
+            if (searchText.equals("")) {
+                for (int i = 0; i < fullList.getModel().getSize(); i++)
+                    ((ResultSetColumn) fullList.getModel().getElementAt(i)).highlight = false;
+                return;
+            }
+
+            for (int i = 0; i < fullList.getModel().getSize(); i++) {
+                String itemText = fullList.getModel().getElementAt(i).toString();
+                ((ResultSetColumn) fullList.getModel().getElementAt(i)).highlight = itemText.toLowerCase().contains(searchText);
+            }
+
+            for (int i = 0; i < fullList.getModel().getSize(); i++) {
+                String itemText = fullList.getModel().getElementAt(i).toString();
+                if (itemText.toLowerCase().contains(searchText)) {
+                    fullList.scrollRectToVisible(fullList.getCellBounds(i, i));
+                    break;
+                }
+            }
+
+        } finally {
+            repaint();
+        }
     }
 
     private ResultSetTableModel getTableModel() {
@@ -224,7 +262,7 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
             setFont(list.getFont());
             setFocusPainted(false);
 
-            setBackground(list.getBackground());
+            setBackground(resultSetColumn.highlight ? Color.YELLOW : list.getBackground());
             setBorderPainted(true);
             setBorder(noFocusBorder);
 
@@ -238,11 +276,13 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
         private final String id;
         private final String name;
         private boolean visible;
+        private boolean highlight;
 
         public ResultSetColumn(String id, String name, boolean visible) {
             this.id = id;
             this.name = name;
             this.visible = visible;
+            this.highlight = false;
         }
 
         public String getId() {

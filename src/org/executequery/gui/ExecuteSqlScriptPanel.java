@@ -547,7 +547,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
         try {
 
-            statusBar.setStatusText("Executing...");
+            statusBar.setStatusText(Bundles.getCommon("executing"));
             statusBar.startProgressBar();
 
             if (useConnection.isSelected()) {

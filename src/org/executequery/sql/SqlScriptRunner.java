@@ -31,6 +31,7 @@ import org.executequery.databasemediators.spi.DefaultDatabaseDriver;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.SimpleDataSource;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
@@ -107,7 +108,7 @@ public class SqlScriptRunner {
 
 
             //executionController.message("Found " + executableQueries.size() + " executable queries");
-            executionController.message("Executing...");
+            executionController.message(Bundles.getCommon("executing"));
 
             /*if (connection == null)
                 throw new SQLException("There is no connection. Select a connection from the available connections " +

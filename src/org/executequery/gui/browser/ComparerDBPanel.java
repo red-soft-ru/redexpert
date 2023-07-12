@@ -231,7 +231,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         progressBar.setMinimum(0);
 
         sqlTextPanel = new SimpleSqlTextPanel();
-        differenceSqlTextPanel = new DifferenceSqlTextPanel("Source DB Script (new)", "Target DB Script (old)");
+        differenceSqlTextPanel = new DifferenceSqlTextPanel(bundleString("SourceLabel"), bundleString("TargetLabel"));
 
         // ---
 

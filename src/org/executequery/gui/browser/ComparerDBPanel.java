@@ -8,8 +8,10 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.SimpleDataSource;
 import org.executequery.gui.LoggingOutputPanel;
+import org.executequery.gui.browser.comparer.ComparedObject;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.editor.QueryEditor;
+import org.executequery.gui.text.DifferenceSqlTextPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.localization.LocaleManager;
@@ -30,8 +32,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -64,6 +66,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private Comparer comparer;
     private List<DatabaseConnection> databaseConnectionList;
     private List<Integer> scriptGenerationOrder;
+    private List<ComparedObject> comparedObjectList;
     private boolean isScriptGeneratorOrderReversed;
 
     // --- panel components ---
@@ -79,6 +82,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private JTabbedPane tabPane;
     private LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
+    private DifferenceSqlTextPanel differenceSqlTextPanel;
     private JTree dbComponentsTree;
     private ComparerTreeNode rootTreeNode;
 
@@ -111,6 +115,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private void init() {
 
         databaseConnectionList = new ArrayList<>();
+        comparedObjectList = new ArrayList<>();
 
         // --- script generation order defining ---
 
@@ -197,27 +202,22 @@ public class ComparerDBPanel extends JPanel implements TabView {
         rootTreeNode = new ComparerTreeNode(bundleString("DatabaseChanges"));
         dbComponentsTree = new JTree(new DefaultTreeModel(rootTreeNode));
         dbComponentsTree.setCellRenderer(new ComparerTreeCellRenderer());
-        dbComponentsTree.addMouseListener(new MouseListener() {
+        dbComponentsTree.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1)
-                    goToScript();
-            }
 
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
+                TreePath selectionPath = dbComponentsTree.getSelectionPath();
+                if (selectionPath != null) {
 
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
+                    ComparerTreeNode node = (ComparerTreeNode) selectionPath.getLastPathComponent();
+                    comparedObjectList.stream()
+                            .filter(i -> (i.getType() == node.type && i.getName().equals(node.name))).findFirst()
+                            .ifPresent(i -> differenceSqlTextPanel.setTexts(i.getSourceObjectScript(), i.getTargetObjectScript()));
 
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
+                    if (e.getClickCount() > 1)
+                        goToScript(node);
 
-            @Override
-            public void mouseExited(MouseEvent e) {
+                }
             }
         });
 
@@ -231,6 +231,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         progressBar.setMinimum(0);
 
         sqlTextPanel = new SimpleSqlTextPanel();
+        differenceSqlTextPanel = new DifferenceSqlTextPanel("Source DB Script (new)", "Target DB Script (old)");
 
         // ---
 
@@ -305,18 +306,23 @@ public class ComparerDBPanel extends JPanel implements TabView {
         sqlPanel.add(executeScriptButton, gridBagHelper.nextCol().get());
         sqlPanel.add(new JPanel(), gridBagHelper.nextCol().get());
 
-        // --- dbComponentsTree panel ---
+        // --- view panel ---
 
         JScrollPane dbComponentsTreePanel = new JScrollPane(dbComponentsTree,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        JSplitPane viewPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        viewPanel.setResizeWeight(0.25);
+        viewPanel.setTopComponent(dbComponentsTreePanel);
+        viewPanel.setBottomComponent(differenceSqlTextPanel);
 
         // --- tabbed pane ---
 
         tabPane = new JTabbedPane();
 
         tabPane.add(bundleString("OutputLabel"), loggingOutputPanel);
-        tabPane.add(bundleString("TreeView"), dbComponentsTreePanel);
+        tabPane.add(bundleString("TreeView"), viewPanel);
         tabPane.add("SQL", sqlPanel);
 
         // --- compare panel ---
@@ -380,6 +386,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         loggingOutputPanel.clear();
         sqlTextPanel.setSQLText("");
         comparer.clearLists();
+        comparedObjectList.clear();
 
         try {
 
@@ -809,25 +816,19 @@ public class ComparerDBPanel extends JPanel implements TabView {
         progressBar.setValue(progressBar.getValue() + 1);
     }
 
-    public void goToScript() {
+    public void goToScript(ComparerTreeNode node) {
 
-        TreePath selectionPath = dbComponentsTree.getSelectionPath();
-        if (selectionPath != null) {
+        if (node.isComponent) {
+            tabPane.setSelectedIndex(2);
 
-            ComparerTreeNode node = (ComparerTreeNode) selectionPath.getLastPathComponent();
-            if (node.isComponent) {
-                tabPane.setSelectedIndex(2);
+            String searchText = "/\\* " + node.name.replace("$", "\\$") + " \\*/";
+            Pattern pattern = Pattern.compile(searchText);
+            Matcher matcher = pattern.matcher(sqlTextPanel.getSQLText());
 
-                String searchText = "/\\* " + node.name.replace("$", "\\$") + " \\*/";
-                Pattern pattern = Pattern.compile(searchText);
-                Matcher matcher = pattern.matcher(sqlTextPanel.getSQLText());
-
-                if (matcher.find()) {
-                    int start = matcher.start();
-                    int end = matcher.end();
-                    sqlTextPanel.getTextPane().select(start, end);
-                }
-
+            if (matcher.find()) {
+                int start = matcher.start();
+                int end = matcher.end();
+                sqlTextPanel.getTextPane().select(start, end);
             }
         }
 
@@ -864,6 +865,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 comparerTreeNode.add(child);
         }
 
+    }
+
+    public List<ComparedObject> getComparedObjectList() {
+        return comparedObjectList;
     }
 
     public boolean isCanceled() {

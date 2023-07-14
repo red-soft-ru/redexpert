@@ -148,12 +148,33 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
 
     @Override
     protected String generateQuery() {
-        if (!editing)
-            return SQLUtils.generateCreateJob(getFormattedName(), cronPanel.getCron(), activeBox.isSelected(), startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
-                    endDatePicker.isNull() ? null : endDatePicker.getDateTime(), jobTypeCombo.getSelectedIndex(), jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ? sqlTextPanel.getSQLText() : bashTextPanel.getTextAreaComponent().getText());
-        else
-            return SQLUtils.generateAlterJob(job, getFormattedName(), cronPanel.getCron(), activeBox.isSelected(), startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
-                    endDatePicker.isNull() ? null : endDatePicker.getDateTime(), jobTypeCombo.getSelectedIndex(), jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ? sqlTextPanel.getSQLText() : bashTextPanel.getTextAreaComponent().getText());
+
+        if (!editing) {
+
+            return SQLUtils.generateCreateJob(
+                    nameField.getText(),
+                    cronPanel.getCron(),
+                    activeBox.isSelected(),
+                    startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
+                    endDatePicker.isNull() ? null : endDatePicker.getDateTime(),
+                    jobTypeCombo.getSelectedIndex(),
+                    jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
+                            sqlTextPanel.getSQLText() :
+                            bashTextPanel.getTextAreaComponent().getText(),
+                    simpleCommentPanel.getComment(), "^");
+
+        } else {
+
+            return SQLUtils.generateAlterJob(
+                    job, nameField.getText(), cronPanel.getCron(), activeBox.isSelected(),
+                    startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
+                    endDatePicker.isNull() ? null : endDatePicker.getDateTime(),
+                    jobTypeCombo.getSelectedIndex(),
+                    jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
+                            sqlTextPanel.getSQLText() :
+                            bashTextPanel.getTextAreaComponent().getText(),
+                    simpleCommentPanel.getComment(), "^");
+        }
     }
 
 }

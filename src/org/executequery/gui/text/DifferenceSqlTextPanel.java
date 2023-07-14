@@ -1,7 +1,12 @@
 package org.executequery.gui.text;
 
+import com.github.difflib.text.DiffRow;
+import com.github.difflib.text.DiffRowGenerator;
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class DifferenceSqlTextPanel extends JPanel {
 
@@ -38,8 +43,32 @@ public class DifferenceSqlTextPanel extends JPanel {
     }
 
     public void setTexts(String value1, String value2) {
-        topTextPanel.setSQLText(value1);
-        botTextPanel.setSQLText(value2);
+
+        DiffRowGenerator diffGenerator = DiffRowGenerator.create().build();
+
+        topTextPanel.setSQLText("");
+        botTextPanel.setSQLText("");
+
+        for (DiffRow row : diffGenerator.generateDiffRows(
+                value2 != null ? Arrays.asList(value2.split("\n")) : new ArrayList<>(),
+                value1 != null ? Arrays.asList(value1.split("\n")) : new ArrayList<>())
+        ) {
+
+            if (row.getTag().equals(DiffRow.Tag.INSERT)) {
+                topTextPanel.getTextPane().append("+++ " + row.getNewLine() + "\n");
+
+            } else if (row.getTag().equals(DiffRow.Tag.DELETE)) {
+                botTextPanel.getTextPane().append("~~~ " + row.getOldLine() + "\n");
+
+            } else if (row.getTag().equals(DiffRow.Tag.CHANGE)) {
+                topTextPanel.getTextPane().append("*** " + row.getNewLine() + "\n");
+                botTextPanel.getTextPane().append("*** " + row.getOldLine() + "\n");
+
+            } else {
+                topTextPanel.getTextPane().append("    " + row.getNewLine() + "\n");
+                botTextPanel.getTextPane().append("    " + row.getOldLine() + "\n");
+            }
+        }
     }
 
 }

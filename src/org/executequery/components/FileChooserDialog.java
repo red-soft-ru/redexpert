@@ -52,13 +52,11 @@ public class FileChooserDialog extends JFileChooser {
 
         super();
         setCurrentDirectory(new File(getLastOpenFilePath()));
-        LocaleManager.setLocaleFor(LocaleManager.FILE_CHOOSER);
     }
 
     public FileChooserDialog(String currentDirectoryPath) {
 
         super(currentDirectoryPath);
-        LocaleManager.setLocaleFor(LocaleManager.FILE_CHOOSER);
     }
 
     public int showOpenDialog(Component parent) throws HeadlessException {

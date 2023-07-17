@@ -451,7 +451,6 @@ public class PropertiesEditorSyntax extends AbstractPropertiesBasePanel
 
             if (col == 1) {
 
-                LocaleManager.setLocaleFor(LocaleManager.COLOR_CHOOSER);
                 Color color = JColorChooser.showDialog(
                         GUIUtilities.getInFocusDialogOrWindow(),
                         Bundles.get("LocaleManager.ColorChooser.title"),

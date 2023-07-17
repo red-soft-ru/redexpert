@@ -57,7 +57,6 @@ public class ColourChooserButton extends JButton
     }
 
     public void actionPerformed(ActionEvent e) {
-        LocaleManager.setLocaleFor(LocaleManager.COLOR_CHOOSER);
         Color _buttonColour = JColorChooser.showDialog(
                 GUIUtilities.getInFocusDialogOrWindow(),
                 Bundles.get("LocaleManager.ColorChooser.title"),

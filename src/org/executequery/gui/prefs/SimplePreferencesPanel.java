@@ -378,7 +378,6 @@ public class SimplePreferencesPanel extends JPanel
             if (preferences[row].getType() == UserPreference.COLOUR_TYPE) {
 
                 Color oldColor = (Color) preferences[row].getValue();
-                LocaleManager.setLocaleFor(LocaleManager.COLOR_CHOOSER);
                 Color newColor = JColorChooser.showDialog(
                         GUIUtilities.getInFocusDialogOrWindow(),
                         Bundles.get("LocaleManager.ColorChooser.title"),

@@ -122,7 +122,6 @@ class ColorMenu extends JMenu implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         MenuSelectionManager.defaultManager().clearSelectedPath();
-        LocaleManager.setLocaleFor(LocaleManager.COLOR_CHOOSER);
         Color c = JColorChooser.showDialog(
                 menuOwner,
                 Bundles.get("LocaleManager.ColorChooser.title"),

@@ -13,7 +13,13 @@ public class LocaleManager {
     public static final int COLOR_CHOOSER = 0;
     public static final int FILE_CHOOSER = COLOR_CHOOSER + 1;
 
-    public static void setLocaleFor(int key) {
+    public static void updateLocaleEverywhere() {
+        bundleColorChooser();
+        bundleFileChooser();
+    }
+
+    @SuppressWarnings("unused")
+    public static void updateLocaleFor(int key) {
 
         switch (key) {
 

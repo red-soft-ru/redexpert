@@ -26,6 +26,7 @@ import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 /**
  * @author Takis Diakoumis
@@ -49,6 +50,8 @@ public class LineNumber extends JComponent {
     private final int iconHeight;
     private final int iconWidth;
 
+    private List<String> borderLabels;
+
     /**
      * Convenience constructor for Text Components.
      */
@@ -58,6 +61,7 @@ public class LineNumber extends JComponent {
         setBackground(backgroundColour());
 
         this.component = (component != null) ? component : this;
+        this.borderLabels = null;
 
         Font font = this.component.getFont();
         setFont(this.component.getFont());
@@ -161,54 +165,85 @@ public class LineNumber extends JComponent {
         // Paint the background
         g.setColor(getBackground());
         g.fillRect(drawHere.x, drawHere.y, drawHere.width, drawHere.height);
-
-        // Determine the number of lines to draw in the foreground.
         g.setColor(getForeground());
-        int startLineNumber = (drawHere.y / lineHeight) + 1;
-        int tempEndLineNumber = startLineNumber + (drawHere.height / lineHeight);
-        int endLineNumber = Math.min(totalRows, tempEndLineNumber);
 
-        String lineNumber;
-        int start = (drawHere.y / lineHeight) * lineHeight + startOffset;
+        if (borderLabels == null) {
 
-        for (int i = startLineNumber; i <= endLineNumber; i++) {
+            // Determine the number of lines to draw in the foreground.
+            int startLineNumber = (drawHere.y / lineHeight) + 1;
+            int tempEndLineNumber = startLineNumber + (drawHere.height / lineHeight);
+            int endLineNumber = Math.min(totalRows, tempEndLineNumber);
 
-            lineNumber = String.valueOf(i);
-            int width = fontMetrics.stringWidth(lineNumber);
+            String lineNumber;
+            int start = (drawHere.y / lineHeight) * lineHeight + startOffset;
 
-            if (executingLine == i) {
+            for (int i = startLineNumber; i <= endLineNumber; i++) {
 
-                g.drawImage(executingIcon(),
-                        MARGIN + currentRowWidth - width - 2,
-                        start - iconHeight + 2,
-                        iconWidth,
-                        iconHeight,
-                        this
-                );
+                lineNumber = String.valueOf(i);
+                int width = fontMetrics.stringWidth(lineNumber);
 
-            } else {
+                if (executingLine == i) {
 
-                g.drawString(lineNumber,
-                        MARGIN + currentRowWidth - width,
+                    g.drawImage(executingIcon(),
+                            MARGIN + currentRowWidth - width - 2,
+                            start - iconHeight + 2,
+                            iconWidth,
+                            iconHeight,
+                            this
+                    );
+
+                } else {
+
+                    g.drawString(lineNumber,
+                            MARGIN + currentRowWidth - width,
+                            start
+                    );
+                }
+
+                start += lineHeight;
+            }
+            setPreferredWidth(endLineNumber);
+
+        } else {
+
+            int start = (drawHere.y / lineHeight) * lineHeight + startOffset;
+            int maxLen = -1;
+
+            for (String label : borderLabels) {
+
+                g.drawString(label,
+                        MARGIN + currentRowWidth - fontMetrics.stringWidth(label),
                         start
                 );
+
+                maxLen = Math.max(label.length(), maxLen);
+                start += lineHeight;
             }
 
-            start += lineHeight;
+            setPreferredWidth(maxLen);
         }
 
-        setPreferredWidth(endLineNumber);
     }
 
     public void resetExecutingLine() {
 
+        resetBorderLabels();
         if (executingLine != -1) {
             executingLine = -1;
             repaint();
         }
     }
 
+    public void setBorderLabels(List<String> borderLabels) {
+        this.borderLabels = borderLabels;
+    }
+
+    public void resetBorderLabels() {
+        this.borderLabels = null;
+    }
+
     public void setExecutingLine(int lineNumber) {
+        resetBorderLabels();
         executingLine = lineNumber + 1;
     }
 

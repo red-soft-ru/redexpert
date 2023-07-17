@@ -1,29 +1,26 @@
 package org.executequery.gui.browser.managment.tracemanager;
 
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.browser.TraceManagerPanel;
-import org.executequery.gui.browser.managment.tracemanager.ResultSetDataModel;
 import org.executequery.gui.browser.managment.tracemanager.net.AnaliseRow;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.gui.editor.SimpleDataItemViewerPanel;
 import org.executequery.gui.resultset.SimpleRecordDataItem;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.ListSelectionPanel;
+import org.underworldlabs.swing.ListSelectionPanelEvent;
+import org.underworldlabs.swing.ListSelectionPanelListener;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,16 +30,33 @@ public class AnalisePanel extends JPanel {
     List<LogMessage> messages;
     JTable table;
     AnaliseTableModel model;
+    SimpleSqlTextPanel sqlTextArea;
+    ListSelectionPanel typesPanel;
+
+    String[] types = {"TRACE_INIT", "TRACE_FINI", "CREATE_DATABASE", "ATTACH_DATABASE", "DROP_DATABASE", "DETACH_DATABASE", "START_TRANSACTION",
+            "COMMIT_RETAINING", "COMMIT_TRANSACTION", "ROLLBACK_RETAINING", "ROLLBACK_TRANSACTION", "EXECUTE_STATEMENT_START", "EXECUTE_STATEMENT_FINISH",
+            "START_SERVICE", "PREPARE_STATEMENT", "FREE_STATEMENT", "CLOSE_CURSOR", "SET_CONTEXT", "PRIVILEGES_CHANGE", "EXECUTE_PROCEDURE_START",
+            "EXECUTE_FUNCTION_START", "EXECUTE_PROCEDURE_FINISH", "EXECUTE_FUNCTION_FINISH", "EXECUTE_TRIGGER_START", "EXECUTE_TRIGGER_FINISH", "COMPILE_BLR",
+            "EXECUTE_BLR", "EXECUTE_DYN", "ATTACH_SERVICE", "DETACH_SERVICE", "QUERY_SERVICE", "SWEEP_START", "SWEEP_FINISH", "SWEEP_FAILED", "SWEEP_PROGRESS"};
 
     public AnalisePanel(List<LogMessage> messages) {
-        this.messages=messages;
+        this.messages = messages;
         init();
     }
 
-    void init()
-    {
-        model= new AnaliseTableModel();
+    void init() {
+        model = new AnaliseTableModel();
         table = new JTable(model);
+        sqlTextArea = new SimpleSqlTextPanel();
+        typesPanel = new ListSelectionPanel();
+        typesPanel.createAvailableList(types);
+        typesPanel.selectOneStringAction("EXECUTE_STATEMENT_FINISH");
+        typesPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
+            @Override
+            public void changed(ListSelectionPanelEvent event) {
+                rebuildRows();
+            }
+        });
         GridBagLayout gridBagLayout = new GridBagLayout();
         setLayout(gridBagLayout);
         GridBagHelper gbh = new GridBagHelper();
@@ -52,7 +66,7 @@ public class AnalisePanel extends JPanel {
 
         JScrollPane logListPanel = new JScrollPane();
         logListPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-       table.setRowSorter(new TableRowSorter<>(model));
+        table.setRowSorter(new TableRowSorter<>(model));
         /*table.setDefaultRenderer(Object.class, new CustomTableCellRenderer());
         table.setDefaultRenderer(Long.class, new CustomTableCellRenderer());
         table.setDefaultRenderer(Timestamp.class, new StatementTimestampTableCellRenderer());*/
@@ -69,7 +83,8 @@ public class AnalisePanel extends JPanel {
                     if (row >= 0 && col >= 0) {
 
                         SimpleRecordDataItem rdi = new SimpleRecordDataItem("Value", 0, "");
-                        rdi.setValue(table.getValueAt(row, col));
+                        row = table.getRowSorter().convertRowIndexToModel(row);
+                        rdi.setValue(rows.get(row).getLogMessage().getBody());
                         BaseDialog dialog = new BaseDialog(Bundles.get("ResultSetTablePopupMenu.RecordDataItemViewer"), true);
                         dialog.addDisplayComponentWithEmptyBorder(
                                 new SimpleDataItemViewerPanel(dialog, rdi));
@@ -78,11 +93,21 @@ public class AnalisePanel extends JPanel {
                 }
             }
         });
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                int row = table.getSelectedRow();
+                if (row >= 0) {
+                    row = table.getRowSorter().convertRowIndexToModel(row);
+                    sqlTextArea.setSQLText(rows.get(row).getLogMessage().getStatementText());
+                }
+            }
+        });
 
 
-
-
-
+        gbh.setLabelDefault();
+        add(sqlTextArea, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().get());
+        add(typesPanel, gbh.nextCol().fillHorizontally().get());
         add(logListPanel, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
         rebuildRows();
 
@@ -95,19 +120,19 @@ public class AnalisePanel extends JPanel {
         checkLogMessage(logMessage);
     }
 
-    void checkLogMessage(LogMessage msg)
-    {
-        boolean added=false;
-        for(AnaliseRow row:rows)
-        {
-            if(msg.getStatementText()!=null&&row.getLogMessage().getStatementText().contentEquals(msg.getStatementText())) {
+    void checkLogMessage(LogMessage msg) {
+        boolean added = false;
+        if (!typesPanel.getSelectedValues().contains(msg.getTypeEvent()))
+            return;
+        for (AnaliseRow row : rows) {
+            if (msg.getStatementText() != null && row.getLogMessage().getStatementText().contentEquals(msg.getStatementText()) && msg.getTypeEvent().contentEquals(row.getLogMessage().getTypeEvent())) {
                 row.addMessage(msg);
-                added=true;
+                added = true;
                 break;
             }
 
         }
-        if(!added&&msg.getStatementText()!=null)
+        if (!added && msg.getStatementText() != null)
         {
             AnaliseRow row = new AnaliseRow();
             row.addMessage(msg);
@@ -130,7 +155,7 @@ public class AnalisePanel extends JPanel {
     class AnaliseTableModel extends AbstractTableModel
     {
 
-        String[] headers = {"QUERY","TOTAL_TIME","AVERAGE_TIME","COUNT"};
+        String[] headers = {"QUERY", "TOTAL_TIME", "AVERAGE_TIME", "MAX_EXEC_TIME", "DISPERSION", "COUNT"};
 
 
         @Override
@@ -152,11 +177,10 @@ public class AnalisePanel extends JPanel {
 
         @Override
         public Class<?> getColumnClass(int columnIndex) {
-            switch (columnIndex)
-            {
-                case 0:return String.class;
-                default:return Long.class;
+            if (columnIndex == 0) {
+                return String.class;
             }
+            return Long.class;
         }
 
         @Override
@@ -167,12 +191,19 @@ public class AnalisePanel extends JPanel {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             if(rowIndex>=0&&columnIndex>=0) {
-                switch (columnIndex)
-                {
-                    case 0:return rows.get(rowIndex).getLogMessage().getStatementText();
-                    case 1:return rows.get(rowIndex).getTotalTime();
-                    case 2:return rows.get(rowIndex).getAverageTime();
-                    case 3:return rows.get(rowIndex).getCount();
+                switch (columnIndex) {
+                    case 0:
+                        return rows.get(rowIndex).getLogMessage().getStatementText();
+                    case 1:
+                        return rows.get(rowIndex).getTotalTime();
+                    case 2:
+                        return rows.get(rowIndex).getAverageTime();
+                    case 3:
+                        return rows.get(rowIndex).getMaxTime();
+                    case 4:
+                        return rows.get(rowIndex).getDispersionTime();
+                    case 5:
+                        return rows.get(rowIndex).getCount();
                 }
             }
             return null;

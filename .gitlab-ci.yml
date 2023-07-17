@@ -120,7 +120,7 @@ build:linux:
     - builder
     - x86_64
   variables:
-    MAVEN_VERSION: 3.9.2
+    MAVEN_VERSION: 3.9.3
     M2_HOME: /opt/apache-maven-${MAVEN_VERSION}/
     QMAKE: qmake-qt4
     DIST: ${CI_PROJECT_DIR}/dist/linux-${ARCH}
@@ -130,7 +130,7 @@ build:linux:
     - yum group install -y "Development Tools"
     - yum install -y ca-certificates
     - cd /opt
-    - wget http://www.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
+    - wget https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
     - tar xzf apache-maven-${MAVEN_VERSION}-bin.tar.gz
     - export PATH=${M2_HOME}/bin:${PATH}
     - export JAVA_HOME=`java -XshowSettings:properties -version 2>&1|grep "java.home"|cut -d "=" -f 2|tr -d " "|rev | cut -c 4- | rev`
@@ -156,7 +156,7 @@ build:linux:
     - ./ci/build_installer.sh
   parallel:
     matrix:
-      - BUILD_IMAGE: amd64/centos:7
+      - BUILD_IMAGE: oraclelinux:7
         ARCH: x86_64
       - BUILD_IMAGE: i386/centos:7
         ARCH: x86

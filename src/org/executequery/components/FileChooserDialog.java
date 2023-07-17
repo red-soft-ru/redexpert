@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -51,11 +52,13 @@ public class FileChooserDialog extends JFileChooser {
 
         super();
         setCurrentDirectory(new File(getLastOpenFilePath()));
+        LocaleManager.setLocaleFor(LocaleManager.FILE_CHOOSER);
     }
 
     public FileChooserDialog(String currentDirectoryPath) {
 
         super(currentDirectoryPath);
+        LocaleManager.setLocaleFor(LocaleManager.FILE_CHOOSER);
     }
 
     public int showOpenDialog(Component parent) throws HeadlessException {

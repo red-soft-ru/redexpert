@@ -1,3 +1,5 @@
+desktop.background.default.colour=-6710836
+desktop.background.custom.colour=-6710836
 editor.caret.colour=-65536
 editor.display.linehighlight.colour=-52
 editor.linenumber.background=-2565928

@@ -107,6 +107,8 @@ public class Comparer {
 
             if (!sqlScript.contains("Will be created with constraint defining")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.CREATE, type, obj.getName());
+                panel.getComparedObjectList().add(new ComparedObject(type, obj.getName(), sqlScript, null));
                 panel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[0]++;
@@ -151,6 +153,8 @@ public class Comparer {
 
             if (!sqlScript.contains("Remove with table constraint")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.DROP, type, obj.getName());
+                panel.getComparedObjectList().add(new ComparedObject(type, obj.getName(), null, ((AbstractDatabaseObject) obj).getCreateSQLText()));
                 panel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[1] ++;
@@ -207,6 +211,8 @@ public class Comparer {
 
             if (!sqlScript.contains("there are no changes")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, type, obj.getName());
+                panel.getComparedObjectList().add(new ComparedObject(type, obj.getName(), compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
                 panel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[2]++;
@@ -961,7 +967,7 @@ public class Comparer {
         );
 
         for (NamedObject obj : stubsList) {
-            script.add("\n/* " + obj.getName() + " */");
+            script.add("\n/* " + obj.getName() + " (STUB) */");
             script.add("\n" + SQLUtils.generateCreateDefaultStub(obj));
             panel.incrementProgressBarValue();
         }

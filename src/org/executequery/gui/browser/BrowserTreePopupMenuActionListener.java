@@ -458,7 +458,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         GUIUtilities.showWaitCursor();
 
                         BaseDialog dialog = new BaseDialog(CreateProcedurePanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateProcedurePanel(currentSelection, dialog, node.getName().trim());
+                        createObjectPanel = new CreateProcedurePanel(currentSelection, dialog, MiscUtils.trimEnd(node.getName()));
                         showDialogCreateObject(createObjectPanel, dialog);
                     } finally {
                         GUIUtilities.showNormalCursor();
@@ -475,7 +475,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         GUIUtilities.showWaitCursor();
 
                         BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateDomainPanel(currentSelection, dialog, node.getName().trim());
+                        createObjectPanel = new CreateDomainPanel(currentSelection, dialog, MiscUtils.trimEnd(node.getName()));
                         showDialogCreateObject(createObjectPanel, dialog);
                     } finally {
                         GUIUtilities.showNormalCursor();
@@ -546,7 +546,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         GUIUtilities.showWaitCursor();
 
                         BaseDialog dialog = new BaseDialog(CreateFunctionPanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateFunctionPanel(currentSelection, dialog, node.getName().trim(), (DefaultDatabaseFunction) node.getDatabaseObject());
+                        createObjectPanel = new CreateFunctionPanel(currentSelection, dialog, MiscUtils.trimEnd(node.getName()), (DefaultDatabaseFunction) node.getDatabaseObject());
                         showDialogCreateObject(createObjectPanel, dialog);
                     } finally {
                         GUIUtilities.showNormalCursor();
@@ -976,7 +976,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     querySender = new DefaultStatementExecutor(currentSelection, false);
                     SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
                     treePanel.reloadPath(treePaths[i]);
-                    if (result.isException() && firstErrorExists == false) {
+                    if (result.isException() && !firstErrorExists) {
                         error.append(result.getErrorMessage());
                         firstErrorExists = true;
                     }
@@ -1022,7 +1022,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     querySender = new DefaultStatementExecutor(currentSelection, false);
                     SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
                     treePanel.reloadPath(treePaths[i]);
-                    if (result.isException() && firstErrorExists == false) {
+                    if (result.isException() && !firstErrorExists) {
                         error.append(result.getErrorMessage());
                         firstErrorExists = true;
                     }

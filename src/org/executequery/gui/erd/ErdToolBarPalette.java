@@ -24,6 +24,7 @@ import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
@@ -189,8 +190,9 @@ public class ErdToolBarPalette extends PanelToolBar
             }
         }
 
+        LocaleManager.setLocaleFor(LocaleManager.COLOR_CHOOSER);
         Color newColour = JColorChooser.showDialog(parent,
-                "Select Background Colour",
+                Bundles.get("LocaleManager.ColorChooser.title"),
                 currentColour);
 
         if (newColour == null) {

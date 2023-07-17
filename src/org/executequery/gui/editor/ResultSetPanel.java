@@ -20,6 +20,7 @@
 
 package org.executequery.gui.editor;
 
+import org.executequery.UserPreferencesManager;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTable;
@@ -98,7 +99,12 @@ public class ResultSetPanel extends JPanel {
 
         Color bg = SystemProperties.getColourProperty("user",
                 "editor.results.background.colour");
-        table = new ResultSetTable();
+        table = new ResultSetTable() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return !UserPreferencesManager.doubleClickOpenItemView();
+            }
+        };
 
         // this is set for the bg of any remaining
         // header region outside the cells themselves

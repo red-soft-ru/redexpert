@@ -21,6 +21,7 @@
 package org.executequery.components;
 
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.underworldlabs.swing.FileSelector;
 
 import javax.swing.*;
@@ -93,6 +94,7 @@ public class OpenFileDialog extends FileChooserDialog
         sqlFiles = new FileSelector(new String[]{"sql"}, bundleString("file-sql"));
         eqFiles = new FileSelector(new String[]{"eqd"}, bundleString("file-RedExpertERD"));
 
+        LocaleManager.setLocaleFor(LocaleManager.FILE_CHOOSER);
         setFileSelectionMode(JFileChooser.FILES_ONLY);
         addChoosableFileFilter(textFiles);
         addChoosableFileFilter(eqFiles);

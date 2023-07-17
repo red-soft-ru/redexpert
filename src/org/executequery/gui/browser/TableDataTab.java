@@ -331,20 +331,49 @@ public class TableDataTab extends JPanel
         tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
     }
 
-    Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String query = "SELECT " + key.getReferencedColumn() + " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
-        Vector items = new Vector();
+    Vector<Object> itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+
+        String query = "SELECT " + key.getReferencedColumn() +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
+
+        Vector<Object> items = new Vector<>();
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
+            while (rs.next())
                 items.add(rs.getObject(1));
-            }
+
         } catch (Exception e) {
             Log.error("Error get Foreign keys:" + e.getMessage());
+
         } finally {
             querySender.releaseResources();
         }
-        items.add(null);
+
+        return items;
+    }
+
+    Vector<Vector<Object>> allItemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+
+        String query = "SELECT " + key.getReferenceColumnDisplayList() +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
+
+        Vector<Vector<Object>> items = new Vector<>();
+        for (int i = 0; i < key.getReferenceColumnDisplayList().split(",").length; i++)
+            items.add(new Vector<>());
+
+        try {
+            ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
+            while (rs.next())
+                for (int i = 0; i < items.size(); i++)
+                    items.get(i).add(rs.getObject(i + 1));
+
+        } catch (Exception e) {
+            Log.error("Error get Foreign keys:" + e.getMessage());
+
+        } finally {
+            querySender.releaseResources();
+        }
+
         return items;
     }
 
@@ -530,18 +559,14 @@ public class TableDataTab extends JPanel
             }
 
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            if (foreigns != null)
-                if (foreigns.size() > 0)
-                    for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
-                        Vector items = itemsForeign(key);
-                        DefaultTableModel defaultTableModel = tableForeign(key);
-                        //table.setComboboxColumn(tableModel.getColumnIndex(key.getColumnName()), items);
+            if (foreigns != null && foreigns.size() > 0) {
+                for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
 
-                        int columnIndex = tableModel.getColumnIndex(key.getColumnName());
-                        if (columnIndex > -1)
-                            table.setComboboxTable(columnIndex, defaultTableModel, items);
-                    }
-
+                    int columnIndex = tableModel.getColumnIndex(key.getColumnName());
+                    if (columnIndex > -1)
+                        table.setForeignKeyTable(columnIndex, tableForeign(key), allItemsForeign(key), tableForeignChildren(key));
+                }
+            }
 
             scroller.getViewport().add(table);
             if (scroller.getVerticalScrollBar().getAdjustmentListeners().length < 1)
@@ -948,15 +973,23 @@ public class TableDataTab extends JPanel
     }
 
     public DefaultTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String checked_column = "select R.RDB$FIELD_NAME from RDB$FIELDS F, RDB$RELATION_FIELDS R where (F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE) and (R.RDB$SYSTEM_FLAG = 0) and (R.RDB$RELATION_NAME = " + "'" + key.getReferencedTable() + "'" + ") and (NOT F.RDB$FIELD_NAME IN (select RDB$FIELD_NAME from RDB$FIELD_DIMENSIONS))";
-        ArrayList<String> checked_column_list = new ArrayList<String>();
+
+        String checked_column = "select R.RDB$FIELD_NAME " +
+                "from RDB$FIELDS F, RDB$RELATION_FIELDS R " +
+                "where (F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE) " +
+                "and (R.RDB$SYSTEM_FLAG = 0) " +
+                "and (R.RDB$RELATION_NAME = " + "'" + key.getReferencedTable() + "'" + ") " +
+                "and (NOT F.RDB$FIELD_NAME IN (select RDB$FIELD_NAME from RDB$FIELD_DIMENSIONS))";
+
+        ArrayList<String> checked_column_list = new ArrayList<>();
         try {
             ResultSet checked_column_rs = querySender.execute(QueryTypes.SELECT, checked_column).getResultSet();
-            while (checked_column_rs.next()) {
+            while (checked_column_rs.next())
                 checked_column_list.add(checked_column_rs.getObject(1).toString());
-            }
+
         } catch (Exception e) {
             Log.error("Error get Foreign keys:" + e.getMessage());
+
         } finally {
             querySender.releaseResources();
         }
@@ -964,22 +997,36 @@ public class TableDataTab extends JPanel
         String checkedColumns = "";
         for (int i = 0; i < checked_column_list.size(); i++) {
             checkedColumns += MiscUtils.getFormattedObject(checked_column_list.get(i));
-            if (i < checked_column_list.size() - 1) {
+            if (i < checked_column_list.size() - 1)
                 checkedColumns += " , ";
-            }
         }
 
-        String query = "SELECT " + checkedColumns + " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
+        String query = "SELECT " + checkedColumns +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
+
         DefaultTableModel defaultTableModel = new DefaultTableModel();
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
             defaultTableModel = buildTableModel(rs);
+
         } catch (Exception e) {
             Log.error("Error get Foreign keys:" + e.getMessage());
+
         } finally {
             querySender.releaseResources();
         }
+
         return defaultTableModel;
+    }
+
+    private int[] tableForeignChildren(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+
+        List<Integer> indexes = new ArrayList<>();
+        for (int i = 0; i < tableModel.getColumnCount(); i++)
+            if (key.getColumnDisplayList().contains(tableModel.getColumnName(i)))
+                indexes.add(i);
+
+        return indexes.stream().mapToInt(Integer::intValue).toArray();
     }
 
     private void createButtonsEditingPanel() {

@@ -22,6 +22,7 @@ package org.executequery.gui.browser.nodes;
 
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.tree.MutableTreeNode;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public class RootDatabaseObjectNode extends DatabaseObjectNode {
 
     private static final String NAME = Bundles.getCommon("database-connections");
 
-    private List<DatabaseHostNode> hostNodes = new ArrayList<DatabaseHostNode>();
+    private final List<DatabaseHostNode> hostNodes = new ArrayList<DatabaseHostNode>();
 
     /**
      * Propagates the call to the underlying database object
@@ -75,7 +76,7 @@ public class RootDatabaseObjectNode extends DatabaseObjectNode {
 
     public String getShortName() {
 
-        return getName().trim();
+        return MiscUtils.trimEnd(getName());
     }
 
     /**

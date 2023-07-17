@@ -109,7 +109,7 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
     @Override
     public String getCreateSQLText() throws DataSourceException {
         return SQLUtils.generateCreateJob(getName(), getCronSchedule(), isActive(),
-                getStartDate(), getEndDate(), getJobType(), getSource());
+                getStartDate(), getEndDate(), getJobType(), getSource(), getRemarks(), "^");
     }
 
     @Override

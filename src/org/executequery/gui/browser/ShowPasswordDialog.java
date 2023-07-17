@@ -37,12 +37,12 @@ public class ShowPasswordDialog extends BaseDialog implements ActionListener {
 
     public ShowPasswordDialog(String connectionName, String password) {
 
-        super("Password", true);
+        super(bundleString("Password"), true);
         this.password = password;
 
         JButton okButton = WidgetFactory.createPanelButton(Bundles.get("common.close.button"), null, this);
-        JButton copyButton = WidgetFactory.createPanelButton("Copy to Clipboard",
-                "Copies the selected query to the system clipboard", this, COPY_COMMAND);
+        JButton copyButton = WidgetFactory.createPanelButton(bundleString("Copy"),
+                bundleString("CopyToolTip"), this, COPY_COMMAND);
 
         JPanel basePanel = new JPanel(new GridBagLayout());
 
@@ -82,7 +82,7 @@ public class ShowPasswordDialog extends BaseDialog implements ActionListener {
     private String createPanelText(String connectionName, String password) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("<html><table><tr><td align='center'>Password for connection<br/>[ ")
+        sb.append("<html><table><tr><td align='center'>" + bundleString("PasswordForConnection") + "<br/>[ ")
                 .append(connectionName)
                 .append(" ]</td></tr>")
                 .append("<tr><td align='center'><br/><b>")
@@ -101,6 +101,10 @@ public class ShowPasswordDialog extends BaseDialog implements ActionListener {
         }
 
         dispose();
+    }
+
+    private static String bundleString(String key) {
+        return Bundles.get(ShowPasswordDialog.class, key);
     }
 
 }

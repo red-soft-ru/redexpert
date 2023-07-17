@@ -6,12 +6,14 @@ import java.util.List;
 public class
 SelectBuilder extends SQLBuilder {
 
+    boolean unionDistinct = false;
     boolean distinct = false;
     List<Table> tables;
     List<Field> fields;
-    List<LeftJoin> joins;
+    List<Join> joins;
 
     List<Condition> conditions;
+    List<SelectBuilder> selectBuilders;
 
     String ordering;
 
@@ -36,11 +38,11 @@ SelectBuilder extends SQLBuilder {
         this.fields = fields;
     }
 
-    public List<LeftJoin> getJoins() {
+    public List<Join> getJoins() {
         return joins;
     }
 
-    public void setJoins(List<LeftJoin> joins) {
+    public void setJoins(List<Join> joins) {
         this.joins = joins;
     }
 
@@ -89,7 +91,7 @@ SelectBuilder extends SQLBuilder {
         return this;
     }
 
-    public SelectBuilder appendJoin(LeftJoin join) {
+    public SelectBuilder appendJoin(Join join) {
         if (joins == null)
             joins = new ArrayList<>();
         joins.add(join);
@@ -110,6 +112,13 @@ SelectBuilder extends SQLBuilder {
         return this;
     }
 
+    public SelectBuilder appendSelectBuilder(SelectBuilder selectBuilder) {
+        if (selectBuilders == null)
+            selectBuilders = new ArrayList<>();
+        selectBuilders.add(selectBuilder);
+        return this;
+    }
+
     public boolean isDistinct() {
         return distinct;
     }
@@ -119,83 +128,103 @@ SelectBuilder extends SQLBuilder {
         return this;
     }
 
+    public boolean isUnionDistinct() {
+        return unionDistinct;
+    }
+
+    public SelectBuilder setUnionDistinct(boolean unionDistinct) {
+        this.unionDistinct = unionDistinct;
+        return this;
+    }
+
     public String getSQLQuery() {
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT ");
-        if (distinct)
-            sb.append("DISTINCT ");
-        if (fields != null && fields.size() > 0) {
+        if (selectBuilders != null) {
             boolean first = true;
-            for (Field field : fields) {
-                if (!first)
-                    sb.append(",\n");
+            for (SelectBuilder selectBuilder : selectBuilders) {
+                if (!first) {
+                    sb.append("\nUNION ");
+                    if (selectBuilder.isUnionDistinct())
+                        sb.append("DISTINCT");
+                    else sb.append("ALL");
+                    sb.append("\n");
+                }
                 first = false;
-                if (field.isNull)
-                    sb.append("NULL");
-                else if (field.statement != null)
-                    sb.append(field.statement);
-                else sb.append(field.getFieldTable());
-                sb.append(" AS ").append(field.alias);
+                sb.append(selectBuilder.getSQLQuery());
             }
-        } else sb.append("*");
-        sb.append("\n");
-        sb.append("FROM ");
-        if (tables != null) {
-            boolean first = true;
-            for (Table table : tables) {
-                if (!first)
-                    sb.append(", ");
-                first = false;
-                sb.append(table.getName()).append(" ").append(table.getAlias());
-            }
-        }
-        if (joins != null) {
-            boolean first = true;
-            List<Table> usedTables = new ArrayList<>();
-            for (LeftJoin join : joins) {
-                if (first) {
-                    if (tables != null)
+        } else {
+            sb.append("SELECT ");
+            if (distinct)
+                sb.append("DISTINCT ");
+            if (fields != null && fields.size() > 0) {
+                boolean first = true;
+                for (Field field : fields) {
+                    if (!first)
                         sb.append(",\n");
+                    first = false;
+                    sb.append(field.getFieldForQuery());
                 }
-                first = false;
-                if (!usedTables.contains(join.getLeftTable())) {
-                    if (!usedTables.isEmpty())
-                        sb.append(",\n");
-                    sb.append(join.getLeftTable().getName()).append(" ").append(join.getLeftTable().getAlias());
-                    usedTables.add(join.getLeftTable());
-                }
-                sb.append("\nLEFT JOIN ").append(join.getRightTable().getName()).append(" ").append(join.getRightTable().getAlias());
-                usedTables.add(join.getRightTable());
-                boolean firstField = true;
-                for (Field leftField : join.getMapField().keySet()) {
-                    Field rightField = join.getMapField().get(leftField);
-                    if (!firstField) {
-                        sb.append(" AND ");
-                    } else sb.append(" ON ");
-                    firstField = false;
-                    sb.append(leftField.getFieldTable());
-                    sb.append(" = ").append(rightField.getFieldTable());
-                }
-                if (join.getCondition() != null) {
-                    sb.append("\nAND (").append(join.getCondition().getConditionStatement()).append(")");
+            } else sb.append("*");
+            sb.append("\n");
+            sb.append("FROM ");
+            if (tables != null) {
+                boolean first = true;
+                for (Table table : tables) {
+                    if (!first)
+                        sb.append(", ");
+                    first = false;
+                    sb.append(table.getTableForQuery());
                 }
             }
-        }
-        sb.append("\n");
-        if (conditions != null) {
-            sb.append("WHERE ");
-            boolean first = true;
-            for (Condition condition : conditions) {
-                if (!first)
-                    sb.append("AND ");
-                first = false;
-                sb.append(condition.getConditionStatement());
-                sb.append("\n");
+            if (joins != null) {
+                boolean first = true;
+                List<Table> usedTables = new ArrayList<>();
+                for (Join join : joins) {
+                    if (first) {
+                        if (tables != null)
+                            sb.append(",\n");
+                    }
+                    first = false;
+                    if (!usedTables.contains(join.getLeftTable())) {
+                        if (!usedTables.isEmpty())
+                            sb.append(",\n");
+                        sb.append(join.getLeftTable().getName()).append(" ").append(join.getLeftTable().getAlias());
+                        usedTables.add(join.getLeftTable());
+                    }
+                    sb.append("\n").append(join.getTypeJoin()).append(" JOIN ");
+                    sb.append(join.getRightTable().getName()).append(" ").append(join.getRightTable().getAlias());
+                    usedTables.add(join.getRightTable());
+                    boolean firstField = true;
+                    for (Field leftField : join.getMapField().keySet()) {
+                        Field rightField = join.getMapField().get(leftField);
+                        if (!firstField) {
+                            sb.append(" AND ");
+                        } else sb.append(" ON ");
+                        firstField = false;
+                        sb.append(leftField.getFieldTable());
+                        sb.append(" = ").append(rightField.getFieldTable());
+                    }
+                    if (join.getCondition() != null) {
+                        sb.append("\nAND (").append(join.getCondition().getConditionStatement()).append(")");
+                    }
+                }
             }
-        }
-        if (ordering != null) {
-            sb.append("ORDER BY ").append(ordering);
+            sb.append("\n");
+            if (conditions != null) {
+                sb.append("WHERE ");
+                boolean first = true;
+                for (Condition condition : conditions) {
+                    if (!first)
+                        sb.append("AND ");
+                    first = false;
+                    sb.append(condition.getConditionStatement());
+                    sb.append("\n");
+                }
+            }
+            if (ordering != null) {
+                sb.append("ORDER BY ").append(ordering);
 
+            }
         }
         return sb.toString();
 

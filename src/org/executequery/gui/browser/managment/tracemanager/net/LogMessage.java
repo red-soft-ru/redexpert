@@ -75,6 +75,10 @@ public class LogMessage {
     private String nextTransaction;
     private boolean failed;
     private boolean highlight;
+
+    public LogMessage() {
+    }
+
     public LogMessage(String body) {
         init(body);
     }

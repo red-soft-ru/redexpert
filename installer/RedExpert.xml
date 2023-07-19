@@ -241,6 +241,87 @@
                 </shortcut>
             </shortcutList>
         </createShortcuts>
+        <iniFileSet>
+            <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>Categories</key>
+            <value>Development;IDE;</value>
+            <ruleList>
+                <fileExists>
+                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </iniFileSet>
+        <iniFileSet>
+            <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>Encoding</key>
+            <value>UTF-8</value>
+            <ruleList>
+                <fileExists>
+                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </iniFileSet>
+        <iniFileSet>
+            <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>GenericName</key>
+            <value>${project.shortName}</value>
+            <ruleList>
+                <fileExists>
+                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </iniFileSet>
+
+        <createShortcuts>
+            <destination>/usr/share/applications</destination>
+            <shortcutList>
+                <shortcut>
+                    <comment>Launches ${project.fullName}</comment>
+                    <name>${project.shortName}</name>
+                    <platforms>linux</platforms>
+                    <exec>${installdir}/bin/${execute_file}</exec>
+                    <path>${installdir}/bin</path>
+                    <icon>${installdir}/red_expert.png</icon>
+                    <runAsAdmin>0</runAsAdmin>
+                </shortcut>
+            </shortcutList>
+        </createShortcuts>
+        <iniFileSet>
+            <file>/usr/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>Categories</key>
+            <value>Development;IDE;</value>
+            <ruleList>
+                <fileExists>
+                    <path>/usr/share/applications/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </iniFileSet>
+        <iniFileSet>
+            <file>/usr/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>Encoding</key>
+            <value>UTF-8</value>
+            <ruleList>
+                <fileExists>
+                    <path>/usr/share/applications/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </iniFileSet>
+        <iniFileSet>
+            <file>/usr/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>GenericName</key>
+            <value>${project.shortName}</value>
+            <ruleList>
+                <fileExists>
+                    <path>/usr/share/applications/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </iniFileSet>
 
         <actionGroup>
             <actionList>
@@ -266,25 +347,28 @@
                     <programArguments>install ${installdir}/firebird-x-fdb.xml</programArguments>
                 </runProgram>
 
-                <writeFile>
-                    <path>~/.local/share/applications/${project.shortName}.desktop</path>
-                    <encoding>utf-8</encoding>
-                    <text>
-                        [Desktop Entry]
-                        Version=1.0
-                        Encoding=UTF-8
-                        Name=${project.shortName}
-                        GenericName=${project.shortName}
-                        Comment=${project.shortName}
-                        Exec=${installdir}/bin/${execute_file}
-                        Icon=${installdir}/red_expert.png
-                        Path=/home/alexey/snap/RedExpert/bin
-                        Terminal=false
-                        Type=Application
-                        Categories=Application;Utility;TextEditor;
-                        MimeType=application/firebird-x-fdb
-                    </text>
-                </writeFile>
+                <iniFileSet>
+                    <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
+                    <section>Desktop Entry</section>
+                    <key>MimeType</key>
+                    <value>application/firebird-x-fdb</value>
+                    <ruleList>
+                        <fileExists>
+                            <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
+                        </fileExists>
+                    </ruleList>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>/usr/share/applications/${project.shortName}.desktop</file>
+                    <section>Desktop Entry</section>
+                    <key>MimeType</key>
+                    <value>application/firebird-x-fdb</value>
+                    <ruleList>
+                        <fileExists>
+                            <path>/usr/share/applications/${project.shortName}.desktop</path>
+                        </fileExists>
+                    </ruleList>
+                </iniFileSet>
 
                 <runProgram>
                     <program>xdg-mime</program>
@@ -308,18 +392,6 @@
             </ruleList>
 
         </actionGroup>
-
-        <iniFileSet>
-            <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
-            <section>Desktop Entry</section>
-            <key>Categories</key>
-            <value>Development;IDE;</value>
-            <ruleList>
-                <fileExists>
-                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
-                </fileExists>
-            </ruleList>
-        </iniFileSet>
 
     </postInstallationActionList>
 

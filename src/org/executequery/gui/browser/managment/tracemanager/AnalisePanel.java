@@ -113,10 +113,17 @@ public class AnalisePanel extends JPanel {
 
     }
 
-    public void addMessage(LogMessage logMessage)
-    {
-        if(rows==null)
-            rows= new ArrayList<>();
+    public List<LogMessage> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<LogMessage> messages) {
+        this.messages = messages;
+    }
+
+    public void addMessage(LogMessage logMessage) {
+        if (rows == null)
+            rows = new ArrayList<>();
         checkLogMessage(logMessage);
     }
 
@@ -141,26 +148,27 @@ public class AnalisePanel extends JPanel {
         model.fireTableDataChanged();
     }
 
-    public synchronized void rebuildRows()
-    {
-        if(rows==null)
-            rows= new ArrayList<>();
+    public synchronized void rebuildRows() {
+        if (rows == null)
+            rows = new ArrayList<>();
         rows.clear();
-        for(LogMessage msg:messages)
-        {
+        for (LogMessage msg : messages) {
             checkLogMessage(msg);
         }
     }
 
-    class AnaliseTableModel extends AbstractTableModel
-    {
+    public void repaintTable() {
+        table.updateUI();
+    }
+
+    class AnaliseTableModel extends AbstractTableModel {
 
         String[] headers = {"QUERY", "TOTAL_TIME", "AVERAGE_TIME", "MAX_EXEC_TIME", "DISPERSION", "COUNT"};
 
 
         @Override
         public int getRowCount() {
-            if(rows!=null)
+            if (rows != null)
             return rows.size();
             return 0;
         }

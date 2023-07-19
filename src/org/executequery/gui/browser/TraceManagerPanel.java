@@ -27,6 +27,8 @@ import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -407,6 +409,14 @@ public class TraceManagerPanel extends JPanel implements TabView {
         tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
         tabPane.add(bundleString("Logger"), loggerPanel);
         tabPane.add(bundleString("Analise"), analisePanel);
+        tabPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (tabPane.getSelectedComponent() == analisePanel) {
+                    analisePanel.repaintTable();
+                }
+            }
+        });
         connectionPanel.setLayout(new GridBagLayout());
         gbh.fullDefaults();
         gbh.addLabelFieldPair(connectionPanel, bundleString("Connections"), databaseBox, null, true, true);
@@ -554,6 +564,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
     public void clearAll() {
         loggerPanel.clearAll();
+        analisePanel.setMessages(loggerPanel.getTableRows());
+        analisePanel.rebuildRows();
         idLogMessage = 0;
     }
 

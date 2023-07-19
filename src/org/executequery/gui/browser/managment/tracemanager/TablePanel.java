@@ -90,7 +90,7 @@ public class TablePanel extends JPanel {
                 for (int i = 0; i < cols.length; i++) {
                     columnsCheckPanel.selectOneStringAction(cols[i]);
                 }
-            }
+            } else columnsCheckPanel.selectAllAction();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -182,7 +182,6 @@ public class TablePanel extends JPanel {
             @Override
             public void changed(ListSelectionPanelEvent event) {
                 dataModel.rebuildModel();
-                dataModel.fireTableStructureChanged();
                 saveCols();
             }
         });

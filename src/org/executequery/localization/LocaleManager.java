@@ -13,7 +13,13 @@ public class LocaleManager {
     public static final int COLOR_CHOOSER = 0;
     public static final int FILE_CHOOSER = COLOR_CHOOSER + 1;
 
-    public static void setLocaleFor(int key) {
+    public static void updateLocaleEverywhere() {
+        bundleColorChooser();
+        bundleFileChooser();
+    }
+
+    @SuppressWarnings("unused")
+    public static void updateLocaleFor(int key) {
 
         switch (key) {
 
@@ -107,6 +113,7 @@ public class LocaleManager {
         UIManager.put("FileChooser.newFolderToolTipText", bundleString("FileChooser.newFolderToolTipText"));
         UIManager.put("FileChooser.listViewButtonToolTipText", bundleString("FileChooser.listViewButtonToolTipText"));
         UIManager.put("FileChooser.detailsViewButtonToolTipText", bundleString("FileChooser.detailsViewButtonToolTipText"));
+        UIManager.put("FileChooser.viewMenuButtonToolTipText", bundleString("FileChooser.viewMenuButtonToolTipText"));
 
         // --- detail table headers ---
 
@@ -137,6 +144,7 @@ public class LocaleManager {
         UIManager.put("FileChooser.newFolderAccessibleName", bundleString("FileChooser.newFolderAccessibleName"));
         UIManager.put("FileChooser.listViewButtonAccessibleName", bundleString("FileChooser.listViewButtonAccessibleName"));
         UIManager.put("FileChooser.detailsViewButtonAccessibleName", bundleString("FileChooser.detailsViewButtonAccessibleName"));
+        UIManager.put("FileChooser.viewMenuButtonAccessibleName", bundleString("FileChooser.viewMenuButtonAccessibleName"));
 
         // --- others ---
 

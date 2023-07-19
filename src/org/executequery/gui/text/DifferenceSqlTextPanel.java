@@ -2,11 +2,14 @@ package org.executequery.gui.text;
 
 import com.github.difflib.text.DiffRow;
 import com.github.difflib.text.DiffRowGenerator;
+import org.executequery.components.LineNumber;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class DifferenceSqlTextPanel extends JPanel {
 
@@ -33,6 +36,9 @@ public class DifferenceSqlTextPanel extends JPanel {
         topTextPanel.setSQLTextEditable(false);
         botTextPanel.setSQLTextEditable(false);
 
+        topTextPanel.getTextPane().getLineBorder().setFont(topTextPanel.getTextPane().getFont());
+        botTextPanel.getTextPane().getLineBorder().setFont(botTextPanel.getTextPane().getFont());
+
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setResizeWeight(0.5);
         splitPane.setTopComponent(topTextPanel);
@@ -49,26 +55,38 @@ public class DifferenceSqlTextPanel extends JPanel {
         topTextPanel.setSQLText("");
         botTextPanel.setSQLText("");
 
+        List<String> topLineBorders = new LinkedList<>();
+        List<String> botLineBorders = new LinkedList<>();
+
         for (DiffRow row : diffGenerator.generateDiffRows(
                 value2 != null ? Arrays.asList(value2.split("\n")) : new ArrayList<>(),
                 value1 != null ? Arrays.asList(value1.split("\n")) : new ArrayList<>())
         ) {
 
             if (row.getTag().equals(DiffRow.Tag.INSERT)) {
-                topTextPanel.getTextPane().append("+++ " + row.getNewLine() + "\n");
+                topTextPanel.getTextPane().append(row.getNewLine() + "\n");
+                topLineBorders.add("+++");
 
             } else if (row.getTag().equals(DiffRow.Tag.DELETE)) {
-                botTextPanel.getTextPane().append("~~~ " + row.getOldLine() + "\n");
+                botTextPanel.getTextPane().append(row.getOldLine() + "\n");
+                botLineBorders.add("---");
 
             } else if (row.getTag().equals(DiffRow.Tag.CHANGE)) {
-                topTextPanel.getTextPane().append("*** " + row.getNewLine() + "\n");
-                botTextPanel.getTextPane().append("*** " + row.getOldLine() + "\n");
+                topTextPanel.getTextPane().append(row.getNewLine() + "\n");
+                botTextPanel.getTextPane().append(row.getOldLine() + "\n");
+                topLineBorders.add("***");
+                botLineBorders.add("***");
 
             } else {
-                topTextPanel.getTextPane().append("    " + row.getNewLine() + "\n");
-                botTextPanel.getTextPane().append("    " + row.getOldLine() + "\n");
+                topTextPanel.getTextPane().append(row.getNewLine() + "\n");
+                botTextPanel.getTextPane().append(row.getOldLine() + "\n");
+                topLineBorders.add("   ");
+                botLineBorders.add("   ");
             }
         }
+
+        ((LineNumber) topTextPanel.getTextPane().getLineBorder()).setBorderLabels(topLineBorders);
+        ((LineNumber) botTextPanel.getTextPane().getLineBorder()).setBorderLabels(botLineBorders);
     }
 
 }

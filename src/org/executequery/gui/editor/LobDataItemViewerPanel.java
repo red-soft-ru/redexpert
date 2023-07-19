@@ -20,7 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import org.apache.commons.lang.CharUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databaseobjects.DatabaseTableObject;
@@ -204,12 +203,10 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
     private String formatDescriptionString() {
 
-        StringBuilder sb = new StringBuilder();
+        String sb = bundleString("LOBDataType") + " " + recordDataItem.getLobRecordItemName() +
+                "   " + bundleString("TotalSize") + " " + recordDataItem.length() + " " + bundleString("Bytes");
 
-        sb.append(bundleString("LOBDataType") + " ").append(recordDataItem.getLobRecordItemName());
-        sb.append("   " + bundleString("TotalSize") + " ").append(recordDataItem.length()).append(" " + bundleString("Bytes"));
-
-        return sb.toString();
+        return sb;
     }
 
     private byte[] recordDataItemByteArray() {
@@ -236,7 +233,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
             int defaultEndPoint = 256;
             int endPoint = Math.min(charArray.length, defaultEndPoint);
-            if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
+            /*if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
                 for (int i = 0; i < endPoint; i++) {
 
                     if (!CharUtils.isAscii(charArray[i])) {
@@ -245,7 +242,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
                         break;
                     }
 
-                }
+                }*/
 
         } else {
 

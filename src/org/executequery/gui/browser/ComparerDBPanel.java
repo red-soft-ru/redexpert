@@ -673,7 +673,6 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return;
         }
 
-        LocaleManager.setLocaleFor(LocaleManager.FILE_CHOOSER);
         JFileChooser fileSave = new JFileChooser("C:\\");
 
         FileFilter sqlFilter = new FileTypeFilter(".sql", "SQL files");

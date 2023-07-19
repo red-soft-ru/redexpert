@@ -190,7 +190,6 @@ public class ErdToolBarPalette extends PanelToolBar
             }
         }
 
-        LocaleManager.setLocaleFor(LocaleManager.COLOR_CHOOSER);
         Color newColour = JColorChooser.showDialog(parent,
                 Bundles.get("LocaleManager.ColorChooser.title"),
                 currentColour);

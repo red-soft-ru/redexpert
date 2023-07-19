@@ -28,6 +28,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -376,7 +377,7 @@ public class ApplicationLauncher {
         System.setProperty("user.timezone", stringUserProperty("locale.timezone"));
 
         Locale.setDefault(new Locale(stringUserProperty("locale.language")));
-
+        LocaleManager.updateLocaleEverywhere();
     }
 
     private void printVersionInfo() {

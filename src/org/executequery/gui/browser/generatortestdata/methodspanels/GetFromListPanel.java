@@ -54,7 +54,6 @@ public class GetFromListPanel extends AbstractMethodPanel {
     }
 
     private void init() {
-        LocaleManager.setLocaleFor(LocaleManager.FILE_CHOOSER);
         openFileDialog = new JFileChooser();
         textArea = new SimpleTextArea();
         textArea.getTextAreaComponent().setColumns(20);

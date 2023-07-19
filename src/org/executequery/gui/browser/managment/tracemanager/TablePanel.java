@@ -348,5 +348,9 @@ public class TablePanel extends JPanel {
         txtFieldRawSql = null;
     }
 
+    public int countRows() {
+        return dataModel.getRowCount();
+    }
+
 
 }

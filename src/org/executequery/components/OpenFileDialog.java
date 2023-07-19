@@ -94,7 +94,6 @@ public class OpenFileDialog extends FileChooserDialog
         sqlFiles = new FileSelector(new String[]{"sql"}, bundleString("file-sql"));
         eqFiles = new FileSelector(new String[]{"eqd"}, bundleString("file-RedExpertERD"));
 
-        LocaleManager.setLocaleFor(LocaleManager.FILE_CHOOSER);
         setFileSelectionMode(JFileChooser.FILES_ONLY);
         addChoosableFileFilter(textFiles);
         addChoosableFileFilter(eqFiles);

@@ -354,8 +354,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
                                         new InputStreamReader(
                                                 Files.newInputStream(Paths.get(openFileLogField.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
                                 readFromBufferedReader(reader, true);
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
+                            } catch (Exception e1) {
+                                GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
                             } finally {
                                 if (reader != null) {
                                     try {

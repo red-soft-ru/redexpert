@@ -93,22 +93,6 @@
 
             </folderList>
 
-            <desktopShortcutList>
-                <shortcut>
-                    <comment>Launch ${project.shortName}</comment>
-                    <name>${project.shortName}</name>
-                    <platforms>all</platforms>
-                    <exec>${installdir}/bin/${execute_file}</exec>
-                    <path>${installdir}/bin</path>
-                    <icon>${installdir}/red_expert.png</icon>
-                    <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
-                    <windowsPath>${installdir}/bin/</windowsPath>
-                    <windowsExecArgs/>
-                    <windowsIcon>${installdir}/bin/${execute_file}.exe</windowsIcon>
-                    <runAsAdmin>0</runAsAdmin>
-                </shortcut>
-            </desktopShortcutList>
-
             <startMenuShortcutList>
 
                 <startMenuShortcut>
@@ -227,6 +211,7 @@
 
         </associateWindowsFileExtension>
 
+        <!-- single user linux shortcut -->
         <createShortcuts>
             <destination>${user_home_directory}/.local/share/applications</destination>
             <shortcutList>
@@ -275,6 +260,7 @@
             </ruleList>
         </iniFileSet>
 
+        <!-- root linux shortcut -->
         <createShortcuts>
             <destination>/usr/share/applications</destination>
             <shortcutList>
@@ -322,6 +308,26 @@
                 </fileExists>
             </ruleList>
         </iniFileSet>
+
+        <!-- desktop shortcut -->
+        <createShortcuts>
+            <destination>${user_home_directory}/Desktop</destination>
+            <shortcutList>
+                <shortcut>
+                    <comment>Launch ${project.shortName}</comment>
+                    <name>${project.shortName}</name>
+                    <platforms>all</platforms>
+                    <exec>${installdir}/bin/${execute_file}</exec>
+                    <path>${installdir}/bin</path>
+                    <icon>${installdir}/red_expert.png</icon>
+                    <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
+                    <windowsPath>${installdir}/bin/</windowsPath>
+                    <windowsExecArgs/>
+                    <windowsIcon>${installdir}/bin/${execute_file}.exe</windowsIcon>
+                    <runAsAdmin>0</runAsAdmin>
+                </shortcut>
+            </shortcutList>
+        </createShortcuts>
 
         <actionGroup>
             <actionList>

@@ -36,7 +36,6 @@ import org.underworldlabs.swing.plaf.TabRollOverListener;
 import org.underworldlabs.swing.plaf.TabRolloverEvent;
 import org.underworldlabs.swing.plaf.TabSelectionListener;
 import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -59,7 +58,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         ResultSetTableContainer,
         ChangeListener {
 
-    private static final String OUTPUT_TAB_TITLE = Bundles.get(QueryEditorResultsPanel.class, "title");
+    private static final String OUTPUT_TAB_TITLE = bundleString("title");
 
     /**
      * the editor parent
@@ -86,13 +85,13 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      */
     private Icon outputTabIcon;
 
-    private static final String SUCCESS = " Statement executed successfully";
-    private static final String NO_ROWS = "No rows selected";
-    private static final String SUCCESSFULL_NO_ROWS = SUCCESS + "\n" + NO_ROWS;
-    private static final String ZERO_ROWS = " 0 rows returned";
+    private static final String SUCCESS = bundleString("SUCCESS");
+    private static final String NO_ROWS = bundleString("NO_ROWS");
+    private static final String SUCCESS_NO_ROWS = SUCCESS + "\n" + NO_ROWS;
+    private static final String ZERO_ROWS = bundleString("ZERO_ROWS");
     private static final String SPACE = " ";
-    private static final String ROW_RETURNED = " row returned";
-    private static final String ROWS_RETURNED = " rows returned";
+    private static final String ROW_RETURNED = bundleString("ROW_RETURNED");
+    private static final String ROWS_RETURNED = bundleString("ROWS_RETURNED");
 
     private ResultSetTableColumnResizingManager resultSetTableColumnResizingManager;
 
@@ -237,7 +236,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         if (indexOfTab(OUTPUT_TAB_TITLE) == -1) {
 
-            insertTab(OUTPUT_TAB_TITLE, outputTabIcon, outputTextPane, "Database output", 0);
+            insertTab(OUTPUT_TAB_TITLE, outputTabIcon, outputTextPane, bundleString("DatabaseOutput"), 0);
         }
 
     }
@@ -432,7 +431,9 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         resetTabCount();
 
-        String title = "Result Set " + resultSetTabTitleCounter + (filtered ? " - Filtered" : "");
+        String title = bundleString("ResultSetTitle") + resultSetTabTitleCounter
+                + (filtered ? " " + bundleString("ResultSetTitleFiltered") : "");
+
         if (useSingleResultSetTabs()) {
 
             if (getResultSetTabCount() >= 1) {
@@ -498,11 +499,11 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
             if (rowCount > 1) {
 
-                queryEditor.setLeftStatusText(SPACE + rowCount + ROWS_RETURNED);
+                queryEditor.setLeftStatusText(SPACE + rowCount + " " + ROWS_RETURNED);
 
             } else if (rowCount == 1) {
 
-                queryEditor.setLeftStatusText(SPACE + rowCount + ROW_RETURNED);
+                queryEditor.setLeftStatusText(SPACE + rowCount + " " + ROW_RETURNED);
 
             } else {
 
@@ -517,7 +518,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         int rowCount = model.getRowCount();
         if (rowCount == 0) {
             if (showRowNumber) {
-                setOutputMessage(SqlMessages.PLAIN_MESSAGE, SUCCESSFULL_NO_ROWS.trim(), true);
+                setOutputMessage(SqlMessages.PLAIN_MESSAGE, SUCCESS_NO_ROWS.trim(), true);
                 resetEditorRowCount(rowCount);
                 queryEditor.setMetaDataButtonEnabled(false);
             }
@@ -846,6 +847,10 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
     public boolean isTransposeAvailable() {
         return true;
+    }
+
+    private static String bundleString(String key) {
+        return Bundles.get(QueryEditorResultsPanel.class, key);
     }
 
 }

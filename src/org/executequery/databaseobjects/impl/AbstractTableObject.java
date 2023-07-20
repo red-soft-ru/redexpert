@@ -48,9 +48,8 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
 
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
-        for (String column : columns) {
+        for (String column : columns)
             sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
-        }
 
         sb.deleteCharAt(sb.length() - 1);
         sb.append(" WHERE ");
@@ -58,26 +57,27 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         boolean applied = false;
         List<DatabaseColumn> cols = getColumns();
         for (int i = 0; i < cols.size(); i++) {
+
             DatabaseColumn column = cols.get(i);
             String col = MiscUtils.getFormattedObject(cols.get(i).getName());
             RecordDataItem rdi = changes.get(i);
-            if (column.isGenerated())
+
+            if (column.isGenerated()) {
                 rdi.setGenerated(true);
-            else {
-                if (applied) {
+
+            } else {
+
+                if (applied)
                     sb.append(" AND ");
-                }
-                if (rdi.isValueNull())
-                    sb.append(col).append(" is NULL ");
-                else
-                    sb.append(col).append(" = ? ");
+                sb.append(col).append(rdi.isValueNull() ? " is NULL " : " = ? ");
                 applied = true;
             }
         }
 
         sb.deleteCharAt(sb.length() - 1);
-        sb.append("\nORDER BY " + cols.get(0) + " \n");
+        sb.append("\nORDER BY ").append(cols.get(0)).append(" \n");
         sb.append("ROWS 1");
+
         return sb.toString();
     }
 
@@ -90,27 +90,27 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         boolean applied = false;
         List<DatabaseColumn> cols = getColumns();
         for (int i = 0; i < cols.size(); i++) {
+
             DatabaseColumn column = cols.get(i);
             String col = MiscUtils.getFormattedObject(cols.get(i).getName());
             RecordDataItem rdi = changes.get(i);
-            if (column.isGenerated())
-                rdi.setGenerated(true);
-            else {
-                if (applied) {
 
+            if (column.isGenerated()) {
+                rdi.setGenerated(true);
+
+            } else {
+
+                if (applied)
                     sb.append(" AND ");
-                }
-                if (rdi.isValueNull())
-                    sb.append(col).append(" is NULL ");
-                else
-                    sb.append(col).append(" = ? ");
+                sb.append(col).append(rdi.isValueNull() ? " is NULL " : " = ? ");
                 applied = true;
             }
         }
 
         sb.deleteCharAt(sb.length() - 1);
-        sb.append("\nORDER BY " + cols.get(0) + " \n");
+        sb.append("\nORDER BY ").append(cols.get(0)).append(" \n");
         sb.append("ROWS 1");
+
         return sb.toString();
     }
 
@@ -118,30 +118,38 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
 
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ").append(getNameWithPrefixForQuery());
-        String columnsForQuery = " (";
-        String values = " VALUES (";
+        StringBuilder columnsForQuery = new StringBuilder(" (");
+        StringBuilder values = new StringBuilder(" VALUES (");
+
         boolean applied = false;
         List<DatabaseColumn> cols = getColumns();
         for (int i = 0; i < cols.size(); i++) {
+
             DatabaseColumn column = cols.get(i);
             String col = MiscUtils.getFormattedObject(cols.get(i).getName());
             RecordDataItem rdi = changes.get(i);
-            if (column.isGenerated() || rdi.isNewValueNull() && column.isIdentity())
-                rdi.setGenerated(true);
-            else {
-                if (applied) {
 
-                    columnsForQuery += " , ";
-                    values += " , ";
+            if (column.isGenerated() || column.isIdentity()
+                    && rdi.isNewValueNull() || column.getDefaultValue() != null && rdi.isNewValueNull()
+                    || column.getDomainDefaultValue() != null && rdi.isNewValueNull()) {
+                rdi.setGenerated(true);
+
+            } else {
+
+                if (applied) {
+                    columnsForQuery.append(" , ");
+                    values.append(" , ");
                 }
-                columnsForQuery += col;
-                values += "?";
+                columnsForQuery.append(col);
+                values.append("?");
                 applied = true;
             }
         }
-        columnsForQuery += ") ";
-        values += ") ";
+
+        columnsForQuery.append(") ");
+        values.append(") ");
         sb.append(columnsForQuery).append(values);
+
         return sb.toString();
     }
 

@@ -20,6 +20,7 @@
 
 package org.executequery.gui.editor;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.TextFieldFocusController;
 import org.underworldlabs.util.SystemProperties;
@@ -45,7 +46,7 @@ final class MaxRowCountField extends NumberTextField
         this.queryEditor = queryEditor;
 
         setValue(SystemProperties.getIntProperty("user", "editor.max.records"));
-        setToolTipText("Set the maximum rows returned (-1 for all)");
+        setToolTipText(Bundles.get("QueryEditor.MaxRowsToolTip"));
         setFocusAccelerator('r');
 
         addFocusListener(this);

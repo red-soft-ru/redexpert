@@ -125,8 +125,8 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
         sb.appendField(Field.createField(fields, "CHARACTER_LENGTH").setAlias(CHAR_LENGTH));
         sb.appendField(Field.createField(charsets, CHARSET));
         sb.appendField(Field.createField(collations, COLLATION_NAME));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, "CHARACTER_SET_ID"), Field.createField(charsets, "CHARACTER_SET_ID")));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, "COLLATION_ID"), Field.createField(collations, "COLLATION_ID"))
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, "CHARACTER_SET_ID"), Field.createField(charsets, "CHARACTER_SET_ID")));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, "COLLATION_ID"), Field.createField(collations, "COLLATION_ID"))
                 .appendFields(Field.createField(fields, "CHARACTER_SET_ID"), Field.createField(collations, "CHARACTER_SET_ID")));
         sb.setOrdering("1");
         return sb;

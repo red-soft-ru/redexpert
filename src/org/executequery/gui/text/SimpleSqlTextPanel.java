@@ -76,14 +76,22 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     private final boolean autocompleteOnlyHotKey;
 
     public SimpleSqlTextPanel() {
-        this(false, true);
+        this(false, true, "SQL");
+    }
+
+    public SimpleSqlTextPanel(String title) {
+        this(false, true, title);
     }
 
     public SimpleSqlTextPanel(boolean appending, boolean autocompleteOnlyHotKey) {
+        this(appending, autocompleteOnlyHotKey, "SQL");
+    }
+
+    public SimpleSqlTextPanel(boolean appending, boolean autocompleteOnlyHotKey, String title) {
         super(new BorderLayout());
         this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
         try {
-            init();
+            init(title);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -92,9 +100,9 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
         this.appending = appending;
     }
 
-    private void init() throws Exception {
+    private void init(String title) throws Exception {
 
-        setBorder(BorderFactory.createTitledBorder("SQL"));
+        setBorder(BorderFactory.createTitledBorder(title));
 
         textPane = new SQLTextArea(autocompleteOnlyHotKey);
         textPane.setFont(new Font("monospaced", Font.PLAIN, 12));

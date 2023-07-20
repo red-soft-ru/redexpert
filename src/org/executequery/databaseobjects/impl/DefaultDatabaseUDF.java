@@ -230,9 +230,9 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
         sb.appendField(Field.createField(arguments, NULL_FLAG).setNull(getDatabaseMajorVersion() < 3));
         sb.appendFields(charsets, CHARACTER_SET_NAME, BYTES_PER_CHARACTER);
 
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(functions, getFieldName()),
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(functions, getFieldName()),
                 Field.createField(arguments, getFieldName())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(arguments, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
         sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(arguments, PARAMETER_NUMBER).getFieldTable());
         return sb;
     }

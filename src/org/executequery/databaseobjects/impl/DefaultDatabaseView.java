@@ -70,7 +70,7 @@ public class DefaultDatabaseView extends AbstractTableObject
         Table rf = Table.createTable("RDB$RELATION_FIELDS", "RF");
         sb.appendFields(rels, getFieldName(), SOURCE, DESCRIPTION);
         sb.appendFields(rf, FIELD_NAME);
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(getObjectField(), Field.createField(rf, getFieldName())));
+        sb.appendJoin(Join.createLeftJoin().appendFields(getObjectField(), Field.createField(rf, getFieldName())));
         sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(rf, FIELD_POSITION).getFieldTable());
         return sb;
     }

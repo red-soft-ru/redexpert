@@ -421,7 +421,7 @@ public class QueryEditor extends DefaultTabView
 
         filterTextField = new DefaultTextField();
         filterTextField.setFocusAccelerator('l');
-        filterTextField.setToolTipText("Apply filter to current result set");
+        filterTextField.setToolTipText(bundleString("FilterToolTip"));
         filterTextField.addActionListener(e -> resultsPanel.filter(filterTextField.getText()));
 
         return filterTextField;
@@ -622,7 +622,7 @@ public class QueryEditor extends DefaultTabView
         popup.statementExecuting();
         setStopButtonEnabled(true);
         statusBar.startProgressBar();
-        statusBar.setExecutionTime(" Executing.. ");
+        statusBar.setExecutionTime(Bundles.getCommon("executing"));
 
     }
 

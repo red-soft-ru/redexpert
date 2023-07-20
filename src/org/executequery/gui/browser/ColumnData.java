@@ -21,7 +21,6 @@
 package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -32,13 +31,9 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.log.Log;
-import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 
 import java.io.Serializable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -663,7 +658,7 @@ public class ColumnData implements Serializable {
     }
 
     private void getDomainInfo() {
-        domain = domain.trim();
+        domain = MiscUtils.trimEnd(domain);
 
         DefaultDatabaseDomain defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.DOMAIN, domain);
         if (defaultDatabaseDomain == null)
@@ -746,7 +741,7 @@ public class ColumnData implements Serializable {
         }
         if (typeString.contains("<0")) {
             if (columnSubtype < 0)
-                typeString = typeString.replace("<0", "" + columnSubtype);
+                typeString = typeString.replace("<0", String.valueOf(columnSubtype));
             else typeString = typeString.replace("<0", "0");
         }
         StringBuilder sb = new StringBuilder(typeString);

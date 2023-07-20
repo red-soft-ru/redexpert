@@ -234,7 +234,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     return;
                 }
 
-                while (!objects.get(i).getName().contentEquals(rs.getString(1).trim())) {
+                while (!objects.get(i).getName().contentEquals(MiscUtils.trimEnd(rs.getString(1)))) {
                     i++;
                     if (i >= objects.size())
                         throw new DataSourceException("Error load info for" + metaDataKey);
@@ -317,7 +317,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     }
                 }
 
-                while (!objects.get(i).getName().contentEquals(rs.getString(1).trim())) {
+                while (!objects.get(i).getName().contentEquals(MiscUtils.trimEnd(rs.getString(1)))) {
                     i++;
                     if (i >= objects.size())
                         throw new DataSourceException("Error load columns for " + metaDataKey);
@@ -577,7 +577,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private AbstractDatabaseObject getIndex(ResultSet rs) throws SQLException {
 
 
-        DefaultDatabaseIndex index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
+        DefaultDatabaseIndex index = new DefaultDatabaseIndex(this, MiscUtils.trimEnd(rs.getString(1)));
         index.setHost(this.getHost());
         index.setActive(rs.getInt(2) != 1);
         return index;
@@ -592,7 +592,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             rs = getIndexFromNameResultSet(name);
             while (rs.next()) {
 
-                index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
+                index = new DefaultDatabaseIndex(this, MiscUtils.trimEnd(rs.getString(1)));
                 index.setTableName(rs.getString(2));
                 index.setIndexType(rs.getInt(4));
                 index.setActive(rs.getInt(6) != 1);
@@ -623,8 +623,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      * Loads the database triggers.
      */
     private AbstractDatabaseObject getTrigger(ResultSet rs) throws SQLException {
-                DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
-                        rs.getString(1).trim());
+        DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
+                MiscUtils.trimEnd(rs.getString(1)));
                 if (typeTree == TreePanel.DEFAULT)
                     trigger.setTriggerActive(rs.getInt(2) != 1);
                 else trigger.getObjectInfo();
@@ -690,7 +690,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private AbstractDatabaseObject getUDF(ResultSet rs) throws SQLException {
 
                 DefaultDatabaseUDF udf = new DefaultDatabaseUDF(this,
-                        rs.getString(1).trim(),
+                        MiscUtils.trimEnd(rs.getString(1)),
                         this.getHost());
                 udf.setRemarks(rs.getString(2));
                 String moduleName = rs.getString(3);
@@ -709,7 +709,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
 
     private AbstractDatabaseObject getPackage(ResultSet rs) throws SQLException {
-                return new DefaultDatabasePackage(this, rs.getString(1).trim());
+        return new DefaultDatabasePackage(this, MiscUtils.trimEnd(rs.getString(1)));
     }
 
     private ResultSet getResultSetFromQuery(String query) throws SQLException {
@@ -898,39 +898,37 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getUDFResultSet() throws SQLException {
 
         ResultSet resultSet = null;
-        switch (getHost().getDatabaseMetaData().getDatabaseMajorVersion()) {
-            case 2:
-                String query = "select RDB$FUNCTION_NAME,\n" +
-                        "RDB$DESCRIPTION,\n" +
-                        "RDB$MODULE_NAME,\n" +
-                        "RDB$ENTRYPOINT,\n" +
-                        "RDB$RETURN_ARGUMENT,\n" +
-                        "RDB$DESCRIPTION as description\n" +
-                        "from RDB$FUNCTIONS\n" +
-                        "where RDB$SYSTEM_FLAG =0 or RDB$SYSTEM_FLAG is null\n" +
-                        "order by RDB$FUNCTION_NAME";
-                if (typeTree == TreePanel.DEPENDED_ON)
-                    query = getDependOnQuery(15);
-                else if (typeTree == TreePanel.DEPENDENT)
-                    query = getDependentQuery(15);
-                resultSet = getResultSetFromQuery(query);
-                break;
-            default:
-                query = "select RDB$FUNCTION_NAME,\n" +
-                        "RDB$DESCRIPTION,\n" +
-                        "RDB$MODULE_NAME,\n" +
-                        "RDB$ENTRYPOINT,\n" +
-                        "RDB$RETURN_ARGUMENT,\n" +
-                        "RDB$DESCRIPTION as description\n" +
-                        "from RDB$FUNCTIONS\n" +
-                        "where RDB$LEGACY_FLAG = 1 and (RDB$MODULE_NAME is not NULL) and (RDB$SYSTEM_FLAG =0 or RDB$SYSTEM_FLAG is null)\n" +
-                        "order by RDB$FUNCTION_NAME";
-                if (typeTree == TreePanel.DEPENDED_ON)
-                    query = getDependOnQuery(15);
-                else if (typeTree == TreePanel.DEPENDENT)
-                    query = getDependentQuery(15);
-                resultSet = getResultSetFromQuery(query);
-                break;
+        if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() == 2) {
+            String query = "select RDB$FUNCTION_NAME,\n" +
+                    "RDB$DESCRIPTION,\n" +
+                    "RDB$MODULE_NAME,\n" +
+                    "RDB$ENTRYPOINT,\n" +
+                    "RDB$RETURN_ARGUMENT,\n" +
+                    "RDB$DESCRIPTION as description\n" +
+                    "from RDB$FUNCTIONS\n" +
+                    "where RDB$SYSTEM_FLAG =0 or RDB$SYSTEM_FLAG is null\n" +
+                    "order by RDB$FUNCTION_NAME";
+            if (typeTree == TreePanel.DEPENDED_ON)
+                query = getDependOnQuery(15);
+            else if (typeTree == TreePanel.DEPENDENT)
+                query = getDependentQuery(15);
+            resultSet = getResultSetFromQuery(query);
+        } else {
+            String query;
+            query = "select RDB$FUNCTION_NAME,\n" +
+                    "RDB$DESCRIPTION,\n" +
+                    "RDB$MODULE_NAME,\n" +
+                    "RDB$ENTRYPOINT,\n" +
+                    "RDB$RETURN_ARGUMENT,\n" +
+                    "RDB$DESCRIPTION as description\n" +
+                    "from RDB$FUNCTIONS\n" +
+                    "where RDB$LEGACY_FLAG = 1 and (RDB$MODULE_NAME is not NULL) and (RDB$SYSTEM_FLAG =0 or RDB$SYSTEM_FLAG is null)\n" +
+                    "order by RDB$FUNCTION_NAME";
+            if (typeTree == TreePanel.DEPENDED_ON)
+                query = getDependOnQuery(15);
+            else if (typeTree == TreePanel.DEPENDENT)
+                query = getDependentQuery(15);
+            resultSet = getResultSetFromQuery(query);
         }
 
         return resultSet;

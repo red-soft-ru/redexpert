@@ -936,32 +936,31 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             Connection conn = getConnection().unwrap(Connection.class);
             IFBDatabaseConnection db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), conn, "FBDatabaseConnectionImpl");
             db.setConnection(conn);
-            switch (db.getMajorVersion()) {
-                case 2:
-                    switch (type) {
-                        case NamedObject.SYNONYM:
-                        case NamedObject.FUNCTION:
-                        case NamedObject.SYSTEM_VIEW:
-                        case NamedObject.PACKAGE:
-                        case NamedObject.SYSTEM_PACKAGE:
-                        case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
-                        case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
-                        case NamedObject.SYSTEM_STRING_FUNCTIONS:
-                        case NamedObject.SYSTEM_FUNCTION:
-                        case NamedObject.DDL_TRIGGER:
-                        case NamedObject.USER:
-                            return false;
-                    }
-                default: // TODO check after the 5 version is released
-                    switch (type) {
-                        case NamedObject.SYNONYM:
-                        case NamedObject.SYSTEM_VIEW:
-                        case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
-                        case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
-                        case NamedObject.SYSTEM_STRING_FUNCTIONS:
-                        case NamedObject.SYSTEM_FUNCTION:
-                            return false;
-                    }
+            // TODO check after the 5 version is released
+            if (db.getMajorVersion() == 2) {
+                switch (type) {
+                    case NamedObject.SYNONYM:
+                    case NamedObject.FUNCTION:
+                    case NamedObject.SYSTEM_VIEW:
+                    case NamedObject.PACKAGE:
+                    case NamedObject.SYSTEM_PACKAGE:
+                    case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
+                    case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
+                    case NamedObject.SYSTEM_STRING_FUNCTIONS:
+                    case NamedObject.SYSTEM_FUNCTION:
+                    case NamedObject.DDL_TRIGGER:
+                    case NamedObject.USER:
+                        return false;
+                }
+            }
+            switch (type) {
+                case NamedObject.SYNONYM:
+                case NamedObject.SYSTEM_VIEW:
+                case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
+                case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
+                case NamedObject.SYSTEM_STRING_FUNCTIONS:
+                case NamedObject.SYSTEM_FUNCTION:
+                    return false;
             }
             if (type == NamedObject.TABLESPACE||type == NamedObject.JOB)
                 return getDatabaseProductName().toUpperCase().contains("REDDATABASE") && db.getMajorVersion() >= 4;
@@ -1288,7 +1287,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         List<String> list = new ArrayList<>();
         List<NamedObject> databaseObjects = getDatabaseObjectsForMetaTag(metadatakey);
         for (NamedObject namedObject : databaseObjects) {
-            list.add(namedObject.getName().trim());
+            list.add(MiscUtils.trimEnd(namedObject.getName()));
         }
         return list;
     }
@@ -1296,7 +1295,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     public NamedObject getDatabaseObjectFromMetaTagAndName(String metadatakey, String name) {
         List<NamedObject> namedObjects = getDatabaseObjectsForMetaTag(metadatakey);
         for (NamedObject namedObject : namedObjects) {
-            if (namedObject.getName().trim().contentEquals(name))
+            if (MiscUtils.trimEnd(namedObject.getName()).contentEquals(name))
                 return namedObject;
         }
         return null;

@@ -26,7 +26,6 @@ import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.browser.tree.TreePanel;
-import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.sql.TokenizingFormatter;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -970,117 +969,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return true;
     }
 
-    @Override
-    public String prepareStatement(List<String> columns, List<RecordDataItem> changes) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
-        for (String column : columns)
-            sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
-
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append(" WHERE ");
-
-        boolean applied = false;
-        List<DatabaseColumn> cols = getColumns();
-        for (int i = 0; i < cols.size(); i++) {
-
-            DatabaseColumn column = cols.get(i);
-            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
-            RecordDataItem rdi = changes.get(i);
-
-            if (column.isGenerated()) {
-                rdi.setGenerated(true);
-
-            } else {
-
-                if (applied)
-                    sb.append(" AND ");
-                sb.append(col).append(rdi.isValueNull() ? " is NULL " : " = ? ");
-                applied = true;
-            }
-        }
-
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append("\nORDER BY ").append(cols.get(0)).append(" \n");
-        sb.append("ROWS 1");
-
-        return sb.toString();
-    }
-
-    @Override
-    public String prepareStatementDeleting(List<RecordDataItem> changes) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("DELETE FROM ").append(getNameWithPrefixForQuery());
-        sb.append(" WHERE ");
-
-        boolean applied = false;
-        List<DatabaseColumn> cols = getColumns();
-        for (int i = 0; i < cols.size(); i++) {
-
-            DatabaseColumn column = cols.get(i);
-            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
-            RecordDataItem rdi = changes.get(i);
-
-            if (column.isGenerated()) {
-                rdi.setGenerated(true);
-
-            } else {
-
-                if (applied)
-                    sb.append(" AND ");
-                sb.append(col).append(rdi.isValueNull() ? " is NULL " : " = ? ");
-                applied = true;
-            }
-        }
-
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append("\nORDER BY ").append(cols.get(0)).append(" \n");
-        sb.append("ROWS 1");
-
-        return sb.toString();
-    }
-
-    @Override
-    public String prepareStatementAdding(List<String> columns, List<RecordDataItem> changes) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO ").append(getNameWithPrefixForQuery());
-        StringBuilder columnsForQuery = new StringBuilder(" (");
-        StringBuilder values = new StringBuilder(" VALUES (");
-
-        boolean applied = false;
-        List<DatabaseColumn> cols = getColumns();
-        for (int i = 0; i < cols.size(); i++) {
-
-            DatabaseColumn column = cols.get(i);
-            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
-            RecordDataItem rdi = changes.get(i);
-
-            if (column.isGenerated() || column.isIdentity()
-                    && rdi.isNewValueNull() || column.getDefaultValue() != null && rdi.isNewValueNull()
-                    || column.getDomainDefaultValue() != null && rdi.isNewValueNull()) {
-                rdi.setGenerated(true);
-
-            } else {
-
-                if (applied) {
-                    columnsForQuery.append(" , ");
-                    values.append(" , ");
-                }
-                columnsForQuery.append(col);
-                values.append("?");
-                applied = true;
-            }
-        }
-
-        columnsForQuery.append(") ");
-        values.append(") ");
-        sb.append(columnsForQuery).append(values);
-
-        return sb.toString();
-    }
 
     @Override
     public String prepareStatementWithPK(List<String> columns) {
@@ -1225,9 +1113,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         sb.appendField(Field.createField(rels, TABLESPACE + "_NAME").setAlias(TABLESPACE).
                 setNull(!tablespaceCheck()));
         sb.appendField(Field.createField(rels, DESCRIPTION));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(getObjectField(), Field.createField(relCons, getObjectField().getAlias())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
+        sb.appendJoin(Join.createLeftJoin().appendFields(getObjectField(), Field.createField(relCons, getObjectField().getAlias())));
+        sb.appendJoin(Join.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
                 Field.createField(triggers, "TRIGGER_NAME")));
 
         sb.appendCondition(Condition.createCondition()

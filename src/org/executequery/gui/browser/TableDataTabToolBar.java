@@ -22,6 +22,7 @@ package org.executequery.gui.browser;
 
 import org.executequery.Constants;
 import org.executequery.gui.DefaultNumberTextField;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.actions.ActionBuilder;
@@ -61,7 +62,7 @@ public class TableDataTabToolBar extends JPanel implements FocusListener {
                 return 100;
             }
         };
-        maxRowCountField.setToolTipText("Set the maximum rows returned (-1 for all)");
+        maxRowCountField.setToolTipText(Bundles.get("QueryEditor.MaxRowsToolTip"));
         maxRowCountField.setFocusAccelerator('r');
         maxRowCountField.addFocusListener(this);
         maxRowCountField.setValue(SystemProperties.getIntProperty("user", "browser.max.records"));

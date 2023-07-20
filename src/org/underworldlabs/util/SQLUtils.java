@@ -1603,74 +1603,85 @@ public final class SQLUtils {
         return sb.append(";\n").toString();
     }
 
-    public static String generateCreateJob(String name, String cronSchedule, boolean active,
-                                           LocalDateTime startDate,LocalDateTime endDate,int jobType,String source) {
+    public static String generateCreateJob(
+            String name, String cronSchedule, boolean active, LocalDateTime startDate, LocalDateTime endDate,
+            int jobType, String source, String comment, String delimiter) {
+
         StringBuilder sb = new StringBuilder();
+
         sb.append("CREATE JOB ").append(format(name)).append("\n");
         sb.append("'").append(cronSchedule).append("'").append("\n");
-        if(active)
-            sb.append("ACTIVE");
-        else sb.append("INACTIVE");
-        sb.append("\n");
+        sb.append(active ? "ACTIVE" : "INACTIVE").append("\n");
+
         sb.append("START DATE ");
-        if(startDate!=null)
-            sb.append("'").append(startDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
-        else sb.append("NULL");
-        sb.append("\n");
+        if (startDate != null)
+            sb.append("'").append(startDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'\n");
+        else
+            sb.append("NULL\n");
+
         sb.append("END DATE ");
-        if(endDate!=null)
-            sb.append("'").append(endDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
-        else sb.append("NULL");
-        sb.append("\n");
+        if (endDate != null)
+            sb.append("'").append(endDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'\n");
+        else
+            sb.append("NULL\n");
+
         if (jobType == DefaultDatabaseJob.BASH_TYPE)
-            sb.append("COMMAND '");
-        else sb.append("AS\n");
-        sb.append(source);
-        if (jobType == DefaultDatabaseJob.BASH_TYPE)
-            sb.append("'");
-        sb.append("^");
-        return sb.toString();
+            sb.append("COMMAND '").append(source).append("'");
+        else
+            sb.append("AS\n").append(source);
+
+        if (comment != null && !comment.isEmpty())
+            sb.append(delimiter).append(generateComment(format(name), "JOB", comment, "", true));
+
+        return sb.append(delimiter).append("\n").toString();
     }
 
-    public static String generateAlterJob(DefaultDatabaseJob job, String name, String cronSchedule, boolean active,
-                                          LocalDateTime startDate, LocalDateTime endDate, int jobType, String source) {
+    public static String generateAlterJob(
+            DefaultDatabaseJob job, String name, String cronSchedule, boolean active, LocalDateTime startDate,
+            LocalDateTime endDate, int jobType, String source, String comment, String delimiter) {
+
         StringBuilder sb = new StringBuilder();
+
         sb.append("ALTER JOB ").append(format(name)).append("\n");
+
         if (!job.getCronSchedule().equals(cronSchedule))
             sb.append("'").append(cronSchedule).append("'").append("\n");
-        if (job.isActive() != active) {
-            if (active)
-                sb.append("ACTIVE");
-            else sb.append("INACTIVE");
-            sb.append("\n");
-        }
+
+        if (job.isActive() != active)
+            sb.append(active ? "ACTIVE" : "INACTIVE").append("\n");
+
         if (!Objects.equals(job.getStartDate(), startDate)) {
             sb.append("START DATE ");
             if (startDate != null)
-                sb.append("'").append(startDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
-            else sb.append("NULL");
-            sb.append("\n");
+                sb.append("'").append(startDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'\n");
+            else
+                sb.append("NULL\n");
         }
+
         if (!Objects.equals(job.getEndDate(), endDate)) {
             sb.append("END DATE ");
             if (endDate != null)
-                sb.append("'").append(endDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
-            else sb.append("NULL");
-            sb.append("\n");
+                sb.append("'").append(endDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'\n");
+            else
+                sb.append("NULL\n");
         }
+
         if (job.getJobType() != jobType || !job.getSource().equals(source)) {
             if (jobType == DefaultDatabaseJob.BASH_TYPE)
-                sb.append("COMMAND '");
-            else sb.append("AS\n");
-            sb.append(source);
-            if (jobType == DefaultDatabaseJob.BASH_TYPE)
-                sb.append("'");
+                sb.append("COMMAND '").append(source).append("'");
+            else
+                sb.append("AS\n").append(source);
         }
-        sb.append("^");
-        return sb.toString();
+
+        if (!Objects.equals(job.getRemarks(), comment) && !comment.isEmpty())
+            sb.append(delimiter).append(generateComment(format(name), "JOB", comment, "", true));
+
+        return sb.append(delimiter).append("\n").toString();
     }
 
     public static String generateAlterJob(DefaultDatabaseJob thisJob, DefaultDatabaseJob compareJob) {
+
+        String delimiter = "^";
 
         StringBuilder sb = new StringBuilder();
         sb.append("ALTER JOB ").append(format(thisJob.getName())).append("\n");
@@ -1680,36 +1691,37 @@ public final class SQLUtils {
             sb.append("'").append(compareJob.getCronSchedule()).append("'").append("\n");
 
         if (thisJob.isActive() != compareJob.isActive())
-            sb.append(compareJob.isActive() ? "ACTIVE\n" : "INACTIVE\n");
+            sb.append(compareJob.isActive() ? "ACTIVE" : "INACTIVE").append("\n");
 
         if (!Objects.equals(thisJob.getStartDate(), compareJob.getStartDate())) {
             sb.append("START DATE ");
             if (compareJob.getStartDate() != null)
-                sb.append("'").append(compareJob.getStartDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+                sb.append("'").append(compareJob.getStartDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'\n");
             else
-                sb.append("NULL");
-            sb.append("\n");
+                sb.append("NULL\n");
         }
 
         if (!Objects.equals(thisJob.getEndDate(), compareJob.getEndDate())) {
             sb.append("END DATE ");
             if (compareJob.getEndDate() != null)
-                sb.append("'").append(compareJob.getEndDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'");
+                sb.append("'").append(compareJob.getEndDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).append("'\n");
             else
-                sb.append("NULL");
-            sb.append("\n");
+                sb.append("NULL\n");
         }
 
         if (thisJob.getJobType() != compareJob.getJobType() || !thisJob.getSource().equals(compareJob.getSource())) {
-            sb.append((compareJob.getJobType() == DefaultDatabaseJob.BASH_TYPE) ? "COMMAND '" : "AS\n");
-            sb.append(compareJob.getSource());
             if (compareJob.getJobType() == DefaultDatabaseJob.BASH_TYPE)
-                sb.append("'");
+                sb.append("COMMAND '").append(compareJob.getSource()).append("'");
+            else
+                sb.append("AS\n").append(compareJob.getSource());
         }
 
-        if (noChangesCheckString.equals(sb.toString()))
+        if (!Objects.equals(thisJob.getRemarks(), compareJob.getRemarks()) && !compareJob.getRemarks().isEmpty())
+            sb.append(delimiter).append(generateComment(format(thisJob.getName()), "JOB", compareJob.getRemarks(), "", true));
+
+        if (noChangesCheckString.contentEquals(sb))
             return "/* there are no changes */\n";
-        return sb.append("^\n").toString();
+        return sb.append(delimiter).append("\n").toString();
     }
 
     private static String format(String object) {

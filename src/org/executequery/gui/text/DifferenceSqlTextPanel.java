@@ -14,38 +14,48 @@ import java.util.List;
 
 public class DifferenceSqlTextPanel extends JPanel {
 
-    private final String topTitle;
-    private final String botTitle;
+    private static final Color INSERT_COLOR = new Color(100, 255, 100, 77);
+    private static final Color DELETE_COLOR = new Color(255, 100, 100, 77);
+    private static final Color CHANGE_COLOR = new Color(100, 100, 255, 77);
 
-    private SimpleSqlTextPanel topTextPanel;
-    private SimpleSqlTextPanel botTextPanel;
+    private final String newTitle;
+    private final String oldTitle;
+
+    private SimpleSqlTextPanel newTextPanel;
+    private SimpleSqlTextPanel oldTextPanel;
 
     private List<Object[]> highlights;
+    private List<String> newLineBorders;
+    private List<String> oldLineBorders;
 
-    public DifferenceSqlTextPanel(String topTitle, String botTitle) {
+    public DifferenceSqlTextPanel(String newTitle, String oldTitle) {
         super(new BorderLayout());
 
-        this.topTitle = topTitle;
-        this.botTitle = botTitle;
+        this.newTitle = newTitle;
+        this.oldTitle = oldTitle;
 
         init();
     }
 
     private void init() {
 
-        topTextPanel = new SimpleSqlTextPanel(topTitle);
-        botTextPanel = new SimpleSqlTextPanel(botTitle);
+        highlights = new ArrayList<>();
+        newLineBorders = new LinkedList<>();
+        oldLineBorders = new LinkedList<>();
 
-        topTextPanel.setSQLTextEditable(false);
-        botTextPanel.setSQLTextEditable(false);
+        newTextPanel = new SimpleSqlTextPanel(newTitle);
+        oldTextPanel = new SimpleSqlTextPanel(oldTitle);
 
-        topTextPanel.getTextPane().getLineBorder().setFont(topTextPanel.getTextPane().getFont());
-        botTextPanel.getTextPane().getLineBorder().setFont(botTextPanel.getTextPane().getFont());
+        newTextPanel.setSQLTextEditable(false);
+        oldTextPanel.setSQLTextEditable(false);
+
+        newTextPanel.getTextPane().getLineBorder().setFont(newTextPanel.getTextPane().getFont());
+        oldTextPanel.getTextPane().getLineBorder().setFont(oldTextPanel.getTextPane().getFont());
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setResizeWeight(0.5);
-        splitPane.setTopComponent(topTextPanel);
-        splitPane.setBottomComponent(botTextPanel);
+        splitPane.setTopComponent(oldTextPanel);
+        splitPane.setBottomComponent(newTextPanel);
 
         add(splitPane, BorderLayout.CENTER);
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
@@ -54,67 +64,65 @@ public class DifferenceSqlTextPanel extends JPanel {
     public void setTexts(String value1, String value2) {
 
         DiffRowGenerator diffGenerator = DiffRowGenerator.create().build();
-        if (highlights == null)
-            highlights = new ArrayList<>();
-        highlights.clear();
-        topTextPanel.setSQLText("");
-        topTextPanel.getTextPane().removeAllLineHighlights();
-        botTextPanel.setSQLText("");
-        botTextPanel.getTextPane().removeAllLineHighlights();
 
-        List<String> topLineBorders = new LinkedList<>();
-        List<String> botLineBorders = new LinkedList<>();
+        highlights.clear();
+        newLineBorders.clear();
+        oldLineBorders.clear();
+
+        newTextPanel.setSQLText("");
+        oldTextPanel.setSQLText("");
+
+        newTextPanel.getTextPane().removeAllLineHighlights();
+        oldTextPanel.getTextPane().removeAllLineHighlights();
 
         for (DiffRow row : diffGenerator.generateDiffRows(
                 value2 != null ? Arrays.asList(value2.split("\n")) : new ArrayList<>(),
                 value1 != null ? Arrays.asList(value1.split("\n")) : new ArrayList<>())
         ) {
 
-            if (row.getTag().equals(DiffRow.Tag.INSERT)) {
-                topTextPanel.getTextPane().append(row.getNewLine() + "\n");
-                topLineBorders.add("+++");
-                addHighLightLine(topTextPanel.getTextPane(), Color.GREEN);
+            if (row.getTag().equals(DiffRow.Tag.INSERT))
+                addRow(row, INSERT_COLOR, "+++");
 
-            } else if (row.getTag().equals(DiffRow.Tag.DELETE)) {
-                botTextPanel.getTextPane().append(row.getOldLine() + "\n");
-                botLineBorders.add("---");
-                addHighLightLine(botTextPanel.getTextPane(), Color.RED);
+            else if (row.getTag().equals(DiffRow.Tag.DELETE))
+                addRow(row, DELETE_COLOR, "---");
 
-            } else if (row.getTag().equals(DiffRow.Tag.CHANGE)) {
-                topTextPanel.getTextPane().append(row.getNewLine() + "\n");
-                botTextPanel.getTextPane().append(row.getOldLine() + "\n");
-                topLineBorders.add("***");
-                botLineBorders.add("***");
-                addHighLightLine(topTextPanel.getTextPane(), Color.BLUE);
-                addHighLightLine(botTextPanel.getTextPane(), Color.BLUE);
+            else if (row.getTag().equals(DiffRow.Tag.CHANGE))
+                addRow(row, CHANGE_COLOR, "***");
 
-            } else {
-                topTextPanel.getTextPane().append(row.getNewLine() + "\n");
-                botTextPanel.getTextPane().append(row.getOldLine() + "\n");
-                topLineBorders.add("   ");
-                botLineBorders.add("   ");
-            }
-        }
-        for (Object[] objs : highlights) {
-            addHighLightLine((SQLTextArea) objs[0], (int) objs[1], (Color) objs[2]);
+            else
+                addRow(row, null, "   ");
         }
 
-        ((LineNumber) topTextPanel.getTextPane().getLineBorder()).setBorderLabels(topLineBorders);
-        ((LineNumber) botTextPanel.getTextPane().getLineBorder()).setBorderLabels(botLineBorders);
+        for (Object[] highlight : highlights)
+            addHighlightLine((SQLTextArea) highlight[0], (int) highlight[1], (Color) highlight[2]);
+
+        ((LineNumber) newTextPanel.getTextPane().getLineBorder()).setBorderLabels(newLineBorders);
+        ((LineNumber) oldTextPanel.getTextPane().getLineBorder()).setBorderLabels(oldLineBorders);
     }
 
+    private void addRow(DiffRow row, Color color, String label) {
 
-    protected void addHighLightLine(SQLTextArea sqlTextArea, Color color) {
-        if (highlights == null)
-            highlights = new ArrayList<>();
-        Object[] objects = new Object[3];
-        objects[0] = sqlTextArea;
-        objects[1] = sqlTextArea.getLineCount() - 2;
-        objects[2] = color;
-        highlights.add(objects);
+        //add rows
+        newTextPanel.getTextPane().append(row.getNewLine() + "\n");
+        oldTextPanel.getTextPane().append(row.getOldLine() + "\n");
+
+        //add highlight properties
+        if (color != null) {
+            highlights.add(getHighlight(newTextPanel.getTextPane(), color));
+            highlights.add(getHighlight(oldTextPanel.getTextPane(), color));
+        }
+
+        //add border labels
+        newLineBorders.add(label);
+        oldLineBorders.add(label);
+
     }
 
-    protected void addHighLightLine(SQLTextArea sqlTextArea, int line, Color color) {
+    private Object[] getHighlight(SQLTextArea sqlTextArea, Color color) {
+        return new Object[]{sqlTextArea, sqlTextArea.getLineCount() - 2, color};
+    }
+
+    protected void addHighlightLine(SQLTextArea sqlTextArea, int line, Color color) {
         try {
             sqlTextArea.addLineHighlight(line, color);
         } catch (BadLocationException e) {

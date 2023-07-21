@@ -71,7 +71,7 @@ public class ProfilerTreeTable extends ProfilerTable {
         getSelectionModel().addListSelectionListener(adapter);
 
         tree.setRowHeight(rowHeight);
-        tree.setCellRenderer(new ProfilerTreeCellRenderer());
+        tree.setCellRenderer(new ProfilerTreeCellRenderer(this));
         setDefaultRenderer(JTree.class, tree);
     }
 
@@ -94,7 +94,7 @@ public class ProfilerTreeTable extends ProfilerTable {
         getSelectionModel().addListSelectionListener(adapter);
 
         tree.setRowHeight(rowHeight);
-        tree.setCellRenderer(new ProfilerTreeCellRenderer());
+        tree.setCellRenderer(new ProfilerTreeCellRenderer(this));
         setDefaultRenderer(JTree.class, tree);
     }
 

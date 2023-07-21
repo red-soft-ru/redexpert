@@ -104,4 +104,9 @@ public class ProfilerTreeTableNode extends CCTNode {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return getProcessName().toString();
+    }
+
 }

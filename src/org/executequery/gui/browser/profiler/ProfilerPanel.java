@@ -312,7 +312,7 @@ public class ProfilerPanel extends JPanel
         }
         if (node.getChildCount() > 0)
             node.add(new ProfilerTreeTableNode(
-                    new ProfilerData(-1, nodeData.getCallerId(), "Self Time", "SELF_TIME", selfTime)));
+                    new ProfilerData(-1, nodeData.getCallerId(), bundleString("SelfTime"), "SELF_TIME", selfTime)));
 
     }
 
@@ -435,8 +435,12 @@ public class ProfilerPanel extends JPanel
      */
     public static class TreeTableModel extends ProfilerTreeTableModel.Abstract {
 
-        private static final List<String> columnNames =
-                Arrays.asList("PROCESS NAME", "TOTAL TIME (ns)", "AVERAGE TIME (ns)", "CALLS COUNT");
+        private static final List<String> columnNames = Arrays.asList(
+                bundleString("PROCESS-NAME"),
+                bundleString("TOTAL-TIME"),
+                bundleString("AVERAGE-TIME"),
+                bundleString("CALLS-COUNT")
+        );
         private static final List<Class<?>> columnClasses =
                 Arrays.asList(JTree.class, String.class, Long.class, Integer.class);
 

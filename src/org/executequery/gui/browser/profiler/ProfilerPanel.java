@@ -82,6 +82,7 @@ public class ProfilerPanel extends JPanel
         fullRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
         profilerTree = new ProfilerTreeTable(
                 new TreeTableModel(fullRootTreeNode), SORTABLE, false, new int[4]);
+        profilerTree.setDefaultColumnWidth(200);
 
         startButton = new JButton(bundleString("Start"));
         startButton.addActionListener(e -> startSession());
@@ -166,6 +167,11 @@ public class ProfilerPanel extends JPanel
 
     private void startSession() {
 
+        if (!isConnected()) {
+            GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
+            return;
+        }
+
         profilerExecutor = new DefaultProfilerExecutor(combosGroup.getSelectedHost().getDatabaseConnection());
         try {
 
@@ -182,6 +188,12 @@ public class ProfilerPanel extends JPanel
     }
 
     private void pauseSession() {
+
+        if (!isConnected()) {
+            GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
+            return;
+        }
+
         try {
 
             profilerExecutor.pauseSession();
@@ -194,6 +206,12 @@ public class ProfilerPanel extends JPanel
     }
 
     private void resumeSession() {
+
+        if (!isConnected()) {
+            GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
+            return;
+        }
+
         try {
 
             profilerExecutor.resumeSession();
@@ -205,6 +223,12 @@ public class ProfilerPanel extends JPanel
     }
 
     private void finishSession() {
+
+        if (!isConnected()) {
+            GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
+            return;
+        }
+
         try {
 
             profilerExecutor.finishSession();
@@ -217,6 +241,12 @@ public class ProfilerPanel extends JPanel
     }
 
     private void cancelSession() {
+
+        if (!isConnected()) {
+            GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
+            return;
+        }
+
         try {
 
             profilerExecutor.cancelSession();
@@ -228,6 +258,12 @@ public class ProfilerPanel extends JPanel
     }
 
     private void discardSession() {
+
+        if (!isConnected()) {
+            GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
+            return;
+        }
+
         try {
 
             profilerExecutor.discardSession();
@@ -378,9 +414,11 @@ public class ProfilerPanel extends JPanel
     // ---
 
     private void updateTreeDisplay() {
-        profilerTree.setTreeTableModel(new TreeTableModel(
-                compactViewCheckBox.isSelected() ? compactRootTreeNode : fullRootTreeNode), SORTABLE);
-        profilerTree.setDefaultColumnWidth(200);
+        if (compactRootTreeNode != null && fullRootTreeNode != null) {
+            profilerTree.setTreeTableModel(new TreeTableModel(
+                    compactViewCheckBox.isSelected() ? compactRootTreeNode : fullRootTreeNode), SORTABLE);
+            profilerTree.setDefaultColumnWidth(200);
+        }
     }
 
     private void switchSessionState(int state) {
@@ -408,6 +446,10 @@ public class ProfilerPanel extends JPanel
                 cancelButton.setEnabled(false);
                 break;
         }
+    }
+
+    private boolean isConnected() {
+        return combosGroup.getSelectedHost().isConnected();
     }
 
     @Override

@@ -31,6 +31,7 @@ public class DefaultProfilerExecutor {
             "EXECUTE PROCEDURE RDB$PROFILER.DISCARD";
 
     private final DefaultStatementExecutor executor;
+    private int sessionId;
 
     public DefaultProfilerExecutor(DatabaseConnection connection) {
         executor = new DefaultStatementExecutor();
@@ -51,11 +52,11 @@ public class DefaultProfilerExecutor {
 
         String query = String.format(START_SESSION, executor.getDatabaseConnection().getName() + "_session");
         ResultSet resultSet = executor.execute(query, true).getResultSet();
-        int sessionId = resultSet.next() ? resultSet.getInt(1) : -1;
+        sessionId = resultSet.next() ? resultSet.getInt(1) : -1;
         executor.getConnection().commit();
         executor.releaseResources();
 
-        Log.info("Profiler session started");
+        Log.info(String.format("Profiler session with ID %s started", sessionId));
         return sessionId;
     }
 
@@ -64,7 +65,7 @@ public class DefaultProfilerExecutor {
      */
     public void pauseSession() throws SQLException {
         executeAndReleaseResources(PAUSE_SESSION);
-        Log.info("Profiler session paused");
+        Log.info(String.format("Profiler session with ID %s paused", sessionId));
     }
 
     /**
@@ -72,7 +73,7 @@ public class DefaultProfilerExecutor {
      */
     public void resumeSession() throws SQLException {
         executeAndReleaseResources(RESUME_SESSION);
-        Log.info("Profiler session resumed");
+        Log.info(String.format("Profiler session with ID %s resumed", sessionId));
     }
 
     /**
@@ -80,7 +81,7 @@ public class DefaultProfilerExecutor {
      */
     public void finishSession() throws SQLException {
         executeAndReleaseResources(FINISH_SESSION);
-        Log.info("Profiler session finished");
+        Log.info(String.format("Profiler session with ID %s finished", sessionId));
     }
 
     /**
@@ -88,7 +89,7 @@ public class DefaultProfilerExecutor {
      */
     public void cancelSession() throws SQLException {
         executeAndReleaseResources(CANCEL_SESSION);
-        Log.info("Profiler session canceled");
+        Log.info(String.format("Profiler session with ID %s canceled", sessionId));
     }
 
     /**

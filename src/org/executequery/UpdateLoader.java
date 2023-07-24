@@ -3,6 +3,7 @@ package org.executequery;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.http.JSONAPI;
 import org.executequery.http.ReddatabaseAPI;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.util.ApplicationProperties;
 import org.executequery.util.UserProperties;
@@ -40,6 +41,7 @@ public class UpdateLoader extends JFrame {
 
     private String version = null;
     private String root = "update/";
+    private boolean isDownloaded;
 
     // --- gui ---
 
@@ -52,6 +54,7 @@ public class UpdateLoader extends JFrame {
 
     public UpdateLoader(String repository) {
         repo = repository;
+        isDownloaded = true;
         initComponents();
     }
 
@@ -199,6 +202,9 @@ public class UpdateLoader extends JFrame {
     }
 
     private void unzip(boolean useLog) {
+
+        if (!isDownloaded())
+            return;
 
         int bufferSize = 2048;
         BufferedOutputStream outputStream = null;
@@ -393,7 +399,15 @@ public class UpdateLoader extends JFrame {
         Log.info("Downloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
         outText.append("\nDownloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
 
-        BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(new File("update.zip").toPath()));
+        File dowloadedFile = new File("update.zip");
+        if (!dowloadedFile.canWrite()) {
+            GUIUtilities.displayWarningMessage(
+                    String.format(Bundles.get("UpdateLoader.PermissionsDenied"), dowloadedFile.getAbsolutePath()));
+            isDownloaded = false;
+            return;
+        }
+
+        BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(dowloadedFile.toPath()));
         byte[] buffer = new byte[32 * 1024];
         int bytesRead;
         long in = 0;
@@ -565,6 +579,10 @@ public class UpdateLoader extends JFrame {
 
     public String getVersion() {
         return version;
+    }
+
+    public boolean isDownloaded() {
+        return isDownloaded;
     }
 
     public void setRoot(String root) {

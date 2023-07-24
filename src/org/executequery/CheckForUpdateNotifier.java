@@ -240,6 +240,10 @@ public class CheckForUpdateNotifier implements Interruptible {
                     statusBar().addComponent(progbar, LABEL_INDEX);
                     updateLoader.downloadUpdate();
                     updateLoader.unzipLocale();
+
+                    if (!updateLoader.isDownloaded())
+                        return Constants.WORKER_CANCEL;
+
                     argsList.add("-root=" + updateLoader.getRoot());
                     if (GUIUtilities.displayYesNoDialog(bundledString("restart.message"), bundledString("restart.message.title")) == JOptionPane.YES_OPTION) {
                         String[] args = argsList.toArray(new String[0]);

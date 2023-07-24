@@ -272,6 +272,12 @@ public class ProfilerPanel extends JPanel
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionDiscard"), e);
         }
+
+        // clear tree
+        fullRootTreeNode.removeAllChildren();
+        compactRootTreeNode.removeAllChildren();
+        updateTreeDisplay();
+
     }
 
     // --- profiler tree processing ---

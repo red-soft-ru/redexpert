@@ -13,7 +13,6 @@ import org.underworldlabs.util.MiscUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -40,6 +39,7 @@ public class UpdateLoader extends JFrame {
     private String repoArg;
 
     private String version = null;
+    private String pathToZip = "";
     private String root = "update/";
     private boolean isDownloaded;
 
@@ -145,7 +145,7 @@ public class UpdateLoader extends JFrame {
         outText.append("\nPreforming clean up...");
         try {
 
-            new File("update.zip").delete();
+            new File(pathToZip + "update.zip").delete();
             remove(new File(root));
             Files.delete(Paths.get(root));
 
@@ -212,8 +212,9 @@ public class UpdateLoader extends JFrame {
 
         try {
 
-            ZipFile zipfile = new ZipFile("update.zip");
+            ZipFile zipfile = new ZipFile(pathToZip + "update.zip");
             Enumeration<?> entries = zipfile.entries();
+            root = pathToZip + (System.getProperty("os.name").equals("windows") ? "update\\" : "update/");
             new File(root).mkdir();
 
             while (entries.hasMoreElements()) {
@@ -396,17 +397,22 @@ public class UpdateLoader extends JFrame {
         InputStream inputStream = conn.getInputStream();
         long max = conn.getContentLength();
 
-        Log.info("Downloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
-        outText.append("\nDownloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
+        pathToZip = System.getProperty("user.dir");
+        pathToZip = System.getProperty("os.name").equals("windows") ?
+                pathToZip.substring(0, pathToZip.lastIndexOf("\\") + 1) :
+                pathToZip.substring(0, pathToZip.lastIndexOf("/") + 1);
 
-        File dowloadedFile = new File("update.zip");
-        if (!dowloadedFile.canWrite()) {
+        if (!new File(pathToZip).getParentFile().canWrite()) {
             GUIUtilities.displayWarningMessage(
-                    String.format(Bundles.get("UpdateLoader.PermissionsDenied"), dowloadedFile.getAbsolutePath()));
+                    String.format(Bundles.get("UpdateLoader.PermissionsDenied"), pathToZip));
             isDownloaded = false;
             return;
         }
 
+        Log.info("Downloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
+        outText.append("\nDownloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
+
+        File dowloadedFile = new File(pathToZip, "update.zip");
         BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(dowloadedFile.toPath()));
         byte[] buffer = new byte[32 * 1024];
         int bytesRead;
@@ -473,13 +479,9 @@ public class UpdateLoader extends JFrame {
     private void downloadArchive() {
         try {
 
-            String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
-            parent += "/";
-            new File(parent);
-            root = parent + "/update/";
             downloadFile(downloadLink);
 
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -503,10 +505,8 @@ public class UpdateLoader extends JFrame {
         Thread worker = new Thread(() -> {
             try {
 
-                String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
-                parent += "/";
+                String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + "/";
                 File aNew = new File(parent);
-                root = parent + "/update/";
                 downloadFile(downloadLink);
                 unzip(false);
                 aNew.mkdir();

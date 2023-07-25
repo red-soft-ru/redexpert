@@ -190,7 +190,8 @@ public class ProfilerPanel extends JPanel
     private void pauseSession() {
 
         if (!isConnected()) {
-            GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
+            GUIUtilities.displayWarningMessage(bundleString("NotConnectedCancel"));
+            switchSessionState(INACTIVE);
             return;
         }
 
@@ -208,7 +209,8 @@ public class ProfilerPanel extends JPanel
     private void resumeSession() {
 
         if (!isConnected()) {
-            GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
+            GUIUtilities.displayWarningMessage(bundleString("NotConnectedCancel"));
+            switchSessionState(INACTIVE);
             return;
         }
 
@@ -225,7 +227,8 @@ public class ProfilerPanel extends JPanel
     private void finishSession() {
 
         if (!isConnected()) {
-            GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
+            GUIUtilities.displayWarningMessage(bundleString("NotConnectedCancel"));
+            switchSessionState(INACTIVE);
             return;
         }
 
@@ -243,7 +246,7 @@ public class ProfilerPanel extends JPanel
     private void cancelSession() {
 
         if (!isConnected()) {
-            GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
+            switchSessionState(INACTIVE);
             return;
         }
 
@@ -259,8 +262,13 @@ public class ProfilerPanel extends JPanel
 
     private void discardSession() {
 
+        // clear tree
+        fullRootTreeNode.removeAllChildren();
+        compactRootTreeNode.removeAllChildren();
+        updateTreeDisplay();
+
         if (!isConnected()) {
-            GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
+            switchSessionState(INACTIVE);
             return;
         }
 
@@ -272,11 +280,6 @@ public class ProfilerPanel extends JPanel
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionDiscard"), e);
         }
-
-        // clear tree
-        fullRootTreeNode.removeAllChildren();
-        compactRootTreeNode.removeAllChildren();
-        updateTreeDisplay();
 
     }
 

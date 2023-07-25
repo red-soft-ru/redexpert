@@ -18,7 +18,7 @@ import java.util.List;
 public class DefaultProfilerExecutor {
 
     private static final String START_SESSION =
-            "SELECT RDB$PROFILER.START_SESSION('%s') FROM RDB$DATABASE";
+            "SELECT RDB$PROFILER.START_SESSION('%s', NULL, NULL, NULL, 'DETAILED_REQUESTS') FROM RDB$DATABASE";
     private static final String PAUSE_SESSION =
             "EXECUTE PROCEDURE RDB$PROFILER.PAUSE_SESSION(TRUE)";
     private static final String RESUME_SESSION =

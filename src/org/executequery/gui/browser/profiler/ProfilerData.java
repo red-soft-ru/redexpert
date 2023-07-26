@@ -45,10 +45,14 @@ class ProfilerData {
     public boolean compareAndMergeData(ProfilerData comparingData) {
 
         if (this.callerId == comparingData.callerId && Objects.equals(this.processName, comparingData.processName)) {
+
             this.callCount++;
             this.avgTime = (this.avgTime + comparingData.avgTime) / 2;
             this.totalTime += comparingData.totalTime;
+
             this.totalTimePercentage += comparingData.totalTimePercentage;
+            if (this.totalTimePercentage > 100.00) this.totalTimePercentage = 100.00;
+
             return true;
         }
 

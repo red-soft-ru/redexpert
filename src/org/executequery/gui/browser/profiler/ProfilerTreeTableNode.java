@@ -4,6 +4,7 @@ import org.underworldlabs.swing.treetable.CCTNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ProfilerTreeTableNode extends CCTNode {
 
@@ -30,6 +31,22 @@ public class ProfilerTreeTableNode extends CCTNode {
     public void removeAllChildren() {
         childrenList.clear();
         refreshArray();
+    }
+
+    public boolean compareAndMerge(ProfilerTreeTableNode compareNode) {
+
+        if (this.childrenList.size() != compareNode.childrenList.size())
+            return false;
+
+        for (int i = 0; i < this.childrenList.size(); i++) {
+
+            ProfilerData data_1 = ((ProfilerTreeTableNode) this.childrenList.get(i)).getData();
+            ProfilerData data_2 = ((ProfilerTreeTableNode) compareNode.childrenList.get(i)).getData();
+            if (data_1.getCallerId() != data_2.getCallerId() || !Objects.equals(data_1.getProcessName(), data_2.getProcessName()))
+                return false;
+        }
+
+        return this.getData().compareAndMergeData(compareNode.getData());
     }
 
     public void setData(ProfilerData data) {

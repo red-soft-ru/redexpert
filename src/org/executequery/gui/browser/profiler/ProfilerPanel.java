@@ -383,33 +383,26 @@ public class ProfilerPanel extends JPanel
 
     }
 
-    private ProfilerTreeTableNode compressNodes(ProfilerTreeTableNode node) {
+    private void compressNodes(ProfilerTreeTableNode node) {
 
+        Enumeration<CCTNode> children;
         List<ProfilerTreeTableNode> childrenList = new LinkedList<>();
 
-        Enumeration<CCTNode> children = node.children();
-        while (children.hasMoreElements()) {
+        children = node.children();
+        while (children.hasMoreElements())
+            childrenList.add((ProfilerTreeTableNode) children.nextElement());
 
+        for (int i = 0; i < childrenList.size(); i++)
+            for (int j = i + 1; j < childrenList.size(); j++)
+                if (childrenList.get(i).compareAndMerge(childrenList.get(j)))
+                    node.remove(childrenList.get(j));
+
+        children = node.children();
+        while (children.hasMoreElements()) {
             ProfilerTreeTableNode child = (ProfilerTreeTableNode) children.nextElement();
             if (child.getChildCount() > 0)
-                childrenList.add(compressNodes(child));
-            else
-                childrenList.add(child);
+                compressNodes(child);
         }
-
-        for (int i = 0, activeNodeIndex = 0; i < childrenList.size() - 1; i++) {
-
-            ProfilerData data_1 = childrenList.get(activeNodeIndex).getData();
-            ProfilerData data_2 = childrenList.get(i + 1).getData();
-
-            if (data_1.compareAndMergeData(data_2))
-                node.remove(childrenList.get(i + 1));
-            else
-                activeNodeIndex = i + 1;
-
-        }
-
-        return node;
     }
 
     public ProfilerTreeTableNode cloneNode(ProfilerTreeTableNode originalNode) {

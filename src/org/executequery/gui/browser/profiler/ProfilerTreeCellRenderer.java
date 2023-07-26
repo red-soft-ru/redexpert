@@ -30,7 +30,7 @@ public class ProfilerTreeCellRenderer extends AbstractTreeCellRenderer {
         ProfilerTreeTableNode node = (ProfilerTreeTableNode) value;
         setText((String) node.getProcessName());
 
-        tree.addMouseListener(new MouseAdapter() {
+        component.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3)

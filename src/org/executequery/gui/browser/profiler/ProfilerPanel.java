@@ -52,6 +52,7 @@ public class ProfilerPanel extends JPanel
     private int sessionId;
     private DefaultProfilerExecutor profilerExecutor;
     private TableSelectionCombosGroup combosGroup;
+    private List<ProfilerData> oldDataList;
 
     // ---
 
@@ -196,7 +197,6 @@ public class ProfilerPanel extends JPanel
         }
 
         try {
-
             profilerExecutor.pauseSession();
             switchSessionState(PAUSED);
             generateTree(false);
@@ -215,7 +215,6 @@ public class ProfilerPanel extends JPanel
         }
 
         try {
-
             profilerExecutor.resumeSession();
             switchSessionState(ACTIVE);
 
@@ -233,7 +232,6 @@ public class ProfilerPanel extends JPanel
         }
 
         try {
-
             profilerExecutor.finishSession();
             switchSessionState(INACTIVE);
             generateTree(false);
@@ -245,13 +243,15 @@ public class ProfilerPanel extends JPanel
 
     private void cancelSession() {
 
+        // reset oldDataList
+        oldDataList = null;
+
         if (!isConnected()) {
             switchSessionState(INACTIVE);
             return;
         }
 
         try {
-
             profilerExecutor.cancelSession();
             switchSessionState(INACTIVE);
 
@@ -267,13 +267,15 @@ public class ProfilerPanel extends JPanel
         compactRootTreeNode.removeAllChildren();
         updateTreeDisplay();
 
+        // reset oldDataList
+        oldDataList = null;
+
         if (!isConnected()) {
             switchSessionState(INACTIVE);
             return;
         }
 
         try {
-
             profilerExecutor.discardSession();
             switchSessionState(INACTIVE);
 
@@ -288,8 +290,11 @@ public class ProfilerPanel extends JPanel
     private void generateTree(boolean showProfilerProcesses) {
 
         List<ProfilerData> profilerDataList = profilerExecutor.getProfilerData(sessionId, showProfilerProcesses);
+        if (oldDataList != null && profilerDataList.size() == oldDataList.size())
+            GUIUtilities.displayWarningMessage(bundleString("NoNewData"));
+
         if (profilerDataList.isEmpty()) {
-            GUIUtilities.displayWarningMessage(bundleString("ErrorUpdatingData"));
+            GUIUtilities.displayWarningMessage(bundleString("NoData"));
             return;
         }
 
@@ -320,6 +325,7 @@ public class ProfilerPanel extends JPanel
         compressNodes(compactRootTreeNode);
 
         updateTreeDisplay();
+        oldDataList = profilerDataList;
     }
 
     private ProfilerTreeTableNode getParenNode(int id, ProfilerTreeTableNode node) {

@@ -32,6 +32,8 @@ import java.util.zip.ZipFile;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class UpdateLoader extends JFrame {
 
+    private static final String UPDATE_NAME = "redexpert_update";
+    private static final String SEP = System.getProperty("file.separator");
     private static String repo;
 
     private boolean releaseHub;
@@ -39,9 +41,8 @@ public class UpdateLoader extends JFrame {
     private String repoArg;
 
     private String version = null;
-    private String pathToZip = "";
-    private String root = "update/";
-    private boolean isDownloaded;
+    private String pathToZip = SEP;
+    private String root = UPDATE_NAME + SEP;
 
     // --- gui ---
 
@@ -54,7 +55,6 @@ public class UpdateLoader extends JFrame {
 
     public UpdateLoader(String repository) {
         repo = repository;
-        isDownloaded = true;
         initComponents();
     }
 
@@ -145,7 +145,7 @@ public class UpdateLoader extends JFrame {
         outText.append("\nPreforming clean up...");
         try {
 
-            new File(pathToZip + "update.zip").delete();
+            new File(pathToZip, UPDATE_NAME + ".zip").delete();
             remove(new File(root));
             Files.delete(Paths.get(root));
 
@@ -172,10 +172,10 @@ public class UpdateLoader extends JFrame {
         if (files != null) {
             for (File f : files) {
                 if (f.isDirectory()) {
-                    new File(dir + "/" + f.getName()).mkdir();
-                    copyFiles(f, dir + "/" + f.getName());
+                    new File(dir + SEP + f.getName()).mkdir();
+                    copyFiles(f, dir + SEP + f.getName());
                 } else
-                    copy(f.getAbsolutePath(), dir + "/" + f.getName());
+                    copy(f.getAbsolutePath(), dir + SEP + f.getName());
             }
         }
     }
@@ -203,7 +203,7 @@ public class UpdateLoader extends JFrame {
 
     private void unzip(boolean useLog) {
 
-        if (!isDownloaded())
+        if (!canDownload(false))
             return;
 
         int bufferSize = 2048;
@@ -212,9 +212,9 @@ public class UpdateLoader extends JFrame {
 
         try {
 
-            ZipFile zipfile = new ZipFile(pathToZip + "update.zip");
+            ZipFile zipfile = new ZipFile(pathToZip + UPDATE_NAME + ".zip");
             Enumeration<?> entries = zipfile.entries();
-            root = pathToZip + (System.getProperty("os.name").equals("windows") ? "update\\" : "update/");
+            root = pathToZip + UPDATE_NAME + SEP;
             new File(root).mkdir();
 
             while (entries.hasMoreElements()) {
@@ -393,26 +393,17 @@ public class UpdateLoader extends JFrame {
 
     private void downloadFile(String link) throws IOException {
 
+        if (!canDownload(false))
+            return;
+
         URLConnection conn = new URL(link).openConnection();
         InputStream inputStream = conn.getInputStream();
         long max = conn.getContentLength();
 
-        pathToZip = System.getProperty("user.dir");
-        pathToZip = System.getProperty("os.name").equals("windows") ?
-                pathToZip.substring(0, pathToZip.lastIndexOf("\\") + 1) :
-                pathToZip.substring(0, pathToZip.lastIndexOf("/") + 1);
-
-        if (!new File(pathToZip).getParentFile().canWrite()) {
-            GUIUtilities.displayWarningMessage(
-                    String.format(Bundles.get("UpdateLoader.PermissionsDenied"), pathToZip));
-            isDownloaded = false;
-            return;
-        }
-
         Log.info("Downloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
         outText.append("\nDownloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
 
-        File dowloadedFile = new File(pathToZip, "update.zip");
+        File dowloadedFile = new File(pathToZip, UPDATE_NAME + ".zip");
         BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(dowloadedFile.toPath()));
         byte[] buffer = new byte[32 * 1024];
         int bytesRead;
@@ -489,8 +480,7 @@ public class UpdateLoader extends JFrame {
     public void replaceFiles() {
         try {
 
-            String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
-            parent += "/";
+            String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + SEP;
             File aNew = new File(parent);
             aNew.mkdir();
             copyFiles(new File(root), aNew.getAbsolutePath());
@@ -505,7 +495,7 @@ public class UpdateLoader extends JFrame {
         Thread worker = new Thread(() -> {
             try {
 
-                String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + "/";
+                String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + SEP;
                 File aNew = new File(parent);
                 downloadFile(downloadLink);
                 unzip(false);
@@ -569,6 +559,18 @@ public class UpdateLoader extends JFrame {
         return (!Objects.equals(result, "0.0")) ? result : null;
     }
 
+    public boolean canDownload(boolean showMessage) {
+
+        pathToZip = System.getProperty("java.io.tmpdir") + SEP;
+        if (!new File(pathToZip).canWrite()) {
+            if (showMessage)
+                GUIUtilities.displayWarningMessage(String.format(Bundles.get("UpdateLoader.PermissionsDenied"), pathToZip));
+            return false;
+        }
+
+        return true;
+    }
+
     public String getRepo() {
         return repo;
     }
@@ -579,10 +581,6 @@ public class UpdateLoader extends JFrame {
 
     public String getVersion() {
         return version;
-    }
-
-    public boolean isDownloaded() {
-        return isDownloaded;
     }
 
     public void setRoot(String root) {

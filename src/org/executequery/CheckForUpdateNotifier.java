@@ -210,39 +210,43 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     void displayDialogDownload(MouseListener listener) {
-        int yesNo = displayNewDownloadVersionMessage();
-        if (yesNo == JOptionPane.YES_OPTION) {
+
+        if (displayNewDownloadVersionMessage() == JOptionPane.YES_OPTION) {
 
             resetLabel(listener);
+            worker = new SwingWorker("downloadUpdate") {
 
-            worker = new org.underworldlabs.swing.util.SwingWorker("downloadUpdate") {
-
+                @Override
                 public Object construct() {
 
                     updateLoader.setReleaseHub(releaseHub);
-                    List<String> argsList = new ArrayList<String>();
+                    List<String> argsList = new ArrayList<>();
                     if (releaseHub)
                         argsList.add("useReleaseHub");
-                    else if (ReddatabaseAPI.getHeadersWithToken() == null) {
+                    else if (ReddatabaseAPI.getHeadersWithToken() == null)
                         return Constants.WORKER_CANCEL;
-                    }
 
                     String version = bundledString("Version") + "=" + updateLoader.getVersion();
                     argsList.add(version);
+
                     ApplicationContext instance = ApplicationContext.getInstance();
-                    String repo = "";
-                    if(instance.getRepo() != null && !instance.getRepo().isEmpty()) {
+                    String repo = instance.getRepo();
+                    if(!repo.isEmpty()) {
                         repo = "-repo=" + instance.getRepo();
                         argsList.add(repo);
                     }
-                    JProgressBar progbar = new JProgressBar();
-                    updateLoader.setProgressBar(progbar);
-                    statusBar().addComponent(progbar, LABEL_INDEX);
+
+                    if (!updateLoader.canDownload(true)) {
+                        setDownloadNotifierInStatusBar();
+                        return Constants.WORKER_CANCEL;
+                    }
+
+                    JProgressBar progressbar = new JProgressBar();
+                    updateLoader.setProgressBar(progressbar);
+                    statusBar().addComponent(progressbar, LABEL_INDEX);
+
                     updateLoader.downloadUpdate();
                     updateLoader.unzipLocale();
-
-                    if (!updateLoader.isDownloaded())
-                        return Constants.WORKER_CANCEL;
 
                     argsList.add("-root=" + updateLoader.getRoot());
                     if (GUIUtilities.displayYesNoDialog(bundledString("restart.message"), bundledString("restart.message.title")) == JOptionPane.YES_OPTION) {
@@ -268,12 +272,6 @@ public class CheckForUpdateNotifier implements Interruptible {
                     }
 
                     return Constants.WORKER_SUCCESS;
-                }
-
-                public void finished() {
-
-//                        closeProgressDialog();
-//                        GUIUtilities.showNormalCursor();
                 }
 
             };

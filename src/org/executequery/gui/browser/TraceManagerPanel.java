@@ -101,7 +101,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
             traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(),
                     driver,
                     "FBTraceManagerImpl");
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -805,7 +805,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     public SelectBuilder getBuilderLoadColsCommon(boolean allTables) {
         SelectBuilder sb = new SelectBuilder();
         sb.appendTable(Table.createTable().setStatement(new SelectBuilder().appendSelectBuilder(getBuilderForCols(allTables)).appendSelectBuilder(getBuilderForCons(allTables)).getSQLQuery()));
-        sb.setOrdering(RELATION_NAME + ", " + FIELD_POSITION);
+        sb.setOrdering(RELATION_NAME + ", " + FIELD_POSITION + ", " + FIELD_TYPE + " NULLS LAST");
         return sb;
     }
 
@@ -828,8 +828,10 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 someExecuteForColumns ? querySenderForColumns : new DefaultStatementExecutor(getHost().getDatabaseConnection());
         try {
 
-            if (statementForLoadInfoForColumns == null || statementForLoadInfoForColumns.isClosed())
-                statementForLoadInfoForColumns = (PooledStatement) executor.getPreparedStatement(getBuilderLoadColsForSingleTable().getSQLQuery());
+            if (statementForLoadInfoForColumns == null || statementForLoadInfoForColumns.isClosed()) {
+                String query = getBuilderLoadColsForSingleTable().getSQLQuery();
+                statementForLoadInfoForColumns = (PooledStatement) executor.getPreparedStatement(query);
+            }
             statementForLoadInfoForColumns.setString(1, getName());
             ResultSet rs = executor.getResultSet(-1, statementForLoadInfoForColumns).getResultSet();
             setColumnsFromResultSet(rs);

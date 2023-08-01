@@ -3,21 +3,16 @@ package org.executequery;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.http.JSONAPI;
 import org.executequery.http.ReddatabaseAPI;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.util.ApplicationProperties;
 import org.executequery.util.UserProperties;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -34,206 +29,96 @@ import java.util.zip.ZipFile;
 /**
  * Created by vasiliy on 16.01.17.
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class UpdateLoader extends JFrame {
 
-    private Thread worker;
-    private String binaryZipUrl;
-    private boolean releaseHub;
-
-    public String getRepo() {
-        return repo;
-    }
-
+    private static final String UPDATE_NAME = "redexpert_update";
+    private static final String SEP = System.getProperty("file.separator");
     private static String repo;
-    private String version = null;
+
+    private boolean releaseHub;
     private String downloadLink;
+    private String repoArg;
+
+    private String version = null;
+    private String pathToZip = SEP;
+    private String root = UPDATE_NAME + SEP;
+
+    // --- gui ---
 
     private JTextArea outText;
     private JButton cancelButton;
     private JButton restartButton;
-    private JScrollPane scrollPane;
-    private JPanel panel1;
-    private JPanel panel2;
-
-    public void setProgressBar(JProgressBar progressBar) {
-        this.progressBar = progressBar;
-    }
-
     private JProgressBar progressBar;
-    private String repoArg;
 
-    public void setRepoArg(String repoArg) {
-        this.repoArg = repoArg;
-    }
-
-    public void setExternalArg(String externalArg) {
-        this.externalArg = externalArg;
-    }
-
-    private String externalArg;
-
-
-    private String root = "update/";
-
-    public String getRoot() {
-        return root;
-    }
-
-    public void setRoot(String root) {
-        this.root = root;
-    }
+    // ---
 
     public UpdateLoader(String repository) {
-        initComponents();
         repo = repository;
-    }
-
-    private String getLastVersion(String repo) {
-        StringBuilder buffer = new StringBuilder();
-        try {
-            URL myUrl = new URL(repo);
-            URLConnection myUrlCon = myUrl.openConnection();
-            InputStream input = myUrlCon.getInputStream();
-            int c;
-            while (((c = input.read()) != -1)) {
-                buffer.append((char) c);
-            }
-            input.close();
-        } catch (Exception e) {
-            Log.error("Cannot download update from repository. " +
-                    "Please, check repository url or try update later.");
-            return null;
-        }
-        String s = buffer.toString();
-        String[] ss = s.split("\n");
-        String res = "0.0";
-        for (int i = 0; i < ss.length; i++) {
-            Pattern pattern;
-            pattern = Pattern.compile("(<a href=\")([0-9]+[\\.][0-9]+.+)(/\">)");
-            Matcher m = pattern.matcher(ss[i]);
-            if (m.find()) {
-                String r = m.group(2);
-                try {
-                    ApplicationVersion temp = new ApplicationVersion(r);
-                    if (temp.isNewerThan(res))
-                        res = r;
-                } catch (Exception e) {
-                    Log.debug("Big version:" + r, e);
-                }
-
-            }
-        }
-        if (!Objects.equals(res, "0.0"))
-            return res;
-        else
-            return null;
-    }
-
-    public void setReleaseHub(boolean releaseHub) {
-        this.releaseHub = releaseHub;
+        initComponents();
     }
 
     private void initComponents() {
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        panel1 = new JPanel();
-        panel1.setLayout(new BorderLayout());
-
-        panel2 = new JPanel();
-        panel2.setLayout(new FlowLayout());
-
-        outText = new JTextArea();
-        outText.setFont(UIManager.getDefaults().getFont("Label.font"));
-        scrollPane = new JScrollPane();
-        scrollPane.setViewportView(outText);
+        // --- init ---
 
         restartButton = new JButton("Restart now");
         restartButton.setEnabled(false);
-        restartButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                launch();
-            }
-        });
-        panel2.add(restartButton);
+        restartButton.addActionListener(e -> launch());
 
         cancelButton = new JButton("Cancel Update");
-        cancelButton.addActionListener(new ActionListener() {
+        cancelButton.addActionListener(e -> dispose());
 
-            public void actionPerformed(ActionEvent e) {
-                cancelUpdate();
-            }
-        });
-        panel2.add(cancelButton);
+        outText = new JTextArea();
+        outText.setFont(UIManager.getDefaults().getFont("Label.font"));
+
         progressBar = new JProgressBar();
-        panel1.add(progressBar, BorderLayout.NORTH);
         progressBar.setVisible(false);
-        panel1.add(scrollPane, BorderLayout.CENTER);
-        panel1.add(panel2, BorderLayout.SOUTH);
 
-        add(panel1);
-        pack();
+        // --- arrange ---
+
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanel.add(restartButton);
+        buttonPanel.add(cancelButton);
+
+        JPanel basePanel = new JPanel(new BorderLayout());
+        basePanel.add(progressBar, BorderLayout.NORTH);
+        basePanel.add(new JScrollPane(outText), BorderLayout.CENTER);
+        basePanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // --- configure ---
+
+        this.add(basePanel);
+        this.pack();
         this.setSize(500, 400);
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
-    }
-
-    private void cancelUpdate() {
-
-        this.dispose();
-    }
-
-    public static void main(String[] args) {
-        applySystemProperties();
-        UpdateLoader updateLoader = new UpdateLoader(repo);
-        for (String arg :
-                args) {
-            if (arg.equalsIgnoreCase("usereleasehub")) {
-                updateLoader.setReleaseHub(true);
-            } else if (arg.contains("version")) {
-                int i = arg.indexOf('=');
-                String ver = arg.substring(i + 1);
-                updateLoader.setVersion(ver);
-            } else if (arg.contains("-repo")) {
-                updateLoader.setRepoArg(arg);
-            } else if (arg.contains("externalProcessName")) {
-                int i = arg.indexOf('=');
-                String external = arg.substring(i + 1);
-                updateLoader.setExternalArg(external);
-            } else if (arg.contains("-root")) {
-                int i = arg.indexOf('=');
-                String root = arg.substring(i + 1);
-                updateLoader.setRoot(root);
-            }
-
-        }
-        //updateLoader.setVisible(true);
-        updateLoader.replaceFiles();
-        updateLoader.launch();
+        this.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        this.setLocation(
+                Toolkit.getDefaultToolkit().getScreenSize().width / 2 - this.getSize().width / 2,
+                Toolkit.getDefaultToolkit().getScreenSize().height / 2 - this.getSize().height / 2
+        );
     }
 
     private static void applySystemProperties() {
 
         String encoding = stringApplicationProperty("system.file.encoding");
-        if (StringUtils.isNotBlank(encoding)) {
+        String build = stringApplicationProperty("eq.build");
+        String settingDirName = stringPropertyFromConfig("eq.user.home.dir")
+                .replace("$HOME", System.getProperty("user.home"));
 
+        if (StringUtils.isNotBlank(encoding))
             System.setProperty("file.encoding", encoding);
-        }
 
-        String settingDirName = stringPropertyFromConfig("eq.user.home.dir");
-        settingDirName = settingDirName.replace("$HOME", System.getProperty("user.home"));
         System.setProperty("executequery.user.home.dir", settingDirName);
         ApplicationContext.getInstance().setUserSettingsDirectoryName(settingDirName);
 
-        String build = stringApplicationProperty("eq.build");
         System.setProperty("executequery.build", build);
         ApplicationContext.getInstance().setBuild(build);
     }
 
     public void launch() {
-        ProcessBuilder pb = null;
+
         try {
+
             StringBuilder sb = new StringBuilder("./RedExpert");
             if (System.getProperty("os.arch").toLowerCase().contains("64"))
                 sb.append("64");
@@ -241,216 +126,214 @@ public class UpdateLoader extends JFrame {
                 sb.append(".exe");
             if (repoArg == null)
                 repoArg = "-repo=";
-            System.out.println("Executing: " + sb);
-            pb = new ProcessBuilder(sb.toString(), repoArg);
-            pb.directory(new File(System.getProperty("user.dir")));
-            pb.start();
+
+            Log.info("Executing: " + sb);
+
+            ProcessBuilder processBuilder = new ProcessBuilder(sb.toString(), repoArg);
+            processBuilder.directory(new File(System.getProperty("user.dir")));
+            processBuilder.start();
 
         } catch (IOException e) {
-            System.err.println(e);
             e.printStackTrace();
         }
+
         System.exit(0);
     }
 
     private void cleanup() {
-        outText.setText(outText.getText() + "\nPreforming clean up...");
-        File f = new File("update.zip");
-        f.delete();
-        remove(new File(root));
+
+        outText.append("\nPreforming clean up...");
         try {
+
+            new File(pathToZip, UPDATE_NAME + ".zip").delete();
+            remove(new File(root));
             Files.delete(Paths.get(root));
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void remove(File f) {
-        File[] files = f.listFiles();
+    private void remove(File file) {
+
+        File[] files = file.listFiles();
         if (files != null) {
-            for (File ff : files) {
-                if (ff.isDirectory()) {
-                    remove(ff);
-                    ff.delete();
-                } else {
-                    ff.delete();
-                }
+            for (File f : files) {
+                if (f.isDirectory())
+                    remove(f);
+                f.delete();
             }
         }
     }
 
-    private void copyFiles(File f, String dir) {
-        File[] files = f.listFiles();
-        if (files != null) {
-            for (File ff : files) {
-                if (ff.isDirectory()) {
-                    new File(dir + "/" + ff.getName()).mkdir();
-                    copyFiles(ff, dir + "/" + ff.getName());
-                } else {
-                    try {
-                        copy(ff.getAbsolutePath(), dir + "/" + ff.getName());
-                    } catch (IOException e) {
-                        outText.setText(outText.getText() + "\n Copying error. " +
-                                e.getMessage());
-                    }
-                }
+    private void copyFiles(File file, String dir) {
 
+        File[] files = file.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    new File(dir + SEP + f.getName()).mkdir();
+                    copyFiles(f, dir + SEP + f.getName());
+                } else
+                    copy(f.getAbsolutePath(), dir + SEP + f.getName());
             }
         }
     }
 
-    public void copy(String srFile, String dtFile) throws IOException {
+    public void copy(String srFile, String dtFile) {
 
         File f1 = new File(srFile);
         File f2 = new File(dtFile);
 
-        InputStream in = new FileInputStream(f1);
+        try (
+                InputStream in = Files.newInputStream(f1.toPath());
+                OutputStream out = Files.newOutputStream(f2.toPath())
+        ) {
 
-        OutputStream out = new FileOutputStream(f2);
+            int len;
+            byte[] buf = new byte[1024];
+            while ((len = in.read(buf)) > 0)
+                out.write(buf, 0, len);
 
-        byte[] buf = new byte[1024];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
+        } catch (IOException e) {
+            outText.append("\nCopying error. " + e.getMessage());
+            e.printStackTrace();
         }
-        in.close();
-        out.close();
     }
 
     private void unzip(boolean useLog) {
-        int BUFFER = 2048;
-        BufferedOutputStream dest = null;
-        BufferedInputStream is;
-        ZipEntry entry;
+
+        if (!canDownload(false))
+            return;
+
+        int bufferSize = 2048;
+        BufferedOutputStream outputStream = null;
+        BufferedInputStream inputStream;
+
         try {
-            ZipFile zipfile = new ZipFile("update.zip");
-            Enumeration e = zipfile.entries();
-            (new File(root)).mkdir();
-            while (e.hasMoreElements()) {
-                entry = (ZipEntry) e.nextElement();
+
+            ZipFile zipfile = new ZipFile(pathToZip + UPDATE_NAME + ".zip");
+            Enumeration<?> entries = zipfile.entries();
+            root = pathToZip + UPDATE_NAME + SEP;
+            new File(root).mkdir();
+
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = (ZipEntry) entries.nextElement();
+
                 if (useLog)
                     Log.info("\nExtracting: " + entry);
-                outText.setText(outText.getText() + "\nExtracting: " + entry);
-                if (entry.isDirectory())
-                    (new File(root + entry.getName())).mkdir();
-                else {
-                    (new File(root + entry.getName())).createNewFile();
-                    is = new BufferedInputStream
-                            (zipfile.getInputStream(entry));
-                    int count;
-                    byte[] data = new byte[BUFFER];
+                outText.append("\nExtracting: " + entry);
+
+                if (entry.isDirectory()) {
+                    new File(root + entry.getName()).mkdir();
+
+                } else {
+
+                    new File(root + entry.getName()).createNewFile();
+                    inputStream = new BufferedInputStream(zipfile.getInputStream(entry));
+
                     try {
-                        FileOutputStream fos = new
-                                FileOutputStream(root + entry.getName());
-                        dest = new
-                                BufferedOutputStream(fos, BUFFER);
-                        while ((count = is.read(data, 0, BUFFER))
-                                != -1) {
-                            dest.write(data, 0, count);
-                        }
-                    } catch (FileNotFoundException ex) {
-                        outText.setText(outText.getText() + "\nExtracting " + entry + " error. " +
-                                ex.getMessage());
+
+                        FileOutputStream fos = new FileOutputStream(root + entry.getName());
+                        outputStream = new BufferedOutputStream(fos, bufferSize);
+
+                        int count;
+                        byte[] data = new byte[bufferSize];
+                        while ((count = inputStream.read(data, 0, bufferSize)) != -1)
+                            outputStream.write(data, 0, count);
+
+                    } catch (FileNotFoundException e) {
+                        outText.append("\nExtracting " + entry + " error. " + e.getMessage());
                         if (useLog)
-                            Log.info("\nExtracting " + entry + " error. " +
-                                    ex.getMessage());
-                    } catch (IOException ex) {
-                        outText.setText(outText.getText() + "\nExtracting " + entry + "error." +
-                                ex.getMessage());
+                            Log.info("\nExtracting " + entry + " error. " + e.getMessage());
+
+                    } catch (IOException e) {
+                        outText.append("\nExtracting " + entry + "error." + e.getMessage());
                         if (useLog)
-                            Log.info("\nExtracting " + entry + " error. " +
-                                    ex.getMessage());
+                            Log.info("\nExtracting " + entry + " error. " + e.getMessage());
                     }
-                    if (dest != null) {
-                        dest.flush();
-                        dest.close();
+
+                    if (outputStream != null) {
+                        outputStream.flush();
+                        outputStream.close();
                     }
-                    is.close();
+                    inputStream.close();
                 }
             }
             zipfile.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private static String stringPropertyFromConfig(String key) {
-        Properties props = null;
+
+        String result = "";
         try {
-            props = FileUtils.loadProperties(MiscUtils.loadURLs("./config/redexpert_config.ini;../config/redexpert_config.ini"));
-            return props.getProperty(key);
+
+            Properties properties = FileUtils.loadProperties(MiscUtils.loadURLs("./config/redexpert_config.ini;../config/redexpert_config.ini"));
+            if (properties != null)
+                result = properties.getProperty(key);
+
         } catch (Exception e) {
             e.printStackTrace();
-            return "";
         }
 
+        return result;
     }
 
     public boolean isNeedUpdate() {
+
         version = getLastVersion(repo);
         ApplicationVersion remoteVersion = new ApplicationVersion(version);
         String localVersion = System.getProperty("executequery.minor.version");
 
-        if (localVersion != null) {
-            return remoteVersion.isNewerThan(localVersion);
-        }
-        return false;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setBinaryZipUrl(String binaryZip) {
-        this.binaryZipUrl = binaryZip;
-    }
-
-    private static String stringApplicationProperty(String key) {
-
-        return applicationProperties().getProperty(key);
-    }
-
-    private static ApplicationProperties applicationProperties() {
-
-        return ApplicationProperties.getInstance();
+        return localVersion != null && remoteVersion.isNewerThan(localVersion);
     }
 
     public void downloadUpdate() {
-        Log.info("Contacting Download Server...");
-        if (releaseHub) {
 
+        Log.info("Contacting Download Server...");
+
+        if (releaseHub) {
             try {
-                JSONObject obj = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(
-                                "http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
-                        "artifact_id",
-                        "red_expert:bin:" + version + ":zip");
-                downloadLink = "http://builds.red-soft.biz/" + obj.getString("file");
+
+                String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
+                        JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
+                        "artifact_id", "red_expert:bin:" + version + ":zip")).getString("file");
+
+                downloadLink = "http://builds.red-soft.biz/" + file;
                 downloadArchive();
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
         } else {
+
             if (!MiscUtils.isNull(repo)) {
                 this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
                 downloadArchive();
+
             } else {
                 try {
+
                     //изменить эту строку в соответствии с форматом имени файла на сайте
                     String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
                     Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
+
                     if (heads != null) {
+
                         String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
-                        JSONArray jsa = JSONAPI.getJsonArray(prop + version,
-                                heads);
-                        JSONObject js = JSONAPI.getJsonObjectFromArray(jsa, "filename", filename);
-                        String url = js.getString("url");
+                        String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
+                                JSONAPI.getJsonArray(prop + version, heads),
+                                "filename", filename)).getString("url");
+
                         downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
                         downloadArchive();
                     }
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -458,129 +341,122 @@ public class UpdateLoader extends JFrame {
         }
     }
 
+    @SuppressWarnings("unused")
     void update() {
+
         this.setTitle("Updating");
+        outText.setText("Contacting Download Server...");
+
         if (releaseHub) {
-            outText.setText("Contacting Download Server...");
             try {
 
-                JSONObject obj = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(
-                                "http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
-                        "artifact_id",
-                        "red_expert:bin:" + version + ":zip");
-                downloadLink = "http://builds.red-soft.biz/" + obj.getString("file");
+                String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
+                        JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
+                        "artifact_id", "red_expert:bin:" + version + ":zip")).getString("file");
+
+                downloadLink = "http://builds.red-soft.biz/" + file;
                 download();
+
             } catch (Exception e) {
-                outText.append("\n");
-                e.printStackTrace(new PrintWriter(new Writer() {
-                    @Override
-                    public void write(char[] cbuf, int off, int len) throws IOException {
-                        outText.append("\n");
-                        outText.append(new String(cbuf));
-                    }
-
-                    @Override
-                    public void flush() throws IOException {
-
-                    }
-
-                    @Override
-                    public void close() throws IOException {
-
-                    }
-                }));
+                e.printStackTrace(new PrintWriter(new CustomWriter()));
             }
+
         } else {
-            outText.setText("Contacting Download Server...");
+
             if (!MiscUtils.isNull(repo)) {
                 this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
                 download();
+
             } else {
                 try {
+
                     //изменить эту строку в соответствии с форматом имени файла на сайте
                     String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
                     Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
+
                     if (heads != null) {
-                        String url = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(UserProperties.getInstance().getStringProperty("reddatabase.get-files.url") + version,
-                                heads), "filename", filename).getString("url");
+
+                        String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
+                                JSONAPI.getJsonArray(UserProperties.getInstance().getStringProperty("reddatabase.get-files.url") + version, heads),
+                                "filename", filename)).getString("url");
+
                         downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
                         download();
                     }
+
                 } catch (Exception e) {
-                    outText.append("\n");
-                    e.printStackTrace(new PrintWriter(new Writer() {
-                        @Override
-                        public void write(char[] cbuf, int off, int len) throws IOException {
-                            outText.append("\n");
-                            outText.append(new String(cbuf));
-                        }
-
-                        @Override
-                        public void flush() throws IOException {
-
-                        }
-
-                        @Override
-                        public void close() throws IOException {
-
-                        }
-                    }));
+                    e.printStackTrace(new PrintWriter(new CustomWriter()));
                 }
             }
         }
     }
 
     private void downloadFile(String link) throws IOException {
-        URL url = new URL(link);
-        URLConnection conn = url.openConnection();
-        InputStream is = conn.getInputStream();
+
+        if (!canDownload(false))
+            return;
+
+        URLConnection conn = new URL(link).openConnection();
+        InputStream inputStream = conn.getInputStream();
         long max = conn.getContentLength();
+
         Log.info("Downloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
-        outText.setText(outText.getText() + "\n" + "Downloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
-        BufferedOutputStream fOut = new BufferedOutputStream(new FileOutputStream(new File("update.zip")));
+        outText.append("\nDownloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
+
+        File dowloadedFile = new File(pathToZip, UPDATE_NAME + ".zip");
+        BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(dowloadedFile.toPath()));
         byte[] buffer = new byte[32 * 1024];
         int bytesRead;
         long in = 0;
         int delimiter = 1024;
+
         progressBar.setVisible(true);
         progressBar.setMaximum((int) (max / delimiter));
         progressBar.setMinimum(0);
         progressBar.setValue(0);
         progressBar.setStringPainted(true);
+
         String textOut = outText.getText();
-        while ((bytesRead = is.read(buffer)) != -1) {
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
             in += bytesRead;
-            fOut.write(buffer, 0, bytesRead);
+            outputStream.write(buffer, 0, bytesRead);
             progressBar.setString(getUsabilitySize(in));
             outText.setText(textOut + "\n" + getUsabilitySize(in));
             progressBar.setValue((int) (in / delimiter));
         }
         progressBar.setValue(0);
         progressBar.setVisible(false);
-        fOut.flush();
-        fOut.close();
-        is.close();
-        outText.setText(outText.getText() + "\nDownload Complete!");
 
+        outputStream.flush();
+        outputStream.close();
+        inputStream.close();
+
+        outText.append("\nDownload Complete!");
     }
 
     String getUsabilitySize(long countByte) {
+
         int oneByte = 1024;
         int delimiter = 103;
-        long drob = 0;
+        long drob;
+
         if (countByte > 1024) {
             drob = (countByte % oneByte) / delimiter;
             countByte = countByte / oneByte;
+
             if (countByte > oneByte) {
                 drob = (countByte % oneByte) / delimiter;
                 countByte = countByte / oneByte;
+
                 if (countByte > oneByte) {
                     drob = (countByte % oneByte) / delimiter;
                     countByte = countByte / oneByte;
+
                     if (countByte > oneByte) {
                         drob = (countByte % oneByte) / delimiter;
                         countByte = countByte / oneByte;
                         return countByte + "," + drob + "Tb";
+
                     } else return countByte + "," + drob + "Gb";
                 } else return countByte + "," + drob + "Mb";
             } else return countByte + "," + drob + "Kb";
@@ -593,59 +469,190 @@ public class UpdateLoader extends JFrame {
 
     private void downloadArchive() {
         try {
-            String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
-            parent += "/";
-            File aNew = new File(parent);
-            root = parent + "/update/";
+
             downloadFile(downloadLink);
+
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
     }
 
     public void replaceFiles() {
-        String parent = null;
         try {
-            parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
 
-            parent += "/";
+            String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + SEP;
             File aNew = new File(parent);
             aNew.mkdir();
             copyFiles(new File(root), aNew.getAbsolutePath());
             cleanup();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void download() {
-        worker = new Thread(
-                () -> {
-                    try {
-                        String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
-                        parent += "/";
-                        File aNew = new File(parent);
-                        root = parent + "/update/";
-                        downloadFile(downloadLink);
-                        unzip(false);
-                        aNew.mkdir();
-                        copyFiles(new File(root), aNew.getAbsolutePath());
-                        cleanup();
-                        restartButton.setEnabled(true);
-                        outText.setText(outText.getText() + "\nUpdate Finished!");
-                        cancelButton.setText("Restart later");
-                    } catch (FileNotFoundException ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "Access denied. Please restart RedExpert as an admin!");
+        Thread worker = new Thread(() -> {
+            try {
 
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "An error occurred while preforming update!");
-                    }
-                });
+                String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + SEP;
+                File aNew = new File(parent);
+                downloadFile(downloadLink);
+                unzip(false);
+                aNew.mkdir();
+                copyFiles(new File(root), aNew.getAbsolutePath());
+                cleanup();
+
+                restartButton.setEnabled(true);
+                outText.append("\nUpdate Finished!");
+                cancelButton.setText("Restart later");
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Access denied. Please restart RedExpert as an admin!");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "An error occurred while preforming update!");
+            }
+
+        });
         worker.start();
+    }
+
+    private static String stringApplicationProperty(String key) {
+        return ApplicationProperties.getInstance().getProperty(key);
+    }
+
+    private String getLastVersion(String repo) {
+
+        StringBuilder buffer = new StringBuilder();
+        try (InputStream input = new URL(repo).openConnection().getInputStream()) {
+
+            int character;
+            while ((character = input.read()) != -1)
+                buffer.append((char) character);
+
+        } catch (Exception e) {
+            Log.error("Cannot download update from repository. Please, check repository url or try update later.");
+            return null;
+        }
+
+        String result = "0.0";
+        for (String value : buffer.toString().split("\n")) {
+
+            Pattern pattern = Pattern.compile("(<a href=\")([0-9]+[\\.][0-9]+.+)(/\">)");
+            Matcher matcher = pattern.matcher(value);
+            if (matcher.find()) {
+
+                String str = matcher.group(2);
+                try {
+                    if (new ApplicationVersion(str).isNewerThan(result))
+                        result = str;
+
+                } catch (Exception e) {
+                    Log.debug("Big version:" + str, e);
+                }
+            }
+        }
+
+        return (!Objects.equals(result, "0.0")) ? result : null;
+    }
+
+    public boolean canDownload(boolean showMessage) {
+
+        pathToZip = System.getProperty("java.io.tmpdir") + SEP;
+        if (!new File(pathToZip).canWrite()) {
+            if (showMessage)
+                GUIUtilities.displayWarningMessage(String.format(Bundles.get("UpdateLoader.PermissionsDenied"), pathToZip));
+            return false;
+        }
+
+        return true;
+    }
+
+    public String getRepo() {
+        return repo;
+    }
+
+    public String getRoot() {
+        return root;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setRoot(String root) {
+        this.root = root;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public void setRepoArg(String repoArg) {
+        this.repoArg = repoArg;
+    }
+
+    public void setReleaseHub(boolean releaseHub) {
+        this.releaseHub = releaseHub;
+    }
+
+    public void setProgressBar(JProgressBar progressBar) {
+        this.progressBar = progressBar;
+    }
+
+    private class CustomWriter extends Writer {
+
+        @Override
+        public void write(char[] cbuf, int off, int len) {
+            outText.append("\n" + new String(cbuf));
+        }
+
+        @Override
+        public void flush() {
+
+        }
+
+        @Override
+        public void close() {
+
+        }
+
+    } // class CustomWriter
+
+    // ---
+
+    public static void main(String[] args) {
+
+        applySystemProperties();
+        UpdateLoader updateLoader = new UpdateLoader(repo);
+        for (String arg : args) {
+
+            if (arg.equalsIgnoreCase("usereleasehub")) {
+                updateLoader.setReleaseHub(true);
+
+            } else if (arg.contains("version")) {
+                String ver = arg.substring(arg.indexOf('=') + 1);
+                updateLoader.setVersion(ver);
+
+            } else if (arg.contains("-repo")) {
+                updateLoader.setRepoArg(arg);
+
+//            } else if (arg.contains("externalProcessName")) {
+//                String external = arg.substring(arg.indexOf('=') + 1);
+//                updateLoader.setExternalArg(external);
+
+            } else if (arg.contains("-root")) {
+                String root = arg.substring(arg.indexOf('=') + 1);
+                updateLoader.setRoot(root);
+            }
+        }
+
+        //updateLoader.setVisible(true);
+        updateLoader.replaceFiles();
+        updateLoader.launch();
     }
 
 }

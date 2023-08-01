@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Comparator;
 
 public class TablePanel extends JPanel {
 
@@ -91,7 +92,7 @@ public class TablePanel extends JPanel {
                 for (int i = 0; i < cols.length; i++) {
                     columnsCheckPanel.selectOneStringAction(cols[i]);
                 }
-            }
+            } else columnsCheckPanel.selectAllAction();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -182,6 +183,7 @@ public class TablePanel extends JPanel {
         columnsCheckPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
             @Override
             public void changed(ListSelectionPanelEvent event) {
+                columnsCheckPanel.getAvailableValues().sort(Comparator.naturalOrder());
                 dataModel.rebuildModel();
                 dataModel.fireTableStructureChanged();
                 saveCols();

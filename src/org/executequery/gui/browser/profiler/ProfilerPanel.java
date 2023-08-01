@@ -263,6 +263,8 @@ public class ProfilerPanel extends JPanel
     private void discardSession() {
 
         // clear tree
+        fullRootTreeNode.setData(new ProfilerData(-1, -1, "ROOT NODE", "ROOT", 0));
+        compactRootTreeNode.setData(new ProfilerData(-1, -1, "ROOT NODE", "ROOT", 0));
         fullRootTreeNode.removeAllChildren();
         compactRootTreeNode.removeAllChildren();
         updateTreeDisplay();
@@ -312,18 +314,19 @@ public class ProfilerPanel extends JPanel
             }
         }
 
+        // set new data to the root node
+        long totalTime = Arrays.stream(fullRootTreeNode.getChildren()).mapToLong(child -> (long) ((ProfilerTreeTableNode) child).getTotalTime()).sum();
+        fullRootTreeNode.setData(new ProfilerData(-1, -1, "Profiler Session [ID: " + sessionId + "]", "ROOT", totalTime));
 
-        Enumeration<CCTNode> children = fullRootTreeNode.children();
-        while (children.hasMoreElements())
-            addNodesSelfTime((ProfilerTreeTableNode) children.nextElement());
+        // add 'self time' nodes
+        Arrays.stream(fullRootTreeNode.getChildren()).forEachOrdered(child -> addNodesSelfTime((ProfilerTreeTableNode) child));
+        calculatePercentage(fullRootTreeNode);
 
-        children = fullRootTreeNode.children();
-        while (children.hasMoreElements())
-            calculatePercentage((ProfilerTreeTableNode) children.nextElement());
-
+        // generate compact tree
         compactRootTreeNode = cloneNode(fullRootTreeNode);
         compressNodes(compactRootTreeNode);
 
+        // display tree
         updateTreeDisplay();
         oldDataList = profilerDataList;
     }

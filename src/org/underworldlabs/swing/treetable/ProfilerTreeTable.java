@@ -25,6 +25,7 @@ package org.underworldlabs.swing.treetable;
  * questions.
  */
 
+import org.executequery.gui.browser.profiler.ProfilerTabPopupMenu;
 import org.executequery.gui.browser.profiler.ProfilerTreeCellRenderer;
 
 import javax.accessibility.Accessible;
@@ -39,6 +40,7 @@ import javax.swing.table.*;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -59,29 +61,18 @@ public class ProfilerTreeTable extends ProfilerTable {
     public ProfilerTreeTable(ProfilerTreeTableModel model, boolean sortable,
                              boolean hideableColums, int[] scrollableColumns) {
         super(new TableModelImpl(model), sortable, hideableColums, scrollableColumns);
-
-        this.model = (TableModelImpl)getModel();
-        tree = this.model.getTree();
-
-        Adapter adapter = new Adapter();
-        tree.addTreeSelectionListener(adapter);
-        tree.addTreeExpansionListener(adapter);
-        tree.addTreeWillExpandListener(adapter);
-        tree.getModel().addTreeModelListener(adapter);
-        getSelectionModel().addListSelectionListener(adapter);
-
-        tree.setRowHeight(rowHeight);
-        tree.setCellRenderer(new ProfilerTreeCellRenderer(this));
-        setDefaultRenderer(JTree.class, tree);
+        configure();
     }
 
     public void setTreeTableModel(ProfilerTreeTableModel model, boolean sortable) {
-
         setRowSorter(null);
-
         setModel(new TableModelImpl(model));
         setupModels(sortable);
         setupAppearance();
+        configure();
+    }
+
+    private void configure() {
 
         this.model = (TableModelImpl)getModel();
         tree = this.model.getTree();
@@ -94,10 +85,19 @@ public class ProfilerTreeTable extends ProfilerTable {
         getSelectionModel().addListSelectionListener(adapter);
 
         tree.setRowHeight(rowHeight);
-        tree.setCellRenderer(new ProfilerTreeCellRenderer(this));
+        tree.setCellRenderer(new ProfilerTreeCellRenderer());
         setDefaultRenderer(JTree.class, tree);
-    }
 
+        Component component = this;
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3)
+                    new ProfilerTabPopupMenu(tree).show(component, e.getX(), e.getY());
+            }
+        });
+
+    }
 
     // --- Traversing nodes ---
 

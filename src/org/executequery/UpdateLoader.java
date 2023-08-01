@@ -127,14 +127,14 @@ public class UpdateLoader extends JFrame {
             if (repoArg == null)
                 repoArg = "-repo=";
 
-            Log.info("Executing: " + sb);
+            System.out.println("Executing: " + sb);
 
             ProcessBuilder processBuilder = new ProcessBuilder(sb.toString(), repoArg);
             processBuilder.directory(new File(System.getProperty("user.dir")));
             processBuilder.start();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
 
         System.exit(0);
@@ -150,7 +150,7 @@ public class UpdateLoader extends JFrame {
             Files.delete(Paths.get(root));
 
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
     }
 
@@ -487,7 +487,7 @@ public class UpdateLoader extends JFrame {
             cleanup();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
     }
 

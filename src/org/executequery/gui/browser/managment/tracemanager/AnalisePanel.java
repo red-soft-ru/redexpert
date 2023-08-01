@@ -7,6 +7,7 @@ import org.executequery.gui.editor.SimpleDataItemViewerPanel;
 import org.executequery.gui.resultset.SimpleRecordDataItem;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.EQDateTimePicker;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.ListSelectionPanelEvent;
 import org.underworldlabs.swing.ListSelectionPanelListener;
@@ -23,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.executequery.gui.browser.managment.tracemanager.net.AnaliseRow.TIME;
 import static org.executequery.gui.browser.managment.tracemanager.net.AnaliseRow.TYPES;
 
 public class AnalisePanel extends JPanel {
@@ -47,6 +47,9 @@ public class AnalisePanel extends JPanel {
             "START_SERVICE", "PREPARE_STATEMENT", "FREE_STATEMENT", "CLOSE_CURSOR", "SET_CONTEXT", "PRIVILEGES_CHANGE", "EXECUTE_PROCEDURE_START",
             "EXECUTE_FUNCTION_START", "EXECUTE_PROCEDURE_FINISH", "EXECUTE_FUNCTION_FINISH", "EXECUTE_TRIGGER_START", "EXECUTE_TRIGGER_FINISH", "COMPILE_BLR",
             "EXECUTE_BLR", "EXECUTE_DYN", "ATTACH_SERVICE", "DETACH_SERVICE", "QUERY_SERVICE", "SWEEP_START", "SWEEP_FINISH", "SWEEP_FAILED", "SWEEP_PROGRESS"};
+
+    EQDateTimePicker startTimePicker;
+    EQDateTimePicker endTimePicker;
 
     public AnalisePanel(List<LogMessage> messages) {
         this.messages = messages;
@@ -79,7 +82,6 @@ public class AnalisePanel extends JPanel {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
                     buildHeaders();
-                    repaintTable();
                 }
             });
         }
@@ -95,9 +97,13 @@ public class AnalisePanel extends JPanel {
         typesPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
             @Override
             public void changed(ListSelectionPanelEvent event) {
-                repaintTable();
+                rebuildRows();
             }
         });
+        startTimePicker = new EQDateTimePicker();
+        endTimePicker = new EQDateTimePicker();
+        startTimePicker.setVisibleNullBox(false);
+        endTimePicker.setVisibleNullBox(false);
         GridBagLayout gridBagLayout = new GridBagLayout();
         setLayout(gridBagLayout);
         GridBagHelper gbh = new GridBagHelper();
@@ -108,11 +114,7 @@ public class AnalisePanel extends JPanel {
         JScrollPane logListPanel = new JScrollPane();
         logListPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         table.setRowSorter(new TableRowSorter<>(model));
-        /*table.setDefaultRenderer(Object.class, new CustomTableCellRenderer());
-        table.setDefaultRenderer(Long.class, new CustomTableCellRenderer());
-        table.setDefaultRenderer(Timestamp.class, new StatementTimestampTableCellRenderer());*/
         logListPanel.setViewportView(table);
-        //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
 
         table.addMouseListener(new MouseAdapter() {
@@ -125,7 +127,7 @@ public class AnalisePanel extends JPanel {
 
                         SimpleRecordDataItem rdi = new SimpleRecordDataItem("Value", 0, "");
                         row = table.getRowSorter().convertRowIndexToModel(row);
-                        rdi.setValue(rows.get(row).getLogMessage().getBody());
+                        rdi.setValue(rows.get(row).getLogMessages());
                         BaseDialog dialog = new BaseDialog(Bundles.get("ResultSetTablePopupMenu.RecordDataItemViewer"), true);
                         dialog.addDisplayComponentWithEmptyBorder(
                                 new SimpleDataItemViewerPanel(dialog, rdi));
@@ -156,6 +158,13 @@ public class AnalisePanel extends JPanel {
             }
         });
 
+        JButton reloadButton = new JButton(Bundles.getCommon("rebuild"));
+        reloadButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                rebuildRows();
+            }
+        });
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new GridBagLayout());
         JSplitPane splitPane = new JSplitPane();
@@ -167,6 +176,11 @@ public class AnalisePanel extends JPanel {
         add(selectEventsButton, gbh.nextRowFirstCol().setLabelDefault().get());
         for (int i = 0; i < checkBoxes.length; i++)
             add(checkBoxes[i], gbh.nextCol().setLabelDefault().get());
+        add(new JLabel(bundleString("Period")), gbh.nextCol().setLabelDefault().get());
+        add(startTimePicker, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        add(new JLabel(" - "), gbh.nextCol().setLabelDefault().get());
+        add(endTimePicker, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        add(reloadButton, gbh.nextCol().setLabelDefault().get());
         topPanel.add(sqlTextArea, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setMaxWeightY().get());
         topPanel.add(typesPanel, gbh.nextCol().fillHorizontally().get());
         add(splitPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
@@ -180,6 +194,22 @@ public class AnalisePanel extends JPanel {
 
     public void setMessages(List<LogMessage> messages) {
         this.messages = messages;
+        if (messages.size() > 0) {
+            int index = 0;
+            while (messages.get(index).getTimestamp() == null) {
+                index++;
+                if (index > messages.size())
+                    return;
+            }
+            startTimePicker.setDateTimePermissive(messages.get(index).getTimestamp().toLocalDateTime());
+            index = messages.size() - 1;
+            while (messages.get(index).getTimestamp() == null) {
+                index--;
+                if (index < 0)
+                    return;
+            }
+            endTimePicker.setDateTimePermissive(messages.get(index).getTimestamp().toLocalDateTime());
+        }
     }
 
     public void addMessage(LogMessage logMessage) {
@@ -190,7 +220,15 @@ public class AnalisePanel extends JPanel {
 
     void checkLogMessage(LogMessage msg) {
         boolean added = false;
+        if (msg.getTimestamp() == null)
+            return;
         if (!typesPanel.getSelectedValues().contains(msg.getTypeEvent()))
+            return;
+        int compareIndex = msg.getTimestamp().toLocalDateTime().compareTo(startTimePicker.getDateTime());
+        if (compareIndex < 0)
+            return;
+        compareIndex = msg.getTimestamp().toLocalDateTime().compareTo(endTimePicker.getDateTime());
+        if (compareIndex > 0)
             return;
         for (AnaliseRow row : rows) {
             if (msg.getStatementText() != null && row.getLogMessage().getStatementText().contentEquals(msg.getStatementText()) && msg.getTypeEvent().contentEquals(row.getLogMessage().getTypeEvent())) {
@@ -200,8 +238,7 @@ public class AnalisePanel extends JPanel {
             }
 
         }
-        if (!added && msg.getStatementText() != null)
-        {
+        if (!added && msg.getStatementText() != null) {
             AnaliseRow row = new AnaliseRow();
             row.addMessage(msg);
             rows.add(row);
@@ -219,14 +256,22 @@ public class AnalisePanel extends JPanel {
         for (AnaliseRow row : rows) {
             row.calculateValues();
         }
-    }
-
-    public void repaintTable() {
-        table.updateUI();
+        model.fireTableDataChanged();
     }
 
     private String bundleString(String key) {
         return Bundles.get(AnalisePanel.class, key);
+    }
+
+    private int convertTypeFromCheckBoxes(int index) {
+        int type = 0;
+        for (int i = 0; i < TYPES.length; i++) {
+            if (checkBoxes[i].isSelected())
+                if (type == index)
+                    return i;
+                else type++;
+        }
+        return -1;
     }
 
     class AnaliseTableModel extends AbstractTableModel {
@@ -271,10 +316,11 @@ public class AnalisePanel extends JPanel {
                     case 0:
                         return rows.get(rowIndex).getLogMessage().getStatementText();
                     case 1:
-                        return rows.get(rowIndex).getCount()[TIME];
+                        return rows.get(rowIndex).getCountAllRows();
                     default:
                         int param = (columnIndex - 2) % 4;
-                        int type = (columnIndex - 2) / 4;
+                        int x = (columnIndex - 2) / 4;
+                        int type = convertTypeFromCheckBoxes(x);
                         switch (param) {
                             case 0:
                                 return rows.get(rowIndex).getTotal()[type];

@@ -7,12 +7,14 @@ import java.util.List;
 
 public class AnaliseRow {
     LogMessage logMessage;
+    StringBuilder logMessages;
     public final static int TIME = 0;
     public final static int READ = 1;
     public final static int FETCH = 2;
     public final static int WRITE = 3;
     public final static String[] TYPES = {"TIME", "READ", "FETCH", "WRITE"};
     List<LogMessage>[] rows;
+    List<LogMessage> allRows;
     long[] average = new long[4];
     long[] total = new long[4];
     long[] max = new long[4];
@@ -20,6 +22,8 @@ public class AnaliseRow {
     long[] count = new long[4];
 
     public AnaliseRow() {
+        allRows = new ArrayList<>();
+        logMessages = new StringBuilder();
         rows = new List[4];
         for (int i = 0; i < 4; i++)
             rows[i] = new ArrayList<>();
@@ -27,6 +31,10 @@ public class AnaliseRow {
 
     public LogMessage getLogMessage() {
         return logMessage;
+    }
+
+    public String getLogMessages() {
+        return logMessages.toString();
     }
 
     public void setLogMessage(LogMessage logMessage) {
@@ -57,7 +65,13 @@ public class AnaliseRow {
         return count;
     }
 
+    public long getCountAllRows() {
+        return allRows.size();
+    }
+
     public void addMessage(LogMessage msg) {
+        allRows.add(msg);
+        logMessages.append(msg.getBody()).append("\n");
         for (int i = TIME; i < 4; i++) {
             addMessage(msg, i);
         }

@@ -7,22 +7,22 @@ import java.util.List;
 
 public class AnaliseRow {
     LogMessage logMessage;
-    List<LogMessage> rows;
-    long averageTime;
-    long totalTime;
-    long maxTime;
-    long minTime;
-    long dispersionTime;
-    long count;
+    public final static int TIME = 0;
+    public final static int READ = 1;
+    public final static int FETCH = 2;
+    public final static int WRITE = 3;
+    public final static String[] TYPES = {"TIME", "READ", "FETCH", "WRITE"};
+    List<LogMessage>[] rows;
+    long[] average = new long[4];
+    long[] total = new long[4];
+    long[] max = new long[4];
+    long[] dispersion = new long[4];
+    long[] count = new long[4];
 
     public AnaliseRow() {
-        rows = new ArrayList<>();
-        averageTime = 0;
-        totalTime = 0;
-        maxTime = 0;
-        minTime = Long.MAX_VALUE;
-        dispersionTime = 0;
-        count = 0;
+        rows = new List[4];
+        for (int i = 0; i < 4; i++)
+            rows[i] = new ArrayList<>();
     }
 
     public LogMessage getLogMessage() {
@@ -33,74 +33,81 @@ public class AnaliseRow {
         this.logMessage = logMessage;
     }
 
-    public List<LogMessage> getRows() {
+    public long[] getAverage() {
+        return average;
+    }
+
+    public long[] getTotal() {
+        return total;
+    }
+
+    public long[] getMax() {
+        return max;
+    }
+
+    public long[] getDispersion() {
+        return dispersion;
+    }
+
+    public List<LogMessage>[] getRows() {
         return rows;
     }
 
-    public void setRows(List<LogMessage> rows) {
-        this.rows = rows;
-    }
-
-    public long getAverageTime() {
-        return averageTime;
-    }
-
-    public void setAverageTime(long averageTime) {
-        this.averageTime = averageTime;
-    }
-
-    public long getTotalTime() {
-        return totalTime;
-    }
-
-    public void setTotalTime(long totalTime) {
-        this.totalTime = totalTime;
-    }
-
-    public long getMaxTime() {
-        return maxTime;
-    }
-
-    public void setMaxTime(long maxTime) {
-        this.maxTime = maxTime;
-    }
-
-    public long getDispersionTime() {
-        return dispersionTime;
-    }
-
-    public void setDispersionTime(long dispersionTime) {
-        this.dispersionTime = dispersionTime;
-    }
-
-    public long getCount() {
+    public long[] getCount() {
         return count;
     }
 
-    public void setCount(long count) {
-        this.count = count;
+    public void addMessage(LogMessage msg) {
+        for (int i = TIME; i < 4; i++) {
+            addMessage(msg, i);
+        }
     }
 
-    public void addMessage(LogMessage msg) {
-        if (msg.getTimeExecution() != null) {
+    void addMessage(LogMessage msg, int type) {
+        Long currentValue = getValueFromType(msg, type);
+        if (currentValue != null) {
             if (logMessage == null)
                 logMessage = msg;
-            rows.add(msg);
-            count++;
-            totalTime += msg.getTimeExecution();
-            averageTime = totalTime / count;
-            if (msg.getTimeExecution() > maxTime)
-                maxTime = msg.getTimeExecution();
-            if (msg.getTimeExecution() < minTime)
-                minTime = msg.getTimeExecution();
+            rows[type].add(msg);
+            count[type]++;
+            total[type] += currentValue;
+            if (currentValue > max[type])
+                max[type] = currentValue;
+        } else Log.debug("calculate error for type '" + TYPES[type] + "': trace id = " + msg.getId());
+    }
+
+    public void calculateValues() {
+        for (int i = TIME; i < 4; i++) {
+            calculateValues(i);
+        }
+    }
+
+    void calculateValues(int type) {
+        if (count[type] > 0) {
+            average[type] = total[type] / count[type];
+
             long sko = 0;
-            if (count > 1) {
-                for (LogMessage row : rows) {
-                    sko += (row.getTimeExecution() - averageTime) * (row.getTimeExecution() - averageTime);
+            if (count[type] > 1) {
+                for (LogMessage row : rows[type]) {
+                    long value = getValueFromType(row, type);
+                    sko += (value - average[type]) * (value - average[type]);
                 }
-                sko = sko / count - 1;
-                dispersionTime = (long) Math.sqrt(sko);
+                sko = sko / count[type] - 1;
+                dispersion[type] = (long) Math.sqrt(sko);
             }
-        } else Log.error("Time execution error: trace id = "+msg.getId());
+        }
+    }
+
+    Long getValueFromType(LogMessage msg, int type) {
+        switch (type) {
+            case READ:
+                return msg.getCountReads();
+            case FETCH:
+                return msg.getCountFetches();
+            case WRITE:
+                return msg.getCountWrites();
+            default:
+                return msg.getTimeExecution();
+        }
     }
 }

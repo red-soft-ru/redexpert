@@ -15,23 +15,32 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.executequery.gui.browser.managment.tracemanager.net.AnaliseRow.TIME;
+import static org.executequery.gui.browser.managment.tracemanager.net.AnaliseRow.TYPES;
 
 public class AnalisePanel extends JPanel {
     List<AnaliseRow> rows;
 
+    List<String> headers;
     List<LogMessage> messages;
     JTable table;
     AnaliseTableModel model;
     SimpleSqlTextPanel sqlTextArea;
     ListSelectionPanel typesPanel;
+
+    JCheckBox[] checkBoxes;
+    String[] params = new String[]{
+
+            "TOTAL", "AVERAGE", "MAX", "DISPERSION"
+    };
 
     String[] types = {"TRACE_INIT", "TRACE_FINI", "CREATE_DATABASE", "ATTACH_DATABASE", "DROP_DATABASE", "DETACH_DATABASE", "START_TRANSACTION",
             "COMMIT_RETAINING", "COMMIT_TRANSACTION", "ROLLBACK_RETAINING", "ROLLBACK_TRANSACTION", "EXECUTE_STATEMENT_START", "EXECUTE_STATEMENT_FINISH",
@@ -44,17 +53,49 @@ public class AnalisePanel extends JPanel {
         init();
     }
 
+    void buildHeaders() {
+        headers.clear();
+        headers.add("QUERY");
+        headers.add("COUNT");
+        for (int i = 0; i < checkBoxes.length; i++) {
+            if (checkBoxes[i].isSelected()) {
+                for (int g = 0; g < params.length; g++)
+                    headers.add(params[g] + "_" + TYPES[i]);
+
+            }
+        }
+        model.fireTableStructureChanged();
+    }
+
     void init() {
+        headers = new ArrayList<>();
+        Arrays.sort(types);
+        checkBoxes = new JCheckBox[TYPES.length];
+        for (int i = 0; i < checkBoxes.length; i++) {
+            checkBoxes[i] = new JCheckBox(TYPES[i]);
+            if (i == 0)
+                checkBoxes[i].setSelected(true);
+            checkBoxes[i].addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    buildHeaders();
+                    repaintTable();
+                }
+            });
+        }
+
         model = new AnaliseTableModel();
+        buildHeaders();
         table = new JTable(model);
         sqlTextArea = new SimpleSqlTextPanel();
         typesPanel = new ListSelectionPanel();
+        typesPanel.setLabelText(bundleString("AvailableEvents"), bundleString("SelectedEvents"));
         typesPanel.createAvailableList(types);
         typesPanel.selectOneStringAction("EXECUTE_STATEMENT_FINISH");
         typesPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
             @Override
             public void changed(ListSelectionPanelEvent event) {
-                rebuildRows();
+                repaintTable();
             }
         });
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -104,11 +145,31 @@ public class AnalisePanel extends JPanel {
             }
         });
 
+        JButton selectEventsButton = new JButton(bundleString("HideEvents"));
+        selectEventsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                typesPanel.setVisible(!typesPanel.isVisible());
+                if (typesPanel.isVisible())
+                    selectEventsButton.setText(bundleString("HideEvents"));
+                else selectEventsButton.setText(bundleString("ShowEvents"));
+            }
+        });
+
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new GridBagLayout());
+        JSplitPane splitPane = new JSplitPane();
+        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setTopComponent(topPanel);
+        splitPane.setBottomComponent(logListPanel);
 
         gbh.setLabelDefault();
-        add(sqlTextArea, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().get());
-        add(typesPanel, gbh.nextCol().fillHorizontally().get());
-        add(logListPanel, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        add(selectEventsButton, gbh.nextRowFirstCol().setLabelDefault().get());
+        for (int i = 0; i < checkBoxes.length; i++)
+            add(checkBoxes[i], gbh.nextCol().setLabelDefault().get());
+        topPanel.add(sqlTextArea, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setMaxWeightY().get());
+        topPanel.add(typesPanel, gbh.nextCol().fillHorizontally().get());
+        add(splitPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
         rebuildRows();
 
     }
@@ -155,32 +216,39 @@ public class AnalisePanel extends JPanel {
         for (LogMessage msg : messages) {
             checkLogMessage(msg);
         }
+        for (AnaliseRow row : rows) {
+            row.calculateValues();
+        }
     }
 
     public void repaintTable() {
         table.updateUI();
     }
 
-    class AnaliseTableModel extends AbstractTableModel {
+    private String bundleString(String key) {
+        return Bundles.get(AnalisePanel.class, key);
+    }
 
-        String[] headers = {"QUERY", "TOTAL_TIME", "AVERAGE_TIME", "MAX_EXEC_TIME", "DISPERSION", "COUNT"};
+    class AnaliseTableModel extends AbstractTableModel {
 
 
         @Override
         public int getRowCount() {
             if (rows != null)
-            return rows.size();
+                return rows.size();
             return 0;
         }
 
         @Override
         public int getColumnCount() {
-            return headers.length;
+
+            return headers.size();
         }
 
         @Override
         public String getColumnName(int columnIndex) {
-            return headers[columnIndex];
+
+            return headers.get(columnIndex);
         }
 
         @Override
@@ -203,15 +271,20 @@ public class AnalisePanel extends JPanel {
                     case 0:
                         return rows.get(rowIndex).getLogMessage().getStatementText();
                     case 1:
-                        return rows.get(rowIndex).getTotalTime();
-                    case 2:
-                        return rows.get(rowIndex).getAverageTime();
-                    case 3:
-                        return rows.get(rowIndex).getMaxTime();
-                    case 4:
-                        return rows.get(rowIndex).getDispersionTime();
-                    case 5:
-                        return rows.get(rowIndex).getCount();
+                        return rows.get(rowIndex).getCount()[TIME];
+                    default:
+                        int param = (columnIndex - 2) % 4;
+                        int type = (columnIndex - 2) / 4;
+                        switch (param) {
+                            case 0:
+                                return rows.get(rowIndex).getTotal()[type];
+                            case 1:
+                                return rows.get(rowIndex).getAverage()[type];
+                            case 2:
+                                return rows.get(rowIndex).getMax()[type];
+                            case 3:
+                                return rows.get(rowIndex).getDispersion()[type];
+                        }
                 }
             }
             return null;
@@ -220,21 +293,6 @@ public class AnalisePanel extends JPanel {
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 
-        }
-
-        List<TableModelListener> listeners;
-
-        @Override
-        public void addTableModelListener(TableModelListener l) {
-            if(listeners==null)
-                listeners=new ArrayList<>();
-            listeners.add(l);
-        }
-
-        @Override
-        public void removeTableModelListener(TableModelListener l) {
-            if(listeners!=null)
-                listeners.remove(l);
         }
 
     }

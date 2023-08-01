@@ -374,6 +374,16 @@ public class TraceManagerPanel extends JPanel implements TabView {
                             GUIUtilities.showNormalCursor();
                             tabPane.setEnabled(true);
                             loggerPanel.setEnableElements(true);
+                            SwingWorker sw = new SwingWorker("buildAnalise") {
+                                @Override
+                                public Object construct() {
+                                    analisePanel.setMessages(loggerPanel.getTableRows());
+                                    analisePanel.rebuildRows();
+                                    return null;
+                                }
+                            };
+                            sw.start();
+
                         }
                     };
                     GUIUtilities.showWaitCursor();
@@ -555,7 +565,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
             idLogMessage++;
             logMessage.setId(idLogMessage);
             loggerPanel.addRow(logMessage);
-            analisePanel.addMessage(logMessage);
+            if (!fromFile)
+                analisePanel.addMessage(logMessage);
         } else {
             if (fromFile)
                 return;

@@ -161,7 +161,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
                     jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
                             sqlTextPanel.getSQLText() :
                             bashTextPanel.getTextAreaComponent().getText(),
-                    simpleCommentPanel.getComment(), "^");
+                    simpleCommentPanel.getComment(), false);
 
         } else {
 
@@ -173,7 +173,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
                     jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
                             sqlTextPanel.getSQLText() :
                             bashTextPanel.getTextAreaComponent().getText(),
-                    simpleCommentPanel.getComment(), "^");
+                    simpleCommentPanel.getComment(), false);
         }
     }
 

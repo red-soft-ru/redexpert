@@ -1488,7 +1488,7 @@ public final class SQLUtils {
                 break;
         }
 
-        sb.append("SET TERM ;^\n");
+        sb.append("\nSET TERM ;^\n");
         return sb.toString();
     }
 
@@ -1605,9 +1605,10 @@ public final class SQLUtils {
 
     public static String generateCreateJob(
             String name, String cronSchedule, boolean active, LocalDateTime startDate, LocalDateTime endDate,
-            int jobType, String source, String comment, String delimiter) {
+            int jobType, String source, String comment, boolean setTerm) {
 
         StringBuilder sb = new StringBuilder();
+        sb.append(setTerm ? "SET TERM ^;\n" : "");
 
         sb.append("CREATE JOB ").append(format(name)).append("\n");
         sb.append("'").append(cronSchedule).append("'").append("\n");
@@ -1631,17 +1632,17 @@ public final class SQLUtils {
             sb.append("AS\n").append(source);
 
         if (comment != null && !comment.isEmpty())
-            sb.append(delimiter).append(generateComment(format(name), "JOB", comment, "", true));
+            sb.append("^").append(generateComment(format(name), "JOB", comment, "", true));
 
-        return sb.append(delimiter).append("\n").toString();
+        return sb.append(setTerm ? "^\nSET TERM ;^\n" : "^\n").toString();
     }
 
     public static String generateAlterJob(
             DefaultDatabaseJob job, String name, String cronSchedule, boolean active, LocalDateTime startDate,
-            LocalDateTime endDate, int jobType, String source, String comment, String delimiter) {
+            LocalDateTime endDate, int jobType, String source, String comment, boolean setTerm) {
 
         StringBuilder sb = new StringBuilder();
-
+        sb.append(setTerm ? "SET TERM ^;\n" : "");
         sb.append("ALTER JOB ").append(format(name)).append("\n");
 
         if (!job.getCronSchedule().equals(cronSchedule))
@@ -1674,17 +1675,17 @@ public final class SQLUtils {
         }
 
         if (!Objects.equals(job.getRemarks(), comment) && !comment.isEmpty())
-            sb.append(delimiter).append(generateComment(format(name), "JOB", comment, "", true));
+            sb.append("^").append(generateComment(format(name), "JOB", comment, "", true));
 
-        return sb.append(delimiter).append("\n").toString();
+        return sb.append(setTerm ? "^\nSET TERM ;^\n" : "^\n").toString();
     }
 
     public static String generateAlterJob(DefaultDatabaseJob thisJob, DefaultDatabaseJob compareJob) {
 
-        String delimiter = "^";
-
         StringBuilder sb = new StringBuilder();
+        sb.append("SET TERM ^;\n");
         sb.append("ALTER JOB ").append(format(thisJob.getName())).append("\n");
+
         String noChangesCheckString = sb.toString();
 
         if (!thisJob.getCronSchedule().equals(compareJob.getCronSchedule()))
@@ -1717,11 +1718,11 @@ public final class SQLUtils {
         }
 
         if (!Objects.equals(thisJob.getRemarks(), compareJob.getRemarks()) && !compareJob.getRemarks().isEmpty())
-            sb.append(delimiter).append(generateComment(format(thisJob.getName()), "JOB", compareJob.getRemarks(), "", true));
+            sb.append("^").append(generateComment(format(thisJob.getName()), "JOB", compareJob.getRemarks(), "", true));
 
         if (noChangesCheckString.contentEquals(sb))
             return "/* there are no changes */\n";
-        return sb.append(delimiter).append("\n").toString();
+        return sb.append("^\nSET TERM ;^\n").toString();
     }
 
     private static String format(String object) {

@@ -214,18 +214,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             ResultSet rs = querySender.getResultSet(query).getResultSet();
             int i = 0;
 
-            ComparerDBPanel comparerDBPanel = null;
-            if (thread != null) {
-                Object threadUserObject = thread.getUserObject();
-                if (threadUserObject instanceof ComparerDBPanel) {
-                    comparerDBPanel = ((ComparerDBPanel) threadUserObject);
-                    comparerDBPanel.recreateProgressBar(
-                            "LoadFullInfoForObjects",
-                            NamedObject.META_TYPES_FOR_BUNDLE[getSubType()],
-                            objects.size()
-                    );
-                }
-            }
+            ComparerDBPanel comparerDBPanel = getComparerDBPanel(
+                    thread, "LoadFullInfoForObjects", objects.size());
 
             while (rs.next()) {
 
@@ -288,18 +278,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             ResultSet rs = querySender.getResultSet(query).getResultSet();
             int i = 0;
 
-            ComparerDBPanel comparerDBPanel = null;
-            if (thread != null) {
-                Object threadUserObject = thread.getUserObject();
-                if (threadUserObject instanceof ComparerDBPanel) {
-                    comparerDBPanel = ((ComparerDBPanel) threadUserObject);
-                    comparerDBPanel.recreateProgressBar(
-                            "LoadColumnsForAllTables",
-                            NamedObject.META_TYPES_FOR_BUNDLE[getSubType()],
-                            objects.size()
-                    );
-                }
-            }
+            ComparerDBPanel comparerDBPanel = getComparerDBPanel(
+                    thread, "LoadColumnsForAllTables", objects.size());
 
             AbstractDatabaseObject previousObject = null;
             while (rs.next()) {
@@ -354,6 +334,21 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             getHost().setPauseLoadingTreeForSearch(false);
         }
 
+    }
+
+    private ComparerDBPanel getComparerDBPanel(InterruptibleThread thread, String labelKey, int objectsSize) {
+
+        ComparerDBPanel comparerDBPanel = null;
+        if (thread != null) {
+
+            Object threadUserObject = thread.getUserObject();
+            if (threadUserObject instanceof ComparerDBPanel) {
+                comparerDBPanel = ((ComparerDBPanel) threadUserObject);
+                comparerDBPanel.recreateProgressBar(labelKey, NamedObject.META_TYPES_FOR_BUNDLE[getSubType()], objectsSize);
+            }
+        }
+
+        return comparerDBPanel;
     }
 
     private void addAsParentToObjects(List<NamedObject> children) {

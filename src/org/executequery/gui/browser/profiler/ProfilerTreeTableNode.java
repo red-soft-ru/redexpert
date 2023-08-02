@@ -42,7 +42,7 @@ public class ProfilerTreeTableNode extends CCTNode {
 
             ProfilerData data_1 = ((ProfilerTreeTableNode) this.childrenList.get(i)).getData();
             ProfilerData data_2 = ((ProfilerTreeTableNode) compareNode.childrenList.get(i)).getData();
-            if (data_1.getCallerId() != data_2.getCallerId() || !Objects.equals(data_1.getProcessName(), data_2.getProcessName()))
+            if (!Objects.equals(data_1.getProcessName(), data_2.getProcessName()))
                 return false;
         }
 

@@ -217,7 +217,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             ComparerDBPanel comparerDBPanel = getComparerDBPanel(
                     thread, "LoadFullInfoForObjects", objects.size());
 
-            while (rs.next()) {
+            while (rs != null && rs.next()) {
 
                 if (thread != null && thread.isCanceled()) {
                     querySender.releaseResources();
@@ -282,7 +282,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     thread, "LoadColumnsForAllTables", objects.size());
 
             AbstractDatabaseObject previousObject = null;
-            while (rs.next()) {
+            while (rs != null && rs.next()) {
 
                 if (thread != null && thread.isCanceled()) {
                     querySender.releaseResources();

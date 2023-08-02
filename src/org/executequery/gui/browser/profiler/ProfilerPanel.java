@@ -50,6 +50,7 @@ public class ProfilerPanel extends JPanel
     // ---
 
     private int sessionId;
+    private int currentState;
     private DefaultProfilerExecutor profilerExecutor;
     private TableSelectionCombosGroup combosGroup;
     private List<ProfilerData> oldDataList;
@@ -168,6 +169,8 @@ public class ProfilerPanel extends JPanel
 
     private void startSession() {
 
+        clearTree();
+
         if (!isConnected()) {
             GUIUtilities.displayWarningMessage(bundleString("NotConnected"));
             return;
@@ -231,6 +234,9 @@ public class ProfilerPanel extends JPanel
             return;
         }
 
+        if (currentState == PAUSED)
+            resumeSession();
+
         try {
             profilerExecutor.finishSession();
             switchSessionState(INACTIVE);
@@ -243,13 +249,15 @@ public class ProfilerPanel extends JPanel
 
     private void cancelSession() {
 
-        // reset oldDataList
-        oldDataList = null;
+        clearTree();
 
         if (!isConnected()) {
             switchSessionState(INACTIVE);
             return;
         }
+
+        if (currentState == PAUSED)
+            resumeSession();
 
         try {
             profilerExecutor.cancelSession();
@@ -262,20 +270,15 @@ public class ProfilerPanel extends JPanel
 
     private void discardSession() {
 
-        // clear tree
-        fullRootTreeNode.setData(new ProfilerData(-1, -1, "ROOT NODE", "ROOT", 0));
-        compactRootTreeNode.setData(new ProfilerData(-1, -1, "ROOT NODE", "ROOT", 0));
-        fullRootTreeNode.removeAllChildren();
-        compactRootTreeNode.removeAllChildren();
-        updateTreeDisplay();
-
-        // reset oldDataList
-        oldDataList = null;
+        clearTree();
 
         if (!isConnected()) {
             switchSessionState(INACTIVE);
             return;
         }
+
+        if (currentState == PAUSED)
+            resumeSession();
 
         try {
             profilerExecutor.discardSession();
@@ -432,7 +435,25 @@ public class ProfilerPanel extends JPanel
         }
     }
 
+    private void clearTree() {
+
+        if (fullRootTreeNode != null) {
+            fullRootTreeNode.setData(new ProfilerData(-1, -1, "ROOT NODE", "ROOT", 0));
+            fullRootTreeNode.removeAllChildren();
+        }
+
+        if (compactRootTreeNode != null) {
+            compactRootTreeNode.setData(new ProfilerData(-1, -1, "ROOT NODE", "ROOT", 0));
+            compactRootTreeNode.removeAllChildren();
+        }
+
+        oldDataList = null;
+        updateTreeDisplay();
+    }
+
     private void switchSessionState(int state) {
+
+        currentState = state;
         switch (state) {
             case ACTIVE:
                 startButton.setEnabled(false);

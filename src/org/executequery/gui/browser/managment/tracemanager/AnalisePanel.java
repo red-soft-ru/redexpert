@@ -39,7 +39,7 @@ public class AnalisePanel extends JPanel {
     JCheckBox[] checkBoxes;
     String[] params = new String[]{
 
-            "TOTAL", "AVERAGE", "MAX", "DISPERSION"
+            "TOTAL", "AVERAGE", "MAX", "STD_DEV"
     };
 
     String[] types = {"TRACE_INIT", "TRACE_FINI", "CREATE_DATABASE", "ATTACH_DATABASE", "DROP_DATABASE", "DETACH_DATABASE", "START_TRANSACTION",
@@ -329,7 +329,7 @@ public class AnalisePanel extends JPanel {
                             case 2:
                                 return rows.get(rowIndex).getMax()[type];
                             case 3:
-                                return rows.get(rowIndex).getDispersion()[type];
+                                return rows.get(rowIndex).getStd_dev()[type];
                         }
                 }
             }

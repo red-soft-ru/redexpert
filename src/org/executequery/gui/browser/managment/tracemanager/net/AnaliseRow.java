@@ -18,7 +18,7 @@ public class AnaliseRow {
     long[] average = new long[4];
     long[] total = new long[4];
     long[] max = new long[4];
-    long[] dispersion = new long[4];
+    long[] std_dev = new long[4];
     long[] count = new long[4];
 
     public AnaliseRow() {
@@ -53,8 +53,8 @@ public class AnaliseRow {
         return max;
     }
 
-    public long[] getDispersion() {
-        return dispersion;
+    public long[] getStd_dev() {
+        return std_dev;
     }
 
     public List<LogMessage>[] getRows() {
@@ -100,14 +100,14 @@ public class AnaliseRow {
         if (count[type] > 0) {
             average[type] = total[type] / count[type];
 
-            long sko = 0;
+            long dispersion = 0;
             if (count[type] > 1) {
                 for (LogMessage row : rows[type]) {
                     long value = getValueFromType(row, type);
-                    sko += (value - average[type]) * (value - average[type]);
+                    dispersion += (value - average[type]) * (value - average[type]);
                 }
-                sko = sko / count[type] - 1;
-                dispersion[type] = (long) Math.sqrt(sko);
+                dispersion = dispersion / count[type] - 1;
+                std_dev[type] = (long) Math.sqrt(dispersion);
             }
         }
     }

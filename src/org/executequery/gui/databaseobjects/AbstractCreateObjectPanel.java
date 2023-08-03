@@ -34,7 +34,6 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.Printable;
-import java.sql.SQLException;
 import java.util.Vector;
 
 public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPanel {
@@ -84,7 +83,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                 return new CreateUserPanel(dc, null, (DefaultDatabaseUser) databaseObject);
             case NamedObject.ROLE:
             case NamedObject.SYSTEM_ROLE:
-                return new CreateRolePanel(dc, null, (DefaultDatabaseRole) databaseObject);
+                return new CreateRolePanel(dc, null, databaseObject);
             case NamedObject.TABLESPACE:
                 return new CreateTablespacePanel(dc, null, databaseObject);
             case NamedObject.JOB:
@@ -151,10 +150,12 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
     private void initComponents() {
         nameField = new JFormattedTextField();
-        nameField.setText(SQLUtils.generateNameForDBObject(getTypeObject(), connection));
-        if (connection.isNamesToUpperCase() && !editing) {
-            PlainDocument doc = (PlainDocument) nameField.getDocument();
-            doc.setDocumentFilter(new UpperFilter());
+        if (connection != null) {
+            nameField.setText(SQLUtils.generateNameForDBObject(getTypeObject(), connection));
+            if (connection.isNamesToUpperCase() && !editing) {
+                PlainDocument doc = (PlainDocument) nameField.getDocument();
+                doc.setDocumentFilter(new UpperFilter());
+            }
         }
         tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(700, 400));
@@ -310,7 +311,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         DatabaseHost host = new DefaultDatabaseHost(connection);
         try {
             return host.getDatabaseMetaData().getDatabaseMajorVersion();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return 0;
         }

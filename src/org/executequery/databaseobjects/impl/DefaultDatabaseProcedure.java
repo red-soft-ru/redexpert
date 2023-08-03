@@ -176,6 +176,17 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                     DatabaseTypeConverter.getDataTypeName(rs.getInt(FIELD_TYPE), rs.getInt(FIELD_SUB_TYPE), rs.getInt(FIELD_SCALE)),
                     rs.getInt(FIELD_LENGTH),
                     1 - rs.getInt(PP + NULL_FLAG));
+            final short fieldScale = rs.getShort(FIELD_SCALE);
+            pp.setScale(fieldScale);
+            switch (pp.getDataType()) {
+                case Types.DECIMAL:
+                case Types.NUMERIC:
+                    // TODO column precision
+                    pp.setScale(fieldScale * (-1));
+                    break;
+                default:
+                    break;
+            }
             if (rs.getInt(FIELD_PRECISION) != 0)
                 pp.setSize(rs.getInt(FIELD_PRECISION));
             if (rs.getInt(CHARACTER_LENGTH) != 0)

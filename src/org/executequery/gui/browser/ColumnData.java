@@ -387,6 +387,7 @@ public class ColumnData implements Serializable {
         primaryKey = cd.isPrimaryKey();
         foreignKey = cd.isForeignKey();
         columnSize = cd.getColumnSize();
+        columnScale = cd.getColumnScale();
         notNull = cd.isNotNull();
         sqlType = cd.getSQLType();
         domain = cd.getDomain();
@@ -412,6 +413,7 @@ public class ColumnData implements Serializable {
         setPrimaryKey(cd.isPrimaryKey());
         setForeignKey(cd.isForeignKey());
         setColumnSize(cd.getColumnSize());
+        setColumnScale(cd.getColumnScale());
         setNotNull(cd.isRequired());
         setDomainNotNull(cd.isDomainNotNull());
         setSQLType(cd.getTypeInt());

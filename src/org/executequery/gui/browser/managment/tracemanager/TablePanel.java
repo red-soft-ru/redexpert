@@ -32,6 +32,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Comparator;
 
 public class TablePanel extends JPanel {
 
@@ -181,6 +182,7 @@ public class TablePanel extends JPanel {
         columnsCheckPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
             @Override
             public void changed(ListSelectionPanelEvent event) {
+                columnsCheckPanel.getAvailableValues().sort(Comparator.naturalOrder());
                 dataModel.rebuildModel();
                 saveCols();
             }

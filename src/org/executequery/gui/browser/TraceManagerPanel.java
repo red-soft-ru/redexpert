@@ -9,10 +9,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
-import org.executequery.gui.browser.managment.tracemanager.BuildConfigurationPanel;
-import org.executequery.gui.browser.managment.tracemanager.LogConstants;
-import org.executequery.gui.browser.managment.tracemanager.SessionManagerPanel;
-import org.executequery.gui.browser.managment.tracemanager.TablePanel;
+import org.executequery.gui.browser.managment.tracemanager.*;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.gui.browser.managment.tracemanager.net.SessionInfo;
 import org.executequery.localization.Bundles;
@@ -50,6 +47,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
     public static final String TITLE = Bundles.get(TraceManagerPanel.class, "title");
     private IFBTraceManager traceManager;
     private TablePanel loggerPanel;
+
+    private AnalisePanel analisePanel;
     private FileOutputStream fileLog;
     private PipedOutputStream outputStream;
 
@@ -102,7 +101,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
             traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(),
                     driver,
                     "FBTraceManagerImpl");
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -204,6 +203,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         ListSelectionPanel columnsCheckPanel = new ListSelectionPanel(new Vector<>(Arrays.asList(LogConstants.COLUMNS)));
         columnsCheckPanel.selectAllAction();
         loggerPanel = new TablePanel(columnsCheckPanel);
+        analisePanel = new AnalisePanel(loggerPanel.getTableRows());
         fileLogButton = new JButton("...");
         fileDatabaseButton = new JButton("...");
         fileConfButton = new JButton("...");
@@ -372,6 +372,16 @@ public class TraceManagerPanel extends JPanel implements TabView {
                             GUIUtilities.showNormalCursor();
                             tabPane.setEnabled(true);
                             loggerPanel.setEnableElements(true);
+                            SwingWorker sw = new SwingWorker("buildAnalise") {
+                                @Override
+                                public Object construct() {
+                                    analisePanel.setMessages(loggerPanel.getTableRows());
+                                    analisePanel.rebuildRows();
+                                    return null;
+                                }
+                            };
+                            sw.start();
+
                         }
                     };
                     GUIUtilities.showWaitCursor();
@@ -513,6 +523,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));
         tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
         tabPane.add(bundleString("Logger"), loggerPanel);
+        tabPane.add(bundleString("Analise"), analisePanel);
         connectionPanel.setLayout(new GridBagLayout());
         gbh.fullDefaults();
         gbh.addLabelFieldPair(connectionPanel, bundleString("Connections"), databaseBox, null, true, true);
@@ -544,6 +555,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
             idLogMessage++;
             logMessage.setId(idLogMessage);
             loggerPanel.addRow(logMessage);
+            if (!fromFile)
+                analisePanel.addMessage(logMessage);
         } else {
             if (fromFile)
                 return;
@@ -566,6 +579,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
     public void clearAll() {
         loggerPanel.clearAll();
+        analisePanel.setMessages(loggerPanel.getTableRows());
+        analisePanel.rebuildRows();
         idLogMessage = 0;
     }
 

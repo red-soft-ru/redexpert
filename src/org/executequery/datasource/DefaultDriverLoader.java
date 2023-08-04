@@ -162,9 +162,13 @@ public class DefaultDriverLoader implements DriverLoader {
         if (DEFAULT_DATABASE_DRIVER == null) {
             List<DatabaseDriver> dds = driverRepository().findAll();
             for (DatabaseDriver d : dds) {
-                if (d.getClassName().contains("FBDriver") && d.getMajorVersion() == 4) {
-                    DEFAULT_DATABASE_DRIVER = d;
-                    break;
+                try {
+                    if (d.getClassName().contains("FBDriver") && d.getMajorVersion() == 4) {
+                        DEFAULT_DATABASE_DRIVER = d;
+                        break;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
             if (DEFAULT_DATABASE_DRIVER == null) {

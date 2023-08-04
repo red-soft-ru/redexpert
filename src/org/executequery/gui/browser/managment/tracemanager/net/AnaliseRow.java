@@ -21,13 +21,8 @@ public class AnaliseRow {
     long[] std_dev = new long[4];
     long[] count = new long[4];
 
-    public AnaliseRow() {
-        allRows = new ArrayList<>();
-        logMessages = new StringBuilder();
-        rows = new List[4];
-        for (int i = 0; i < 4; i++)
-            rows[i] = new ArrayList<>();
-    }
+    List<String> plans;
+    String planText;
 
     public LogMessage getLogMessage() {
         return logMessage;
@@ -69,12 +64,13 @@ public class AnaliseRow {
         return allRows.size();
     }
 
-    public void addMessage(LogMessage msg) {
-        allRows.add(msg);
-        logMessages.append(msg.getBody()).append("\n");
-        for (int i = TIME; i < 4; i++) {
-            addMessage(msg, i);
-        }
+    public AnaliseRow() {
+        allRows = new ArrayList<>();
+        logMessages = new StringBuilder();
+        rows = new List[4];
+        for (int i = 0; i < 4; i++)
+            rows[i] = new ArrayList<>();
+        plans = new ArrayList<>();
     }
 
     void addMessage(LogMessage msg, int type) {
@@ -110,6 +106,44 @@ public class AnaliseRow {
                 std_dev[type] = (long) Math.sqrt(dispersion);
             }
         }
+    }
+
+    public void addMessage(LogMessage msg) {
+        allRows.add(msg);
+        logMessages.append(msg.getBody()).append("\n");
+        if (msg.getPlanText() != null) {
+            if (plans.isEmpty())
+                plans.add(msg.getPlanText());
+            else {
+                boolean finded = false;
+                for (String plan : plans) {
+                    if (plan.contentEquals(msg.getPlanText())) {
+                        finded = true;
+                        break;
+                    }
+                }
+                if (!finded)
+                    plans.add(msg.getPlanText());
+            }
+        }
+        for (int i = TIME; i < 4; i++) {
+            addMessage(msg, i);
+        }
+    }
+
+    public int countPlans() {
+        return plans.size();
+    }
+
+    public String getPlanText() {
+        if (planText == null) {
+            StringBuilder sb = new StringBuilder();
+            for (String plan : plans) {
+                sb.append(plan).append("\n");
+            }
+            planText = sb.toString();
+        }
+        return planText;
     }
 
     Long getValueFromType(LogMessage msg, int type) {

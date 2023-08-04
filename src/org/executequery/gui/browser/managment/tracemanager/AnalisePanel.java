@@ -1,12 +1,14 @@
 package org.executequery.gui.browser.managment.tracemanager;
 
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.managment.tracemanager.net.AnaliseRow;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.gui.editor.SimpleDataItemViewerPanel;
 import org.executequery.gui.resultset.SimpleRecordDataItem;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
+import org.executequery.sql.SqlMessages;
 import org.underworldlabs.swing.EQDateTimePicker;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.ListSelectionPanelEvent;
@@ -16,7 +18,11 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.*;
@@ -35,6 +41,8 @@ public class AnalisePanel extends JPanel {
     AnaliseTableModel model;
     SimpleSqlTextPanel sqlTextArea;
     ListSelectionPanel typesPanel;
+    LoggingOutputPanel planPanel;
+    Color[] colors = new Color[]{new Color(255, 102, 102), new Color(51, 204, 255), new Color(102, 255, 102), new Color(255, 255, 204)};
 
     JCheckBox[] checkBoxes;
     String[] params = new String[]{
@@ -50,6 +58,7 @@ public class AnalisePanel extends JPanel {
 
     EQDateTimePicker startTimePicker;
     EQDateTimePicker endTimePicker;
+    TableRowSorter rowSorter;
 
     public AnalisePanel(List<LogMessage> messages) {
         this.messages = messages;
@@ -84,13 +93,25 @@ public class AnalisePanel extends JPanel {
                     buildHeaders();
                 }
             });
+            checkBoxes[i].setBackground(colors[i]);
         }
 
         model = new AnaliseTableModel();
+        model.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                if (e.getLastRow() == TableModelEvent.HEADER_ROW) {
+                    if (rowSorter != null)
+                        updateSorter();
+                }
+            }
+        });
         buildHeaders();
         table = new JTable(model);
+        table.setDefaultRenderer(Long.class, new AnaliseRenderer());
         sqlTextArea = new SimpleSqlTextPanel();
         typesPanel = new ListSelectionPanel();
+        typesPanel.setVisible(false);
         typesPanel.setLabelText(bundleString("AvailableEvents"), bundleString("SelectedEvents"));
         typesPanel.createAvailableList(types);
         typesPanel.selectOneStringAction("EXECUTE_STATEMENT_FINISH");
@@ -104,6 +125,7 @@ public class AnalisePanel extends JPanel {
         endTimePicker = new EQDateTimePicker();
         startTimePicker.setVisibleNullBox(false);
         endTimePicker.setVisibleNullBox(false);
+        planPanel = new LoggingOutputPanel();
         GridBagLayout gridBagLayout = new GridBagLayout();
         setLayout(gridBagLayout);
         GridBagHelper gbh = new GridBagHelper();
@@ -113,7 +135,9 @@ public class AnalisePanel extends JPanel {
 
         JScrollPane logListPanel = new JScrollPane();
         logListPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        table.setRowSorter(new TableRowSorter<>(model));
+        rowSorter = new AnaliseSorter<>(model);
+        table.setRowSorter(rowSorter);
+        updateSorter();
         logListPanel.setViewportView(table);
 
 
@@ -143,11 +167,17 @@ public class AnalisePanel extends JPanel {
                 if (row >= 0) {
                     row = table.getRowSorter().convertRowIndexToModel(row);
                     sqlTextArea.setSQLText(rows.get(row).getLogMessage().getStatementText());
+                    planPanel.clear();
+                    int type = SqlMessages.PLAIN_MESSAGE;
+                    if (rows.get(row).countPlans() > 1)
+                        type = SqlMessages.ERROR_MESSAGE;
+                    planPanel.append(type, rows.get(row).getPlanText());
+
                 }
             }
         });
 
-        JButton selectEventsButton = new JButton(bundleString("HideEvents"));
+        JButton selectEventsButton = new JButton(bundleString("ShowEvents"));
         selectEventsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -155,6 +185,17 @@ public class AnalisePanel extends JPanel {
                 if (typesPanel.isVisible())
                     selectEventsButton.setText(bundleString("HideEvents"));
                 else selectEventsButton.setText(bundleString("ShowEvents"));
+            }
+        });
+
+        JButton hidePlanButton = new JButton(bundleString("HidePlan"));
+        hidePlanButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                planPanel.setVisible(!planPanel.isVisible());
+                if (planPanel.isVisible())
+                    hidePlanButton.setText(bundleString("HidePlan"));
+                else hidePlanButton.setText(bundleString("ShowPlan"));
             }
         });
 
@@ -173,7 +214,7 @@ public class AnalisePanel extends JPanel {
         splitPane.setBottomComponent(logListPanel);
 
         gbh.setLabelDefault();
-        add(selectEventsButton, gbh.nextRowFirstCol().setLabelDefault().get());
+        gbh.nextRowFirstCol().previousCol();
         for (int i = 0; i < checkBoxes.length; i++)
             add(checkBoxes[i], gbh.nextCol().setLabelDefault().get());
         add(new JLabel(bundleString("Period")), gbh.nextCol().setLabelDefault().get());
@@ -181,8 +222,11 @@ public class AnalisePanel extends JPanel {
         add(new JLabel(" - "), gbh.nextCol().setLabelDefault().get());
         add(endTimePicker, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
         add(reloadButton, gbh.nextCol().setLabelDefault().get());
+        add(hidePlanButton, gbh.nextCol().setLabelDefault().get());
+        add(selectEventsButton, gbh.nextCol().setLabelDefault().get());
         topPanel.add(sqlTextArea, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setMaxWeightY().get());
-        topPanel.add(typesPanel, gbh.nextCol().fillHorizontally().get());
+        topPanel.add(typesPanel, gbh.nextCol().fillHorizontally().spanY().get());
+        topPanel.add(planPanel, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setWeightY(0.5).get());
         add(splitPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
         rebuildRows();
 
@@ -190,6 +234,14 @@ public class AnalisePanel extends JPanel {
 
     public List<LogMessage> getMessages() {
         return messages;
+    }
+
+    private void updateSorter() {
+        if (headers.size() > 2) {
+            rowSorter.toggleSortOrder(3);
+        }
+
+
     }
 
     public void setMessages(List<LogMessage> messages) {
@@ -264,6 +316,7 @@ public class AnalisePanel extends JPanel {
     }
 
     private int convertTypeFromCheckBoxes(int index) {
+        index = (index - 2) / 4;
         int type = 0;
         for (int i = 0; i < TYPES.length; i++) {
             if (checkBoxes[i].isSelected())
@@ -319,8 +372,7 @@ public class AnalisePanel extends JPanel {
                         return rows.get(rowIndex).getCountAllRows();
                     default:
                         int param = (columnIndex - 2) % 4;
-                        int x = (columnIndex - 2) / 4;
-                        int type = convertTypeFromCheckBoxes(x);
+                        int type = convertTypeFromCheckBoxes(columnIndex);
                         switch (param) {
                             case 0:
                                 return rows.get(rowIndex).getTotal()[type];
@@ -341,6 +393,71 @@ public class AnalisePanel extends JPanel {
 
         }
 
+    }
+
+    class AnaliseRenderer extends DefaultTableCellRenderer {
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+
+            Component superComp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            int col = table.convertColumnIndexToModel(column);
+            if (col > 1) {
+                int ind = convertTypeFromCheckBoxes(col);
+                superComp.setBackground(colors[ind]);
+            } else superComp.setBackground(Color.WHITE);
+            return superComp;
+        }
+    }
+
+    class AnaliseSorter<M extends TableModel> extends TableRowSorter {
+        public AnaliseSorter(TableModel model) {
+            super(model);
+        }
+
+        public void toggleSortOrder(int column) {
+            checkColumn(column);
+            if (isSortable(column)) {
+                List<SortKey> keys = new ArrayList<SortKey>(getSortKeys());
+                SortKey sortKey;
+                int sortIndex;
+                for (sortIndex = keys.size() - 1; sortIndex >= 0; sortIndex--) {
+                    if (keys.get(sortIndex).getColumn() == column) {
+                        break;
+                    }
+                }
+                if (sortIndex == -1) {
+                    // Key doesn't exist
+                    sortKey = new SortKey(column, SortOrder.DESCENDING);
+                    keys.add(0, sortKey);
+                } else if (sortIndex == 0) {
+                    // It's the primary sorting key, toggle it
+                    keys.set(0, toggle(keys.get(0)));
+                } else {
+                    // It's not the first, but was sorted on, remove old
+                    // entry, insert as first with ascending.
+                    keys.remove(sortIndex);
+                    keys.add(0, new SortKey(column, SortOrder.DESCENDING));
+                }
+                if (keys.size() > getMaxSortKeys()) {
+                    keys = keys.subList(0, getMaxSortKeys());
+                }
+                setSortKeys(keys);
+            }
+        }
+
+        private SortKey toggle(SortKey key) {
+            if (key.getSortOrder() == SortOrder.DESCENDING) {
+                return new SortKey(key.getColumn(), SortOrder.ASCENDING);
+            }
+            return new SortKey(key.getColumn(), SortOrder.DESCENDING);
+        }
+
+        private void checkColumn(int column) {
+            if (column < 0 || column >= getModelWrapper().getColumnCount()) {
+                throw new IndexOutOfBoundsException(
+                        "column beyond range of TableModel");
+            }
+        }
     }
 
 }

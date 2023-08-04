@@ -1129,6 +1129,19 @@ public class QueryEditor extends DefaultTabView
         delegate.executeScript(getSelectedConnection(), script);
     }
 
+    public void executeInProfiler(String query) {
+
+        preExecute();
+
+        if (query == null)
+            query = editorPanel.getQueryAreaText();
+
+        editorPanel.resetExecutingLine();
+        boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
+        delegate.executeQueryInProfiler(getSelectedConnection(), query, executeAsBlock);
+
+    }
+
     public void printExecutedPlan(boolean explained) {
 
         preExecute();

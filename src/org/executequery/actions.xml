@@ -391,6 +391,12 @@
             small-icon="/org/executequery/icons/ExecuteSqlScript16.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteScriptCommand"/>
 
+    <action id="execute-in-profiler-command"
+            name="Execute Script In Profiler"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ExecuteInProfiler16.png"
+            execute-class="org.executequery.actions.queryeditor.ExecuteInProfilerCommand"/>
+
     <action id="print-plan-command"
             name="Print Plan"
             accel-key="control shift P"
@@ -917,6 +923,13 @@
             accel-editable="true"
             description="Trace Manager"
             execute-class="org.executequery.actions.toolscommands.TraceManagerCommands"/>
+
+    <action id="profiler-command"
+            name="Profiler"
+            mnemonic="PF"
+            accel-editable="true"
+            description="Profiler"
+            execute-class="org.executequery.actions.toolscommands.ProfilerCommand"/>
 
     <action id="exit-from-account-command"
             name="Exit From Account"

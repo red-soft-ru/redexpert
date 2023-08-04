@@ -211,6 +211,11 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     void displayDialogDownload(MouseListener listener) {
 
+        if (ApplicationInstanceCounter.getCount() > 1) {
+            GUIUtilities.displayWarningMessage(bundledString("CloseAllInstances"));
+            return;
+        }
+
         if (displayNewDownloadVersionMessage() == JOptionPane.YES_OPTION) {
 
             resetLabel(listener);

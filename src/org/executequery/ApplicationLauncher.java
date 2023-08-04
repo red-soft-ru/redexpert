@@ -223,7 +223,6 @@ public class ApplicationLauncher {
                 }
                 QueryEditorHistory.restoreTabs(null);
 
-
                 doCheckForUpdate();
                 GUIUtilities.loadAuthorisationInfo();
             } catch (Exception e) {
@@ -236,6 +235,7 @@ public class ApplicationLauncher {
             System.exit(1);
         }
 
+        ApplicationInstanceCounter.add();
     }
 
     private void printSystemProperties() {

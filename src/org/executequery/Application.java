@@ -69,6 +69,7 @@ public final class Application {
         GUIUtilities.shuttingDown();
         GUIUtilities.getParentFrame().dispose();
 
+        ApplicationInstanceCounter.remove();
         System.exit(0);
     }
 

@@ -308,7 +308,7 @@ public class GUIUtils {
                 JOptionPane.INFORMATION_MESSAGE,
                 false,
                 "OptionPane.informationIcon",
-                "Message",
+                Bundles.get("common.message"),
                 message, null);
     }
 
@@ -328,7 +328,7 @@ public class GUIUtils {
                 JOptionPane.WARNING_MESSAGE,
                 false,
                 "OptionPane.warningIcon",
-                "Warning",
+                Bundles.get("common.warning"),
                 message, null);
     }
 

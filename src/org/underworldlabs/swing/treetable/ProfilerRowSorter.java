@@ -25,26 +25,17 @@ package org.underworldlabs.swing.treetable;
  * questions.
  */
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import javax.swing.RowFilter;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
+import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import java.util.*;
 
 /**
  * TableRowSorter for single-column sorting with default SortOrders for each column.
  *
  * @author Jiri Sedlacek
  */
-class ProfilerRowSorter extends TableRowSorter {
+public class ProfilerRowSorter extends TableRowSorter {
 
     // --- Package-private constructor -----------------------------------------
 
@@ -133,7 +124,7 @@ class ProfilerRowSorter extends TableRowSorter {
                 secondarySortColumn == key.getColumn() ? null :
                 new RowSorter.SortKey(secondarySortColumn,
                         getDefaultSortOrder(secondarySortColumn));
-        setSortKeysImpl(secondaryKey == null ? Arrays.asList(key) :
+        setSortKeysImpl(secondaryKey == null ? Collections.singletonList(key) :
                 Arrays.asList(key, secondaryKey));
     }
 
@@ -195,7 +186,7 @@ class ProfilerRowSorter extends TableRowSorter {
 
     void addRowFilter(RowFilter filter) {
         if (filters == null) filters = new HashSet();
-        if (filters.contains(filter)) filters.remove(filter);
+        filters.remove(filter);
         filters.add(filter);
         refreshRowFilter();
     }

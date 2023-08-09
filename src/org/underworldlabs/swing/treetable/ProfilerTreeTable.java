@@ -208,7 +208,7 @@ public class ProfilerTreeTable extends ProfilerTable {
     }
 
     public boolean getShowsRootHandles() {
-        return tree != null ? tree.getShowsRootHandles() : false;
+        return tree != null && tree.getShowsRootHandles();
     }
 
     public void setRootVisible(boolean rootVisible) {
@@ -216,7 +216,7 @@ public class ProfilerTreeTable extends ProfilerTable {
     }
 
     public boolean isRootVisible() {
-        return tree != null ? tree.isRootVisible() : false;
+        return tree != null && tree.isRootVisible();
     }
 
 
@@ -315,9 +315,8 @@ public class ProfilerTreeTable extends ProfilerTable {
             }
 
             //tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, Boolean.TRUE);//TODO check
-            try { tree.expandPath(tpath); selectPath(tpath, true); }
-            finally { //tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, null);//TODO check
-                 }
+            tree.expandPath(tpath);
+            selectPath(tpath, true);
 
         } finally {
             clearExpansionTransaction();
@@ -337,9 +336,7 @@ public class ProfilerTreeTable extends ProfilerTable {
                 tpath = tpath.pathByAddingChild(tmodel.getChild(tpath.getLastPathComponent(), 0));
 
            // tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, Boolean.TRUE);
-            try { selectPath(tpath, true); }
-            finally { //tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, null);
-            }
+            selectPath(tpath, true);
 
         } finally {
             clearExpansionTransaction();
@@ -351,9 +348,7 @@ public class ProfilerTreeTable extends ProfilerTable {
             markExpansionTransaction();
 
             //tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, Boolean.TRUE);
-            try { tree.expandPath(path); }
-            finally { //tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, null);
-                 }
+            tree.expandPath(path);
 
         } finally {
             clearExpansionTransaction();
@@ -365,10 +360,7 @@ public class ProfilerTreeTable extends ProfilerTable {
             markExpansionTransaction();
 
             //tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, Boolean.TRUE);
-            try { tree.expandRow(row); }
-            finally {
-                //tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, null);
-            }
+            tree.expandRow(row);
 
         } finally {
             clearExpansionTransaction();
@@ -424,7 +416,7 @@ public class ProfilerTreeTable extends ProfilerTable {
 
     }
 
-    public static interface DeleteNodes {}
+    public interface DeleteNodes {}
 
     public void setCellRenderer(TreeCellRenderer renderer) {
         if (tree != null) {
@@ -460,7 +452,13 @@ public class ProfilerTreeTable extends ProfilerTable {
         ProfilerRendererWrapper(ProfilerRenderer renderer) { this.renderer = renderer; }
 
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            setValue(value, row); // NOTE: should use table.convertRowIndexToModel(row)
+            if (value instanceof Object[]) {
+                Object[] objs = (Object[]) value;
+                String res = objs[0].toString() + " [" +
+                        String.format("%.2f", (double) objs[1]).replace(",", ".") + "%]";
+                setValue(res, row);
+            } else
+                setValue(value, row); // NOTE: should use table.convertRowIndexToModel(row)
             JComponent comp = getComponent();
             comp.setOpaque(false);
             if (tree != null) {
@@ -847,7 +845,7 @@ public class ProfilerTreeTable extends ProfilerTable {
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             TreeNode node = nodeForRow(rowIndex);
-            return node == null ? false : treeTableModel.isCellEditable(node, columnIndex);
+            return node != null && treeTableModel.isCellEditable(node, columnIndex);
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
@@ -1099,11 +1097,11 @@ public class ProfilerTreeTable extends ProfilerTable {
 //            hashCode = Arrays.deepHashCode(pathToRoot);
         }
 
-        public final int hashCode() {
+        public int hashCode() {
             return hashCode;
         }
 
-        public final boolean equals(Object o) {
+        public boolean equals(Object o) {
             if (o == this) return true;
             if (!(o instanceof TreePathKey)) return false;
 
@@ -1141,8 +1139,6 @@ public class ProfilerTreeTable extends ProfilerTable {
         } catch (Exception e) {
             System.err.println(">>> Exception in ProfilerTreeTable.restoreExpandedNodes: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            //tree.putClientProperty(UIUtils.PROP_EXPANSION_TRANSACTION, null);
         }
     }
 
@@ -1449,7 +1445,7 @@ public class ProfilerTreeTable extends ProfilerTable {
         }
 
         public boolean hasBeenExpanded(TreePath path) {
-            return forgetPreviouslyExpanded ? false : super.hasBeenExpanded(path);
+            return !forgetPreviouslyExpanded && super.hasBeenExpanded(path);
         }
 
         public void fireTreeCollapsed(TreePath path) {
@@ -1665,12 +1661,30 @@ public class ProfilerTreeTable extends ProfilerTable {
         protected void paintHorizontalPartOfLeg(Graphics g, Rectangle clipBounds,
                                                 Insets insets, Rectangle bounds,
                                                 TreePath path, int row, boolean isExpanded,
-                                                boolean hasBeenExpanded, boolean isLeaf) {}
+                                                boolean hasBeenExpanded, boolean isLeaf) {
+        }
 
         protected void paintVerticalPartOfLeg(Graphics g, Rectangle clipBounds,
-                                              Insets insets, TreePath path) {}
+                                              Insets insets, TreePath path) {
+        }
 
     }
+
+    class PercentRenderer extends DefaultTableCellRenderer {
+
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (value instanceof Object[]) {
+                Object[] objs = (Object[]) value;
+                String res = objs[0].toString() + " [" +
+                        String.format("%.2f", (double) objs[1]).replace(",", ".") + "%]";
+                setValue(res);
+            }
+            return this;
+        }
+    }
+
 
 }
 

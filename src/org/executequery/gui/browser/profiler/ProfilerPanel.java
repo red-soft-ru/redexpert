@@ -10,10 +10,12 @@ import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.treetable.CCTNode;
+import org.underworldlabs.swing.treetable.ProfilerRowSorter;
 import org.underworldlabs.swing.treetable.ProfilerTreeTable;
 import org.underworldlabs.swing.treetable.ProfilerTreeTableModel;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.util.List;
@@ -84,6 +86,15 @@ public class ProfilerPanel extends JPanel
         fullRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
         profilerTree = new ProfilerTreeTable(
                 new TreeTableModel(fullRootTreeNode), SORTABLE, false, new int[4]);
+        profilerTree.getColumnModel().getColumn(1).setCellRenderer(new PercentRenderer());
+        ProfilerRowSorter rowSorter = (ProfilerRowSorter) profilerTree.getRowSorter();
+        rowSorter.setComparator(1, new Comparator<Object>() {
+            public int compare(Object o1, Object o2) {
+                Object[] vals1 = (Object[]) o1;
+                Object[] vals2 = (Object[]) o2;
+                return Long.compare((long) vals1[0], (long) vals2[0]);
+            }
+        });
         profilerTree.setDefaultColumnWidth(200);
 
         startButton = new JButton(bundleString("Start"));
@@ -187,6 +198,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(ACTIVE);
 
         } catch (Exception e) {
+            e.printStackTrace();
             GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionStart"), e);
         }
     }
@@ -516,7 +528,7 @@ public class ProfilerPanel extends JPanel
                 bundleString("CALLS-COUNT")
         );
         private static final List<Class<?>> columnClasses =
-                Arrays.asList(JTree.class, String.class, Long.class, Integer.class);
+                Arrays.asList(JTree.class, Object.class, Long.class, Integer.class);
 
         TreeTableModel(TreeNode root) {
             super(root);
@@ -551,8 +563,10 @@ public class ProfilerPanel extends JPanel
             ProfilerTreeTableNode profilerNode = (ProfilerTreeTableNode) node;
 
             if (columnIndex == 0) return profilerNode.getProcessName();
-            if (columnIndex == 1) return profilerNode.getTotalTime().toString() + " [" +
-                    String.format("%.2f", (double) profilerNode.getTotalTimePercentage()).replace(",", ".") + "%]";
+            if (columnIndex == 1) return new Object[]{profilerNode.getTotalTime(),
+                    profilerNode.getTotalTimePercentage()
+            };/*.toString() + " [" +
+                    String.format("%.2f", (double) ).replace(",", ".") + "%]";*/
             if (columnIndex == 2) return profilerNode.getAvgTime();
             if (columnIndex == 3) return profilerNode.getCallCount();
 
@@ -569,5 +583,35 @@ public class ProfilerPanel extends JPanel
         }
 
     }
+
+    class PercentRenderer extends DefaultTableCellRenderer {
+
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (value instanceof Object[]) {
+                Object[] objs = (Object[]) value;
+                String res = objs[0].toString() + " [" +
+                        String.format("%.2f", (double) objs[1]).replace(",", ".") + "%]";
+                setValue(res);
+            }
+            return this;
+        }
+    }
+   /* class PercentTreeRenderer extends DefaultTreeCellRenderer {
+
+        public Component getTreeCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTreeCellRendererComponent(table,value,isSelected,hasFocus,row,column);
+            if(value instanceof Object[])
+            {
+                Object[] objs = (Object[]) value;
+                String res = objs[0].toString() + " [" +
+                        String.format("%.2f", (double) objs[1]).replace(",", ".") + "%]";
+                setValue(res);
+            }
+            return this;
+        }
+    }*/
 
 }

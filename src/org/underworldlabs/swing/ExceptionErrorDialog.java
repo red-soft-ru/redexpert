@@ -121,11 +121,11 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
 
         exceptions = new Vector<Throwable>();
         // we want the underlying cause
-        if (exception.getCause() != null) {
+        /*if (exception.getCause() != null) {
             exceptions.add(exception.getCause());
-        } else {
+        } else {*/
             exceptions.add(exception);
-        }
+        // }
         selectedIndex = 0;
 
         try {

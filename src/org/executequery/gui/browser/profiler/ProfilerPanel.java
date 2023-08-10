@@ -198,7 +198,6 @@ public class ProfilerPanel extends JPanel
             switchSessionState(ACTIVE);
 
         } catch (Exception e) {
-            e.printStackTrace();
             GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionStart"), e);
         }
     }

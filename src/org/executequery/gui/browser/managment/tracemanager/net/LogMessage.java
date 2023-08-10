@@ -75,6 +75,7 @@ public class LogMessage {
     private String nextTransaction;
     private boolean failed;
     private boolean highlight;
+    private long totalCacheMemory;
 
     public LogMessage() {
     }
@@ -390,6 +391,8 @@ public class LogMessage {
             setGlobalCounters(ctx.global_counters());
             setTableCounters(textFromRuleContext(ctx.table_counters()));
             setStatementText(textFromRuleContext(ctx.query()));
+            if (ctx.memory_size_rule() != null)
+                setTotalCacheMemory(getLongFromString(ctx.memory_size_rule().sum_cache().cache().size_cache().getText()));
         }
         if (ctx != null && (ctx.global_counters() == null && ctx.plan() == null && ctx.params() == null && ctx.table_counters() == null)) {
             String query = textFromRuleContext(ctx);
@@ -954,6 +957,14 @@ public class LogMessage {
 
     private String addField(String body, String regex, String excludedRegex, String colName) {
         return addField(body, regex, new String[]{excludedRegex}, colName);
+    }
+
+    public long getTotalCacheMemory() {
+        return totalCacheMemory;
+    }
+
+    public void setTotalCacheMemory(long totalCacheMemory) {
+        this.totalCacheMemory = totalCacheMemory;
     }
 
     private String addField(String body, String regex, String[] excludedRegex, String colName) {

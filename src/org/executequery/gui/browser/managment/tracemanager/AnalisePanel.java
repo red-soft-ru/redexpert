@@ -42,7 +42,13 @@ public class AnalisePanel extends JPanel {
     SimpleSqlTextPanel sqlTextArea;
     ListSelectionPanel typesPanel;
     LoggingOutputPanel planPanel;
-    Color[] colors = new Color[]{new Color(255, 102, 102), new Color(51, 204, 255), new Color(102, 255, 102), new Color(255, 255, 204)};
+    Color[] colors = new Color[]{new Color(255, 102, 102),
+            new Color(51, 204, 255),
+            new Color(102, 255, 102),
+            new Color(255, 255, 204),
+            new Color(255, 140, 0)
+    };
+
 
     JCheckBox[] checkBoxes;
     String[] params = new String[]{
@@ -316,7 +322,7 @@ public class AnalisePanel extends JPanel {
     }
 
     private int convertTypeFromCheckBoxes(int index) {
-        index = (index - 2) / 4;
+        index = (index - 2) / params.length;
         int type = 0;
         for (int i = 0; i < TYPES.length; i++) {
             if (checkBoxes[i].isSelected())
@@ -371,7 +377,7 @@ public class AnalisePanel extends JPanel {
                     case 1:
                         return rows.get(rowIndex).getCountAllRows();
                     default:
-                        int param = (columnIndex - 2) % 4;
+                        int param = (columnIndex - 2) % params.length;
                         int type = convertTypeFromCheckBoxes(columnIndex);
                         switch (param) {
                             case 0:

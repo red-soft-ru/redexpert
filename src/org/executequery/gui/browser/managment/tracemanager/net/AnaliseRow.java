@@ -12,14 +12,15 @@ public class AnaliseRow {
     public final static int READ = 1;
     public final static int FETCH = 2;
     public final static int WRITE = 3;
-    public final static String[] TYPES = {"TIME", "READ", "FETCH", "WRITE"};
+    public final static int CASH_SORTED = 4;
+    public final static String[] TYPES = {"TIME", "READ", "FETCH", "WRITE", "CACHE_SORTED"};
     List<LogMessage>[] rows;
     List<LogMessage> allRows;
-    long[] average = new long[4];
-    long[] total = new long[4];
-    long[] max = new long[4];
-    long[] std_dev = new long[4];
-    long[] count = new long[4];
+    long[] average = new long[TYPES.length];
+    long[] total = new long[TYPES.length];
+    long[] max = new long[TYPES.length];
+    long[] std_dev = new long[TYPES.length];
+    long[] count = new long[TYPES.length];
 
     List<String> plans;
     String planText;
@@ -67,8 +68,8 @@ public class AnaliseRow {
     public AnaliseRow() {
         allRows = new ArrayList<>();
         logMessages = new StringBuilder();
-        rows = new List[4];
-        for (int i = 0; i < 4; i++)
+        rows = new List[TYPES.length];
+        for (int i = 0; i < TYPES.length; i++)
             rows[i] = new ArrayList<>();
         plans = new ArrayList<>();
     }
@@ -87,7 +88,7 @@ public class AnaliseRow {
     }
 
     public void calculateValues() {
-        for (int i = TIME; i < 4; i++) {
+        for (int i = TIME; i < TYPES.length; i++) {
             calculateValues(i);
         }
     }
@@ -126,7 +127,7 @@ public class AnaliseRow {
                     plans.add(msg.getPlanText());
             }
         }
-        for (int i = TIME; i < 4; i++) {
+        for (int i = TIME; i < TYPES.length; i++) {
             addMessage(msg, i);
         }
     }
@@ -154,6 +155,8 @@ public class AnaliseRow {
                 return msg.getCountFetches();
             case WRITE:
                 return msg.getCountWrites();
+            case CASH_SORTED:
+                return msg.getTotalCacheMemory();
             default:
                 return msg.getTimeExecution();
         }

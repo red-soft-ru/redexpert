@@ -455,7 +455,20 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         SwingWorker sw = new SwingWorker("TraceSession") {
                             @Override
                             public Object construct() {
-                                readFromBufferedReader(bufferedReader, false);
+                                try {
+                                    readFromBufferedReader(bufferedReader, false);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                while (startStopSessionButton.getText().contentEquals(bundleString("Stop"))) {
+                                    try {
+                                        Thread.sleep(1000);
+                                        traceManager.startTraceSession(sessionField.getText(), conf);
+                                        readFromBufferedReader(bufferedReader, false);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
                                 return null;
                             }
                         };

@@ -439,10 +439,21 @@ public class ProfilerPanel extends JPanel
     // ---
 
     private void updateTreeDisplay() {
+
         if (compactRootTreeNode != null && fullRootTreeNode != null) {
             profilerTree.setTreeTableModel(new TreeTableModel(
                     compactViewCheckBox.isSelected() ? compactRootTreeNode : fullRootTreeNode), SORTABLE);
             profilerTree.setDefaultColumnWidth(200);
+            profilerTree.getColumnModel().getColumn(1).setCellRenderer(new PercentRenderer());
+            ProfilerRowSorter rowSorter = (ProfilerRowSorter) profilerTree.getRowSorter();
+            rowSorter.setComparator(1, new Comparator<Object>() {
+                public int compare(Object o1, Object o2) {
+                    Object[] vals1 = (Object[]) o1;
+                    Object[] vals2 = (Object[]) o2;
+                    return Long.compare((long) vals1[0], (long) vals2[0]);
+                }
+            });
+            rowSorter.toggleSortOrder(1);
         }
     }
 
@@ -593,24 +604,11 @@ public class ProfilerPanel extends JPanel
                 String res = objs[0].toString() + " [" +
                         String.format("%.2f", (double) objs[1]).replace(",", ".") + "%]";
                 setValue(res);
+                setHorizontalAlignment(SwingConstants.RIGHT);
             }
             return this;
         }
     }
-   /* class PercentTreeRenderer extends DefaultTreeCellRenderer {
 
-        public Component getTreeCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected, boolean hasFocus, int row, int column) {
-            super.getTreeCellRendererComponent(table,value,isSelected,hasFocus,row,column);
-            if(value instanceof Object[])
-            {
-                Object[] objs = (Object[]) value;
-                String res = objs[0].toString() + " [" +
-                        String.format("%.2f", (double) objs[1]).replace(",", ".") + "%]";
-                setValue(res);
-            }
-            return this;
-        }
-    }*/
 
 }

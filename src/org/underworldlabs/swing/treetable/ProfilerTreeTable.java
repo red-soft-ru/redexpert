@@ -452,13 +452,7 @@ public class ProfilerTreeTable extends ProfilerTable {
         ProfilerRendererWrapper(ProfilerRenderer renderer) { this.renderer = renderer; }
 
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            if (value instanceof Object[]) {
-                Object[] objs = (Object[]) value;
-                String res = objs[0].toString() + " [" +
-                        String.format("%.2f", (double) objs[1]).replace(",", ".") + "%]";
-                setValue(res, row);
-            } else
-                setValue(value, row); // NOTE: should use table.convertRowIndexToModel(row)
+            setValue(value, row); // NOTE: should use table.convertRowIndexToModel(row)
             JComponent comp = getComponent();
             comp.setOpaque(false);
             if (tree != null) {

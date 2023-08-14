@@ -269,6 +269,8 @@ repackage:
     - apk --update add bash tar zip
   script:
     - ./ci/repackage.sh linux-x86_64 linux-x86 windows-x86_64 windows-x86
+  dependencies: [ "prepare", "sources", "build_docs" "build" ]
+  needs: [ "prepare", "sources","build_docs", "build" ]
   artifacts:
     expire_in: 1 day
     paths:

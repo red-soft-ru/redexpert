@@ -33,7 +33,7 @@ public final class Log {
 
     public static final String LOGGER_NAME = "system-logger";
 
-    public static final String PATTERN = "[%d{HH:mm:ss}] %m%n";
+    public static final String PATTERN = "[%d{HH:mm:ss.SSS}] %m%n";
 
     public static final int MAX_BACKUP_INDEX = 5;
 

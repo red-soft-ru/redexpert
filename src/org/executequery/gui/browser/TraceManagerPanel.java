@@ -556,7 +556,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
             logMessage.setId(idLogMessage);
             loggerPanel.addRow(logMessage);
             if (!fromFile)
-                analisePanel.addMessage(logMessage);
+                analisePanel.addMessage(logMessage, !fromFile);
         } else {
             if (fromFile)
                 return;

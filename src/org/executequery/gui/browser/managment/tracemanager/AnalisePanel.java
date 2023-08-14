@@ -270,24 +270,26 @@ public class AnalisePanel extends JPanel {
         }
     }
 
-    public void addMessage(LogMessage logMessage) {
+    public void addMessage(LogMessage logMessage, boolean realTime) {
         if (rows == null)
             rows = new ArrayList<>();
-        checkLogMessage(logMessage);
+        checkLogMessage(logMessage, realTime);
     }
 
-    void checkLogMessage(LogMessage msg) {
+    void checkLogMessage(LogMessage msg, boolean realTime) {
         boolean added = false;
         if (msg.getTimestamp() == null)
             return;
         if (!typesPanel.getSelectedValues().contains(msg.getTypeEvent()))
             return;
-        int compareIndex = msg.getTimestamp().toLocalDateTime().compareTo(startTimePicker.getDateTime());
-        if (compareIndex < 0)
-            return;
-        compareIndex = msg.getTimestamp().toLocalDateTime().compareTo(endTimePicker.getDateTime());
-        if (compareIndex > 0)
-            return;
+        if (!realTime) {
+            int compareIndex = msg.getTimestamp().toLocalDateTime().compareTo(startTimePicker.getDateTime());
+            if (compareIndex < 0)
+                return;
+            compareIndex = msg.getTimestamp().toLocalDateTime().compareTo(endTimePicker.getDateTime());
+            if (compareIndex > 0)
+                return;
+        }
         for (AnaliseRow row : rows) {
             if (msg.getStatementText() != null && row.getLogMessage().getStatementText().contentEquals(msg.getStatementText()) && msg.getTypeEvent().contentEquals(row.getLogMessage().getTypeEvent())) {
                 row.addMessage(msg);
@@ -309,7 +311,7 @@ public class AnalisePanel extends JPanel {
             rows = new ArrayList<>();
         rows.clear();
         for (LogMessage msg : messages) {
-            checkLogMessage(msg);
+            checkLogMessage(msg, false);
         }
         for (AnaliseRow row : rows) {
             row.calculateValues();

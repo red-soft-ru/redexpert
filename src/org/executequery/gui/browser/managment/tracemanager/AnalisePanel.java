@@ -44,13 +44,13 @@ public class AnalisePanel extends JPanel {
     SimpleSqlTextPanel sqlTextArea;
     ListSelectionPanel typesPanel;
     LoggingOutputPanel planPanel;
-    Color[] colors = new Color[]{new Color(255, 102, 102),
-            new Color(51, 204, 255),
-            new Color(102, 255, 102),
-            new Color(255, 255, 204),
-            new Color(255, 140, 0),
-            new Color(0, 140, 0),
-            new Color(255, 0, 128)
+    Color[] colors = new Color[]{new Color(255, 173, 173),
+            new Color(255, 214, 165),
+            new Color(253, 255, 182),
+            new Color(202, 255, 191),
+            new Color(155, 246, 255),
+            new Color(160, 196, 255),
+            new Color(189, 178, 255)
     };
 
 

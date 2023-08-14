@@ -273,8 +273,8 @@ repackage:
     expire_in: 1 day
     paths:
       - dist/unified/
-  dependencies: [ "prepare", "sources", "build" ]
-  needs: [ "prepare", "sources", "build" ]
+  dependencies: [ "prepare", "sources", "build:windows", "build:linux" ]
+  needs: [ "prepare", "sources", "build:windows", "build:linux" ]
 
 deploy:
   tags:

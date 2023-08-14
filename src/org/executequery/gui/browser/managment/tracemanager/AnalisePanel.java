@@ -60,6 +60,8 @@ public class AnalisePanel extends JPanel {
             "TOTAL", "AVERAGE", "MAX", "STD_DEV"
     };
 
+    int beginParamIndex = 2;
+
     String[] types = {"TRACE_INIT", "TRACE_FINI", "CREATE_DATABASE", "ATTACH_DATABASE", "DROP_DATABASE", "DETACH_DATABASE", "START_TRANSACTION",
             "COMMIT_RETAINING", "COMMIT_TRANSACTION", "ROLLBACK_RETAINING", "ROLLBACK_TRANSACTION", "EXECUTE_STATEMENT_START", "EXECUTE_STATEMENT_FINISH",
             "START_SERVICE", "PREPARE_STATEMENT", "FREE_STATEMENT", "CLOSE_CURSOR", "SET_CONTEXT", "PRIVILEGES_CHANGE", "EXECUTE_PROCEDURE_START",
@@ -79,6 +81,10 @@ public class AnalisePanel extends JPanel {
         headers.clear();
         headers.add("QUERY");
         headers.add("COUNT");
+        if (planPanel == null || planPanel.isVisible()) {
+            headers.add("PLAN_COUNT");
+            beginParamIndex = 3;
+        } else beginParamIndex = 2;
         for (int i = 0; i < checkBoxes.length; i++) {
             if (checkBoxes[i].isSelected()) {
                 for (int g = 0; g < params.length; g++)
@@ -136,6 +142,7 @@ public class AnalisePanel extends JPanel {
         startTimePicker.setVisibleNullBox(false);
         endTimePicker.setVisibleNullBox(false);
         planPanel = new LoggingOutputPanel();
+        planPanel.setBorder(BorderFactory.createTitledBorder(bundleString("Plan")));
         GridBagLayout gridBagLayout = new GridBagLayout();
         setLayout(gridBagLayout);
         GridBagHelper gbh = new GridBagHelper();
@@ -206,6 +213,7 @@ public class AnalisePanel extends JPanel {
                 if (planPanel.isVisible())
                     hidePlanButton.setText(bundleString("HidePlan"));
                 else hidePlanButton.setText(bundleString("ShowPlan"));
+                buildHeaders();
             }
         });
 
@@ -234,7 +242,7 @@ public class AnalisePanel extends JPanel {
         topPanel.setLayout(new GridBagLayout());
         JSplitPane splitPane = new JSplitPane();
         splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setDividerLocation(200);
+        splitPane.setDividerLocation(300);
         splitPane.setTopComponent(topPanel);
         splitPane.setBottomComponent(logListPanel);
 
@@ -262,8 +270,8 @@ public class AnalisePanel extends JPanel {
     }
 
     private void updateSorter() {
-        if (headers.size() > 2) {
-            rowSorter.toggleSortOrder(3);
+        if (headers.size() > beginParamIndex) {
+            rowSorter.toggleSortOrder(beginParamIndex + 1);
         }
 
 
@@ -347,7 +355,7 @@ public class AnalisePanel extends JPanel {
     }
 
     private int convertTypeFromCheckBoxes(int index) {
-        index = (index - 2) / params.length;
+        index = (index - beginParamIndex) / params.length;
         int type = 0;
         for (int i = 0; i < TYPES.length; i++) {
             if (checkBoxes[i].isSelected())
@@ -401,8 +409,11 @@ public class AnalisePanel extends JPanel {
                         return rows.get(rowIndex).getLogMessage().getStatementText();
                     case 1:
                         return rows.get(rowIndex).getCountAllRows();
+                    case 2:
+                        if (headers.contains("PLAN_COUNT"))
+                            return rows.get(rowIndex).countPlans();
                     default:
-                        int param = (columnIndex - 2) % params.length;
+                        int param = (columnIndex - beginParamIndex) % params.length;
                         int type = convertTypeFromCheckBoxes(columnIndex);
                         switch (param) {
                             case 0:
@@ -432,7 +443,7 @@ public class AnalisePanel extends JPanel {
 
             Component superComp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             int col = table.convertColumnIndexToModel(column);
-            if (col > 1) {
+            if (col >= beginParamIndex) {
                 int ind = convertTypeFromCheckBoxes(col);
                 superComp.setBackground(colors[ind]);
             } else superComp.setBackground(Color.WHITE);

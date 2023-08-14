@@ -1,5 +1,6 @@
 package org.executequery.gui.browser.managment.tracemanager;
 
+import org.executequery.GUIUtilities;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.managment.tracemanager.net.AnaliseRow;
@@ -14,6 +15,7 @@ import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.ListSelectionPanelEvent;
 import org.underworldlabs.swing.ListSelectionPanelListener;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -46,7 +48,9 @@ public class AnalisePanel extends JPanel {
             new Color(51, 204, 255),
             new Color(102, 255, 102),
             new Color(255, 255, 204),
-            new Color(255, 140, 0)
+            new Color(255, 140, 0),
+            new Color(0, 140, 0),
+            new Color(255, 0, 128)
     };
 
 
@@ -209,13 +213,28 @@ public class AnalisePanel extends JPanel {
         reloadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                rebuildRows();
+                SwingWorker sw = new SwingWorker("rebuildAuditAnalise") {
+                    @Override
+                    public Object construct() {
+                        GUIUtilities.showWaitCursor();
+                        rebuildRows();
+                        return null;
+                    }
+
+                    @Override
+                    public void finished() {
+                        GUIUtilities.showNormalCursor();
+                    }
+                };
+                sw.start();
+
             }
         });
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new GridBagLayout());
         JSplitPane splitPane = new JSplitPane();
         splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setDividerLocation(200);
         splitPane.setTopComponent(topPanel);
         splitPane.setBottomComponent(logListPanel);
 
@@ -303,13 +322,16 @@ public class AnalisePanel extends JPanel {
             row.addMessage(msg);
             rows.add(row);
         }
-        model.fireTableDataChanged();
+        if (realTime)
+            model.fireTableDataChanged();
     }
 
     public synchronized void rebuildRows() {
+        table.setEnabled(false);
         if (rows == null)
             rows = new ArrayList<>();
         rows.clear();
+        model.fireTableDataChanged();
         for (LogMessage msg : messages) {
             checkLogMessage(msg, false);
         }
@@ -317,6 +339,7 @@ public class AnalisePanel extends JPanel {
             row.calculateValues();
         }
         model.fireTableDataChanged();
+        table.setEnabled(true);
     }
 
     private String bundleString(String key) {

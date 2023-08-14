@@ -12,8 +12,10 @@ public class AnaliseRow {
     public final static int READ = 1;
     public final static int FETCH = 2;
     public final static int WRITE = 3;
-    public final static int CASH_SORTED = 4;
-    public final static String[] TYPES = {"TIME", "READ", "FETCH", "WRITE", "CACHE_SORTED"};
+    public final static int SUM_CASH_SORTED = 4;
+    public final static int RAM_CASH_SORTED = 5;
+    public final static int DISK_CASH_SORTED = 6;
+    public final static String[] TYPES = {"TIME", "READ", "FETCH", "WRITE", "SUM_CACHE", "RAM_CASH", "DISK_CASH"};
     List<LogMessage>[] rows;
     List<LogMessage> allRows;
     long[] average = new long[TYPES.length];
@@ -155,8 +157,12 @@ public class AnaliseRow {
                 return msg.getCountFetches();
             case WRITE:
                 return msg.getCountWrites();
-            case CASH_SORTED:
+            case SUM_CASH_SORTED:
                 return msg.getTotalCacheMemory();
+            case RAM_CASH_SORTED:
+                return msg.getRamCacheMemory();
+            case DISK_CASH_SORTED:
+                return msg.getDiskCacheMemory();
             default:
                 return msg.getTimeExecution();
         }

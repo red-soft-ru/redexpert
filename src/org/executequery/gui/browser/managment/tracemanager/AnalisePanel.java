@@ -10,18 +10,12 @@ import org.executequery.gui.resultset.SimpleRecordDataItem;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlMessages;
-import org.underworldlabs.swing.EQDateTimePicker;
-import org.underworldlabs.swing.ListSelectionPanel;
-import org.underworldlabs.swing.ListSelectionPanelEvent;
-import org.underworldlabs.swing.ListSelectionPanelListener;
+import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import javax.swing.event.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
@@ -32,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.executequery.gui.browser.managment.tracemanager.net.AnaliseRow.TYPES;
+import static org.executequery.gui.browser.managment.tracemanager.net.AnaliseRow.*;
 
 public class AnalisePanel extends JPanel {
     List<AnaliseRow> rows;
@@ -44,21 +38,23 @@ public class AnalisePanel extends JPanel {
     SimpleSqlTextPanel sqlTextArea;
     ListSelectionPanel typesPanel;
     LoggingOutputPanel planPanel;
-    Color[] colors = new Color[]{new Color(255, 173, 173),
-            new Color(255, 214, 165),
-            new Color(253, 255, 182),
-            new Color(202, 255, 191),
-            new Color(155, 246, 255),
-            new Color(160, 196, 255),
-            new Color(189, 178, 255)
-    };
+    /*Color[] colors = new Color[]{new Color(244, 66, 54),
+            new Color( 63, 81, 181),
+            new Color(33, 150, 243),
+            new Color(139, 194, 74),
+            new Color(255, 235, 60),
+            new Color(0, 188, 213),
+            new Color(255, 151, 0)
+    };*///dark colors
 
 
     JCheckBox[] checkBoxes;
-    String[] params = new String[]{
 
-            "TOTAL", "AVERAGE", "MAX", "STD_DEV"
-    };
+    JCheckBox roundCheckBox;
+    JCheckBox filterCheckBox;
+    NumberTextField numberSymbolsField;
+    JCheckBox showMoreParamsBox;
+    JPanel moreParamsPanels;
 
     int beginParamIndex = 2;
 
@@ -87,9 +83,8 @@ public class AnalisePanel extends JPanel {
         } else beginParamIndex = 2;
         for (int i = 0; i < checkBoxes.length; i++) {
             if (checkBoxes[i].isSelected()) {
-                for (int g = 0; g < params.length; g++)
-                    headers.add(params[g] + "_" + TYPES[i]);
-
+                for (int g = 0; g < PARAMS.length; g++)
+                    headers.add(PARAMS[g] + "_" + TYPES[i]);
             }
         }
         model.fireTableStructureChanged();
@@ -109,9 +104,54 @@ public class AnalisePanel extends JPanel {
                     buildHeaders();
                 }
             });
-            checkBoxes[i].setBackground(colors[i]);
+            checkBoxes[i].setBackground(COLORS[i]);
+            checkBoxes[i].setToolTipText(TOOLTIPS[i]);
         }
+        roundCheckBox = new JCheckBox(bundleString("roundValues"));
+        roundCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                model.fireTableDataChanged();
+            }
+        });
+        filterCheckBox = new JCheckBox(bundleString("filterText"));
+        filterCheckBox.setToolTipText(bundleString("filterToolTip"));
+        filterCheckBox.setVerticalAlignment(SwingConstants.CENTER);
+        filterCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                numberSymbolsField.setEnabled(filterCheckBox.isSelected());
+                runRebuildRowsInThread();
+            }
+        });
+        numberSymbolsField = new NumberTextField();
+        numberSymbolsField.setValue(100);
+        numberSymbolsField.setEnabled(false);
+        numberSymbolsField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                runRebuildRowsInThread();
+            }
 
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                runRebuildRowsInThread();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                runRebuildRowsInThread();
+            }
+        });
+        showMoreParamsBox = new JCheckBox(bundleString("showMoreParams"));
+        showMoreParamsBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                showMoreParams(showMoreParamsBox.isSelected());
+            }
+        });
+        moreParamsPanels = new JPanel();
+        moreParamsPanels.setBorder(BorderFactory.createTitledBorder(bundleString("extraParams")));
         model = new AnaliseTableModel();
         model.addTableModelListener(new TableModelListener() {
             @Override
@@ -124,13 +164,15 @@ public class AnalisePanel extends JPanel {
         });
         buildHeaders();
         table = new JTable(model);
-        table.setDefaultRenderer(Long.class, new AnaliseRenderer());
+        table.setDefaultRenderer(AnaliseRow.AnaliseValue.class, new AnaliseRenderer());
         sqlTextArea = new SimpleSqlTextPanel();
         typesPanel = new ListSelectionPanel();
         typesPanel.setVisible(false);
         typesPanel.setLabelText(bundleString("AvailableEvents"), bundleString("SelectedEvents"));
         typesPanel.createAvailableList(types);
         typesPanel.selectOneStringAction("EXECUTE_STATEMENT_FINISH");
+        typesPanel.selectOneStringAction("EXECUTE_PROCEDURE_FINISH");
+        typesPanel.selectOneStringAction("EXECUTE_FUNCTION_FINISH");
         typesPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
             @Override
             public void changed(ListSelectionPanelEvent event) {
@@ -157,7 +199,6 @@ public class AnalisePanel extends JPanel {
         updateSorter();
         logListPanel.setViewportView(table);
 
-
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -165,7 +206,6 @@ public class AnalisePanel extends JPanel {
                     int row = table.getSelectedRow();
                     int col = table.getSelectedColumn();
                     if (row >= 0 && col >= 0) {
-
                         SimpleRecordDataItem rdi = new SimpleRecordDataItem("Value", 0, "");
                         row = table.getRowSorter().convertRowIndexToModel(row);
                         rdi.setValue(rows.get(row).getLogMessages());
@@ -183,7 +223,9 @@ public class AnalisePanel extends JPanel {
                 int row = table.getSelectedRow();
                 if (row >= 0) {
                     row = table.getRowSorter().convertRowIndexToModel(row);
-                    sqlTextArea.setSQLText(rows.get(row).getLogMessage().getStatementText());
+                    if (rows.get(row).getLogMessage().getStatementText() != null)
+                        sqlTextArea.setSQLText(rows.get(row).getLogMessage().getStatementText());
+                    else sqlTextArea.setSQLText(rows.get(row).getLogMessage().getProcedureName());
                     planPanel.clear();
                     int type = SqlMessages.PLAIN_MESSAGE;
                     if (rows.get(row).countPlans() > 1)
@@ -221,21 +263,7 @@ public class AnalisePanel extends JPanel {
         reloadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SwingWorker sw = new SwingWorker("rebuildAuditAnalise") {
-                    @Override
-                    public Object construct() {
-                        GUIUtilities.showWaitCursor();
-                        rebuildRows();
-                        return null;
-                    }
-
-                    @Override
-                    public void finished() {
-                        GUIUtilities.showNormalCursor();
-                    }
-                };
-                sw.start();
-
+                runRebuildRowsInThread();
             }
         });
         JPanel topPanel = new JPanel();
@@ -250,19 +278,50 @@ public class AnalisePanel extends JPanel {
         gbh.nextRowFirstCol().previousCol();
         for (int i = 0; i < checkBoxes.length; i++)
             add(checkBoxes[i], gbh.nextCol().setLabelDefault().get());
-        add(new JLabel(bundleString("Period")), gbh.nextCol().setLabelDefault().get());
-        add(startTimePicker, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
-        add(new JLabel(" - "), gbh.nextCol().setLabelDefault().get());
-        add(endTimePicker, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        add(roundCheckBox, gbh.nextCol().setLabelDefault().get());
         add(reloadButton, gbh.nextCol().setLabelDefault().get());
         add(hidePlanButton, gbh.nextCol().setLabelDefault().get());
-        add(selectEventsButton, gbh.nextCol().setLabelDefault().get());
+        add(showMoreParamsBox, gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.setLayout(new GridBagLayout());
+
+        moreParamsPanels.add(filterCheckBox, gbh.nextRowFirstCol().setLabelDefault().get());
+        moreParamsPanels.add(new JLabel("N:"), gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.add(numberSymbolsField, gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.add(new JLabel(bundleString("Period")), gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.add(startTimePicker, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        moreParamsPanels.add(new JLabel(" - "), gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.add(endTimePicker, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        moreParamsPanels.add(selectEventsButton, gbh.nextCol().setLabelDefault().get());
+        add(moreParamsPanels, gbh.nextRowFirstCol().previousRow().fillHorizontally().spanX().get());
+        gbh.setLabelDefault();
         topPanel.add(sqlTextArea, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setMaxWeightY().get());
         topPanel.add(typesPanel, gbh.nextCol().fillHorizontally().spanY().get());
         topPanel.add(planPanel, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setWeightY(0.5).get());
         add(splitPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        showMoreParams(false);
         rebuildRows();
 
+    }
+
+    void runRebuildRowsInThread() {
+        SwingWorker sw = new SwingWorker("rebuildAuditAnalise") {
+            @Override
+            public Object construct() {
+                GUIUtilities.showWaitCursor();
+                rebuildRows();
+                return null;
+            }
+
+            @Override
+            public void finished() {
+                GUIUtilities.showNormalCursor();
+            }
+        };
+        sw.start();
+    }
+
+    void showMoreParams(boolean visible) {
+        moreParamsPanels.setVisible(visible);
     }
 
     public List<LogMessage> getMessages() {
@@ -318,14 +377,26 @@ public class AnalisePanel extends JPanel {
                 return;
         }
         for (AnaliseRow row : rows) {
-            if (msg.getStatementText() != null && row.getLogMessage().getStatementText().contentEquals(msg.getStatementText()) && msg.getTypeEvent().contentEquals(row.getLogMessage().getTypeEvent())) {
+            if (msg.getStatementText() != null && row.getLogMessage().getStatementText() != null && row.getLogMessage().getStatementText().contentEquals(msg.getStatementText()) && msg.getTypeEvent().contentEquals(row.getLogMessage().getTypeEvent())) {
+                row.addMessage(msg);
+                added = true;
+                break;
+            }
+            if (msg.getProcedureName() != null && row.getLogMessage().getProcedureName() != null && row.getLogMessage().getProcedureName().contentEquals(msg.getProcedureName()) && msg.getTypeEvent().contentEquals(row.getLogMessage().getTypeEvent())) {
                 row.addMessage(msg);
                 added = true;
                 break;
             }
 
+            if (msg.getStatementText() != null && row.getLogMessage().getStatementText() != null && filterCheckBox.isSelected() && msg.getStatementText().length() > numberSymbolsField.getValue() && row.getLogMessage().getStatementText().length() > numberSymbolsField.getValue())
+                if (row.getLogMessage().getStatementText().startsWith(msg.getStatementText().substring(0, numberSymbolsField.getValue()))) {
+                    row.addMessage(msg);
+                    added = true;
+                    break;
+                }
+
         }
-        if (!added && msg.getStatementText() != null) {
+        if (!added && (msg.getStatementText() != null || msg.getProcedureName() != null)) {
             AnaliseRow row = new AnaliseRow();
             row.addMessage(msg);
             rows.add(row);
@@ -343,8 +414,28 @@ public class AnalisePanel extends JPanel {
         for (LogMessage msg : messages) {
             checkLogMessage(msg, false);
         }
-        for (AnaliseRow row : rows) {
-            row.calculateValues();
+        if (rows.size() > 0) {
+            AnaliseRow maxRow = new AnaliseRow();
+            for (AnaliseRow row : rows) {
+                row.calculateValues();
+                for (int i = 0; i < TYPES.length; i++) {
+                    for (int g = 0; g < PARAMS.length; g++) {
+                        if (row.getValueFromTypeAndParam(i, g).getLongValue() > maxRow.getValueFromTypeAndParam(i, g).getLongValue()) {
+                            maxRow.getValueFromTypeAndParam(i, g).setLongValue(row.getValueFromTypeAndParam(i, g).getLongValue());
+                        }
+                    }
+                }
+            }
+            for (AnaliseRow row : rows) {
+                for (int i = 0; i < TYPES.length; i++) {
+                    for (int g = 0; g < PARAMS.length; g++) {
+                        AnaliseRow.AnaliseValue analiseValue = row.getValueFromTypeAndParam(i, g);
+                        if (maxRow.getValueFromTypeAndParam(i, g).getLongValue() > 0)
+                            analiseValue.setPercent((int) (analiseValue.getLongValue() * 100 / maxRow.getValueFromTypeAndParam(i, g).getLongValue()));
+                        else analiseValue.setPercent(100);
+                    }
+                }
+            }
         }
         model.fireTableDataChanged();
         table.setEnabled(true);
@@ -355,7 +446,7 @@ public class AnalisePanel extends JPanel {
     }
 
     private int convertTypeFromCheckBoxes(int index) {
-        index = (index - beginParamIndex) / params.length;
+        index = (index - beginParamIndex) / PARAMS.length;
         int type = 0;
         for (int i = 0; i < TYPES.length; i++) {
             if (checkBoxes[i].isSelected())
@@ -392,8 +483,10 @@ public class AnalisePanel extends JPanel {
         public Class<?> getColumnClass(int columnIndex) {
             if (columnIndex == 0) {
                 return String.class;
-            }
-            return Long.class;
+            } else if (columnIndex < beginParamIndex)
+                return Long.class;
+            else
+                return AnaliseRow.AnaliseValue.class;
         }
 
         @Override
@@ -406,25 +499,18 @@ public class AnalisePanel extends JPanel {
             if(rowIndex>=0&&columnIndex>=0) {
                 switch (columnIndex) {
                     case 0:
-                        return rows.get(rowIndex).getLogMessage().getStatementText();
+                        if (rows.get(rowIndex).getLogMessage().getStatementText() != null)
+                            return rows.get(rowIndex).getLogMessage().getStatementText();
+                        else return rows.get(rowIndex).getLogMessage().getProcedureName();
                     case 1:
                         return rows.get(rowIndex).getCountAllRows();
                     case 2:
                         if (headers.contains("PLAN_COUNT"))
                             return rows.get(rowIndex).countPlans();
                     default:
-                        int param = (columnIndex - beginParamIndex) % params.length;
+                        int param = (columnIndex - beginParamIndex) % PARAMS.length;
                         int type = convertTypeFromCheckBoxes(columnIndex);
-                        switch (param) {
-                            case 0:
-                                return rows.get(rowIndex).getTotal()[type];
-                            case 1:
-                                return rows.get(rowIndex).getAverage()[type];
-                            case 2:
-                                return rows.get(rowIndex).getMax()[type];
-                            case 3:
-                                return rows.get(rowIndex).getStd_dev()[type];
-                        }
+                        return rows.get(rowIndex).getValueFromTypeAndParam(type, param);
                 }
             }
             return null;
@@ -442,10 +528,11 @@ public class AnalisePanel extends JPanel {
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
 
             Component superComp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            int col = table.convertColumnIndexToModel(column);
-            if (col >= beginParamIndex) {
-                int ind = convertTypeFromCheckBoxes(col);
-                superComp.setBackground(colors[ind]);
+            if (value instanceof AnaliseRow.AnaliseValue) {
+                AnaliseRow.AnaliseValue analiseValue = (AnaliseRow.AnaliseValue) value;
+                setText(analiseValue.getDisplayValue(roundCheckBox.isSelected()));
+                superComp.setBackground(COLORS[analiseValue.getType()]);
+                setHorizontalAlignment(SwingConstants.RIGHT);
             } else superComp.setBackground(Color.WHITE);
             return superComp;
         }

@@ -54,7 +54,7 @@ public class AnalisePanel extends JPanel {
     JCheckBox filterCheckBox;
     NumberTextField numberSymbolsField;
     JCheckBox showMoreParamsBox;
-    JPanel moreParamsPanels;
+    JToolBar moreParamsPanels;
 
     int beginParamIndex = 2;
 
@@ -67,6 +67,7 @@ public class AnalisePanel extends JPanel {
     EQDateTimePicker startTimePicker;
     EQDateTimePicker endTimePicker;
     TableRowSorter rowSorter;
+    JCheckBox showPlanBox;
 
     public AnalisePanel(List<LogMessage> messages) {
         this.messages = messages;
@@ -89,219 +90,7 @@ public class AnalisePanel extends JPanel {
         }
         model.fireTableStructureChanged();
     }
-
-    void init() {
-        headers = new ArrayList<>();
-        Arrays.sort(types);
-        checkBoxes = new JCheckBox[TYPES.length];
-        for (int i = 0; i < checkBoxes.length; i++) {
-            checkBoxes[i] = new JCheckBox(TYPES[i]);
-            if (i == 0)
-                checkBoxes[i].setSelected(true);
-            checkBoxes[i].addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                    buildHeaders();
-                }
-            });
-            checkBoxes[i].setBackground(COLORS[i]);
-            checkBoxes[i].setToolTipText(TOOLTIPS[i]);
-        }
-        roundCheckBox = new JCheckBox(bundleString("roundValues"));
-        roundCheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                model.fireTableDataChanged();
-            }
-        });
-        filterCheckBox = new JCheckBox(bundleString("filterText"));
-        filterCheckBox.setToolTipText(bundleString("filterToolTip"));
-        filterCheckBox.setVerticalAlignment(SwingConstants.CENTER);
-        filterCheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                numberSymbolsField.setEnabled(filterCheckBox.isSelected());
-                runRebuildRowsInThread();
-            }
-        });
-        numberSymbolsField = new NumberTextField();
-        numberSymbolsField.setValue(100);
-        numberSymbolsField.setEnabled(false);
-        numberSymbolsField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                runRebuildRowsInThread();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                runRebuildRowsInThread();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                runRebuildRowsInThread();
-            }
-        });
-        showMoreParamsBox = new JCheckBox(bundleString("showMoreParams"));
-        showMoreParamsBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                showMoreParams(showMoreParamsBox.isSelected());
-            }
-        });
-        moreParamsPanels = new JPanel();
-        moreParamsPanels.setBorder(BorderFactory.createTitledBorder(bundleString("extraParams")));
-        model = new AnaliseTableModel();
-        model.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                if (e.getLastRow() == TableModelEvent.HEADER_ROW) {
-                    if (rowSorter != null)
-                        updateSorter();
-                }
-            }
-        });
-        buildHeaders();
-        table = new JTable(model);
-        table.setDefaultRenderer(AnaliseRow.AnaliseValue.class, new AnaliseRenderer());
-        sqlTextArea = new SimpleSqlTextPanel();
-        typesPanel = new ListSelectionPanel();
-        typesPanel.setVisible(false);
-        typesPanel.setLabelText(bundleString("AvailableEvents"), bundleString("SelectedEvents"));
-        typesPanel.createAvailableList(types);
-        typesPanel.selectOneStringAction("EXECUTE_STATEMENT_FINISH");
-        typesPanel.selectOneStringAction("EXECUTE_PROCEDURE_FINISH");
-        typesPanel.selectOneStringAction("EXECUTE_FUNCTION_FINISH");
-        typesPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
-            @Override
-            public void changed(ListSelectionPanelEvent event) {
-                rebuildRows();
-            }
-        });
-        startTimePicker = new EQDateTimePicker();
-        endTimePicker = new EQDateTimePicker();
-        startTimePicker.setVisibleNullBox(false);
-        endTimePicker.setVisibleNullBox(false);
-        planPanel = new LoggingOutputPanel();
-        planPanel.setBorder(BorderFactory.createTitledBorder(bundleString("Plan")));
-        GridBagLayout gridBagLayout = new GridBagLayout();
-        setLayout(gridBagLayout);
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic().defaults();
-
-        gbh.fullDefaults();
-
-        JScrollPane logListPanel = new JScrollPane();
-        logListPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        rowSorter = new AnaliseSorter<>(model);
-        table.setRowSorter(rowSorter);
-        updateSorter();
-        logListPanel.setViewportView(table);
-
-        table.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() >= 2) {
-                    int row = table.getSelectedRow();
-                    int col = table.getSelectedColumn();
-                    if (row >= 0 && col >= 0) {
-                        SimpleRecordDataItem rdi = new SimpleRecordDataItem("Value", 0, "");
-                        row = table.getRowSorter().convertRowIndexToModel(row);
-                        rdi.setValue(rows.get(row).getLogMessages());
-                        BaseDialog dialog = new BaseDialog(Bundles.get("ResultSetTablePopupMenu.RecordDataItemViewer"), true);
-                        dialog.addDisplayComponentWithEmptyBorder(
-                                new SimpleDataItemViewerPanel(dialog, rdi));
-                        dialog.display();
-                    }
-                }
-            }
-        });
-        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                int row = table.getSelectedRow();
-                if (row >= 0) {
-                    row = table.getRowSorter().convertRowIndexToModel(row);
-                    if (rows.get(row).getLogMessage().getStatementText() != null)
-                        sqlTextArea.setSQLText(rows.get(row).getLogMessage().getStatementText());
-                    else sqlTextArea.setSQLText(rows.get(row).getLogMessage().getProcedureName());
-                    planPanel.clear();
-                    int type = SqlMessages.PLAIN_MESSAGE;
-                    if (rows.get(row).countPlans() > 1)
-                        type = SqlMessages.ERROR_MESSAGE;
-                    planPanel.append(type, rows.get(row).getPlanText());
-
-                }
-            }
-        });
-
-        JButton selectEventsButton = new JButton(bundleString("ShowEvents"));
-        selectEventsButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                typesPanel.setVisible(!typesPanel.isVisible());
-                if (typesPanel.isVisible())
-                    selectEventsButton.setText(bundleString("HideEvents"));
-                else selectEventsButton.setText(bundleString("ShowEvents"));
-            }
-        });
-
-        JButton hidePlanButton = new JButton(bundleString("HidePlan"));
-        hidePlanButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                planPanel.setVisible(!planPanel.isVisible());
-                if (planPanel.isVisible())
-                    hidePlanButton.setText(bundleString("HidePlan"));
-                else hidePlanButton.setText(bundleString("ShowPlan"));
-                buildHeaders();
-            }
-        });
-
-        JButton reloadButton = new JButton(Bundles.getCommon("rebuild"));
-        reloadButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                runRebuildRowsInThread();
-            }
-        });
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(new GridBagLayout());
-        JSplitPane splitPane = new JSplitPane();
-        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setDividerLocation(300);
-        splitPane.setTopComponent(topPanel);
-        splitPane.setBottomComponent(logListPanel);
-
-        gbh.setLabelDefault();
-        gbh.nextRowFirstCol().previousCol();
-        for (int i = 0; i < checkBoxes.length; i++)
-            add(checkBoxes[i], gbh.nextCol().setLabelDefault().get());
-        add(roundCheckBox, gbh.nextCol().setLabelDefault().get());
-        add(reloadButton, gbh.nextCol().setLabelDefault().get());
-        add(hidePlanButton, gbh.nextCol().setLabelDefault().get());
-        add(showMoreParamsBox, gbh.nextCol().setLabelDefault().get());
-        moreParamsPanels.setLayout(new GridBagLayout());
-
-        moreParamsPanels.add(filterCheckBox, gbh.nextRowFirstCol().setLabelDefault().get());
-        moreParamsPanels.add(new JLabel("N:"), gbh.nextCol().setLabelDefault().get());
-        moreParamsPanels.add(numberSymbolsField, gbh.nextCol().setLabelDefault().get());
-        moreParamsPanels.add(new JLabel(bundleString("Period")), gbh.nextCol().setLabelDefault().get());
-        moreParamsPanels.add(startTimePicker, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
-        moreParamsPanels.add(new JLabel(" - "), gbh.nextCol().setLabelDefault().get());
-        moreParamsPanels.add(endTimePicker, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
-        moreParamsPanels.add(selectEventsButton, gbh.nextCol().setLabelDefault().get());
-        add(moreParamsPanels, gbh.nextRowFirstCol().previousRow().fillHorizontally().spanX().get());
-        gbh.setLabelDefault();
-        topPanel.add(sqlTextArea, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setMaxWeightY().get());
-        topPanel.add(typesPanel, gbh.nextCol().fillHorizontally().spanY().get());
-        topPanel.add(planPanel, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setWeightY(0.5).get());
-        add(splitPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
-        showMoreParams(false);
-        rebuildRows();
-
-    }
+    AnaliseRow sumRow;
 
     void runRebuildRowsInThread() {
         SwingWorker sw = new SwingWorker("rebuildAuditAnalise") {
@@ -404,6 +193,240 @@ public class AnalisePanel extends JPanel {
         if (realTime)
             model.fireTableDataChanged();
     }
+    AnaliseRow avgRow;
+
+    void init() {
+        headers = new ArrayList<>();
+        Arrays.sort(types);
+        checkBoxes = new JCheckBox[TYPES.length];
+        for (int i = 0; i < checkBoxes.length; i++) {
+            checkBoxes[i] = new JCheckBox(TYPES[i]);
+            if (i == 0)
+                checkBoxes[i].setSelected(true);
+            checkBoxes[i].addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    buildHeaders();
+                }
+            });
+            checkBoxes[i].setBackground(COLORS[i]);
+            checkBoxes[i].setToolTipText(TOOLTIPS[i]);
+        }
+        roundCheckBox = new JCheckBox(bundleString("roundValues"));
+        roundCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                model.fireTableDataChanged();
+            }
+        });
+        filterCheckBox = new JCheckBox(bundleString("filterText"));
+        filterCheckBox.setToolTipText(bundleString("filterToolTip"));
+        filterCheckBox.setVerticalAlignment(SwingConstants.CENTER);
+        filterCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                numberSymbolsField.setEnabled(filterCheckBox.isSelected());
+                runRebuildRowsInThread();
+            }
+        });
+        numberSymbolsField = new NumberTextField();
+        numberSymbolsField.setValue(100);
+        numberSymbolsField.setEnabled(false);
+        numberSymbolsField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                runRebuildRowsInThread();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                runRebuildRowsInThread();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                runRebuildRowsInThread();
+            }
+        });
+        showMoreParamsBox = new JCheckBox(bundleString("showMoreParams"));
+        showMoreParamsBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                showMoreParams(showMoreParamsBox.isSelected());
+            }
+        });
+        moreParamsPanels = new JToolBar();
+        moreParamsPanels.setBorder(BorderFactory.createTitledBorder(bundleString("extraParams")));
+        model = new AnaliseTableModel();
+        model.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                if (e.getLastRow() == TableModelEvent.HEADER_ROW) {
+                    if (rowSorter != null)
+                        updateSorter();
+                }
+            }
+        });
+        buildHeaders();
+        table = new JTable(model) {
+            public String getToolTipText(MouseEvent e) {
+                java.awt.Point p = e.getPoint();
+                int colIndex = columnAtPoint(p);
+                int realColumnIndex = convertColumnIndexToModel(colIndex);
+                String tip = model.getColumnName(realColumnIndex);
+                if (realColumnIndex >= beginParamIndex) {
+
+                    int param = (realColumnIndex - beginParamIndex) % PARAMS.length;
+                    int type = convertTypeFromCheckBoxes(realColumnIndex);
+                    if (sumRow != null) {
+                        tip += "   SUM:" + sumRow.getValueFromTypeAndParam(type, param).getDisplayValue(roundCheckBox.isSelected()) + "    ";
+                    }
+                    if (avgRow != null) {
+                        tip += "AVG:" + avgRow.getValueFromTypeAndParam(type, param).getDisplayValue(roundCheckBox.isSelected());
+                    }
+                }
+                return tip;
+            }
+        };
+        table.setDefaultRenderer(AnaliseRow.AnaliseValue.class, new AnaliseRenderer());
+
+        sqlTextArea = new SimpleSqlTextPanel();
+        typesPanel = new ListSelectionPanel();
+        typesPanel.setVisible(false);
+        typesPanel.setLabelText(bundleString("AvailableEvents"), bundleString("SelectedEvents"));
+        typesPanel.createAvailableList(types);
+        typesPanel.selectOneStringAction("EXECUTE_STATEMENT_FINISH");
+        typesPanel.selectOneStringAction("EXECUTE_PROCEDURE_FINISH");
+        typesPanel.selectOneStringAction("EXECUTE_FUNCTION_FINISH");
+        typesPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
+            @Override
+            public void changed(ListSelectionPanelEvent event) {
+                rebuildRows();
+            }
+        });
+        startTimePicker = new EQDateTimePicker();
+        endTimePicker = new EQDateTimePicker();
+        startTimePicker.setVisibleNullBox(false);
+        endTimePicker.setVisibleNullBox(false);
+        planPanel = new LoggingOutputPanel();
+        planPanel.setBorder(BorderFactory.createTitledBorder(bundleString("Plan")));
+        GridBagLayout gridBagLayout = new GridBagLayout();
+        setLayout(gridBagLayout);
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
+
+        gbh.fullDefaults();
+
+        JScrollPane logListPanel = new JScrollPane();
+        logListPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        rowSorter = new AnaliseSorter<>(model);
+        table.setRowSorter(rowSorter);
+        updateSorter();
+        logListPanel.setViewportView(table);
+
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() >= 2) {
+                    int row = table.getSelectedRow();
+                    int col = table.getSelectedColumn();
+                    if (row >= 0 && col >= 0) {
+                        SimpleRecordDataItem rdi = new SimpleRecordDataItem("Value", 0, "");
+                        row = table.getRowSorter().convertRowIndexToModel(row);
+                        rdi.setValue(rows.get(row).getLogMessages());
+                        BaseDialog dialog = new BaseDialog(Bundles.get("ResultSetTablePopupMenu.RecordDataItemViewer"), true);
+                        dialog.addDisplayComponentWithEmptyBorder(
+                                new SimpleDataItemViewerPanel(dialog, rdi));
+                        dialog.display();
+                    }
+                }
+            }
+        });
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                int row = table.getSelectedRow();
+                if (row >= 0) {
+                    row = table.getRowSorter().convertRowIndexToModel(row);
+                    if (rows.get(row).getLogMessage().getStatementText() != null)
+                        sqlTextArea.setSQLText(rows.get(row).getLogMessage().getStatementText());
+                    else sqlTextArea.setSQLText(rows.get(row).getLogMessage().getProcedureName());
+                    planPanel.clear();
+                    int type = SqlMessages.PLAIN_MESSAGE;
+                    if (rows.get(row).countPlans() > 1)
+                        type = SqlMessages.ERROR_MESSAGE;
+                    planPanel.append(type, rows.get(row).getPlanText());
+
+                }
+            }
+        });
+
+        JButton selectEventsButton = new JButton(bundleString("ShowEvents"));
+        selectEventsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                typesPanel.setVisible(!typesPanel.isVisible());
+                if (typesPanel.isVisible())
+                    selectEventsButton.setText(bundleString("HideEvents"));
+                else selectEventsButton.setText(bundleString("ShowEvents"));
+            }
+        });
+
+        showPlanBox = new JCheckBox(bundleString("ShowPlan"));
+        showPlanBox.setSelected(true);
+        showPlanBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                planPanel.setVisible(showPlanBox.isSelected());
+                buildHeaders();
+            }
+        });
+
+        JButton reloadButton = new JButton(Bundles.getCommon("rebuild"));
+        reloadButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                runRebuildRowsInThread();
+            }
+        });
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new GridBagLayout());
+        JSplitPane splitPane = new JSplitPane();
+        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setDividerLocation(300);
+        splitPane.setTopComponent(topPanel);
+        splitPane.setBottomComponent(logListPanel);
+
+        gbh.setLabelDefault();
+        gbh.nextRowFirstCol().previousCol();
+        for (int i = 0; i < checkBoxes.length; i++)
+            add(checkBoxes[i], gbh.nextCol().setLabelDefault().get());
+        add(roundCheckBox, gbh.nextCol().setLabelDefault().get());
+        add(showPlanBox, gbh.nextCol().setLabelDefault().get());
+        add(showMoreParamsBox, gbh.nextCol().setLabelDefault().get());
+        add(reloadButton, gbh.nextCol().setLabelDefault().get());
+
+        moreParamsPanels.setLayout(new GridBagLayout());
+
+        moreParamsPanels.add(new JLabel(bundleString("Period")), gbh.nextRowFirstCol().setLabelDefault().get());
+        moreParamsPanels.add(startTimePicker, gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.add(new JLabel(" - "), gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.add(endTimePicker, gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.add(filterCheckBox, gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.add(new JLabel("N:"), gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.add(numberSymbolsField, gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.add(selectEventsButton, gbh.nextCol().setLabelDefault().get());
+        moreParamsPanels.add(new JPanel(), gbh.nextCol().fillHorizontally().spanX().get());
+        add(moreParamsPanels, gbh.nextRowFirstCol().previousRow().fillHorizontally().spanX().get());
+        gbh.setLabelDefault();
+        topPanel.add(sqlTextArea, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setMaxWeightY().get());
+        topPanel.add(typesPanel, gbh.nextCol().fillHorizontally().spanY().get());
+        topPanel.add(planPanel, gbh.nextRowFirstCol().fillBoth().setMaxWeightX().setWeightY(0.5).get());
+        add(splitPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        showMoreParams(false);
+        rebuildRows();
+
+    }
 
     public synchronized void rebuildRows() {
         table.setEnabled(false);
@@ -416,6 +439,8 @@ public class AnalisePanel extends JPanel {
         }
         if (rows.size() > 0) {
             AnaliseRow maxRow = new AnaliseRow();
+            avgRow = new AnaliseRow();
+            sumRow = new AnaliseRow();
             for (AnaliseRow row : rows) {
                 row.calculateValues();
                 for (int i = 0; i < TYPES.length; i++) {
@@ -423,7 +448,14 @@ public class AnalisePanel extends JPanel {
                         if (row.getValueFromTypeAndParam(i, g).getLongValue() > maxRow.getValueFromTypeAndParam(i, g).getLongValue()) {
                             maxRow.getValueFromTypeAndParam(i, g).setLongValue(row.getValueFromTypeAndParam(i, g).getLongValue());
                         }
+                        sumRow.getValueFromTypeAndParam(i, g).setLongValue(row.getValueFromTypeAndParam(i, g).getLongValue() + sumRow.getValueFromTypeAndParam(i, g).getLongValue());
                     }
+                }
+            }
+            for (int i = 0; i < TYPES.length; i++) {
+                for (int g = 0; g < PARAMS.length; g++) {
+                    if (rows.size() > 0)
+                        avgRow.getValueFromTypeAndParam(i, g).setLongValue(sumRow.getValueFromTypeAndParam(i, g).getLongValue() / rows.size());
                 }
             }
             for (AnaliseRow row : rows) {

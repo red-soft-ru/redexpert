@@ -132,7 +132,7 @@ public final class GUIUtilities {
     /**
      * docked panel cache of non-central pane tabs
      */
-    private static Map<String, JPanel> dockedTabComponents;
+    private static final Map<String, JPanel> dockedTabComponents;
 
     /**
      * the resource path to the image directory
@@ -147,12 +147,12 @@ public final class GUIUtilities {
     /**
      * System.err logger
      */
-    private static SystemErrLogger errLogger;
+    private static final SystemErrLogger errLogger;
 
     /**
      * System.out logger
      */
-    private static SystemErrLogger outLogger;
+    private static final SystemErrLogger outLogger;
 
     private static SystemOutputPanel systemOutputPanel;
 
@@ -320,7 +320,7 @@ public final class GUIUtilities {
     /**
      * Sets the divider locations to previously saved (or default) values.
      */
-    protected static void setDividerLocations() {
+    private static void setDividerLocations() {
         String[] keys = DesktopMediator.DIVIDER_LOCATION_KEYS;
         for (int i = 0; i < keys.length; i++) {
 
@@ -1119,6 +1119,10 @@ public final class GUIUtilities {
         return IconUtilities.loadIcon(ICON_PATH + name, store);
     }
 
+    public static ImageIcon loadIcon(String name, int iconSize) {
+        return IconUtilities.loadIcon(ICON_PATH + name, iconSize);
+    }
+
     /**
      * Returns the absolute icon resource path by appending
      * the package icon path to the specified icon file name.
@@ -1382,14 +1386,14 @@ public final class GUIUtilities {
      *
      * @return the application status bar
      */
-    public static final StatusBarPanel getStatusBar() {
+    public static StatusBarPanel getStatusBar() {
         return statusBar;
     }
 
     /**
      * Returns the current look and feel value.
      */
-    public static final LookAndFeelType getLookAndFeel() {
+    public static LookAndFeelType getLookAndFeel() {
 
         return LookAndFeelType.valueOf(UserProperties.getInstance().getStringProperty("startup.display.lookandfeel"));
     }
@@ -1793,35 +1797,35 @@ public final class GUIUtilities {
     // ensure the dialog is centered within the dektop pane and not
     // within the entire screen as you get with JOptionPane.showXXX()
 
-    public static final void displayInformationMessage(Object message) {
+    public static void displayInformationMessage(Object message) {
         GUIUtils.displayInformationMessage(getInFocusDialogOrWindow(), message);
     }
 
-    public static final void displayWarningMessage(Object message) {
+    public static void displayWarningMessage(Object message) {
         GUIUtils.displayWarningMessage(getInFocusDialogOrWindow(), message);
     }
 
-    public static final void displayErrorMessage(Object message) {
+    public static void displayErrorMessage(Object message) {
         GUIUtils.displayErrorMessage(getInFocusDialogOrWindow(), message);
     }
 
-    public static final String displayInputMessage(String title, Object message) {
+    public static String displayInputMessage(String title, Object message) {
         return GUIUtils.displayInputMessage(getInFocusDialogOrWindow(), title, message);
     }
 
-    public static final int displayConfirmCancelErrorMessage(Object message) {
+    public static int displayConfirmCancelErrorMessage(Object message) {
         return GUIUtils.displayConfirmCancelErrorMessage(getInFocusDialogOrWindow(), message);
     }
 
-    public static final int displayYesNoDialog(Object message, String title) {
+    public static int displayYesNoDialog(Object message, String title) {
         return GUIUtils.displayYesNoDialog(getInFocusDialogOrWindow(), message, title);
     }
 
-    public static final int displayConfirmCancelDialog(Object message) {
+    public static int displayConfirmCancelDialog(Object message) {
         return GUIUtils.displayConfirmCancelDialog(getInFocusDialogOrWindow(), message);
     }
 
-    public static final int displayConfirmDialog(Object message) {
+    public static int displayConfirmDialog(Object message) {
         return GUIUtils.displayConfirmDialog(getInFocusDialogOrWindow(), message);
     }
 

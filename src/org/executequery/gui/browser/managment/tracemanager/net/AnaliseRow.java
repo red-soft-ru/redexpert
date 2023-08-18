@@ -209,7 +209,7 @@ public class AnaliseRow {
 
     public class AnaliseValue implements Comparable {
         private long longValue;
-        private int percent;
+        private int percent = -1;
         private Color color;
         private int type;
         private boolean isRoundValue = false;
@@ -252,7 +252,8 @@ public class AnaliseRow {
 
                 }
             } else displayValue = delimitValue(longValue, "");
-            displayValue = displayValue + " [" + percent + "%" + "]";
+            if (percent != -1)
+                displayValue = displayValue + " [" + percent + "%" + "]";
             return displayValue;
         }
 

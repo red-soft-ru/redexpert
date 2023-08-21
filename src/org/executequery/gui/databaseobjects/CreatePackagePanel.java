@@ -111,11 +111,15 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     private void changeName() {
 
         String sqlText = headerPanel.getSQLText().trim()
-                .replaceAll("PACKAGE ((\".*\")|(\\w*\\b)|)", "PACKAGE " + getFormattedName());
+                .replaceAll("PACKAGE\\s+((\".*\")|(\\w*\\$?\\w*\\b)|)",
+                        "PACKAGE " + getFormattedName().replace("$", "\\$"))
+                .replace("PACKAGE " + getFormattedName().replace("$", "\\$"), "PACKAGE " + getFormattedName());
         headerPanel.setSQLText(sqlText);
 
         sqlText = bodyPanel.getSQLText().trim()
-                .replaceAll("PACKAGE BODY ((\".*\")|(\\w*\\b)|)", "PACKAGE BODY " + getFormattedName());
+                .replaceAll("PACKAGE BODY\\s+((\".*\")|(\\w*\\$?\\w*\\b)|)",
+                        "PACKAGE BODY " + getFormattedName().replace("$", "\\$"))
+                .replace("PACKAGE BODY " + getFormattedName().replace("$", "\\$"), "PACKAGE BODY " + getFormattedName());
         bodyPanel.setSQLText(sqlText);
     }
 

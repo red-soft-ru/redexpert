@@ -237,8 +237,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                                 if (var.notnull() != null && !var.notnull().isEmpty()) {
                                     variable.setNullable(0);
                                 } else variable.setNullable(1);
-                                if (var.default_value() != null)
-                                    variable.setDefaultValue(var.default_value().getText());
+                                if (var.default_statement() != null)
+                                    variable.setDefaultValue(var.default_statement().getText());
                                 if (var.comment() != null) {
                                     String description = var.comment().getText();
                                     if (description.startsWith("--")) {

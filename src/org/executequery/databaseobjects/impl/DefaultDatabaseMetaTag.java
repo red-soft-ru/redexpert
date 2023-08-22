@@ -29,6 +29,10 @@ import org.executequery.gui.browser.ComparerDBPanel;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.executequery.sql.sqlbuilder.Condition;
+import org.executequery.sql.sqlbuilder.Field;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.InterruptibleThread;
 import org.underworldlabs.util.DynamicLibraryLoader;
@@ -159,6 +163,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
 
         children = (type != SYSTEM_FUNCTION) ? loadObjects(type) : getSystemFunctionTypes();
+        if (type == PACKAGE || type == SYSTEM_PACKAGE) {
+            loadChildrenForAllPackages(META_TYPES[PROCEDURE]);
+            loadChildrenForAllPackages(META_TYPES[FUNCTION]);
+        }
 
         // loop through and add this object as the parent object
         addAsParentToObjects(children);
@@ -310,6 +318,88 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
 
     }
+
+    protected Condition checkSystemCondition(boolean isSystem, Table mainTable) {
+        if (!isSystem) {
+            return Condition.createCondition()
+                    .appendCondition(Condition.createCondition(Field.createField(mainTable, "SYSTEM_FLAG"), "IS", "NULL"))
+                    .appendCondition(Condition.createCondition(Field.createField(mainTable, "SYSTEM_FLAG"), "=", "0"))
+                    .setLogicOperator("OR");
+        } else return Condition.createCondition()
+                .appendCondition(Condition.createCondition(Field.createField(mainTable, "SYSTEM_FLAG"), "IS", "NOT NULL"))
+                .appendCondition(Condition.createCondition(Field.createField(mainTable, "SYSTEM_FLAG"), "<>", "0"))
+                .setLogicOperator("AND");
+    }
+
+    SelectBuilder getBuilderForPackageChildren(String metatag) {
+        SelectBuilder sb = new SelectBuilder();
+        Table mainTable = Table.createTable("RDB$" + metatag + "S", metatag + "S");
+        sb.appendTable(mainTable);
+        sb.appendField(Field.createField(mainTable, metatag + "_NAME"));
+        sb.appendField(Field.createField(mainTable, "PACKAGE_NAME"));
+        sb.appendCondition(Condition.createCondition(Field.createField(mainTable, "PACKAGE_NAME"), "IS", "NOT NULL"));
+        sb.appendCondition(checkSystemCondition(getSubType() == NamedObject.SYSTEM_PACKAGE, mainTable));
+        sb.setOrdering("RDB$PACKAGE_NAME, RDB$" + metatag + "_NAME");
+        return sb;
+    }
+
+    public void loadChildrenForAllPackages(String metatag) {
+
+        List<NamedObject> objects = getObjects();
+        if (objects.isEmpty())
+            return;
+
+        boolean first = true;
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        String query = getBuilderForPackageChildren(metatag).getSQLQuery();
+
+        try {
+
+
+            ResultSet rs = querySender.getResultSet(query).getResultSet();
+
+
+            int i = 0;
+            DefaultDatabasePackage previousObject = null;
+            while (rs != null && rs.next()) {
+                String packageName = rs.getString("PACKAGE_NAME");
+                while (!objects.get(i).getName().contentEquals(MiscUtils.trimEnd(packageName))) {
+                    i++;
+                    if (i >= objects.size())
+                        new DataSourceException("Error load all children for " + metaDataKey).printStackTrace();
+                    first = true;
+                }
+
+                DefaultDatabasePackage defaultDatabasePackage = (DefaultDatabasePackage) objects.get(i);
+                if (defaultDatabasePackage.isMarkedReloadChildren()) {
+
+                    if (first) {
+                        defaultDatabasePackage.prepareLoadChildren(metatag);
+                        if (previousObject != null) {
+                            //previousObject.finishLoadColumns();
+                            previousObject.setMarkedReloadChildren(false);
+                        }
+                    }
+
+                    defaultDatabasePackage.addChildFromResultSet(rs, metatag);
+                    first = false;
+                    previousObject = defaultDatabasePackage;
+                }
+            }
+
+            if (previousObject != null) {
+                previousObject.setMarkedReloadChildren(false);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+
+        } finally {
+            querySender.releaseResources();
+        }
+
+    }
+
 
     private ComparerDBPanel getComparerDBPanel(InterruptibleThread thread, String labelKey, int objectsSize) {
 

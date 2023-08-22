@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
@@ -10,6 +11,8 @@ import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by vasiliy on 04.05.17.
@@ -22,10 +25,20 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     private boolean validBodyFlag;
     private String securityClass;
     private String ownerName;
+    private boolean markedReloadChildren = true;
+
+    private List<AbstractDatabaseObject> procedures;
+    private List<DefaultDatabaseFunction> functions;
+
+    private List<NamedObject> childs;
+
+    private DefaultDatabaseMetaTag procedureMetatag;
+    private DefaultDatabaseMetaTag functionMetatag;
 
     public DefaultDatabasePackage(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
     }
+
     public int getType() {
         if (isSystem())
             return SYSTEM_PACKAGE;
@@ -148,6 +161,35 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         return null;
     }
 
+    public void prepareLoadChildren(String metatag) {
+        if (childs == null)
+            childs = new ArrayList<>();
+        if (metatag.contentEquals(NamedObject.META_TYPES[NamedObject.PROCEDURE])) {
+            procedures = new ArrayList<>();
+            procedureMetatag = new DefaultDatabaseMetaTag(getHost(), null, null, metatag);
+        } else if (metatag.contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION])) {
+            functions = new ArrayList<>();
+            functionMetatag = new DefaultDatabaseMetaTag(getHost(), null, null, metatag);
+        }
+    }
+
+    public void addChildFromResultSet(ResultSet rs, String metatag) throws SQLException {
+        if (metatag.contentEquals(NamedObject.META_TYPES[NamedObject.PROCEDURE])) {
+            DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(procedureMetatag, rs.getString(1));
+            procedure.setParent(this);
+            procedure.setSystemFlag(isSystem());
+            procedures.add(procedure);
+            childs.add(procedure);
+        } else if (metatag.contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION])) {
+            DefaultDatabaseFunction function = new DefaultDatabaseFunction(functionMetatag, rs.getString(1));
+            function.setParent(this);
+            function.setSystemFlag(isSystem());
+            functions.add(function);
+            childs.add(function);
+        }
+    }
+
+
     @Override
     public void prepareLoadingInfo() {
 
@@ -161,5 +203,21 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     @Override
     public boolean isAnyRowsResultSet() {
         return false;
+    }
+
+    public boolean isMarkedReloadChildren() {
+        return markedReloadChildren;
+    }
+
+    public void setMarkedReloadChildren(boolean markedReloadChildren) {
+        this.markedReloadChildren = markedReloadChildren;
+    }
+
+    public boolean allowsChildren() {
+        return true;
+    }
+
+    public List<NamedObject> getObjects() throws DataSourceException {
+        return childs;
     }
 }

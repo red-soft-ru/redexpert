@@ -205,17 +205,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                                         List<ParseTree> children = type.datatypeSQL().children;
                                         variable.setSqlType(children.get(0).getText());
                                         if (type.datatypeSQL().type_size() != null && !type.datatypeSQL().type_size().isEmpty()) {
-                                            variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText()));
+                                            variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText().trim()));
                                         }
                                         if (type.datatypeSQL().scale() != null && !type.datatypeSQL().scale().isEmpty()) {
-                                            variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText()));
+                                            variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText().trim()));
                                         }
                                         if (type.datatypeSQL().subtype() != null && !type.datatypeSQL().subtype().isEmpty()) {
                                             if (type.datatypeSQL().subtype().any_name() != null && !type.datatypeSQL().subtype().any_name().isEmpty()) {
                                                 variable.setSubType(1);
                                             }
                                             if (type.datatypeSQL().subtype().int_number() != null && !type.datatypeSQL().subtype().int_number().isEmpty()) {
-                                                variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText()));
+                                                variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText().trim()));
                                             }
                                         }
                                         if (type.datatypeSQL().charset_name() != null && !type.datatypeSQL().charset_name().isEmpty()) {

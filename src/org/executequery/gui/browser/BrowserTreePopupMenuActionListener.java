@@ -454,6 +454,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     GUIUtilities.setSelectedDialog(CreateProcedurePanel.EDIT_TITLE);
 
                 } else {
+                    if (node.getDatabaseObject().getParent().getType() == NamedObject.PACKAGE) {
+                        GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
+                        break;
+                    }
                     try {
                         GUIUtilities.showWaitCursor();
 
@@ -542,6 +546,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     GUIUtilities.setSelectedDialog(CreateFunctionPanel.EDIT_TITLE);
 
                 } else {
+                    if (node.getDatabaseObject().getParent().getType() == NamedObject.PACKAGE) {
+                        GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
+                        break;
+                    }
                     try {
                         GUIUtilities.showWaitCursor();
 

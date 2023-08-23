@@ -220,4 +220,12 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     public List<NamedObject> getObjects() throws DataSourceException {
         return childs;
     }
+
+    public void reset() {
+        super.reset();
+        markedReloadChildren = true;
+        childs = null;
+        procedures = null;
+        functions = null;
+    }
 }

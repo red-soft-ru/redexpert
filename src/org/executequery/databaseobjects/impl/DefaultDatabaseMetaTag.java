@@ -163,15 +163,15 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
 
         children = (type != SYSTEM_FUNCTION) ? loadObjects(type) : getSystemFunctionTypes();
-        if (type == PACKAGE || type == SYSTEM_PACKAGE) {
-            loadChildrenForAllPackages(META_TYPES[PROCEDURE]);
-            loadChildrenForAllPackages(META_TYPES[FUNCTION]);
-        }
+
 
         // loop through and add this object as the parent object
         addAsParentToObjects(children);
         setMarkedForReload(false);
-
+        if (type == PACKAGE || type == SYSTEM_PACKAGE) {
+            loadChildrenForAllPackages(META_TYPES[PROCEDURE]);
+            loadChildrenForAllPackages(META_TYPES[FUNCTION]);
+        }
         return children;
     }
 

@@ -24,6 +24,7 @@ import org.executequery.Constants;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
+import org.executequery.gui.editor.QueryEditorSettings;
 import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
 
 import javax.swing.*;
@@ -105,7 +106,7 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
         setBorder(BorderFactory.createTitledBorder(title));
 
         textPane = new SQLTextArea(autocompleteOnlyHotKey);
-        textPane.setFont(new Font("monospaced", Font.PLAIN, 12));
+        textPane.setFont(QueryEditorSettings.getEditorFont());
 //        textPane.setBackground(null);
         textPane.setDragEnabled(true);
         textComponent = textPane;

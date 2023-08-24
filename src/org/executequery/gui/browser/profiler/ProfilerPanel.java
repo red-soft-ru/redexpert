@@ -24,6 +24,7 @@ import java.util.*;
 /**
  * @author Alexey Kozlov
  */
+@SuppressWarnings("unchecked")
 public class ProfilerPanel extends JPanel
         implements TabView {
 
@@ -32,15 +33,23 @@ public class ProfilerPanel extends JPanel
     private static final int ACTIVE = 0;
     private static final int PAUSED = ACTIVE + 1;
     private static final int INACTIVE = PAUSED + 1;
+    private static final String DEFAULT_TREE = "defaultTreeView";
+    private static final String COMPACT_TREE = "compactTreeView";
+    private static final String EXTENDED_TREE = "extendedTreeView";
+
 
     // --- GUI objects ---
 
     private JComboBox<?> connectionsComboBox;
-    private JCheckBox compactViewCheckBox;
+
+    private JRadioButton defaultViewRadioButton;
+    private JRadioButton compactViewRadioButton;
+    private JRadioButton extendedViewRadioButton;
 
     private ProfilerTreeTable profilerTree;
-    private ProfilerTreeTableNode fullRootTreeNode;
+    private ProfilerTreeTableNode defaultRootTreeNode;
     private ProfilerTreeTableNode compactRootTreeNode;
+    private ProfilerTreeTableNode extendedRootTreeNode;
 
     private JButton startButton;
     private JButton pauseButton;
@@ -74,28 +83,40 @@ public class ProfilerPanel extends JPanel
 
     private void init() {
 
+        // --- connections comboBox ---
+
         connectionsComboBox = WidgetFactory.createComboBox();
         connectionsComboBox.setModel(
                 new DynamicComboBoxModel(new Vector<>(ConnectionManager.getActiveConnections())));
         combosGroup = new TableSelectionCombosGroup(connectionsComboBox);
 
-        compactViewCheckBox = new JCheckBox(bundleString("compactViewCheckBox"));
-        compactViewCheckBox.addActionListener(e -> updateTreeDisplay());
-        compactViewCheckBox.setSelected(true);
+        // --- radioButtons group ---
 
-        fullRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
-        profilerTree = new ProfilerTreeTable(
-                new TreeTableModel(fullRootTreeNode), SORTABLE, false, new int[4]);
+        defaultViewRadioButton = new JRadioButton(bundleString(DEFAULT_TREE));
+        defaultViewRadioButton.addActionListener(e -> updateTreeDisplay());
+
+        compactViewRadioButton = new JRadioButton(bundleString(COMPACT_TREE));
+        compactViewRadioButton.addActionListener(e -> updateTreeDisplay());
+        compactViewRadioButton.setSelected(true);
+
+        extendedViewRadioButton = new JRadioButton(bundleString(EXTENDED_TREE));
+        extendedViewRadioButton.addActionListener(e -> updateTreeDisplay());
+
+        ButtonGroup updateViewButtonGroup = new ButtonGroup();
+        updateViewButtonGroup.add(defaultViewRadioButton);
+        updateViewButtonGroup.add(compactViewRadioButton);
+        updateViewButtonGroup.add(extendedViewRadioButton);
+
+        // --- profiler tree ---
+
+        defaultRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
+        extendedRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
+        profilerTree = new ProfilerTreeTable(new TreeTableModel(defaultRootTreeNode), SORTABLE, false, new int[4]);
         profilerTree.getColumnModel().getColumn(1).setCellRenderer(new PercentRenderer());
-        ProfilerRowSorter rowSorter = (ProfilerRowSorter) profilerTree.getRowSorter();
-        rowSorter.setComparator(1, new Comparator<Object>() {
-            public int compare(Object o1, Object o2) {
-                Object[] vals1 = (Object[]) o1;
-                Object[] vals2 = (Object[]) o2;
-                return Long.compare((long) vals1[0], (long) vals2[0]);
-            }
-        });
+        ((ProfilerRowSorter) profilerTree.getRowSorter()).setComparator(1, (Comparator<Object>) this::compareNodes);
         profilerTree.setDefaultColumnWidth(200);
+
+        // --- buttons ---
 
         startButton = new JButton(bundleString("Start"));
         startButton.addActionListener(e -> startSession());
@@ -114,6 +135,8 @@ public class ProfilerPanel extends JPanel
 
         discardButton = new JButton(bundleString("Discard"));
         discardButton.addActionListener(e -> discardSession());
+
+        // ---
 
         arrangeComponents();
         switchSessionState(INACTIVE);
@@ -134,6 +157,16 @@ public class ProfilerPanel extends JPanel
         buttonPanel.add(cancelButton, gridBagHelper.nextCol().get());
         buttonPanel.add(discardButton, gridBagHelper.nextCol().get());
 
+        // --- radioButton panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(5, 5, 5, 0).anchorNorthWest();
+        JPanel radioButtonPanel = new JPanel(new GridBagLayout());
+
+        radioButtonPanel.add(compactViewRadioButton, gridBagHelper.get());
+        radioButtonPanel.add(defaultViewRadioButton, gridBagHelper.nextCol().get());
+        radioButtonPanel.add(extendedViewRadioButton, gridBagHelper.nextCol().get());
+
         // --- tools panel ---
 
         gridBagHelper = new GridBagHelper();
@@ -143,7 +176,6 @@ public class ProfilerPanel extends JPanel
         gridBagHelper.addLabelFieldPair(toolsPanel,
                 bundleString("Connection"), connectionsComboBox, null, false, false);
         toolsPanel.add(buttonPanel, gridBagHelper.nextCol().get());
-        toolsPanel.add(compactViewCheckBox, gridBagHelper.nextCol().get());
 
         // --- resultSet panel ---
 
@@ -155,7 +187,9 @@ public class ProfilerPanel extends JPanel
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        resultSetPanel.add(scrollPane, gridBagHelper.spanX().spanY().get());
+        resultSetPanel.add(scrollPane, gridBagHelper.setMaxWeightY().spanX().get());
+        resultSetPanel.add(radioButtonPanel, gridBagHelper.setMinWeightY().fillNone().nextRowFirstCol().get());
+
 
         // --- profiler panel ---
 
@@ -314,35 +348,98 @@ public class ProfilerPanel extends JPanel
             return;
         }
 
-        fullRootTreeNode.removeAllChildren();
-        for (ProfilerData data : profilerDataList) {
-            if (data.getCallerId() == 0) {
-                fullRootTreeNode.add(new ProfilerTreeTableNode(data));
-
-            } else {
-                ProfilerTreeTableNode node = getParenNode(data.getCallerId(), fullRootTreeNode);
-                if (node != null)
-                    node.add(new ProfilerTreeTableNode(data));
-                else
-                    fullRootTreeNode.add(new ProfilerTreeTableNode(data));
-            }
-        }
-
-        // set new data to the root node
-        long totalTime = Arrays.stream(fullRootTreeNode.getChildren()).mapToLong(child -> (long) ((ProfilerTreeTableNode) child).getTotalTime()).sum();
-        fullRootTreeNode.setData(new ProfilerData(-1, -1, "Profiler Session [ID: " + sessionId + "]", "ROOT", totalTime));
-
-        // add 'self time' nodes
-        Arrays.stream(fullRootTreeNode.getChildren()).forEachOrdered(child -> addNodesSelfTime((ProfilerTreeTableNode) child));
-        calculatePercentage(fullRootTreeNode);
-
-        // generate compact tree
-        compactRootTreeNode = cloneNode(fullRootTreeNode);
-        compressNodes(compactRootTreeNode);
+        generateDefaultTree(profilerDataList);
+        generateCompactTree(profilerDataList);
+        generateExtendedTree(profilerDataList);
 
         // display tree
         updateTreeDisplay();
         oldDataList = profilerDataList;
+    }
+
+    private void generateDefaultTree(List<ProfilerData> profilerDataList) {
+
+        defaultRootTreeNode.removeAllChildren();
+        for (ProfilerData data : profilerDataList) {
+            if (data.getCallerId() == 0) {
+                defaultRootTreeNode.add(new ProfilerTreeTableNode(data));
+
+            } else {
+                ProfilerTreeTableNode node = getParenNode(data.getCallerId(), defaultRootTreeNode);
+                if (node != null)
+                    node.add(new ProfilerTreeTableNode(data));
+                else
+                    defaultRootTreeNode.add(new ProfilerTreeTableNode(data));
+            }
+        }
+
+        // set new data to the root node
+        long totalTime = Arrays.stream(defaultRootTreeNode.getChildren()).mapToLong(child -> (long) ((ProfilerTreeTableNode) child).getTotalTime()).sum();
+        defaultRootTreeNode.setData(new ProfilerData(-1, -1, "Profiler Session [ID: " + sessionId + "]", ProfilerData.ROOT, null, totalTime));
+
+        // add 'self time' nodes
+        Arrays.stream(defaultRootTreeNode.getChildren()).forEachOrdered(child -> addNodesSelfTime((ProfilerTreeTableNode) child));
+
+        // add elapsed time percentages
+        calculatePercentage(defaultRootTreeNode);
+
+    }
+
+    private void generateCompactTree(List<ProfilerData> profilerDataList) {
+
+        if (defaultRootTreeNode == null)
+            generateDefaultTree(profilerDataList);
+
+        compactRootTreeNode = cloneNode(defaultRootTreeNode);
+        compressNodes(compactRootTreeNode);
+
+    }
+
+    private void generateExtendedTree(List<ProfilerData> profilerDataList) {
+
+        extendedRootTreeNode.removeAllChildren();
+        for (ProfilerData data : profilerDataList) {
+
+            ProfilerTreeTableNode newNode = new ProfilerTreeTableNode(data);
+            if (data.getCallerId() != 0) {
+
+                ProfilerTreeTableNode node = getParenNode(data.getCallerId(), extendedRootTreeNode);
+                if (node != null) {
+
+                    boolean isAdded = false;
+                    Enumeration<CCTNode> children = node.children();
+                    while (children.hasMoreElements()) {
+
+                        ProfilerTreeTableNode child = (ProfilerTreeTableNode) children.nextElement();
+                        if (child.getData().getProcessName().toLowerCase().contains(data.getProcessName().toLowerCase())) {
+                            child.add(newNode);
+                            isAdded = true;
+                            break;
+                        }
+                    }
+                    if (!isAdded)
+                        node.add(newNode);
+
+                } else
+                    extendedRootTreeNode.add(newNode);
+            } else
+                extendedRootTreeNode.add(newNode);
+
+            if (data.getPsqlStats() != null) {
+                for (ProfilerData.PsqlLine line : data.getPsqlStats())
+                    newNode.add(new ProfilerTreeTableNode(
+                            new ProfilerData(-1, data.getId(), line.getString(), ProfilerData.PSQL, line.getTotalTime(), line.getAvgTime(), line.getCallCount())));
+            }
+
+        }
+
+        // set new data to the root node
+        long totalTime = Arrays.stream(extendedRootTreeNode.getChildren()).mapToLong(child -> (long) ((ProfilerTreeTableNode) child).getTotalTime()).sum();
+        extendedRootTreeNode.setData(new ProfilerData(-1, -1, "Profiler Session [ID: " + sessionId + "]", ProfilerData.ROOT, null, totalTime));
+
+        // add elapsed time percentages
+        calculatePercentage(extendedRootTreeNode);
+
     }
 
     private ProfilerTreeTableNode getParenNode(int id, ProfilerTreeTableNode node) {
@@ -380,7 +477,7 @@ public class ProfilerPanel extends JPanel
         }
         if (node.getChildCount() > 0)
             node.add(new ProfilerTreeTableNode(
-                    new ProfilerData(-1, nodeData.getCallerId(), bundleString("SelfTime"), "SELF_TIME", selfTime)));
+                    new ProfilerData(-1, nodeData.getCallerId(), bundleString("SelfTime"), ProfilerData.SELF_TIME, null, selfTime)));
 
     }
 
@@ -440,33 +537,39 @@ public class ProfilerPanel extends JPanel
 
     private void updateTreeDisplay() {
 
-        if (compactRootTreeNode != null && fullRootTreeNode != null) {
-            profilerTree.setTreeTableModel(new TreeTableModel(
-                    compactViewCheckBox.isSelected() ? compactRootTreeNode : fullRootTreeNode), SORTABLE);
+        if (compactRootTreeNode != null && extendedRootTreeNode != null && defaultRootTreeNode != null) {
+
+            if (defaultViewRadioButton.isSelected())
+                profilerTree.setTreeTableModel(new TreeTableModel(defaultRootTreeNode), SORTABLE);
+            else if (compactViewRadioButton.isSelected())
+                profilerTree.setTreeTableModel(new TreeTableModel(compactRootTreeNode), SORTABLE);
+            else if (extendedViewRadioButton.isSelected())
+                profilerTree.setTreeTableModel(new TreeTableModel(extendedRootTreeNode), SORTABLE);
+
             profilerTree.setDefaultColumnWidth(200);
             profilerTree.getColumnModel().getColumn(1).setCellRenderer(new PercentRenderer());
+
             ProfilerRowSorter rowSorter = (ProfilerRowSorter) profilerTree.getRowSorter();
-            rowSorter.setComparator(1, new Comparator<Object>() {
-                public int compare(Object o1, Object o2) {
-                    Object[] vals1 = (Object[]) o1;
-                    Object[] vals2 = (Object[]) o2;
-                    return Long.compare((long) vals1[0], (long) vals2[0]);
-                }
-            });
+            rowSorter.setComparator(1, (Comparator<Object>) this::compareNodes);
             rowSorter.toggleSortOrder(1);
         }
     }
 
     private void clearTree() {
 
-        if (fullRootTreeNode != null) {
-            fullRootTreeNode.setData(new ProfilerData(-1, -1, "ROOT NODE", "ROOT", 0));
-            fullRootTreeNode.removeAllChildren();
+        if (defaultRootTreeNode != null) {
+            defaultRootTreeNode.setData(new ProfilerData(-1, -1, "ROOT NODE", ProfilerData.ROOT, null, 0));
+            defaultRootTreeNode.removeAllChildren();
         }
 
         if (compactRootTreeNode != null) {
-            compactRootTreeNode.setData(new ProfilerData(-1, -1, "ROOT NODE", "ROOT", 0));
+            compactRootTreeNode.setData(new ProfilerData(-1, -1, "ROOT NODE", ProfilerData.ROOT, null, 0));
             compactRootTreeNode.removeAllChildren();
+        }
+
+        if (extendedRootTreeNode != null) {
+            extendedRootTreeNode.setData(new ProfilerData(-1, -1, "ROOT NODE", ProfilerData.ROOT, null, 0));
+            extendedRootTreeNode.removeAllChildren();
         }
 
         oldDataList = null;
@@ -502,6 +605,12 @@ public class ProfilerPanel extends JPanel
         }
     }
 
+    private int compareNodes(Object o1, Object o2) {
+        Object[] values1 = (Object[]) o1;
+        Object[] values2 = (Object[]) o2;
+        return Long.compare((long) values1[0], (long) values2[0]);
+    }
+
     private boolean isConnected() {
         return combosGroup.getSelectedHost().isConnected();
     }
@@ -525,10 +634,6 @@ public class ProfilerPanel extends JPanel
         return Bundles.get(ProfilerPanel.class, key);
     }
 
-
-    /**
-     * Profiler Tree Table Model class
-     */
     public static class TreeTableModel extends ProfilerTreeTableModel.Abstract {
 
         private static final List<String> columnNames = Arrays.asList(
@@ -592,23 +697,25 @@ public class ProfilerPanel extends JPanel
             return false;
         }
 
-    }
+    } // TreeTableModel class
 
-    class PercentRenderer extends DefaultTableCellRenderer {
+    static class PercentRenderer extends DefaultTableCellRenderer {
 
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             if (value instanceof Object[]) {
-                Object[] objs = (Object[]) value;
-                String res = objs[0].toString() + " [" +
-                        String.format("%.2f", (double) objs[1]).replace(",", ".") + "%]";
-                setValue(res);
+                Object[] objects = (Object[]) value;
+                String formattedString = objects[0].toString() +
+                        " [" + String.format("%.2f", (double) objects[1]).replace(",", ".") + "%]";
+                setValue(formattedString);
                 setHorizontalAlignment(SwingConstants.RIGHT);
             }
             return this;
         }
-    }
 
+    } // PercentRenderer class
 
 }

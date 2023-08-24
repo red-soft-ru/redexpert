@@ -7,6 +7,7 @@ import org.executequery.log.Log;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -116,18 +117,30 @@ public class DefaultProfilerExecutor {
                 "STA.ROUTINE_NAME,\n" +
                 "STA.SQL_TEXT,\n" +
                 "STA.STATEMENT_TYPE,\n" +
-                "REQ.TOTAL_ELAPSED_TIME TOTAL_TIME\n" +
+                "PSQL.LINE_NUM,\n" +
+                "PSQL.COUNTER,\n" +
+                "PSQL.TOTAL_ELAPSED_TIME LINE_TIME,\n" +
+                "REQ.TOTAL_ELAPSED_TIME TOTAL_TIME,\n" +
+                "PROC.RDB$PROCEDURE_SOURCE,\n" +
+                "FUNC.RDB$FUNCTION_SOURCE\n" +
                 "FROM PLG$PROF_REQUESTS REQ\n" +
                 "LEFT OUTER JOIN PLG$PROF_STATEMENTS STA USING (PROFILE_ID, STATEMENT_ID)\n" +
+                "LEFT OUTER JOIN PLG$PROF_PSQL_STATS PSQL USING (PROFILE_ID, REQUEST_ID)\n" +
+                "LEFT OUTER JOIN RDB$PROCEDURES PROC ON STA.ROUTINE_NAME = RDB$PROCEDURE_NAME\n" +
+                "LEFT OUTER JOIN RDB$FUNCTIONS FUNC ON STA.ROUTINE_NAME = RDB$FUNCTION_NAME\n" +
                 "WHERE STA.PROFILE_ID = '" + sessionId + "'\n" +
                 (showProfilerProcesses ? "" :
                         "AND (STA.PACKAGE_NAME IS NULL OR STA.PACKAGE_NAME NOT CONTAINING 'RDB$PROFILER')\n" +
                                 "AND (STA.SQL_TEXT IS NULL OR STA.SQL_TEXT NOT CONTAINING 'RDB$PROFILER')\n"
                 ) +
-                "ORDER BY REQ.CALLER_REQUEST_ID, REQ.REQUEST_ID;";
+                "ORDER BY REQ.CALLER_REQUEST_ID, REQ.REQUEST_ID, PSQL.LINE_NUM;";
 
         List<ProfilerData> profilerDataList = new LinkedList<>();
         try {
+
+            int oldId = -1;
+            int previousIndex = -1;
+            List<ProfilerData.PsqlLine> psqlStats = new ArrayList<>();
 
             ResultSet rs = executor.execute(query, true).getResultSet();
             while (rs.next()) {
@@ -138,13 +151,30 @@ public class DefaultProfilerExecutor {
                 String routineName = rs.getNString(4);
                 String sqlText = rs.getNString(5);
                 String statementType = rs.getNString(6);
-                long totalTime = rs.getLong(7);
+                int lineNumber = rs.getInt(7);
+                int lineCounter = rs.getInt(8);
+                long lineTime = rs.getLong(9);
+                long totalTime = rs.getLong(10);
+                String sourceCode = rs.getNString(11) != null ? rs.getNString(11) : rs.getNString(12);
 
-                ProfilerData data = sqlText != null ?
-                        new ProfilerData(id, callerId, sqlText, statementType, totalTime) :
-                        new ProfilerData(id, callerId, packageName, routineName, statementType, totalTime);
+                if (oldId != id) {
 
-                profilerDataList.add(data);
+                    if (previousIndex != -1) {
+                        if (psqlStats.size() > 1)
+                            profilerDataList.get(previousIndex).setPsqlStats(psqlStats);
+                        psqlStats = new ArrayList<>();
+                    }
+
+                    ProfilerData data = sqlText != null ?
+                            new ProfilerData(id, callerId, sqlText, statementType, null, totalTime) :
+                            new ProfilerData(id, callerId, packageName, routineName, statementType, sourceCode, totalTime);
+                    profilerDataList.add(data);
+
+                    previousIndex = profilerDataList.size() - 1;
+                    oldId = id;
+                }
+                if (lineNumber != 0 || lineCounter != 0 || lineTime != 0)
+                    psqlStats.add(new ProfilerData.PsqlLine(lineNumber, lineTime, lineCounter));
 
             }
             executor.getConnection().commit();
@@ -168,7 +198,7 @@ public class DefaultProfilerExecutor {
             dbHost.close();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
             isSupported = false;
         }
 

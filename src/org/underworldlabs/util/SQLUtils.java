@@ -215,11 +215,10 @@ public final class SQLUtils {
             Vector<ColumnData> outputParameters, Vector<ColumnData> variables, String sqlSecurity,
             String authid, String procedureBody, String comment, boolean setTerm, boolean setComment) {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(formattedParameters(variables, true));
-        sb.append(procedureBody);
+        String sb = formattedParameters(variables, true) +
+                procedureBody;
         return generateCreateProcedure(name, entryPoint, engine, inputParameters, outputParameters,
-                sqlSecurity, authid, sb.toString(), comment, setTerm, setComment);
+                sqlSecurity, authid, sb, comment, setTerm, setComment);
     }
 
     public static String generateCreateProcedure(
@@ -300,6 +299,8 @@ public final class SQLUtils {
 
     public static String generateComment(
             String name, String metaTag, String comment, String delimiter, boolean nameAlreadyFormatted) {
+        if (metaTag != null && metaTag.contentEquals(NamedObject.META_TYPES[GLOBAL_TEMPORARY]))
+            metaTag = NamedObject.META_TYPES[TABLE];
         StringBuilder sb = new StringBuilder();
 
         if (comment != null && !comment.isEmpty()) {
@@ -349,9 +350,7 @@ public final class SQLUtils {
     }
 
     public static String generateSQLBody(String sqlBody) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("\nAS\n").append(sqlBody).append("^\n");
-        return sb.toString();
+        return "\nAS\n" + sqlBody + "^\n";
     }
 
     public static String generateCreateFunction(
@@ -359,10 +358,9 @@ public final class SQLUtils {
             String functionBody, String entryPoint, String engine, String sqlSecurity, String comment,
             boolean setTerm, boolean setComment, boolean deterministic) {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(formattedParameters(variables, true));
-        sb.append(functionBody);
-        return generateCreateFunction(name, argumentList, returnType, sb.toString(), entryPoint,
+        String sb = formattedParameters(variables, true) +
+                functionBody;
+        return generateCreateFunction(name, argumentList, returnType, sb, entryPoint,
                 engine, sqlSecurity, comment, setTerm, setComment, deterministic);
     }
 
@@ -449,28 +447,28 @@ public final class SQLUtils {
         if (column.isRequiredChanged())
             sb.append(alterTableTemplate)
                     .append(column.isRequired() ? " SET NOT NULL" : " DROP NOT NULL")
-                    .append(delimiter).append("\n");;
+                    .append(delimiter).append("\n");
 
         if (column.isDefaultValueChanged())
             sb.append(alterTableTemplate)
                     .append(" SET ").append(format(columnData.getDefaultValue(), columnData.getSQLType()))
-                    .append(delimiter).append("\n");;
+                    .append(delimiter).append("\n");
 
         if (column.isComputedChanged())
             sb.append(alterTableTemplate)
                     .append(" COMPUTED BY ").append(column.getComputedSource())
-                    .append(delimiter).append("\n");;
+                    .append(delimiter).append("\n");
 
         if (column.isDomainChanged() && !column.isGenerated())
             sb.append(alterTableTemplate)
                     .append(" TYPE ").append(columnData.getFormattedDomain())
-                    .append(delimiter).append("\n");;
+                    .append(delimiter).append("\n");
 
         if (column.isDescriptionChanged())
             sb.append("COMMENT ON COLUMN ")
                     .append(format(tableName)).append(".").append(columnData.getFormattedColumnName())
                     .append(" IS '").append(column.getColumnDescription()).append("'")
-                    .append(delimiter).append("\n");;
+                    .append(delimiter).append("\n");
 
         return sb.toString();
     }
@@ -673,7 +671,7 @@ public final class SQLUtils {
                     }
 
             }
-        number = "" + (int_number + 1);
+        number = String.valueOf(int_number + 1);
         return name + number;
     }
 
@@ -710,7 +708,7 @@ public final class SQLUtils {
                     }
 
             }
-        number = "" + (int_number + 1);
+        number = String.valueOf(int_number + 1);
         return name + number;
     }
 
@@ -752,10 +750,9 @@ public final class SQLUtils {
     }
 
     public static String generateDefaultDropQuery(String metaTag, String name) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("DROP ").append(metaTag).append(" ");
-        sb.append(format(name)).append(";\n");
-        return sb.toString();
+        String sb = "DROP " + metaTag + " " +
+                format(name) + ";\n";
+        return sb;
     }
 
     public static String generateCreateDomain(
@@ -874,7 +871,7 @@ public final class SQLUtils {
         if (!Objects.equals(thisDomainData.getDomainTypeName(), domainData.getDomainTypeName()))
             sb.append("TYPE ").append(domainData.getDomainTypeName());
 
-        if (noChangesCheckString.equals(sb.toString()))
+        if (noChangesCheckString.contentEquals(sb))
             sb = new StringBuilder();
         else
             sb.append(";\n");
@@ -918,7 +915,7 @@ public final class SQLUtils {
         if (columnData.isTypeChanged())
             sb.append("TYPE ").append(columnData.getFormattedDataType());
 
-        if (noChangesCheckString.equals(sb.toString()))
+        if (noChangesCheckString.contentEquals(sb))
             sb = new StringBuilder();
         else
             sb.append(";\n");
@@ -1027,7 +1024,7 @@ public final class SQLUtils {
 
         }
 
-        if (noChangesCheckString.equals(sb.toString()))
+        if (noChangesCheckString.contentEquals(sb))
             return "/* there are no changes */\n";
         return sb.deleteCharAt(sb.length() - 1).append(";\n").toString();
     }
@@ -1039,10 +1036,9 @@ public final class SQLUtils {
         if (Objects.equals(thisException.getExceptionText(), comparingExceptionText))
             return "/* there are no changes */\n";
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("ALTER EXCEPTION ").append(format(thisException.getName()));
-        sb.append(SPACE).append(comparingExceptionText).append(";\n");
-        return sb.toString();
+        String sb = "ALTER EXCEPTION " + format(thisException.getName()) +
+                SPACE + comparingExceptionText + ";\n";
+        return sb;
     }
 
     public static String generateAlterSequence(
@@ -1059,7 +1055,7 @@ public final class SQLUtils {
                 sb.append("\n\tINCREMENT BY ").append(comparingSequence.getIncrement());
         }
 
-        if (noChangesCheckString.equals(sb.toString()))
+        if (noChangesCheckString.contentEquals(sb))
             return "/* there are no changes */\n";
         return sb.append(";\n").toString();
     }
@@ -1076,7 +1072,7 @@ public final class SQLUtils {
         if (!Objects.equals(thisUDF.getModuleName(), comparingUDF.getModuleName()))
             sb.append("\nMODULE_NAME '").append(comparingUDF.getModuleName()).append("'");
 
-        if (noChangesCheckString.equals(sb.toString()))
+        if (noChangesCheckString.contentEquals(sb))
             return "/* there are no changes */\n";
         return sb.append(";\n").toString();
     }
@@ -1150,7 +1146,7 @@ public final class SQLUtils {
             sb.deleteCharAt(sb.lastIndexOf(",")).append(" )");
         }
 
-        if (noChangesCheckString.equals(sb.toString()))
+        if (noChangesCheckString.contentEquals(sb))
             sb = new StringBuilder();
         else
             sb.append(";\n");
@@ -1178,17 +1174,15 @@ public final class SQLUtils {
     }
 
     public static String generateAlterTablespace(String name, String file) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLESPACE ").append(format(name));
-        sb.append(" SET FILE '").append(file).append("';\n");
-        return sb.toString();
+        String sb = "ALTER TABLESPACE " + format(name) +
+                " SET FILE '" + file + "';\n";
+        return sb;
     }
 
     public static String generateCreateTablespace(String name, String file) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE TABLESPACE ").append(format(name));
-        sb.append(" FILE '").append(file).append("';\n");
-        return sb.toString();
+        String sb = "CREATE TABLESPACE " + format(name) +
+                " FILE '" + file + "';\n";
+        return sb;
     }
 
     public static String generateCreateSequence(
@@ -1241,28 +1235,24 @@ public final class SQLUtils {
     }
 
     public static String generateDefaultUpdateStatement(String name, String settings) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("UPDATE ").append(format(name.trim()));
-        sb.append(" SET ").append(settings.trim()).append(";\n");
-        return sb.toString();
+        String sb = "UPDATE " + format(name.trim()) +
+                " SET " + settings.trim() + ";\n";
+        return sb;
     }
 
     public static String generateDefaultInsertStatement(String name, String fields, String values) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO ").append(format(name.trim()));
-        sb.append(" (").append(fields.trim()).append(")");
-        sb.append(" VALUES (").append(values.trim()).append(");\n");
-        return sb.toString();
+        String sb = "INSERT INTO " + format(name.trim()) +
+                " (" + fields.trim() + ")" +
+                " VALUES (" + values.trim() + ");\n";
+        return sb;
     }
 
     public static String generateDefaultSelectStatement(String name, String fields) {
 
-        StringBuilder sb = new StringBuilder();
+        String sb = "SELECT " + fields.trim() +
+                " FROM " + format(name.trim()) + ";\n";
 
-        sb.append("SELECT ").append(fields.trim());
-        sb.append(" FROM ").append(format(name.trim())).append(";\n");
-
-        return sb.toString();
+        return sb;
     }
 
     public static String generateCreateTriggerStatement(
@@ -1307,10 +1297,9 @@ public final class SQLUtils {
     }
 
     public static String generateCreateException(String name, String exceptionText) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE EXCEPTION ").append(format(name));
-        sb.append("\n'").append(exceptionText).append("';\n");
-        return sb.toString();
+        String sb = "CREATE EXCEPTION " + format(name) +
+                "\n'" + exceptionText + "';\n";
+        return sb;
     }
 
     public static String generateCreatePackage(
@@ -1389,9 +1378,7 @@ public final class SQLUtils {
     }
 
     public static String generateCreateRole(String name) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE ROLE ").append(format(name)).append(";\n");
-        return sb.toString();
+        return "CREATE ROLE " + format(name) + ";\n";
     }
 
     public static String generateCreateIndex(
@@ -1568,11 +1555,10 @@ public final class SQLUtils {
 
     public static String generateCreateJobStub(DefaultDatabaseJob obj) {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE JOB ").append(format(obj.getName())).append("\n");
-        sb.append("\t'' COMMAND ''^");
+        String sb = "CREATE JOB " + format(obj.getName()) + "\n" +
+                "\t'' COMMAND ''^";
 
-        return sb.toString();
+        return sb;
     }
 
     public static String generateCreateCollation(

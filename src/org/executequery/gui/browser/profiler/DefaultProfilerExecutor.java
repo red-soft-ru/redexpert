@@ -19,22 +19,26 @@ import java.util.List;
 public class DefaultProfilerExecutor {
 
     private static final String START_SESSION =
-            "SELECT RDB$PROFILER.START_SESSION('%s', NULL, (SELECT CURRENT_CONNECTION FROM RDB$DATABASE), NULL, 'DETAILED_REQUESTS') FROM RDB$DATABASE";
+            "SELECT RDB$PROFILER.START_SESSION('%s', NULL, %s, NULL, 'DETAILED_REQUESTS') FROM RDB$DATABASE";
     private static final String PAUSE_SESSION =
-            "EXECUTE PROCEDURE RDB$PROFILER.PAUSE_SESSION(TRUE)";
+            "EXECUTE PROCEDURE RDB$PROFILER.PAUSE_SESSION(TRUE, %s)";
     private static final String RESUME_SESSION =
-            "EXECUTE PROCEDURE RDB$PROFILER.RESUME_SESSION";
+            "EXECUTE PROCEDURE RDB$PROFILER.RESUME_SESSION(%s)";
     private static final String FINISH_SESSION =
-            "EXECUTE PROCEDURE RDB$PROFILER.FINISH_SESSION(TRUE)";
+            "EXECUTE PROCEDURE RDB$PROFILER.FINISH_SESSION(TRUE, %s)";
     private static final String CANCEL_SESSION =
-            "EXECUTE PROCEDURE RDB$PROFILER.CANCEL_SESSION";
+            "EXECUTE PROCEDURE RDB$PROFILER.CANCEL_SESSION(%s)";
     private static final String DISCARD =
-            "EXECUTE PROCEDURE RDB$PROFILER.DISCARD";
+            "EXECUTE PROCEDURE RDB$PROFILER.DISCARD(%s)";
 
     private final DefaultStatementExecutor executor;
+    private final String attachmentId;
     private int sessionId;
 
-    public DefaultProfilerExecutor(DatabaseConnection connection) {
+    public DefaultProfilerExecutor(DatabaseConnection connection, String attachmentId) {
+
+        this.attachmentId = attachmentId != null ? attachmentId : "(SELECT CURRENT_CONNECTION FROM RDB$DATABASE)";
+
         executor = new DefaultStatementExecutor();
         executor.setDatabaseConnection(connection);
         executor.setKeepAlive(true);
@@ -51,7 +55,7 @@ public class DefaultProfilerExecutor {
         if (!isVersionSupported(executor.getDatabaseConnection()))
             return -1;
 
-        String query = String.format(START_SESSION, executor.getDatabaseConnection().getName() + "_session");
+        String query = String.format(START_SESSION, executor.getDatabaseConnection().getName() + "_session", attachmentId);
         ResultSet resultSet = executor.execute(query, true).getResultSet();
         sessionId = resultSet.next() ? resultSet.getInt(1) : -1;
         executor.getConnection().commit();
@@ -65,7 +69,7 @@ public class DefaultProfilerExecutor {
      * Pause current profiler session
      */
     public void pauseSession() throws SQLException {
-        executeAndReleaseResources(PAUSE_SESSION);
+        executeAndReleaseResources(String.format(PAUSE_SESSION, attachmentId));
         Log.info(String.format("Profiler session with ID %s paused", sessionId));
     }
 
@@ -73,7 +77,7 @@ public class DefaultProfilerExecutor {
      * Resume current profiler session
      */
     public void resumeSession() throws SQLException {
-        executeAndReleaseResources(RESUME_SESSION);
+        executeAndReleaseResources(String.format(RESUME_SESSION, attachmentId));
         Log.info(String.format("Profiler session with ID %s resumed", sessionId));
     }
 
@@ -81,7 +85,7 @@ public class DefaultProfilerExecutor {
      * Finish current profiler session
      */
     public void finishSession() throws SQLException {
-        executeAndReleaseResources(FINISH_SESSION);
+        executeAndReleaseResources(String.format(FINISH_SESSION, attachmentId));
         Log.info(String.format("Profiler session with ID %s finished", sessionId));
     }
 
@@ -89,7 +93,7 @@ public class DefaultProfilerExecutor {
      * Cancel current profiler session
      */
     public void cancelSession() throws SQLException {
-        executeAndReleaseResources(CANCEL_SESSION);
+        executeAndReleaseResources(String.format(CANCEL_SESSION, attachmentId));
         Log.info(String.format("Profiler session with ID %s canceled", sessionId));
     }
 
@@ -97,7 +101,7 @@ public class DefaultProfilerExecutor {
      * Discard all profiler session
      */
     public void discardSession() throws SQLException {
-        executeAndReleaseResources(DISCARD);
+        executeAndReleaseResources(String.format(DISCARD, attachmentId));
         Log.info("Profiler sessions discarded");
     }
 

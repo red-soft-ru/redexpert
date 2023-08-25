@@ -314,7 +314,7 @@ public class QueryDispatcher {
 
                 try {
 
-                    DefaultProfilerExecutor profilerExecutor = new DefaultProfilerExecutor(dc);
+                    DefaultProfilerExecutor profilerExecutor = new DefaultProfilerExecutor(dc, null);
                     int sessionId = profilerExecutor.startSession();
 
                     if (sessionId != -1) {

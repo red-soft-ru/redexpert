@@ -4,9 +4,11 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.components.TableSelectionCombosGroup;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.treetable.CCTNode;
@@ -18,6 +20,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
 
@@ -41,6 +45,7 @@ public class ProfilerPanel extends JPanel
     // --- GUI objects ---
 
     private JComboBox<?> connectionsComboBox;
+    private JComboBox<?> attachmentsComboBox;
 
     private JRadioButton defaultViewRadioButton;
     private JRadioButton compactViewRadioButton;
@@ -76,18 +81,23 @@ public class ProfilerPanel extends JPanel
 
         init();
         this.sessionId = sessionId;
-        this.profilerExecutor = new DefaultProfilerExecutor(connection);
+        this.profilerExecutor = new DefaultProfilerExecutor(connection, null);
+        connectionsComboBox.setSelectedItem(connection);
         generateTree(false);
 
     }
 
     private void init() {
 
+        // --- attachments comboBox ---
+
+        attachmentsComboBox = WidgetFactory.createComboBox();
+
         // --- connections comboBox ---
 
         connectionsComboBox = WidgetFactory.createComboBox();
-        connectionsComboBox.setModel(
-                new DynamicComboBoxModel(new Vector<>(ConnectionManager.getActiveConnections())));
+        connectionsComboBox.setModel(new DynamicComboBoxModel(new Vector<>(ConnectionManager.getActiveConnections())));
+        connectionsComboBox.addActionListener(e -> refreshAttachments());
         combosGroup = new TableSelectionCombosGroup(connectionsComboBox);
 
         // --- radioButtons group ---
@@ -139,6 +149,7 @@ public class ProfilerPanel extends JPanel
         // ---
 
         arrangeComponents();
+        refreshAttachments();
         switchSessionState(INACTIVE);
     }
 
@@ -175,6 +186,8 @@ public class ProfilerPanel extends JPanel
 
         gridBagHelper.addLabelFieldPair(toolsPanel,
                 bundleString("Connection"), connectionsComboBox, null, false, false);
+        gridBagHelper.addLabelFieldPair(toolsPanel,
+                bundleString("Attachment"), attachmentsComboBox, null, false, false);
         toolsPanel.add(buttonPanel, gridBagHelper.nextCol().get());
 
         // --- resultSet panel ---
@@ -221,7 +234,9 @@ public class ProfilerPanel extends JPanel
             return;
         }
 
-        profilerExecutor = new DefaultProfilerExecutor(combosGroup.getSelectedHost().getDatabaseConnection());
+        profilerExecutor = new DefaultProfilerExecutor(
+                combosGroup.getSelectedHost().getDatabaseConnection(),
+                ((AttachmentData) Objects.requireNonNull(attachmentsComboBox.getSelectedItem())).id);
         try {
 
             sessionId = profilerExecutor.startSession();
@@ -576,6 +591,42 @@ public class ProfilerPanel extends JPanel
         updateTreeDisplay();
     }
 
+    private void refreshAttachments() {
+
+        String query = "SELECT\n" +
+                "MON$ATTACHMENT_ID," +
+                "MON$REMOTE_ADDRESS\n" +
+                "FROM MON$ATTACHMENTS\n" +
+                "WHERE (MON$USER NOT CONTAINING 'Garbage Collector')\n" +
+                "AND (MON$USER NOT CONTAINING 'Cache Writer')\n" +
+                "ORDER BY MON$REMOTE_ADDRESS";
+
+        Vector<AttachmentData> attachments = new Vector<>();
+        try {
+
+            DefaultStatementExecutor executor = new DefaultStatementExecutor();
+            executor.setDatabaseConnection(combosGroup.getSelectedHost().getDatabaseConnection());
+            executor.setKeepAlive(true);
+            executor.setCommitMode(false);
+
+            ResultSet rs = executor.execute(query, true).getResultSet();
+            while (rs.next()) {
+
+                String id = rs.getNString(1);
+                String remoteAddress = rs.getNString(2);
+
+                attachments.add(new AttachmentData(id, remoteAddress));
+            }
+            executor.getConnection().commit();
+            executor.releaseResources();
+
+        } catch (SQLException e) {
+            Log.error("Error loading attachments", e);
+        }
+
+        attachmentsComboBox.setModel(new DynamicComboBoxModel(attachments));
+    }
+
     private void switchSessionState(int state) {
 
         currentState = state;
@@ -699,7 +750,7 @@ public class ProfilerPanel extends JPanel
 
     } // TreeTableModel class
 
-    static class PercentRenderer extends DefaultTableCellRenderer {
+    protected static class PercentRenderer extends DefaultTableCellRenderer {
 
         @Override
         public Component getTableCellRendererComponent(
@@ -717,5 +768,22 @@ public class ProfilerPanel extends JPanel
         }
 
     } // PercentRenderer class
+
+    protected static class AttachmentData {
+
+        String id;
+        String remoteAddress;
+
+        AttachmentData(String id, String remoteAddress) {
+            this.id = id;
+            this.remoteAddress = remoteAddress;
+        }
+
+        @Override
+        public String toString() {
+            return remoteAddress;
+        }
+
+    } // AttachmentData class
 
 }

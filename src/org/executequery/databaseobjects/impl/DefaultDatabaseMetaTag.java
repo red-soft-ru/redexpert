@@ -371,13 +371,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 }
 
                 DefaultDatabasePackage defaultDatabasePackage = (DefaultDatabasePackage) objects.get(i);
-                if (defaultDatabasePackage.isMarkedReloadChildren()) {
+                if (defaultDatabasePackage.isMarkedReloadChildren(metatag)) {
 
                     if (first) {
                         defaultDatabasePackage.prepareLoadChildren(metatag);
                         if (previousObject != null) {
                             //previousObject.finishLoadColumns();
-                            previousObject.setMarkedReloadChildren(false);
+                            previousObject.setMarkedReloadChildren(false, metatag);
                         }
                     }
 
@@ -388,7 +388,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             }
 
             if (previousObject != null) {
-                previousObject.setMarkedReloadChildren(false);
+                previousObject.setMarkedReloadChildren(false, metatag);
             }
 
         } catch (SQLException e) {

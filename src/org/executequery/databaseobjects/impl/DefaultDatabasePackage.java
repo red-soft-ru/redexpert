@@ -25,7 +25,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     private boolean validBodyFlag;
     private String securityClass;
     private String ownerName;
-    private boolean markedReloadChildren = true;
+    private boolean markedReloadProcedures = true;
+    private boolean markedReloadFunctions = true;
 
     private List<AbstractDatabaseObject> procedures;
     private List<DefaultDatabaseFunction> functions;
@@ -205,13 +206,26 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         return false;
     }
 
-    public boolean isMarkedReloadChildren() {
-        return markedReloadChildren;
+    public boolean isMarkedReloadProcedures() {
+        return markedReloadProcedures;
     }
 
-    public void setMarkedReloadChildren(boolean markedReloadChildren) {
-        this.markedReloadChildren = markedReloadChildren;
+    public void setMarkedReloadProcedures(boolean markedReloadProcedures) {
+        this.markedReloadProcedures = markedReloadProcedures;
     }
+
+    public boolean isMarkedReloadChildren(String metatag) {
+        if (metatag.contentEquals(NamedObject.META_TYPES[PROCEDURE]))
+            return markedReloadProcedures;
+        else return markedReloadFunctions;
+    }
+
+    public void setMarkedReloadChildren(boolean markedReloadChildren, String metatag) {
+        if (metatag.contentEquals(NamedObject.META_TYPES[PROCEDURE]))
+            this.markedReloadProcedures = markedReloadChildren;
+        else this.markedReloadFunctions = markedReloadChildren;
+    }
+
 
     public boolean allowsChildren() {
         return true;
@@ -223,7 +237,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     public void reset() {
         super.reset();
-        markedReloadChildren = true;
+        markedReloadProcedures = true;
+        markedReloadFunctions = true;
         childs = null;
         procedures = null;
         functions = null;

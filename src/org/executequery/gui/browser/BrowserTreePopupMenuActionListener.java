@@ -100,7 +100,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             String type;
             if (node.getType() == NamedObject.GLOBAL_TEMPORARY)
                 type = NamedObject.META_TYPES[NamedObject.TABLE];
-            else if (node.getType() == NamedObject.DATABASE_TRIGGER)
+            else if (node.getType() == NamedObject.DATABASE_TRIGGER || node.getType() == NamedObject.DDL_TRIGGER)
                 type = NamedObject.META_TYPES[NamedObject.TRIGGER];
             else
                 type = NamedObject.META_TYPES[node.getType()];

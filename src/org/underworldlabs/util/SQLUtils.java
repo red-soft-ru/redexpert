@@ -301,6 +301,8 @@ public final class SQLUtils {
             String name, String metaTag, String comment, String delimiter, boolean nameAlreadyFormatted) {
         if (metaTag != null && metaTag.contentEquals(NamedObject.META_TYPES[GLOBAL_TEMPORARY]))
             metaTag = NamedObject.META_TYPES[TABLE];
+        if (metaTag != null && (metaTag.contentEquals(NamedObject.META_TYPES[DATABASE_TRIGGER]) || metaTag.contentEquals(NamedObject.META_TYPES[DDL_TRIGGER])))
+            metaTag = NamedObject.META_TYPES[TRIGGER];
         StringBuilder sb = new StringBuilder();
 
         if (comment != null && !comment.isEmpty()) {

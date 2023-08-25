@@ -171,9 +171,14 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
 
     private void changeName() {
 
-        String sqlText = sqlTextPanel.getSQLText().trim().replaceAll(
-                "VIEW ((\".*\")|(\\w*\\b)|)",
-                "VIEW " + MiscUtils.getFormattedObject(nameField.getText()));
+        String sqlText = sqlTextPanel.getSQLText().trim()
+                .replaceAll(
+                        "VIEW\\s+((\".*\")|(\\w*\\$?\\w*\\b)|)",
+                        "VIEW " + MiscUtils.getFormattedObject(nameField.getText()).replace("$", "\\$"))
+                .replace(
+                        "VIEW " + MiscUtils.getFormattedObject(nameField.getText()).replace("$", "\\$"),
+                        "VIEW " + MiscUtils.getFormattedObject(nameField.getText()));
+
         sqlTextPanel.setSQLText(sqlText);
     }
 

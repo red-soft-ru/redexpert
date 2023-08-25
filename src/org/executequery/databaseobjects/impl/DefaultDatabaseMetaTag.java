@@ -1073,7 +1073,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "T.RDB$TRIGGER_NAME," +
                 "T.RDB$TRIGGER_INACTIVE\n" +
                 "FROM RDB$TRIGGERS T\n" +
-                "WHERE T.RDB$SYSTEM_FLAG <> 0" +
+                "WHERE T.RDB$SYSTEM_FLAG <> 0\n" +
                 "ORDER BY T.RDB$TRIGGER_NAME";
 
         return getResultSetFromQuery(query);
@@ -1086,7 +1086,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "T.RDB$TRIGGER_INACTIVE\n" +
                 "FROM RDB$TRIGGERS T\n" +
                 "WHERE T.RDB$SYSTEM_FLAG = 0\n" +
-                "AND BIN_AND(T.RDB$TRIGGER_TYPE," + DefaultDatabaseTrigger.RDB_TRIGGER_TYPE_MASK + ") = " + DefaultDatabaseTrigger.TRIGGER_TYPE_DDL + " \n" +
+                "AND BIN_AND(T.RDB$TRIGGER_TYPE," + DefaultDatabaseTrigger.RDB_TRIGGER_TYPE_MASK + ") = " + DefaultDatabaseTrigger.TRIGGER_TYPE_DDL + "\n" +
                 "ORDER BY T.RDB$TRIGGER_NAME";
 
         return getResultSetFromQuery(query);
@@ -1099,7 +1099,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "T.RDB$TRIGGER_INACTIVE\n" +
                 "FROM RDB$TRIGGERS T\n" +
                 "WHERE T.RDB$SYSTEM_FLAG = 0\n" +
-                "AND BIN_AND(T.RDB$TRIGGER_TYPE," + DefaultDatabaseTrigger.RDB_TRIGGER_TYPE_MASK + ") = " + DefaultDatabaseTrigger.TRIGGER_TYPE_DB + " \n" +
+                "AND BIN_AND(T.RDB$TRIGGER_TYPE," + DefaultDatabaseTrigger.RDB_TRIGGER_TYPE_MASK + ") = " + DefaultDatabaseTrigger.TRIGGER_TYPE_DB + "\n" +
                 "ORDER BY T.RDB$TRIGGER_NAME";
 
         return getResultSetFromQuery(query);
@@ -1107,7 +1107,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getPackagesResultSet() throws SQLException {
 
-        String query = "SELECT P.RDB$PACKAGE_NAME \n" +
+        String query = "SELECT P.RDB$PACKAGE_NAME\n" +
                 "FROM RDB$PACKAGES P\n" +
                 "WHERE RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL ORDER BY 1";
 
@@ -1128,8 +1128,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     "FROM RDB$RELATIONS\n" +
                     "WHERE RDB$VIEW_BLR IS NULL\n" +
                     "AND (RDB$SYSTEM_FLAG IS NULL OR RDB$SYSTEM_FLAG = 0)\n" +
-                    ((getHost().getDatabaseMetaData().getDatabaseMajorVersion() < 2 || repeat) ?
-                            "AND (RDB$RELATION_TYPE = 0 OR RDB$RELATION_TYPE = 2 OR RDB$RELATION_TYPE IS NULL)\n" : "") +
+                    ((getHost().getDatabaseMetaData().getDatabaseMajorVersion() < 2 || repeat) ? "" :
+                            "AND (RDB$RELATION_TYPE = 0 OR RDB$RELATION_TYPE = 2 OR RDB$RELATION_TYPE IS NULL)\n") +
                     "ORDER BY RDB$RELATION_NAME";
 
             if (typeTree == TreePanel.DEPENDED_ON)
@@ -1437,7 +1437,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "CAST(0 AS INTEGER)\n" +
                 "FROM RDB$REF_CONSTRAINTS B," +
                 "RDB$RELATION_CONSTRAINTS A," +
-                "RDB$RELATION_CONSTRAINTS C,\n" +
+                "RDB$RELATION_CONSTRAINTS C," +
                 "RDB$INDEX_SEGMENTS D," +
                 "RDB$INDEX_SEGMENTS E," +
                 "RDB$INDICES I\n" +
@@ -1552,8 +1552,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 query += "UNION ALL\n" +
                         "SELECT DISTINCT F1.RDB$RELATION_NAME\n" +
                         "FROM RDB$RELATION_FIELDS F1, RDB$RELATIONS R1\n" +
-                        "WHERE (NOT (R1.RDB$VIEW_BLR IS NULL)) " +
-                        "AND (F1.RDB$RELATION_NAME = R1.RDB$RELATION_NAME) " +
+                        "WHERE (NOT (R1.RDB$VIEW_BLR IS NULL))\n" +
+                        "AND (F1.RDB$RELATION_NAME = R1.RDB$RELATION_NAME)\n" +
                         "AND (F1.RDB$FIELD_SOURCE = '" + dependedObject.getName() + "')\n" +
                         "UNION ALL\n" +
                         "SELECT RF.RDB$RELATION_NAME\n" +

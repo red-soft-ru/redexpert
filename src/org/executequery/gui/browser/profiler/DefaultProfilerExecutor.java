@@ -163,11 +163,8 @@ public class DefaultProfilerExecutor {
 
                 if (oldId != id) {
 
-                    if (previousIndex != -1) {
-                        if (psqlStats.size() > 1)
-                            profilerDataList.get(previousIndex).setPsqlStats(psqlStats);
+                    if (previousIndex != -1)
                         psqlStats = new ArrayList<>();
-                    }
 
                     ProfilerData data = sqlText != null ?
                             new ProfilerData(id, callerId, sqlText, statementType, null, totalTime) :
@@ -177,8 +174,11 @@ public class DefaultProfilerExecutor {
                     previousIndex = profilerDataList.size() - 1;
                     oldId = id;
                 }
-                if (lineNumber != 0 || lineCounter != 0 || lineTime != 0)
+
+                if (lineNumber != 0 || lineCounter != 0 || lineTime != 0) {
                     psqlStats.add(new ProfilerData.PsqlLine(lineNumber, lineTime, lineCounter));
+                    profilerDataList.get(previousIndex).setPsqlStats(psqlStats);
+                }
 
             }
             executor.getConnection().commit();

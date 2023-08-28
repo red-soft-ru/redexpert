@@ -82,8 +82,7 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
         searchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                if (searchField.getText() != null)
-                    highlightMatching(searchField.getText().toLowerCase());
+                filter(searchField.getText());
             }
         });
 
@@ -164,28 +163,21 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
         list.repaint();
     }
 
-    private void highlightMatching(String searchText) {
+    private void filter(String searchText) {
 
         try {
 
-            if (searchText.equals("")) {
-                for (int i = 0; i < fullList.getModel().getSize(); i++)
-                    ((ResultSetColumn) fullList.getModel().getElementAt(i)).highlight = false;
+            if (searchText == null || searchText.isEmpty()) {
+                fullList.setModel(new ResultSetColumnList(columns).getModel());
                 return;
             }
 
-            for (int i = 0; i < fullList.getModel().getSize(); i++) {
-                String itemText = fullList.getModel().getElementAt(i).toString();
-                ((ResultSetColumn) fullList.getModel().getElementAt(i)).highlight = itemText.toLowerCase().contains(searchText);
-            }
+            List<VisibleResultSetColumnsDialog.ResultSetColumn> filteredList = new ArrayList<>();
+            for (ResultSetColumn column : columns)
+                if (column.toString().toLowerCase().contains(searchText.toLowerCase()))
+                    filteredList.add(column);
 
-            for (int i = 0; i < fullList.getModel().getSize(); i++) {
-                String itemText = fullList.getModel().getElementAt(i).toString();
-                if (itemText.toLowerCase().contains(searchText)) {
-                    fullList.scrollRectToVisible(fullList.getCellBounds(i, i));
-                    break;
-                }
-            }
+            fullList.setModel(new ResultSetColumnList(filteredList).getModel());
 
         } finally {
             repaint();

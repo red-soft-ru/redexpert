@@ -194,6 +194,7 @@ public final class DerivedQuery {
     }
 
     private void setTypeObject(String query, String firstOperator) {
+
         query = query.substring(firstOperator.length()).trim();
         int ind = indexSpace(query);
         metaName = query.substring(0, ind);
@@ -204,12 +205,13 @@ public final class DerivedQuery {
                 typeObject = i;
                 break;
             }
+
         ind = indexSpace(query);
         objectName = query.substring(0, ind);
-        objectName = objectName.trim();
-        if (objectName.startsWith("\"") && objectName.length() > 2) {
+        if (objectName.startsWith("\"") && objectName.length() > 2)
             objectName = objectName.substring(1, objectName.length() - 1);
-        }
+        ind = queryWithoutComments.toUpperCase().indexOf(objectName);
+        objectName = ind > -1 ? queryWithoutComments.substring(ind, objectName.length() + ind) : objectName;
     }
 
     public String getObjectName() {

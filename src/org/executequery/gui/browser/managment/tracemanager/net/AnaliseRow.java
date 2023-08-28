@@ -14,18 +14,20 @@ public class AnaliseRow {
     public final static int READ = TIME + 1;
     public final static int FETCH = READ + 1;
     public final static int WRITE = FETCH + 1;
-    public final static int RSORT = WRITE + 1;
+    public final static int MARK = WRITE + 1;
+    public final static int RSORT = MARK + 1;
     public final static int DSORT = RSORT + 1;
-    public final static String[] TYPES = {"TIME", "READ", "FETCH", "WRITE", "RSORT", "DSORT"};
+    public final static String[] TYPES = {"TIME", "READ", "FETCH", "WRITE", "MARK", "RSORT", "DSORT"};
     public final static Color[] COLORS = new Color[]{new Color(255, 173, 173),
             new Color(255, 214, 165),
             new Color(253, 255, 182),
             new Color(202, 255, 191),
             new Color(155, 246, 255),
-            new Color(189, 178, 255)
+            new Color(189, 178, 255),
+            new Color(255, 198, 255)
     };
 
-    public final static String[] TOOLTIPS = Bundles.get(AnaliseRow.class, new String[]{"TIME", "READ", "FETCH", "WRITE", "RSORT", "DSORT"});
+    public final static String[] TOOLTIPS = Bundles.get(AnaliseRow.class, new String[]{"TIME", "READ", "FETCH", "WRITE", "MARK", "RSORT", "DSORT"});
 
 
     public final static int TOTAL = 0;
@@ -184,6 +186,8 @@ public class AnaliseRow {
                 return msg.getCountFetches();
             case WRITE:
                 return msg.getCountWrites();
+            case MARK:
+                return msg.getCountMarks();
             case RSORT:
                 return msg.getRamCacheMemory();
             case DSORT:

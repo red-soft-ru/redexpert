@@ -70,7 +70,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         defaultValuePanel = new SimpleTextArea();
         checkPanel = new SimpleSqlTextPanel();
         computedPanel = new SimpleSqlTextPanel();
-        descriptionPanel = new SimpleSqlTextPanel();
+        descriptionPanel = new SimpleSqlTextPanel(bundleString("Description"));
         sqlPanel = new SimpleSqlTextPanel();
         selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(),
                 connection.getIntDataTypesArray(), columnData, false);

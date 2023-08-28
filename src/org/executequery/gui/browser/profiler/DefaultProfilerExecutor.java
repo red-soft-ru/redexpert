@@ -175,10 +175,10 @@ public class DefaultProfilerExecutor {
                     oldId = id;
                 }
 
-                if (lineNumber != 0 || lineCounter != 0 || lineTime != 0) {
+                if (lineNumber != 0 || lineCounter != 0 || lineTime != 0)
                     psqlStats.add(new ProfilerData.PsqlLine(lineNumber, lineTime, lineCounter));
+                if (!psqlStats.isEmpty())
                     profilerDataList.get(previousIndex).setPsqlStats(psqlStats);
-                }
 
             }
             executor.getConnection().commit();

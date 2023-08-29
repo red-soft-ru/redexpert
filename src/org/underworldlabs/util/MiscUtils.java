@@ -686,7 +686,9 @@ public final class MiscUtils {
         if ((checkKeyword(value.getValue()) || value.getValue().startsWith("'")
                 || value.getValue().trim().contentEquals("null")
                 || value.getValue().trim().contentEquals("=null")
-                || value.getValue().trim().contentEquals("= null"))
+                || value.getValue().trim().contentEquals("= null")
+                || value.getValue().trim().startsWith("null ")
+        )
                 && !value.isUseQuotes())
             return value.getValue();
         if (value.isUseQuotes())

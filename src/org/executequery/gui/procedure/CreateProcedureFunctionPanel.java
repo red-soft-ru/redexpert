@@ -114,6 +114,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     protected JPanel mainPanel;
 
     protected JLabel sqlSecurityLabel;
+    protected JCheckBox parseVariablesBox;
 
 
 
@@ -295,6 +296,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     protected void init() {
         initExternal();
+        parseVariablesBox = new JCheckBox(bundleString("parseVariables"));
+        parseVariablesBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                fillSqlBody();
+            }
+        });
         parametersTabs = new JTabbedPane();
         // create the column definition panel
         // and add this to the tabbed pane
@@ -342,8 +350,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         //centralGbh.previousRow().previousRow().addLabelFieldPair(topPanel, sqlSecurityLabel, authidCombo, null);
 
-        containerPanel.add(parametersTabs,
+        containerPanel.add(parseVariablesBox,
                 new GridBagConstraints(0, 0,
+                        1, 1, 0, 0,
+                        GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                        0, 0));
+        containerPanel.add(parametersTabs,
+                new GridBagConstraints(0, 1,
                         1, 1, 1, 1,
                         GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
                         0, 0));
@@ -395,6 +408,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         //metaData
         topGbh.nextRowFirstCol();
         checkExternal();
+        fillSqlBody();
     }
 
     protected void fillCustomKeyWords()
@@ -425,12 +439,20 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     protected void checkExternal() {
         super.checkExternal();
         boolean selected = useExternalBox.isSelected();
-        if(selected)
+        if (selected) {
             parametersTabs.remove(sqlBodyText);
-       else {
+            parseVariablesBox.setVisible(false);
+            int index = parametersTabs.indexOfComponent(variablesPanel);
+            if (index > 0) {
+                parametersTabs.remove(variablesPanel);
+                parametersTabs.remove(cursorsPanel);
+            }
+        } else {
             parametersTabs.insertTab(bundleString("Body", bundleString(getTypeObject())), null, sqlBodyText, null, 0);
             parametersTabs.setSelectedComponent(sqlBodyText);
-       }
+            parseVariablesBox.setVisible(true);
+            fillSqlBody();
+        }
     }
 
     protected abstract String getEmptySqlBody();
@@ -649,7 +671,25 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         nameField.setText(this.procedure);
         nameField.setEditable(false);
         loadParameters();
-        loadVariables();
+        fillSqlBody();
         simpleCommentPanel.resetComment();
+    }
+
+    protected void fillSqlBody() {
+        if (parseVariablesBox.isSelected()) {
+            if (parametersTabs.indexOfComponent(variablesPanel) < 0) {
+                parametersTabs.add(bundleString("Variables"), variablesPanel);
+                parametersTabs.add(bundleString("Cursors"), cursorsPanel);
+            }
+            loadVariables();
+        } else {
+            int index = parametersTabs.indexOfComponent(variablesPanel);
+            if (index > 0) {
+                parametersTabs.remove(variablesPanel);
+                parametersTabs.remove(cursorsPanel);
+            }
+            if (procedure != null)
+                sqlBodyText.setSQLText(getFullSourceBody());
+        }
     }
 }

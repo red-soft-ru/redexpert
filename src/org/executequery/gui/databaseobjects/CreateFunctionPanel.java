@@ -115,13 +115,19 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     }
 
     protected String generateQuery() {
-        Vector<ColumnData> vars = new Vector<>();
-        vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
-        vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
-        return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
-                vars, returnType, sqlBodyText.getSQLText(),
-                externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
-                simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected());
+        if (parseVariablesBox.isSelected()) {
+            Vector<ColumnData> vars = new Vector<>();
+            vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
+            vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
+            return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
+                    vars, returnType, sqlBodyText.getSQLText(),
+                    externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
+                    simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected());
+        } else {
+            return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
+                    externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
+                    simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected());
+        }
     }
 
     @Override

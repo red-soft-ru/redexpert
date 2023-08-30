@@ -37,10 +37,8 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.Vector;
 
 public class TraceManagerPanel extends JPanel implements TabView {
 
@@ -95,12 +93,25 @@ public class TraceManagerPanel extends JPanel implements TabView {
         init();
     }
 
-    private void initTraceManager() {
+    private void initTraceManager(DatabaseConnection dc) {
         try {
-            Driver driver = DefaultDriverLoader.getDefaultDriver();
-            traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(),
-                    driver,
-                    "FBTraceManagerImpl");
+
+            Driver driver = null;
+            Map<String, Driver> drivers = DefaultDriverLoader.getLoadedDrivers();
+            if (dc != null) {
+                for (String driverName : drivers.keySet()) {
+                    if (driverName.startsWith(String.valueOf(dc.getDriverId()))) {
+                        driver = drivers.get(driverName);
+                        break;
+                    }
+                }
+            }
+            if (driver == null)
+                driver = DefaultDriverLoader.getDefaultDriver();
+
+            traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(
+                    driver.getMajorVersion(), driver, "FBTraceManagerImpl");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -195,7 +206,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private void init() {
         message = Message.LOG_MESSAGE;
         sessions = new ArrayList<>();
-        initTraceManager();
+        initTraceManager(null);
         sessionField = new JTextField();
         sessionField.setText("Session");
         sessionManagerPanel = new SessionManagerPanel(traceManager, sessionField);
@@ -269,6 +280,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     } else {
                         confPanel.getAppropriationBox().setSelectedIndex(0);
                     }
+                    initTraceManager(dc);
                 }
             }
         });

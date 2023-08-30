@@ -44,6 +44,8 @@ public class ProfilerPanel extends JPanel
 
     // --- GUI objects ---
 
+    private static JCheckBox roundValuesCheckBox = new JCheckBox(bundleString("roundValuesCheckBox"));
+
     private JComboBox<?> connectionsComboBox;
     private JComboBox<?> attachmentsComboBox;
 
@@ -117,12 +119,18 @@ public class ProfilerPanel extends JPanel
         updateViewButtonGroup.add(compactViewRadioButton);
         updateViewButtonGroup.add(extendedViewRadioButton);
 
+        // --- roundValues CheckBox ---
+
+        roundValuesCheckBox.addActionListener(e -> updateTreeDisplay());
+        roundValuesCheckBox.setSelected(true);
+
         // --- profiler tree ---
 
         defaultRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
         extendedRootTreeNode = new ProfilerTreeTableNode(new ProfilerData());
         profilerTree = new ProfilerTreeTable(new TreeTableModel(defaultRootTreeNode), SORTABLE, false, new int[4]);
-        profilerTree.getColumnModel().getColumn(1).setCellRenderer(new PercentRenderer());
+        profilerTree.getColumnModel().getColumn(1).setCellRenderer(new TimeRenderer());
+        profilerTree.getColumnModel().getColumn(2).setCellRenderer(new TimeRenderer());
         ((ProfilerRowSorter) profilerTree.getRowSorter()).setComparator(1, (Comparator<Object>) this::compareNodes);
         profilerTree.setDefaultColumnWidth(200);
 
@@ -177,6 +185,7 @@ public class ProfilerPanel extends JPanel
         radioButtonPanel.add(compactViewRadioButton, gridBagHelper.get());
         radioButtonPanel.add(defaultViewRadioButton, gridBagHelper.nextCol().get());
         radioButtonPanel.add(extendedViewRadioButton, gridBagHelper.nextCol().get());
+        radioButtonPanel.add(roundValuesCheckBox, gridBagHelper.nextCol().get());
 
         // --- tools panel ---
 
@@ -562,7 +571,8 @@ public class ProfilerPanel extends JPanel
                 profilerTree.setTreeTableModel(new TreeTableModel(extendedRootTreeNode), SORTABLE);
 
             profilerTree.setDefaultColumnWidth(200);
-            profilerTree.getColumnModel().getColumn(1).setCellRenderer(new PercentRenderer());
+            profilerTree.getColumnModel().getColumn(1).setCellRenderer(new TimeRenderer());
+            profilerTree.getColumnModel().getColumn(2).setCellRenderer(new TimeRenderer());
 
             ProfilerRowSorter rowSorter = (ProfilerRowSorter) profilerTree.getRowSorter();
             rowSorter.setComparator(1, (Comparator<Object>) this::compareNodes);
@@ -750,21 +760,63 @@ public class ProfilerPanel extends JPanel
 
     } // TreeTableModel class
 
-    protected static class PercentRenderer extends DefaultTableCellRenderer {
+    protected static class TimeRenderer extends DefaultTableCellRenderer {
 
         @Override
         public Component getTableCellRendererComponent(
                 JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            String formattedString;
             if (value instanceof Object[]) {
+
                 Object[] objects = (Object[]) value;
-                String formattedString = objects[0].toString() +
-                        " [" + String.format("%.2f", (double) objects[1]).replace(",", ".") + "%]";
-                setValue(formattedString);
-                setHorizontalAlignment(SwingConstants.RIGHT);
-            }
+
+                String timeValue = roundValuesCheckBox.isSelected() ? roundTime((long) objects[0]) : objects[0].toString() + " ns";
+                String percentValue = " [" + String.format("%.2f", (double) objects[1]).replace(",", ".") + "%]";
+                formattedString = timeValue + percentValue;
+
+            } else
+                formattedString = roundValuesCheckBox.isSelected() ? roundTime((long) value) : value.toString() + " ns";
+
+            setValue(formattedString);
+            setHorizontalAlignment(SwingConstants.RIGHT);
+
             return this;
+        }
+
+        private String roundTime(long value) {
+
+            String suffix = "ns";
+            while (((suffix.equals("ns") && value > 1000000) || (!suffix.equals("ns") && value > 10000)) && !suffix.contentEquals("h")) {
+                switch (suffix) {
+
+                    case "ns":
+                        suffix = "ms";
+                        value /= 1000000;
+                        break;
+
+                    case "ms":
+                        suffix = "s";
+                        value /= 1000;
+                        break;
+
+                    case "s":
+                        suffix = "m";
+                        value /= 60;
+                        break;
+
+                    case "m":
+                        suffix = "h";
+                        value /= 60;
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+            return value + " " + suffix;
         }
 
     } // PercentRenderer class

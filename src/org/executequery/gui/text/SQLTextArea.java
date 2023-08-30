@@ -13,6 +13,7 @@ import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.gui.editor.QueryEditorSettings;
 import org.executequery.gui.editor.autocomplete.DefaultAutoCompletePopupProvider;
 import org.executequery.gui.text.syntax.SQLSyntaxDocument;
+import org.executequery.localization.Bundles;
 import org.executequery.print.TextPrinter;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
@@ -374,7 +375,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
 
     protected void setCaretPosition(int row,int col)
     {
-        caretPositionLabel.setText("Caret position: "+row+":"+col);
+        caretPositionLabel.setText(String.format(Bundles.get("common.care-position.label"), row, col));
     }
 
     public JLabel getCaretPositionLabel() {

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Alexey Kozlov
@@ -65,7 +66,10 @@ public class TableValidationPanel extends JPanel implements TabView {
         formattedOutputText = "";
 
         databaseConnections = ((DatabaseConnectionRepository)
-                Objects.requireNonNull(RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
+                Objects.requireNonNull(RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)))
+                .findAll().stream()
+                .sorted((o1, o2) -> Boolean.compare(o1.isConnected(), o2.isConnected()) * -1)
+                .collect(Collectors.toList());
 
         connectionsComboBox = new JComboBox<>();
         databaseConnections.forEach(item -> connectionsComboBox.addItem(item.getName()));

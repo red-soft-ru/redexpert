@@ -99,8 +99,7 @@ public class GenerateErdPanel extends JPanel
 
         } else {
 
-            GUIUtilities.displayErrorMessage(
-                    "You must select at least one table.");
+            GUIUtilities.displayErrorMessage(bundleString("SelectMoreTablesError"));
         }
 
     }

@@ -252,7 +252,7 @@ public class ErdToolBarPalette extends PanelToolBar
             int v_size = tables.size();
 
             if (v_size == 0) {
-                GUIUtilities.displayErrorMessage("No tables in ERD");
+                GUIUtilities.displayErrorMessage(bundleString("NoTablesError"));
                 return;
             }
 
@@ -269,7 +269,7 @@ public class ErdToolBarPalette extends PanelToolBar
             if (sql != null && sql.length() > 0)
                 new ErdExecuteSQL(parent, sql);
             else
-                GUIUtilities.displayErrorMessage("No schema changes have been recorded");
+                GUIUtilities.displayErrorMessage(bundleString("NoSchemaChangesRecordedError"));
 
         } else if (btnObject == dropTableButton) {
             parent.removeSelectedTables();
@@ -284,8 +284,7 @@ public class ErdToolBarPalette extends PanelToolBar
         } else if (btnObject == relationButton) {
 
             if (parent.getAllComponentsVector().size() <= 1) {
-                GUIUtilities.displayErrorMessage(
-                        "You need at least 2 tables to create a relationship");
+                GUIUtilities.displayErrorMessage(Bundles.get("ErdPopupMenu.needMoreTablesError"));
                 return;
             }
 
@@ -297,8 +296,7 @@ public class ErdToolBarPalette extends PanelToolBar
             if (tables.length < 2) {
                 return;
             } else if (tables.length > 2) {
-                GUIUtilities.displayErrorMessage(
-                        "Please select only 2 related tables");
+                GUIUtilities.displayErrorMessage(bundleString("SelectOnlyTwoTablesError"));
                 return;
             }
             new ErdDeleteRelationshipDialog(parent, tables);
@@ -362,18 +360,3 @@ public class ErdToolBarPalette extends PanelToolBar
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

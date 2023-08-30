@@ -24,6 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.gui.text.DefaultTextEditorContainer;
 import org.executequery.gui.text.SimpleTextArea;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.LogRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.GUIUtils;
@@ -47,7 +48,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         TabView,
         ActionListener {
 
-    public static final String TITLE = "System Log Viewer";
+    public static final String TITLE = bundleString("title");
 
     public static final String FRAME_ICON = "SystemOutput.png";
 
@@ -90,10 +91,10 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         textComponent = textArea;
 
         reloadButton = new RolloverButton("/org/executequery/icons/Refresh16.png",
-                "Reload this log file");
+                bundleString("reload"));
 
         trashButton = new RolloverButton("/org/executequery/icons/Delete16.png",
-                "Reset this log file");
+                bundleString("reset"));
 
         reloadButton.addActionListener(this);
         trashButton.addActionListener(this);
@@ -192,8 +193,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
 
             GUIUtilities.showNormalCursor();
 
-            GUIUtilities.displayErrorMessage(
-                    "Out of Memory.\nThe file is too large to open for viewing.");
+            GUIUtilities.displayErrorMessage(bundleString("outOfMemory"));
 
         } finally {
 
@@ -234,7 +234,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
 
     private boolean resetConfirmed() {
 
-        String message = "Are you sure you want to reset the selected log file?";
+        String message = bundleString("resetConfirmed");
 
         return GUIUtilities.displayConfirmDialog(message) == JOptionPane.YES_OPTION;
     }
@@ -274,6 +274,10 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
 
     public String toString() {
         return TITLE;
+    }
+
+    private static String bundleString(String key) {
+        return Bundles.get(SystemLogsViewer.class, key);
     }
 
 }

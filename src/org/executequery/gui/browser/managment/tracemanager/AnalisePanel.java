@@ -88,8 +88,27 @@ public class AnalisePanel extends JPanel {
                     headers.add(PARAMS[g] + "_" + TYPES[i]);
             }
         }
+
         model.fireTableStructureChanged();
+        setMinWidthCols();
     }
+
+    private void setMinWidthCols() {
+        if (table != null) {
+
+            int colWidth = 120;
+            if (getWidth() / table.getColumnCount() < colWidth) {
+                table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
+                    table.getColumnModel().getColumn(i).setPreferredWidth(colWidth);
+                    table.getColumnModel().getColumn(i).setWidth(colWidth);
+                    table.getColumnModel().getColumn(i).setMinWidth(colWidth);
+                }
+            } else table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+
+        }
+    }
+
     AnaliseRow sumRow;
 
     void runRebuildRowsInThread() {
@@ -289,6 +308,7 @@ public class AnalisePanel extends JPanel {
             }
         };
         table.setDefaultRenderer(AnaliseRow.AnaliseValue.class, new AnaliseRenderer());
+
 
         sqlTextArea = new SimpleSqlTextPanel();
         typesPanel = new ListSelectionPanel();

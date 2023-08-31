@@ -281,6 +281,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         confPanel.getAppropriationBox().setSelectedIndex(0);
                     }
                     initTraceManager(dc);
+                    sessionManagerPanel.setFbTraceManager(traceManager);
                 }
             }
         });

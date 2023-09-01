@@ -13,6 +13,7 @@ import org.underworldlabs.util.MiscUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -566,6 +567,19 @@ public class UpdateLoader extends JFrame {
             if (showMessage)
                 GUIUtilities.displayWarningMessage(String.format(Bundles.get("UpdateLoader.PermissionsDenied"), pathToZip));
             return false;
+        }
+
+        try {
+
+            File parentDir = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            if (!parentDir.canWrite()) {
+                if (showMessage)
+                    GUIUtilities.displayWarningMessage(String.format(Bundles.get("UpdateLoader.PermissionsDenied"), parentDir.getAbsolutePath()));
+                return false;
+            }
+
+        } catch (URISyntaxException e) {
+            e.printStackTrace(System.out);
         }
 
         return true;

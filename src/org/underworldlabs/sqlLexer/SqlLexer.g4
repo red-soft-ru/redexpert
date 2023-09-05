@@ -1265,10 +1265,13 @@ BIND_PARAMETER
 
 
  IDENTIFIER
-  : '"' (~'"' | '""')* '"'
-  | '`' (~'`' | '``')* '`'
+  : '`' (~'`' | '``')* '`'
   | '[' ~']'* ']'
   | [a-zA-Z_] [a-zA-Z_$0-9]* // TODO check: needs more chars in set
+  ;
+
+ QUOTE_IDENTIFIER
+  : '"' (~'"' | '""')* ('"'|EOF)
   ;
 
 STRING_LITERAL

@@ -18,7 +18,8 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
 
     public SqlLexerTokenMaker() {
         super(new MultiLineTokenInfo(0, Token.COMMENT_MULTILINE, "/*", "*/"),
-                new MultiLineTokenInfo(0, Token.LITERAL_STRING_DOUBLE_QUOTE, "'", "'"));
+                new MultiLineTokenInfo(0, Token.LITERAL_STRING_DOUBLE_QUOTE, "'", "'"),
+                new MultiLineTokenInfo(0, Token.IDENTIFIER, "\"", "\""));
     }
 
     TreeSet<String> dbobjects;

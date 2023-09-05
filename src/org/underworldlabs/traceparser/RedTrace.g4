@@ -282,6 +282,7 @@ query_and_params
 
 query
 :~(CARETS
+|'param0 = '
 |'records fetched'
 |'sorting memory usage: total: ')*
 ;
@@ -573,6 +574,7 @@ CARETS
 
 param
 :PARAM id ' = '
+|'param0 = '
 ;
 
 id_transaction

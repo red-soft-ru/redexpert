@@ -22,11 +22,17 @@ package org.executequery.actions.databasecommands;
 
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.GenerateErdPanel;
+import org.executequery.gui.browser.GrantManagerPanel;
+import org.executequery.localization.Bundles;
+import org.executequery.repository.DatabaseConnectionRepository;
+import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.actions.BaseCommand;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 /**
  * @author Takis Diakoumis
@@ -36,27 +42,36 @@ public class CreateErdFromDatabaseCommand extends OpenFrameCommand
 
     public void execute(ActionEvent e) {
 
-        if (!isConnected()) {
-            return;
-        }
-
-        if (isActionableDialogOpen()) {
-            GUIUtilities.acionableDialogToFront();
-            return;
-        }
-
-        if (!isDialogOpen(GenerateErdPanel.TITLE)) {
-            try {
-                GUIUtilities.showWaitCursor();
-                BaseDialog dialog = createDialog(GenerateErdPanel.TITLE, false);
-                GenerateErdPanel panel = new GenerateErdPanel(dialog);
-                dialog.addDisplayComponentWithEmptyBorder(panel);
-                dialog.setResizable(false);
-                dialog.display();
-            } finally {
-                GUIUtilities.showNormalCursor();
+        boolean execute_w = false;
+        List<DatabaseConnection> listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
+        for (DatabaseConnection dc : listConnections) {
+            if (dc.isConnected()) {
+                execute_w = true;
+                break;
             }
         }
+        if (execute_w) {
+
+
+            if (isActionableDialogOpen()) {
+                GUIUtilities.acionableDialogToFront();
+                return;
+            }
+
+            if (!isDialogOpen(GenerateErdPanel.TITLE)) {
+                try {
+                    GUIUtilities.showWaitCursor();
+                    BaseDialog dialog = createDialog(GenerateErdPanel.TITLE, false);
+                    GenerateErdPanel panel = new GenerateErdPanel(dialog);
+                    dialog.addDisplayComponentWithEmptyBorder(panel);
+                    dialog.setResizable(false);
+                    dialog.display();
+                } finally {
+                    GUIUtilities.showNormalCursor();
+                }
+            }
+        } else
+            GUIUtilities.displayErrorMessage(Bundles.get(GrantManagerPanel.class, "message.notConnected"));
 
 
     }

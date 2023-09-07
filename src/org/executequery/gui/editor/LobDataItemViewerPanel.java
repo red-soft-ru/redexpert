@@ -37,6 +37,7 @@ import org.executequery.log.Log;
 import org.underworldlabs.swing.hexeditor.AKDockLayout;
 import org.underworldlabs.swing.hexeditor.HexEditor;
 import org.underworldlabs.swing.hexeditor.bdoc.AnnotatedBinaryDocument;
+import org.underworldlabs.swing.pdf.PDFViewer;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -140,6 +141,15 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
             setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
 
+        } else if (isPdf()) {
+            setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
+            try {
+                imagePanel = new PDFViewer(recordDataItem.getData());
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
             imageLabel = new JLabel(bundleString("UnsupportedFormat"), JLabel.CENTER);
             imageScroll.setViewportView(imageLabel);
@@ -219,20 +229,21 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         String dataAsText = null;
         byte[] data = binaryStringTextArea.getDocument().getData();
         boolean isValidText = true;
+        if (getTypeObject().startsWith("BLOB")) {
 
-        if (data != null) {
-            if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
-                dataAsText = new String(data);
-            else try {
-                dataAsText = new String(data, charset);
-            } catch (UnsupportedEncodingException e) {
-                Log.error("Error method loadTextData in class LobDataItemViewerPanel:", e);
-                dataAsText = new String(data);
-            }
-            char[] charArray = dataAsText.toCharArray();
+            if (data != null) {
+                if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
+                    dataAsText = new String(data);
+                else try {
+                    dataAsText = new String(data, charset);
+                } catch (UnsupportedEncodingException e) {
+                    Log.error("Error method loadTextData in class LobDataItemViewerPanel:", e);
+                    dataAsText = new String(data);
+                }
+                char[] charArray = dataAsText.toCharArray();
 
-            int defaultEndPoint = 256;
-            int endPoint = Math.min(charArray.length, defaultEndPoint);
+                int defaultEndPoint = 256;
+                int endPoint = Math.min(charArray.length, defaultEndPoint);
             /*if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
                 for (int i = 0; i < endPoint; i++) {
 
@@ -243,6 +254,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
                     }
 
                 }*/
+            }
 
         } else {
 
@@ -280,17 +292,41 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
     private static final String SUPPORTED_IMAGES = "image/jpeg,image/gif,image/png";
 
+    String getTypeObject() {
+        try {
+            String type = ((BlobRecordDataItem) recordDataItem).getLobRecordItemName(binaryStringTextArea.getDocument().getData());
+            return type;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     private boolean isImage() {
 
         if (isBlob()) {
             try {
-                String type = ((BlobRecordDataItem) recordDataItem).getLobRecordItemName(binaryStringTextArea.getDocument().getData());
+                String type = getTypeObject();
                 return SUPPORTED_IMAGES.contains(type);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         return SUPPORTED_IMAGES.contains(recordDataItem.getLobRecordItemName());
+    }
+
+    private boolean isPdf() {
+
+        if (isBlob()) {
+            try {
+                String type = getTypeObject();
+                if (type.contentEquals("application/pdf"))
+                    return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     private boolean isBlob() {
@@ -389,6 +425,17 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
                 if (isImage()) {
                     imageLabel = new JLabel(loadImageData());
                     imageScroll.setViewportView(imageLabel);
+                } else if (isPdf()) {
+                    setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
+                    if (tabbedPane.getTabCount() > 2)
+                        tabbedPane.remove(1);
+                    try {
+                        tabbedPane.insertTab("Pdf", null, new PDFViewer(binaryStringTextArea.getDocument().getData()), null, 1);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else if (!getTypeObject().startsWith("BLOB")) {
+                    setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
                 }
             } catch (IOException e) {
                 Log.error("Error method open in class LobDataItemViewerPanel:", e);
@@ -411,8 +458,9 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
         int selectedIndex = tabbedPane.getSelectedIndex();
 
-        if (selectedIndex == 0) { // binary tab always last
-            loadTextData();
+        if (selectedIndex == 0) {
+            if (!textArea.getText().equals(CANNOT_DISPLAY_BINARY_DATA_AS_TEXT))// binary tab always last
+                loadTextData();
             textArea.requestFocus();
         }
         if (selectedIndex == 2) {

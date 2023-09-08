@@ -66,6 +66,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
     private JScrollPane scrollPane;
     private JScrollPane imageScroll;
     private JLabel imageLabel;
+    private JCheckBox lineWrapperCheckBox;
 
     String charset;
     DatabaseTableObject table;
@@ -103,9 +104,14 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         textArea.setLineWrap(false);
         textArea.setMargin(new Insets(2, 2, 2, 2));
 
+        lineWrapperCheckBox = new JCheckBox(Bundles.get("QueryEditor.LineWrapper"));
+        lineWrapperCheckBox.setToolTipText(bundleString("QueryEditor.LineWrapper.tool-tip"));
+        lineWrapperCheckBox.addChangeListener(e -> textArea.setLineWrap(!textArea.getLineWrap()));
+
         JPanel textPanel = new JPanel(new BorderLayout());
         textPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         textPanel.add(new JScrollPane(textArea), BorderLayout.CENTER);
+        textPanel.add(lineWrapperCheckBox, BorderLayout.SOUTH);
 
         JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));

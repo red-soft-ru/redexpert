@@ -41,42 +41,33 @@ import org.underworldlabs.swing.pdf.PDFViewer;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.List;
 
 public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         implements ChangeListener {
 
     private static final String CANNOT_DISPLAY_BINARY_DATA_AS_TEXT = "\n  Cannot display binary data as text";
-
-    private JTextArea textArea;
-
-    /*private JTextArea binaryStringTextArea;
-
-    private JTextArea binaryCharTextArea;*/
-
-    private HexEditor binaryStringTextArea;
-
-    private JTabbedPane tabbedPane;
-
-    private JButton openButton;
+    private static final String SUPPORTED_IMAGES = "image/jpeg,image/gif,image/png";
 
     private final LobRecordDataItem recordDataItem;
-
     private final ActionContainer parent;
 
+    private JTextArea textArea;
+    private HexEditor binaryStringTextArea;
+    private JTabbedPane tabbedPane;
+    private JButton openButton;
+    private JScrollPane scrollPane;
+    private JScrollPane imageScroll;
+    private JLabel imageLabel;
+
     String charset;
-
-    JScrollPane scrollPane;
-    JScrollPane imageScroll;
-    JLabel imageLabel;
-
     DatabaseTableObject table;
     List<RecordDataItem> row;
     boolean readOnly;
@@ -89,18 +80,18 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         this.row = row;
         readOnly = table == null;
         charset = "";
+
         if (recordDataItem instanceof ClobRecordDataItem)
             charset = ((ClobRecordDataItem) recordDataItem).getCharset();
         if (charset == null)
             charset = "";
         if (!MiscUtils.isNull(charset))
             charset = MiscUtils.getJavaCharsetFromSqlCharset(charset);
-        try {
 
+        try {
             init();
 
         } catch (Exception e) {
-
             Log.error("Error init class LobDataItemViewerPanel:", e);
         }
 
@@ -108,23 +99,16 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
     private void init() {
 
-        Border emptyBorder = BorderFactory.createEmptyBorder(2, 2, 2, 2);
-
-        JPanel textPanel = new JPanel(new BorderLayout());
-        textPanel.setBorder(emptyBorder);
-
         textArea = createTextArea();
         textArea.setLineWrap(false);
         textArea.setMargin(new Insets(2, 2, 2, 2));
+
+        JPanel textPanel = new JPanel(new BorderLayout());
+        textPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         textPanel.add(new JScrollPane(textArea), BorderLayout.CENTER);
 
-        JPanel imagePanel = null;
-
-        imagePanel = new JPanel(new BorderLayout());
-        imagePanel.setBorder(emptyBorder);
-
-
-        JPanel binaryPanel = new JPanel(new AKDockLayout());
+        JPanel imagePanel = new JPanel(new BorderLayout());
+        imagePanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 
         binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(recordDataItemByteArray(), readOnly), charset);
         imageScroll = new JScrollPane();
@@ -133,7 +117,6 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
             ImageIcon image = loadImageData();
             if (image != null) {
-
                 imageLabel = new JLabel(image);
                 imageScroll.setViewportView(imageLabel);
                 imagePanel.add(imageScroll, BorderLayout.CENTER);
@@ -142,24 +125,26 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
             setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
 
         } else if (isPdf()) {
+
             setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
             try {
                 imagePanel = new PDFViewer(recordDataItem.getData());
-            } catch (IOException e) {
-                e.printStackTrace();
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
+
         } else {
+
             imageLabel = new JLabel(bundleString("UnsupportedFormat"), JLabel.CENTER);
             imageScroll.setViewportView(imageLabel);
 
             imagePanel.add(imageScroll, BorderLayout.CENTER);
-
             loadTextData();
         }
 
         scrollPane = new JScrollPane(binaryStringTextArea);
+
+        JPanel binaryPanel = new JPanel(new AKDockLayout());
         binaryPanel.add(scrollPane, AKDockLayout.CENTER);
 
         tabbedPane = new JTabbedPane();
@@ -190,7 +175,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         openButton.setActionCommand("open");
 
         JButton nullButton = new JButton("NULL");
-        nullButton.setActionCommand("tonull");
+        nullButton.setActionCommand("toNull");
 
         saveButton.addActionListener(this);
         closeButton.addActionListener(this);
@@ -205,22 +190,17 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         addActionButton(nullButton);
 
         setPreferredSize(new Dimension(600, 420));
-
         addContentPanel(contentPanel);
 
         textArea.requestFocus();
     }
 
     private String formatDescriptionString() {
-
-        String sb = bundleString("LOBDataType") + " " + recordDataItem.getLobRecordItemName() +
-                "   " + bundleString("TotalSize") + " " + recordDataItem.length() + " " + bundleString("Bytes");
-
-        return sb;
+        return bundleString("LOBDataType") + " " + recordDataItem.getLobRecordItemName() + "   " +
+                bundleString("TotalSize") + " " + recordDataItem.length() + " " + bundleString("Bytes");
     }
 
     private byte[] recordDataItemByteArray() {
-
         return recordDataItem.getData() != null ? recordDataItem.getData() : new byte[0];
     }
 
@@ -229,9 +209,11 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         String dataAsText = null;
         byte[] data = binaryStringTextArea.getDocument().getData();
         boolean isValidText = true;
+
         if (getTypeObject().startsWith("BLOB")) {
 
             if (data != null) {
+
                 if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
                     dataAsText = new String(data);
                 else try {
@@ -240,41 +222,33 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
                     Log.error("Error method loadTextData in class LobDataItemViewerPanel:", e);
                     dataAsText = new String(data);
                 }
+/*
                 char[] charArray = dataAsText.toCharArray();
-
                 int defaultEndPoint = 256;
                 int endPoint = Math.min(charArray.length, defaultEndPoint);
-            /*if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
-                for (int i = 0; i < endPoint; i++) {
-
-                    if (!CharUtils.isAscii(charArray[i])) {
-
-                        isValidText = false;
-                        break;
+                if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE)) {
+                    for (int i = 0; i < endPoint; i++) {
+                        if (!CharUtils.isAscii(charArray[i])) {
+                            isValidText = false;
+                            break;
+                        }
                     }
-
-                }*/
+                }
+*/
             }
 
-        } else {
-
+        } else
             isValidText = false;
-        }
 
         if (isValidText) {
-
             setTextAreaText(textArea, dataAsText);
             textArea.setEditable(true);
-
-        } else {
-
+        } else
             setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
-        }
 
     }
 
     private void setTextAreaText(JTextArea textArea, String text) {
-
         textArea.setText(text);
         textArea.setCaretPosition(0);
     }
@@ -290,15 +264,14 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         return textArea;
     }
 
-    private static final String SUPPORTED_IMAGES = "image/jpeg,image/gif,image/png";
-
     String getTypeObject() {
+
         try {
-            String type = ((BlobRecordDataItem) recordDataItem).getLobRecordItemName(binaryStringTextArea.getDocument().getData());
-            return type;
+            return ((BlobRecordDataItem) recordDataItem).getLobRecordItemName(binaryStringTextArea.getDocument().getData());
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
+
         return "";
     }
 
@@ -306,12 +279,12 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
         if (isBlob()) {
             try {
-                String type = getTypeObject();
-                return SUPPORTED_IMAGES.contains(type);
+                return SUPPORTED_IMAGES.contains(getTypeObject());
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
         }
+
         return SUPPORTED_IMAGES.contains(recordDataItem.getLobRecordItemName());
     }
 
@@ -319,25 +292,22 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
         if (isBlob()) {
             try {
-                String type = getTypeObject();
-                if (type.contentEquals("application/pdf"))
-                    return true;
+                return getTypeObject().contentEquals("application/pdf");
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
         }
+
         return false;
     }
 
     private boolean isBlob() {
-
         return (recordDataItem instanceof BlobRecordDataItem);
     }
 
     private ImageIcon loadImageData() {
 
         if (isBlob()) {
-
             byte[] data = binaryStringTextArea.getDocument().getData();
             return new ImageIcon(data);
         }
@@ -351,102 +321,104 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
         int result = fileChooser.showSaveDialog((JDialog) parent);
-        if (result == JFileChooser.CANCEL_OPTION) {
-
+        if (result == JFileChooser.CANCEL_OPTION)
             return;
-        }
 
         if (fileChooser.getSelectedFile() != null) {
 
             try {
-
                 GUIUtilities.showWaitCursor();
-
-                new ByteArrayFileWriter().write(
-                        fileChooser.getSelectedFile(), recordDataItemByteArray());
+                new ByteArrayFileWriter().write(fileChooser.getSelectedFile(), recordDataItemByteArray());
 
             } catch (IOException e) {
 
-                if (Log.isDebugEnabled()) {
-
+                if (Log.isDebugEnabled())
                     Log.debug("Error writing LOB to file", e);
-                }
 
-                GUIUtilities.displayErrorMessage(
-                        "Error writing LOB data to file:\n" + e.getMessage());
+                GUIUtilities.displayErrorMessage("Error writing LOB data to file:\n" + e.getMessage());
                 return;
 
             } finally {
-
                 GUIUtilities.showNormalCursor();
             }
-
         }
 
         close();
     }
 
     public void close() {
-
         parent.finished();
     }
 
     public void ok() {
+
         if (!readOnly) {
-            int selectedIndex = tabbedPane.getSelectedIndex();
-            if (selectedIndex == 0)
+
+            if (tabbedPane.getSelectedIndex() == 0) {
                 if (!textArea.getText().equals(CANNOT_DISPLAY_BINARY_DATA_AS_TEXT)) {
+
                     if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
                         binaryStringTextArea.setData(textArea.getText().getBytes());
                     else try {
                         binaryStringTextArea.setData(textArea.getText().getBytes(charset));
                     } catch (UnsupportedEncodingException e1) {
-                        e1.printStackTrace();
+                        e1.printStackTrace(System.out);
                         binaryStringTextArea.setData(textArea.getText().getBytes());
                     }
                 }
-            if (!recordDataItemByteArray().equals(binaryStringTextArea.getDocument().getData())) {
+            }
+
+            if (!Arrays.equals(recordDataItemByteArray(), binaryStringTextArea.getDocument().getData())) {
                 recordDataItem.valueChanged(binaryStringTextArea.getDocument().getData());
                 table.addTableDataChange(new TableDataChange(row));
             }
         }
+
         parent.finished();
     }
 
     public void open() {
+
         FileChooserDialog fileChooser = new FileChooserDialog();
         int returnVal = fileChooser.showOpenDialog(openButton);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
+
             File file = fileChooser.getSelectedFile();
             try {
+
                 binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(file), charset);
                 scrollPane.setViewportView(binaryStringTextArea);
                 loadTextData();
+
                 if (isImage()) {
                     imageLabel = new JLabel(loadImageData());
                     imageScroll.setViewportView(imageLabel);
+
                 } else if (isPdf()) {
                     setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
                     if (tabbedPane.getTabCount() > 2)
                         tabbedPane.remove(1);
+
                     try {
                         tabbedPane.insertTab("Pdf", null, new PDFViewer(binaryStringTextArea.getDocument().getData()), null, 1);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        e.printStackTrace(System.out);
                     }
+
                 } else if (!getTypeObject().startsWith("BLOB")) {
                     setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
                 }
+
             } catch (IOException e) {
                 Log.error("Error method open in class LobDataItemViewerPanel:", e);
             }
-
         }
-
 
     }
 
-    public void tonull() {
+    @SuppressWarnings("unused")
+    public void toNull() {
+
         if (!readOnly) {
             recordDataItem.valueChanged(null);
             table.addTableDataChange(new TableDataChange(row));
@@ -454,6 +426,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         parent.finished();
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
 
         int selectedIndex = tabbedPane.getSelectedIndex();
@@ -463,24 +436,21 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
                 loadTextData();
             textArea.requestFocus();
         }
+
         if (selectedIndex == 2) {
             if (!textArea.getText().equals(CANNOT_DISPLAY_BINARY_DATA_AS_TEXT)) {
+
                 if (MiscUtils.isNull(charset) || charset.equals(CreateTableSQLSyntax.NONE))
                     binaryStringTextArea.setData(textArea.getText().getBytes());
                 else try {
                     binaryStringTextArea.setData(textArea.getText().getBytes(charset));
                 } catch (UnsupportedEncodingException e1) {
-                    e1.printStackTrace();
+                    e1.printStackTrace(System.out);
                     binaryStringTextArea.setData(textArea.getText().getBytes());
                 }
             }
         }
+
     }
 
 }
-
-
-
-
-
-

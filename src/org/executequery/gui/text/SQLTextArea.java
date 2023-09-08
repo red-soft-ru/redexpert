@@ -75,7 +75,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
      */
     protected LineNumber lineBorder;
 
-    private JLabel caretPositionLabel;
+    private final JLabel caretPositionLabel;
 
     protected void setEditorPreferences() {
 
@@ -211,7 +211,8 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
 
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.normal");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.normal");
-        createStyle(Token.IDENTIFIER, color,  null,fontName,fontStyle,fontSize,false);
+        createStyle(Token.IDENTIFIER, color, null, fontName, fontStyle, fontSize, false);
+        createStyle(Token.RESERVED_WORD_2, color, null, fontName, fontStyle, fontSize, false);
 
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.singlecomment");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.singlecomment");

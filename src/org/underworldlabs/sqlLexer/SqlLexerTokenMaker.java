@@ -19,7 +19,7 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
     public SqlLexerTokenMaker() {
         super(new MultiLineTokenInfo(0, Token.COMMENT_MULTILINE, "/*", "*/"),
                 new MultiLineTokenInfo(0, Token.LITERAL_STRING_DOUBLE_QUOTE, "'", "'"),
-                new MultiLineTokenInfo(0, Token.IDENTIFIER, "\"", "\""));
+                new MultiLineTokenInfo(0, Token.RESERVED_WORD_2, "\"", "\""));
     }
 
     TreeSet<String> dbobjects;
@@ -57,6 +57,8 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
                 return Token.LITERAL_NUMBER_DECIMAL_INT;
             case SqlLexer.ERROR_CHAR:
                 return Token.ERROR_IDENTIFIER;
+            case SqlLexer.QUOTE_IDENTIFIER:
+                return Token.RESERVED_WORD_2;
             default:
                 return Token.IDENTIFIER;
         }
@@ -64,8 +66,7 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
 
     @Override
     protected org.antlr.v4.runtime.Token convertToken(org.antlr.v4.runtime.Token token) {
-        if(token.getType()==SqlLexer.IDENTIFIER)
-        {
+        if (token.getType() == SqlLexer.IDENTIFIER || token.getType() == SqlLexer.QUOTE_IDENTIFIER) {
             if (dbobjects != null) {
                 String x = token.getText();
                 if (x.length() > 0 && x.charAt(0) >= 'A' && x.charAt(0) <= 'z')

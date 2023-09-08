@@ -36,6 +36,7 @@ import org.executequery.gui.*;
 import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.table.KeyCellRenderer;
@@ -669,22 +670,23 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         createSqlText.cleanup();
     }
 
+    @Override
     public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 
-        if (Integer.valueOf(e.getOldValue().toString()) == TABLE_DATA_TAB_INDEX) {
-
+        if (Integer.parseInt(e.getOldValue().toString()) == TABLE_DATA_TAB_INDEX) {
             if (tableDataPanel.hasChanges()) {
 
-                boolean applyChanges = new DatabaseObjectChangeProvider(table).applyChanges(true);
-                if (!applyChanges) {
-
+                DatabaseObjectChangeProvider provider = new DatabaseObjectChangeProvider(table);
+                if (!provider.applyChanges(true))
                     throw new PropertyVetoException("User cancelled", e);
+
+                if (provider.lastOption == JOptionPane.NO_OPTION) {
+                    tableDataPanel.getDeleterRowIndexes().forEach(row -> tableDataPanel.getRowDataForRow(row).forEach(col -> col.setDeleted(false)));
+                    tableDataPanel.getDeleterRowIndexes().clear();
+                    tableDataPanel.markedForReload = false;
                 }
             }
-
         }
-
-
     }
 
     /**
@@ -696,6 +698,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         if (index == TABLE_PROPERTIES_INDEX)
             propertiesPanel.update();
+
+        if (index == TABLE_DATA_TAB_INDEX && tableDataPanel.markedForReload)
+            tableDataPanel.loadDataForTable(table);
 
         if (index != TABLE_DATA_TAB_INDEX && tableDataPanel.isExecuting()) {
 

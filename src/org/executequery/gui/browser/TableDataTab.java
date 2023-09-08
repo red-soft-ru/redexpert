@@ -92,6 +92,8 @@ public class TableDataTab extends JPanel
     private DisabledField rowCountField;
     private JPanel rowCountPanel;
     private List<TableDataChange> tableDataChanges;
+    private List<Integer> deleterRowIndexes;
+    boolean markedForReload;
 
     private JPanel canEditTableNotePanel;
 
@@ -222,21 +224,19 @@ public class TableDataTab extends JPanel
 
         addInProgressPanel();
 
-        if (timer != null) {
-
+        if (timer != null)
             timer.cancel();
-        }
 
         timer = new Timer();
         timer.schedule(new TimerTask() {
 
             @Override
             public void run() {
-
                 load(databaseObject);
             }
         }, 600);
 
+        markedForReload = false;
     }
 
     private boolean loaded = false;
@@ -1054,18 +1054,28 @@ public class TableDataTab extends JPanel
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+
+                if (deleterRowIndexes == null)
+                    deleterRowIndexes = new ArrayList<>();
+
                 boolean useForm = SystemProperties.getBooleanProperty(
                         Constants.USER_PROPERTIES_KEY, "results.table.use.form.adding.deleting");
-                if (useForm)
+                if (useForm) {
                     delete_record();
-                else {
-                    int[] rows = table.getSelectedRows();
-                    for (int row : rows) {
-                        if (row >= 0)
-                            tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
-                    }
+
+                } else {
+
+                    Arrays.stream(table.getSelectedRows())
+                            .filter(row -> row >= 0)
+                            .forEach(row ->  {
+                                tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
+                                deleterRowIndexes.add(row);
+                            });
+
                     table.clearSelection();
                 }
+
+                markedForReload = true;
             }
         });
         bar.add(deleteRolloverButton);
@@ -1265,6 +1275,14 @@ public class TableDataTab extends JPanel
     public JTable getTable() {
 
         return table;
+    }
+
+    public List<Integer> getDeleterRowIndexes() {
+        return deleterRowIndexes;
+    }
+
+    public List<RecordDataItem> getRowDataForRow(int row) {
+        return tableModel.getRowDataForRow(row);
     }
 
     public boolean isTransposeAvailable() {

@@ -216,7 +216,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         byte[] data = binaryStringTextArea.getDocument().getData();
         boolean isValidText = true;
 
-        if (getTypeObject().startsWith("BLOB")) {
+        if (recordDataItem instanceof ClobRecordDataItem || getTypeObject().startsWith("BLOB")) {
 
             if (data != null) {
 

@@ -1596,12 +1596,16 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         private void populateTablespace() {
 
-            List<String> tablespaceList = ConnectionsTreePanel.getPanelFromBrowser()
+            List<NamedObject> tablespaceList = ConnectionsTreePanel.getPanelFromBrowser()
                     .getDefaultDatabaseHostFromConnection(table.getHost().getDatabaseConnection())
-                    .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.TABLESPACE])
-                    .stream().map(Named::getName).collect(Collectors.toList());
-            tablespaceList.add(0, NONE);
-            tablespaceComboModel.setElements(tablespaceList);
+                    .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.TABLESPACE]);
+
+            List<String> tablespaceNameList = new ArrayList<>();
+            tablespaceNameList.add(0, NONE);
+            if (tablespaceList != null && !tablespaceList.isEmpty())
+                tablespaceNameList.addAll(tablespaceList.stream().map(Named::getName).collect(Collectors.toList()));
+
+            tablespaceComboModel.setElements(tablespaceNameList);
         }
 
         protected void update() {
@@ -1614,7 +1618,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             String externalFile = databaseTable.getExternalFile();
             String adapter = databaseTable.getAdapter();
 
-            if (databaseTable.getDatabaseMajorVersion() < 5)
+            if (databaseTable.getDatabaseMajorVersion() < 5 || !databaseTable.getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
                 tablespaceComboBox.setEnabled(false);
 
             sqlSecurityComboBox.setSelectedItem(Objects.equals(sqlSecurity, "") ? NONE : sqlSecurity);

@@ -202,70 +202,57 @@ public class UpdateLoader extends JFrame {
         }
     }
 
-    private void unzip(boolean useLog) {
-
-        if (!canDownload(false))
-            return;
+    private void unzip(boolean useLog) throws IOException {
 
         int bufferSize = 2048;
         BufferedOutputStream outputStream = null;
         BufferedInputStream inputStream;
 
-        try {
+        ZipFile zipfile = new ZipFile(pathToZip + UPDATE_NAME + ".zip");
+        Enumeration<?> entries = zipfile.entries();
+        root = pathToZip + UPDATE_NAME + SEP;
+        new File(root).mkdir();
 
-            ZipFile zipfile = new ZipFile(pathToZip + UPDATE_NAME + ".zip");
-            Enumeration<?> entries = zipfile.entries();
-            root = pathToZip + UPDATE_NAME + SEP;
-            new File(root).mkdir();
+        while (entries.hasMoreElements()) {
+            ZipEntry entry = (ZipEntry) entries.nextElement();
 
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = (ZipEntry) entries.nextElement();
+            if (useLog)
+                Log.info("\nExtracting: " + entry);
+            outText.append("\nExtracting: " + entry);
 
-                if (useLog)
-                    Log.info("\nExtracting: " + entry);
-                outText.append("\nExtracting: " + entry);
+            if (entry.isDirectory()) {
+                new File(root + entry.getName()).mkdir();
 
-                if (entry.isDirectory()) {
-                    new File(root + entry.getName()).mkdir();
+            } else {
 
-                } else {
+                new File(root + entry.getName()).createNewFile();
+                inputStream = new BufferedInputStream(zipfile.getInputStream(entry));
 
-                    new File(root + entry.getName()).createNewFile();
-                    inputStream = new BufferedInputStream(zipfile.getInputStream(entry));
+                try {
 
-                    try {
+                    FileOutputStream fos = new FileOutputStream(root + entry.getName());
+                    outputStream = new BufferedOutputStream(fos, bufferSize);
 
-                        FileOutputStream fos = new FileOutputStream(root + entry.getName());
-                        outputStream = new BufferedOutputStream(fos, bufferSize);
+                    int count;
+                    byte[] data = new byte[bufferSize];
+                    while ((count = inputStream.read(data, 0, bufferSize)) != -1)
+                        outputStream.write(data, 0, count);
 
-                        int count;
-                        byte[] data = new byte[bufferSize];
-                        while ((count = inputStream.read(data, 0, bufferSize)) != -1)
-                            outputStream.write(data, 0, count);
-
-                    } catch (FileNotFoundException e) {
-                        outText.append("\nExtracting " + entry + " error. " + e.getMessage());
-                        if (useLog)
-                            Log.info("\nExtracting " + entry + " error. " + e.getMessage());
-
-                    } catch (IOException e) {
-                        outText.append("\nExtracting " + entry + "error." + e.getMessage());
-                        if (useLog)
-                            Log.info("\nExtracting " + entry + " error. " + e.getMessage());
-                    }
-
-                    if (outputStream != null) {
-                        outputStream.flush();
-                        outputStream.close();
-                    }
-                    inputStream.close();
+                } catch (IOException e) {
+                    outText.append("\nExtracting " + entry + " error. " + e.getMessage());
+                    if (useLog)
+                        Log.info("\nExtracting " + entry + " error. " + e.getMessage());
                 }
-            }
-            zipfile.close();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+                if (outputStream != null) {
+                    outputStream.flush();
+                    outputStream.close();
+                }
+                inputStream.close();
+            }
         }
+
+        zipfile.close();
     }
 
     private static String stringPropertyFromConfig(String key) {
@@ -293,23 +280,18 @@ public class UpdateLoader extends JFrame {
         return localVersion != null && remoteVersion.isNewerThan(localVersion);
     }
 
-    public void downloadUpdate() {
+    public void downloadUpdate() throws IOException {
 
         Log.info("Contacting Download Server...");
 
         if (releaseHub) {
-            try {
 
-                String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                        JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
-                        "artifact_id", "red_expert:bin:" + version + ":zip")).getString("file");
+            String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
+                    JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
+                    "artifact_id", "red_expert:bin:" + version + ":zip")).getString("file");
 
-                downloadLink = "http://builds.red-soft.biz/" + file;
-                downloadArchive();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            downloadLink = "http://builds.red-soft.biz/" + file;
+            downloadArchive();
 
         } else {
 
@@ -318,26 +300,22 @@ public class UpdateLoader extends JFrame {
                 downloadArchive();
 
             } else {
-                try {
 
-                    //изменить эту строку в соответствии с форматом имени файла на сайте
-                    String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
-                    Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
+                //изменить эту строку в соответствии с форматом имени файла на сайте
+                String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
+                Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
 
-                    if (heads != null) {
+                if (heads != null) {
 
-                        String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
-                        String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                                JSONAPI.getJsonArray(prop + version, heads),
-                                "filename", filename)).getString("url");
+                    String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
+                    String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
+                            JSONAPI.getJsonArray(prop + version, heads),
+                            "filename", filename)).getString("url");
 
-                        downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
-                        downloadArchive();
-                    }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
+                    downloadArchive();
                 }
+
             }
         }
     }
@@ -464,18 +442,12 @@ public class UpdateLoader extends JFrame {
         } else return countByte + "b";
     }
 
-    public void unzipLocale() {
+    public void unzipLocale() throws IOException {
         unzip(true);
     }
 
-    private void downloadArchive() {
-        try {
-
-            downloadFile(downloadLink);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void downloadArchive() throws IOException {
+        downloadFile(downloadLink);
     }
 
     public void replaceFiles() {
@@ -509,11 +481,11 @@ public class UpdateLoader extends JFrame {
                 cancelButton.setText("Restart later");
 
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
                 JOptionPane.showMessageDialog(null, "Access denied. Please restart RedExpert as an admin!");
 
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
                 JOptionPane.showMessageDialog(null, "An error occurred while preforming update!");
             }
 

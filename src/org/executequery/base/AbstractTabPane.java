@@ -432,7 +432,7 @@ public abstract class AbstractTabPane extends JPanel
         }
         for (int i = 0, k = components.size(); i < k; i++) {
             TabComponent tabComponent = components.get(i);
-            if (tabComponent.getTitle().equals(title)) {
+            if (tabComponent.getDisplayName().equals(title)) {
                 return i;
             }
         }

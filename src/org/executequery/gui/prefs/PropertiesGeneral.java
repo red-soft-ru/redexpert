@@ -126,7 +126,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
 
         key = "startup.java.path";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.FILE_TYPE,
                 key,
                 bundledString("JavaPath"),
                 stringUserProperty(key)));

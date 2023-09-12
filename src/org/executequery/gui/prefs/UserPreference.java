@@ -160,24 +160,21 @@ public class UserPreference {
     }
 
     public void reset(Object value) {
-        if (type == STRING_TYPE) {
 
-            if (availableValues != null && availableValues.length > 0) {
+        if (type == STRING_TYPE && availableValues != null && availableValues.length > 0) {
 
-                if (saveActual) {
-                    this.value = savedValue;
-                }
-                try {
-                    int index = Integer.parseInt(savedValue);
-                    this.value = availableValues[index];
-                } catch (NumberFormatException e) {
-                    this.value = value;
-                }
+            if (saveActual)
+                this.value = savedValue;
+
+            try {
+                int index = Integer.parseInt(savedValue);
+                this.value = availableValues[index];
+            } catch (NumberFormatException e) {
+                this.value = value;
             }
 
-        } else {
+        } else
             this.value = value;
-        }
     }
 
     public void setValue(Object value) {

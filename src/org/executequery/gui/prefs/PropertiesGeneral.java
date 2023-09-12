@@ -131,13 +131,6 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                 bundledString("JavaPath"),
                 stringUserProperty(key)));
 
-        key = "startup.log.path";
-        list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
-                key,
-                bundledString("LogPath"),
-                stringUserProperty(key)));
-
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,

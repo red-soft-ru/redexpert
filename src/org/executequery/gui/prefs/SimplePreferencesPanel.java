@@ -308,6 +308,7 @@ public class SimplePreferencesPanel extends JPanel
                 case UserPreference.ENUM_TYPE:
                 case UserPreference.STRING_TYPE:
                 case UserPreference.INTEGER_TYPE:
+                case UserPreference.FILE_TYPE:
                     preference.reset(SystemProperties.getProperty("defaults", preference.getKey()));
                     if (preference.getKey().equals("startup.java.path"))
                         JavaFileProperty.restore();

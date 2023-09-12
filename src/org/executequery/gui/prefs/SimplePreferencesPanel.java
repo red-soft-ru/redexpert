@@ -43,6 +43,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -365,6 +366,20 @@ public class SimplePreferencesPanel extends JPanel
         // set the new properties
         for (UserPreference preference : preferences) {
             if (preference.getType() != UserPreference.CATEGORY_TYPE) {
+
+                if (preference.getKey().equals("editor.logging.path")) {
+                    try {
+                        String value = preference.getSaveValue();
+                        if (value.startsWith("../"))
+                            preference.setValue(value.replaceFirst("\\.\\./",
+                                    new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() +
+                                            System.getProperty("file.separator")));
+
+                    } catch (URISyntaxException e) {
+                        Log.error("Error updating log file path", e);
+                    }
+                }
+
                 SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
                 if (preference.getKey().equals("startup.java.path"))
                     JavaFileProperty.setValue(preference.getSaveValue());
@@ -582,6 +597,9 @@ public class SimplePreferencesPanel extends JPanel
 
             if (relativePath.isEmpty())
                 return;
+
+            if (relativePath.startsWith("../"))
+                relativePath = relativePath.replaceFirst("\\.\\./", "");
 
             String value = "jvm=";
             String absolutePath = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() +

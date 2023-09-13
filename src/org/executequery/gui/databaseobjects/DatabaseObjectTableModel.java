@@ -123,7 +123,9 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
 //                return stringValueToUpper(column.getShortName());
                 return column.getShortName();
             case 2:
-                return column.getTypeName();
+                if (column.getDimensions() == null)
+                    return column.getTypeName();
+                else return column.getTypeName() + " [...]";
             case 3:
                 return Integer.valueOf(column.getColumnSize());
             case 4:

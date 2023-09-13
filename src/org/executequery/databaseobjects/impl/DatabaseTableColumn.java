@@ -113,6 +113,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setIdentity(column.isIdentity());
         setCharset(column.getCharset());
         setCollate(column.getCollate());
+        setDimensions(column.getDimensions());
     }
 
     @Override

@@ -279,6 +279,9 @@ public class ColumnData implements Serializable {
 
     private String selectOperator;
 
+    private List<ColumnData.Dimension> dimensions;
+    private List<ColumnData.Dimension> domainDimensions;
+
     DefaultStatementExecutor executor;
 
     public ColumnData(DatabaseConnection databaseConnection) {
@@ -399,6 +402,7 @@ public class ColumnData implements Serializable {
         table = cd.getTable();
         columnTable = cd.getColumnTable();
         typeOf = cd.isTypeOf();
+        dimensions = cd.getDimensions();
 
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
         if (constraints != null) {
@@ -422,6 +426,7 @@ public class ColumnData implements Serializable {
         setComputedBy(cd.getComputedSource());
         setDefaultValue(cd.getDefaultValue());
         setDomainDefault(cd.getDomainDefaultValue());
+        setDimensions(cd.getDimensions());
         if (cd.isIdentity())
             ai.setIdentity(true);
     }
@@ -691,6 +696,8 @@ public class ColumnData implements Serializable {
             domainDefault = defaultDatabaseDomain.getDomainData().domainDefault;
             domainComputedBy = defaultDatabaseDomain.getDomainData().domainComputedBy;
             domainCollate = defaultDatabaseDomain.getDomainData().domainCollate;
+            domainDimensions = defaultDatabaseDomain.getDomainData().getDimensions();
+
         }
         sqlType = domainType;
         columnSize = domainSize;
@@ -698,6 +705,7 @@ public class ColumnData implements Serializable {
         columnSubtype = domainSubType;
         setCharset(domainCharset);
         setCollate(domainCollate);
+        setDimensions(domainDimensions);
         if (!find)
             Log.error("Error get Domain '" + domain + "'");
 
@@ -778,6 +786,20 @@ public class ColumnData implements Serializable {
             }
             if (!MiscUtils.isNull(getCharset()) && dc != null && !getCharset().equalsIgnoreCase(dc.getDBCharset())) {
                 sb.append(" CHARACTER SET ").append(getCharset());
+            }
+            if (dimensions != null) {
+                sb.append("[");
+                boolean first = true;
+                for (Dimension dimension : dimensions) {
+                    if (!first)
+                        sb.append(",");
+                    first = false;
+                    if (dimension.lowerBound != 1) {
+                        sb.append(dimension.lowerBound).append(":");
+                    }
+                    sb.append(dimension.upperBound);
+                }
+                sb.append("]");
             }
         }
         return sb.toString();
@@ -1123,6 +1145,31 @@ public class ColumnData implements Serializable {
         this.selectOperator = selectOperator;
     }
 
+    public void appendDimension(int orderNumber, int lowerBound, int upperBound) {
+        if (dimensions == null)
+            dimensions = new ArrayList<>();
+        ColumnData.Dimension dimension = new ColumnData.Dimension(lowerBound, upperBound);
+        if (orderNumber >= dimensions.size())
+            dimensions.add(dimension);
+        else dimensions.add(orderNumber, dimension);
+    }
+
+    public List<ColumnData.Dimension> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<ColumnData.Dimension> dimensions) {
+        this.dimensions = dimensions;
+    }
+
+    public List<Dimension> getDomainDimensions() {
+        return domainDimensions;
+    }
+
+    public void setDomainDimensions(List<Dimension> domainDimensions) {
+        this.domainDimensions = domainDimensions;
+    }
+
     public class DefaultValue implements Serializable {
         String originOperator;
         String value;
@@ -1150,6 +1197,32 @@ public class ColumnData implements Serializable {
 
         public void setUseQuotes(boolean useQuotes) {
             this.useQuotes = useQuotes;
+        }
+    }
+
+    public static class Dimension {
+        int lowerBound;
+        int upperBound;
+
+        public Dimension(int lowerBound, int upperBound) {
+            this.lowerBound = lowerBound;
+            this.upperBound = upperBound;
+        }
+
+        public int getLowerBound() {
+            return lowerBound;
+        }
+
+        public void setLowerBound(int lowerBound) {
+            this.lowerBound = lowerBound;
+        }
+
+        public int getUpperBound() {
+            return upperBound;
+        }
+
+        public void setUpperBound(int upperBound) {
+            this.upperBound = upperBound;
         }
     }
 }

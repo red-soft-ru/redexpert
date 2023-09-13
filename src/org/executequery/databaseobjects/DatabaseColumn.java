@@ -21,6 +21,7 @@
 package org.executequery.databaseobjects;
 
 import org.executequery.databaseobjects.impl.ColumnConstraint;
+import org.executequery.gui.browser.ColumnData;
 
 import java.util.List;
 
@@ -156,6 +157,10 @@ public interface DatabaseColumn extends DatabaseObjectElement {
     String getCollate();
 
     void setCollate(String collate);
+
+    List<ColumnData.Dimension> getDimensions();
+
+    void setDimensions(List<ColumnData.Dimension> dimensions);
 
 }
 

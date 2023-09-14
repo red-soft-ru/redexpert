@@ -168,7 +168,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         // loop through and add this object as the parent object
         addAsParentToObjects(children);
         setMarkedForReload(false);
-        if (type == PACKAGE || type == SYSTEM_PACKAGE) {
+        if (typeTree == DEFAULT && (type == PACKAGE || type == SYSTEM_PACKAGE)) {
             loadChildrenForAllPackages(META_TYPES[PROCEDURE]);
             loadChildrenForAllPackages(META_TYPES[FUNCTION]);
         }

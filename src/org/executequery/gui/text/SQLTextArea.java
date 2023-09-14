@@ -37,6 +37,8 @@ import java.awt.event.MouseEvent;
 import java.awt.print.Printable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -131,7 +133,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
         TokenImpl clone = new TokenImpl(t);
         TokenImpl cloneEnd = clone;
 
-        while ((t=t.getNextToken())!=null) {
+        while ((t = t.getNextToken()) != null) {
             TokenImpl temp = new TokenImpl(t);
             cloneEnd.setNextToken(temp);
             cloneEnd = temp;
@@ -139,6 +141,22 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
 
         return clone;
 
+    }
+
+    public List<TokenImpl> getTokensForType(int type) {
+        List<TokenImpl> result = new ArrayList<>();
+        for (int i = 0; i < getLineCount(); i++) {
+            TokenImpl t = (TokenImpl) getTokenListForLine(i);
+            t = cloneTokenList(t);
+            if (t.getType() == type)
+                result.add(t);
+            while (t.getNextToken() != null) {
+                t = (TokenImpl) t.getNextToken();
+                if (t.getType() == type)
+                    result.add(t);
+            }
+        }
+        return result;
     }
 
     public Token getTokenForPosition(int cursor) {

@@ -85,6 +85,8 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
         if (token.getType() != SqlLexer.SPACES
                 && token.getType() != SqlLexer.SINGLE_LINE_COMMENT
                 && token.getType() != SqlLexer.MULTILINE_COMMENT
+                && token.getType() != SqlLexer.QUOTE_IDENTIFIER
+                && token.getType() != SqlLexer.IDENTIFIER
                 && !token.getText().equalsIgnoreCase("as")
         )
             lastDBObject = null;

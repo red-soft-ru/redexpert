@@ -29,6 +29,9 @@ public class CustomToken implements Token {
         setStopIndex(token.getStopIndex());
         setTokenSource(token.getTokenSource());
         setInputStream(token.getInputStream());
+        if (token instanceof CustomToken) {
+            setTableNameForAlias(((CustomToken) token).getTableNameForAlias());
+        }
     }
 
     @Override

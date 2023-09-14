@@ -26,8 +26,8 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.T;
-import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
+import org.executequery.databaseobjects.impl.DefaultDatabaseObject;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.log.Log;
@@ -268,7 +268,7 @@ public class ColumnData implements Serializable {
 
     boolean cstring;
 
-    AbstractTableObject table;
+    DefaultDatabaseObject table;
     List<NamedObject> tables;
     String columnTable;
     List<String> columns;
@@ -974,22 +974,8 @@ public class ColumnData implements Serializable {
         this.typeOf = typeOf;
     }
 
-    public void setTable(String table) {
-        if (table == null)
-            return;
-        for (NamedObject namedObject : getTables()) {
-            if (namedObject.getName().contentEquals(table)) {
-                this.table = (AbstractTableObject) namedObject;
-                break;
-            }
-        }
-        columns.clear();
-        for (DatabaseColumn column : this.table.getColumns()) {
-            columns.add(column.getName());
-        }
-        if (!columns.isEmpty())
-            setColumnTable(columns.get(0));
-
+    public DefaultDatabaseObject getTable() {
+        return table;
     }
 
 
@@ -1019,8 +1005,22 @@ public class ColumnData implements Serializable {
         return defaultValue;
     }
 
-    public AbstractTableObject getTable() {
-        return table;
+    public void setTable(String table) {
+        if (table == null)
+            return;
+        for (NamedObject namedObject : getTables()) {
+            if (namedObject.getName().contentEquals(table)) {
+                this.table = (DefaultDatabaseObject) namedObject;
+                break;
+            }
+        }
+        columns.clear();
+        for (DatabaseColumn column : this.table.getColumns()) {
+            columns.add(column.getName());
+        }
+        if (!columns.isEmpty())
+            setColumnTable(columns.get(0));
+
     }
 
     public String getFormattedTable() {

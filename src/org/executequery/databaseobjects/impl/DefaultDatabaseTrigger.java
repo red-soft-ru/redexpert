@@ -181,6 +181,21 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
         return false;
     }
 
+    @Override
+    protected String prefixLabel() {
+        return null;
+    }
+
+    @Override
+    protected String mechanismLabel() {
+        return null;
+    }
+
+    @Override
+    protected String positionLabel() {
+        return null;
+    }
+
     public String getTriggerSourceCode() {
         if (isMarkedForReload())
             getObjectInfo();

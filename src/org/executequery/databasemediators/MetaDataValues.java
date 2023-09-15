@@ -1113,7 +1113,7 @@ public class MetaDataValues implements ConnectionListener {
             while (rs.next()) {
                 String stype = rs.getString(1);
                 int type = rs.getInt(2);
-                if (!stype.startsWith(underscore)) {
+                if (!stype.startsWith(underscore) && !stype.equalsIgnoreCase(T.ARRAY)) {
                     _dataTypes.add(type);
                 }
             }

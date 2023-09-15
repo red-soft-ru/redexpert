@@ -231,6 +231,21 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         return true;
     }
 
+    @Override
+    protected String prefixLabel() {
+        return null;
+    }
+
+    @Override
+    protected String mechanismLabel() {
+        return null;
+    }
+
+    @Override
+    protected String positionLabel() {
+        return null;
+    }
+
     public List<NamedObject> getObjects() throws DataSourceException {
         return childs;
     }

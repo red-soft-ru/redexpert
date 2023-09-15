@@ -601,7 +601,7 @@ public final class SQLUtils {
 
     public static String formattedParameter(ColumnData cd) {
         StringBuilder sb = new StringBuilder();
-        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
+        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : format(cd.getColumnName())).
                 append(" ");
         if (MiscUtils.isNull(cd.getComputedBy())) {
             if (MiscUtils.isNull(cd.getDomain())) {
@@ -1322,7 +1322,7 @@ public final class SQLUtils {
 
     public static String generateCreateUDF(
             String name, List<UDFParameter> parameters, int returnArg,
-            String entryPoint, String moduleName, boolean freeIt) {
+            String entryPoint, String moduleName, boolean freeIt, DatabaseConnection dc) {
 
         int BY_VALUE = 0;
         int BY_REFERENCE = 1;
@@ -1333,12 +1333,18 @@ public final class SQLUtils {
         sb.append("DECLARE EXTERNAL FUNCTION ").append(format(name)).append("\n");
 
         String args = "";
+        Map<UDFParameter, ColumnData> mapParameters = new HashMap<>();
+
+        for (UDFParameter parameter : parameters) {
+            ColumnData cd = columnDataFromProcedureParameter(parameter, dc, false);
+            mapParameters.put(parameter, cd);
+        }
         for (int i = 0; i < parameters.size(); i++) {
 
             if (returnArg == 0 && i == 0)
                 continue;
 
-            args += "\t" + parameters.get(i).getFieldStringType();
+            args += "\t" + mapParameters.get(parameters.get(i)).getFormattedDataType();
             if (parameters.get(i).getMechanism() != BY_VALUE && parameters.get(i).getMechanism() != BY_REFERENCE)
                 if (parameters.get(i).isNotNull() || parameters.get(i).getMechanism() == BY_DESCRIPTOR)
                     args += " " + parameters.get(i).getStringMechanism();
@@ -1357,7 +1363,7 @@ public final class SQLUtils {
 
         if (returnArg == 0) {
 
-            sb.append(parameters.get(0).getFieldStringType());
+            sb.append(mapParameters.get(parameters.get(0)).getFormattedDataType());
             if (parameters.get(0).getMechanism() != BY_REFERENCE && parameters.get(0).getMechanism() != -1)
                 sb.append(" ").append(parameters.get(0).getStringMechanism());
 

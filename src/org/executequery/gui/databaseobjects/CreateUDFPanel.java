@@ -1,7 +1,6 @@
 package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.UDFParameter;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
@@ -19,6 +18,7 @@ import java.util.Vector;
 
 import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_DESCRIPTOR;
 import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_VALUE;
+import static org.underworldlabs.util.SQLUtils.columnDataFromProcedureParameter;
 
 public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
@@ -240,12 +240,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 cstringLengthField.setText(String.valueOf(udfParameter.getSize()));
                 cstringBoxChanged();
             } else {
-                returnsType.setColumnSize(udfParameter.getSize());
-                returnsType.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(udfParameter.getDataType(),
-                        udfParameter.getSubType()));
-                returnsType.setColumnSubtype(udfParameter.getSubType());
-                returnsType.setColumnScale(udfParameter.getScale());
-                returnsType.setColumnType(udfParameter.getFieldStringType());
+                returnsType = columnDataFromProcedureParameter(udfParameter, connection, false);
 
                 selectTypePanel.setColumnData(returnsType);
                 selectTypePanel.refresh();
@@ -264,13 +259,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 editedUDF.getUDFParameters()) {
             if (parameter.getPosition() == 0)
                 continue;
-            ColumnData cd = new ColumnData(connection);
-            cd.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(parameter.getDataType(),
-                    parameter.getSubType()));
-            cd.setColumnSubtype(parameter.getSubType());
-            cd.setColumnSize(parameter.getSize());
-            cd.setColumnType(DatabaseTypeConverter.getDataTypeName(parameter.getDataType(),
-                    parameter.getSubType(), parameter.getScale()));
+            ColumnData cd = columnDataFromProcedureParameter(parameter, connection, false);
             cd.setMechanism(parameter.getStringMechanism());
             cd.setCstring(parameter.isCString());
             cd.setNotNull(parameter.isNotNull());

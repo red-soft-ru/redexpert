@@ -26,6 +26,7 @@ public class Parameter {
     protected int typeOfFrom;
     protected String defaultValue;
     protected boolean descriptionAsSingleComment;
+    protected String systemDomain;
 
     public int getDataType() {
         return dataType;
@@ -199,6 +200,14 @@ public class Parameter {
 
     public void setDescriptionAsSingleComment(boolean descriptionAsSingleComment) {
         this.descriptionAsSingleComment = descriptionAsSingleComment;
+    }
+
+    public String getSystemDomain() {
+        return systemDomain;
+    }
+
+    public void setSystemDomain(String systemDomain) {
+        this.systemDomain = systemDomain;
     }
 }
 

@@ -38,6 +38,8 @@ public class UserPreference {
     public static final int FILE_TYPE = 5;
     public static final int PASSWORD_TYPE = 6;
     public static final int ENUM_TYPE = 7;
+    public static final int DIR_TYPE = 8;
+
 
     private boolean collapsed;
     private boolean saveActual;

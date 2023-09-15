@@ -135,6 +135,7 @@ public class SimplePreferencesPanel extends JPanel
 
         // lazily create as required
         FileSelectionTableCell fileRenderer = null;
+        FileSelectionTableCell dirRenderer = null;
         ColourTableCellRenderer colourRenderer = null;
         CheckBoxTableCellRenderer checkBoxRenderer = null;
         CategoryHeaderCellRenderer categoryRenderer = null;
@@ -226,12 +227,23 @@ public class SimplePreferencesPanel extends JPanel
                 case UserPreference.FILE_TYPE:
 
                     if (fileRenderer == null) {
-                        fileRenderer = new FileSelectionTableCell();
+                        fileRenderer = new FileSelectionTableCell(JFileChooser.FILES_ONLY);
                         fileRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
                     }
 
                     rowRendererValues.add(i, fileRenderer);
                     rowEditor.setEditorAt(i, fileRenderer);
+                    break;
+
+                case UserPreference.DIR_TYPE:
+
+                    if (dirRenderer == null) {
+                        dirRenderer = new FileSelectionTableCell(JFileChooser.DIRECTORIES_ONLY);
+                        dirRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
+                    }
+
+                    rowRendererValues.add(i, dirRenderer);
+                    rowEditor.setEditorAt(i, dirRenderer);
                     break;
 
             }
@@ -310,6 +322,7 @@ public class SimplePreferencesPanel extends JPanel
                 case UserPreference.STRING_TYPE:
                 case UserPreference.INTEGER_TYPE:
                 case UserPreference.FILE_TYPE:
+                case UserPreference.DIR_TYPE:
                     preference.reset(SystemProperties.getProperty("defaults", preference.getKey()));
                     if (preference.getKey().equals("startup.java.path"))
                         JavaFileProperty.restore();
@@ -370,10 +383,13 @@ public class SimplePreferencesPanel extends JPanel
                 if (preference.getKey().equals("editor.logging.path")) {
                     try {
                         String value = preference.getSaveValue();
-                        if (value.startsWith("../"))
-                            preference.setValue(value.replaceFirst("\\.\\./",
-                                    new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() +
-                                            System.getProperty("file.separator")));
+                        if (value.startsWith("%re%")) {
+                            value = value.substring(4);
+                            if (!value.startsWith(System.getProperty("file.separator")))
+                                value = System.getProperty("file.separator") + value;
+                            value = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + value;
+                        }
+                        preference.setValue(value);
 
                     } catch (URISyntaxException e) {
                         Log.error("Error updating log file path", e);
@@ -598,8 +614,11 @@ public class SimplePreferencesPanel extends JPanel
             if (relativePath.isEmpty())
                 return;
 
-            if (relativePath.startsWith("../"))
-                relativePath = relativePath.replaceFirst("\\.\\./", "");
+            if (relativePath.startsWith("%re%")) {
+                relativePath = relativePath.substring(4);
+                if (relativePath.startsWith(System.getProperty("file.separator")))
+                    relativePath = relativePath.substring(1);
+            }
 
             String value = "jvm=";
             String absolutePath = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() +

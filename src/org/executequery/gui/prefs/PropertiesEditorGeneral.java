@@ -159,7 +159,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
 
         key = "editor.logging.path";
         list.add(new UserPreference(
-                UserPreference.FILE_TYPE,
+                UserPreference.DIR_TYPE,
                 key,
                 bundledString("OutputLogFilePath"),
                 stringUserProperty(key)));

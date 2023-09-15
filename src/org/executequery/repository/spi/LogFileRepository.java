@@ -23,6 +23,7 @@ package org.executequery.repository.spi;
 import org.executequery.ApplicationException;
 import org.executequery.repository.LogRepository;
 import org.executequery.util.ApplicationProperties;
+import org.executequery.util.UserProperties;
 import org.executequery.util.UserSettingsProperties;
 import org.underworldlabs.util.FileUtils;
 
@@ -60,12 +61,17 @@ public class LogFileRepository implements LogRepository {
         return pathForType(type);
     }
 
+    @Override
     public String getLogFileDirectory() {
 
-        UserSettingsProperties settings = new UserSettingsProperties();
+        String logFolderPath = UserProperties.getInstance().getStringProperty("editor.logging.path");
+        if (logFolderPath == null || logFolderPath.isEmpty())
+            logFolderPath = new UserSettingsProperties().getUserSettingsBaseHome();
+        
+        if (!logFolderPath.endsWith(System.getProperty("file.separator")))
+            logFolderPath += System.getProperty("file.separator");
 
-        return settings.getUserSettingsBaseHome() + LOG_FILE_DIR_NAME +
-                System.getProperty("file.separator");
+        return logFolderPath + LOG_FILE_DIR_NAME + System.getProperty("file.separator");
     }
 
     public String getId() {

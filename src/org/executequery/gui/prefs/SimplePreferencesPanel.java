@@ -380,7 +380,7 @@ public class SimplePreferencesPanel extends JPanel
         for (UserPreference preference : preferences) {
             if (preference.getType() != UserPreference.CATEGORY_TYPE) {
 
-                if (preference.getKey().equals("editor.logging.path")) {
+                if (preference.getKey().equals("editor.logging.path") || preference.getKey().equals("startup.java.path")) {
                     try {
                         String value = preference.getSaveValue();
                         if (value.startsWith("%re%")) {
@@ -592,7 +592,6 @@ public class SimplePreferencesPanel extends JPanel
 
         static void setValue(String path) {
             try {
-                delete();
                 rewrite(path);
 
             } catch (Exception e) {
@@ -609,28 +608,25 @@ public class SimplePreferencesPanel extends JPanel
             }
         }
 
-        private static void rewrite(String relativePath) throws Exception {
+        private static void rewrite(String pathToJava) throws Exception {
 
-            if (relativePath.isEmpty())
+            if (pathToJava.isEmpty())
                 return;
 
-            if (relativePath.startsWith("%re%")) {
-                relativePath = relativePath.substring(4);
-                if (relativePath.startsWith(System.getProperty("file.separator")))
-                    relativePath = relativePath.substring(1);
+            if (pathToJava.startsWith("%re%")) {
+                pathToJava = pathToJava.substring(4);
+                if (!pathToJava.startsWith(System.getProperty("file.separator")))
+                    pathToJava = System.getProperty("file.separator") + pathToJava;
+                pathToJava = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + pathToJava;
             }
 
             String value = "jvm=";
-            String absolutePath = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() +
-                    System.getProperty("file.separator") + relativePath;
-
-            if (new File(relativePath).exists())
-                value += relativePath;
-            else if (new File(absolutePath).exists())
-                value += absolutePath;
+            if (new File(pathToJava).exists())
+                value += pathToJava;
             else
                 throw new FileExistsException();
 
+            delete();
             Files.createFile(CACHE_JAVA_FILE_PATH);
             Files.write(CACHE_JAVA_FILE_PATH, value.getBytes(), StandardOpenOption.WRITE);
         }

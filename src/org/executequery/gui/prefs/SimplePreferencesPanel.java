@@ -621,10 +621,10 @@ public class SimplePreferencesPanel extends JPanel
                 if (pathToJava.endsWith("\\"))
                     pathToJava = pathToJava.substring(0, pathToJava.lastIndexOf("\\") - 1);
 
-                if (!new File(pathToJava + "\\jvm.ddl").exists())
-                    throw new FileExistsException(String.format("File %s doesn't exists", pathToJava + "\\jvm.ddl"));
+                if (!new File(pathToJava + "\\jvm.dll").exists())
+                    throw new FileExistsException(String.format("File %s doesn't exists", pathToJava + "\\jvm.dll"));
 
-                value = "jvm=" + pathToJava + "\\jvm.ddl";
+                value = "jvm=" + pathToJava + "\\jvm.dll";
                 value += "\npath=" + pathToJava.substring(0, pathToJava.lastIndexOf("\\"));
             }
 

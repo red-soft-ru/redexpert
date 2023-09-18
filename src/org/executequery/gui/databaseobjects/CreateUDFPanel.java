@@ -235,7 +235,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             parameterBoxChanged();
         } else {
             UDFParameter udfParameter = editedUDF.getUDFParameters().get(0);
-            if (udfParameter.getDataType() == 40) {// check for cstring type
+            if (udfParameter.getSqlType().contains("CSTRING")) {// check for cstring type
                 cstringBox.setSelected(true);
                 cstringLengthField.setText(String.valueOf(udfParameter.getSize()));
                 cstringBoxChanged();

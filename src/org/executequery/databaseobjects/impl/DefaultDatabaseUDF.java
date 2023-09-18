@@ -180,7 +180,8 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
     }
 
     public List<UDFParameter> getUDFParameters() {
-        return this.parameters;
+        checkOnReload(parameters);
+        return parameters;
     }
 
     public int getType() {

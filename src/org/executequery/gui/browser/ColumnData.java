@@ -765,7 +765,8 @@ public class ColumnData implements Serializable {
                 (type == Types.CHAR ||
                         type == Types.VARCHAR ||
                         type == Types.BLOB || type == Types.LONGVARCHAR
-                        || type == Types.LONGVARBINARY)) {
+                        || type == Types.LONGVARBINARY
+                        || isCstring())) {
             if (type == Types.BLOB || type == Types.LONGVARCHAR
                     || type == Types.LONGVARBINARY) {
                 if (getColumnSize() != 80)
@@ -822,6 +823,7 @@ public class ColumnData implements Serializable {
         return getColumnType() != null && (getSQLType() == Types.NUMERIC || getSQLType() == Types.CHAR || getSQLType() == Types.VARCHAR
                 || getSQLType() == Types.DECIMAL || getSQLType() == Types.BLOB || getSQLType() == Types.LONGVARCHAR
                 || getSQLType() == Types.LONGVARBINARY
+                || getColumnType().equalsIgnoreCase("CSTRING")
                 || getColumnType().equalsIgnoreCase("VARCHAR")
                 || getColumnType().equalsIgnoreCase("CHAR"))
                 || getColumnType().equalsIgnoreCase(T.DECFLOAT);

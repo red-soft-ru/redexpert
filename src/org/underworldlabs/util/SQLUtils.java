@@ -1375,11 +1375,11 @@ public final class SQLUtils {
 
         sb.append("\nENTRY_POINT '");
         if (!MiscUtils.isNull(entryPoint))
-            sb.append(entryPoint);
+            sb.append(entryPoint.replace("'", "''"));
 
         sb.append("' MODULE_NAME '");
         if (!MiscUtils.isNull(moduleName))
-            sb.append(moduleName);
+            sb.append(moduleName.replace("'", "''"));
         sb.append("';\n");
 
         return sb.toString();

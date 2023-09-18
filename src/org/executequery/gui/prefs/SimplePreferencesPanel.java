@@ -43,7 +43,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -379,22 +378,6 @@ public class SimplePreferencesPanel extends JPanel
         // set the new properties
         for (UserPreference preference : preferences) {
             if (preference.getType() != UserPreference.CATEGORY_TYPE) {
-
-                if (preference.getKey().equals("editor.logging.path") || preference.getKey().equals("startup.java.path")) {
-                    try {
-                        String value = preference.getSaveValue();
-                        if (value.startsWith("%re%")) {
-                            value = value.substring(4);
-                            if (!value.startsWith(System.getProperty("file.separator")))
-                                value = System.getProperty("file.separator") + value;
-                            value = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + value;
-                        }
-                        preference.setValue(value);
-
-                    } catch (URISyntaxException e) {
-                        Log.error("Error updating log file path", e);
-                    }
-                }
 
                 SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
                 if (preference.getKey().equals("startup.java.path"))

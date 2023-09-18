@@ -379,9 +379,11 @@ public class SimplePreferencesPanel extends JPanel
         for (UserPreference preference : preferences) {
             if (preference.getType() != UserPreference.CATEGORY_TYPE) {
 
-                SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
-                if (preference.getKey().equals("startup.java.path"))
-                    JavaFileProperty.setValue(preference.getSaveValue());
+                if (preference.getKey().equals("startup.java.path")) {
+                    if (JavaFileProperty.setValue(preference.getSaveValue()))
+                        SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
+                } else
+                    SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
             }
         }
 
@@ -573,13 +575,16 @@ public class SimplePreferencesPanel extends JPanel
                 ApplicationContext.getInstance().getUserSettingsHome() + ".cache_java_path64";
         private static final Path CACHE_JAVA_FILE_PATH = new File(CACHE_JAVA_PATH64).toPath();
 
-        static void setValue(String path) {
+        static boolean setValue(String path) {
             try {
                 rewrite(path);
 
             } catch (Exception e) {
-                Log.error("Error updating Java path property", e);
+                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e);
+                return false;
             }
+
+            return true;
         }
 
         static void restore() {
@@ -587,7 +592,7 @@ public class SimplePreferencesPanel extends JPanel
                 delete();
 
             } catch (Exception e) {
-                Log.error("Error updating Java path property", e);
+                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e);
             }
         }
 
@@ -607,7 +612,7 @@ public class SimplePreferencesPanel extends JPanel
             if (System.getProperty("os.name").toLowerCase().contains("lin")) {
 
                 if (!new File(pathToJava).exists())
-                    throw new FileExistsException();
+                    throw new FileExistsException(String.format("File %s doesn't exists", pathToJava));
 
                 value = "jvm=" + pathToJava;
 
@@ -617,7 +622,7 @@ public class SimplePreferencesPanel extends JPanel
                     pathToJava = pathToJava.substring(0, pathToJava.lastIndexOf("\\") - 1);
 
                 if (!new File(pathToJava + "\\jvm.ddl").exists())
-                    throw new FileExistsException();
+                    throw new FileExistsException(String.format("File %s doesn't exists", pathToJava + "\\jvm.ddl"));
 
                 value = "jvm=" + pathToJava + "\\jvm.ddl";
                 value += "\npath=" + pathToJava.substring(0, pathToJava.lastIndexOf("\\"));

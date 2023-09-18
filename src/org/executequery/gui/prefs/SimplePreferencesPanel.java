@@ -610,6 +610,7 @@ public class SimplePreferencesPanel extends JPanel
 
         private static void rewrite(String pathToJava) throws Exception {
 
+            String value = "";
             if (pathToJava.isEmpty())
                 return;
 
@@ -620,11 +621,24 @@ public class SimplePreferencesPanel extends JPanel
                 pathToJava = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + pathToJava;
             }
 
-            String value = "jvm=";
-            if (new File(pathToJava).exists())
-                value += pathToJava;
-            else
-                throw new FileExistsException();
+            if (System.getProperty("os.name").toLowerCase().contains("lin")) {
+
+                if (!new File(pathToJava).exists())
+                    throw new FileExistsException();
+
+                value = "jvm=" + pathToJava;
+
+            } else if (System.getProperty("os.name").toLowerCase().contains("win")) {
+
+                if (pathToJava.endsWith("\\"))
+                    pathToJava = pathToJava.substring(0, pathToJava.lastIndexOf("\\") - 1);
+
+                if (!new File(pathToJava + "\\jvm.ddl").exists())
+                    throw new FileExistsException();
+
+                value = "jvm=" + pathToJava + "\\jvm.ddl";
+                value += "\npath=" + pathToJava.substring(0, pathToJava.lastIndexOf("\\"));
+            }
 
             delete();
             Files.createFile(CACHE_JAVA_FILE_PATH);

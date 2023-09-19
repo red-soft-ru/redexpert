@@ -83,6 +83,9 @@ public class LogFileRepository implements LogRepository {
             logFolderPath = new UserSettingsProperties().getUserSettingsBaseHome();
         }
 
+        if (!logFolderPath.endsWith(System.getProperty("file.separator")))
+            logFolderPath += System.getProperty("file.separator");
+
         return logFolderPath + LOG_FILE_DIR_NAME + System.getProperty("file.separator");
     }
 

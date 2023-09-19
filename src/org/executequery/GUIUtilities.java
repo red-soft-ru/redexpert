@@ -187,9 +187,7 @@ public final class GUIUtilities {
 
         // initialise and add the status bar
         statusBar = new StatusBarPanel(Bundles.get(ConnectionPanel.class, "status.NotConnected"), Constants.EMPTY);
-        statusBar.setFourthLabelText(
-                "JDK" + (javaVersion.length() >= 5 ? javaVersion.substring(0, 5) : javaVersion),
-                SwingConstants.CENTER);
+        statusBar.setFourthLabelText("JDK" + javaVersion, SwingConstants.CENTER);
 
         displayStatusBar(SystemProperties.getBooleanProperty(
                 "user", "system.display.statusbar"));

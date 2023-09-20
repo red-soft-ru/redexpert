@@ -14,6 +14,8 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -138,8 +140,8 @@ public class ForeignKeyPicker extends JPanel
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() > 1) {
                     selectedIndex = table.getSelectedRow();
-                    if (selectedIndex > 0) {
-                        setText(foreignKeysItems.get(0).get(selectedIndex - 1).toString());
+                    if (selectedIndex > -1) {
+                        setText(foreignKeysItems.get(0).get(selectedIndex).toString());
                         closePopup();
                     }
                 }
@@ -154,7 +156,7 @@ public class ForeignKeyPicker extends JPanel
     }
 
     public String getValueAt(int col) {
-        return (selectedValue != null && selectedIndex > 0) ? foreignKeysItems.get(col).get(selectedIndex - 1).toString() : null;
+        return (selectedValue != null && selectedIndex > -1) ? foreignKeysItems.get(col).get(selectedIndex).toString() : null;
     }
 
     @Override
@@ -225,21 +227,36 @@ public class ForeignKeyPicker extends JPanel
 
     private static class ForeignKeyTableModel extends DefaultTableModel {
 
+        private final List<String> columnNames;
+
         protected ForeignKeyTableModel(DefaultTableModel defaultTableModel) {
+
+            columnNames = new ArrayList<>();
 
             for (int j = 0; j < defaultTableModel.getColumnCount(); j++)
                 addColumn("");
 
             for (int i = -1; i < defaultTableModel.getRowCount(); i++) {
 
-                addRow(new Object[]{});
+                if (i != -1)
+                    addRow(new Object[]{});
+
                 for (int j = 0; j < defaultTableModel.getColumnCount(); j++)
                     if (i != -1)
                         setValueAt(defaultTableModel.getValueAt(i, j), getRowCount() - 1, j);
                     else
-                        setValueAt(defaultTableModel.getColumnName(j), getRowCount() - 1, j);
+                        columnNames.add(String.valueOf(defaultTableModel.getColumnName(j)));
             }
 
+        }
+
+        @Override
+        public String getColumnName(int columnIndex) {
+
+            if (columnIndex < 0)
+                columnIndex++;
+
+            return columnNames.get(columnIndex);
         }
 
         @Override

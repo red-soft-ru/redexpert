@@ -710,7 +710,7 @@ public class Comparer {
                 break;
 
             if ((cc.isPrimaryKey() || cc.isUniqueKey()) && cc.getColumnDisplayList() != null)
-                droppedConstraintsColumns.addAll(Arrays.stream(cc.getColumnDisplayList().split(","))
+                droppedConstraintsColumns.addAll(cc.getColumnDisplayList().stream()
                         .map(i -> cc.getTableName().concat("." + i))
                         .collect(Collectors.toList()));
         }
@@ -730,7 +730,7 @@ public class Comparer {
                 if (droppedConstraints.contains(masterCC) || !masterCC.isForeignKey())
                     continue;
 
-                if (Arrays.stream(masterCC.getReferenceColumnDisplayList().split(","))
+                if (masterCC.getReferenceColumnDisplayList().stream()
                         .map(i -> masterCC.getTableName().concat("." + i))
                         .anyMatch(droppedConstraintsColumns::contains)) {
 
@@ -805,7 +805,7 @@ public class Comparer {
 
             List<String> masterConstraintColumns = new ArrayList<>();
             if (masterCC.getColumnDisplayList() != null)
-                Collections.addAll(masterConstraintColumns, masterCC.getColumnDisplayList().split(","));
+                masterConstraintColumns.addAll(masterCC.getColumnDisplayList());
 
             List<DatabaseColumn> masterColumns = ((DefaultDatabaseTable) masterObject).getColumns();
             List<DatabaseColumn> compareColumns = ((DefaultDatabaseTable) compareObject).getColumns();

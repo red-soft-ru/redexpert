@@ -359,7 +359,7 @@ public class TableDataTab extends JPanel
                 " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
 
         Vector<Vector<Object>> items = new Vector<>();
-        for (int i = 0; i < key.getReferenceColumnDisplayList().split(",").length; i++)
+        for (int i = 0; i < key.getReferenceColumnDisplayList().size(); i++)
             items.add(new Vector<>());
 
         try {
@@ -1023,10 +1023,9 @@ public class TableDataTab extends JPanel
     private int[] tableForeignChildren(org.executequery.databaseobjects.impl.ColumnConstraint key) {
 
         List<Integer> indexes = new ArrayList<>();
-        List<String> columnsNames = Arrays.stream(key.getColumnDisplayList().split(",")).collect(Collectors.toList());
 
         for (int i = 0; i < tableModel.getColumnCount(); i++)
-            if (columnsNames.contains(tableModel.getColumnName(i)))
+            if (key.getColumnDisplayList().contains(tableModel.getColumnName(i)))
                 indexes.add(i);
 
         return indexes.stream().mapToInt(Integer::intValue).toArray();

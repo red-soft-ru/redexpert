@@ -168,7 +168,7 @@ public final class SQLUtils {
 
                     String formatted = (cc.getCountCols() > 1) ? cc.getColumn() : format(cc.getColumn());
                     if (editing) {
-                        List<String> columnList = Arrays.asList(cc.getColumnDisplayList().split(", "));
+                        List<String> columnList = cc.getColumnDisplayList();
                         columnList.replaceAll(SQLUtils::format);
                         formatted = String.join(", ", columnList);
                     }
@@ -187,7 +187,7 @@ public final class SQLUtils {
 
                             formatted = (cc.getCountCols() > 1) ? cc.getRefColumn() : format(cc.getRefColumn());
                             if (editing) {
-                                List<String> columnList = Arrays.asList(cc.getRefColumnDisplayList().split(", "));
+                                List<String> columnList = cc.getRefColumnDisplayList();
                                 columnList.replaceAll(SQLUtils::format);
                                 formatted = String.join(", ", columnList);
                             }

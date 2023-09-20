@@ -243,11 +243,11 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
             case 2:
                 return constraint.getTypeName();
             case 3:
-                return constraint.getColumnDisplayList();
+                return listToString(constraint.getColumnDisplayList());
             case 4:
                 return constraint.getReferencedTable();
             case 5:
-                return constraint.getReferenceColumnDisplayList();
+                return listToString(constraint.getReferenceColumnDisplayList());
             case 6:
                 return constraint.getCheck();
             case 7:
@@ -303,16 +303,16 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
         this.editable = editable;
     }
 
+    private String listToString(List<String> list) {
+
+        if (list == null || list.isEmpty())
+            return "";
+
+        String result = "";
+        for (String value : list)
+            result += value + ", ";
+
+        return result.substring(0, result.length() - 2);
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-

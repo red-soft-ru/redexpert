@@ -70,6 +70,7 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Timer;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Takis Diakoumis
@@ -1022,8 +1023,10 @@ public class TableDataTab extends JPanel
     private int[] tableForeignChildren(org.executequery.databaseobjects.impl.ColumnConstraint key) {
 
         List<Integer> indexes = new ArrayList<>();
+        List<String> columnsNames = Arrays.stream(key.getColumnDisplayList().split(",")).collect(Collectors.toList());
+
         for (int i = 0; i < tableModel.getColumnCount(); i++)
-            if (key.getColumnDisplayList().contains(tableModel.getColumnName(i)))
+            if (columnsNames.contains(tableModel.getColumnName(i)))
                 indexes.add(i);
 
         return indexes.stream().mapToInt(Integer::intValue).toArray();

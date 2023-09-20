@@ -254,7 +254,7 @@ public class ForeignKeyPicker extends JPanel
         public String getColumnName(int columnIndex) {
 
             if (columnIndex < 0)
-                columnIndex++;
+                return null;
 
             return columnNames.get(columnIndex);
         }

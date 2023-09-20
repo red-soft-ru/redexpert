@@ -78,6 +78,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
     protected LineNumber lineBorder;
 
     private final JLabel caretPositionLabel;
+    private String triggerTable;
 
     protected void setEditorPreferences() {
 
@@ -948,6 +949,14 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
     }
 
     public void changedUpdate(DocumentEvent e) {
+    }
+
+    public String getTriggerTable() {
+        return triggerTable;
+    }
+
+    public void setTriggerTable(String triggerTable) {
+        this.triggerTable = triggerTable;
     }
 
     class SQLTextUndoManager extends RUndoManager {

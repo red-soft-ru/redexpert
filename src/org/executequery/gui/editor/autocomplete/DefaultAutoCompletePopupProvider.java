@@ -509,12 +509,16 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         // maybe alias?
         if (hasDotIndex) {
             String tableFromAlias = null;
-            for (QueryTable queryTable : tables) {
-                if (queryTable.getAlias().equalsIgnoreCase(tableString)) {
-                    tableFromAlias = queryTable.getName();
-                    break;
-                }
+            if ((tableString.equalsIgnoreCase("new") || tableString.equalsIgnoreCase("old")) && sqlTextPane.getTriggerTable() != null) {
+                tableFromAlias = sqlTextPane.getTriggerTable();
+            } else {
+                for (QueryTable queryTable : tables) {
+                    if (queryTable.getAlias().equalsIgnoreCase(tableString)) {
+                        tableFromAlias = queryTable.getName();
+                        break;
+                    }
 
+                }
             }
             if (tableFromAlias != null) {
                 List<AutoCompleteListItem> itemsForTable =

@@ -77,11 +77,11 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     private final boolean autocompleteOnlyHotKey;
 
     public SimpleSqlTextPanel() {
-        this(false, true, "SQL");
+        this(false, false, "SQL");
     }
 
     public SimpleSqlTextPanel(String title) {
-        this(false, true, title);
+        this(false, false, title);
     }
 
     public SimpleSqlTextPanel(boolean appending, boolean autocompleteOnlyHotKey) {

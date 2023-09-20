@@ -599,8 +599,10 @@ public class SimplePreferencesPanel extends JPanel
         private static void rewrite(String pathToJava) throws Exception {
 
             String value = "";
-            if (pathToJava.isEmpty())
+            if (pathToJava.isEmpty()) {
+                delete();
                 return;
+            }
 
             if (pathToJava.startsWith("%re%")) {
                 pathToJava = pathToJava.substring(4);

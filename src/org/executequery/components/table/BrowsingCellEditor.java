@@ -49,10 +49,10 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
         ActionListener,
         FocusListener {
 
-    transient protected ChangeEvent changeEvent = null;
+    private final int BUTTON_WIDTH = 16;
 
+    protected transient ChangeEvent changeEvent = null;
     protected EventListenerList listenerList = new EventListenerList();
-
     protected EditorDelegate delegate;
 
     /**
@@ -93,36 +93,34 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
     /**
      * the base panel the components are rendered onto
      */
-    private RendererbasePanel base;
+    private final RendererBasePanel base;
+
+    /**
+     * Indicates this has focus
+     */
+    private static boolean hasFocusOnLabel;
 
     static {
         Border focusBorder = UIManager.getBorder("Table.focusCellHighlightBorder");
         if (focusBorder instanceof LineBorder) {
             focusBorderColor = ((LineBorder) focusBorder).getLineColor();
-            textFieldFocusBorder = BorderFactory.
-                    createMatteBorder(1, 1, 1, 0, focusBorderColor);
+            textFieldFocusBorder = BorderFactory.createMatteBorder(1, 1, 1, 0, focusBorderColor);
         }
         textFieldInsets = new Insets(0, 2, 0, 0);
         iconColor = Color.DARK_GRAY.darker();
     }
 
-    /**
-     * Creates a new instance of ComboBoxCellRenderer
-     */
     public BrowsingCellEditor() {
+
         super(new CellTextField());
 
-        // assign the editor component
+        base = new RendererBasePanel();
+        delegate = new EditorDelegate();
+
         textField = (CellTextField) editorComponent;
-
-        //super(new BorderLayout());
-        base = new RendererbasePanel();
-
         textField.setBorder(null);
         textField.setMargin(textFieldInsets);
         textField.setDisabledTextColor(UIManager.getColor("Table.foreground"));
-
-        delegate = new EditorDelegate();
         textField.addActionListener(delegate);
         textField.addFocusListener(this);
 
@@ -133,34 +131,21 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
         base.add(browseButton, BorderLayout.EAST);
     }
 
-    /**
-     * Indicates this has focus
-     */
-    private static boolean hasFocusOnLabel;
-
-    public Component getTableCellEditorComponent(JTable table,
-                                                 Object value,
-                                                 boolean isSelected,
-                                                 int row,
-                                                 int column) {
-
-        //Log.debug("getTableCellEditorComponent "+row);
+    @Override
+    public Component getTableCellEditorComponent(
+            JTable table, Object value, boolean isSelected, int row, int column) {
 
         hasFocusOnLabel = false;
         textField.setFont(table.getFont());
         delegate.setValue(value);
         textField.setEnabled(true);
+
         return base;
     }
 
-    public Component getTableCellRendererComponent(JTable table,
-                                                   Object value,
-                                                   boolean isSelected,
-                                                   boolean cellHasFocus,
-                                                   int row,
-                                                   int col) {
-
-        //Log.debug("getTableCellRendererComponent " +row);
+    @Override
+    public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected, boolean cellHasFocus, int row, int col) {
 
         hasFocusOnLabel = cellHasFocus;
         textField.setEnabled(false);
@@ -173,16 +158,12 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
         return base;
     }
 
-    public boolean isFocusable() {
-        return true;
-    }
-
-    public boolean getFocusTraversalKeysEnabled() {
-        return true;
-    }
-
     public void setDelegateValue(Object value) {
         delegate.setValue(value);
+    }
+
+    public void setFont(Font font) {
+        textField.setFont(font);
     }
 
     /**
@@ -191,40 +172,38 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
      *
      * @return the editor's value
      */
+    @Override
     public String getEditorValue() {
         return getCellEditorValue().toString();
     }
 
     public void addKeyListener(KeyListener listener) {
-        if (textField != null) {
+        if (textField != null)
             textField.addKeyListener(listener);
-        }
     }
 
+    @SuppressWarnings("unused")
     public void removeKeyListener(KeyListener listener) {
-        if (textField != null) {
+        if (textField != null)
             textField.removeKeyListener(listener);
-        }
     }
 
     /**
      * Defines the action to be taken upon activation of the
      * selection button.
      *
-     * @param e - the event
+     * @param e the event
      */
+    @Override
     public abstract void actionPerformed(ActionEvent e);
 
+    @Override
     public void focusGained(FocusEvent e) {
-        //Log.debug("focusGained");
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
         fireEditingStopped();
-    }
-
-    public void setFont(Font font) {
-        textField.setFont(font);
     }
 
     /**
@@ -232,90 +211,110 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
      *
      * @return the editor <code>Component</code>
      */
+    @Override
     public Component getComponent() {
         return textField;
     }
 
-    // ----------------------------
+    // -------------------------------------------
     // borrowed from javax.swing.DefaultCellEditor
+    // -------------------------------------------
 
+    @Override
     public void addCellEditorListener(CellEditorListener l) {
         listenerList.add(CellEditorListener.class, l);
     }
 
+    @Override
     public void removeCellEditorListener(CellEditorListener l) {
         listenerList.remove(CellEditorListener.class, l);
     }
 
+    @Override
     public CellEditorListener[] getCellEditorListeners() {
-        return (CellEditorListener[]) listenerList.getListeners(
-                CellEditorListener.class);
+        return listenerList.getListeners(CellEditorListener.class);
     }
 
+    @Override
     protected void fireEditingStopped() {
-        // Guaranteed to return a non-null array
-        Object[] listeners = listenerList.getListenerList();
-        // Process the listeners last to first, notifying
-        // those that are interested in this event
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == CellEditorListener.class) {
-                // Lazily create the event:
-                if (changeEvent == null) {
-                    changeEvent = new ChangeEvent(this);
-                }
-                ((CellEditorListener) listeners[i + 1]).editingStopped(changeEvent);
-            }
-        }
-        super.fireEditingStopped();
-    }
 
-    protected void fireEditingCanceled() {
         // Guaranteed to return a non-null array
         Object[] listeners = listenerList.getListenerList();
-        // Process the listeners last to first, notifying
-        // those that are interested in this event
+
+        // Process the listeners last to first, notifying those that are interested in this event
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == CellEditorListener.class) {
+
                 // Lazily create the event:
                 if (changeEvent == null)
                     changeEvent = new ChangeEvent(this);
+
+                ((CellEditorListener) listeners[i + 1]).editingStopped(changeEvent);
+            }
+        }
+
+        super.fireEditingStopped();
+    }
+
+    @Override
+    protected void fireEditingCanceled() {
+
+        // Guaranteed to return a non-null array
+        Object[] listeners = listenerList.getListenerList();
+
+        // Process the listeners last to first, notifying those that are interested in this event
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == CellEditorListener.class) {
+
+                // Lazily create the event:
+                if (changeEvent == null)
+                    changeEvent = new ChangeEvent(this);
+
                 ((CellEditorListener) listeners[i + 1]).editingCanceled(changeEvent);
             }
         }
+
         super.fireEditingCanceled();
     }
 
+    @Override
     public Object getCellEditorValue() {
         return delegate.getCellEditorValue();
     }
 
+    @Override
     public boolean isCellEditable(EventObject anEvent) {
         return delegate.isCellEditable(anEvent);
     }
 
+    @Override
     public boolean shouldSelectCell(EventObject anEvent) {
         return delegate.shouldSelectCell(anEvent);
     }
 
+    @Override
     public boolean stopCellEditing() {
         return delegate.stopCellEditing();
     }
 
+    @Override
     public void cancelCellEditing() {
         delegate.cancelCellEditing();
     }
 
     // ----------------------------------
 
-    protected class RendererbasePanel extends JPanel {
+    protected static class RendererBasePanel extends JPanel {
 
-        public RendererbasePanel() {
+        public RendererBasePanel() {
             super(new BorderLayout());
             setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
         }
 
+        @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
+
             // check for a selection border
             if (hasFocusOnLabel && focusBorderColor != null) {
                 g.setColor(focusBorderColor);
@@ -323,89 +322,14 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
             }
         }
 
-    }
+    } // RendererBasePanel class
 
-    /*
-    protected static class MyBoundedRangeModel extends DefaultBoundedRangeModel {
-        public MyBoundedRangeModel() {
-            super();
-        }
-        
-        public void setExtent(int newExtent) {
-            newExtent -= 500;
-            super.setExtent(newExtent);
-        }
-        
-        public void setRangeProperties(int newValue, int newExtent, int newMin, int newMax, boolean adjusting) {
-            newExtent -= 500;
-            super.setRangeProperties(newValue, newExtent, newMin, newMax, adjusting);
-            Log.debug(this);
-        }
-    }
-*/
     protected static class CellTextField extends JTextField {
-        //MyBoundedRangeModel myModel;
-        public CellTextField() {
-            /*
-            myModel = new MyBoundedRangeModel();
-            myModel.addChangeListener(new ScrollRepainter());
-             */
-        }
-        
-        /*
-        public BoundedRangeModel getHorizontalVisibility() {
-            return myModel;
-        }
-        */
 
-        /**
-         * Gets the scroll offset, in pixels.
-         *
-         * @return the offset >= 0
-         */
-        /*
-        public int getScrollOffset() {
-            return myModel.getValue();
-        }
-        */
-
-        /**
-         * Sets the scroll offset, in pixels.
-         *
-         * @param scrollOffset the offset >= 0
-         */
-        /*
-        public void setScrollOffset(int scrollOffset) {
-            myModel.setValue(scrollOffset);
-        }
-         **/
-
-        /**
-         * Scrolls the field left or right.
-         *
-         * @param r the region to scroll
-         */
-        /*
-        public void scrollRectToVisible(Rectangle r) {
-            //BoundedRangeModel visibility = super.getHorizontalVisibility();
-            //visibility.setExtent(100);
-            // convert to coordinate system of the bounded range
-            BoundedRangeModel visibility = getHorizontalVisibility();
-        Insets i = getInsets();
-            int x0 = r.x + visibility.getValue() - i.left;
-            int x1 = x0 + r.width;
-            if (x0 < visibility.getValue()) {
-                // Scroll to the left
-                visibility.setValue(x0);
-            } else if(x1 > visibility.getValue() + visibility.getExtent()) {
-                // Scroll to the right
-                visibility.setValue(x1 - visibility.getExtent());
-            }
-
-        }
-         */
+        @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
+
             // check for a selection border
             if (hasFocusOnLabel && focusBorderColor != null) {
                 int width = getWidth() - 1;
@@ -413,43 +337,30 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
                 g.setColor(focusBorderColor);
                 g.drawLine(0, 0, width, 0); // top
                 g.drawLine(0, height, width, height); // bottom
-                //g.drawLine(0, 0, 0, height); // left
             }
         }
 
-    }
+    } // CellTextField class
 
-    /*
-    static class ScrollRepainter implements ChangeListener, Serializable {
-
-        public void stateChanged(ChangeEvent e) {
-            textField.repaint();
-        }
-
-    }
-    */
-
-
-    // ----------------------------------
-
-    private int BUTTON_WIDTH = 16;
-
-    protected class BrowseButton extends JButton implements MouseListener {
+    protected class BrowseButton extends JButton
+            implements MouseListener {
 
         public BrowseButton() {
+
             setFocusPainted(false);
             setBorderPainted(false);
             setOpaque(true);
-            //addMouseListener(this);
 
             try {
                 setUI(new javax.swing.plaf.basic.BasicButtonUI());
-            } catch (NullPointerException nullExc) {
+            } catch (NullPointerException e) {
+                e.printStackTrace(System.out);
             }
-
         }
 
+        @Override
         public void paintComponent(Graphics g) {
+
             int width = getWidth();
             int height = getHeight();
 
@@ -467,48 +378,60 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
             g.drawLine(x + 6, y, x + 6, y);
         }
 
+        @Override
         public boolean isFocusTraversable() {
             return false;
         }
 
-        public void requestFocus() {
-        }
-
-        ;
-
+        @Override
         public int getHeight() {
             return super.getHeight() - 2;
         }
 
+        @Override
         public Dimension getMaximumSize() {
             return getPreferredSize();
         }
 
+        @Override
         public Dimension getPreferredSize() {
             return new Dimension(BUTTON_WIDTH + 2, getHeight());
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             actionPerformed(new ActionEvent(this, -1, Constants.EMPTY));
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
         }
 
-    }
+        @Override
+        public void requestFocus() {
+        }
+
+    } // BrowseButton class
 
 
+    // ----------------------------------------------------------
     // borrowed from javax.swing.DefaultCellEditor.EditorDelegate
-    private class EditorDelegate implements ActionListener,
+    // ----------------------------------------------------------
+
+    private class EditorDelegate
+            implements ActionListener,
             ItemListener,
             Serializable {
 
@@ -524,7 +447,6 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
          */
         public Object getCellEditorValue() {
             return textField.getText();
-            //return value;
         }
 
         /**
@@ -534,8 +456,7 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
          */
         public void setValue(Object value) {
             this.value = value;
-            textField.setText((value != null) ?
-                    value.toString() : Constants.EMPTY);
+            textField.setText((value != null) ? value.toString() : Constants.EMPTY);
         }
 
         /**
@@ -550,21 +471,21 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
          * @see #shouldSelectCell
          */
         public boolean isCellEditable(EventObject anEvent) {
+
             if (anEvent instanceof MouseEvent) {
                 MouseEvent mEvent = (MouseEvent) anEvent;
 
                 Point point = mEvent.getPoint();
                 JTable table = (JTable) mEvent.getSource();
-                Rectangle cellRect = table.getCellRect(table.rowAtPoint(point),
-                        table.columnAtPoint(point),
-                        true);
+                Rectangle cellRect = table.getCellRect(
+                        table.rowAtPoint(point), table.columnAtPoint(point),true);
 
-                if (mEvent.getX() >= (cellRect.x + cellRect.width - BUTTON_WIDTH)) {
+                if (mEvent.getX() >= (cellRect.x + cellRect.width - BUTTON_WIDTH))
                     return true;
-                }
 
                 return mEvent.getClickCount() >= 2;
             }
+
             return true;
         }
 
@@ -585,6 +506,7 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
          *
          * @param anEvent the event
          */
+        @SuppressWarnings("unused")
         public boolean startCellEditing(EventObject anEvent) {
             return true;
         }
@@ -614,6 +536,7 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
          * @param e the action event
          * @see #stopCellEditing
          */
+        @Override
         public void actionPerformed(ActionEvent e) {
             BrowsingCellEditor.this.stopCellEditing();
         }
@@ -624,24 +547,10 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
          * @param e the action event
          * @see #stopCellEditing
          */
+        @Override
         public void itemStateChanged(ItemEvent e) {
             BrowsingCellEditor.this.stopCellEditing();
         }
     }
 
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+} // EditorDelegate class

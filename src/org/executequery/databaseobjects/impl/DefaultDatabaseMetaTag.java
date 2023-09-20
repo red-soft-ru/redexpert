@@ -1124,7 +1124,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         String query = null;
         if (metaDataKey.equals(NamedObject.META_TYPES[TABLE])) {
 
-            query = "SELECT RDB$RELATION_NAME\n" +
+            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(63))\n" +
                     "FROM RDB$RELATIONS\n" +
                     "WHERE RDB$VIEW_BLR IS NULL\n" +
                     "AND (RDB$SYSTEM_FLAG IS NULL OR RDB$SYSTEM_FLAG = 0)\n" +

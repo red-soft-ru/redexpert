@@ -398,7 +398,10 @@ public class ColumnData implements Serializable {
         description = cd.getDescription();
         check = cd.getCheck();
         computedBy = cd.getComputedBy();
-        defaultValue = cd.getDefaultValue();
+        defaultValue = new DefaultValue();
+        defaultValue.value = cd.getDefaultValue().value;
+        defaultValue.originOperator = cd.getDefaultValue().originOperator;
+        defaultValue.useQuotes = cd.getDefaultValue().useQuotes;
         table = cd.getTable();
         columnTable = cd.getColumnTable();
         typeOf = cd.isTypeOf();

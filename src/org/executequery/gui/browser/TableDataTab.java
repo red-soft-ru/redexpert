@@ -355,7 +355,7 @@ public class TableDataTab extends JPanel
 
     Vector<Vector<Object>> allItemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
 
-        String query = "SELECT " + key.getReferenceColumnDisplayList() +
+        String query = "SELECT " + listToString(key.getReferenceColumnDisplayList()) +
                 " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
 
         Vector<Vector<Object>> items = new Vector<>();
@@ -376,6 +376,18 @@ public class TableDataTab extends JPanel
         }
 
         return items;
+    }
+
+    private String listToString(List<String> list) {
+
+        if (list == null || list.isEmpty())
+            return "";
+
+        String result = "";
+        for (String value : list)
+            result += value + ", ";
+
+        return result.substring(0, result.length() - 2);
     }
 
     private Object setTableResultsPanel(DatabaseObject databaseObject) {

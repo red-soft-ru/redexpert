@@ -963,7 +963,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
             databaseHost = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(selectedConnection);
         }
-
+        autoCompleteListItems = new ArrayList<>();
         selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteSchema, sqlTextPane);
 
         return true;

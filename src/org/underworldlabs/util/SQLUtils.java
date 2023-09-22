@@ -615,7 +615,7 @@ public final class SQLUtils {
                     sb.append(cd.getFormattedDomain());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
-            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue().getValue())) {
+            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue().getValue()) && !cd.getDefaultValue().isDomain()) {
                 sb.append(format(cd.getDefaultValue(), cd.getSQLType()));
             }
             if (!MiscUtils.isNull(cd.getCheck())) {
@@ -643,7 +643,7 @@ public final class SQLUtils {
         cd.setTypeOfFrom(parameter.getTypeOfFrom());
         cd.setTable(parameter.getRelationName());
         cd.setColumnTable(parameter.getFieldName());
-        cd.setDefaultValue(parameter.getDefaultValue(), true);
+        cd.setDefaultValue(parameter.getDefaultValue(), true, parameter.isDefaultValueFromDomain());
         cd.setDescriptionAsSingleComment(parameter.isDescriptionAsSingleComment());
         String[] dataTypes = dc.getDataTypesArray();
         int[] intDataTypes = dc.getIntDataTypesArray();

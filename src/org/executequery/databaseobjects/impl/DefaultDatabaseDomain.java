@@ -174,7 +174,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
                 }
             }
             domainData.setDomainCheck(domainCheck);
-            domainData.setDomainDefault(domainData.processedDefaultValue(domainData.getDomainDefault()));
+            domainData.setDomainDefault(domainData.processedDefaultValue(domainData.getDomainDefault(), false));
             if (MiscUtils.isNull(domainCharset)) {
                 domainCharset = "";
             } else domainCharset = domainCharset.trim();

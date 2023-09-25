@@ -231,7 +231,6 @@ public class UDFDefinitionPanel extends JPanel
     public void tableChanged(TableModelEvent e) {
         int row = table.getEditingRow();
         if (row == -1 || tableVector.size() == row) {
-            return;
         }
     }
 
@@ -554,7 +553,7 @@ public class UDFDefinitionPanel extends JPanel
 
         protected String[] header = Bundles.get(TableDefinitionPanel.class,
                 new String[]
-                        {"Datatype", "Size", "Scale", "Subtype", "Encoding", "ByDescriptor", "NULL", "CSTRING"});
+                        {"Datatype", "SizePrecision", "Scale", "Subtype", "Encoding", "ByDescriptor", "NULL", "CSTRING"});
 
         public UDFParameterModel() {
             tableVector = new Vector<>();

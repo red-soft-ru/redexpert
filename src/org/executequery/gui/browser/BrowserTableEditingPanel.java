@@ -33,10 +33,9 @@ import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
 import org.executequery.gui.*;
-import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.databaseobjects.CreateIndexPanel;
+import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.table.KeyCellRenderer;
@@ -1229,7 +1228,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             dialog = new BaseDialog(CreateIndexPanel.CREATE_TITLE, true);
             panelForDialog = new CreateIndexPanel(table.getHost().getDatabaseConnection(), dialog, table.getName());
         } else if (tabIndex == TABLE_TRIGGERS_INDEX) {
-            dialog = new BaseDialog(CreateIndexPanel.CREATE_TITLE, true);
+            dialog = new BaseDialog(CreateTriggerPanel.CREATE_TITLE, true);
             panelForDialog = new CreateTriggerPanel(table.getHost().getDatabaseConnection(), dialog, DefaultDatabaseTrigger.TABLE_TRIGGER, table.getName());
         }
         dialog.addDisplayComponent(panelForDialog);

@@ -30,6 +30,7 @@ import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.event.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -353,7 +354,7 @@ public class TableDataTab extends JPanel
         return items;
     }
 
-    Vector<Vector<Object>> allItemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+    Vector<Vector<Object>> allItemsForeign(ColumnConstraint key) {
 
         String query = "SELECT " + listToString(key.getReferenceColumnDisplayList()) +
                 " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
@@ -376,6 +377,10 @@ public class TableDataTab extends JPanel
         }
 
         return items;
+    }
+
+    private Vector<String> namesForeign(ColumnConstraint key) {
+        return new Vector<>(key.getReferenceColumnDisplayList());
     }
 
     private String listToString(List<String> list) {
@@ -577,7 +582,8 @@ public class TableDataTab extends JPanel
 
                     int columnIndex = tableModel.getColumnIndex(key.getColumnName());
                     if (columnIndex > -1)
-                        table.setForeignKeyTable(columnIndex, tableForeign(key), allItemsForeign(key), tableForeignChildren(key));
+                        table.setForeignKeyTable(columnIndex, tableForeign(key),
+                                allItemsForeign(key), namesForeign(key), tableForeignChildren(key));
                 }
             }
 

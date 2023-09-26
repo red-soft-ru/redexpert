@@ -22,27 +22,25 @@ package org.executequery;
 
 import org.executequery.gui.HelpWindow;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
- * The entry point for Execute Query.
+ * The entry point for RedExpert application.
  *
  * @author Takis Diakoumis
  */
 public final class ExecuteQuery {
 
-    public ExecuteQuery() {
-
-        new ApplicationLauncher().startup();
-    }
-
     public static void main(String[] args) {
 
-        // make sure the installed java version is at least 1.7
         /*
+        // make sure the installed java version is at least 1.7
         if (!MiscUtils.isMinJavaVersion(1, 7)) {
 
-            JOptionPane.showMessageDialog(null, 
+            JOptionPane.showMessageDialog(null,
                     "The minimum required Java version is 1.7.\n" +
-                    "The reported version is " + 
+                    "The reported version is " +
                     System.getProperty("java.vm.version") +
                     ".\n\nPlease download and install the latest Java " +
                     "version\nfrom http://java.sun.com and try again.\n\n",
@@ -54,31 +52,42 @@ public final class ExecuteQuery {
         */
 
         if (isHelpStartupOnly(args)) {
-
             HelpWindow.main(args);
 
         } else {
-
             ApplicationContext.getInstance().startup(args);
-            new ExecuteQuery();
+            new ApplicationLauncher().startup();
         }
 
+    }
+
+    public static void restart(String repoArg) {
+
+        try {
+
+            StringBuilder sb = new StringBuilder("./RedExpert");
+            if (System.getProperty("os.arch").toLowerCase().contains("64"))
+                sb.append("64");
+            if (System.getProperty("os.name").toLowerCase().contains("win"))
+                sb.append(".exe");
+            if (repoArg == null || repoArg.isEmpty())
+                repoArg = "-repo=";
+
+            System.out.println("Executing: " + sb);
+
+            ProcessBuilder processBuilder = new ProcessBuilder(sb.toString(), repoArg);
+            processBuilder.directory(new File(System.getProperty("user.dir")));
+            processBuilder.start();
+
+        } catch (IOException e) {
+            e.printStackTrace(System.err);
+        }
+
+        System.exit(0);
     }
 
     private static boolean isHelpStartupOnly(String[] args) {
-
-        if (args.length > 0) {
-
-            return args[0].toUpperCase().equals("HELP");
-        }
-
-        return false;
+        return args.length > 0 && args[0].equalsIgnoreCase("help");
     }
 
 }
-
-
-
-
-
-

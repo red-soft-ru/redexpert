@@ -117,28 +117,7 @@ public class UpdateLoader extends JFrame {
     }
 
     public void launch() {
-
-        try {
-
-            StringBuilder sb = new StringBuilder("./RedExpert");
-            if (System.getProperty("os.arch").toLowerCase().contains("64"))
-                sb.append("64");
-            if (System.getProperty("os.name").toLowerCase().contains("win"))
-                sb.append(".exe");
-            if (repoArg == null)
-                repoArg = "-repo=";
-
-            System.out.println("Executing: " + sb);
-
-            ProcessBuilder processBuilder = new ProcessBuilder(sb.toString(), repoArg);
-            processBuilder.directory(new File(System.getProperty("user.dir")));
-            processBuilder.start();
-
-        } catch (IOException e) {
-            e.printStackTrace(System.err);
-        }
-
-        System.exit(0);
+        ExecuteQuery.restart(repoArg);
     }
 
     private void cleanup() {

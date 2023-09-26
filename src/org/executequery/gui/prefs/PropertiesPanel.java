@@ -20,9 +20,7 @@
 
 package org.executequery.gui.prefs;
 
-import org.executequery.ActiveComponent;
-import org.executequery.EventMediator;
-import org.executequery.GUIUtilities;
+import org.executequery.*;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.components.SplitPaneFactory;
 import org.executequery.components.table.PropertiesTreeCellRenderer;
@@ -397,29 +395,19 @@ public class PropertiesPanel extends JPanel
         preferenceChangeEvents.put(e.getKey(), e);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
 
         try {
-
             GUIUtilities.showWaitCursor();
 
-            for (Integer key : panelMap.keySet()) {
+            panelMap.values().forEach(UserPreferenceFunction::save);
+            ThreadUtils.invokeLater(() -> EventMediator.fireEvent(createUserPreferenceEvent()));
 
-                panelMap.get(key).save();
-            }
-
-            ThreadUtils.invokeLater(new Runnable() {
-
-                public void run() {
-
-                    EventMediator.fireEvent(createUserPreferenceEvent());
-                }
-
-            });
-            GUIUtilities.displayInformationMessage(bundledString("restart-message"));
+            if (GUIUtilities.displayConfirmDialog(bundledString("restart-message")) == JOptionPane.YES_OPTION)
+                ExecuteQuery.restart(ApplicationContext.getInstance().getRepo());
 
         } finally {
-
             GUIUtilities.showNormalCursor();
         }
 

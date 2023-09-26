@@ -34,6 +34,8 @@ public class CreateRolePanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void initEdited() {
+
+        edited = true;
         tabbedPane.removeAll();
         nameField.setText(role.getName());
         nameField.setEditable(false);
@@ -78,9 +80,17 @@ public class CreateRolePanel extends AbstractCreateObjectPanel {
 
     @Override
     protected String generateQuery() {
-        String query = "CREATE ROLE " + MiscUtils.getFormattedObject(nameField.getText()) + ";";
-        if (!MiscUtils.isNull(simpleCommentPanel.getComment()))
+
+        String query = "";
+
+        if (!edited) {
+            query += "CREATE ROLE " + MiscUtils.getFormattedObject(nameField.getText()) + ";";
+            if (!MiscUtils.isNull(simpleCommentPanel.getComment()))
+                query += "COMMENT ON ROLE " + MiscUtils.getFormattedObject(nameField.getText()) + " IS '" + simpleCommentPanel.getComment() + "';";
+
+        } else if (!MiscUtils.isNull(simpleCommentPanel.getComment()) && !role.getRemarks().equals(simpleCommentPanel.getComment()))
             query += "COMMENT ON ROLE " + MiscUtils.getFormattedObject(nameField.getText()) + " IS '" + simpleCommentPanel.getComment() + "';";
+
         return query;
     }
 }

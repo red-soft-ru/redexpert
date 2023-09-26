@@ -168,7 +168,7 @@ public class ForeignKeyPicker extends JPanel
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() > 1) {
-                    selectedIndex = foreignTable.getSelectedRow();
+                    selectedIndex = ((TableSorter) foreignTable.getModel()).modelIndex(foreignTable.getSelectedRow());
                     if (selectedIndex > -1) {
                         setText(foreignKeysItems.get(0).get(selectedIndex).toString());
                         closePopup();

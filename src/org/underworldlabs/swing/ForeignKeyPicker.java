@@ -144,7 +144,7 @@ public class ForeignKeyPicker extends JPanel
             for (int col : selectedValues.keySet()) {
 
                 RecordDataItem value = (RecordDataItem) foreignTable.getValueAt(row, foreignTable.getColumn(foreignKeysNames.get(col)).getModelIndex());
-                if (value.getValue() != null && value.getValue() != null)
+                if (value.getValue() != null)
                     if (value.getValue() instanceof Number && selectedValues.get(col) != null) {
                         if (value.getValue().toString().contentEquals(selectedValues.get(col)))
                             matchCounter++;

@@ -39,8 +39,10 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
@@ -537,7 +539,7 @@ public class ResultSetTable extends JTable implements StandardTable {
     }
 
     public void setForeignKeyTable(
-            int ind, DefaultTableModel defaultTableModel, Vector<Vector<Object>> items,
+            int ind, ResultSetTableModel defaultTableModel, Vector<Vector<Object>> items,
             Vector<String> names, int[] childColumnIndexes) {
 
         foreignColumnsIndexes.add(ind);
@@ -603,12 +605,12 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         private final int columnIndex;
         private final int[] childColumnIndexes;
-        private final DefaultTableModel tableModel;
+        private final ResultSetTableModel tableModel;
         private final Vector<Vector<Object>> items;
         private final Vector<String> names;
 
         public ForeignData(
-                int columnIndex, DefaultTableModel tableModel, Vector<Vector<Object>> items,
+                int columnIndex, ResultSetTableModel tableModel, Vector<Vector<Object>> items,
                 Vector<String> names, int[] childColumnIndexes) {
 
             this.columnIndex = columnIndex;
@@ -622,7 +624,7 @@ public class ResultSetTable extends JTable implements StandardTable {
             return columnIndex;
         }
 
-        public DefaultTableModel getTableModel() {
+        public ResultSetTableModel getTableModel() {
             return tableModel;
         }
 

@@ -1700,6 +1700,21 @@ public class ConnectionsTreePanel extends TreePanel
         return getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).getDatabaseObjectFromTypeAndName(type, name);
     }
 
+    public static NamedObject getTableOrViewFromHost(DatabaseConnection dc, String name) {
+        List<Integer> list = new ArrayList<>();
+        list.add(NamedObject.TABLE);
+        list.add(NamedObject.GLOBAL_TEMPORARY);
+        list.add(NamedObject.VIEW);
+        list.add(NamedObject.SYSTEM_TABLE);
+        list.add(NamedObject.SYSTEM_VIEW);
+        for (Integer type : list) {
+            NamedObject table = getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).getDatabaseObjectFromTypeAndName(type, name);
+            if (table != null)
+                return table;
+        }
+        return null;
+    }
+
     public static NamedObject getNamedObjectFromHost(DatabaseConnection dc, String metaTag, String name) {
         return getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).getDatabaseObjectFromMetaTagAndName(metaTag, name);
     }

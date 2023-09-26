@@ -1,9 +1,9 @@
 package org.underworldlabs.swing;
 
 import org.executequery.gui.resultset.RecordDataItem;
+import org.executequery.gui.resultset.ResultSetTableModel;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import java.awt.*;
@@ -25,7 +25,7 @@ public class ForeignKeyCellEditor extends AbstractCellEditor
     private final int[] childColumnIndices;
     private final int selectedRow;
 
-    public ForeignKeyCellEditor(TableModel resultSetTableModel, DefaultTableModel defaultTableModel,
+    public ForeignKeyCellEditor(TableModel resultSetTableModel, ResultSetTableModel defaultTableModel,
                                 Vector<Vector<Object>> foreignKeysItems, Vector<String> foreignKeysNames, Object selectedValue, int selectedRow,
                                 int[] childColumnIndices) {
 

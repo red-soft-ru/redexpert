@@ -4,13 +4,17 @@ import com.github.lgooddatepicker.zinternaltools.CustomPopup;
 import com.github.lgooddatepicker.zinternaltools.InternalUtilities;
 import com.privatejgoodies.forms.factories.CC;
 import com.privatejgoodies.forms.layout.FormLayout;
+import org.executequery.gui.resultset.RecordDataItem;
+import org.executequery.gui.resultset.ResultSetTable;
+import org.executequery.gui.resultset.ResultSetTableModel;
+import org.underworldlabs.swing.table.TableSorter;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -25,14 +29,16 @@ import java.util.Vector;
 public class ForeignKeyPicker extends JPanel
         implements DefaultDataPicker {
 
-    private final ForeignKeyTableModel foreignKeyTableModel;
+    private final ResultSetTableModel foreignKeyTableModel;
     private final Vector<Vector<Object>> foreignKeysItems;
     private final Map<Integer, String> foreignKeysNames;
     private final Map<Integer, String> selectedValues;
 
+    private ResultSetTable foreignTable;
+    private JScrollPane scroller;
+
     private Object selectedValue;
     private int selectedIndex;
-    private JTable foreignTable;
 
     private CustomPopup popup;
     private JPanel editorPanel;
@@ -40,10 +46,10 @@ public class ForeignKeyPicker extends JPanel
     private JButton toggleButton;
 
     public ForeignKeyPicker(
-            DefaultTableModel foreignKeysTableModel, Vector<Vector<Object>> foreignKeysItems,
+            ResultSetTableModel foreignKeysTableModel, Vector<Vector<Object>> foreignKeysItems,
             Map<Integer, String> foreignKeysNames, Object selectedValue, Map<Integer, String> selectedValues) {
 
-        this.foreignKeyTableModel = new ForeignKeyTableModel(foreignKeysTableModel);
+        this.foreignKeyTableModel = foreignKeysTableModel;
         this.foreignKeysItems = foreignKeysItems;
         this.foreignKeysNames = foreignKeysNames;
         this.selectedValues = selectedValues;
@@ -105,39 +111,40 @@ public class ForeignKeyPicker extends JPanel
         popup.setLocation(popupRectangle.x, popupRectangle.y);
     }
 
-    private Component getCreateTable() {
-
-        foreignTable = new JTable(foreignKeyTableModel);
-        foreignTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-        for (int column = 0; column < foreignTable.getColumnCount(); column++) {
-
-            int preferredWidth = foreignTable.getColumnModel().getColumn(column).getPreferredWidth();
-            int maxWidth = foreignTable.getColumnModel().getColumn(column).getMaxWidth();
-
-            for (int row = 0; row < foreignTable.getRowCount(); row++) {
-
-                TableCellRenderer cellRenderer = foreignTable.getCellRenderer(row, column);
-                Component component = foreignTable.prepareRenderer(cellRenderer, row, column);
-
-                preferredWidth = Math.max(preferredWidth, component.getPreferredSize().width);
-                if (preferredWidth >= maxWidth) {
-                    preferredWidth = maxWidth;
-                    break;
-                }
-
+    private ResultSetTable getCreateTable() {
+        foreignTable = new ResultSetTable() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
             }
+        };
+        Color bg = SystemProperties.getColourProperty("user",
+                "editor.results.background.colour");
 
-            foreignTable.getColumnModel().getColumn(column).setPreferredWidth(preferredWidth);
+        // this is set for the bg of any remaining
+        // header region outside the cells themselves
+        foreignTable.getTableHeader().setBackground(bg);
+
+
+        int rowCount = foreignKeyTableModel.getRowCount();
+        if (rowCount > 0) {
+
+            TableSorter sorter = new TableSorter(foreignKeyTableModel);
+            foreignTable.setModel(sorter);
+            sorter.setTableHeader(foreignTable.getTableHeader());
+            foreignTable.applyUserPreferences();
+            foreignTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            foreignTable.setTableColumnWidthFromContents();
+        } else {
+            foreignTable.setTableColumnWidth(SystemProperties.getIntProperty("user", "results.table.column.width"));
         }
-
         for (int row = 0; row < foreignTable.getRowCount(); row++) {
 
             int matchCounter = 0;
             for (int col : selectedValues.keySet()) {
 
-                String value = foreignTable.getValueAt(row, foreignTable.getColumn(foreignKeysNames.get(col)).getModelIndex()).toString();
-                if (value.equals(selectedValues.get(col)))
+                RecordDataItem value = (RecordDataItem) foreignTable.getValueAt(row, foreignTable.getColumn(foreignKeysNames.get(col)).getModelIndex());
+                if (value.getValue() != null && value.getValue().equals(selectedValues.get(col)))
                     matchCounter++;
                 else break;
             }
@@ -161,7 +168,6 @@ public class ForeignKeyPicker extends JPanel
                 }
             }
         });
-
         return foreignTable;
     }
 
@@ -185,11 +191,17 @@ public class ForeignKeyPicker extends JPanel
 
             if (!textField.hasFocus())
                 textField.requestFocusInWindow();
-
+            Color bg = SystemProperties.getColourProperty("user",
+                    "editor.results.background.colour");
             editorPanel = new JPanel(new GridBagLayout());
-            editorPanel.add(new JScrollPane(getCreateTable(),
+            ResultSetTable table = getCreateTable();
+            scroller = new JScrollPane(table,
                     JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+                    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scroller.setBackground(bg);
+            scroller.setBorder(null);
+            scroller.getViewport().setBackground(bg);
+            editorPanel.add(scroller);
 
             popup = new CustomPopup(this.editorPanel, SwingUtilities.getWindowAncestor(this),
                     this, BorderFactory.createLineBorder(Color.BLACK));

@@ -1294,10 +1294,11 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     public NamedObject getDatabaseObjectFromMetaTagAndName(String metadatakey, String name) {
         List<NamedObject> namedObjects = getDatabaseObjectsForMetaTag(metadatakey);
-        for (NamedObject namedObject : namedObjects) {
-            if (MiscUtils.trimEnd(namedObject.getName()).contentEquals(name))
-                return namedObject;
-        }
+        if (namedObjects != null)
+            for (NamedObject namedObject : namedObjects) {
+                if (MiscUtils.trimEnd(namedObject.getName()).contentEquals(name))
+                    return namedObject;
+            }
         return null;
     }
 

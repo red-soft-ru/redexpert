@@ -442,44 +442,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
     DocumentListener autoCompletePopupDocumentListener;
     CaretListener autoCompletePopupCaretListener;
 
-    private void registerAutoCompletePopup() {
-
-
-        Action autoCompletePopupAction = autoCompletePopup.getPopupAction();
-
-        getActionMap().put(AUTO_COMPLETE_POPUP_ACTION_KEY, autoCompletePopupAction);
-        getInputMap().put((KeyStroke)
-                        autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
-                AUTO_COMPLETE_POPUP_ACTION_KEY);
-        autoCompletePopupDocumentListener = new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                changed = true;
-            }
-        };
-        getDocument().addDocumentListener(autoCompletePopupDocumentListener);
-        autoCompletePopupCaretListener = new CaretListener() {
-            @Override
-            public void caretUpdate(CaretEvent e) {
-
-                if ((changed && !autocompleteOnlyHotKey) || autoCompletePopup.isShow())
-                    autoCompletePopupAction.actionPerformed(null);
-                changed = false;
-            }
-        };
-        addCaretListener(autoCompletePopupCaretListener);
-
-    }
+    boolean updateFromSetText = false;
 
     public void deregisterAutoCompletePopup() {
 
@@ -541,15 +504,46 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
         return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
-    public void deleteAll() {
+    private void registerAutoCompletePopup() {
 
-        try {
 
-            RSyntaxDocument document = (RSyntaxDocument) getDocument();
-            document.replace(0, document.getLength(), "", null);
+        Action autoCompletePopupAction = autoCompletePopup.getPopupAction();
 
-        } catch (BadLocationException badLoc) {
-        }
+        getActionMap().put(AUTO_COMPLETE_POPUP_ACTION_KEY, autoCompletePopupAction);
+        getInputMap().put((KeyStroke)
+                        autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
+                AUTO_COMPLETE_POPUP_ACTION_KEY);
+        autoCompletePopupDocumentListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changed = true;
+            }
+        };
+        getDocument().addDocumentListener(autoCompletePopupDocumentListener);
+        autoCompletePopupCaretListener = new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                if (updateFromSetText) {
+                    updateFromSetText = false;
+                    changed = false;
+                    return;
+                }
+                if ((changed && !autocompleteOnlyHotKey) || autoCompletePopup.isShow())
+                    autoCompletePopupAction.actionPerformed(null);
+                changed = false;
+            }
+        };
+        addCaretListener(autoCompletePopupCaretListener);
 
     }
 
@@ -957,6 +951,23 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
 
     public void setTriggerTable(String triggerTable) {
         this.triggerTable = triggerTable;
+    }
+
+    public void deleteAll() {
+        updateFromSetText = true;
+        try {
+
+            RSyntaxDocument document = (RSyntaxDocument) getDocument();
+            document.replace(0, document.getLength(), "", null);
+
+        } catch (BadLocationException badLoc) {
+        }
+
+    }
+
+    public void setText(String text) {
+        updateFromSetText = true;
+        super.setText(text);
     }
 
     class SQLTextUndoManager extends RUndoManager {

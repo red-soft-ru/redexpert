@@ -1226,11 +1226,11 @@ public final class SQLUtils {
         else
             sb.append("ALTER VIEW ").append(format(name));
 
-        if (fields != null && !fields.trim().equals(""))
+        if (fields != null && !fields.trim().isEmpty())
             sb.append(" (").append(fields.trim()).append(") ");
         sb.append("\nAS \n").append(selectStatement.trim()).append(";\n");
 
-        if (description != null && !description.trim().equals(""))
+        if (description != null && !description.trim().isEmpty())
             sb.append(generateComment(name, "VIEW", description.trim(), ";", false));
 
         return sb.toString();
@@ -1445,7 +1445,7 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateAlterIndex(String name, Boolean isActive, String tablespace) {
+    public static String generateAlterIndex(String name, Boolean isActive, String tablespace, String comment) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -1453,6 +1453,8 @@ public final class SQLUtils {
             sb.append("ALTER INDEX ").append(format(name)).append(isActive ? " ACTIVE" : " INACTIVE").append(";\n");
         if (tablespace != null)
             sb.append("ALTER INDEX ").append(format(name)).append(" SET TABLESPACE TO ").append(tablespace).append(";\n");
+        if (comment != null)
+            sb.append(generateComment(name, "INDEX", comment, ";", false));
 
         return sb.toString();
     }

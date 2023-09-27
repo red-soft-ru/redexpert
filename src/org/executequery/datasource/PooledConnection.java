@@ -272,7 +272,7 @@ public class PooledConnection implements Connection {
                 @Override
                 public void run() {
                     if (databaseConnection.isConnected()) {
-                        if (GUIUtilities.displayConfirmDialog("The server is not responding. do you want to close the connection?") == JOptionPane.OK_OPTION) {
+                        if (GUIUtilities.displayConfirmDialog("The server is not responding. Do you want to close the connection?") == JOptionPane.OK_OPTION) {
                             closeDatabaseConnection();
                             timerDelay.cancel();
                         }
@@ -296,7 +296,7 @@ public class PooledConnection implements Connection {
             timerDelay.cancel();
         } catch (ClassNotFoundException e) {
             if (databaseConnection.isConnected()) {
-                if (GUIUtilities.displayConfirmDialog("The server is not responding. do you want to close the connection?") == JOptionPane.OK_OPTION) {
+                if (GUIUtilities.displayConfirmDialog("The server is not responding. Do you want to close the connection?") == JOptionPane.OK_OPTION) {
                     closeDatabaseConnection();
                 }
             }

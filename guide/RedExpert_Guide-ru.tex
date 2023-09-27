@@ -870,14 +870,20 @@ Red Expert позволяет одновременно использовать 
 	\pgftext{\includegraphics[width=12pt]{img/Execute16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Выполнить все операторы в редакторе & Ctrl+Shift+Enter\\\hline
 	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/PartialExecute16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Выполнить оператор, на котором находится курсор (операторы должны быть разделены хотя бы одной пустой строкой) & Ctrl+Enter\\\hline
-	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/ExecuteSelection16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Выполнить любой выделенный текст в редакторе & F9\\\hline
+ 	\begin{tikzpicture}
+ 	\pgftext{\includegraphics[width=12pt]{img/ExecuteSqlScript16.png}} at (0pt,0pt)
+ 	\end{tikzpicture}& Выполнить SQL скрипт & F10\\\hline
+ 	\begin{tikzpicture}
+ 	\pgftext{\includegraphics[width=12pt]{img/ExecuteInProfiler.png}} at (0pt,0pt)
+ 	\end{tikzpicture} & Выполнить в профайлере & \\\hline
+ 	\begin{tikzpicture}
+ 	\pgftext{\includegraphics[width=12pt]{img/PrintPlan.png}} at (0pt,0pt)
+ 	\end{tikzpicture}& Печать плана запроса & Ctrl+Shift+P\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/plan.png}} at (0pt,0pt)
-	\end{tikzpicture} & Печать плана запроса & Ctrl+Shift+P\\\hline
+	\end{tikzpicture} & Печать детального плана запроса & Ctrl+Alt+P\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/Stop16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Отмена выполнения текущего оператора & \\\hline
@@ -932,17 +938,38 @@ Red Expert позволяет одновременно использовать 
 	\end{tikzpicture} & Показать/скрыть окно вывода & \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/ShiftTextLeft16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Сдвиг текущей строки влево & \\\hline
+	\end{tikzpicture} & Сдвиг текущей строки влево & Ctrl+Shift+D\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/ShiftTextRight16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Сдвиг текущей строки вправо & \\\hline
+	\end{tikzpicture} & Сдвиг текущей строки вправо & Ctrl+Shift+T\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/AddComment16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Закомментировать текущую строку или выделение & Ctrl+/\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/FormatSql16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Форматирование SQL кода & Ctrl+Shift+F\\\hline
+	\begin{tikzpicture}
+	\pgftext{\includegraphics[width=12pt]{img/split.png}} at (0pt,0pt)
+	\end{tikzpicture}& Изменить ориентацию разделителя & Ctrl+Alt+Q\\\hline
 \end{longtable}	
+
+Горячие клавиши для действий, которых нет в панели инструментов редактора запроса:
+\begin{longtable}[r]{|>{\ttfamily}m{3.5cm}|m{11.5cm}|}
+	\hline
+	\centering\normalfont\bfseries Горячие клавиши &
+	\centering\arraybslash\bfseries Описание\\\hline
+	\endfirsthead
+	\hline
+	\centering\normalfont\bfseries Горячие клавиши &
+	\centering\arraybslash\bfseries Описание\\\hline
+	\endhead
+	Ctrl+F & Поиск \\\hline
+	Ctrl+R & Найти и заменить\\\hline
+	Ctrl+K & Найти слово в позиции курсора, выделить все совпадения и перейти к следующему совпадению\\\hline
+	Ctrl + Shift + К & Найти слово в позиции курсора, выделить все совпадения и перейти к предыдущему совпадению\\\hline
+	Ctrl + D & Удалить текущую строку\\\hline
+	Ctrl + J & Объединить текущую строку со следующей\\\hline
+\end{longtable}
 
 \begin{longtable}[c]{|>{\ttfamily}m{2.8cm}|m{12.5cm}|}
 	\hline

@@ -12,8 +12,6 @@ import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -60,32 +58,19 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
         addCommentTab(null);
         tabbedPane.add("DDL", ddlTextPanel);
 
-        nameField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                ddlTextPanel.setSQLText(generateQuery());
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                ddlTextPanel.setSQLText(generateQuery());
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                ddlTextPanel.setSQLText(generateQuery());
-            }
-        });
-
         tabbedPane.addChangeListener(e -> {
-            if (tabbedPane.getSelectedComponent().equals(ddlTextPanel))
+
+            if (tabbedPane.getSelectedComponent().equals(ddlTextPanel)) {
                 ddlTextPanel.setSQLText(generateQuery());
+                nameField.setEditable(false);
+            } else
+                nameField.setEditable(true);
+
         });
 
         selectTextPanel.setSQLText((view != null) ? view.getSource() : "SELECT _fields_ FROM _table_ WHERE _conditions_");
         ddlTextPanel.setSQLText(generateQuery());
         centralPanel.setVisible(false);
-
     }
 
     @Override
@@ -110,19 +95,25 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
 
     @Override
     public void createObject() {
-        displayExecuteQueryDialog(ddlTextPanel.getSQLText(), ";");
+
+        String query = tabbedPane.getSelectedComponent().equals(ddlTextPanel) ?
+                ddlTextPanel.getSQLText() : generateQuery();
+
+        displayExecuteQueryDialog(query, ";");
     }
 
     @Override
     protected String generateQuery() {
 
         StringBuilder fields = new StringBuilder();
-        List<DatabaseColumn> columns = view.getColumns();
+        if (view != null) {
 
-        if (columns != null) {
-            for (DatabaseColumn column : columns)
-                fields.append(" ").append(MiscUtils.getFormattedObject(column.getName())).append(", ");
-            fields.deleteCharAt(fields.lastIndexOf(","));
+            List<DatabaseColumn> columns = view.getColumns();
+            if (columns != null) {
+                for (DatabaseColumn column : columns)
+                    fields.append(" ").append(MiscUtils.getFormattedObject(column.getName())).append(", ");
+                fields.deleteCharAt(fields.lastIndexOf(","));
+            }
         }
 
         return SQLUtils.generateCreateView(nameField.getText(), fields.toString(), selectTextPanel.getSQLText(),

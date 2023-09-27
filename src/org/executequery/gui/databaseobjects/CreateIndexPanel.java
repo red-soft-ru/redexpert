@@ -17,6 +17,8 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -45,6 +47,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     private List<NamedObject> tss;
     private String table_name;
     private boolean changed = false;
+    private boolean commentChanged = false;
     private boolean free_sender = true;
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog) {
@@ -148,7 +151,24 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseIndex.getHost(), null, null, NamedObject.META_TYPES[NamedObject.INDEX]);
         databaseIndex = metaTag.getIndexFromName(databaseIndex.getName());
         nameField.setEditable(false);
+
         simpleCommentPanel.setDatabaseObject(databaseIndex);
+        simpleCommentPanel.getCommentField().getTextAreaComponent().getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                commentChanged = !databaseIndex.getRemarks().equals(simpleCommentPanel.getComment());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                commentChanged = !databaseIndex.getRemarks().equals(simpleCommentPanel.getComment());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                commentChanged = !databaseIndex.getRemarks().equals(simpleCommentPanel.getComment());
+            }
+        });
 
         for (int i = 0; i < tableName.getItemCount(); i++) {
             if (databaseIndex.getTableName().trim().equals(tableName.getItemAt(i))) {
@@ -319,14 +339,17 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         if (editing && !changed) {
 
             Boolean isActive = (activeBox.isSelected() != databaseIndex.isActive()) ? activeBox.isSelected() : null;
+            String comment = commentChanged ? simpleCommentPanel.getComment() : null;
+
             String stringTablespace = null;
             if (tablespace != null) {
                 if (!Objects.equals(databaseIndex.getTablespace(), tablespace.getName()))
                     stringTablespace = tablespace.getName();
-            } else if (!Objects.equals(databaseIndex.getTablespace(), "PRIMARY"))
+
+            } else if (Objects.equals(databaseIndex.getTablespace(), "PRIMARY") && !databaseIndex.getTablespace().isEmpty())
                 stringTablespace = "PRIMARY";
 
-            query = SQLUtils.generateAlterIndex(nameField.getText(), isActive, stringTablespace);
+            query = SQLUtils.generateAlterIndex(nameField.getText(), isActive, stringTablespace, comment);
 
         } else {
 

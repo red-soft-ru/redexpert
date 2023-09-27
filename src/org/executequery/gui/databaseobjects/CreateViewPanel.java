@@ -1,27 +1,19 @@
 package org.executequery.gui.databaseobjects;
 
-import com.github.vertical_blank.sqlformatter.SqlFormatter;
-import org.apache.commons.lang.StringUtils;
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
-import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
-import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -34,7 +26,8 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
     public static final String TITLE = getCreateTitle(NamedObject.VIEW);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.VIEW);
 
-    private SimpleSqlTextPanel sqlTextPanel;
+    private SimpleSqlTextPanel ddlTextPanel;
+    private SimpleSqlTextPanel selectTextPanel;
     private DefaultDatabaseView view;
 
     private String notChangedText;
@@ -57,57 +50,40 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
     @Override
     protected void init() {
 
-        JButton formatSqlButton = WidgetFactory.createButton(Bundles.getCommon("FormatSQL"));
-        formatSqlButton.addActionListener(e -> formatSql());
+        ddlTextPanel = new SimpleSqlTextPanel();
+        ddlTextPanel.getTextPane().setDatabaseConnection(connection);
 
-        sqlTextPanel = new SimpleSqlTextPanel();
-        sqlTextPanel.getTextPane().setDatabaseConnection(connection);
+        selectTextPanel = new SimpleSqlTextPanel();
+        selectTextPanel.getTextPane().setDatabaseConnection(connection);
 
-        GridBagHelper gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest();
-
-        JPanel sqlPanel = new JPanel(new GridBagLayout());
-        sqlPanel.add(formatSqlButton, gridBagHelper.fillNone().get());
-        sqlPanel.add(sqlTextPanel, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        tabbedPane.add(Bundles.get("CreateViewPanel.selectTabLabel"), selectTextPanel);
+        addCommentTab(null);
+        tabbedPane.add("DDL", ddlTextPanel);
 
         nameField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                changeName();
+                ddlTextPanel.setSQLText(generateQuery());
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                changeName();
+                ddlTextPanel.setSQLText(generateQuery());
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                changeName();
+                ddlTextPanel.setSQLText(generateQuery());
             }
         });
 
-        tabbedPane.add(bundleStaticString("SQL"), sqlPanel);
-        addCommentTab(null);
-
-        simpleCommentPanel.getCommentField().getTextAreaComponent().getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                changeComment();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                changeComment();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                changeComment();
-            }
+        tabbedPane.addChangeListener(e -> {
+            if (tabbedPane.getSelectedComponent().equals(ddlTextPanel))
+                ddlTextPanel.setSQLText(generateQuery());
         });
 
-        sqlTextPanel.setSQLText(generateQuery());
+        selectTextPanel.setSQLText((view != null) ? view.getSource() : "SELECT _fields_ FROM _table_ WHERE _conditions_");
+        ddlTextPanel.setSQLText(generateQuery());
         centralPanel.setVisible(false);
 
     }
@@ -134,65 +110,23 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
 
     @Override
     public void createObject() {
-        displayExecuteQueryDialog(sqlTextPanel.getSQLText(), ";");
+        displayExecuteQueryDialog(ddlTextPanel.getSQLText(), ";");
     }
 
     @Override
     protected String generateQuery() {
 
-        String query = "";
-
         StringBuilder fields = new StringBuilder();
-        try {
+        List<DatabaseColumn> columns = view.getColumns();
 
-            List<DatabaseColumn> columns = view.getColumns();
-            if (columns != null) {
-                for (DatabaseColumn column : columns)
-                    fields.append(" ").append(MiscUtils.getFormattedObject(column.getName())).append(", ");
-                fields.deleteCharAt(fields.lastIndexOf(","));
-            }
-
-        } catch (Exception ignored) {
+        if (columns != null) {
+            for (DatabaseColumn column : columns)
+                fields.append(" ").append(MiscUtils.getFormattedObject(column.getName())).append(", ");
+            fields.deleteCharAt(fields.lastIndexOf(","));
         }
 
-        try {
-
-            String selectStatement = (view != null) ? view.getSource() : "SELECT _fields_ FROM _table_ WHERE _conditions_";
-            query = SQLUtils.generateCreateView(nameField.getText(), fields.toString(), selectStatement,
-                    simpleCommentPanel.getComment(), getDatabaseVersion(), editing);
-
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
-            e.printStackTrace();
-        }
-
-        return query;
-    }
-
-    private void changeName() {
-
-        String sqlText = sqlTextPanel.getSQLText().trim()
-                .replaceAll(
-                        "VIEW\\s+((\".*\")|(\\w*\\$?\\w*\\b)|)",
-                        "VIEW " + MiscUtils.getFormattedObject(nameField.getText()).replace("$", "\\$"))
-                .replace(
-                        "VIEW " + MiscUtils.getFormattedObject(nameField.getText()).replace("$", "\\$"),
-                        "VIEW " + MiscUtils.getFormattedObject(nameField.getText()));
-
-        sqlTextPanel.setSQLText(sqlText);
-    }
-
-    private void changeComment() {
-
-        String sqlText = sqlTextPanel.getSQLText().trim().replaceAll("COMMENT ON VIEW \"?.*\"? IS '.*';", "") +
-                SQLUtils.generateComment(nameField.getText(), "VIEW", simpleCommentPanel.getComment().trim(), ";", false);
-        sqlTextPanel.setSQLText(sqlText);
-    }
-
-    private void formatSql() {
-        String sqlText = sqlTextPanel.getSQLText();
-        if (StringUtils.isNotEmpty(sqlText))
-            sqlTextPanel.setSQLText(new TokenizingFormatter().format(sqlText));
+        return SQLUtils.generateCreateView(nameField.getText(), fields.toString(), selectTextPanel.getSQLText(),
+                simpleCommentPanel.getComment(), getDatabaseVersion(), editing);
     }
 
     // --- KeyListener ---
@@ -222,8 +156,8 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
 
     @Override
     public void focusGained(FocusEvent focusEvent) {
-        if (focusEvent.getSource() != sqlTextPanel)
-            GUIUtils.requestFocusInWindow(sqlTextPanel);
+        if (focusEvent.getSource() != ddlTextPanel)
+            GUIUtils.requestFocusInWindow(ddlTextPanel);
     }
 
     @Override

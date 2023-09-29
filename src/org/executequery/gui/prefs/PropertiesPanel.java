@@ -56,6 +56,41 @@ public class PropertiesPanel extends JPanel
     public static final String TITLE = Bundles.get("preferences.Preferences");
     public static final String FRAME_ICON = "Preferences16.png";
 
+    private static final List<String> PROPERTIES_KEYS_NEED_RESTART = Arrays.asList(
+            // -- PropertiesGeneral --
+            "startup.unstableversions.load",
+            "startup.majorversions.load",
+            "system.file.encoding",
+            "startup.java.path",
+            "internet.proxy.set",
+            "internet.proxy.host",
+            "internet.proxy.port",
+            "internet.proxy.user",
+            "internet.proxy.password",
+            // -- PropertiesLocales --
+            "locale.country",
+            "locale.language",
+            "locale.timezone",
+            // -- PropertiesAppearance --
+            "system.display.statusbar",
+            "startup.display.lookandfeel",
+            "display.aa.fonts",
+            "decorate.frame.look",
+            // -- PropertiesEditorGeneral --
+            "editor.tabs.tospaces",
+            "editor.tab.spaces",
+            "editor.undo.count",
+            "editor.history.count",
+            "editor.logging.verbose",
+            "editor.logging.enabled",
+            "editor.logging.path",
+            // -- PropertiesEditorColours --
+            "editor.display.linehighlight.colour",
+            // -- PropertiesOutputConsole --
+            "system.log.out",
+            "system.log.err"
+    );
+
     /**
      * the property selection tree
      */
@@ -84,6 +119,11 @@ public class PropertiesPanel extends JPanel
     private final Map<String, PreferenceChangeEvent> preferenceChangeEvents;
 
     /**
+     * boolean key shows is restart needed to apply new settings
+     */
+    private boolean restartNeed;
+
+    /**
      * Constructs a new instance.
      */
     public PropertiesPanel(ActionContainer parent) {
@@ -101,6 +141,7 @@ public class PropertiesPanel extends JPanel
         super(new BorderLayout());
         this.parent = parent;
         this.preferenceChangeEvents = new HashMap<>();
+        this.restartNeed = false;
 
         try {
             init();
@@ -395,6 +436,7 @@ public class PropertiesPanel extends JPanel
             entry.getValue().preferenceChange(e);
 
         preferenceChangeEvents.put(e.getKey(), e);
+        setRestartNeed(PROPERTIES_KEYS_NEED_RESTART.contains(e.getKey()));
     }
 
     @Override
@@ -406,8 +448,13 @@ public class PropertiesPanel extends JPanel
             panelMap.values().forEach(UserPreferenceFunction::save);
             ThreadUtils.invokeLater(() -> EventMediator.fireEvent(createUserPreferenceEvent()));
 
-            if (GUIUtilities.displayConfirmDialog(bundledString("restart-message")) == JOptionPane.YES_OPTION)
-                ExecuteQuery.restart(ApplicationContext.getInstance().getRepo());
+            if (isRestartNeed()) {
+                setRestartNeed(false);
+                if (GUIUtilities.displayConfirmDialog(bundledString("restart-message")) == JOptionPane.YES_OPTION)
+                    ExecuteQuery.restart(ApplicationContext.getInstance().getRepo());
+
+            } else
+                GUIUtilities.displayInformationMessage(bundledString("setting-applied"));
 
         } finally {
             GUIUtilities.showNormalCursor();
@@ -427,6 +474,14 @@ public class PropertiesPanel extends JPanel
             PropertiesEditorBackground panel = (PropertiesEditorBackground) panelMap.get("Colours");
             panel.stopCaretDisplayTimer();
         }
+    }
+
+    public boolean isRestartNeed() {
+        return restartNeed;
+    }
+
+    public void setRestartNeed(boolean restartNeed) {
+        this.restartNeed = restartNeed;
     }
 
     private String bundledString(String key) {

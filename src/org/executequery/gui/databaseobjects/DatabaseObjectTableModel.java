@@ -84,6 +84,36 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
         return (column > 0);
     }
 
+    public void moveColumnUp(DatabaseColumn column) {
+        if (column != null) {
+            int ind = columns.indexOf(column);
+            if (ind > 0) ;
+            columns.remove(column);
+            columns.add(ind - 1, column);
+        }
+        updateColumnPositions();
+    }
+
+    public void moveColumnDown(DatabaseColumn column) {
+        if (column != null) {
+            int ind = columns.indexOf(column);
+            if (ind >= 0 && ind < columns.size() - 1) ;
+            columns.remove(column);
+            columns.add(ind + 1, column);
+        }
+        updateColumnPositions();
+    }
+
+    private void updateColumnPositions() {
+        for (int i = 0; i < columns.size(); i++) {
+            if (columns.get(i).getPosition() != i + 1) {
+                if (columns.get(i) instanceof DatabaseTableColumn)
+                    ((DatabaseTableColumn) columns.get(i)).makeCopy();
+                columns.get(i).setPosition(i + 1);
+            }
+        }
+    }
+
     public void setValues(List<DatabaseColumn> columns) {
         this.columns = columns;
         fireTableDataChanged();

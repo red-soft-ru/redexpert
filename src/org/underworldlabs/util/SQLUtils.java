@@ -1224,11 +1224,11 @@ public final class SQLUtils {
     }
 
     public static String generateCreateView(
-            String name, String fields, String selectStatement, String description, int databaseVersion, boolean existed, DatabaseConnection dc) {
+            String name, String fields, String selectStatement, String description, int databaseVersion, boolean existed, boolean useNewSyntax, DatabaseConnection dc) {
 
         StringBuilder sb = new StringBuilder();
 
-        if (databaseVersion >= 3)
+        if (databaseVersion >= 3 && useNewSyntax)
             sb.append("CREATE OR ALTER VIEW ").append(format(name, dc));
         else if (!existed)
             sb.append("CREATE VIEW ").append(format(name, dc));
@@ -1237,7 +1237,8 @@ public final class SQLUtils {
 
         if (fields != null && !fields.trim().isEmpty())
             sb.append(" (").append(fields.trim()).append(") ");
-        sb.append("\nAS \n").append(selectStatement.trim()).append(";\n");
+        sb.append("\nAS \n").append(selectStatement.trim());
+        sb.append(sb.toString().endsWith(";") ? "\n" : ";\n");
 
         if (description != null && !description.trim().isEmpty())
             sb.append(generateComment(name, "VIEW", description.trim(), ";", false, dc));

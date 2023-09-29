@@ -687,7 +687,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     public SelectBuilder getBuilderForCons(boolean allTables) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table relations = getMainTable();
         Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
         Table constraints1 = Table.createTable("RDB$RELATION_CONSTRAINTS", "RCO");
@@ -755,7 +755,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     public SelectBuilder getBuilderForCols(boolean allTables) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table relations = getMainTable();
         Table relationFields = Table.createTable("RDB$RELATION_FIELDS", "RF");
         Table fields = Table.createTable("RDB$FIELDS", "F");
@@ -815,8 +815,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     public SelectBuilder getBuilderLoadColsCommon(boolean allTables) {
-        SelectBuilder sb = new SelectBuilder();
-        sb.appendTable(Table.createTable().setStatement(new SelectBuilder().appendSelectBuilder(getBuilderForCols(allTables)).appendSelectBuilder(getBuilderForCons(allTables)).getSQLQuery()));
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
+        sb.appendTable(Table.createTable().setStatement(new SelectBuilder(getHost().getDatabaseConnection()).appendSelectBuilder(getBuilderForCols(allTables)).appendSelectBuilder(getBuilderForCons(allTables)).getSQLQuery()));
         sb.setOrdering(RELATION_NAME + ", " + FIELD_POSITION + ", " + FIELD_TYPE + " NULLS LAST");
         return sb;
     }

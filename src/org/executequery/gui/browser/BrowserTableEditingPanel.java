@@ -1186,7 +1186,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             if (row >= 0) {
                 row = ((TableSorter) columnIndexTable.getModel()).modelIndex(row);
                 DefaultDatabaseIndex index = ((TableColumnIndexTableModel) ((TableSorter) columnIndexTable.getModel()).getTableModel()).getIndexes().get(row);
-                String query = "DROP INDEX " + MiscUtils.getFormattedObject(index.getName());
+                String query = "DROP INDEX " + MiscUtils.getFormattedObject(index.getName(), table.getHost().getDatabaseConnection());
                 ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, table.getHost().getDatabaseConnection(), true);
                 eqd.display();
                 if (eqd.getCommit())
@@ -1198,7 +1198,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             if (row >= 0) {
                 row = ((TableSorter) triggersTable.getModel()).modelIndex(row);
                 DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
-                String query = "DROP TRIGGER " + MiscUtils.getFormattedObject(trigger.getName());
+                String query = "DROP TRIGGER " + MiscUtils.getFormattedObject(trigger.getName(), table.getHost().getDatabaseConnection());
                 ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, table.getHost().getDatabaseConnection(), true);
                 eqd.display();
                 if (eqd.getCommit())
@@ -1243,7 +1243,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         StringBuilder sb = new StringBuilder();
         List<DefaultDatabaseIndex> indexes = table.getIndexes();
         for (DefaultDatabaseIndex node : indexes) {
-            sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName())).append(";\n");
+            sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName(), dc)).append(";\n");
             node.reset();
         }
         ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), sb.toString(), dc, true, ";", true, false);
@@ -1642,7 +1642,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             commentPanel.updateComment();
 
-            String query = "ALTER TABLE " + MiscUtils.getFormattedObject(table.getName());
+            String query = "ALTER TABLE " + MiscUtils.getFormattedObject(table.getName(), table.getHost().getDatabaseConnection());
             String noChangesCheckString = query;
 
             String sqlSecurity = (String) sqlSecurityComboBox.getSelectedItem();

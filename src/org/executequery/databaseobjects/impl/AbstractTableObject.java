@@ -49,7 +49,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
         for (String column : columns)
-            sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
+            sb.append(MiscUtils.getFormattedObject(column, getHost().getDatabaseConnection())).append(" = ?,");
 
         sb.deleteCharAt(sb.length() - 1);
         sb.append(" WHERE ");
@@ -59,7 +59,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         for (int i = 0; i < cols.size(); i++) {
 
             DatabaseColumn column = cols.get(i);
-            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
+            String col = MiscUtils.getFormattedObject(cols.get(i).getName(), getHost().getDatabaseConnection());
             RecordDataItem rdi = changes.get(i);
 
             if (column.isGenerated()) {
@@ -92,7 +92,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         for (int i = 0; i < cols.size(); i++) {
 
             DatabaseColumn column = cols.get(i);
-            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
+            String col = MiscUtils.getFormattedObject(cols.get(i).getName(), getHost().getDatabaseConnection());
             RecordDataItem rdi = changes.get(i);
 
             if (column.isGenerated()) {
@@ -126,7 +126,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         for (int i = 0; i < cols.size(); i++) {
 
             DatabaseColumn column = cols.get(i);
-            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
+            String col = MiscUtils.getFormattedObject(cols.get(i).getName(), getHost().getDatabaseConnection());
             RecordDataItem rdi = changes.get(i);
 
             if (column.isGenerated() || column.isIdentity()

@@ -91,7 +91,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("DOMAIN", getName());
+        return SQLUtils.generateDefaultDropQuery("DOMAIN", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -116,7 +116,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table fields = getMainTable();
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "C");
         Table collations = Table.createTable("RDB$COLLATIONS", "CO");

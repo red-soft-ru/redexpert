@@ -1100,7 +1100,7 @@ public class ColumnData implements Serializable {
     }
 
     String getFormattedObject(String obj) {
-        return MiscUtils.getFormattedObject(obj);
+        return MiscUtils.getFormattedObject(obj, dc);
     }
 
     public boolean isDescriptionAsSingleComment() {

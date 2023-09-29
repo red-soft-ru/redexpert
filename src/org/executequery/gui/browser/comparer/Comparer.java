@@ -34,10 +34,10 @@ public class Comparer {
 
 
     protected ComparerDBPanel panel;
-    protected StatementExecutor compareConnection;
-    protected StatementExecutor masterConnection;
+    protected DefaultStatementExecutor compareConnection;
+    protected DefaultStatementExecutor masterConnection;
 
-    private int[] counter;
+    private final int[] counter;
     private String constraintsList;
     private String computedFieldsList;
 
@@ -448,7 +448,7 @@ public class Comparer {
 
                 script.add("\n/* " + cd.getTableName() + "." + cd.getColumnName() + " */");
                 script.add("\nALTER TABLE " + cd.getTableName());
-                script.add("\n\tDROP " + MiscUtils.getFormattedObject(cd.getColumnName()) + ",");
+                script.add("\n\tDROP " + cd.getFormattedColumnName() + ",");
                 script.add("\n\tADD " + SQLUtils.generateDefinitionColumn(
                         cd, true, false, false) + ";\n");
 
@@ -478,7 +478,7 @@ public class Comparer {
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
         script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
         script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
-                SQLUtils.generateDefinitionColumnConstraint(obj, true, false) + ";\n");
+                SQLUtils.generateDefinitionColumnConstraint(obj, true, false, compareConnection.getDatabaseConnection()) + ";\n");
     }
 
     private void dropConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {

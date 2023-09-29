@@ -806,7 +806,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             if (databaseColumns != null && !databaseColumns.isEmpty()) {
                 rowLines.append(((AbstractDatabaseObject) databaseColumns.get(0).getParent()).getCreateSQLText());
             } else {
-                rowLines.append("CREATE TABLE ").append(MiscUtils.getFormattedObject(nameOfTableForExport)).append(" (\n");
+                rowLines.append("CREATE TABLE ").append(MiscUtils.getFormattedObject(nameOfTableForExport, null)).append(" (\n");
                 for (int i = 0; i < columnCount; i++) {
                     rowLines.append("\t").append(model.getColumnName(i));
                     String type = "BLOB SUB_TYPE TEXT";
@@ -826,7 +826,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             rowLines.append("*/\n");
             boolean applyQuotes = applyQuotesCheck.isSelected();
             StringBuilder insertHeader = new StringBuilder();
-            insertHeader.append("\nINSERT INTO ").append(MiscUtils.getFormattedObject(nameOfTableForExport)).append("(");
+            insertHeader.append("\nINSERT INTO ").append(MiscUtils.getFormattedObject(nameOfTableForExport, null)).append("(");
             boolean first = true;
             for (int countColumnName = 0; countColumnName < model.getColumnCount(); countColumnName++) {
                 if (databaseColumns != null && databaseColumns.get(countColumnName).isGenerated())
@@ -834,7 +834,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 if (first) {
                     first = false;
                 } else insertHeader.append(separator);
-                insertHeader.append("\n").append("\t").append(MiscUtils.getFormattedObject(model.getColumnName(countColumnName)));
+                insertHeader.append("\n").append("\t").append(MiscUtils.getFormattedObject(model.getColumnName(countColumnName), null));
             }
             insertHeader.append(")\nVALUES (");
             for (int i = 0; i < rowCount; i++) {

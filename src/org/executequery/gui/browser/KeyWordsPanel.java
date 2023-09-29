@@ -69,7 +69,7 @@ public class KeyWordsPanel extends ConnectionPropertiesPanel {
         panel1.setBorder(BorderFactory.createTitledBorder("Database Specific"));
         panel1.add(new JScrollPane(keywordsTable));
 
-        List<String> sql92 = keywords().getSQL92();
+        List<String> sql92 = keywords().getServerKeywords(0, 0, "");
         savedWordsTable = new DefaultTable(
                 new SingleColumnTableModel(null, sql92));
         setTableProperties(savedWordsTable);

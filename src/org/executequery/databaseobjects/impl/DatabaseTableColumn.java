@@ -139,7 +139,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
     public String getNameEscaped() {
 
-        return MiscUtils.getFormattedObject(getName());
+        return MiscUtils.getFormattedObject(getName(), getTable().getHost().getDatabaseConnection());
     }
 
     /**

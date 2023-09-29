@@ -274,7 +274,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
         for (int i = 0, n = columnCount - 1; i < columnCount; i++) {
 
             String columnName = columns.get(i).toString();
-            columnName = MiscUtils.getFormattedObject(columnName);
+            columnName = MiscUtils.getFormattedObject(columnName, parent.getDatabaseConnection());
 
             sb.append(columnName);
             if (i != n) {

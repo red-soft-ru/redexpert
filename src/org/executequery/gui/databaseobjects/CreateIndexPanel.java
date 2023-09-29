@@ -349,17 +349,17 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             } else if (Objects.equals(databaseIndex.getTablespace(), "PRIMARY") && !databaseIndex.getTablespace().isEmpty())
                 stringTablespace = "PRIMARY";
 
-            query = SQLUtils.generateAlterIndex(nameField.getText(), isActive, stringTablespace, comment);
+            query = SQLUtils.generateAlterIndex(nameField.getText(), isActive, stringTablespace, comment, getDatabaseConnection());
 
         } else {
 
             if (editing)
-                query = SQLUtils.generateDefaultDropQuery("INDEX", nameField.getText());
+                query = SQLUtils.generateDefaultDropQuery("INDEX", nameField.getText(), getDatabaseConnection());
 
             query += SQLUtils.generateCreateIndex(nameField.getText(), sortingBox.getSelectedIndex(), uniqueBox.isSelected(),
                     tableName.getSelectedItem() != null ? tableName.getSelectedItem().toString() : "",
                     computedPanel.getSQLText(), null, fieldsPanel.getSelectedValues(),
-                    tablespace != null ? tablespace.getName() : null, activeBox.isSelected(), simpleCommentPanel.getComment());
+                    tablespace != null ? tablespace.getName() : null, activeBox.isSelected(), simpleCommentPanel.getComment(), getDatabaseConnection());
         }
 
         return query;

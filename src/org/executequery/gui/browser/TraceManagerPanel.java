@@ -37,8 +37,8 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class TraceManagerPanel extends JPanel implements TabView {
 
@@ -275,7 +275,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     charsetCombo.setSelectedItem(dc.getCharset());
                     if (dc.getPathToTraceConfig() != null)
                         fileConfField.setText(dc.getPathToTraceConfig());
-                    if (dc.getServerVersion() >= 3) {
+                    if (dc.getMajorServerVersion() >= 3) {
                         confPanel.getAppropriationBox().setSelectedIndex(1);
                     } else {
                         confPanel.getAppropriationBox().setSelectedIndex(0);

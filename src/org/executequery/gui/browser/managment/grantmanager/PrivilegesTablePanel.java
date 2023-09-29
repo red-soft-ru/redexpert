@@ -73,7 +73,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     boolean inited = false;
     long startTime;
     boolean visibleProgress = false;
-    private int typeTable;
+    private final int typeTable;
     private NamedObject user;
     private NamedObject relation;
     private RolloverButton[] grantFieldButtons;
@@ -91,7 +91,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     private EQCheckCombox objectTypeBox;
     private DefaultStatementExecutor querySender;
     //private EQCheckCombox userBox;
-    private int buttonSize = 20;
+    private final int buttonSize = 20;
     private GrantManagerPanel grantManagerPanel;
 
     public PrivilegesTablePanel(int typeTable, GrantManagerPanel grantManagerPanel) {
@@ -122,7 +122,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
                 e.printStackTrace();
             }
             if (supported)
-                if (databaseConnection.getServerVersion() < 3) {
+                if (databaseConnection.getMajorServerVersion() < 3) {
                     if (metattype == NamedObject.SEQUENCE || metattype == NamedObject.EXCEPTION)
                         return false;
                 }
@@ -536,7 +536,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     }
 
     private String getGrantQuery(NamedObject grantor, int typeGrant, String grant, NamedObject relation, String... fields) {
-        GrantBuilder gb = new GrantBuilder();
+        GrantBuilder gb = new GrantBuilder(querySender.getDatabaseConnection());
         gb.setGrantor(grantor.getName()).setRelation(relation.getName()).setGrantType(grant);
         switch (typeGrant) {
             case 0:
@@ -666,18 +666,18 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     }
 
     String buildQueryForPrivileges(int rdbTypeUser, int rdbTypeObject) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(querySender.getDatabaseConnection());
         Table userPrivileges = Table.createTable("RDB$USER_PRIVILEGES", "UP");
         sb.appendTable(userPrivileges);
         sb.appendFields(userPrivileges, "RELATION_NAME", "PRIVILEGE", "GRANT_OPTION", "FIELD_NAME");
         sb.appendField(Field.createField(userPrivileges, "USER").setAlias("USER_NAME"));
-        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER_TYPE"), "=", rdbTypeUser + ""));
+        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER_TYPE"), "=", String.valueOf(rdbTypeUser)));
         String aliasCondition = "USER";
         if (typeTable == OBJECT_USERS)
             aliasCondition = "RELATION_NAME";
         sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, aliasCondition), "=", "?"));
         Condition rfbTypeCondition = Condition.createCondition()
-                .appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", rdbTypeObject + ""));
+                .appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", String.valueOf(rdbTypeObject)));
         if (rdbTypeObject == 1) {
             rfbTypeCondition.setLogicOperator("OR");
             rfbTypeCondition.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", 0 + ""));
@@ -720,7 +720,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
 
     List<NamedObject> getUsers() {
         List<NamedObject> users = new ArrayList<>();
-        if (databaseConnection.getServerVersion() >= 3)
+        if (databaseConnection.getMajorServerVersion() >= 3)
             users.addAll(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.USER]));
         else {
             Connection connection = null;
@@ -917,14 +917,14 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     }
 
     String buildQueryForPrivilegesByField(int rdbTypeUser, int rdbTypeObject) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(querySender.getDatabaseConnection());
         Table userPrivileges = Table.createTable("RDB$USER_PRIVILEGES", "UP");
         sb.appendTable(userPrivileges);
         sb.appendFields(userPrivileges, "RELATION_NAME", "PRIVILEGE", "GRANT_OPTION", "FIELD_NAME");
-        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER_TYPE"), "=", rdbTypeUser + ""));
+        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER_TYPE"), "=", String.valueOf(rdbTypeUser)));
         sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER"), "=", "?"));
         Condition rfbTypeCondition = Condition.createCondition()
-                .appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", rdbTypeObject + ""));
+                .appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", String.valueOf(rdbTypeObject)));
         if (rdbTypeObject == 1) {
             rfbTypeCondition.setLogicOperator("OR");
             rfbTypeCondition.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", 0 + ""));

@@ -47,7 +47,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("TABLE", getName());
+        return SQLUtils.generateDefaultDropQuery("TABLE", getName(), getHost().getDatabaseConnection());
     }
 
     @Override

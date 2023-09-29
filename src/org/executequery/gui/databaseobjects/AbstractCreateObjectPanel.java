@@ -267,7 +267,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     protected abstract String generateQuery();
 
     public String getFormattedName() {
-        return MiscUtils.getFormattedObject(nameField.getText());
+        return MiscUtils.getFormattedObject(nameField.getText(), getDatabaseConnection());
     }
 
     public String bundleString(String key) {

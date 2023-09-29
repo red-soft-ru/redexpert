@@ -111,13 +111,13 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
             List<DatabaseColumn> columns = view.getColumns();
             if (columns != null) {
                 for (DatabaseColumn column : columns)
-                    fields.append(" ").append(MiscUtils.getFormattedObject(column.getName())).append(", ");
+                    fields.append(" ").append(MiscUtils.getFormattedObject(column.getName(), getDatabaseConnection())).append(", ");
                 fields.deleteCharAt(fields.lastIndexOf(","));
             }
         }
 
         return SQLUtils.generateCreateView(nameField.getText(), fields.toString(), selectTextPanel.getSQLText(),
-                simpleCommentPanel.getComment(), getDatabaseVersion(), editing);
+                simpleCommentPanel.getComment(), getDatabaseVersion(), editing, getDatabaseConnection());
     }
 
     // --- KeyListener ---

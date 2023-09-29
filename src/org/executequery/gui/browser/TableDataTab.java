@@ -336,7 +336,7 @@ public class TableDataTab extends JPanel
     Vector<Object> itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
 
         String query = "SELECT " + key.getReferencedColumn() +
-                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable(), querySender.getDatabaseConnection());
 
         Vector<Object> items = new Vector<>();
         try {
@@ -357,7 +357,7 @@ public class TableDataTab extends JPanel
     Vector<Vector<Object>> allItemsForeign(ColumnConstraint key) {
 
         String query = "SELECT " + listToString(key.getReferenceColumnDisplayList()) +
-                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable(), querySender.getDatabaseConnection());
 
         Vector<Vector<Object>> items = new Vector<>();
         for (int i = 0; i < key.getReferenceColumnDisplayList().size(); i++)
@@ -1007,15 +1007,15 @@ public class TableDataTab extends JPanel
         String checkedColumns = "";
         for (int i = 0; i < checked_column_list.size(); i++) {
             if (checked_column_list.get(i).getDimensions() == null)
-                checkedColumns += MiscUtils.getFormattedObject(checked_column_list.get(i).getName());
+                checkedColumns += MiscUtils.getFormattedObject(checked_column_list.get(i).getName(), databaseObject.getHost().getDatabaseConnection());
             else
-                checkedColumns += "'SQL type not supported' as " + MiscUtils.getFormattedObject(checked_column_list.get(i).getName());
+                checkedColumns += "'SQL type not supported' as " + MiscUtils.getFormattedObject(checked_column_list.get(i).getName(), databaseObject.getHost().getDatabaseConnection());
             if (i < checked_column_list.size() - 1)
                 checkedColumns += " , ";
         }
 
         String query = "SELECT " + checkedColumns +
-                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable(), databaseObject.getHost().getDatabaseConnection());
 
         ResultSetTableModel defaultTableModel = null;
         try {

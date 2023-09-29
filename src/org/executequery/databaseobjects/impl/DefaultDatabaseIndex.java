@@ -217,12 +217,12 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     public String getCreateSQLText() {
         return SQLUtils.generateCreateIndex(
                 getName(), getType(), isUnique(), getTableName(), null, getCondition(),
-                getIndexColumns(), getTablespace(), isActive(), getRemarks());
+                getIndexColumns(), getTablespace(), isActive(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("INDEX", getName());
+        return SQLUtils.generateDefaultDropQuery("INDEX", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -286,7 +286,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table indicies = getMainTable();
         Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
         Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT");
@@ -378,7 +378,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
         boolean res = true;
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        String query = "SET STATISTICS INDEX " + MiscUtils.getFormattedObject(getName());
+        String query = "SET STATISTICS INDEX " + MiscUtils.getFormattedObject(getName(), getHost().getDatabaseConnection());
 
         try {
 

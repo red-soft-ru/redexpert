@@ -617,7 +617,9 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
     }
 
     public void setSQLKeywords(boolean reset) {
-        document.setSQLKeywords(keywords().getSQLKeywords());
+        if (databaseConnection == null)
+            document.setSQLKeywords(keywords().getSQLKeywords());
+        else document.setSQLKeywords(databaseConnection.getKeywords());
     }
 
     public SQLSyntaxDocument getSQLSyntaxDocument() {

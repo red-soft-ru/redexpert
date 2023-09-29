@@ -131,7 +131,7 @@ public class TablespaceTreePopupMenu extends JPopupMenu implements ActionListene
                 type = NamedObject.META_TYPES[NamedObject.TRIGGER];
             else
                 type = NamedObject.META_TYPES[node.getType()];
-            String query = "ALTER " + type + " " + MiscUtils.getFormattedObject(node.getName()) + " SET TABLESPACE PRIMARY";
+            String query = "ALTER " + type + " " + MiscUtils.getFormattedObject(node.getName(), object.getHost().getDatabaseConnection()) + " SET TABLESPACE PRIMARY";
             ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, currentSelection, true);
             eqd.display();
             if (eqd.getCommit())

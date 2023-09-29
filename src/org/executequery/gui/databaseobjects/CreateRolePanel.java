@@ -84,12 +84,12 @@ public class CreateRolePanel extends AbstractCreateObjectPanel {
         String query = "";
 
         if (!edited) {
-            query += "CREATE ROLE " + MiscUtils.getFormattedObject(nameField.getText()) + ";";
+            query += "CREATE ROLE " + MiscUtils.getFormattedObject(nameField.getText(), getDatabaseConnection()) + ";";
             if (!MiscUtils.isNull(simpleCommentPanel.getComment()))
-                query += "COMMENT ON ROLE " + MiscUtils.getFormattedObject(nameField.getText()) + " IS '" + simpleCommentPanel.getComment() + "';";
+                query += "COMMENT ON ROLE " + MiscUtils.getFormattedObject(nameField.getText(), getDatabaseConnection()) + " IS '" + simpleCommentPanel.getComment() + "';";
 
         } else if (!MiscUtils.isNull(simpleCommentPanel.getComment()) && !role.getRemarks().equals(simpleCommentPanel.getComment()))
-            query += "COMMENT ON ROLE " + MiscUtils.getFormattedObject(nameField.getText()) + " IS '" + simpleCommentPanel.getComment() + "';";
+            query += "COMMENT ON ROLE " + MiscUtils.getFormattedObject(nameField.getText(), getDatabaseConnection()) + " IS '" + simpleCommentPanel.getComment() + "';";
 
         return query;
     }

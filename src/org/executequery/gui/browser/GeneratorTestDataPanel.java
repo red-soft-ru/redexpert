@@ -250,7 +250,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                                         boolean lastError = false;
                                         String lastMessage = "";
                                         int i = 0;
-                                        for (; i < count;) {
+                                        while (i < count) {
 
                                             if (i + batchCount > count)
                                                 batchCount = i + batchCount - count;
@@ -472,7 +472,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
         Driver driver = new DefaultDriverLoader().load(executor.getDatabaseConnection().getJDBCDriver());
         if (driver.getMajorVersion() < 4 || !executor.getDatabaseConnection().useNewAPI() ||
-                executor.getDatabaseConnection().getServerVersion() < 4) {
+                executor.getDatabaseConnection().getMajorServerVersion() < 4) {
             useBatchesBox.setEnabled(false);
             batchLabel.setEnabled(false);
             batchCountField.setEnabled(false);
@@ -485,7 +485,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                     sb.append(". ");
                 sb.append(bundles("OOAPINotUsed"));
             }
-            if (executor.getDatabaseConnection().getServerVersion() < 4) {
+            if (executor.getDatabaseConnection().getMajorServerVersion() < 4) {
                 if (sb.length() > 0)
                     sb.append(". ");
                 sb.append(bundles("UnsupportedServer"));

@@ -589,7 +589,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         List<ColumnConstraint> _constraints = getConstraints();
         boolean first = true;
 
-        sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(getName()));
+        sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(getName(), getHost().getDatabaseConnection()));
         if (_constraints != null) {
             for (ColumnConstraint constraint : _constraints) {
                 if (constraint instanceof TableColumnConstraint) {
@@ -599,7 +599,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                         if (!first)
                             sb.append(",");
                         first = false;
-                        sb.append("\nDROP CONSTRAINT ").append(MiscUtils.getFormattedObject(dtc.getName()));
+                        sb.append("\nDROP CONSTRAINT ").append(MiscUtils.getFormattedObject(dtc.getName(), getHost().getDatabaseConnection()));
                     }
                 }
             }
@@ -636,7 +636,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("TABLE", getName());
+        return SQLUtils.generateDefaultDropQuery("TABLE", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -882,7 +882,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
+        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values, getHost().getDatabaseConnection()));
     }
 
     @Override
@@ -908,7 +908,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings));
+        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings, getHost().getDatabaseConnection()));
     }
 
     @Override
@@ -934,7 +934,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields));
+        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields, getHost().getDatabaseConnection()));
     }
 
     protected TokenizingFormatter getFormatter() {
@@ -976,7 +976,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
         for (String column : columns)
-            sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
+            sb.append(MiscUtils.getFormattedObject(column, getHost().getDatabaseConnection())).append(" = ?,");
         sb.deleteCharAt(sb.length() - 1);
         sb.append(" WHERE ");
 
@@ -985,7 +985,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
             if (applied)
                 sb.append(" AND ");
-            sb.append(MiscUtils.getFormattedObject(primaryKey)).append(" = ? ");
+            sb.append(MiscUtils.getFormattedObject(primaryKey, getHost().getDatabaseConnection())).append(" = ? ");
             applied = true;
         }
         sb.deleteCharAt(sb.length() - 1);
@@ -1005,7 +1005,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
             if (applied)
                 sb.append(" AND ");
-            sb.append(MiscUtils.getFormattedObject(primaryKey)).append(" = ? ");
+            sb.append(MiscUtils.getFormattedObject(primaryKey, getHost().getDatabaseConnection())).append(" = ? ");
             applied = true;
         }
         sb.deleteCharAt(sb.length() - 1);
@@ -1089,7 +1089,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         sb.setDistinct(true);
         Table rels = Table.createTable("RDB$RELATIONS", "R");
         Table relCons = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");

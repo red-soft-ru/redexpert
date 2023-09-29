@@ -120,6 +120,8 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     String collate;
     private List<ColumnData.Dimension> dimensions;
 
+    private int position;
+
     public DefaultDatabaseColumn() {
     }
 
@@ -550,6 +552,16 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
 
     public void setDimensions(List<ColumnData.Dimension> dimensions) {
         this.dimensions = dimensions;
+    }
+
+    @Override
+    public int getPosition() {
+        return position;
+    }
+
+    @Override
+    public void setPosition(int position) {
+        this.position = position;
     }
 }
 

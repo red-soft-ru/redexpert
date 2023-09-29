@@ -64,7 +64,7 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
                 DefaultCellEditor defaultCellEditor = (DefaultCellEditor) cellEditor;
                 if (defaultCellEditor.getComponent() instanceof JTextField) {
 
-                    ((JTextField) defaultCellEditor.getComponent()).addKeyListener(this);
+                    defaultCellEditor.getComponent().addKeyListener(this);
                 }
 
             }
@@ -144,6 +144,54 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
 
     }
 
+    public void moveUpSelectedColumn() {
+
+        int selectedRow = getSelectedRow();
+        if (selectedRow <= 0) {
+
+            return;
+        }
+
+        DatabaseObjectTableModel _model = getDatabaseTableModel();
+        DatabaseTableColumn column = (DatabaseTableColumn) _model.getValueAt(selectedRow, 0);
+
+        // if its a new column - just remove it
+        if (column.isNewColumn()) {
+
+            //_model.m(selectedRow);
+
+        } else { // otherwise mark to drop
+            _model.moveColumnUp(column);
+            _model.fireTableDataChanged();
+            getSelectionModel().setSelectionInterval(selectedRow - 1, selectedRow - 1);
+        }
+
+    }
+
+    public void moveDownSelectedColumn() {
+
+        int selectedRow = getSelectedRow();
+        if (selectedRow < 0 || selectedRow >= getColumnCount() - 1) {
+
+            return;
+        }
+
+        DatabaseObjectTableModel _model = getDatabaseTableModel();
+        DatabaseTableColumn column = (DatabaseTableColumn) _model.getValueAt(selectedRow, 0);
+
+        // if its a new column - just remove it
+        if (column.isNewColumn()) {
+
+            //_model.m(selectedRow);
+
+        } else { // otherwise mark to drop
+            _model.moveColumnDown(column);
+            _model.fireTableDataChanged();
+            getSelectionModel().setSelectionInterval(selectedRow + 1, selectedRow + 1);
+        }
+
+    }
+
     /**
      * Resets and clears the currently displayed table.
      */
@@ -173,7 +221,7 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
 
                 if (MiscUtils.isValidNumber(value)) {
 
-                    tableChanged(row, col, new Integer(value));
+                    tableChanged(row, col, Integer.valueOf(value));
                 }
 
             } else { // if not an int must be a string

@@ -929,7 +929,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             final short fieldScale = rs.getShort(FIELD_SCALE);
             final int characterSetId = rs.getInt(CHARACTER_SET_ID);
             final int dataType = DefaultDatabaseHost.getDataType(fieldType, fieldSubType, fieldScale, characterSetId);
-
+            column.setPosition(rs.getInt(FIELD_POSITION));
             column.setTypeInt(dataType);
             column.setColumnSubtype(fieldSubType);
             column.setColumnScale(fieldScale);

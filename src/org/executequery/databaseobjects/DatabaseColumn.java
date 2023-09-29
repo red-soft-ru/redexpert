@@ -162,6 +162,9 @@ public interface DatabaseColumn extends DatabaseObjectElement {
 
     void setDimensions(List<ColumnData.Dimension> dimensions);
 
+    int getPosition();
+
+    void setPosition(int position);
 }
 
 

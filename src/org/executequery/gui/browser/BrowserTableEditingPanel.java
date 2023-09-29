@@ -1290,9 +1290,21 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     public void moveColumnUp() {
+        int tabIndex = tabPane.getSelectedIndex();
+        if (tabIndex == TABLE_COLUMNS_INDEX) {
+
+            descriptionTable.moveUpSelectedColumn();
+
+        }
     }
 
     public void moveColumnDown() {
+        int tabIndex = tabPane.getSelectedIndex();
+        if (tabIndex == TABLE_COLUMNS_INDEX) {
+
+            descriptionTable.moveDownSelectedColumn();
+
+        }
     }
 
     public ColumnData[] getTableColumnData() {
@@ -1364,6 +1376,26 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             }
         });
         bar.add(deleteRolloverButton);
+        RolloverButton moveUpButton = new RolloverButton();
+        moveUpButton.setIcon(GUIUtilities.loadIcon("Up16.png"));
+        moveUpButton.setToolTipText("Move up");
+        moveUpButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                moveColumnUp();
+            }
+        });
+        bar.add(moveUpButton);
+        RolloverButton moveDownButton = new RolloverButton();
+        moveDownButton.setIcon(GUIUtilities.loadIcon("Down16.png"));
+        moveDownButton.setToolTipText("Move down");
+        moveDownButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                moveColumnDown();
+            }
+        });
+        bar.add(moveDownButton);
         RolloverButton commitRolloverButton = new RolloverButton();
         commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
         commitRolloverButton.setToolTipText("Commit");
@@ -1389,7 +1421,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         rollbackRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                table.revert();
+                table.reset();
                 setValues(table);
             }
         });

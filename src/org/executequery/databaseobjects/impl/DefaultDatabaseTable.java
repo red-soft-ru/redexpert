@@ -615,6 +615,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                             sb.append(",");
                         first = false;
                         sb.append("\nDROP ").append(dtc.getNameEscaped());
+                    } else if (dtc.isPositionChanged()) {
+                        if (!first)
+                            sb.append(",");
+                        first = false;
+                        sb.append("\nALTER COLUMN ").append(dtc.getNameEscaped()).append(" POSITION ").append(dtc.getPosition());
                     }
                 }
             }

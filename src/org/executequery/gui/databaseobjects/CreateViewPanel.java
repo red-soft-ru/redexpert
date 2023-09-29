@@ -1,25 +1,19 @@
 package org.executequery.gui.databaseobjects;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import javax.swing.*;
 import java.util.List;
 
-public class CreateViewPanel extends AbstractCreateObjectPanel
-        implements FocusListener, KeyListener {
+public class CreateViewPanel extends AbstractCreateObjectPanel {
 
     public static final String TITLE = getCreateTitle(NamedObject.VIEW);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.VIEW);
@@ -27,9 +21,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
     private SimpleSqlTextPanel ddlTextPanel;
     private SimpleSqlTextPanel selectTextPanel;
     private DefaultDatabaseView view;
-
-    private String notChangedText;
-    private boolean released = true;
+    private int oldSelectedTabIndex = 0;
 
     public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);
@@ -42,6 +34,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
     @Override
     protected void initEdited() {
         nameField.setText(view.getName());
+        nameField.setEditable(false);
         simpleCommentPanel.setDatabaseObject(view);
     }
 
@@ -54,7 +47,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
         selectTextPanel = new SimpleSqlTextPanel();
         selectTextPanel.getTextPane().setDatabaseConnection(connection);
 
-        tabbedPane.add(Bundles.get("CreateViewPanel.selectTabLabel"), selectTextPanel);
+        tabbedPane.add(bundleString("selectTabLabel"), selectTextPanel);
         addCommentTab(null);
         tabbedPane.add("DDL", ddlTextPanel);
 
@@ -62,10 +55,18 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
 
             if (tabbedPane.getSelectedComponent().equals(ddlTextPanel)) {
                 ddlTextPanel.setSQLText(generateQuery());
-                nameField.setEditable(false);
-            } else
-                nameField.setEditable(true);
 
+            } else if (oldSelectedTabIndex == 2) {
+                String ddlText = ddlTextPanel.getSQLText();
+
+                int result = GUIUtilities.displayConfirmDialog(bundleString("confirmTabChange"));
+                if (result != JOptionPane.YES_OPTION) {
+                    tabbedPane.setSelectedComponent(ddlTextPanel);
+                    ddlTextPanel.setSQLText(ddlText);
+                }
+            }
+
+            oldSelectedTabIndex = tabbedPane.getSelectedIndex();
         });
 
         selectTextPanel.setSQLText((view != null) ? view.getSource() : "SELECT _fields_ FROM _table_ WHERE _conditions_");
@@ -117,45 +118,8 @@ public class CreateViewPanel extends AbstractCreateObjectPanel
         }
 
         return SQLUtils.generateCreateView(nameField.getText(), fields.toString(), selectTextPanel.getSQLText(),
-                simpleCommentPanel.getComment(), getDatabaseVersion(), editing);
+                simpleCommentPanel.getComment(), getDatabaseVersion(), editing, false);
     }
-
-    // --- KeyListener ---
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        SQLTextArea textPane = (SQLTextArea) e.getSource();
-        if (released) {
-            notChangedText = textPane.getText();
-            released = false;
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        SQLTextArea textPane = (SQLTextArea) e.getSource();
-        if (!textPane.getText().contains(" <view_name>\n") && !editing)
-            textPane.setText(notChangedText);
-        released = true;
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-    }
-
-    // --- FocusListener ---
-
-    @Override
-    public void focusGained(FocusEvent focusEvent) {
-        if (focusEvent.getSource() != ddlTextPanel)
-            GUIUtils.requestFocusInWindow(ddlTextPanel);
-    }
-
-    @Override
-    public void focusLost(FocusEvent focusEvent) {
-    }
-
-    // ---
 
     @Override
     public void setParameters(Object[] params) {

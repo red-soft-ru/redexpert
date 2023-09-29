@@ -112,7 +112,7 @@ public class DefaultDatabaseView extends AbstractTableObject
     @Override
     public String getCreateSQLText() throws DataSourceException {
         return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
-                getRemarks(), getDatabaseMajorVersion(), false);
+                getRemarks(), getDatabaseMajorVersion(), false, true);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class DefaultDatabaseView extends AbstractTableObject
     public String getCompareCreateSQL() throws DataSourceException {
         String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
         return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
-                comment, getDatabaseMajorVersion(), false);
+                comment, getDatabaseMajorVersion(), false, true);
     }
 
     @Override

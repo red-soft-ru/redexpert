@@ -74,17 +74,17 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
   private String url;
 
   /**
-   * The unique name of the JDBC/ODBC driver used with this connection
+   * The unique name of the JDBC driver used with this connection
    */
   private String driverName;
 
   /**
-   * The unique ID of the JDBC/ODBC driver used with this connection
+   * The unique ID of the JDBC driver used with this connection
    */
   private long driverId;
 
   /**
-   * The JDBC/ODBC Driver used with this connection
+   * The JDBC Driver used with this connection
    */
   private DatabaseDriver driver;
 

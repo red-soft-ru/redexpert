@@ -303,11 +303,6 @@ public class DriversPanel extends AbstractFormObjectViewPanel
 
     public void findDriverClass(ActionEvent e) {
 
-        if (databaseDriver.isDefaultSunOdbc()) {
-
-            return;
-        }
-
         if (jarPathListModel.isEmpty()) {
 
             GUIUtilities.displayErrorMessage(
@@ -388,11 +383,6 @@ public class DriversPanel extends AbstractFormObjectViewPanel
 
     public void browseDrivers(ActionEvent e) {
 
-        if (databaseDriver.isDefaultSunOdbc()) {
-
-            return;
-        }
-
         FileSelector jarFiles = new FileSelector(
                 new String[]{"jar"}, "Java Archive files");
 
@@ -443,12 +433,6 @@ public class DriversPanel extends AbstractFormObjectViewPanel
      * Populates the driver object from the field values.
      */
     private void populateDriverObject() {
-
-        // ODBC driver can not be changed
-        if (databaseDriver.isDefaultSunOdbc()) {
-
-            return;
-        }
 
         databaseDriver.setDescription(descField.getText());
         databaseDriver.setClassName(classField.getText());

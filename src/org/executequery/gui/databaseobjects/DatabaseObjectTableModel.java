@@ -87,9 +87,10 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
     public void moveColumnUp(DatabaseColumn column) {
         if (column != null) {
             int ind = columns.indexOf(column);
-            if (ind > 0) ;
-            columns.remove(column);
-            columns.add(ind - 1, column);
+            if (ind > 0) {
+                columns.remove(column);
+                columns.add(ind - 1, column);
+            }
         }
         updateColumnPositions();
     }
@@ -97,9 +98,10 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
     public void moveColumnDown(DatabaseColumn column) {
         if (column != null) {
             int ind = columns.indexOf(column);
-            if (ind >= 0 && ind < columns.size() - 1) ;
-            columns.remove(column);
-            columns.add(ind + 1, column);
+            if (ind >= 0 && ind < columns.size() - 1) {
+                columns.remove(column);
+                columns.add(ind + 1, column);
+            }
         }
         updateColumnPositions();
     }

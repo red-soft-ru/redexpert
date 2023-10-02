@@ -171,7 +171,7 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
     public void moveDownSelectedColumn() {
 
         int selectedRow = getSelectedRow();
-        if (selectedRow < 0 || selectedRow >= getColumnCount() - 1) {
+        if (selectedRow < 0 || selectedRow >= getDatabaseTableModel().getDatabaseColumns().size() - 1) {
 
             return;
         }

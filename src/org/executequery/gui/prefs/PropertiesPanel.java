@@ -119,7 +119,7 @@ public class PropertiesPanel extends JPanel
     /**
      * boolean key shows is restart needed to apply new settings
      */
-    private boolean restartNeed;
+    private static boolean restartNeed;
 
     /**
      * Constructs a new instance.
@@ -434,7 +434,7 @@ public class PropertiesPanel extends JPanel
             entry.getValue().preferenceChange(e);
 
         preferenceChangeEvents.put(e.getKey(), e);
-        setRestartNeed(PROPERTIES_KEYS_NEED_RESTART.contains(e.getKey()));
+        checkAndSetRestartNeed(e.getKey());
     }
 
     @Override
@@ -478,8 +478,12 @@ public class PropertiesPanel extends JPanel
         return restartNeed;
     }
 
-    public void setRestartNeed(boolean restartNeed) {
-        this.restartNeed = restartNeed;
+    public static void checkAndSetRestartNeed(String key) {
+        PropertiesPanel.restartNeed = PROPERTIES_KEYS_NEED_RESTART.contains(key);
+    }
+
+    public static void setRestartNeed(boolean restartNeed) {
+        PropertiesPanel.restartNeed = restartNeed;
     }
 
     private String bundledString(String key) {

@@ -85,6 +85,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
         setSelectionColor(QueryEditorSettings.getSelectionColour());
         setSelectedTextColor(QueryEditorSettings.getSelectedTextColour());
         setBackground(QueryEditorSettings.getEditorBackground());
+        setCurrentLineHighlightColor(QueryEditorSettings.getLineHighlightColour());
 
         Font font = QueryEditorSettings.getEditorFont();
         setFont(font);
@@ -192,14 +193,13 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
     }
 
     private void initialiseStyles() {
+
         int fontSize = SystemProperties.getIntProperty("user", "sqlsyntax.font.size");
         String fontName = SystemProperties.getProperty("user", "sqlsyntax.font.name");
 
         createStyle(Token.ERROR_CHAR, Color.red, null,fontName,Font.PLAIN,fontSize,false);
         createStyle(Token.RESERVED_WORD_2, Color.blue, null,fontName,Font.PLAIN,fontSize,false);
 
-        // -----------------------------
-        // user defined styles
         int fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.multicomment");
         Color color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.multicomment");
         createStyle(Token.COMMENT_MULTILINE, color,  null,fontName,fontStyle,fontSize,false);
@@ -244,14 +244,12 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.dbobjects");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.dbobjects");
         createStyle(Token.VARIABLE, color, null, fontName, fontStyle, fontSize, false);
-        //setCurrentLineHighlightColor(SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour"));
-        setCurrentLineHighlightColor(SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour"));
 
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.datatype");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.datatype");
         createStyle(Token.DATA_TYPE, color, null, fontName, fontStyle, fontSize, false);
 
-
+        setCurrentLineHighlightColor(SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour"));
     }
 
     public SQLTextArea(boolean autocompleteOnlyHotKey) {

@@ -84,8 +84,6 @@ public class PropertiesPanel extends JPanel
             "editor.logging.verbose",
             "editor.logging.enabled",
             "editor.logging.path",
-            // -- PropertiesEditorColours --
-            "editor.display.linehighlight.colour",
             // -- PropertiesOutputConsole --
             "system.log.out",
             "system.log.err"

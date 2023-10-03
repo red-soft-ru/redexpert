@@ -4,7 +4,6 @@ editor.caret.colour=-65536
 editor.display.linehighlight.colour=-52
 editor.linenumber.background=-2565928
 editor.linenumber.foreground=-8882056
-editor.margin.colour=-4144960
 editor.results.background.colour=-3355444
 editor.text.background.alternate.color=-1314561
 editor.text.background.colour=-1

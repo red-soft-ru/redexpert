@@ -38,18 +38,6 @@ public class QueryEditorSettings {
      */
     private static boolean displayLineHighlight;
     /**
-     * Whether to display the right margin
-     */
-    private static boolean displayRightMargin;
-    /**
-     * The right margin size
-     */
-    private static int rightMarginSize;
-    /**
-     * The right margin colour
-     */
-    private static Color rightMarginColour;
-    /**
      * Selection colour
      */
     private static Color selectionColour;
@@ -112,10 +100,6 @@ public class QueryEditorSettings {
 
         lineHighlightColour = SystemProperties.getColourProperty(
                 "user", "editor.display.linehighlight.colour");
-
-        displayRightMargin = SystemProperties.getBooleanProperty("user", "editor.display.margin");
-        rightMarginSize = SystemProperties.getIntProperty("user", "editor.margin.size");
-        rightMarginColour = SystemProperties.getColourProperty("user", "editor.margin.colour");
 
         displayLineHighlight = SystemProperties.getBooleanProperty(
                 "user", "editor.display.linehighlight");
@@ -222,36 +206,12 @@ public class QueryEditorSettings {
         displayLineHighlight = aDisplayLineHighlight;
     }
 
-    public static boolean isDisplayRightMargin() {
-        return displayRightMargin;
-    }
-
-    public static void setDisplayRightMargin(boolean aDisplayRightMargin) {
-        displayRightMargin = aDisplayRightMargin;
-    }
-
-    public static int getRightMarginSize() {
-        return rightMarginSize;
-    }
-
-    public static void setRightMarginSize(int aRightMarginSize) {
-        rightMarginSize = aRightMarginSize;
-    }
-
     public static int getHistoryMax() {
         return historyMax;
     }
 
     public static void setHistoryMax(int aHistoryMax) {
         historyMax = aHistoryMax;
-    }
-
-    public static Color getRightMarginColour() {
-        return rightMarginColour;
-    }
-
-    public static void setRightMarginColour(Color aRightMarginColour) {
-        rightMarginColour = aRightMarginColour;
     }
 
     public static Color getSelectionColour() {

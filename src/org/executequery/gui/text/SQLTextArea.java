@@ -85,7 +85,10 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
         setSelectionColor(QueryEditorSettings.getSelectionColour());
         setSelectedTextColor(QueryEditorSettings.getSelectedTextColour());
         setBackground(QueryEditorSettings.getEditorBackground());
-        setCurrentLineHighlightColor(QueryEditorSettings.getLineHighlightColour());
+        setCurrentLineHighlightColor(QueryEditorSettings.isDisplayLineHighlight() ?
+                QueryEditorSettings.getLineHighlightColour() :
+                new Color(0f, 0f, 0f, 0f)
+        );
 
         Font font = QueryEditorSettings.getEditorFont();
         setFont(font);
@@ -249,7 +252,10 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.datatype");
         createStyle(Token.DATA_TYPE, color, null, fontName, fontStyle, fontSize, false);
 
-        setCurrentLineHighlightColor(SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour"));
+        setCurrentLineHighlightColor(SystemProperties.getBooleanProperty("user", "editor.display.linehighlight") ?
+                SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour") :
+                new Color(0f, 0f, 0f, 0f)
+        );
     }
 
     public SQLTextArea(boolean autocompleteOnlyHotKey) {

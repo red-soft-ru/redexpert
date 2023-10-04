@@ -115,18 +115,8 @@ public class QueryEditorTextPanel extends JPanel {
         queryPane.addMouseListener(listener);
     }
 
-    public boolean isLogEnabled() {
-
-        return OutputLogger.isLogEnabled();
-    }
-
     public void log(String message) {
-
-        if (isLogEnabled()) {
-
-            OutputLogger.info(message);
-        }
-
+        Log.info(message);
     }
 
     public void setTextPaneBackground(Color c) {

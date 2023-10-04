@@ -26,9 +26,9 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledStatement;
+import org.executequery.log.Log;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.Log;
 import org.underworldlabs.util.MiscUtils;
 
 import java.sql.*;

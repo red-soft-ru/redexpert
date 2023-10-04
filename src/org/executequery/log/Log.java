@@ -25,6 +25,8 @@ import org.executequery.repository.LogRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.util.UserProperties;
 
+import java.util.Objects;
+
 /**
  * Primary application logger.
  *
@@ -33,23 +35,18 @@ import org.executequery.util.UserProperties;
 public final class Log {
 
     public static final String LOGGER_NAME = "system-logger";
-
     public static final String PATTERN = "[%d{dd.MM.yyyy HH:mm:ss.SSS}] %m%n";
-
+    private static final String LEVEL = "INFO";
+    private static final String MAX_FILE_SIZE = "1MB";
+    public static final String DEFAULT_STACKTRACE_MESSAGE = "stack trace:";
     public static final int MAX_BACKUP_INDEX =
             UserProperties.getInstance().getIntProperty("editor.logging.backups");
+    private static final String LOG_FILE_PATH = ((LogRepository) RepositoryCache.load(LogRepository.REPOSITORY_ID))
+            .getLogFilePath(LogRepository.ACTIVITY);
 
-    private static final String MAX_FILE_SIZE = "1MB";
-
-    private static final String LEVEL = "INFO";
-
-    private static final String LOG_FILE_PATH =
-            ((LogRepository) RepositoryCache.load(
-                    LogRepository.REPOSITORY_ID)).getLogFilePath(LogRepository.ACTIVITY);
-
-    private static final ApplicationLog log =
-            new ApplicationLog(LOG_FILE_PATH, LOGGER_NAME, PATTERN, LEVEL,
-                    MAX_BACKUP_INDEX, MAX_FILE_SIZE);
+    private static final ApplicationLog log = new ApplicationLog(
+            LOG_FILE_PATH, LOGGER_NAME, PATTERN, LEVEL, MAX_BACKUP_INDEX, MAX_FILE_SIZE
+    );
 
     private Log() {
     }
@@ -57,10 +54,9 @@ public final class Log {
     /**
      * Adds the specified appender to the logger.
      *
-     * @param appender - the appender to be added
+     * @param appender the appender to be added
      */
     public static void addAppender(Appender appender) {
-
         log.addAppender(appender);
     }
 
@@ -68,7 +64,6 @@ public final class Log {
      * Returns whether the log level is set to DEBUG.
      */
     public static boolean isDebugEnabled() {
-
         return log.isDebugEnabled();
     }
 
@@ -76,18 +71,16 @@ public final class Log {
      * Returns whether the log level is set to TRACE.
      */
     public static boolean isTraceEnabled() {
-
         return log.isTraceEnabled();
     }
 
     /**
      * Sets the logger level to that specified.
      *
-     * @param level - the logger level to be set.<br>
-     *              Valid values are: ERROR, DEBUG, INFO, WARN, ALL, FATAL, TRACE
+     * @param level the logger level to be set valid values are:<br>
+     *              <code>ERROR, DEBUG, INFO, WARN, ALL, FATAL, TRACE</code>
      */
     public static void setLevel(String level) {
-
         log.setLevel(level);
     }
 
@@ -109,7 +102,6 @@ public final class Log {
      * @param throwable the throwable.
      */
     public static void warning(Object message, Throwable throwable) {
-
         log.warning(message, throwable);
     }
 
@@ -119,7 +111,6 @@ public final class Log {
      * @param message the log message.
      */
     public static void debug(Object message) {
-
         log.debug("DEBUG: " + message);
     }
 
@@ -130,7 +121,6 @@ public final class Log {
      * @param throwable the throwable.
      */
     public static void debug(Object message, Throwable throwable) {
-
         log.debug("DEBUG: " + message, throwable);
     }
 
@@ -140,7 +130,6 @@ public final class Log {
      * @param message the log message.
      */
     public static void trace(Object message) {
-
         log.trace("TRACE: " + message);
     }
 
@@ -151,7 +140,6 @@ public final class Log {
      * @param throwable the throwable.
      */
     public static void trace(Object message, Throwable throwable) {
-
         log.trace("TRACE: " + message, throwable);
     }
 
@@ -162,7 +150,6 @@ public final class Log {
      * @param e       the throwable.
      */
     public static void error(Object message, Throwable e) {
-
         log.error(message, e);
     }
 
@@ -172,7 +159,6 @@ public final class Log {
      * @param message the log message.
      */
     public static void info(Object message) {
-
         log.info(message);
     }
 
@@ -182,7 +168,6 @@ public final class Log {
      * @param message the log message.
      */
     public static void warning(Object message) {
-
         log.warning(message);
     }
 
@@ -192,30 +177,21 @@ public final class Log {
      * @param message the log message.
      */
     public static void error(Object message) {
-
         log.error(message);
     }
 
-    public static final String DEFAULT_MESSAGE = "stack trace:";
-
     public static void printStackTrace(String message) {
+
         info(message);
-        int i = 2;
-        if (message == DEFAULT_MESSAGE)
-            i = 3;
-        StackTraceElement[] elems = Thread.currentThread().getStackTrace();
-        for (; i < elems.length; i++)
-            info("\tat " + elems[i]);
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+
+        int i = Objects.equals(message, DEFAULT_STACKTRACE_MESSAGE) ? 3 : 2;
+        for (; i < stackTraceElements.length; i++)
+            info("\tat " + stackTraceElements[i]);
     }
 
     public static void printStackTrace() {
-        printStackTrace(DEFAULT_MESSAGE);
+        printStackTrace(DEFAULT_STACKTRACE_MESSAGE);
     }
 
-
 }
-
-
-
-
-

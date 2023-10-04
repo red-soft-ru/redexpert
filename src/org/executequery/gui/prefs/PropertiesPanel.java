@@ -84,6 +84,7 @@ public class PropertiesPanel extends JPanel
             "editor.logging.verbose",
             "editor.logging.enabled",
             "editor.logging.path",
+            "editor.logging.backups",
             // -- PropertiesOutputConsole --
             "system.log.out",
             "system.log.err"

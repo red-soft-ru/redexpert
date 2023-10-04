@@ -23,6 +23,7 @@ package org.executequery.log;
 import org.apache.log4j.Appender;
 import org.executequery.repository.LogRepository;
 import org.executequery.repository.RepositoryCache;
+import org.executequery.util.UserProperties;
 
 /**
  * Primary application logger.
@@ -35,7 +36,8 @@ public final class Log {
 
     public static final String PATTERN = "[%d{dd.MM.yyyy HH:mm:ss.SSS}] %m%n";
 
-    public static final int MAX_BACKUP_INDEX = 5;
+    public static final int MAX_BACKUP_INDEX =
+            UserProperties.getInstance().getIntProperty("editor.logging.backups");
 
     private static final String MAX_FILE_SIZE = "1MB";
 

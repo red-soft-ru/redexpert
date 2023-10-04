@@ -20,6 +20,7 @@
 
 package org.executequery.gui;
 
+import org.executequery.ApplicationException;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.gui.text.DefaultTextEditorContainer;
@@ -73,10 +74,11 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
      */
     private void init(final int type) {
 
+        LogRepository logRepository = ((LogRepository) RepositoryCache.load(LogRepository.REPOSITORY_ID));
         String[] logs = {
-                "System Log: ~/.redexpert/logs/eq.output.log",
-                "Export Log: ~/.redexpert/logs/eq.export.log",
-                "Import Log: ~/.redexpert/logs/eq.import.log"
+                "System Log: " + logRepository.getLogFilePath(LogRepository.ACTIVITY),
+                "Export Log: " + logRepository.getLogFilePath(LogRepository.EXPORT),
+                "Import Log: " + logRepository.getLogFilePath(LogRepository.IMPORT)
         };
 
         logCombo = WidgetFactory.createComboBox(logs);
@@ -125,7 +127,13 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
                 GUIUtilities.showWaitCursor();
                 GUIUtilities.showWaitCursor(textArea);
 
-                return logRepository().load(index);
+                try {
+                    return logRepository().load(index);
+
+                } catch (ApplicationException e) {
+                    GUIUtilities.displayWarningMessage(bundleString("LogFileNotFound"));
+                    return "";
+                }
             }
 
             @Override

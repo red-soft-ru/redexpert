@@ -83,7 +83,6 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
     protected void setEditorPreferences() {
 
         setSelectionColor(QueryEditorSettings.getSelectionColour());
-        setSelectedTextColor(QueryEditorSettings.getSelectedTextColour());
         setBackground(QueryEditorSettings.getEditorBackground());
         setCurrentLineHighlightColor(QueryEditorSettings.isDisplayLineHighlight() ?
                 QueryEditorSettings.getLineHighlightColour() :

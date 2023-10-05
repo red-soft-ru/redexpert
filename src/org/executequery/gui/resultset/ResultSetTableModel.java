@@ -43,13 +43,9 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.text.ParseException;
 import java.time.*;
@@ -562,6 +558,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
                         case Types.CHAR:
                         case Types.VARCHAR:
+                            value.setValue(resultSet.getString(i));
+                            break;
                         case Types.TIME_WITH_TIMEZONE:
                             value.setValue(resultSet.getObject(i, OffsetTime.class));
                             break;

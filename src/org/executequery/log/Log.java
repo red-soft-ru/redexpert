@@ -39,8 +39,13 @@ public final class Log {
     private static final String LEVEL = "INFO";
     private static final String MAX_FILE_SIZE = "1MB";
     public static final String DEFAULT_STACKTRACE_MESSAGE = "stack trace:";
+
     public static final int MAX_BACKUP_INDEX =
             UserProperties.getInstance().getIntProperty("editor.logging.backups");
+
+    private static final boolean IS_LOG_ENABLED =
+            UserProperties.getInstance().getBooleanProperty("editor.logging.enabled");
+
     private static final String LOG_FILE_PATH = ((LogRepository) RepositoryCache.load(LogRepository.REPOSITORY_ID))
             .getLogFilePath(LogRepository.ACTIVITY);
 
@@ -61,17 +66,24 @@ public final class Log {
     }
 
     /**
-     * Returns whether the log level is set to DEBUG.
+     * Returns whether the logging is enabled.
      */
-    public static boolean isDebugEnabled() {
-        return log.isDebugEnabled();
+    public static boolean isLogEnabled() {
+        return IS_LOG_ENABLED && log.isLogEnabled();
     }
 
     /**
-     * Returns whether the log level is set to TRACE.
+     * Returns whether the logging is enabled and the log level is set to DEBUG.
+     */
+    public static boolean isDebugEnabled() {
+        return isLogEnabled() && log.isDebugEnabled();
+    }
+
+    /**
+     * Returns whether the logging is enabled and  the log level is set to TRACE.
      */
     public static boolean isTraceEnabled() {
-        return log.isTraceEnabled();
+        return isLogEnabled() && log.isTraceEnabled();
     }
 
     /**
@@ -91,8 +103,8 @@ public final class Log {
      * @param throwable the throwable.
      */
     public static void info(Object message, Throwable throwable) {
-
-        log.info(message, throwable);
+        if (isLogEnabled())
+            log.info(message, throwable);
     }
 
     /**
@@ -102,7 +114,8 @@ public final class Log {
      * @param throwable the throwable.
      */
     public static void warning(Object message, Throwable throwable) {
-        log.warning(message, throwable);
+        if (isLogEnabled())
+            log.warning(message, throwable);
     }
 
     /**
@@ -111,7 +124,8 @@ public final class Log {
      * @param message the log message.
      */
     public static void debug(Object message) {
-        log.debug("DEBUG: " + message);
+        if (isLogEnabled())
+            log.debug("DEBUG: " + message);
     }
 
     /**
@@ -121,7 +135,8 @@ public final class Log {
      * @param throwable the throwable.
      */
     public static void debug(Object message, Throwable throwable) {
-        log.debug("DEBUG: " + message, throwable);
+        if (isLogEnabled())
+            log.debug("DEBUG: " + message, throwable);
     }
 
     /**
@@ -130,7 +145,8 @@ public final class Log {
      * @param message the log message.
      */
     public static void trace(Object message) {
-        log.trace("TRACE: " + message);
+        if (isLogEnabled())
+            log.trace("TRACE: " + message);
     }
 
     /**
@@ -140,7 +156,8 @@ public final class Log {
      * @param throwable the throwable.
      */
     public static void trace(Object message, Throwable throwable) {
-        log.trace("TRACE: " + message, throwable);
+        if (isLogEnabled())
+            log.trace("TRACE: " + message, throwable);
     }
 
     /**
@@ -150,7 +167,8 @@ public final class Log {
      * @param e       the throwable.
      */
     public static void error(Object message, Throwable e) {
-        log.error(message, e);
+        if (isLogEnabled())
+            log.error(message, e);
     }
 
     /**
@@ -159,7 +177,8 @@ public final class Log {
      * @param message the log message.
      */
     public static void info(Object message) {
-        log.info(message);
+        if (isLogEnabled())
+            log.info(message);
     }
 
     /**
@@ -168,7 +187,8 @@ public final class Log {
      * @param message the log message.
      */
     public static void warning(Object message) {
-        log.warning(message);
+        if (isLogEnabled())
+            log.warning(message);
     }
 
     /**
@@ -177,10 +197,14 @@ public final class Log {
      * @param message the log message.
      */
     public static void error(Object message) {
-        log.error(message);
+        if (isLogEnabled())
+            log.error(message);
     }
 
     public static void printStackTrace(String message) {
+
+        if (!isLogEnabled())
+            return;
 
         info(message);
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();

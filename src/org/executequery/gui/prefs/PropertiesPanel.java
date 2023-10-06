@@ -72,7 +72,6 @@ public class PropertiesPanel extends JPanel
             "locale.language",
             "locale.timezone",
             // -- PropertiesAppearance --
-            "system.display.statusbar",
             "startup.display.lookandfeel",
             "display.aa.fonts",
             "decorate.frame.look",

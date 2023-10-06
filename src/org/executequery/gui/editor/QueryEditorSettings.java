@@ -20,12 +20,9 @@
 
 package org.executequery.gui.editor;
 
-import org.executequery.gui.text.syntax.SyntaxStyle;
-import org.executequery.gui.text.syntax.TokenTypes;
 import org.underworldlabs.util.SystemProperties;
 
 import java.awt.*;
-import java.util.Collections;
 
 /**
  * Query editor settings.
@@ -74,21 +71,6 @@ public class QueryEditorSettings {
      */
     private static boolean tabsToSpaces;
 
-    /**
-     * Tab text when converting to spaces
-     */
-    private static String tabs;
-
-    /**
-     * Maximum values held in history
-     */
-    private static int historyMax;
-
-    /**
-     * The syntax styles
-     */
-    private static SyntaxStyle[] syntaxStyles;
-
     static {
         initialise();
     }
@@ -109,78 +91,15 @@ public class QueryEditorSettings {
                 "user", "editor.tab.spaces");
         caretColour = SystemProperties.getColourProperty(
                 "user", "editor.caret.colour");
-        historyMax = SystemProperties.getIntProperty(
-                "user", "editor.history.count");
 
         int fontSize = SystemProperties.getIntProperty("user", "sqlsyntax.font.size");
         String fontName = SystemProperties.getProperty("user", "sqlsyntax.font.name");
         editorFont = new Font(fontName, Font.PLAIN, fontSize);
 
-        if (tabsToSpaces)
-            tabs = String.join("", Collections.nCopies(tabSize, " "));
-
-        initialiseStyles();
-    }
-
-    private static void initialiseStyles() {
-
-        syntaxStyles = new SyntaxStyle[TokenTypes.typeNames.length];
-
-        createStyle(TokenTypes.UNRECOGNIZED, Color.red, Font.PLAIN);
-        createStyle(TokenTypes.KEYWORD2, Color.blue, Font.PLAIN);
-
-        int fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.multicomment");
-        Color color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.multicomment");
-        createStyle(TokenTypes.COMMENT, color, fontStyle);
-
-        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.normal");
-        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.normal");
-        createStyle(TokenTypes.WORD, color, fontStyle);
-
-        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.singlecomment");
-        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.singlecomment");
-        createStyle(TokenTypes.SINGLE_LINE_COMMENT, color, fontStyle);
-
-        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.keyword");
-        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.keyword");
-        createStyle(TokenTypes.KEYWORD, color, fontStyle);
-
-        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.quote");
-        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.quote");
-        createStyle(TokenTypes.STRING, color, fontStyle);
-
-        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.number");
-        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.number");
-        createStyle(TokenTypes.NUMBER, color, fontStyle);
-
-        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.literal");
-        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.literal");
-        createStyle(TokenTypes.LITERAL, color, fontStyle);
-
-        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.operator");
-        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.operator");
-        createStyle(TokenTypes.OPERATOR, color, fontStyle);
-
-        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.dbobjects");
-        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.dbobjects");
-        createStyle(TokenTypes.DBOBJECT, color, fontStyle);
-
-        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.datatype");
-        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.datatype");
-        createStyle(TokenTypes.DATATYPE, color, fontStyle);
-
-    }
-
-    private static void createStyle(int type, Color fcolor, int fontStyle) {
-        syntaxStyles[type] = new SyntaxStyle(type, fontStyle, fcolor, null);
     }
 
     public static boolean isDisplayLineHighlight() {
         return displayLineHighlight;
-    }
-
-    public static int getHistoryMax() {
-        return historyMax;
     }
 
     public static Color getSelectionColour() {
@@ -209,14 +128,6 @@ public class QueryEditorSettings {
 
     public static boolean isTabsToSpaces() {
         return tabsToSpaces;
-    }
-
-    public static String getTabs() {
-        return tabs;
-    }
-
-    public static void setTabs(String aTabs) {
-        tabs = aTabs;
     }
 
 }

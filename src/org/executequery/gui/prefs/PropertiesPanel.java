@@ -78,9 +78,6 @@ public class PropertiesPanel extends JPanel
             // -- PropertiesEditorGeneral --
             "editor.tabs.tospaces",
             "editor.tab.spaces",
-            "editor.undo.count",
-            "editor.history.count",
-            "editor.logging.verbose",
             "editor.logging.enabled",
             "editor.logging.path",
             "editor.logging.backups",

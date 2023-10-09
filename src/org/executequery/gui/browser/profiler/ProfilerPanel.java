@@ -44,14 +44,13 @@ public class ProfilerPanel extends JPanel
 
     // --- GUI objects ---
 
-    private static JCheckBox roundValuesCheckBox = new JCheckBox(bundleString("roundValuesCheckBox"));
-
     private JComboBox<?> connectionsComboBox;
     private JComboBox<?> attachmentsComboBox;
 
     private JRadioButton defaultViewRadioButton;
     private JRadioButton compactViewRadioButton;
     private JRadioButton extendedViewRadioButton;
+    private JCheckBox roundValuesCheckBox;
 
     private ProfilerTreeTable profilerTree;
     private ProfilerTreeTableNode defaultRootTreeNode;
@@ -121,6 +120,7 @@ public class ProfilerPanel extends JPanel
 
         // --- roundValues CheckBox ---
 
+        roundValuesCheckBox = new JCheckBox(bundleString("roundValuesCheckBox"));
         roundValuesCheckBox.addActionListener(e -> updateTreeDisplay());
         roundValuesCheckBox.setSelected(true);
 
@@ -760,7 +760,7 @@ public class ProfilerPanel extends JPanel
 
     } // TreeTableModel class
 
-    protected static class TimeRenderer extends DefaultTableCellRenderer {
+    protected class TimeRenderer extends DefaultTableCellRenderer {
 
         @Override
         public Component getTableCellRendererComponent(

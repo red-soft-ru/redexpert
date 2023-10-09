@@ -1,19 +1,19 @@
 package org.executequery.gui.prefs;
 
 import org.executequery.Constants;
-import org.executequery.log.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PropertiesOutputConsole extends AbstractPropertiesBasePanel {
+public class PropertiesLogging extends AbstractPropertiesBasePanel {
+
     private SimplePreferencesPanel preferencesPanel;
 
-    public PropertiesOutputConsole() {
+    public PropertiesLogging() {
         try {
             init();
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
     }
 
@@ -34,6 +34,13 @@ public class PropertiesOutputConsole extends AbstractPropertiesBasePanel {
                 bundledString("SystemConsole"),
                 Boolean.valueOf(stringUserProperty(key))));
 
+        key = "editor.logging.enabled";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("LogOutputToFile"),
+                Boolean.valueOf(stringUserProperty(key))));
+
         key = "system.log.level";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
@@ -41,6 +48,21 @@ public class PropertiesOutputConsole extends AbstractPropertiesBasePanel {
                 bundledString("OutputLogLevel"),
                 stringUserProperty(key),
                 Constants.LOG_LEVELS));
+
+        key = "editor.logging.path";
+        list.add(new UserPreference(
+                UserPreference.DIR_TYPE,
+                key,
+                bundledString("OutputLogFilePath"),
+                stringUserProperty(key)));
+
+        key = "editor.logging.backups";
+        list.add(new UserPreference(
+                UserPreference.INTEGER_TYPE,
+                1,
+                key,
+                bundledString("MaximumRollingLogBackups"),
+                stringUserProperty(key)));
 
         key = "system.log.out";
         list.add(new UserPreference(
@@ -62,21 +84,19 @@ public class PropertiesOutputConsole extends AbstractPropertiesBasePanel {
 
     }
 
+    @Override
     public void restoreDefaults() {
         preferencesPanel.restoreDefaults();
     }
 
-    public String getName() {
-        return getClass().getName();
-    }
-
+    @Override
     public void save() {
         preferencesPanel.savePreferences();
-        try {
+    }
 
-        } catch (Exception e) {
-            Log.debug("error reload settings console", e);
-        }
+    @Override
+    public String getName() {
+        return getClass().getName();
     }
 
 }

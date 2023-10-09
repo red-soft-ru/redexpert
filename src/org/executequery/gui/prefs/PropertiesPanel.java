@@ -78,10 +78,10 @@ public class PropertiesPanel extends JPanel
             // -- PropertiesEditorGeneral --
             "editor.tabs.tospaces",
             "editor.tab.spaces",
+            // -- PropertiesOutputConsole --
             "editor.logging.enabled",
             "editor.logging.path",
             "editor.logging.backups",
-            // -- PropertiesOutputConsole --
             "system.log.out",
             "system.log.err"
     );
@@ -209,7 +209,7 @@ public class PropertiesPanel extends JPanel
         node = new PropertyNode(PropertyTypes.BROWSER_GENERAL, bundledString("DatabaseBrowser"));
         node.addChild(new PropertyNode(PropertyTypes.BROWSER_DATA_TAB, bundledString("TableDataPanel")));
         branches.add(node);
-        node = new PropertyNode(PropertyTypes.OUTPUT_CONSOLE, bundledString("OutputConsole"));
+        node = new PropertyNode(PropertyTypes.OUTPUT_CONSOLE, bundledString("Logging"));
         node.addChild(new PropertyNode(PropertyTypes.CONSOLE_FONTS, bundledString("Fonts")));
         branches.add(node);
 
@@ -404,7 +404,7 @@ public class PropertiesPanel extends JPanel
                 break;
 
             case PropertyTypes.OUTPUT_CONSOLE:
-                panel = new PropertiesOutputConsole();
+                panel = new PropertiesLogging();
                 break;
 
             case PropertyTypes.CONSOLE_FONTS:

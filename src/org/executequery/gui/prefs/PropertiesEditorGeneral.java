@@ -150,28 +150,6 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 bundledString("PrintAllSQLToOutputPanel"),
                 Boolean.valueOf(stringUserProperty(key))));
 
-        key = "editor.logging.enabled";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("LogOutputToFile"),
-                Boolean.valueOf(stringUserProperty(key))));
-
-        key = "editor.logging.path";
-        list.add(new UserPreference(
-                UserPreference.DIR_TYPE,
-                key,
-                bundledString("OutputLogFilePath"),
-                stringUserProperty(key)));
-
-        key = "editor.logging.backups";
-        list.add(new UserPreference(
-                UserPreference.INTEGER_TYPE,
-                1,
-                key,
-                bundledString("MaximumRollingLogBackups"),
-                stringUserProperty(key)));
-
         key = "editor.open.on-connect";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

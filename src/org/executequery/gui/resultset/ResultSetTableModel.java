@@ -206,7 +206,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 rsmd.getColumnLabel(i),
                                 rsmd.getColumnName(i),
                                 rsmd.getColumnType(i),
-                                rsmd.getColumnTypeName(i)));
+                                rsmd.getColumnTypeName(i),
+                                rsmd.getColumnDisplaySize(i)));
             }
             interrupted = false;
 
@@ -381,7 +382,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 resultSet.getString(4),
                                 resultSet.getString(4),
                                 resultSet.getInt(5),
-                                resultSet.getString(6)
+                                resultSet.getString(6),
+                                resultSet.getInt(7)
                         ));
                 tableName = resultSet.getString(3);
                 g++;
@@ -1048,7 +1050,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     public String getColumnNameHint(int column) {
 
-        return visibleColumnHeaders.get(column).getNameHint();
+        return visibleColumnHeaders.get(column).getNameHint() + " " + visibleColumnHeaders.get(column).getDataTypeName() + (visibleColumnHeaders.get(column).getDisplaySize() != 0 ? " (" + visibleColumnHeaders.get(column).getDisplaySize() + ")" : "");
     }
 
     @Override

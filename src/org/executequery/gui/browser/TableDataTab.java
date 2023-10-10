@@ -115,7 +115,6 @@ public class TableDataTab extends JPanel
 
     private List<org.executequery.databaseobjects.impl.ColumnConstraint> foreigns;
     private Timer timer;
-    public DefaultTableModel myTableModel;
 
     public ResultSet resultSet;
 
@@ -1401,6 +1400,10 @@ public class TableDataTab extends JPanel
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void cleanup() {
+        EventMediator.deregisterListener(this);
     }
 
     private String bundleString(String key) {

@@ -371,6 +371,7 @@ public class BrowserController {
                 case NamedObject.EXCEPTION:
                 case NamedObject.UDF:
                 case NamedObject.ROLE:
+                case NamedObject.SYSTEM_DOMAIN:
                 case NamedObject.SYSTEM_ROLE:
                     AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel.getEditPanelFromType(type, connection, node.getDatabaseObject(), null);
                     if (!viewPanel.containsPanel(objectPanel.getLayoutName())) {
@@ -380,19 +381,6 @@ public class BrowserController {
                                 getFormObjectView(objectPanel.getLayoutName());
                     }
                     return objectPanel;
-                /*case NamedObject.FUNCTION: // Internal function of Red Database 3+
-                    BrowserFunctionPanel functionPanel = null;
-                    if (!viewPanel.containsPanel(BrowserFunctionPanel.NAME)) {
-                        functionPanel = new BrowserFunctionPanel(this);
-                        viewPanel.addToLayout(functionPanel);
-                    } else {
-                        functionPanel = (BrowserFunctionPanel) viewPanel.
-                                getFormObjectView(BrowserFunctionPanel.NAME);
-                    }
-
-                    functionPanel.setValues((DefaultDatabaseFunction) databaseObject);
-                    return functionPanel;*/
-                //case NamedObject.PROCEDURE:
                 case NamedObject.SYSTEM_FUNCTION:
                     BrowserProcedurePanel procsPanel = null;
                     if (!viewPanel.containsPanel(BrowserProcedurePanel.NAME)) {
@@ -444,32 +432,6 @@ public class BrowserController {
 
                     sequencePanel.setValues((DefaultDatabaseSequence) databaseObject);
                     return sequencePanel;
-                //
-                // case NamedObject.DOMAIN:
-                case NamedObject.SYSTEM_DOMAIN:
-                    BrowserDomainPanel domainSPanel = null;
-                    if (!viewPanel.containsPanel(BrowserDomainPanel.NAME)) {
-                        domainSPanel = new BrowserDomainPanel(this);
-                        viewPanel.addToLayout(domainSPanel);
-                    } else {
-                        domainSPanel = (BrowserDomainPanel) viewPanel.
-                                getFormObjectView(BrowserDomainPanel.NAME);
-                    }
-
-                    domainSPanel.setValues((DefaultDatabaseDomain) databaseObject);
-                    return domainSPanel;
-                // case NamedObject.ROLE:
-               /* case NamedObject.SYSTEM_ROLE:
-                    BrowserRolePanel rolePanel = null;
-                    if (!viewPanel.containsPanel(BrowserRolePanel.NAME)) {
-                        rolePanel = new BrowserRolePanel(this);
-                        viewPanel.addToLayout(rolePanel);
-                    } else {
-                        rolePanel = (BrowserRolePanel) viewPanel.
-                                getFormObjectView(BrowserRolePanel.NAME);
-                    }
-                    rolePanel.setValues((DefaultDatabaseRole) databaseObject, this);
-                    return rolePanel;*/
 
                 case NamedObject.INDEX:
                     try {
@@ -940,6 +902,9 @@ public class BrowserController {
         return Bundles.get(BrowserController.class, key);
     }
 
+    public void setViewPanel(BrowserViewPanel viewPanel) {
+        this.viewPanel = viewPanel;
+    }
 }
 
 

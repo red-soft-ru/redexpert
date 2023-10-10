@@ -295,7 +295,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             }
         });
 
-        refreshButton = new RolloverButton(/*bundleString("Refresh")*/);
+        refreshButton = new RolloverButton();
         refreshButton.setIcon(IconUtilities.loadIcon("/org/executequery/icons/Refresh16.svg", buttonSize));
         refreshButton.setMouseEnteredContentAreaFill(false);
         refreshButton.addActionListener(this);
@@ -563,7 +563,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     void execute_thread() {
         if (enableElements) {
             setEnableElements(false);
-            org.underworldlabs.swing.util.SwingWorker sw = new SwingWorker("executeThreadForGrants") {
+            SwingWorker sw = new SwingWorker("executeThreadForGrants") {
                 @Override
                 public Object construct() {
                     runToThread();
@@ -1107,6 +1107,23 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
                         act = CREATE_TABLE;
             execute_thread();
         }
+    }
+
+    public void cleanup() {
+
+        if (grantToolBar != null) {
+            for (Component comp : grantToolBar.getComponents()) {
+                if (comp instanceof RolloverButton) {
+                    ((RolloverButton) comp).removeActionListener(this);
+                }
+            }
+        }
+        if (grantFieldsToolbar != null)
+            for (Component comp : grantFieldsToolbar.getComponents()) {
+                if (comp instanceof RolloverButton) {
+                    ((RolloverButton) comp).removeActionListener(this);
+                }
+            }
     }
 
     class TypeObject {

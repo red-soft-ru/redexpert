@@ -40,6 +40,7 @@ import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.table.KeyCellRenderer;
 import org.executequery.gui.table.TableConstraintFunction;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
@@ -661,12 +662,25 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             worker.interrupt();
             worker = null;
         }
+        if (tableDataPanel != null) {
+            tableDataPanel.closeResultSet();
+            tableDataPanel.cleanup();
+        }
 
-        tableDataPanel.closeResultSet();
-        referencesPanel.cleanup();
+        if (referencesPanel != null)
+            referencesPanel.cleanup();
+        getPrivilegesPanel().cleanup();
         EventMediator.deregisterListener(this);
-        alterSqlText.cleanup();
-        createSqlText.cleanup();
+        cleanupComponent(this);
+    }
+
+    protected void cleanupComponent(Component component) {
+        if (component instanceof SQLTextArea)
+            ((SQLTextArea) component).cleanup();
+        else if (component instanceof Container)
+            for (Component child : ((Container) component).getComponents()) {
+                cleanupComponent(child);
+            }
     }
 
     @Override

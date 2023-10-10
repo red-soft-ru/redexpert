@@ -198,6 +198,10 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
         this.databaseConnection = databaseConnection;
     }
 
+    public BrowserPrivilegesPanel getPrivilegesPanel() {
+        return privilegesPanel;
+    }
+
     @Override
     public String getObjectName() {
         return nameObject;

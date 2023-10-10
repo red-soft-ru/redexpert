@@ -60,6 +60,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     public static AbstractCreateObjectPanel getEditPanelFromType(int type, DatabaseConnection dc, Object databaseObject, Object[] params) {
         switch (type) {
             case NamedObject.DOMAIN:
+            case NamedObject.SYSTEM_DOMAIN:
                 return new CreateDomainPanel(dc, null, ((DatabaseObject) databaseObject).getName());
             case NamedObject.PROCEDURE:
                 return new CreateProcedurePanel(dc, null, ((DatabaseObject) databaseObject).getName());
@@ -362,6 +363,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
     @Override
     public void cleanup() {
+        currentPath = null;
         cleanupComponent(this);
     }
 

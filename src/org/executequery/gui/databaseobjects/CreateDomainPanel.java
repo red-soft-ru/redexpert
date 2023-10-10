@@ -32,6 +32,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements Docu
     private JPanel sqlPanel;
     private SelectTypePanel selectTypePanel;
     private JCheckBox notNullBox;
+    DefaultDatabaseDomain databaseDomain;
 
     public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent, String domain) {
         super(connection, parent, domain);
@@ -90,12 +91,18 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements Docu
     protected void initEdited() {
         reset();
         if (parent == null) {
-            addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain));
-            addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain));
+            int type = NamedObject.DOMAIN;
+            if (databaseDomain != null && databaseDomain.isSystem())
+                type = NamedObject.SYSTEM_DOMAIN;
+            addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, type, domain));
+            addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, type, domain));
         }
     }
 
     protected void reset() {
+        databaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain);
+        if (databaseDomain == null)
+            databaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.SYSTEM_DOMAIN, domain);
         columnData.setColumnName(domain);
         columnData.setDomain(domain);
         columnData.setDescription(columnData.getDomainDescription());

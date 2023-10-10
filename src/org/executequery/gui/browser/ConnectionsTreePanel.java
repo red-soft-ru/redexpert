@@ -81,7 +81,6 @@ public class ConnectionsTreePanel extends TreePanel
     private boolean moveScrollAfterExpansion = false;
 
     private SchemaTree tree;
-    private SwingWorker worker;
     private BrowserController controller;
     private TreePath oldSelectionPath;
 
@@ -980,6 +979,7 @@ public class ConnectionsTreePanel extends TreePanel
         DatabaseHostNode host = (DatabaseHostNode) getHostNode(dc);
         host.disconnected();
         nodeStructureChanged(host);
+        oldSelectionPath = null;
 
         if (rootSelectOnDisconnect) {
             tree.setSelectionRow(0);
@@ -1283,7 +1283,7 @@ public class ConnectionsTreePanel extends TreePanel
             final ConnectionsTreePanel c = this;
             c.setInProcess(true);
 
-            worker = new SwingWorker("loadingNode " + node.getName()) {
+            SwingWorker worker = new SwingWorker("loadingNode " + node.getName()) {
 
                 @Override
                 public Object construct() {
@@ -1325,7 +1325,7 @@ public class ConnectionsTreePanel extends TreePanel
             return;
 
         final DatabaseObjectNode node = (DatabaseObjectNode) object;
-        worker = new SwingWorker("nodeExpansion " + node.getName()) {
+        SwingWorker worker = new SwingWorker("nodeExpansion " + node.getName()) {
 
             @Override
             public Object construct() {

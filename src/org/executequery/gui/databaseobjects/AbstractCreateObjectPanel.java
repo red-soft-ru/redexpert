@@ -65,6 +65,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
             case NamedObject.PROCEDURE:
                 return new CreateProcedurePanel(dc, null, ((DatabaseObject) databaseObject).getName());
             case NamedObject.FUNCTION:
+            case NamedObject.SYSTEM_FUNCTION:
                 DefaultDatabaseFunction function = (DefaultDatabaseFunction) databaseObject;
                 return new CreateFunctionPanel(dc, null, function.getName(), function);
             case NamedObject.TRIGGER:
@@ -363,6 +364,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
     @Override
     public void cleanup() {
+        super.cleanup();
         currentPath = null;
         cleanupComponent(this);
     }

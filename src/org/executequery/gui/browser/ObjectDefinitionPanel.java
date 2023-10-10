@@ -450,6 +450,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     }
 
     public void cleanup() {
+        super.cleanup();
         sqlTextPanel.cleanup();
     }
 

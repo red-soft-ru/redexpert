@@ -134,7 +134,10 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
     /**
      * Performs some cleanup and releases resources before being closed.
      */
-    public abstract void cleanup();
+    public void cleanup() {
+        if (privilegesPanel != null)
+            privilegesPanel.cleanup();
+    }
 
     /**
      * Flags to refresh the data and clears the cache - if any.

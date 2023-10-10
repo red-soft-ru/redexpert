@@ -656,7 +656,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     public void cleanup() {
-
+        super.cleanup();
         if (worker != null) {
 
             worker.interrupt();
@@ -669,7 +669,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         if (referencesPanel != null)
             referencesPanel.cleanup();
-        getPrivilegesPanel().cleanup();
         EventMediator.deregisterListener(this);
         cleanupComponent(this);
     }

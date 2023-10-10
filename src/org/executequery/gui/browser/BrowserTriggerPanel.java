@@ -184,6 +184,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
     }
 
     public void cleanup() {
+        super.cleanup();
         sqlPane.cleanup();
         textPane.cleanup();
     }

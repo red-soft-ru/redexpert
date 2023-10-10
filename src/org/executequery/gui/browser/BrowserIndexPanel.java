@@ -147,6 +147,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
     @Override
     public void cleanup() {
+        super.cleanup();
         expressionText.cleanup();
     }
 

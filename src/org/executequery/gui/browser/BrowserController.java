@@ -26,7 +26,10 @@ import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
@@ -312,36 +315,6 @@ public class BrowserController {
 
                     return hostPanel;
 
-                // catalog node:
-                // this will display the schema table list
-                case NamedObject.CATALOG:
-                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
-                    CatalogPanel catalogPanel = null;
-                    if (!viewPanel.containsPanel(CatalogPanel.NAME)) {
-                        catalogPanel = new CatalogPanel(this);
-                        viewPanel.addToLayout(catalogPanel);
-                    } else {
-                        catalogPanel = (CatalogPanel) viewPanel.
-                                getFormObjectView(CatalogPanel.NAME);
-                    }
-
-                    catalogPanel.setValues((DatabaseCatalog) databaseObject);
-                    return catalogPanel;
-
-                case NamedObject.SCHEMA:
-                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
-                    SchemaPanel schemaPanel = null;
-                    if (!viewPanel.containsPanel(SchemaPanel.NAME)) {
-                        schemaPanel = new SchemaPanel(this);
-                        viewPanel.addToLayout(schemaPanel);
-                    } else {
-                        schemaPanel = (SchemaPanel) viewPanel.
-                                getFormObjectView(SchemaPanel.NAME);
-                    }
-
-                    schemaPanel.setValues((DatabaseSchema) databaseObject);
-                    return schemaPanel;
-
                 case NamedObject.META_TAG:
                 case NamedObject.SYSTEM_STRING_FUNCTIONS:
                 case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
@@ -373,6 +346,7 @@ public class BrowserController {
                 case NamedObject.ROLE:
                 case NamedObject.SYSTEM_DOMAIN:
                 case NamedObject.SYSTEM_ROLE:
+                case NamedObject.SYSTEM_FUNCTION:
                     AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel.getEditPanelFromType(type, connection, node.getDatabaseObject(), null);
                     if (!viewPanel.containsPanel(objectPanel.getLayoutName())) {
                         viewPanel.addToLayout(objectPanel);
@@ -381,18 +355,7 @@ public class BrowserController {
                                 getFormObjectView(objectPanel.getLayoutName());
                     }
                     return objectPanel;
-                case NamedObject.SYSTEM_FUNCTION:
-                    BrowserProcedurePanel procsPanel = null;
-                    if (!viewPanel.containsPanel(BrowserProcedurePanel.NAME)) {
-                        procsPanel = new BrowserProcedurePanel(this);
-                        viewPanel.addToLayout(procsPanel);
-                    } else {
-                        procsPanel = (BrowserProcedurePanel) viewPanel.
-                                getFormObjectView(BrowserProcedurePanel.NAME);
-                    }
 
-                    procsPanel.setValues((DatabaseExecutable) databaseObject);
-                    return procsPanel;
 
                 case NamedObject.SYSTEM_TRIGGER:
                     BrowserTriggerPanel triggerPanel = null;

@@ -66,7 +66,8 @@ public class BrowserPrivilegesPanel extends JPanel {
         if (objectUsersPanel != null)
             objectUsersPanel.cleanup();
         objectUsersPanel = null;
-        tabbedPane.removeAll();
+        if (tabbedPane != null)
+            tabbedPane.removeAll();
         tabbedPane = null;
     }
 }

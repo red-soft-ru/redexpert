@@ -366,15 +366,15 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     public void cleanup() {
         super.cleanup();
         currentPath = null;
-        cleanupComponent(this);
+        cleanupForSqlTextArea(this);
     }
 
-    protected void cleanupComponent(Component component) {
+    protected void cleanupForSqlTextArea(Component component) {
         if (component instanceof SQLTextArea)
             ((SQLTextArea) component).cleanup();
         else if (component instanceof Container)
             for (Component child : ((Container) component).getComponents()) {
-                cleanupComponent(child);
+                cleanupForSqlTextArea(child);
             }
     }
 

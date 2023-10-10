@@ -26,6 +26,7 @@ import org.executequery.gui.browser.BrowserPrivilegesPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.managment.grantmanager.PrivilegesTablePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.GradientLabel;
 
@@ -137,6 +138,16 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
     public void cleanup() {
         if (privilegesPanel != null)
             privilegesPanel.cleanup();
+        cleanupForSqlTextArea(this);
+    }
+
+    protected void cleanupForSqlTextArea(Component component) {
+        if (component instanceof SQLTextArea)
+            ((SQLTextArea) component).cleanup();
+        else if (component instanceof Container)
+            for (Component child : ((Container) component).getComponents()) {
+                cleanupForSqlTextArea(child);
+            }
     }
 
     /**

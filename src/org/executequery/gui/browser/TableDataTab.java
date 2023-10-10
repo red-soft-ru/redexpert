@@ -43,7 +43,6 @@ import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.executequery.util.ThreadUtils;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.plaf.UIUtils;
@@ -292,18 +291,18 @@ public class TableDataTab extends JPanel
 
     private void addInProgressPanel() {
 
-        ThreadUtils.invokeLater(new Runnable() {
-
+        SwingWorker sw = new SwingWorker("loadingDataForTable") {
             @Override
-            public void run() {
-
+            public Object construct() {
                 removeAll();
                 add(cancelPanel, scrollerConstraints);
 
                 repaint();
                 cancelPanel.start();
+                return null;
             }
-        });
+        };
+        sw.start();
 
     }
 

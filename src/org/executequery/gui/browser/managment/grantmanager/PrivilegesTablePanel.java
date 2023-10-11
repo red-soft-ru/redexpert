@@ -65,6 +65,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     int act;
     String[] iconNamesForFields = {"no_grant_vertical", "no_grant_gorisont", "grant_vertical", "grant_gorisont", "admin_option_vertical", "admin_option_gorisont"};
     String[] iconNames = {"no_grant_vertical", "no_grant_gorisont", "no_grant_all", "grant_vertical", "grant_gorisont", "grant_all", "admin_option_vertical", "admin_option_gorisont", "admin_option_all"};
+    String[] toolTips = bundleStrings(new String[]{"no_grant_vertical", "no_grant_gorisont", "no_grant_all", "grant_vertical", "grant_gorisont", "grant_all", "admin_option_vertical", "admin_option_gorisont", "admin_option_all"});
     int firstGrantColumn = 1;
     int col_execute = 6;
     int col_usage = 7;
@@ -199,6 +200,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             grantFieldButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/" + iconNamesForFields[i] + ".svg", buttonSize));
             grantFieldButtons[i].setMouseEnteredContentAreaFill(false);
             grantFieldButtons[i].setActionCommand("field_" + i);
+            grantFieldButtons[i].setToolTipText(bundleString(iconNamesForFields[i]));
             grantFieldButtons[i].addActionListener(this);
         }
         tablePrivileges = new JTable();
@@ -214,6 +216,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/" + iconNames[i] + ".svg", buttonSize));
             grantButtons[i].setActionCommand(iconNames[i]);
             grantButtons[i].setMouseEnteredContentAreaFill(false);
+            grantButtons[i].setToolTipText(toolTips[i]);
             grantToolBar.add(grantButtons[i]);
             grantButtons[i].addActionListener(this);
         }
@@ -296,12 +299,13 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         });
 
         refreshButton = new RolloverButton();
+        refreshButton.setToolTipText(bundleString("Refresh"));
         refreshButton.setIcon(IconUtilities.loadIcon("/org/executequery/icons/Refresh16.svg", buttonSize));
         refreshButton.setMouseEnteredContentAreaFill(false);
         refreshButton.addActionListener(this);
 
         cancelButton = new RolloverButton();
-        //cancelButton.setText(bundleString("CancelFill"));
+        cancelButton.setToolTipText(bundleString("CancelFill"));
         cancelButton.setIcon(IconUtilities.loadIcon("/org/executequery/icons/Stop16.svg", buttonSize));
         cancelButton.setMouseEnteredContentAreaFill(false);
         cancelButton.addActionListener(this);

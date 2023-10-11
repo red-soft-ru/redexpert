@@ -640,7 +640,7 @@ public class UDFDefinitionPanel extends JPanel
                     return cd.isRequired();
 
                 case CSTRING_COLUMN:
-                    return cd.isCstring();
+                    return cd.isCString();
 
                 default:
                     return null;
@@ -698,8 +698,8 @@ public class UDFDefinitionPanel extends JPanel
                     cd.setNotNull((Boolean) value);
                     break;
                 case CSTRING_COLUMN:
-                    cd.setCstring((Boolean) value);
-                    if (cd.isCstring())
+                    cd.setCString((Boolean) value);
+                    if (cd.isCString())
                         _model.setValueAt(false, row, MECHANISM_COLUMN);
                     break;
             }
@@ -727,12 +727,12 @@ public class UDFDefinitionPanel extends JPanel
                     || cd.getSQLType() == Types.LONGVARBINARY
                     || cd.getColumnType().equalsIgnoreCase("VARCHAR")
                     || cd.getColumnType().equalsIgnoreCase("CHAR"))
-                    || cd.isCstring();
+                    || cd.isCString();
         }
 
         boolean isEditMechanism(int row) {
             ColumnData cd = tableVector.elementAt(row);
-            return !cd.isCstring();
+            return !cd.isCString();
         }
 
         boolean isEditScale(int row) {

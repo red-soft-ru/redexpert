@@ -103,7 +103,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         Vector<ColumnData> params = parametersPanel.getTableColumnDataVector();
         for (int i = 0; i < params.size(); i++) {
             ColumnData param = params.elementAt(i);
-            if (param.isCstring())
+            if (param.isCString())
                 sb.append("CSTRING (").append(param.getColumnSize()).append(") ");
             else {
                 if (param.getSQLType() == Types.BLOB ||
@@ -261,7 +261,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 continue;
             ColumnData cd = columnDataFromProcedureParameter(parameter, connection, false);
             cd.setMechanism(parameter.getStringMechanism());
-            cd.setCstring(parameter.isCString());
+            cd.setCString(parameter.isCString());
             cd.setNotNull(parameter.isNotNull());
             parametersPanel.addRow(cd);
         }

@@ -492,6 +492,8 @@ public final class SQLUtils {
         if (MiscUtils.isNull(thisCD.getComputedBy()) == MiscUtils.isNull(comparingCD.getComputedBy())) {
             if (thisCD.isAutoincrement() == comparingCD.isAutoincrement()) {
 
+                String alterColumnTemplate = "\n\tALTER COLUMN " + format(thisCD.getColumnName(), thisCD.getDatabaseConnection());
+
                 if (MiscUtils.isNull(thisCD.getComputedBy())) {
                     if (!comparingCD.isAutoincrement()) {
 
@@ -505,37 +507,31 @@ public final class SQLUtils {
                                     return sb.toString();
 
                                 } else
-                                    sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName(), thisCD.getDatabaseConnection()))
-                                            .append(" TYPE ").append(comparingCD.getFormattedDataType()).append(COMMA);
+                                    sb.append(alterColumnTemplate).append(" TYPE ").append(comparingCD.getFormattedDataType()).append(COMMA);
                             }
 
                         } else if (MiscUtils.isNull(thisCD.getDomain()) || !Objects.equals(thisCD.getDomain(), comparingCD.getDomain()))
-                            sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName(), thisCD.getDatabaseConnection()))
-                                    .append(" TYPE ").append(comparingCD.getDomain()).append(COMMA);
+                            sb.append(alterColumnTemplate).append(" TYPE ").append(comparingCD.getDomain()).append(COMMA);
 
                         if (!MiscUtils.isNull(thisCD.getDefaultValue().getValue()) && MiscUtils.isNull(comparingCD.getDefaultValue().getValue()))
-                            sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName(), thisCD.getDatabaseConnection()))
-                                    .append(" DROP DEFAULT").append(COMMA);
+                            sb.append(alterColumnTemplate).append(" DROP DEFAULT").append(COMMA);
 
                         else if (!Objects.equals(thisCD.getDefaultValue().getValue(), comparingCD.getDefaultValue().getValue()))
-                            sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName(), thisCD.getDatabaseConnection()))
-                                    .append(" SET DEFAULT ").append(comparingCD.getDefaultValue().getValue()).append(COMMA);
+                            sb.append(alterColumnTemplate).append(" SET DEFAULT ").append(comparingCD.getDefaultValue().getValue()).append(COMMA);
 
                         if (thisCD.isRequired() && !comparingCD.isRequired())
-                            sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName(), thisCD.getDatabaseConnection()))
-                                    .append(" DROP NOT NULL").append(COMMA);
+                            sb.append(alterColumnTemplate).append(" DROP NOT NULL").append(COMMA);
 
                         else if (!thisCD.isRequired() && comparingCD.isRequired())
-                            sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName(), thisCD.getDatabaseConnection()))
-                                    .append(" SET NOT NULL").append(COMMA);
+                            sb.append(alterColumnTemplate).append(" SET NOT NULL").append(COMMA);
 
                     } else if (!Objects.equals(thisCD.getAutoincrement().getStartValue(), comparingCD.getAutoincrement().getStartValue()))
-                        sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName(), thisCD.getDatabaseConnection()))
-                                .append(" RESTART WITH ").append(comparingCD.getAutoincrement().getStartValue()).append(COMMA);
+                        sb.append(alterColumnTemplate).append(" RESTART WITH ")
+                                .append(comparingCD.getAutoincrement().getStartValue()).append(COMMA);
 
                 } else if (computedNeed && !Objects.equals(thisCD.getComputedBy().trim(), comparingCD.getComputedBy().trim())) {
 
-                    sb.append("\n\tALTER COLUMN ").append(format(thisCD.getColumnName(), thisCD.getDatabaseConnection()));
+                    sb.append(alterColumnTemplate);
 
                     if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
                         sb.append(" TYPE ").append((MiscUtils.isNull(comparingCD.getDomain())) ?

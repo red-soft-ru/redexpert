@@ -55,6 +55,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private static final int CHECK_DROP = 2;
     private static final int IGNORE_COMMENTS = 3;
     private static final int IGNORE_COMPUTED_FIELDS = 4;
+    private static final int IGNORE_FIELDS_POSITIONS = 5;
     private static final int IGNORE_PK = 50;
     private static final int IGNORE_FK = IGNORE_PK + 1;
     private static final int IGNORE_UK = IGNORE_FK + 1;
@@ -180,6 +181,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         propertiesCheckBoxMap.put(CHECK_DROP, new JCheckBox(bundleString("CheckDrop")));
         propertiesCheckBoxMap.put(IGNORE_COMMENTS, new JCheckBox(bundleString(("IgnoreComments"))));
         propertiesCheckBoxMap.put(IGNORE_COMPUTED_FIELDS, new JCheckBox(bundleString(("IgnoreComputed"))));
+        propertiesCheckBoxMap.put(IGNORE_FIELDS_POSITIONS, new JCheckBox(bundleString(("IgnorePositions"))));
         propertiesCheckBoxMap.put(IGNORE_PK, new JCheckBox(bundleString("IgnorePK")));
         propertiesCheckBoxMap.put(IGNORE_FK, new JCheckBox(bundleString("IgnoreFK")));
         propertiesCheckBoxMap.put(IGNORE_UK, new JCheckBox(bundleString("IgnoreUK")));
@@ -380,7 +382,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
                         !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
                 },
                 !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
-                !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected()
+                !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
+                !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
         );
 
         loggingOutputPanel.clear();

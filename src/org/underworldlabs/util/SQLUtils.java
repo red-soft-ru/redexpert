@@ -485,7 +485,7 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateAlterDefinitionColumn(ColumnData thisCD, ColumnData comparingCD, boolean computedNeed) {
+    public static String generateAlterDefinitionColumn(ColumnData thisCD, ColumnData comparingCD, boolean computedNeed, boolean positionNeed) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -512,6 +512,9 @@ public final class SQLUtils {
 
                         } else if (MiscUtils.isNull(thisCD.getDomain()) || !Objects.equals(thisCD.getDomain(), comparingCD.getDomain()))
                             sb.append(alterColumnTemplate).append(" TYPE ").append(comparingCD.getDomain()).append(COMMA);
+
+                        if (positionNeed && !Objects.equals(thisCD.getColumnPosition(), comparingCD.getColumnPosition()))
+                            sb.append(alterColumnTemplate).append(" POSITION ").append(comparingCD.getColumnPosition()).append(COMMA);
 
                         if (!MiscUtils.isNull(thisCD.getDefaultValue().getValue()) && MiscUtils.isNull(comparingCD.getDefaultValue().getValue()))
                             sb.append(alterColumnTemplate).append(" DROP DEFAULT").append(COMMA);
@@ -942,7 +945,7 @@ public final class SQLUtils {
 
     public static String generateAlterTable(
             DefaultDatabaseTable thisTable, DefaultDatabaseTable comparingTable,
-            boolean temporary, boolean[] constraints, boolean computed) {
+            boolean temporary, boolean[] constraints, boolean computed, boolean fieldsPositions) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -966,7 +969,7 @@ public final class SQLUtils {
                     sb.append(generateAlterDefinitionColumn(
                             new ColumnData(thisTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn), false),
                             new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn), false),
-                            computed));
+                            computed, fieldsPositions));
                     break;
 
                 } else dropCheck++;

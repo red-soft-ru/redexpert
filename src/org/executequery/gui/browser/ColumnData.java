@@ -70,6 +70,7 @@ public class ColumnData implements Serializable {
     private int sqlType;
     private DefaultValue defaultValue;
     private Vector<ColumnConstraint> columnConstraints;
+    private int columnPosition;
 
     private String keyType;
     private boolean primaryKey;
@@ -258,6 +259,7 @@ public class ColumnData implements Serializable {
         setTableName(cd.getParentsName());
         setColumnName(cd.getName());
         setColumnType(cd.getTypeName());
+        setColumnPosition(cd.getPosition());
         setPrimaryKey(cd.isPrimaryKey());
         setForeignKey(cd.isForeignKey());
         setColumnSize(cd.getColumnSize());
@@ -1018,6 +1020,14 @@ public class ColumnData implements Serializable {
 
     public void setDimensions(List<ColumnData.Dimension> dimensions) {
         this.dimensions = dimensions;
+    }
+
+    public int getColumnPosition() {
+        return columnPosition;
+    }
+
+    public void setColumnPosition(int columnPosition) {
+        this.columnPosition = columnPosition;
     }
 
     // ---

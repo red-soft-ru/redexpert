@@ -31,6 +31,7 @@ public class Comparer {
     private static boolean[] TABLE_CONSTRAINTS_NEED;
     private static boolean COMMENTS_NEED;
     private static boolean COMPUTED_FIELDS_NEED;
+    private static boolean FIELDS_POSITIONS_NEED;
 
 
     protected ComparerDBPanel panel;
@@ -52,7 +53,7 @@ public class Comparer {
 
     public Comparer(
             ComparerDBPanel panel, DatabaseConnection dbSlave, DatabaseConnection dbMaster,
-            boolean[] constraintsNeed, boolean commentsNeed, boolean computedNeed) {
+            boolean[] constraintsNeed, boolean commentsNeed, boolean computedNeed, boolean fieldsPositions) {
 
         script = new ArrayList<>();
         constraintsToCreate = new ArrayList<>();
@@ -68,6 +69,7 @@ public class Comparer {
         Comparer.TABLE_CONSTRAINTS_NEED = constraintsNeed;
         Comparer.COMMENTS_NEED = commentsNeed;
         Comparer.COMPUTED_FIELDS_NEED = computedNeed;
+        Comparer.FIELDS_POSITIONS_NEED = fieldsPositions;
 
     }
 
@@ -830,7 +832,8 @@ public class Comparer {
                         if (!SQLUtils.generateAlterDefinitionColumn(
                                 new ColumnData(((DefaultDatabaseTable) masterObject).getHost().getDatabaseConnection(), masterC, false),
                                 new ColumnData(((DefaultDatabaseTable) compareObject).getHost().getDatabaseConnection(), comparingC, false),
-                                isComputedFieldsNeed()).equals("")) {
+                                isComputedFieldsNeed(),
+                                isFieldsPositionsNeed()).isEmpty()) {
 
                             constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
                             constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
@@ -1010,6 +1013,10 @@ public class Comparer {
 
     public static boolean isComputedFieldsNeed() {
         return COMPUTED_FIELDS_NEED;
+    }
+
+    public static boolean isFieldsPositionsNeed() {
+        return FIELDS_POSITIONS_NEED;
     }
 
     public void clearLists() {

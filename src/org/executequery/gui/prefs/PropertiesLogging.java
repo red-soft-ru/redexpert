@@ -34,7 +34,7 @@ public class PropertiesLogging extends AbstractPropertiesBasePanel {
                 bundledString("SystemConsole"),
                 Boolean.valueOf(stringUserProperty(key))));
 
-        key = "editor.logging.enabled";
+        key = "system.log.enabled";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,

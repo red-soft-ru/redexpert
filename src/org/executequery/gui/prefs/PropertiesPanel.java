@@ -79,7 +79,7 @@ public class PropertiesPanel extends JPanel
             "editor.tabs.tospaces",
             "editor.tab.spaces",
             // -- PropertiesOutputConsole --
-            "editor.logging.enabled",
+            "system.log.enabled",
             "editor.logging.path",
             "editor.logging.backups",
             "system.log.out",

@@ -44,7 +44,7 @@ public final class Log {
             UserProperties.getInstance().getIntProperty("editor.logging.backups");
 
     private static final boolean IS_LOG_ENABLED =
-            UserProperties.getInstance().getBooleanProperty("editor.logging.enabled");
+            UserProperties.getInstance().getBooleanProperty("system.log.enabled");
 
     private static final String LOG_FILE_PATH = ((LogRepository) RepositoryCache.load(LogRepository.REPOSITORY_ID))
             .getLogFilePath(LogRepository.ACTIVITY);

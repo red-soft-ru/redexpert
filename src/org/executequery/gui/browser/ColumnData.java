@@ -420,7 +420,7 @@ public class ColumnData implements Serializable {
     }
 
     public String getDomain() {
-        return domain.trim();
+        return domain != null ? domain.trim() : "";
     }
 
     public void setDomain(String domain) {

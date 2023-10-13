@@ -14,7 +14,6 @@ import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.DifferenceSqlTextPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
-import org.executequery.localization.LocaleManager;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -169,9 +168,14 @@ public class ComparerDBPanel extends JPanel implements TabView {
         // --- attributes checkBox defining ---
 
         attributesCheckBoxMap = new HashMap<>();
-        for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++)
-            attributesCheckBoxMap.put(objectType,
-                    new JCheckBox(Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType])));
+        for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++) {
+
+            String checkBoxText = bundleString(NamedObject.META_TYPES_FOR_BUNDLE[objectType]);
+            if (checkBoxText.isEmpty())
+                checkBoxText = Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType]);
+
+            attributesCheckBoxMap.put(objectType, new JCheckBox(checkBoxText));
+        }
 
         // --- properties checkBox defining ---
 

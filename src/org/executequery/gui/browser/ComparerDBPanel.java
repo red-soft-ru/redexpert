@@ -78,6 +78,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private JButton executeScriptButton;
     private JButton selectAllAttributesButton;
     private JButton selectAllPropertiesButton;
+    private JButton switchTargetSourceButton;
 
     private JTabbedPane tabPane;
     private LoggingOutputPanel loggingOutputPanel;
@@ -165,6 +166,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
         selectAllPropertiesButton.setText(bundleString("SelectAllButton"));
         selectAllPropertiesButton.addActionListener(e -> selectAll("properties"));
 
+        switchTargetSourceButton = new JButton();
+        switchTargetSourceButton.setText("<html><p style=\"font-size:20pt\">&#x21C5;</p>"); // Unicode Character '⇅' (U+21C5)
+        switchTargetSourceButton.addActionListener(e -> switchTargetSource());
+
         // --- attributes checkBox defining ---
 
         attributesCheckBoxMap = new HashMap<>();
@@ -248,6 +253,18 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         GridBagHelper gridBagHelper;
 
+        // --- connections selector panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+
+        JPanel connectionsSelectorPanel = new JPanel(new GridBagLayout());
+
+        gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
+                bundleString("CompareDatabaseLabel"), dbTargetComboBox, null);
+        gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
+                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
+
         // --- connections panel ---
 
         gridBagHelper = new GridBagHelper();
@@ -256,11 +273,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
         JPanel connectionsPanel = new JPanel(new GridBagLayout());
         connectionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ConnectionsLabel")));
 
-        gridBagHelper.addLabelFieldPair(connectionsPanel,
-                bundleString("CompareDatabaseLabel"), dbTargetComboBox, null);
-        gridBagHelper.addLabelFieldPair(connectionsPanel,
-                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
-        connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().get());
+        connectionsPanel.add(connectionsSelectorPanel, gridBagHelper.setMaxWeightX().get());
+        connectionsPanel.add(switchTargetSourceButton, gridBagHelper.nextCol().setMinWeightX().fillVertical().get());
+        connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().setWidth(2).fillHorizontally().get());
 
         // --- attributes panel ---
 
@@ -754,6 +769,12 @@ public class ComparerDBPanel extends JPanel implements TabView {
             checkBox.setSelected(!curFlag);
         }
 
+    }
+
+    private void switchTargetSource() {
+        Object sourceConnection = dbMasterComboBox.getSelectedItem();
+        dbMasterComboBox.setSelectedItem(dbTargetComboBox.getSelectedItem());
+        dbTargetComboBox.setSelectedItem(sourceConnection);
     }
 
     @Override

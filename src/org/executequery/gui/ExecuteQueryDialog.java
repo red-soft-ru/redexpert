@@ -303,7 +303,7 @@ public class ExecuteQueryDialog extends BaseDialog {
                 copy += "SET TERM " + delimiter + ";\n";
             for (int i = 0; i < v.size(); i++) {
                 if (v.elementAt(i).copyScript)
-                    copy += v.elementAt(i).queryAction + ";\n";
+                    copy += v.elementAt(i).queryAction + delimiter + "\n";
             }
             if (!delimiter.equals(";"))
                 copy += "SET TERM ;" + delimiter;

@@ -230,6 +230,16 @@ public class GUIUtils {
     }
 
     /**
+     * Sets the application cursor to the system hand cursor
+     * the specified component.
+     *
+     * @param component - the component to set the cursor onto
+     */
+    public static void showTextCursor(Component component) {
+        setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR), component);
+    }
+
+    /**
      * Executes the specified runnable using the
      * <code>SwingWorker</code>.
      *

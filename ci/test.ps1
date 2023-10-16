@@ -18,8 +18,8 @@ $PYTHON=$env:PYTHON
 if (-Not (Test-Path env:\DISTRO)) { die("DISTRO not defined") }
 $DISTRO=$env:DISTRO
 
-$SERVICE_NAME="RedDatabase Server - DefaultInstance"
-if ((Get-Service $SERVICE_NAME -ErrorAction SilentlyContinue) -eq $null) { die("RDB not running") }
+if (-Not (Test-Path env:\DBMS)) { die("DBMS not defined") }
+$DBMS=$env:DBMS
 
 echo "Downloading tests"
 git clone -q http://git.red-soft.biz/red-database/re-tests.git
@@ -38,7 +38,7 @@ start-process "${PYTHON}" "-m pytest -vv --junitxml .\results.xml .\tests" -wait
 echo "Copy test results"
 if (Test-Path "results.xml") {
     mkdir "${WORKSPACE}\test-results\"
-    copy "results.xml" "${WORKSPACE}\test-results\${DISTRO}-${ARCH}.xml"
+    copy "results.xml" "${WORKSPACE}\test-results\${DISTRO}-${DBMS}-${ARCH}.xml"
 }
 else
 {

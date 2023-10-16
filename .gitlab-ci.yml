@@ -235,12 +235,17 @@ test:windows:
     DISTRO: red-expert-tests
   parallel:
     matrix:
-      - ARCH: x86_64
-      - ARCH: x86
+      - TEST_TYPE: core
+        ARCH: ["x86_64", "x86"]
+        DBMS: ["Firebird-3.0", "Firebird-5.0", "rdb30", "rdb50"]
   before_script:
    - $TEST_DIR = New-TempDirectory -Prefix 'test_re_'
    - cd $TEST_DIR
    - unzip -q ${CI_PROJECT_DIR}\dist-src\RedExpert-$env:VERSION-src.zip
+   - cd $TEST_DIR\RedExpert-$env:VERSION\ci
+   - start-process "${PYTHON}" "-m pip install beautifulsoup4" -wait -nonewwindow
+   - start-process "${PYTHON}" ".\download_dbms.py ${DBMS} ${ARCH}" -wait -nonewwindow
+   - powershell -ExecutionPolicy ByPass -file install_dbms.ps1
    - cd $DIST\bin
    - |
       if ($env:ARCH -eq "x86_64")

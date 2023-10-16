@@ -419,7 +419,7 @@ static gboolean updateProgress(gpointer data)
             {
                 last_time=cur_time;
             }
-            else if(cur_time-last_time>10)
+            else if(cur_time-last_time>20)
             {
                 status_downl=ERROR_DOWNLOAD;
                 timeout_error = true;
@@ -494,6 +494,7 @@ void init_curl()
             const char* url = download_url.c_str();
             outfile = fopen(archive_path.c_str(), "wb");
             curl_easy_setopt_(curl, CURLOPT_URL, url);
+            curl_easy_setopt_(curl, CURLOPT_FOLLOWLOCATION , 1L);
             curl_easy_setopt_(curl, CURLOPT_WRITEDATA, outfile);
             curl_easy_setopt_(curl, CURLOPT_WRITEFUNCTION, my_write_func);
             curl_easy_setopt_(curl, CURLOPT_READFUNCTION, my_read_func);

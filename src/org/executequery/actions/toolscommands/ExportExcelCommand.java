@@ -43,7 +43,7 @@ public class ExportExcelCommand extends OpenFrameCommand
         }
 
         if (isActionableDialogOpen()) {
-            GUIUtilities.acionableDialogToFront();
+            GUIUtilities.actionableDialogToFront();
             return;
         }
 

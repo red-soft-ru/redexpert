@@ -54,7 +54,7 @@ public class CreateErdFromDatabaseCommand extends OpenFrameCommand
 
 
             if (isActionableDialogOpen()) {
-                GUIUtilities.acionableDialogToFront();
+                GUIUtilities.actionableDialogToFront();
                 return;
             }
 

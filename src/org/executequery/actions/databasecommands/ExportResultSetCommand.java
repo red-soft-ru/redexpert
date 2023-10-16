@@ -42,7 +42,7 @@ public class ExportResultSetCommand extends OpenFrameCommand
         }
 
         if (isActionableDialogOpen()) {
-            GUIUtilities.acionableDialogToFront();
+            GUIUtilities.actionableDialogToFront();
             return;
         }
 

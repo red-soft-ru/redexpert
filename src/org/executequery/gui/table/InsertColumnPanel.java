@@ -179,7 +179,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
     @Override
     public String getTypeObject() {
-        return "DATABASE_TABLE_COLUMN";
+        return NamedObject.META_TYPES[NamedObject.TABLE_COLUMN];
     }
 
     @Override

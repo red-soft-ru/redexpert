@@ -4,9 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
@@ -18,7 +16,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.DependenciesPanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.gui.text.SQLTextArea;
+import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
@@ -90,6 +88,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                 return new CreateTablespacePanel(dc, null, databaseObject);
             case NamedObject.JOB:
                 return new CreateJobPanel(dc, null, databaseObject);
+            case NamedObject.TABLE_COLUMN:
+                return new InsertColumnPanel((DatabaseTable) ((DatabaseColumn) databaseObject).getParent(), null, (DatabaseColumn) databaseObject);
             default:
                 return null;
         }
@@ -117,24 +117,6 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
             }
         }
         treePanel = ConnectionsTreePanel.getPanelFromBrowser();
-        DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(connection);
-
-        for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-            if (metaTagNode.getMetaDataKey().equals(getTypeObject())) {
-                if (editing) {
-                    for (DatabaseObjectNode node : metaTagNode.getChildObjects()) {
-                        if (node.getDatabaseObject() == databaseObject) {
-                            currentPath = node.getTreePath();
-                            break;
-                        }
-                    }
-                } else {
-                    currentPath = metaTagNode.getTreePath();
-                }
-                break;
-            }
-        }
-
         ActionListener escListener = new ActionListener() {
 
             @Override
@@ -301,6 +283,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                 }
                 if (parent != null)
                     parent.finished();
+                else firstQuery = generateQuery();
             }
         } else if (parent != null) parent.finished();
     }
@@ -367,15 +350,6 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         super.cleanup();
         currentPath = null;
         cleanupForSqlTextArea(this);
-    }
-
-    protected void cleanupForSqlTextArea(Component component) {
-        if (component instanceof SQLTextArea)
-            ((SQLTextArea) component).cleanup();
-        else if (component instanceof Container)
-            for (Component child : ((Container) component).getComponents()) {
-                cleanupForSqlTextArea(child);
-            }
     }
 
     @Override

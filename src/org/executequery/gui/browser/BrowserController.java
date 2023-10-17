@@ -267,6 +267,8 @@ public class BrowserController {
 
             if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
                 panel.setObjectName(null);
+            else if (node.getType() == NamedObject.TABLE_COLUMN)
+                panel.setObjectName(MiscUtils.trimEnd(((DatabaseObjectNode) node.getParent()).getShortName() + "." + node.getShortName()) + ":" + type + ":" + connection.getName());
             else
                 panel.setObjectName(MiscUtils.trimEnd(node.getShortName()) + ":" + type + ":" + connection.getName());
 
@@ -354,6 +356,7 @@ public class BrowserController {
                         objectPanel = (AbstractCreateObjectPanel) viewPanel.
                                 getFormObjectView(objectPanel.getLayoutName());
                     }
+                    objectPanel.setCurrentPath(node.getTreePath());
                     return objectPanel;
 
 
@@ -426,6 +429,17 @@ public class BrowserController {
                     editingPanel.setValues((DatabaseTable) databaseObject);
                     return editingPanel;
                 case NamedObject.TABLE_COLUMN:
+                    if (node.getParent() != null && ((DatabaseObjectNode) node.getParent()).getDatabaseObject() instanceof DatabaseTable) {
+                        objectPanel = AbstractCreateObjectPanel.getEditPanelFromType(type, connection, node.getDatabaseObject(), null);
+                        if (!viewPanel.containsPanel(objectPanel.getLayoutName())) {
+                            viewPanel.addToLayout(objectPanel);
+                        } else {
+                            objectPanel = (AbstractCreateObjectPanel) viewPanel.
+                                    getFormObjectView(objectPanel.getLayoutName());
+                        }
+                        objectPanel.setCurrentPath(node.getTreePath());
+                        return objectPanel;
+                    }
                     TableColumnPanel columnPanel = null;
                     if (!viewPanel.containsPanel(TableColumnPanel.NAME)) {
                         columnPanel = new TableColumnPanel(this);

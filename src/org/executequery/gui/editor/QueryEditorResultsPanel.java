@@ -531,7 +531,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         int rowCount = model.getRowCount();
         if (rowCount == 0) {
             if (showRowNumber) {
-                setOutputMessage(null, SqlMessages.PLAIN_MESSAGE, SUCCESSFULL_NO_ROWS.trim(), true);
+                setOutputMessage(null, SqlMessages.PLAIN_MESSAGE, SUCCESS_NO_ROWS.trim(), true);
                 resetEditorRowCount(rowCount);
                 queryEditor.setMetaDataButtonEnabled(false);
             }

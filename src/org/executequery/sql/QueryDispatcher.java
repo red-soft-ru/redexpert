@@ -240,7 +240,7 @@ public class QueryDispatcher {
     public void executeSQLQuery(
             DatabaseConnection dc, final String query, final boolean executeAsBlock, boolean anyConnections) {
 
-        if (!checkBeforeExecuteQuery(query))
+        if (!checkBeforeExecuteQuery(query, dc, anyConnections))
             return;
 
         if (querySender == null) {
@@ -281,7 +281,7 @@ public class QueryDispatcher {
 
         };
 
-        setOutputMessage(SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc);
+        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc, anyConnections);
 
         delegate.executing();
         delegate.setStatusMessage(Constants.EMPTY);
@@ -291,7 +291,7 @@ public class QueryDispatcher {
     public void executeSQLQueryInProfiler(
             DatabaseConnection dc, final String query, final boolean executeAsBlock) {
 
-        if (!checkBeforeExecuteQuery(query))
+        if (!checkBeforeExecuteQuery(query, dc, false))
             return;
 
         if (querySender == null)
@@ -300,7 +300,7 @@ public class QueryDispatcher {
         if (dc != null)
             querySender.setDatabaseConnection(dc);
 
-        querySender.setTransactionIsolation(transactionLevel);
+        querySender.setTpb(tpp.getTpb(dc));
         statementCancelled = false;
 
         worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
@@ -314,14 +314,14 @@ public class QueryDispatcher {
                     int sessionId = profilerExecutor.startSession();
 
                     if (sessionId != -1) {
-                        executeSQL(query, executeAsBlock);
+                        executeSQL(query, executeAsBlock, false);
                         profilerExecutor.finishSession();
                         GUIUtilities.addCentralPane(ProfilerPanel.TITLE,
                                 (Icon) null, new ProfilerPanel(sessionId, dc), null, true);
 
                     } else {
                         GUIUtilities.displayWarningMessage(Bundles.get(ProfilerPanel.class, "VersionNotSupported"));
-                        setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Action canceled, DB version is not supported");
+                        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Action canceled, DB version is not supported", false);
                     }
 
                 } catch (SQLException ex) {
@@ -337,7 +337,7 @@ public class QueryDispatcher {
                 delegate.finished(duration);
 
                 if (statementCancelled) {
-                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Statement cancelled");
+                    setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Statement cancelled", false);
                     delegate.setStatusMessage(" Statement cancelled");
                 }
 
@@ -348,7 +348,7 @@ public class QueryDispatcher {
 
         };
 
-        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc, anyConnections);
+        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc, false);
 
         delegate.executing();
         delegate.setStatusMessage(Constants.EMPTY);
@@ -1782,7 +1782,7 @@ public class QueryDispatcher {
         this.tpp = tpp;
     }
 
-    private boolean checkBeforeExecuteQuery(String query) {
+    private boolean checkBeforeExecuteQuery(String query, DatabaseConnection dc, boolean anyConnections) {
 
         String checkUpdatesToLog = "Checking for updates from the release hub is ";
         if (query.toLowerCase().trim().startsWith("releasehub on")) {
@@ -1790,7 +1790,7 @@ public class QueryDispatcher {
                     "true");
             checkUpdatesToLog += "enabled";
             Log.info(checkUpdatesToLog);
-            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog, anyConnections);
             return false;
         }
         if (query.toLowerCase().trim().startsWith("releasehub off")) {
@@ -1798,13 +1798,13 @@ public class QueryDispatcher {
                     "false");
             checkUpdatesToLog += "disabled";
             Log.info(checkUpdatesToLog);
-            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog, anyConnections);
             return false;
         }
 
         if (!ConnectionManager.hasConnections()) {
 
-            setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Not Connected");
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", anyConnections);
             setStatusMessage(ERROR_EXECUTING);
 
             return false;

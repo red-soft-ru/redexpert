@@ -624,16 +624,25 @@ public class ConnectionsTreePanel extends TreePanel
 
         List<DatabaseHost> hosts = databaseHosts();
         for (DatabaseHost databaseHost : hosts)
-            if (!databaseHost.isConnected())
-                databaseHost.connect();
+            try {
+                if (!databaseHost.isConnected())
+                    databaseHost.connect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
     }
 
     public void disconnectAll() {
 
         List<DatabaseHost> hosts = databaseHosts();
         for (DatabaseHost databaseHost : hosts)
-            if (databaseHost.isConnected())
-                databaseHost.disconnect();
+            try {
+                if (databaseHost.isConnected())
+                    databaseHost.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
     }
 
     public void searchNodes() {

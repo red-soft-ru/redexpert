@@ -17,7 +17,7 @@ public class CreateViewCommand extends OpenFrameCommand implements BaseCommand {
 
 
         if (isActionableDialogOpen()) {
-            GUIUtilities.acionableDialogToFront();
+            GUIUtilities.actionableDialogToFront();
             return;
         }
 

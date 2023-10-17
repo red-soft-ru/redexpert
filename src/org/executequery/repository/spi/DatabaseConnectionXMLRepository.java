@@ -237,7 +237,8 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     private static final String PORT = "port";
     private static final String CHARSET = "charset";
     private static final String ROLE = "role";
-    private static final String SERVER_VERSION = "server_version";
+    private static final String MAJOR_SERVER_VERSION = "server_version";
+    private static final String MINOR_SERVER_VERSION = "minor_server_version";
     private static final String CERTIFICATE = "certificate";
     private static final String AUTH_METHOD = "authmethod";
     private static final String CONNECTION_METHOD = "connectionmethod";
@@ -400,10 +401,15 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
 
                 databaseConnection.setRole(contentsAsString);
 
-            } else if (localNameIsKey(localName, SERVER_VERSION)) {
+            } else if (localNameIsKey(localName, MAJOR_SERVER_VERSION)) {
 
                 if (!contentsAsString.isEmpty())
-                    databaseConnection.setServerVersion(Integer.parseInt(contentsAsString));
+                    databaseConnection.setMajorServerVersion(Integer.parseInt(contentsAsString));
+
+            } else if (localNameIsKey(localName, MINOR_SERVER_VERSION)) {
+
+                if (!contentsAsString.isEmpty())
+                    databaseConnection.setMinorServerVersion(Integer.parseInt(contentsAsString));
 
             } else if (localNameIsKey(localName, CERTIFICATE)) {
 
@@ -676,7 +682,8 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                 writeXML(PORT, connection.getPort(), INDENT_TWO);
                 writeXML(CHARSET, connection.getCharset(), INDENT_TWO);
                 writeXML(ROLE, connection.getRole(), INDENT_TWO);
-                writeXML(SERVER_VERSION, String.valueOf(connection.getServerVersion()), INDENT_TWO);
+                writeXML(MAJOR_SERVER_VERSION, String.valueOf(connection.getMajorServerVersion()), INDENT_TWO);
+                writeXML(MINOR_SERVER_VERSION, String.valueOf(connection.getMinorServerVersion()), INDENT_TWO);
                 writeXML(CERTIFICATE, connection.getCertificate(), INDENT_TWO);
                 writeXML(AUTH_METHOD, connection.getAuthMethod(), INDENT_TWO);
                 writeXML(CONNECTION_METHOD, connection.getConnectionMethod(), INDENT_TWO);

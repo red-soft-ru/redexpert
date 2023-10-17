@@ -60,7 +60,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private final JMenuItem recompileAll;
     private final JMenuItem reselectivityAllIndicies;
     private final JMenuItem reselectivityIndex;
-
+    private final JMenuItem onlineTableValidation;
 
     private final JMenuItem dataBaseInformation;
 
@@ -94,6 +94,10 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         add(editObject);
         deleteObject = createMenuItem(bundleString("delete"), "deleteObject", listener);
         add(deleteObject);
+
+        onlineTableValidation = createMenuItem(bundleString("onlineTableValidation"), "onlineTableValidation", listener);
+        onlineTableValidation.setVisible(false);
+        add(onlineTableValidation);
 
         addSeparator();
 
@@ -201,6 +205,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     editObject.setVisible(false);
                     moveToFolder.setVisible(true);
                     duplicate.setVisible(true);
+                    onlineTableValidation.setVisible(false);
                     addNewConnection.setVisible(true);
                     dataBaseInformation.setVisible(true);
                 } else {
@@ -254,8 +259,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     }
 
 
-                    boolean importExport = (node.getType() == NamedObject.TABLE);
-                    sqlTable.setVisible(importExport);
+                    boolean isTable = (node.getType() == NamedObject.TABLE);
+                    sqlTable.setVisible(isTable);
+                    onlineTableValidation.setVisible(isTable);
 
                     boolean viewIsSelected = (node.getType() == NamedObject.VIEW);
                     sqlView.setVisible(viewIsSelected);

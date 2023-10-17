@@ -20,6 +20,9 @@
 
 package org.executequery.sql;
 
+import com.github.vertical_blank.sqlformatter.SqlFormatter;
+import com.github.vertical_blank.sqlformatter.core.FormatConfig;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,8 +33,6 @@ import java.util.List;
  * @author Takis Diakoumis
  */
 public class TokenizingFormatter {
-
-    private static final String DELIMITER = ";";
 
     private QueryTokenizer queryTokenizer;
 
@@ -47,31 +48,33 @@ public class TokenizingFormatter {
 
         StringBuilder sb = new StringBuilder();
 
-        for (String query : formattedQueries) {
-
-            sb.append(query.trim());
-
-            if (!query.endsWith(DELIMITER)) {
-
-                sb.append(DELIMITER);
-            }
-
-            sb.append("\n");
-        }
+        for (String query : formattedQueries)
+            sb.append(query.trim()).append("\n");
 
         return sb.toString();
     }
 
     private List<String> formatQueries(List<DerivedQuery> queries) {
 
-        List<String> formattedQueries = new ArrayList<String>(queries.size());
+        List<String> formattedQueries = new ArrayList<>(queries.size());
 
         for (DerivedQuery query : queries) {
 
-            String formatted = new SQLFormatter(
-                    query.getOriginalQuery()).format();
+            String formattedQuery = SqlFormatter
+                    .extend(cfg -> cfg.plusSpecialWordChars("$"))
+                    .format(query.getOriginalQuery(), FormatConfig.builder()
+                            .indent("\t").build());
 
-            formattedQueries.add(formatted);
+            if (!formattedQuery.endsWith(query.getEndDelimiter()))
+                formattedQuery += query.getEndDelimiter();
+
+            if (query.isSetTerm()) {
+                formattedQuery = "\nSET TERM " + query.getEndDelimiter() + ";\n" +
+                        formattedQuery + "\nSET TERM ;" + query.getEndDelimiter() + "\n";
+            }
+
+            formattedQueries.add(formattedQuery);
+
         }
 
         return formattedQueries;
@@ -79,11 +82,8 @@ public class TokenizingFormatter {
 
     private QueryTokenizer queryTokenizer() {
 
-        if (queryTokenizer == null) {
-
+        if (queryTokenizer == null)
             queryTokenizer = new QueryTokenizer();
-        }
-
         return queryTokenizer;
     }
 

@@ -21,6 +21,7 @@
 package org.underworldlabs.util;
 
 import org.executequery.ApplicationContext;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
@@ -563,16 +564,15 @@ public final class MiscUtils {
        */
 
         //build "hh:mm:ss.SSS"
-        StringBuilder buffer = new StringBuilder(" ");
-        buffer.append(oneDigitFormat.format(result[3]));
-        buffer.append(':');
-        buffer.append(twoDigitFormat.format(result[2]));
-        buffer.append(':');
-        buffer.append(twoDigitFormat.format(result[1]));
-        buffer.append('.');
-        buffer.append(twoDigitFormat.format(result[0]));
+        String buffer = " " + oneDigitFormat.format(result[3]) +
+                ':' +
+                twoDigitFormat.format(result[2]) +
+                ':' +
+                twoDigitFormat.format(result[1]) +
+                '.' +
+                twoDigitFormat.format(result[0]);
 
-        return buffer.toString();
+        return buffer;
     }
 
     public static boolean getBooleanValue(String value) {
@@ -630,7 +630,7 @@ public final class MiscUtils {
      *
      * @return the Java VM version
      */
-    public static final String getVMVersionFull() {
+    public static String getVMVersionFull() {
         return System.getProperty("java.version");
     }
 
@@ -640,7 +640,7 @@ public final class MiscUtils {
      *
      * @return the Java VM version
      */
-    public static final double getVMVersion() {
+    public static double getVMVersion() {
         String property = System.getProperty("java.version");
         return Double.parseDouble(property.length() >= 3 ? property.substring(0,3) : property);
     }
@@ -672,9 +672,9 @@ public final class MiscUtils {
         return UUID.randomUUID().toString();
     }
 
-    public static String formattedDefaultValue(ColumnData.DefaultValue defaultValue, int type) {
+    public static String formattedDefaultValue(ColumnData.DefaultValue defaultValue, int type, DatabaseConnection dc) {
         StringBuilder sqlText = new StringBuilder();
-        String value = formattedSQLValue(defaultValue, type);
+        String value = formattedSQLValue(defaultValue, type, dc);
         sqlText.append(" ");
         if (defaultValue.getOriginOperator() != null)
             sqlText.append(defaultValue.getOriginOperator());
@@ -683,11 +683,13 @@ public final class MiscUtils {
         return sqlText.toString();
     }
 
-    public static String formattedSQLValue(ColumnData.DefaultValue value, int type) {
-        if ((checkKeyword(value.getValue()) || value.getValue().startsWith("'")
+    public static String formattedSQLValue(ColumnData.DefaultValue value, int type, DatabaseConnection dc) {
+        if ((checkKeyword(value.getValue(), dc) || value.getValue().startsWith("'")
                 || value.getValue().trim().contentEquals("null")
                 || value.getValue().trim().contentEquals("=null")
-                || value.getValue().trim().contentEquals("= null"))
+                || value.getValue().trim().contentEquals("= null")
+                || value.getValue().trim().startsWith("null ")
+        )
                 && !value.isUseQuotes())
             return value.getValue();
         if (value.isUseQuotes())
@@ -758,28 +760,38 @@ public final class MiscUtils {
     }
 
     private static KeywordRepository keywordRepository;
-    public static boolean checkKeyword(String str) {
+
+    public static boolean checkKeyword(String str, DatabaseConnection connection) {
 
         if (keywordRepository == null)
             keywordRepository = (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
 
         TreeSet<String> keywords = keywordRepository.getSQLKeywords();
+        if (connection != null)
+            keywords = connection.getKeywords();
         return keywords.contains(str.toUpperCase());
     }
 
     public final static String LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB = "([A-Za-z]+[$_0-9A-Za-z\\.]*)";
 
-    public static boolean isLatinOrDigitOrSpecSymbolRDB(String obj)
-    {
+    public static boolean isLatinOrDigitOrSpecSymbolRDB(String obj) {
         return obj.matches(LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB);
     }
 
-    public static String getFormattedObject(String obj) {
+    public static String trimEnd(String str) {
+        return str.replaceAll("\\s+$", "");
+    }
+
+    public static String getFormattedObject(String obj, DatabaseConnection dc) {
         if (obj != null) {
-            obj = obj.trim();
-            if (isLatinOrDigitOrSpecSymbolRDB(obj) && checkAllUpperCase(obj) && !checkKeyword(obj) || obj.startsWith("\"") && obj.endsWith("\""))
+            obj = trimEnd(obj);
+
+            if (isLatinOrDigitOrSpecSymbolRDB(obj) && checkAllUpperCase(obj) && !checkKeyword(obj, dc))
                 return obj;
-            else return MiscUtils.wordInQuotes(obj);
+            else {
+                obj = obj.replace("\"", "\"\"");
+                return MiscUtils.wordInQuotes(obj);
+            }
         }
         return "";
     }

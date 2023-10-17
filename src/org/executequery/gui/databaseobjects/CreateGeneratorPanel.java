@@ -123,7 +123,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         String query = "";
         try {
             query = SQLUtils.generateCreateSequence(nameField.getText(), Long.parseLong(startValueText.getStringValue()),
-                    Long.parseLong(incrementText.getStringValue()), simpleCommentPanel.getComment(), getVersion(), editing);
+                    Long.parseLong(incrementText.getStringValue()), simpleCommentPanel.getComment(), getVersion(), editing, getDatabaseConnection());
 
         } catch (SQLException e) {
             GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
@@ -142,7 +142,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
 
     protected void reset() {
         nameField.setText(generator.getName().trim());
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         if (getDatabaseVersion() >= 3)
             startValueText.setLongValue(generator.getSequenceFirstValue());
         currentValueText.setLongValue(generator.getSequenceCurrentValue());

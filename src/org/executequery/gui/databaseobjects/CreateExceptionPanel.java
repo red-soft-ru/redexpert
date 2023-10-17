@@ -87,7 +87,7 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
 
     protected void reset() {
         nameField.setText(exception.getName().trim());
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         textExceptionPanel.getTextAreaComponent().setText(exception.getExceptionText());
         simpleCommentPanel.setDatabaseObject(exception);
     }

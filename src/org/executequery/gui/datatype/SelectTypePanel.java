@@ -200,7 +200,9 @@ public class SelectTypePanel extends JPanel {
                     || cd.getColumnType().equalsIgnoreCase("CHAR")
                     || cd.getColumnType().equalsIgnoreCase(T.DECFLOAT)
             );
-            setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
+            if (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL) {
+                sizeLabel.setText(Bundles.getCommon("precision"));
+            } else sizeLabel.setText(Bundles.getCommon("size"));
             setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
             setSubtypeVisible(cd.getSQLType() == Types.BLOB);
             setEncodingVisible(cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR

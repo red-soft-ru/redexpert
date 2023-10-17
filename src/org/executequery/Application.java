@@ -69,6 +69,7 @@ public final class Application {
         GUIUtilities.shuttingDown();
         GUIUtilities.getParentFrame().dispose();
 
+        ApplicationInstanceCounter.remove();
         System.exit(0);
     }
 
@@ -77,10 +78,10 @@ public final class Application {
         Log.info("Releasing database resources...");
 
         try {
-
             ConnectionManager.close();
 
         } catch (DataSourceException e) {
+            e.printStackTrace(System.out);
         }
 
         Log.info("Connection pools destroyed");

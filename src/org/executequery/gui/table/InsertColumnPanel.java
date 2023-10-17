@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
+import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
@@ -22,10 +23,8 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.ResultSet;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyListener {
@@ -70,7 +69,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         defaultValuePanel = new SimpleTextArea();
         checkPanel = new SimpleSqlTextPanel();
         computedPanel = new SimpleSqlTextPanel();
-        descriptionPanel = new SimpleSqlTextPanel();
+        descriptionPanel = new SimpleSqlTextPanel(bundleString("Description"));
         sqlPanel = new SimpleSqlTextPanel();
         selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(),
                 connection.getIntDataTypesArray(), columnData, false);
@@ -102,7 +101,8 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
                 selectTypePanel.refresh();
             if (editing) {
                 column.makeCopy();
-                column.setDomain((String) domainPanel.getDomainComboBoxSelectedItem());
+                if (domainPanel.getDomainComboBoxSelectedItem() != null)
+                    column.setDomain(((DefaultDatabaseDomain) domainPanel.getDomainComboBoxSelectedItem()).getName());
             }
             generateSQL();
         });
@@ -179,7 +179,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
     @Override
     public String getTypeObject() {
-        return "DATABASE_TABLE_COLUMN";
+        return NamedObject.META_TYPES[NamedObject.TABLE_COLUMN];
     }
 
     @Override
@@ -311,7 +311,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         } else {
             columnData.getAutoincrement().setStartValue(autoIncrementPanel.getStartValue());
             columnData.setColumnName(nameField.getText());
-            sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()));
+            sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName(), getDatabaseConnection()));
             sb.append("\n\tADD ").append(SQLUtils.generateDefinitionColumn(columnData, true, false, false));
         }
 

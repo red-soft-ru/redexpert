@@ -181,6 +181,21 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
         return false;
     }
 
+    @Override
+    protected String prefixLabel() {
+        return null;
+    }
+
+    @Override
+    protected String mechanismLabel() {
+        return null;
+    }
+
+    @Override
+    protected String positionLabel() {
+        return null;
+    }
+
     public String getTriggerSourceCode() {
         if (isMarkedForReload())
             getObjectInfo();
@@ -347,19 +362,19 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
-                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), getRemarks(), false);
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), getRemarks(), false, getHost().getDatabaseConnection());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("TRIGGER", getName());
+        return SQLUtils.generateDefaultDropQuery("TRIGGER", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
         String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
         return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
-                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), comment, true);
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), comment, true, getHost().getDatabaseConnection());
     }
 
     @Override
@@ -408,7 +423,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = SelectBuilder.createSelectBuilder();
+        SelectBuilder sb = SelectBuilder.createSelectBuilder(getHost().getDatabaseConnection());
         Table triggers = getMainTable();
         sb.appendTable(triggers);
         sb.appendFields(triggers, getFieldName(), TRIGGER_SOURCE, RELATION_NAME, TRIGGER_SEQUENCE, TRIGGER_TYPE, TRIGGER_INACTIVE, DESCRIPTION);

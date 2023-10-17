@@ -41,7 +41,7 @@ import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
-import org.executequery.sql.SQLFormatter;
+import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.Constants;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
@@ -384,7 +384,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         sqlTextPanel.setSQLText(Constants.EMPTY);
 
         simpleCommentPanel = new SimpleCommentPanel(currentObjectView);
-        simpleCommentPanel.getCommentUpdateButton().addActionListener(e -> {
+        simpleCommentPanel.addActionForCommentUpdateButton(e -> {
             sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText());
         });
         tabPane.setComponentAt(6, simpleCommentPanel.getCommentPanel());
@@ -437,9 +437,9 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     }
 
     private void formatSql() {
-        if (StringUtils.isNotEmpty(sqlTextPanel.getSQLText())) {
-            String sqlText = sqlTextPanel.getSQLText();
-            sqlTextPanel.setSQLText(new SQLFormatter(sqlText).format());
+        String sqlText = sqlTextPanel.getSQLText();
+        if (StringUtils.isNotEmpty(sqlText)) {
+            sqlTextPanel.setSQLText(new TokenizingFormatter().format(sqlText));
         }
     }
 
@@ -450,6 +450,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     }
 
     public void cleanup() {
+        super.cleanup();
         sqlTextPanel.cleanup();
     }
 

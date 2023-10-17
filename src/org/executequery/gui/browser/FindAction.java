@@ -23,6 +23,7 @@ package org.executequery.gui.browser;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
@@ -75,7 +76,7 @@ public abstract class FindAction<T> extends AbstractAction
         JScrollPane scrollPane = new JScrollPane(resultsList);
         scrollPane.setPreferredSize(new Dimension(300, 150));
 
-        JLabel label = new JLabel(" Search: ");
+        JLabel label = new JLabel(Bundles.get("common.search") + " ");
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;

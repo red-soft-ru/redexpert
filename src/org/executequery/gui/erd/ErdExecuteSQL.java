@@ -21,9 +21,7 @@
 package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
-import org.executequery.gui.editor.TransactionParametersPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.QueryDelegate;
 import org.executequery.sql.QueryDispatcher;
@@ -120,7 +118,7 @@ public class ErdExecuteSQL extends ErdPrintableDialog
         splitPane.setDividerSize(5);
 
         closeButton = new JButton(Bundles.get("common.close.button"));
-        cancelButton = new JButton("Execute");
+        cancelButton = new JButton(Bundles.getCommon("execute"));
 
         Dimension btnDim = new Dimension(80, 30);
         cancelButton.setPreferredSize(btnDim);
@@ -164,13 +162,13 @@ public class ErdExecuteSQL extends ErdPrintableDialog
     }
 
     private void execute() {
-        resultsArea.append("Executing...");
+        resultsArea.append(Bundles.getCommon("executing"));
         queryAnalyser.executeSQLQuery(sqlText.getSQLText(), false, false);
     }
 
     public void setStopButtonEnabled(boolean enable) {
         if (enable) {
-            cancelButton.setText("Stop");
+            cancelButton.setText(Bundles.getCommon("stop"));
         }
         cancelButton.setEnabled(enable);
     }
@@ -221,10 +219,10 @@ public class ErdExecuteSQL extends ErdPrintableDialog
 
             String btnText = cancelButton.getText();
 
-            if (btnText.equals("Execute"))
+            if (btnText.equals(Bundles.getCommon("execute")))
                 execute();
 
-            else if (btnText.equals("Stop")) {
+            else if (btnText.equals(Bundles.getCommon("stop"))) {
                 queryAnalyser.interruptStatement();
                 resultsArea.append("\nProcess cancelled");
             }

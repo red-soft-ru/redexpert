@@ -10,7 +10,6 @@ import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
@@ -105,7 +104,7 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
     @Override
     protected void initEdited() {
         reset();
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         DependPanel tablesIndexesPanel = new DependPanel(TreePanel.TABLESPACE);
         tablesIndexesPanel.setDatabaseObject(tablespace);
         tablesIndexesPanel.setDatabaseConnection(tablespace.getHost().getDatabaseConnection());
@@ -123,8 +122,8 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
     @Override
     protected String generateQuery() {
         return editing ?
-                SQLUtils.generateAlterTablespace(nameField.getText(), fileField.getText()) :
-                SQLUtils.generateCreateTablespace(nameField.getText(), fileField.getText());
+                SQLUtils.generateAlterTablespace(nameField.getText(), fileField.getText(), getDatabaseConnection()) :
+                SQLUtils.generateCreateTablespace(nameField.getText(), fileField.getText(), getDatabaseConnection());
     }
 
     private void generateSQL() {

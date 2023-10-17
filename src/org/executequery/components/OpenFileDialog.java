@@ -21,6 +21,7 @@
 package org.executequery.components;
 
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.underworldlabs.swing.FileSelector;
 
 import javax.swing.*;

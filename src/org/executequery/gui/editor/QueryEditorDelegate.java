@@ -22,6 +22,7 @@ package org.executequery.gui.editor;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.log.Log;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.SqlCommandHistoryRepository;
 import org.executequery.sql.QueryDelegate;
@@ -172,6 +173,25 @@ public class QueryEditorDelegate implements QueryDelegate {
 
     }
 
+    public void executeQueryInProfiler(
+            DatabaseConnection selectedConnection, String query, boolean executeAsBlock) {
+
+        if (dispatcher.isExecuting())
+            return;
+
+        if (query == null)
+            query = queryEditor.getEditorText();
+
+        if (StringUtils.isNotBlank(query)) {
+
+            currentStatementHistoryIndex = -1;
+            queryEditor.setHasPreviousStatement(true);
+            queryEditor.setHasNextStatement(false);
+            dispatcher.executeSQLQueryInProfiler(selectedConnection, query, executeAsBlock);
+        }
+
+    }
+
     public void executeScript(DatabaseConnection selectedConnection,
                               String script, boolean anyConnections) {
 
@@ -230,17 +250,14 @@ public class QueryEditorDelegate implements QueryDelegate {
         dispatcher.interruptStatement();
     }
 
+    @Override
     public boolean isLogEnabled() {
-
-        return OutputLogger.isLogEnabled();
+        return true;
     }
 
+    @Override
     public void log(String message) {
-
-        if (isLogEnabled()) {
-
-            OutputLogger.info(message);
-        }
+        Log.info(message);
     }
 
     public void setOutputMessage(DatabaseConnection dc, int type, String text) {

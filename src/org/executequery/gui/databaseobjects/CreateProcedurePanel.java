@@ -122,15 +122,22 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     }
 
     protected String generateQuery() {
-        Vector<ColumnData> vars = new Vector<>();
-        vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
-        vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
-        return SQLUtils.generateCreateProcedure(
+        if (parseVariablesBox.isSelected()) {
+            Vector<ColumnData> vars = new Vector<>();
+            vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
+            vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
+            return SQLUtils.generateCreateProcedure(
+                    nameField.getText(), externalField.getText(), engineField.getText(),
+                    inputParametersPanel.getProcedureParameterModel().getTableVector(),
+                    outputParametersPanel.getProcedureParameterModel().getTableVector(),
+                    vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
+                    sqlBodyText.getSQLText(), simpleCommentPanel.getComment(), false, true, getDatabaseConnection());
+        } else return SQLUtils.generateCreateProcedure(
                 nameField.getText(), externalField.getText(), engineField.getText(),
                 inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 outputParametersPanel.getProcedureParameterModel().getTableVector(),
-                vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
-                sqlBodyText.getSQLText(), simpleCommentPanel.getComment(), false, true);
+                (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
+                sqlBodyText.getSQLText(), simpleCommentPanel.getComment(), false, true, getDatabaseConnection());
     }
 
 

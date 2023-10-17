@@ -181,11 +181,33 @@
             <artifactId>rsyntaxtextarea</artifactId>
             <version>3.3.3</version>
         </dependency>
+
         <dependency>
             <groupId>org.japura</groupId>
             <artifactId>japura-gui</artifactId>
             <version>7.5.2</version>
         </dependency>
+
+        <!-- https://github.com/vertical-blank/sql-formatter -->
+        <dependency>
+            <groupId>com.github.vertical-blank</groupId>
+            <artifactId>sql-formatter</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+
+        <!-- https://github.com/java-diff-utils/java-diff-utils -->
+        <dependency>
+            <groupId>io.github.java-diff-utils</groupId>
+            <artifactId>java-diff-utils</artifactId>
+            <version>4.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -246,6 +268,11 @@
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.2</version>
+                <configuration>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>ico</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
                 <executions>
                     <execution>
                         <id>copy-resources</id>

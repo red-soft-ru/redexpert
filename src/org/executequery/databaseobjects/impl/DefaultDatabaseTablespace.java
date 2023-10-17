@@ -93,7 +93,7 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table table = getMainTable();
         sb.appendFields(table, getFieldName(), ID, SYSTEM, DESCRIPTION, OWNER, FILE_NAME, READ_ONLY, OFFLINE);
         sb.appendTable(table);
@@ -176,12 +176,12 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() throws DataSourceException {
-        return SQLUtils.generateCreateTablespace(getName(), getFileName());
+        return SQLUtils.generateCreateTablespace(getName(), getFileName(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("TABLESPACE", getName());
+        return SQLUtils.generateDefaultDropQuery("TABLESPACE", getName(), getHost().getDatabaseConnection());
     }
 
     @Override

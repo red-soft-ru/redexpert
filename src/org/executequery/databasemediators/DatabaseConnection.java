@@ -209,9 +209,13 @@ public interface DatabaseConnection extends Serializable {
 
     TreeSet<String> getListObjectsDB();
 
-    int getServerVersion();
+    int getMajorServerVersion();
 
-    void setServerVersion(int serverVersion);
+    void setMajorServerVersion(int majorServerVersion);
+
+    int getMinorServerVersion();
+
+    void setMinorServerVersion(int minorServerVersion);
 
     boolean isNamesToUpperCase();
 
@@ -226,6 +230,10 @@ public interface DatabaseConnection extends Serializable {
     int[] getIntDataTypesArray();
 
     int getDriverMajorVersion();
+
+    TreeSet<String> getKeywords();
+
+    void setServerName(String serverName);
 }
 
 

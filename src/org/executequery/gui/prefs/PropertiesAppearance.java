@@ -140,6 +140,15 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
         if (!lafChangeWarningShown && e.getStateChange() == ItemEvent.DESELECTED) {
 
             GUIUtilities.displayInformationMessage(bundleString("ChangingTheme.Information"));
+
+            PropertiesEditorColours colorsPanel1 = new PropertiesEditorColours();
+            colorsPanel1.restoreDefaults();
+            colorsPanel1.save();
+
+            PropertiesResultSetTableColours colorsPanel2 = new PropertiesResultSetTableColours();
+            colorsPanel2.restoreDefaults();
+            colorsPanel2.save();
+
             lafChangeWarningShown = true;
         }
         
@@ -192,14 +201,20 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
         return (LookAndFeelType) lookAndFeelCombBox().getSelectedItem();
     }
 
+    @Override
     public void restoreDefaults() {
         preferencesPanel.savePreferences();
+        apply();
     }
 
+    @Override
     public void save() {
         preferencesPanel.savePreferences();
+        apply();
     }
 
+    private void apply() {
+        GUIUtilities.displayStatusBar(SystemProperties.getBooleanProperty("user", "system.display.statusbar"));
+    }
 
 }
-

@@ -805,7 +805,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         protected String[] header = Bundles.get(TableDefinitionPanel.class,
                 new String[]
                         {"Name", "Datatype", "TypeOf", "Domain", "Table", "Column",
-                                "Size", "Scale", "Subtype", "Description", "DefaultValue", "Encoding", "Required"});
+                                "SizePrecision", "Scale", "Subtype", "Description", "DefaultValue", "Encoding", "Required"});
 
         public ProcedureParameterModel(int parameterType) {
             tableVector = new Vector<>();

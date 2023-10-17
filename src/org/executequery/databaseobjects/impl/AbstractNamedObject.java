@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -245,7 +246,7 @@ public abstract class AbstractNamedObject implements NamedObject,
      */
     public void setName(String name) {
         if (name != null)
-            this.name = name.trim();
+            this.name = MiscUtils.trimEnd(name);
         else this.name = name;
     }
 

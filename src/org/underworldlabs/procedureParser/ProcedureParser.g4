@@ -74,8 +74,12 @@ body:
   spases_or_comment datatype
   (spases_or_comment notnull)?
   (spases_or_comment K_COLLATE spases_or_comment order_collate)?
-  (spases_or_comment ( '=' |K_DEFAULT (spases_or_comment '=')? ) spases_or_comment default_value)?)
+  (spases_or_comment default_statement)?)
   ';' SPACES* comment? SPACES*
+  ;
+
+  default_statement:
+  ('=' | K_DEFAULT (spases_or_comment '=')?) spases_or_comment default_value
   ;
 
   cursor:
@@ -114,7 +118,7 @@ body:
  ;
 
  input_parameter
- :desciption_parameter (spases_or_comment ( '=' |K_DEFAULT (spases_or_comment'=')? ) spases_or_comment default_value)?
+ :desciption_parameter (spases_or_comment default_statement)?
  ;
 
  desciption_parameter
@@ -179,6 +183,7 @@ signed_number
 
 literal_value
  : NUMERIC_LITERAL
+ | INT_LITERAL
  | STRING_LITERAL
  | BLOB_LITERAL
  | K_NULL

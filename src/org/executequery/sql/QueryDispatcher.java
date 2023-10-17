@@ -29,6 +29,7 @@ import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.executequery.Constants;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.QueryTypes;
@@ -40,10 +41,13 @@ import org.executequery.datasource.PooledResultSet;
 import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.gui.browser.profiler.DefaultProfilerExecutor;
+import org.executequery.gui.browser.profiler.ProfilerPanel;
 import org.executequery.gui.editor.InputParametersDialog;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.editor.TransactionParametersPanel;
 import org.executequery.gui.editor.autocomplete.Parameter;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
@@ -57,6 +61,7 @@ import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -232,34 +237,11 @@ public class QueryDispatcher {
      * @param query          query string
      * @param executeAsBlock to execute in entirety, false otherwise
      */
-    public void executeSQLQuery(DatabaseConnection dc,
-                                final String query,
-                                final boolean executeAsBlock, boolean anyConnections) {
-        String checkUpdatesToLog = "Checking for updates from the release hub is ";
-        if (query.toLowerCase().trim().startsWith("releasehub on")) {
-            SystemProperties.setProperty("user", "releasehub",
-                    "true");
-            checkUpdatesToLog += "enabled";
-            Log.info(checkUpdatesToLog);
-            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog, anyConnections);
-            return;
-        }
-        if (query.toLowerCase().trim().startsWith("releasehub off")) {
-            SystemProperties.setProperty("user", "releasehub",
-                    "false");
-            checkUpdatesToLog += "disabled";
-            Log.info(checkUpdatesToLog);
-            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog, anyConnections);
-            return;
-        }
+    public void executeSQLQuery(
+            DatabaseConnection dc, final String query, final boolean executeAsBlock, boolean anyConnections) {
 
-        if (!ConnectionManager.hasConnections()) {
-
-            setOutputMessage(null, SqlMessages.PLAIN_MESSAGE, "Not Connected", false);
-            setStatusMessage(ERROR_EXECUTING);
-
+        if (!checkBeforeExecuteQuery(query))
             return;
-        }
 
         if (querySender == null) {
 
@@ -292,6 +274,73 @@ public class QueryDispatcher {
                             "Statement cancelled", anyConnections);
                     delegate.setStatusMessage(" Statement cancelled");
                 }
+                querySender.setCloseConnectionAfterQuery(false);
+                querySender.releaseResourcesWithoutCommit();
+                executing = false;
+            }
+
+        };
+
+        setOutputMessage(SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc);
+
+        delegate.executing();
+        delegate.setStatusMessage(Constants.EMPTY);
+        worker.start();
+    }
+
+    public void executeSQLQueryInProfiler(
+            DatabaseConnection dc, final String query, final boolean executeAsBlock) {
+
+        if (!checkBeforeExecuteQuery(query))
+            return;
+
+        if (querySender == null)
+            querySender = new DefaultStatementExecutor(null, true);
+
+        if (dc != null)
+            querySender.setDatabaseConnection(dc);
+
+        querySender.setTransactionIsolation(transactionLevel);
+        statementCancelled = false;
+
+        worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
+
+            @Override
+            public Object construct() {
+
+                try {
+
+                    DefaultProfilerExecutor profilerExecutor = new DefaultProfilerExecutor(dc, null);
+                    int sessionId = profilerExecutor.startSession();
+
+                    if (sessionId != -1) {
+                        executeSQL(query, executeAsBlock);
+                        profilerExecutor.finishSession();
+                        GUIUtilities.addCentralPane(ProfilerPanel.TITLE,
+                                (Icon) null, new ProfilerPanel(sessionId, dc), null, true);
+
+                    } else {
+                        GUIUtilities.displayWarningMessage(Bundles.get(ProfilerPanel.class, "VersionNotSupported"));
+                        setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Action canceled, DB version is not supported");
+                    }
+
+                } catch (SQLException ex) {
+                    Log.error("Error executing script in profiler session", ex);
+                }
+
+                return null;
+            }
+
+            @Override
+            public void finished() {
+
+                delegate.finished(duration);
+
+                if (statementCancelled) {
+                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Statement cancelled");
+                    delegate.setStatusMessage(" Statement cancelled");
+                }
+
                 querySender.setCloseConnectionAfterQuery(false);
                 querySender.releaseResourcesWithoutCommit();
                 executing = false;
@@ -485,13 +534,13 @@ public class QueryDispatcher {
         before = null;
 
         waiting = false;
-        long totalDuration = 0l;
+        long totalDuration = 0L;
         querySender.setCloseConnectionAfterQuery(false);
 
         try {
 
-            long start = 0l;
-            long end = 0l;
+            long start = 0L;
+            long end = 0L;
 
             // check we are executing the whole block of sql text
             if (executeAsBlock) {
@@ -598,34 +647,34 @@ public class QueryDispatcher {
 
             DerivedQuery query = new DerivedQuery(sql);
 
-                if (!query.isExecutable()) {
+            if (!query.isExecutable()) {
 
                     setOutputMessage(querySender.getDatabaseConnection(),
                             SqlMessages.WARNING_MESSAGE, "Non executable query provided", anyConnections);
                     return DONE;
                 }
 
-                // reset clock
-                end = 0l;
-                start = 0l;
+            // reset clock
+            end = 0L;
+            start = 0L;
 
-                String derivedQueryString = query.getDerivedQuery();
-                String queryToExecute = removeQueryComments ? derivedQueryString : query.getOriginalQuery();
+            String derivedQueryString = query.getDerivedQuery();
+            String queryToExecute = removeQueryComments ? derivedQueryString : query.getOriginalQuery();
 
-                int type = query.getQueryType();
-                if (type != QueryTypes.COMMIT && type != QueryTypes.ROLLBACK) {
+            int type = query.getQueryType();
+            if (type != QueryTypes.COMMIT && type != QueryTypes.ROLLBACK) {
 
                     logExecution(queryToExecute, anyConnections);
 
-                } else {
+            } else {
 
-                    if (type == QueryTypes.COMMIT) {
+                if (type == QueryTypes.COMMIT) {
 
                         setOutputMessage(querySender.getDatabaseConnection(),
                                 SqlMessages.ACTION_MESSAGE,
                                 COMMITTING_LAST, anyConnections);
 
-                    } else if (type == QueryTypes.ROLLBACK) {
+                } else if (type == QueryTypes.ROLLBACK) {
 
                         setOutputMessage(
                                 querySender.getDatabaseConnection(),
@@ -633,87 +682,87 @@ public class QueryDispatcher {
                                 ROLLING_BACK_LAST, anyConnections);
                     }
 
-                }
+            }
 
-                try {
-                    DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-                    Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
-                    DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                    Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+            try {
+                DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
+                Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
+                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
-                    if (driver.getClass().getName().contains("FBDriver")) {
+                if (driver.getClass().getName().contains("FBDriver")) {
 
-                        Connection connection = null;
-                        try {
-                            connection = querySender.getConnection().unwrap(Connection.class);
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-
-                        IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabasePerformanceImpl");
-                        try {
-
-                            db.setConnection(connection);
-                            before = db.getPerformanceInfo();
-
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
+                    Connection connection = null;
+                    try {
+                        connection = querySender.getConnection().unwrap(Connection.class);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
 
-                } catch (Exception e) {
-                    // nothing to do
-                }
+                    IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabasePerformanceImpl");
+                    try {
 
-                start = System.currentTimeMillis();
-                PreparedStatement statement = null;
-                CallableStatement callableStatement = null;
-                SqlStatementResult result;
-                if (queryToExecute.toLowerCase().trim().contentEquals("commit") || queryToExecute.toLowerCase().trim().contentEquals("rollback"))
-                    statement = querySender.getPreparedStatement(queryToExecute);
-                else {
-                    if (query.getQueryType() != QueryTypes.CALL) {
-                        statement = prepareStatementWithParameters(queryToExecute, "");
-                    } else {
-                        callableStatement = prepareCallableStatementWithParameters(queryToExecute, "");
+                        db.setConnection(connection);
+                        before = db.getPerformanceInfo();
+
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
                 }
-                if (statement != null)
-                    result = querySender.execute(type, statement);
-                else
-                    result = querySender.execute(type, callableStatement);
 
-                if (statementCancelled || Thread.interrupted()) {
+            } catch (Exception e) {
+                // nothing to do
+            }
 
-                    throw new InterruptedException();
+            start = System.currentTimeMillis();
+            PreparedStatement statement = null;
+            CallableStatement callableStatement = null;
+            SqlStatementResult result;
+            if (queryToExecute.toLowerCase().trim().contentEquals("commit") || queryToExecute.toLowerCase().trim().contentEquals("rollback"))
+                statement = querySender.getPreparedStatement(queryToExecute);
+            else {
+                if (query.getQueryType() != QueryTypes.CALL) {
+                    statement = prepareStatementWithParameters(queryToExecute, "");
+                } else {
+                    callableStatement = prepareCallableStatementWithParameters(queryToExecute, "");
                 }
+            }
+            if (statement != null)
+                result = querySender.execute(type, statement);
+            else
+                result = querySender.execute(type, callableStatement);
 
-                if (result.isResultSet()) {
+            if (statementCancelled || Thread.interrupted()) {
 
-                    ResultSet rset = result.getResultSet();
+                throw new InterruptedException();
+            }
 
-                    if (rset == null) {
+            if (result.isResultSet()) {
 
-                        String message = result.getErrorMessage();
+                ResultSet rset = result.getResultSet();
+
+                if (rset == null) {
+
+                    String message = result.getErrorMessage();
+                    if (message == null) {
+
+                        message = result.getMessage();
+                        // if still null dump simple message
                         if (message == null) {
 
-                            message = result.getMessage();
-                            // if still null dump simple message
-                            if (message == null) {
-
-                                message = "A NULL result set was returned.";
-                            }
-
+                            message = "A NULL result set was returned.";
                         }
+
+                    }
 
                         printExecutionPlan(before, anyConnections);
                         setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE,
                                 message, true, anyConnections);
                         setStatusMessage(ERROR_EXECUTING);
 
-                    } else {
+                } else {
 
-                        // Trying to get execution plan of firebird statement
+                    // Trying to get execution plan of firebird statement
 
                         printPlan(rset, anyConnections);
 
@@ -722,26 +771,26 @@ public class QueryDispatcher {
                         printExecutionPlan(before,anyConnections);
                     }
 
-                    end = System.currentTimeMillis();
+                end = System.currentTimeMillis();
 
-                } else {
+            } else {
 
-                    end = System.currentTimeMillis();
+                end = System.currentTimeMillis();
 
-                    // check that we executed a 'normal' statement (not a proc)
-                    if (result.getType() != QueryTypes.EXECUTE) {
+                // check that we executed a 'normal' statement (not a proc)
+                if (result.getType() != QueryTypes.EXECUTE) {
 
-                        int updateCount = result.getUpdateCount();
-                        if (updateCount == -1) {
+                    int updateCount = result.getUpdateCount();
+                    if (updateCount == -1) {
 
                             printExecutionPlan(before, anyConnections);
                             setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE,
                                     result.getErrorMessage(), true, anyConnections);
                             setStatusMessage(ERROR_EXECUTING);
 
-                        } else {
+                    } else {
 
-                            if (result.isException()) {
+                        if (result.isException()) {
 
                                 printExecutionPlan(before, anyConnections);
                                 setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true, anyConnections);
@@ -756,44 +805,44 @@ public class QueryDispatcher {
                                         if (metaTagNode.getMetaDataKey().equals(query.getMetaName())) {
                                             ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
 
-                                        } else if ((NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(query.getMetaName()) || NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY].contentEquals(query.getMetaName())) && metaTagNode.isSystem()) {
-                                            ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-                                        }
+                                    } else if ((NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(query.getMetaName()) || NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY].contentEquals(query.getMetaName())) && metaTagNode.isSystem()) {
+                                        ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
                                     }
-
-
                                 }
 
-                                if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {
 
-                                    setStatusMessage(" " + result.getMessage());
-                                }
+                            }
+
+                            if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {
+
+                                setStatusMessage(" " + result.getMessage());
+                            }
 
                                 printExecutionPlan(before, anyConnections);
 
-                            }
                         }
+                    }
 
-                    } else {
+                } else {
 
-                        @SuppressWarnings("rawtypes")
-                        Map results = (Map) result.getOtherResult();
+                    @SuppressWarnings("rawtypes")
+                    Map results = (Map) result.getOtherResult();
 
-                        if (results == null) {
+                    if (results == null) {
 
                             printExecutionPlan(before, anyConnections);
 
                             setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true, anyConnections);
                             setStatusMessage(ERROR_EXECUTING);
 
-                        } else {
+                    } else {
 
                             printExecutionPlan(before,  anyConnections);
 
                             setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, "Call executed successfully.", anyConnections);
                             int updateCount = result.getUpdateCount();
 
-                            if (updateCount > 0) {
+                        if (updateCount > 0) {
 
                                 setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE,
                                         updateCount +
@@ -801,25 +850,25 @@ public class QueryDispatcher {
                                                         " rows affected." : " row affected."), anyConnections);
                             }
 
-                            String SPACE = " = ";
-                            for (Iterator<?> i = results.keySet().iterator(); i.hasNext(); ) {
+                        String SPACE = " = ";
+                        for (Iterator<?> i = results.keySet().iterator(); i.hasNext(); ) {
 
                                 String key = i.next().toString();
                                 setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE,
                                         key + SPACE + results.get(key), anyConnections);
                             }
 
-                        }
-
                     }
 
                 }
 
-                // execution times
-                if (end == 0) {
+            }
 
-                    end = System.currentTimeMillis();
-                }
+            // execution times
+            if (end == 0) {
+
+                end = System.currentTimeMillis();
+            }
 
                 long timeTaken = end - start;
                 totalDuration += timeTaken;
@@ -881,13 +930,13 @@ public class QueryDispatcher {
         after = null;
 
         waiting = false;
-        long totalDuration = 0l;
+        long totalDuration = 0L;
         querySender.setCloseConnectionAfterQuery(false);
 
         try {
 
-            long start = 0l;
-            long end = 0l;
+            long start = 0L;
+            long end = 0L;
 
             // check we are executing the whole block of sql text
 
@@ -1221,10 +1270,10 @@ public class QueryDispatcher {
         ParameterMetaData pmd = statement.getParameterMetaData();
         List<Parameter> params = parser.getParameters();
         List<Parameter> displayParams = parser.getDisplayParameters();
-            for (int i = 0; i < params.size(); i++) {
-                params.get(i).setType(pmd.getParameterType(i + 1));
-                params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
-            }
+        for (int i = 0; i < params.size(); i++) {
+            params.get(i).setType(pmd.getParameterType(i + 1));
+            params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
+        }
         if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
             List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
             for (int i = 0; i < displayParams.size(); i++) {
@@ -1731,6 +1780,37 @@ public class QueryDispatcher {
 
     public void setTpp(TransactionParametersPanel tpp) {
         this.tpp = tpp;
+    }
+
+    private boolean checkBeforeExecuteQuery(String query) {
+
+        String checkUpdatesToLog = "Checking for updates from the release hub is ";
+        if (query.toLowerCase().trim().startsWith("releasehub on")) {
+            SystemProperties.setProperty("user", "releasehub",
+                    "true");
+            checkUpdatesToLog += "enabled";
+            Log.info(checkUpdatesToLog);
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
+            return false;
+        }
+        if (query.toLowerCase().trim().startsWith("releasehub off")) {
+            SystemProperties.setProperty("user", "releasehub",
+                    "false");
+            checkUpdatesToLog += "disabled";
+            Log.info(checkUpdatesToLog);
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog);
+            return false;
+        }
+
+        if (!ConnectionManager.hasConnections()) {
+
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Not Connected");
+            setStatusMessage(ERROR_EXECUTING);
+
+            return false;
+        }
+
+        return true;
     }
 }
 

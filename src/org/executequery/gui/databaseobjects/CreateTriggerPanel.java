@@ -15,6 +15,8 @@ import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,7 +141,15 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         labelTable = new JLabel(bundleStaticString("table"));
         beforeAfterLabel = new JLabel(bundleString("before-after"));
         tablesCombo = new JComboBox(getTables());
+        tablesCombo.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                sqlBodyText.getTextPane().setTriggerTable((String) tablesCombo.getSelectedItem());
+
+            }
+        });
         sqlBodyText = new SimpleSqlTextPanel();
+        sqlBodyText.getTextPane().setDatabaseConnection(connection);
         ddlTriggerPanel = new JPanel(new GridBagLayout());
         scrollDDL = new JScrollPane(ddlTriggerPanel);
         scrollDDL.setMinimumSize(new Dimension(100, 200));
@@ -156,7 +166,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         typeTriggerCombo.addActionListener(actionEvent -> changeTypeTrigger());
 
         anyDdlBox.addActionListener(actionEvent -> changeAnyDdlBox());
-
+        sqlBodyText.getTextPane().setTriggerTable((String) tablesCombo.getSelectedItem());
         centralPanel.setVisible(false);
         topPanel.add(activeBox, topGbh.nextRowFirstCol().setLabelDefault().get());
         topPanel.add(typeTriggerCombo, topGbh.nextCol().fillHorizontally().setMaxWeightX().get());
@@ -262,7 +272,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     protected void reset() {
         typeTriggerCombo.setEnabled(false);
         nameField.setText(trigger.getName());
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         simpleCommentPanel.setDatabaseObject(trigger);
         activeBox.setSelected(trigger.isTriggerActive());
         positionField.setValue(trigger.getTriggerSequence());
@@ -426,7 +436,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
 
         return SQLUtils.generateCreateTriggerStatement(nameField.getText(), table, activeBox.isSelected(),
                 triggerType.toString(), (int) positionField.getValue(), sqlBodyText.getSQLText(), engine, external,
-                (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment(), false);
+                (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment(), false, getDatabaseConnection());
     }
 
     private void generateScript() {

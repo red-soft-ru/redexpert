@@ -33,8 +33,8 @@ public class EQDateTimePicker extends JPanel {
         gbh.setDefaults(new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
                 new Insets(0, 0, 0, 0), 0, 0));
         gbh.defaults();
-        add(datePicker, gbh.setMaxWeightX().get());
-        add(timePicker, gbh.nextCol().get());
+        add(datePicker, gbh.setLabelDefault().get());
+        add(timePicker, gbh.nextCol().setLabelDefault().fillBoth().setMaxWeightY().get());
     }
 
     public String getStringValue() {

@@ -295,11 +295,6 @@ public abstract class AbstractDriverPanel extends JPanel
 
     public void findDriverClass(ActionEvent e) {
 
-        if (databaseDriver.isDefaultSunOdbc()) {
-
-            return;
-        }
-
         if (jarPathListModel.isEmpty()) {
 
             GUIUtilities.displayErrorMessage(
@@ -403,11 +398,6 @@ public abstract class AbstractDriverPanel extends JPanel
 
     public void browseDrivers(ActionEvent e) {
 
-        if (databaseDriver.isDefaultSunOdbc()) {
-
-            return;
-        }
-
         FileSelector jarFiles = new FileSelector(
                 new String[]{"jar"}, getString("AbstractDriverPanel.javaArchiveFiles"));
 
@@ -472,12 +462,6 @@ public abstract class AbstractDriverPanel extends JPanel
     protected final void populateDriverObject() {
 
         if (databaseDriver == null) {
-
-            return;
-        }
-
-        // ODBC driver can not be changed
-        if (databaseDriver.isDefaultSunOdbc()) {
 
             return;
         }

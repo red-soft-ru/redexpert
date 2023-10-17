@@ -24,7 +24,6 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseColumn;
-import org.executequery.gui.browser.BrowserDomainPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 
@@ -38,7 +37,7 @@ import java.util.List;
  */
 public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
 
-    protected String[] header = {"", Bundles.getCommon("name"), Bundles.getCommon("data-type"), Bundles.getCommon("size"), Bundles.getCommon("scale"), Bundles.getCommon("required"), Bundles.getCommon("default"), Bundles.getCommon("ComputedSource"), Bundles.getCommon("description"), Bundles.get(BrowserDomainPanel.class, "Domain")};
+    protected String[] header = {"", Bundles.getCommon("name"), Bundles.getCommon("data-type"), Bundles.getCommon("sizePrecision"), Bundles.getCommon("scale"), Bundles.getCommon("required"), Bundles.getCommon("default"), Bundles.getCommon("ComputedSource"), Bundles.getCommon("description"), Bundles.get("BrowserDomainPanel.Domain")};
 
     /**
      * the database table columns
@@ -84,6 +83,38 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
         return (column > 0);
     }
 
+    public void moveColumnUp(DatabaseColumn column) {
+        if (column != null) {
+            int ind = columns.indexOf(column);
+            if (ind > 0) {
+                columns.remove(column);
+                columns.add(ind - 1, column);
+            }
+        }
+        updateColumnPositions();
+    }
+
+    public void moveColumnDown(DatabaseColumn column) {
+        if (column != null) {
+            int ind = columns.indexOf(column);
+            if (ind >= 0 && ind < columns.size() - 1) {
+                columns.remove(column);
+                columns.add(ind + 1, column);
+            }
+        }
+        updateColumnPositions();
+    }
+
+    private void updateColumnPositions() {
+        for (int i = 0; i < columns.size(); i++) {
+            if (columns.get(i).getPosition() != i + 1) {
+                if (columns.get(i) instanceof DatabaseTableColumn)
+                    ((DatabaseTableColumn) columns.get(i)).makeCopy();
+                columns.get(i).setPosition(i + 1);
+            }
+        }
+    }
+
     public void setValues(List<DatabaseColumn> columns) {
         this.columns = columns;
         fireTableDataChanged();
@@ -123,7 +154,9 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
 //                return stringValueToUpper(column.getShortName());
                 return column.getShortName();
             case 2:
-                return column.getTypeName();
+                if (column.getDimensions() == null)
+                    return column.getTypeName();
+                else return column.getTypeName() + " [...]";
             case 3:
                 return Integer.valueOf(column.getColumnSize());
             case 4:

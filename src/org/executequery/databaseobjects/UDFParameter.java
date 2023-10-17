@@ -8,19 +8,17 @@ public class UDFParameter extends FunctionArgument {
     String stringMechanism;
     boolean isCString;
 
-    String fieldStringType;
-
-    public UDFParameter(int position, int mechanism, int dataType, int scale, int size, int subType, int precision) {
-        super(null, dataType, size, precision, scale, subType, position, 0, null, null);
+    public UDFParameter(int mechanism, int dataType) {
+        super(null);
         this.mechanism = mechanism;
         if (this.mechanism == BY_REFERENCE_WITH_NULL)
             this.nullable = 1;
         this.stringMechanism = getStringMechanismFromInt(this.mechanism);
         if (dataType == 40)
             isCString = true;
-        this.fieldStringType = DatabaseTypeConverter.getTypeWithSize(dataType, subType, size, scale);
-
     }
+
+
 
     public boolean isNotNull() {
         return nullable == 0;
@@ -56,11 +54,4 @@ public class UDFParameter extends FunctionArgument {
         isCString = CString;
     }
 
-    public String getFieldStringType() {
-        return fieldStringType;
-    }
-
-    public void setFieldStringType(String fieldStringType) {
-        this.fieldStringType = fieldStringType;
-    }
 }

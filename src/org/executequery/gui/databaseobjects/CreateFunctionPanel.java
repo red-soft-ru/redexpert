@@ -18,6 +18,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * Panel for creating and editing function
@@ -51,7 +52,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         parametersTabs.setTitleAt(parametersTabs.indexOfComponent(inputParametersPanel), bundledString("Arguments"));
         selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(),
                 connection.getIntDataTypesArray(), returnType, true);
-        returnType.setDomain(returnType.getDomain());
+        if (function != null && function.getReturnArgument() != null)
+            returnType.setDomain(function.getReturnArgument().getSystemDomain());
         selectTypePanel.refresh();
         domainPanel = new DomainPanel(returnType, returnType.getDomain());
         returnTypeTabPane = new JTabbedPane();
@@ -114,10 +116,19 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     }
 
     protected String generateQuery() {
-        return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
-                variablesPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
-                externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
-                simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected());
+        if (parseVariablesBox.isSelected()) {
+            Vector<ColumnData> vars = new Vector<>();
+            vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
+            vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
+            return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
+                    vars, returnType, sqlBodyText.getSQLText(),
+                    externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
+                    simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected(), connection);
+        } else {
+            return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
+                    externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
+                    simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected(), connection);
+        }
     }
 
     @Override
@@ -171,39 +182,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
 
         procedure = (String) databaseObject;
         returnType = new ColumnData(connection);
-        if (procedure != null) {
-            String query = "SELECT RDB$FUNCTION_ARGUMENTS.RDB$FIELD_SOURCE,\n" +
-                    "RDB$FUNCTION_ARGUMENTS.RDB$ARGUMENT_MECHANISM,\n" +
-                    "RDB$FUNCTION_ARGUMENTS.RDB$RELATION_NAME,\n" +
-                    "RDB$FUNCTION_ARGUMENTS.RDB$FIELD_NAME\n" +
-                    "FROM RDB$FUNCTIONS LEFT JOIN RDB$FUNCTION_ARGUMENTS ON \n" +
-                    "RDB$FUNCTIONS.RDB$FUNCTION_NAME = RDB$FUNCTION_ARGUMENTS.RDB$FUNCTION_NAME AND\n" +
-                    "RDB$FUNCTIONS.RDB$RETURN_ARGUMENT = RDB$FUNCTION_ARGUMENTS.RDB$ARGUMENT_POSITION \n" +
-                    "WHERE RDB$FUNCTIONS.RDB$FUNCTION_NAME = '" + procedure + "'";
-            try {
-                ResultSet rs = sender.getResultSet(query).getResultSet();
-                String domain = null;
-                String table = null;
-                String column = null;
-                if (rs.next()) {
-                    domain = rs.getString(1).trim();
-                    returnType.setTypeOf(rs.getInt(2) == 1);
-                    table = rs.getString(3);
-                    column = rs.getString(4);
-                }
-                sender.releaseResources();
-                if (domain != null)
-                    returnType.setDomain(domain.trim());
-                if (table != null)
-                    returnType.setTable(table.trim());
-                if (column != null)
-                    returnType.setColumnTable(column.trim());
-                if (returnType.getTable() != null && returnType.getColumnTable() != null)
-                    returnType.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     public String bundledString(String key) {
@@ -213,5 +191,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     @Override
     public void setParameters(Object[] params) {
         function = (DefaultDatabaseFunction) params[0];
+        if (function != null && function.getReturnArgument() != null)
+            returnType = SQLUtils.columnDataFromProcedureParameter(function.getReturnArgument(), connection, true);
     }
 }

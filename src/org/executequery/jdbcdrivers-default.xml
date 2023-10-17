@@ -4,8 +4,7 @@
     =======================================================================
     File:         jdbcdrivers-default.xml
     Author:       Takis Diakoumis
-    Description:  Default empty JDBC driver definitions file (contains
-                  ODBC definition only)
+    Description:  Default empty JDBC driver definitions file
     =======================================================================
 -->
 
@@ -39,14 +38,5 @@
         </path>
         <classname>org.firebirdsql.jdbc.FBDriver</classname>
         <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
-    </databasedrivers>
-    <databasedrivers>
-        <id>9999999999999</id>
-        <name>ODBC Driver</name>
-        <description>Sun ODBC Driver</description>
-        <type>8</type>
-        <path/>
-        <classname>sun.jdbc.odbc.JdbcOdbcDriver</classname>
-        <url>jdbc:odbc:[source]</url>
     </databasedrivers>
 </jdbcdrivers>

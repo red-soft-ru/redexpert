@@ -114,7 +114,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         try {
             return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword(), tpb);
         } catch (SQLException e) {
-            if (e.getSQLState().contentEquals("28000")
+            if (e.getSQLState().contentEquals("28000")&&e.getErrorCode()==335544472
                     && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
                 databaseConnection.setPassword("");
                 dataSource = null;

@@ -16,6 +16,7 @@ public class Table {
 
     private String name;
     private String alias;
+    private String statement;
 
     public String getName() {
         return name;
@@ -33,5 +34,26 @@ public class Table {
     public Table setAlias(String alias) {
         this.alias = alias;
         return this;
+    }
+
+    public String getStatement() {
+        return statement;
+    }
+
+    public Table setStatement(String statement) {
+        this.statement = statement;
+        return this;
+    }
+
+    public String getTableForQuery() {
+        StringBuilder sb = new StringBuilder();
+        if (getStatement() == null)
+            sb.append(getName()).append(" ").append(getAlias());
+        else sb.append("(").append(getStatement()).append(")");
+        return sb.toString();
+    }
+
+    public String toString() {
+        return getTableForQuery();
     }
 }

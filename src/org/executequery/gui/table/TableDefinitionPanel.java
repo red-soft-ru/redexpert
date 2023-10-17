@@ -867,7 +867,7 @@ public abstract class TableDefinitionPanel extends JPanel
     protected class CreateTableModel extends AbstractPrintableTableModel {
 
         protected String[] header = Bundles.get(TableDefinitionPanel.class, new String[] {
-                "PK", "Name", "Datatype", "Domain", "Size", "Scale", "Subtype", "Required", "Check",
+                "PK", "Name", "Datatype", "Domain", "SizePrecision", "Scale", "Subtype", "Required", "Check",
                 "Description", "ComputedBy", "Autoincrement", "DefaultValue", "Collate", "Encoding"});
 
         public CreateTableModel() {

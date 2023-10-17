@@ -26,7 +26,10 @@ import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
@@ -159,35 +162,19 @@ public class BrowserController {
      */
     protected void checkBrowserPanel() {
 
-        // check we have the browser view panel
-//        if (viewPanel == null) {
-//
-//            viewPanel = new BrowserViewPanel(this);
-//        }
-
         // check the panel is in the pane
         if (viewPanel == null)
             viewPanel = new BrowserViewPanel(this);
-        String title = viewPanel.getNameObject();
-        if (title == null)
-            title = BrowserViewPanel.TITLE;
+
+        String title = (viewPanel.getNameObject() != null) ? viewPanel.getNameObject() : BrowserViewPanel.TITLE;
         JPanel _viewPanel = GUIUtilities.getCentralPane(title);
 
         if (_viewPanel == null) {
-
-            GUIUtilities.addCentralPane(title,
-                    BrowserViewPanel.FRAME_ICON,
-                    viewPanel,
-                    title,
-                    true);
+            GUIUtilities.addCentralPane(title, BrowserViewPanel.FRAME_ICON, viewPanel, title, true);
             ConnectionHistory.add(viewPanel.getCurrentView());
 
-        } else {
-
+        } else
             GUIUtilities.setSelectedCentralPane(title);
-        }
-        if (viewPanel.getCurrentView() != null)
-            viewPanel = null;
 
     }
 
@@ -256,35 +243,47 @@ public class BrowserController {
      */
 
 
-   /** This void has been moved in BrowserTreePopupMenuActionListener */
+    /**
+     * This void has been moved in BrowserTreePopupMenuActionListener
+     */
 
-   public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
-       treePanel.setInProcess(true);
+    public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
+        treePanel.setInProcess(true);
 
-       try {
+        try {
 
-           FormObjectView panel = buildPanelView(node);
-           if (panel == null)
-               return;
-           panel.setDatabaseObjectNode(node);
-           String type = "";
-           if (node.getType() < NamedObject.META_TYPES.length)
-               type = NamedObject.META_TYPES[node.getType()];
-           if (connection == null)
-               connection = getDatabaseConnection();
-           if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
-               panel.setObjectName(null);
-           else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
-           panel.setDatabaseConnection(connection);
-               viewPanel.setView(panel);
-               checkBrowserPanel();
+            FormObjectView panel = buildPanelView(node);
+            if (panel == null)
+                return;
 
-       } finally {
+            panel.setDatabaseObjectNode(node);
+            String type = "";
 
-           treePanel.setInProcess(false);
-       }
+            if (node.getType() < NamedObject.META_TYPES.length)
+                type = NamedObject.META_TYPES[node.getType()];
 
-   }
+            if (connection == null)
+                connection = getDatabaseConnection();
+
+            if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
+                panel.setObjectName(null);
+            else if (node.getType() == NamedObject.TABLE_COLUMN)
+                panel.setObjectName(MiscUtils.trimEnd(((DatabaseObjectNode) node.getParent()).getShortName() + "." + node.getShortName()) + ":" + type + ":" + connection.getName());
+            else
+                panel.setObjectName(MiscUtils.trimEnd(node.getShortName()) + ":" + type + ":" + connection.getName());
+
+            panel.setDatabaseConnection(connection);
+            viewPanel.setView(panel);
+            checkBrowserPanel();
+
+            if (viewPanel.getCurrentView() != null)
+                viewPanel = null;
+
+        } finally {
+            treePanel.setInProcess(false);
+        }
+
+    }
 
     /**
      * Determines and builds the object view panel to be
@@ -318,36 +317,6 @@ public class BrowserController {
 
                     return hostPanel;
 
-                // catalog node:
-                // this will display the schema table list
-                case NamedObject.CATALOG:
-                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
-                    CatalogPanel catalogPanel = null;
-                    if (!viewPanel.containsPanel(CatalogPanel.NAME)) {
-                        catalogPanel = new CatalogPanel(this);
-                        viewPanel.addToLayout(catalogPanel);
-                    } else {
-                        catalogPanel = (CatalogPanel) viewPanel.
-                                getFormObjectView(CatalogPanel.NAME);
-                    }
-
-                    catalogPanel.setValues((DatabaseCatalog) databaseObject);
-                    return catalogPanel;
-
-                case NamedObject.SCHEMA:
-                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
-                    SchemaPanel schemaPanel = null;
-                    if (!viewPanel.containsPanel(SchemaPanel.NAME)) {
-                        schemaPanel = new SchemaPanel(this);
-                        viewPanel.addToLayout(schemaPanel);
-                    } else {
-                        schemaPanel = (SchemaPanel) viewPanel.
-                                getFormObjectView(SchemaPanel.NAME);
-                    }
-
-                    schemaPanel.setValues((DatabaseSchema) databaseObject);
-                    return schemaPanel;
-
                 case NamedObject.META_TAG:
                 case NamedObject.SYSTEM_STRING_FUNCTIONS:
                 case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
@@ -377,7 +346,9 @@ public class BrowserController {
                 case NamedObject.EXCEPTION:
                 case NamedObject.UDF:
                 case NamedObject.ROLE:
+                case NamedObject.SYSTEM_DOMAIN:
                 case NamedObject.SYSTEM_ROLE:
+                case NamedObject.SYSTEM_FUNCTION:
                     AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel.getEditPanelFromType(type, connection, node.getDatabaseObject(), null);
                     if (!viewPanel.containsPanel(objectPanel.getLayoutName())) {
                         viewPanel.addToLayout(objectPanel);
@@ -385,32 +356,9 @@ public class BrowserController {
                         objectPanel = (AbstractCreateObjectPanel) viewPanel.
                                 getFormObjectView(objectPanel.getLayoutName());
                     }
+                    objectPanel.setCurrentPath(node.getTreePath());
                     return objectPanel;
-                /*case NamedObject.FUNCTION: // Internal function of Red Database 3+
-                    BrowserFunctionPanel functionPanel = null;
-                    if (!viewPanel.containsPanel(BrowserFunctionPanel.NAME)) {
-                        functionPanel = new BrowserFunctionPanel(this);
-                        viewPanel.addToLayout(functionPanel);
-                    } else {
-                        functionPanel = (BrowserFunctionPanel) viewPanel.
-                                getFormObjectView(BrowserFunctionPanel.NAME);
-                    }
 
-                    functionPanel.setValues((DefaultDatabaseFunction) databaseObject);
-                    return functionPanel;*/
-                //case NamedObject.PROCEDURE:
-                case NamedObject.SYSTEM_FUNCTION:
-                    BrowserProcedurePanel procsPanel = null;
-                    if (!viewPanel.containsPanel(BrowserProcedurePanel.NAME)) {
-                        procsPanel = new BrowserProcedurePanel(this);
-                        viewPanel.addToLayout(procsPanel);
-                    } else {
-                        procsPanel = (BrowserProcedurePanel) viewPanel.
-                                getFormObjectView(BrowserProcedurePanel.NAME);
-                    }
-
-                    procsPanel.setValues((DatabaseExecutable) databaseObject);
-                    return procsPanel;
 
                 case NamedObject.SYSTEM_TRIGGER:
                     BrowserTriggerPanel triggerPanel = null;
@@ -450,32 +398,6 @@ public class BrowserController {
 
                     sequencePanel.setValues((DefaultDatabaseSequence) databaseObject);
                     return sequencePanel;
-                //
-                // case NamedObject.DOMAIN:
-                case NamedObject.SYSTEM_DOMAIN:
-                    BrowserDomainPanel domainSPanel = null;
-                    if (!viewPanel.containsPanel(BrowserDomainPanel.NAME)) {
-                        domainSPanel = new BrowserDomainPanel(this);
-                        viewPanel.addToLayout(domainSPanel);
-                    } else {
-                        domainSPanel = (BrowserDomainPanel) viewPanel.
-                                getFormObjectView(BrowserDomainPanel.NAME);
-                    }
-
-                    domainSPanel.setValues((DefaultDatabaseDomain) databaseObject);
-                    return domainSPanel;
-                // case NamedObject.ROLE:
-               /* case NamedObject.SYSTEM_ROLE:
-                    BrowserRolePanel rolePanel = null;
-                    if (!viewPanel.containsPanel(BrowserRolePanel.NAME)) {
-                        rolePanel = new BrowserRolePanel(this);
-                        viewPanel.addToLayout(rolePanel);
-                    } else {
-                        rolePanel = (BrowserRolePanel) viewPanel.
-                                getFormObjectView(BrowserRolePanel.NAME);
-                    }
-                    rolePanel.setValues((DefaultDatabaseRole) databaseObject, this);
-                    return rolePanel;*/
 
                 case NamedObject.INDEX:
                     try {
@@ -507,6 +429,17 @@ public class BrowserController {
                     editingPanel.setValues((DatabaseTable) databaseObject);
                     return editingPanel;
                 case NamedObject.TABLE_COLUMN:
+                    if (node.getParent() != null && ((DatabaseObjectNode) node.getParent()).getDatabaseObject() instanceof DatabaseTable) {
+                        objectPanel = AbstractCreateObjectPanel.getEditPanelFromType(type, connection, node.getDatabaseObject(), null);
+                        if (!viewPanel.containsPanel(objectPanel.getLayoutName())) {
+                            viewPanel.addToLayout(objectPanel);
+                        } else {
+                            objectPanel = (AbstractCreateObjectPanel) viewPanel.
+                                    getFormObjectView(objectPanel.getLayoutName());
+                        }
+                        objectPanel.setCurrentPath(node.getTreePath());
+                        return objectPanel;
+                    }
                     TableColumnPanel columnPanel = null;
                     if (!viewPanel.containsPanel(TableColumnPanel.NAME)) {
                         columnPanel = new TableColumnPanel(this);
@@ -589,26 +522,41 @@ public class BrowserController {
      * Displays the root main view panel.
      */
     protected void displayConnectionList(ConnectionsFolder folder) {
+
         viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
         checkBrowserPanel();
         viewPanel.displayConnectionList(folder);
+
+        if (viewPanel.getCurrentView() != null)
+            viewPanel = null;
+
     }
 
     /**
      * Displays the root main view panel.
      */
     protected void displayConnectionList() {
+
         viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
         checkBrowserPanel();
         viewPanel.displayConnectionList();
+
+        if (viewPanel.getCurrentView() != null)
+            viewPanel = null;
+
     }
 
     /**
      * Displays the root main view panel.
      */
     protected void displayRootPanel(RootDatabaseObjectNode node) {
+
         checkBrowserPanel();
         viewPanel.displayConnectionList();
+
+        if (viewPanel.getCurrentView() != null)
+            viewPanel = null;
+
     }
 
     /**
@@ -931,6 +879,9 @@ public class BrowserController {
         return Bundles.get(BrowserController.class, key);
     }
 
+    public void setViewPanel(BrowserViewPanel viewPanel) {
+        this.viewPanel = viewPanel;
+    }
 }
 
 

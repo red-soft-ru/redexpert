@@ -399,6 +399,12 @@
             small-icon="/org/executequery/icons/ExecuteSqlScript16.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteScriptCommand"/>
 
+    <action id="execute-in-profiler-command"
+            name="Execute Script In Profiler"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ExecuteInProfiler16.png"
+            execute-class="org.executequery.actions.queryeditor.ExecuteInProfilerCommand"/>
+
     <action id="print-plan-command"
             name="Print Plan"
             accel-key="control shift P"
@@ -649,6 +655,14 @@
             small-icon="/org/executequery/icons/Edit16.png"
             large-icon="/org/executequery/icons/Edit24.png"
             execute-class="org.executequery.actions.toolscommands.EditorCommand"/>
+
+    <action id="manage-shortcuts-command"
+            name="Manage Query Shortcuts"
+            accel-key=""
+            accel-editable="false"
+            small-icon="/org/executequery/icons/Shortcut16.png"
+            execute-class="org.executequery.actions.queryeditor.ManageShortcutsCommand"/>
+
     <!--
       <action id="browser-command"
               name="Database Browser"
@@ -711,6 +725,11 @@
             name="Import data from file"
             description="Import data into database from local files (*.csv, *.xlsx, ...)"
             execute-class="org.executequery.actions.databasecommands.ImportDataFromFileCommand"/>
+
+    <action id="table-validation-command"
+            name="Table Validation"
+            description="Allows online validation of DB tables"
+            execute-class="org.executequery.actions.databasecommands.TableValidationCommand"/>
 
     <action id="execute-sql-script-command"
             name="Execute SQL Script"
@@ -920,6 +939,13 @@
             accel-editable="true"
             description="Trace Manager"
             execute-class="org.executequery.actions.toolscommands.TraceManagerCommands"/>
+
+    <action id="profiler-command"
+            name="Profiler"
+            mnemonic="PF"
+            accel-editable="true"
+            description="Profiler"
+            execute-class="org.executequery.actions.toolscommands.ProfilerCommand"/>
 
     <action id="exit-from-account-command"
             name="Exit From Account"

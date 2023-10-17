@@ -195,4 +195,9 @@ public class SessionManagerPanel extends JPanel {
             GUIUtilities.displayExceptionErrorDialog("Error refresh", e1);
         }
     }
+
+    public void setFbTraceManager(IFBTraceManager fbTraceManager) {
+        this.fbTraceManager = fbTraceManager;
+    }
+
 }

@@ -54,7 +54,7 @@ public class TableColumnPanel extends AbstractFormObjectViewPanel {
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     public TableColumnPanel(BrowserController controller) {
         super();
@@ -131,6 +131,7 @@ public class TableColumnPanel extends AbstractFormObjectViewPanel {
     }
 
     public void cleanup() {
+        super.cleanup();
         // nothing to do here
     }
 

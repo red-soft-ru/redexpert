@@ -43,6 +43,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
     private InterruptibleProgressDialog interruptibleProgressDialog;
 
     boolean applied = false;
+    int lastOption;
 
     public DatabaseObjectChangeProvider(NamedObject namedObject) {
 
@@ -88,16 +89,15 @@ public class DatabaseObjectChangeProvider implements Interruptible {
     private boolean apply() {
 
         int yesNo = GUIUtilities.displayConfirmCancelDialog(Bundles.getCommon("message.apply-changes"));
-        if (yesNo == JOptionPane.NO_OPTION) {
+        lastOption = yesNo;
 
+        if (yesNo == JOptionPane.NO_OPTION) {
             table().revert();
 
         } else if (yesNo == JOptionPane.CANCEL_OPTION) {
-
             return false;
 
         } else if (yesNo == JOptionPane.YES_OPTION) {
-
             execute();
         }
 

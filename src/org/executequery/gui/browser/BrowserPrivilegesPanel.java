@@ -58,4 +58,16 @@ public class BrowserPrivilegesPanel extends JPanel {
         }
         return key;
     }
+
+    public void cleanup() {
+        if (userObjectsPanel != null)
+            userObjectsPanel.cleanup();
+        userObjectsPanel = null;
+        if (objectUsersPanel != null)
+            objectUsersPanel.cleanup();
+        objectUsersPanel = null;
+        if (tabbedPane != null)
+            tabbedPane.removeAll();
+        tabbedPane = null;
+    }
 }

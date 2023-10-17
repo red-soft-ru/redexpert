@@ -114,6 +114,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     protected JPanel mainPanel;
 
     protected JLabel sqlSecurityLabel;
+    protected JCheckBox parseVariablesBox;
 
 
 
@@ -155,6 +156,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             sqlSecurityCombo.setSelectedItem(executable.getSqlSecurity());
         }
         topPanel.add(executeButton, topGbh.setLabelDefault().get());
+        //TODO for system functions and procedures
         addPrivilegesTab(tabbedPane, (AbstractDatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         simpleCommentPanel.setDatabaseObject((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
@@ -205,17 +207,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                                         List<ParseTree> children = type.datatypeSQL().children;
                                         variable.setSqlType(children.get(0).getText());
                                         if (type.datatypeSQL().type_size() != null && !type.datatypeSQL().type_size().isEmpty()) {
-                                            variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText()));
+                                            variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText().trim()));
                                         }
                                         if (type.datatypeSQL().scale() != null && !type.datatypeSQL().scale().isEmpty()) {
-                                            variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText()));
+                                            variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText().trim()));
                                         }
                                         if (type.datatypeSQL().subtype() != null && !type.datatypeSQL().subtype().isEmpty()) {
                                             if (type.datatypeSQL().subtype().any_name() != null && !type.datatypeSQL().subtype().any_name().isEmpty()) {
                                                 variable.setSubType(1);
                                             }
                                             if (type.datatypeSQL().subtype().int_number() != null && !type.datatypeSQL().subtype().int_number().isEmpty()) {
-                                                variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText()));
+                                                variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText().trim()));
                                             }
                                         }
                                         if (type.datatypeSQL().charset_name() != null && !type.datatypeSQL().charset_name().isEmpty()) {
@@ -237,8 +239,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                                 if (var.notnull() != null && !var.notnull().isEmpty()) {
                                     variable.setNullable(0);
                                 } else variable.setNullable(1);
-                                if (var.default_value() != null)
-                                    variable.setDefaultValue(var.default_value().getText());
+                                if (var.default_statement() != null)
+                                    variable.setDefaultValue(var.default_statement().getText());
                                 if (var.comment() != null) {
                                     String description = var.comment().getText();
                                     if (description.startsWith("--")) {
@@ -295,6 +297,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     protected void init() {
         initExternal();
+        parseVariablesBox = new JCheckBox(bundleString("parseVariables"));
+        parseVariablesBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                fillSqlBody();
+            }
+        });
         parametersTabs = new JTabbedPane();
         // create the column definition panel
         // and add this to the tabbed pane
@@ -342,8 +351,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         //centralGbh.previousRow().previousRow().addLabelFieldPair(topPanel, sqlSecurityLabel, authidCombo, null);
 
-        containerPanel.add(parametersTabs,
+        containerPanel.add(parseVariablesBox,
                 new GridBagConstraints(0, 0,
+                        1, 1, 0, 0,
+                        GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                        0, 0));
+        containerPanel.add(parametersTabs,
+                new GridBagConstraints(0, 1,
                         1, 1, 1, 1,
                         GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
                         0, 0));
@@ -395,6 +409,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         //metaData
         topGbh.nextRowFirstCol();
         checkExternal();
+        fillSqlBody();
     }
 
     protected void fillCustomKeyWords()
@@ -425,12 +440,20 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     protected void checkExternal() {
         super.checkExternal();
         boolean selected = useExternalBox.isSelected();
-        if(selected)
+        if (selected) {
             parametersTabs.remove(sqlBodyText);
-       else {
+            parseVariablesBox.setVisible(false);
+            int index = parametersTabs.indexOfComponent(variablesPanel);
+            if (index > 0) {
+                parametersTabs.remove(variablesPanel);
+                parametersTabs.remove(cursorsPanel);
+            }
+        } else {
             parametersTabs.insertTab(bundleString("Body", bundleString(getTypeObject())), null, sqlBodyText, null, 0);
             parametersTabs.setSelectedComponent(sqlBodyText);
-       }
+            parseVariablesBox.setVisible(true);
+            fillSqlBody();
+        }
     }
 
     protected abstract String getEmptySqlBody();
@@ -647,9 +670,27 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     protected void reset() {
         nameField.setText(this.procedure);
-        nameField.setEnabled(false);
+        nameField.setEditable(false);
         loadParameters();
-        loadVariables();
+        fillSqlBody();
         simpleCommentPanel.resetComment();
+    }
+
+    protected void fillSqlBody() {
+        if (parseVariablesBox.isSelected()) {
+            if (parametersTabs.indexOfComponent(variablesPanel) < 0) {
+                parametersTabs.add(bundleString("Variables"), variablesPanel);
+                parametersTabs.add(bundleString("Cursors"), cursorsPanel);
+            }
+            loadVariables();
+        } else {
+            int index = parametersTabs.indexOfComponent(variablesPanel);
+            if (index > 0) {
+                parametersTabs.remove(variablesPanel);
+                parametersTabs.remove(cursorsPanel);
+            }
+            if (procedure != null)
+                sqlBodyText.setSQLText(getFullSourceBody());
+        }
     }
 }

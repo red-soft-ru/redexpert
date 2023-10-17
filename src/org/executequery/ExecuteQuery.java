@@ -21,6 +21,7 @@
 package org.executequery;
 
 import org.executequery.gui.HelpWindow;
+import org.executequery.log.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,8 @@ import java.io.IOException;
  * @author Takis Diakoumis
  */
 public final class ExecuteQuery {
+
+    private static ProcessBuilder shutdownHook = null;
 
     public static void main(String[] args) {
 
@@ -55,6 +58,7 @@ public final class ExecuteQuery {
             HelpWindow.main(args);
 
         } else {
+            Runtime.getRuntime().addShutdownHook(new Thread(ExecuteQuery::shutdownHook));
             ApplicationContext.getInstance().startup(args);
             new ApplicationLauncher().startup();
         }
@@ -83,7 +87,26 @@ public final class ExecuteQuery {
             e.printStackTrace(System.err);
         }
 
+        stop();
+    }
+
+    public static void stop() {
         System.exit(0);
+    }
+
+    public static void setShutdownHook(ProcessBuilder shutdownHook) {
+        ExecuteQuery.shutdownHook = shutdownHook;
+    }
+
+    private static void shutdownHook() {
+
+        try {
+            if (ExecuteQuery.shutdownHook != null)
+                ExecuteQuery.shutdownHook.start();
+
+        } catch (IOException e) {
+            Log.error("Error starting shutdown hook", e);
+        }
     }
 
     private static boolean isHelpStartupOnly(String[] args) {

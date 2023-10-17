@@ -18,6 +18,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Objects;
@@ -448,10 +450,10 @@ public class UpdateLoader extends JFrame {
             File aNew = new File(parent);
             aNew.mkdir();
 
-            System.out.println("\n--- Performing update ---\n");
+            System.out.println("\n--- Replacing unzipped files ---\n");
             copyFiles(new File(root), aNew.getAbsolutePath());
 
-            System.out.println("\n--- Performing cleanup ---\n");
+            System.out.println("\n--- Removing downloaded sources ---\n");
             cleanup();
 
         } catch (Exception e) {
@@ -619,6 +621,8 @@ public class UpdateLoader extends JFrame {
 
         applySystemProperties();
         UpdateLoader updateLoader = new UpdateLoader(repo);
+        boolean launch = true;
+
         for (String arg : args) {
 
             if (arg.equalsIgnoreCase("usereleasehub")) {
@@ -638,12 +642,20 @@ public class UpdateLoader extends JFrame {
             } else if (arg.contains("-root")) {
                 String root = arg.substring(arg.indexOf('=') + 1);
                 updateLoader.setRoot(root);
+
+            } else if (arg.contains("-launch")) {
+                launch = Boolean.parseBoolean(arg.substring(arg.indexOf('=') + 1));
             }
         }
 
-        //updateLoader.setVisible(true);
+        System.out.println("\n-------------------------------");
+        System.out.println("------ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy  HH:mm")) + " ------");
+        System.out.println("------ Performing update ------");
+        System.out.println("-------------------------------");
+
         updateLoader.replaceFiles();
-        updateLoader.launch();
+        if (launch)
+            updateLoader.launch();
     }
 
 }

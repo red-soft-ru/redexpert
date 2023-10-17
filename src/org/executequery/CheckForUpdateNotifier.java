@@ -255,24 +255,33 @@ public class CheckForUpdateNotifier implements Interruptible {
                         updateLoader.downloadUpdate();
                         updateLoader.unzipLocale();
 
+                        boolean restartNow = GUIUtilities.displayYesNoDialog(
+                                bundledString("restart.message"),
+                                bundledString("restart.message.title")
+                        ) == JOptionPane.YES_OPTION;
+
                         argsList.add("-root=" + updateLoader.getRoot());
-                        if (GUIUtilities.displayYesNoDialog(bundledString("restart.message"), bundledString("restart.message.title")) == JOptionPane.YES_OPTION) {
-                            String[] args = argsList.toArray(new String[0]);
-                            String[] run;
-                            File file = new File("RedExpert.jar");
-                            if (!file.exists())
-                                file = new File("../RedExpert.jar");
-                            run = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
-                            run = (String[]) ArrayUtils.addAll(run, args);
+                        argsList.add("-launch=" + restartNow);
 
-                            File outputLog = new File(ApplicationContext.getInstance().getUserSettingsHome() + System.getProperty("file.separator") + "updater.log");
-                            ProcessBuilder pb = new ProcessBuilder(run);
-                            pb.redirectOutput(ProcessBuilder.Redirect.appendTo(outputLog));
-                            pb.redirectError(ProcessBuilder.Redirect.appendTo(outputLog));
-                            pb.start();
+                        File file = new File("RedExpert.jar");
+                        if (!file.exists())
+                            file = new File("../RedExpert.jar");
 
-                            System.exit(0);
-                        }
+                        String[] updaterArguments = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
+                        updaterArguments = (String[]) ArrayUtils.addAll(updaterArguments, argsList.toArray(new String[0]));
+
+                        File outputLog = new File(ApplicationContext.getInstance().getUserSettingsHome() + System.getProperty("file.separator") + "updater.log");
+
+                        ProcessBuilder updateProcessBuilder = new ProcessBuilder(updaterArguments);
+                        updateProcessBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(outputLog));
+                        updateProcessBuilder.redirectError(ProcessBuilder.Redirect.appendTo(outputLog));
+                        ExecuteQuery.setShutdownHook(updateProcessBuilder);
+
+                        if (!restartNow)
+                            ExecuteQuery.stop();
+                        else
+                            GUIUtilities.displayInformationMessage(bundledString("restart.message.postpone"));
+
                         return Constants.WORKER_SUCCESS;
 
                     } catch (Exception e) {

@@ -277,7 +277,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                         updateProcessBuilder.redirectError(ProcessBuilder.Redirect.appendTo(outputLog));
                         ExecuteQuery.setShutdownHook(updateProcessBuilder);
 
-                        if (!restartNow)
+                        if (restartNow)
                             ExecuteQuery.stop();
                         else
                             GUIUtilities.displayInformationMessage(bundledString("restart.message.postpone"));

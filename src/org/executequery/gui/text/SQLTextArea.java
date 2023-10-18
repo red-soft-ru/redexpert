@@ -903,7 +903,12 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
     }
 
     public boolean isHyperlinkHovered() {
-        return getTokenForPosition(viewToModel(getMousePosition())).getType() == Token.PREPROCESSOR;
+
+        Point mousePosition = getMousePosition();
+        if (mousePosition == null)
+            return false;
+
+        return getTokenForPosition(viewToModel(mousePosition)).getType() == Token.PREPROCESSOR;
     }
 
     @Override

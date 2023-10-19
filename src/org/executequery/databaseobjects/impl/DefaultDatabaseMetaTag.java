@@ -332,7 +332,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     SelectBuilder getBuilderForPackageChildren(String metatag) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table mainTable = Table.createTable("RDB$" + metatag + "S", metatag + "S");
         sb.appendTable(mainTable);
         sb.appendField(Field.createField(mainTable, metatag + "_NAME"));

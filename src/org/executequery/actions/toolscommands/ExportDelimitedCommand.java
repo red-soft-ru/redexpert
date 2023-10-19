@@ -43,7 +43,7 @@ public class ExportDelimitedCommand extends OpenFrameCommand
         }
 
         if (isActionableDialogOpen()) {
-            GUIUtilities.acionableDialogToFront();
+            GUIUtilities.actionableDialogToFront();
             return;
         }
 

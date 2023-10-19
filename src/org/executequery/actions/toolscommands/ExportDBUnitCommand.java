@@ -44,7 +44,7 @@ public class ExportDBUnitCommand extends OpenFrameCommand
         
         if (isActionableDialogOpen()) {
             
-            GUIUtilities.acionableDialogToFront();
+            GUIUtilities.actionableDialogToFront();
             return;
         }
 

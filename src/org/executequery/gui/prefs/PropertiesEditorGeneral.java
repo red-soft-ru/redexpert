@@ -150,28 +150,6 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 bundledString("PrintAllSQLToOutputPanel"),
                 Boolean.valueOf(stringUserProperty(key))));
 
-        key = "editor.logging.enabled";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("LogOutputToFile"),
-                Boolean.valueOf(stringUserProperty(key))));
-
-        key = "editor.logging.path";
-        list.add(new UserPreference(
-                UserPreference.DIR_TYPE,
-                key,
-                bundledString("OutputLogFilePath"),
-                stringUserProperty(key)));
-
-        key = "editor.logging.backups";
-        list.add(new UserPreference(
-                UserPreference.INTEGER_TYPE,
-                1,
-                key,
-                bundledString("MaximumRollingLogBackups"),
-                stringUserProperty(key)));
-
         key = "editor.open.on-connect";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
@@ -207,41 +185,12 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 bundledString("LineNumbers"),
                 Boolean.valueOf(stringUserProperty(key))));
 
-        key = "editor.display.results";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("ResultsPanel"),
-                Boolean.valueOf(stringUserProperty(key))));
-
         key = "editor.display.linehighlight";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("CurrentLineHighlight"),
                 Boolean.valueOf(stringUserProperty(key))));
-
-        key = "editor.display.margin";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("RightMargin"),
-                Boolean.valueOf(stringUserProperty(key))));
-
-        key = "editor.margin.size";
-        list.add(new UserPreference(
-                UserPreference.INTEGER_TYPE,
-                3,
-                key,
-                bundledString("RightMarginColumn"),
-                stringUserProperty(key)));
-
-        key = "editor.margin.colour";
-        list.add(new UserPreference(
-                UserPreference.COLOUR_TYPE,
-                key,
-                bundledString("RightMarginColour"),
-                SystemProperties.getColourProperty("user", key)));
 
         UserPreference[] preferences = list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);

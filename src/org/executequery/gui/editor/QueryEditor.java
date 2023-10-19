@@ -1145,7 +1145,9 @@ public class QueryEditor extends DefaultTabView
     public void printExecutedPlan(boolean explained) {
 
         preExecute();
-        String query = editorPanel.getQueryAreaText();
+        String query = editorPanel.getSelectedText();
+        if (MiscUtils.isNull(query))
+            query = editorPanel.getQueryAreaText();
 
         editorPanel.resetExecutingLine();
         delegate.printExecutedPlan(getSelectedConnection(), query, explained);

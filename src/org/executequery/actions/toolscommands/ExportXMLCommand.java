@@ -44,7 +44,7 @@ public class ExportXMLCommand extends OpenFrameCommand
         }
 
         if (isActionableDialogOpen()) {
-            GUIUtilities.acionableDialogToFront();
+            GUIUtilities.actionableDialogToFront();
             return;
         }
 

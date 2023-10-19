@@ -26,9 +26,9 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledStatement;
+import org.executequery.log.Log;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.Log;
 import org.underworldlabs.util.MiscUtils;
 
 import java.sql.*;
@@ -687,7 +687,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     public SelectBuilder getBuilderForCons(boolean allTables) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table relations = getMainTable();
         Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
         Table constraints1 = Table.createTable("RDB$RELATION_CONSTRAINTS", "RCO");
@@ -755,7 +755,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     public SelectBuilder getBuilderForCols(boolean allTables) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table relations = getMainTable();
         Table relationFields = Table.createTable("RDB$RELATION_FIELDS", "RF");
         Table fields = Table.createTable("RDB$FIELDS", "F");
@@ -815,8 +815,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     public SelectBuilder getBuilderLoadColsCommon(boolean allTables) {
-        SelectBuilder sb = new SelectBuilder();
-        sb.appendTable(Table.createTable().setStatement(new SelectBuilder().appendSelectBuilder(getBuilderForCols(allTables)).appendSelectBuilder(getBuilderForCons(allTables)).getSQLQuery()));
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
+        sb.appendTable(Table.createTable().setStatement(new SelectBuilder(getHost().getDatabaseConnection()).appendSelectBuilder(getBuilderForCols(allTables)).appendSelectBuilder(getBuilderForCons(allTables)).getSQLQuery()));
         sb.setOrdering(RELATION_NAME + ", " + FIELD_POSITION + ", " + FIELD_TYPE + " NULLS LAST");
         return sb;
     }
@@ -929,7 +929,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             final short fieldScale = rs.getShort(FIELD_SCALE);
             final int characterSetId = rs.getInt(CHARACTER_SET_ID);
             final int dataType = DefaultDatabaseHost.getDataType(fieldType, fieldSubType, fieldScale, characterSetId);
-
+            column.setPosition(rs.getInt(FIELD_POSITION));
             column.setTypeInt(dataType);
             column.setColumnSubtype(fieldSubType);
             column.setColumnScale(fieldScale);

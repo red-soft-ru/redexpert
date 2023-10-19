@@ -201,14 +201,20 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
         return (LookAndFeelType) lookAndFeelCombBox().getSelectedItem();
     }
 
+    @Override
     public void restoreDefaults() {
         preferencesPanel.savePreferences();
+        apply();
     }
 
+    @Override
     public void save() {
         preferencesPanel.savePreferences();
+        apply();
     }
 
+    private void apply() {
+        GUIUtilities.displayStatusBar(SystemProperties.getBooleanProperty("user", "system.display.statusbar"));
+    }
 
 }
-

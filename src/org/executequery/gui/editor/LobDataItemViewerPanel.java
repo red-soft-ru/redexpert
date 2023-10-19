@@ -216,7 +216,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         byte[] data = binaryStringTextArea.getDocument().getData();
         boolean isValidText = true;
 
-        if (recordDataItem instanceof ClobRecordDataItem || getTypeObject().startsWith("BLOB")) {
+        if (recordDataItem instanceof ClobRecordDataItem || !isMimeType()) {
 
             if (data != null) {
 
@@ -270,6 +270,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         return textArea;
     }
 
+
     String getTypeObject() {
 
         try {
@@ -279,6 +280,15 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         }
 
         return "";
+    }
+
+    boolean isMimeType() {
+        try {
+            return ((BlobRecordDataItem) recordDataItem).isMimeType(binaryStringTextArea.getDocument().getData());
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+            return false;
+        }
     }
 
     private boolean isImage() {

@@ -71,7 +71,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
             long firstValue = (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue();
             query = SQLUtils.generateCreateSequence(getName(), firstValue,
-                    getIncrement(), getRemarks(), getVersion(), false);
+                    getIncrement(), getRemarks(), getVersion(), false, getHost().getDatabaseConnection());
 
         } catch (SQLException e) {
             GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
@@ -83,7 +83,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("SEQUENCE", getName());
+        return SQLUtils.generateDefaultDropQuery("SEQUENCE", getName(), getHost().getDatabaseConnection());
     }
 
     public long getSequenceCurrentValue() {
@@ -99,7 +99,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
             if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
 
                 statement = dmd.getConnection().createStatement();
-                ResultSet rs = statement.executeQuery("SELECT GEN_ID(" + MiscUtils.getFormattedObject(getName()) + ", 0) FROM RDB$DATABASE");
+                ResultSet rs = statement.executeQuery("SELECT GEN_ID(" + MiscUtils.getFormattedObject(getName(), getHost().getDatabaseConnection()) + ", 0) FROM RDB$DATABASE");
 
                 if (rs.next())
                     currentValue = rs.getLong(1);
@@ -145,7 +145,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         try {
             long firstValue = (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue();
             query = SQLUtils.generateCreateSequence(getName(), firstValue,
-                    getIncrement(), comment, getVersion(), false);
+                    getIncrement(), comment, getVersion(), false, getHost().getDatabaseConnection());
 
         } catch (SQLException e) {
             GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
@@ -180,7 +180,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = SelectBuilder.createSelectBuilder();
+        SelectBuilder sb = SelectBuilder.createSelectBuilder(getHost().getDatabaseConnection());
         Table gens = getMainTable();
         sb.appendTable(gens);
         sb.appendField(getObjectField());

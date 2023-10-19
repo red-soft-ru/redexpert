@@ -21,6 +21,7 @@
 package org.underworldlabs.util;
 
 import org.executequery.ApplicationContext;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
@@ -671,9 +672,9 @@ public final class MiscUtils {
         return UUID.randomUUID().toString();
     }
 
-    public static String formattedDefaultValue(ColumnData.DefaultValue defaultValue, int type) {
+    public static String formattedDefaultValue(ColumnData.DefaultValue defaultValue, int type, DatabaseConnection dc) {
         StringBuilder sqlText = new StringBuilder();
-        String value = formattedSQLValue(defaultValue, type);
+        String value = formattedSQLValue(defaultValue, type, dc);
         sqlText.append(" ");
         if (defaultValue.getOriginOperator() != null)
             sqlText.append(defaultValue.getOriginOperator());
@@ -682,8 +683,8 @@ public final class MiscUtils {
         return sqlText.toString();
     }
 
-    public static String formattedSQLValue(ColumnData.DefaultValue value, int type) {
-        if ((checkKeyword(value.getValue()) || value.getValue().startsWith("'")
+    public static String formattedSQLValue(ColumnData.DefaultValue value, int type, DatabaseConnection dc) {
+        if ((checkKeyword(value.getValue(), dc) || value.getValue().startsWith("'")
                 || value.getValue().trim().contentEquals("null")
                 || value.getValue().trim().contentEquals("=null")
                 || value.getValue().trim().contentEquals("= null")
@@ -759,12 +760,15 @@ public final class MiscUtils {
     }
 
     private static KeywordRepository keywordRepository;
-    public static boolean checkKeyword(String str) {
+
+    public static boolean checkKeyword(String str, DatabaseConnection connection) {
 
         if (keywordRepository == null)
             keywordRepository = (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
 
         TreeSet<String> keywords = keywordRepository.getSQLKeywords();
+        if (connection != null)
+            keywords = connection.getKeywords();
         return keywords.contains(str.toUpperCase());
     }
 
@@ -778,11 +782,11 @@ public final class MiscUtils {
         return str.replaceAll("\\s+$", "");
     }
 
-    public static String getFormattedObject(String obj) {
+    public static String getFormattedObject(String obj, DatabaseConnection dc) {
         if (obj != null) {
             obj = trimEnd(obj);
 
-            if (isLatinOrDigitOrSpecSymbolRDB(obj) && checkAllUpperCase(obj) && !checkKeyword(obj))
+            if (isLatinOrDigitOrSpecSymbolRDB(obj) && checkAllUpperCase(obj) && !checkKeyword(obj, dc))
                 return obj;
             else {
                 obj = obj.replace("\"", "\"\"");

@@ -47,7 +47,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("TABLE", getName());
+        return SQLUtils.generateDefaultDropQuery("TABLE", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -71,7 +71,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultTemporaryDatabaseTable comparingTable = (DefaultTemporaryDatabaseTable) databaseObject;
         return SQLUtils.generateAlterTable(this, comparingTable, true,
-                new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed());
+                new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed(), Comparer.isFieldsPositionsNeed());
     }
 
     protected SelectBuilder builderCommonQuery() {

@@ -37,6 +37,7 @@ import java.io.Serializable;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -48,241 +49,82 @@ import java.util.Vector;
  */
 public class ColumnData implements Serializable {
 
-    static final long serialVersionUID = -4937385038396757064L;
-
-    public static final int INPUT_PARAMETER = 0;
-
-    public static final int OUTPUT_PARAMETER = 1;
-
-    public static final int VARIABLE = 2;
-
-    public static final int TYPE_OF_FROM_DOMAIN = 0;
-
-    public static final int TYPE_OF_FROM_COLUMN = 1;
-
+    private static final long serialVersionUID = -4937385038396757064L;
     private boolean descriptionAsSingleComment = false;
 
-    /**
-     * the catalog for this column
-     */
+    public static final int INPUT_PARAMETER = 0;
+    public static final int OUTPUT_PARAMETER = 1;
+    public static final int VARIABLE = 2;
+    public static final int TYPE_OF_FROM_DOMAIN = 0;
+    public static final int TYPE_OF_FROM_COLUMN = 1;
+
     private String catalog;
-
-    /**
-     * the schema for this column
-     */
     private String schema;
-
-    /**
-     * The table this column belongs to
-     */
     private String tableName;
-
-    /**
-     * The name of this column
-     */
     private String columnName;
-
-    /**
-     * The name of the SQL type of this column
-     */
     private String columnType;
+    private int columnSize;
+    private int columnScale;
+    private int columnSubtype;
+    private boolean notNull;
+    private int sqlType;
+    private DefaultValue defaultValue;
+    private Vector<ColumnConstraint> columnConstraints;
+    private int columnPosition;
 
-    /**
-     * The key of this column - if any
-     * (ie primary, foreign etc.)
-     */
     private String keyType;
-
-    /**
-     * Whether this column is a primary key
-     */
     private boolean primaryKey;
-
-    /**
-     * Whether this column is a foreign key
-     */
     private boolean foreignKey;
 
-    /**
-     * The data size of this column
-     */
-    private int columnSize;
-
-    /**
-     * The data scale of this column
-     */
-    private int columnScale;
-
-    /**
-     * The subtype of this column
-     */
-    private int columnSubtype;
-
-    /**
-     * Whether this column is required i.e. NOT NULL
-     */
-    private boolean notNull;
-
-    /**
-     * The mapped SQL type
-     */
-    private int sqlType;
-
-    /**
-     * the column's default value
-     */
-    private DefaultValue defaultValue;
-
-    /**
-     * This column's constraints as a <code>Vector</code>
-     * of <code>ColumnConstraint</code> objects
-     */
-    private Vector<ColumnConstraint> columnConstraints;
-
-    /**
-     * Whether this column is a new column in the table
-     */
     private boolean newColumn;
-
-    /**
-     * Whether this column is marked as to be deleted
-     */
     private boolean markedDeleted;
 
-    /**
-     * Using domain for column
-     */
     private String domain;
-
-    /**
-     * Domain type
-     */
     private int domainType;
-
-    /**
-     * Domain type name
-     */
     private String domainTypeName;
-
-    /**
-     * Domain size
-     */
-    private int domainSize = -1;
-
-    /**
-     * Domain scale
-     */
-    private int domainScale = -1;
-
-    /**
-     * Domain subtype
-     */
     private int domainSubType;
-
-    /**
-     * Domain character set
-     */
+    private int domainSize = -1;
+    private int domainScale = -1;
     private String domainCharset;
-
-    /**
-     * Domain checking string
-     */
     private String domainCheck;
-
-    /**
-     * Domain description
-     */
     private String domainDescription;
-
-    /**
-     * Whether this domain is null or not
-     */
     private boolean domainNotNull;
-
-    /**
-     * Default value for domain
-     */
     private String domainDefault;
 
-    /**
-     * Check string
-     */
     private String check;
-
-    /**
-     * Description for column
-     */
     private String description;
 
-    /**
-     * Whether this column is computed
-     */
     private String computedBy;
-
-    /**
-     * Whether this domain is computed
-     */
     private String domainComputedBy;
 
-    /**
-     * Auto increment panel
-     */
-    Autoincrement ai;
+    private final Autoincrement ai;
+    private DatabaseConnection dc;
+    private ColumnData copy;
 
-    /**
-     * Current database connection
-     */
-    DatabaseConnection dc;
-
-    /**
-     * Current character set
-     */
     private String charset;
-
-    /**
-     * Copy of current column
-     */
-    ColumnData copy;
-
-    /**
-     * Whether column parameter is in or out
-     */
-    int typeParameter;
-
-    /**
-     * Whether column is instance of
-     */
-    boolean typeOf;
-
-
-    /**
-     * Whether column is type of domain or column
-     */
-    int typeOfFrom;
+    private int typeParameter;
+    private boolean typeOf;
+    private int typeOfFrom;
 
     private String collate;
-
     private String domainCollate;
 
-    String mechanism;
+    private String mechanism;
+    private boolean cString;
 
-    boolean cstring;
-
-    DefaultDatabaseObject table;
-    List<NamedObject> tables;
-    String columnTable;
-    List<String> columns;
+    private String columnTable;
+    private DefaultDatabaseObject table;
+    private final List<String> columns;
+    private final List<NamedObject> tables;
 
     private boolean cursor;
-
     private boolean scroll;
-
     private String selectOperator;
 
     private List<ColumnData.Dimension> dimensions;
     private List<ColumnData.Dimension> domainDimensions;
 
-    DefaultStatementExecutor executor;
+    private final DefaultStatementExecutor executor;
 
     public ColumnData(DatabaseConnection databaseConnection) {
         primaryKey = false;
@@ -327,15 +169,15 @@ public class ColumnData implements Serializable {
     }
 
     public void addConstraint(ColumnConstraint cc) {
+
         if (columnConstraints == null)
             columnConstraints = new Vector<>();
         columnConstraints.add(cc);
     }
 
     public void resetConstraints() {
-        if (columnConstraints != null) {
+        if (columnConstraints != null)
             columnConstraints.clear();
-        }
     }
 
     public void removeConstraint(ColumnConstraint cc) {
@@ -347,9 +189,9 @@ public class ColumnData implements Serializable {
     }
 
     public boolean isValid() {
-        return (columnName != null && columnName.length() > 0) &&
-                (tableName != null && tableName.length() > 0) &&
-                (columnType != null && columnType.length() > 0);
+        return (columnName != null && !columnName.isEmpty()) &&
+                (tableName != null && !tableName.isEmpty()) &&
+                (columnType != null && !columnType.isEmpty());
     }
 
     public void setNewColumn(boolean newColumn) {
@@ -373,16 +215,16 @@ public class ColumnData implements Serializable {
     }
 
     public void setNamesToUpper() {
-        if (tableName != null) {
+
+        if (tableName != null)
             tableName = tableName.toUpperCase();
-        }
-        if (columnName != null) {
+        if (columnName != null)
             columnName = columnName.toUpperCase();
-        }
     }
 
     @SuppressWarnings("unchecked")
     public void setValues(ColumnData cd) {
+
         tableName = cd.getTableName();
         columnName = cd.getColumnName();
         columnType = cd.getColumnType();
@@ -398,22 +240,26 @@ public class ColumnData implements Serializable {
         description = cd.getDescription();
         check = cd.getCheck();
         computedBy = cd.getComputedBy();
-        defaultValue = cd.getDefaultValue();
+        defaultValue = new DefaultValue();
+        defaultValue.value = cd.getDefaultValue().value;
+        defaultValue.originOperator = cd.getDefaultValue().originOperator;
+        defaultValue.useQuotes = cd.getDefaultValue().useQuotes;
         table = cd.getTable();
         columnTable = cd.getColumnTable();
         typeOf = cd.isTypeOf();
         dimensions = cd.getDimensions();
 
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
-        if (constraints != null) {
+        if (constraints != null)
             columnConstraints = (Vector<ColumnConstraint>) constraints.clone();
-        }
     }
 
     public void setValues(DatabaseColumn cd, boolean loadDomainInfo) {
+
         setTableName(cd.getParentsName());
         setColumnName(cd.getName());
         setColumnType(cd.getTypeName());
+        setColumnPosition(cd.getPosition());
         setPrimaryKey(cd.isPrimaryKey());
         setForeignKey(cd.isForeignKey());
         setColumnSize(cd.getColumnSize());
@@ -427,8 +273,7 @@ public class ColumnData implements Serializable {
         setDefaultValue(cd.getDefaultValue());
         setDomainDefault(cd.getDomainDefaultValue());
         setDimensions(cd.getDimensions());
-        if (cd.isIdentity())
-            ai.setIdentity(true);
+        if (cd.isIdentity()) ai.setIdentity(true);
     }
 
     public boolean isPrimaryKey() {
@@ -440,7 +285,7 @@ public class ColumnData implements Serializable {
     }
 
     public boolean isKey() {
-        return primaryKey || foreignKey;
+        return isPrimaryKey() || isForeignKey();
     }
 
     public void setPrimaryKey(boolean primaryKey) {
@@ -475,24 +320,20 @@ public class ColumnData implements Serializable {
 
     /**
      * Returns whether this column is a date type or
-     * extension of.
-     * <p>
-     * ie. Types.DATE, Types.TIME, Types.TIMESTAMP.
+     * extension of <code>Types.DATE, Types.TIME, Types.TIMESTAMP</code>.
      *
      * @return true | false
      */
     public boolean isDateDataType() {
-        return sqlType == Types.DATE ||
-                sqlType == Types.TIME ||
-                sqlType == Types.TIMESTAMP ||
-                sqlType == Types.TIME_WITH_TIMEZONE ||
-                sqlType == Types.TIMESTAMP_WITH_TIMEZONE;
+        return sqlType == Types.DATE
+                || sqlType == Types.TIME
+                || sqlType == Types.TIMESTAMP
+                || sqlType == Types.TIME_WITH_TIMEZONE
+                || sqlType == Types.TIMESTAMP_WITH_TIMEZONE;
     }
 
     public boolean isCharacterType() {
-        return sqlType == Types.CHAR ||
-                sqlType == Types.VARCHAR ||
-                sqlType == Types.LONGVARCHAR;
+        return sqlType == Types.CHAR || sqlType == Types.VARCHAR || sqlType == Types.LONGVARCHAR;
     }
 
     public boolean isNonPrecisionType() {
@@ -537,16 +378,11 @@ public class ColumnData implements Serializable {
     }
 
     public void setColumnSize(int columnSize) {
-
         this.columnSize = columnSize;
     }
 
     public int getColumnSize() {
         return columnSize;
-    }
-
-    public String toString() {
-        return columnName == null ? ColumnConstraint.EMPTY : columnName;
     }
 
     public String getCatalog() {
@@ -586,7 +422,7 @@ public class ColumnData implements Serializable {
     }
 
     public String getDomain() {
-        return domain;
+        return domain != null ? MiscUtils.trimEnd(domain) : null;
     }
 
     public void setDomain(String domain) {
@@ -595,10 +431,8 @@ public class ColumnData implements Serializable {
 
     public void setDomain(String domain, boolean loadDomainInfo) {
         this.domain = domain;
-        if (!MiscUtils.isNull(domain) && loadDomainInfo) {
+        if (!MiscUtils.isNull(domain) && loadDomainInfo)
             getDomainInfo();
-        }
-
     }
 
     public void setDomainType(int domainType) {
@@ -626,22 +460,15 @@ public class ColumnData implements Serializable {
     }
 
     public void setDomainComputedBy(String domainComputedBy) {
-        if (!MiscUtils.isNull(domainComputedBy) && domainComputedBy.startsWith("(")
-                && domainComputedBy.endsWith(")"))
-            domainComputedBy = domainComputedBy.substring(1, domainComputedBy.length() - 1);
-        this.domainComputedBy = domainComputedBy;
-    }
 
-    public int getDomainSize() {
-        return domainSize;
+        if (!MiscUtils.isNull(domainComputedBy) && domainComputedBy.startsWith("(") && domainComputedBy.endsWith(")"))
+            domainComputedBy = domainComputedBy.substring(1, domainComputedBy.length() - 1);
+
+        this.domainComputedBy = domainComputedBy;
     }
 
     public void setDomainSize(int domainSize) {
         this.domainSize = domainSize;
-    }
-
-    public int getDomainScale() {
-        return domainScale;
     }
 
     public void setDomainScale(int domainScale) {
@@ -656,28 +483,28 @@ public class ColumnData implements Serializable {
         this.domainSubType = domainSubType;
     }
 
-    public String getDomainCollate() {
-        return domainCollate;
-    }
-
     public void setDomainCollate(String domainCollate) {
         this.domainCollate = domainCollate;
     }
 
     private void getDomainInfo() {
+
         domain = MiscUtils.trimEnd(domain);
 
         DefaultDatabaseDomain defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.DOMAIN, domain);
         if (defaultDatabaseDomain == null)
             defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.SYSTEM_DOMAIN, domain);
+
         if (defaultDatabaseDomain == null) {
+
             DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(dc);
             for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                if (metaTagNode.getMetaDataKey().equals(NamedObject.META_TYPES[NamedObject.DOMAIN]) ||
-                        metaTagNode.getMetaDataKey().equals(NamedObject.META_TYPES[NamedObject.SYSTEM_DOMAIN])) {
+                if (metaTagNode.getMetaDataKey().equals(NamedObject.META_TYPES[NamedObject.DOMAIN])
+                        || metaTagNode.getMetaDataKey().equals(NamedObject.META_TYPES[NamedObject.SYSTEM_DOMAIN])) {
                     ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
                 }
             }
+
             defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.DOMAIN, domain);
             if (defaultDatabaseDomain == null)
                 defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.SYSTEM_DOMAIN, domain);
@@ -697,8 +524,8 @@ public class ColumnData implements Serializable {
             domainComputedBy = defaultDatabaseDomain.getDomainData().domainComputedBy;
             domainCollate = defaultDatabaseDomain.getDomainData().domainCollate;
             domainDimensions = defaultDatabaseDomain.getDomainData().getDimensions();
-
         }
+
         sqlType = domainType;
         columnSize = domainSize;
         columnScale = domainScale;
@@ -706,10 +533,9 @@ public class ColumnData implements Serializable {
         setCharset(domainCharset);
         setCollate(domainCollate);
         setDimensions(domainDimensions);
+
         if (!find)
             Log.error("Error get Domain '" + domain + "'");
-
-
     }
 
     public int getDomainType() {
@@ -726,9 +552,13 @@ public class ColumnData implements Serializable {
     }
 
     public boolean isLOB() {
-        return sqlType == Types.BINARY || sqlType == Types.BLOB || sqlType == Types.CLOB ||
-                sqlType == Types.LONGNVARCHAR || sqlType == Types.LONGVARBINARY || sqlType == Types.LONGVARCHAR ||
-                sqlType == Types.NCLOB;
+        return sqlType == Types.BINARY
+                || sqlType == Types.BLOB
+                || sqlType == Types.CLOB
+                || sqlType == Types.LONGNVARCHAR
+                || sqlType == Types.LONGVARBINARY
+                || sqlType == Types.LONGVARCHAR
+                || sqlType == Types.NCLOB;
     }
 
     /**
@@ -740,20 +570,21 @@ public class ColumnData implements Serializable {
     public String getFormattedDataType() {
 
         if (typeOf) {
-            if (getTypeOfFrom() == TYPE_OF_FROM_DOMAIN) {
-                return "TYPE OF " + getFormattedDomain();
-            } else return "TYPE OF COLUMN " + getFormattedTable() + "." + getFormattedColumnTable();
+            return (getTypeOfFrom() == TYPE_OF_FROM_DOMAIN) ?
+                    "TYPE OF " + getFormattedDomain() :
+                    "TYPE OF COLUMN " + getFormattedTable() + "." + getFormattedColumnTable();
         }
-        String typeString = getColumnType();
-        if (StringUtils.isBlank(typeString)) {
 
+        String typeString = getColumnType();
+        if (StringUtils.isBlank(typeString))
             return "";
-        }
+
         if (typeString.contains("<0")) {
-            if (columnSubtype < 0)
-                typeString = typeString.replace("<0", String.valueOf(columnSubtype));
-            else typeString = typeString.replace("<0", "0");
+            typeString = (columnSubtype < 0) ?
+                    typeString.replace("<0", String.valueOf(columnSubtype)) :
+                    typeString.replace("<0", "0");
         }
+
         StringBuilder sb = new StringBuilder(typeString);
 
         // if the type doesn't end with a digit, or it
@@ -761,52 +592,57 @@ public class ColumnData implements Serializable {
         // here to avoid int4, int8 etc. type values
 
         int type = getSQLType();
-        if (!typeString.matches("\\b\\D+\\d+\\b") ||
-                (type == Types.CHAR ||
-                        type == Types.VARCHAR ||
-                        type == Types.BLOB || type == Types.LONGVARCHAR
-                        || type == Types.LONGVARBINARY
-                        || isCstring())) {
-            if (type == Types.BLOB || type == Types.LONGVARCHAR
-                    || type == Types.LONGVARBINARY) {
+        if (!typeString.matches("\\b\\D+\\d+\\b") || (type == Types.CHAR
+                || type == Types.VARCHAR
+                || type == Types.BLOB
+                || type == Types.LONGVARCHAR
+                || type == Types.LONGVARBINARY
+                || isCString())
+        ) {
+
+            if (type == Types.BLOB || type == Types.LONGVARCHAR || type == Types.LONGVARBINARY) {
                 if (getColumnSize() != 80)
                     sb.append(" SEGMENT SIZE ").append(getColumnSize());
-            } else if (isEditSize() && getColumnSize() > 0 && !isDateDataType()
+
+            } else if (isEditSize()
+                    && getColumnSize() > 0
+                    && !isDateDataType()
                     && !isNonPrecisionType()
                     && (!getColumnType().equalsIgnoreCase(T.DECFLOAT) || getColumnType().equalsIgnoreCase(T.DECFLOAT)
                     && (getColumnSize() == 16 || getColumnSize() == 34))
             ) {
-                sb.append("(");
-                sb.append(getColumnSize());
-
-                if (getColumnScale() > 0) {
-                    sb.append(",");
-                    sb.append(getColumnScale());
-                }
+                sb.append("(").append(getColumnSize());
+                if (getColumnScale() > 0)
+                    sb.append(",").append(getColumnScale());
                 sb.append(")");
             }
-            if (!MiscUtils.isNull(getCharset()) && dc != null && !getCharset().equalsIgnoreCase(dc.getDBCharset())) {
+
+            if (!MiscUtils.isNull(getCharset()) && dc != null && !getCharset().equalsIgnoreCase(dc.getDBCharset()))
                 sb.append(" CHARACTER SET ").append(getCharset());
-            }
+
             if (dimensions != null) {
                 sb.append("[");
+
                 boolean first = true;
                 for (Dimension dimension : dimensions) {
+
                     if (!first)
                         sb.append(",");
                     first = false;
-                    if (dimension.lowerBound != 1) {
+
+                    if (dimension.lowerBound != 1)
                         sb.append(dimension.lowerBound).append(":");
-                    }
                     sb.append(dimension.upperBound);
                 }
                 sb.append("]");
             }
         }
-        return sb.toString();
+
+        return sb.toString().trim();
     }
 
     public String getFormattedDomainDataType() {
+
         sqlType = domainType;
         columnSize = domainSize;
         columnScale = domainScale;
@@ -816,17 +652,22 @@ public class ColumnData implements Serializable {
         setCheck(domainCheck);
         setDefaultValue(domainDefault);
         setColumnType(domainTypeName);
+
         return getFormattedDataType();
     }
 
     public boolean isEditSize() {
-        return getColumnType() != null && (getSQLType() == Types.NUMERIC || getSQLType() == Types.CHAR || getSQLType() == Types.VARCHAR
-                || getSQLType() == Types.DECIMAL || getSQLType() == Types.BLOB || getSQLType() == Types.LONGVARCHAR
+        return getColumnType() != null && (getSQLType() == Types.NUMERIC
+                || getSQLType() == Types.CHAR
+                || getSQLType() == Types.VARCHAR
+                || getSQLType() == Types.DECIMAL
+                || getSQLType() == Types.BLOB
+                || getSQLType() == Types.LONGVARCHAR
                 || getSQLType() == Types.LONGVARBINARY
                 || getColumnType().equalsIgnoreCase("CSTRING")
                 || getColumnType().equalsIgnoreCase("VARCHAR")
-                || getColumnType().equalsIgnoreCase("CHAR"))
-                || getColumnType().equalsIgnoreCase(T.DECFLOAT);
+                || getColumnType().equalsIgnoreCase("CHAR")
+        ) || getColumnType().equalsIgnoreCase(T.DECFLOAT);
     }
 
     public void setCheck(String Check) {
@@ -870,10 +711,6 @@ public class ColumnData implements Serializable {
         return charset;
     }
 
-    public String getDomainCharset() {
-        return domainCharset;
-    }
-
     public String getDomainCheck() {
         return domainCheck;
     }
@@ -906,45 +743,48 @@ public class ColumnData implements Serializable {
     }
 
     public boolean isDefaultChanged() {
-        if (!hasCopy()) {
+
+        if (!hasCopy())
             return false;
-        }
-        if (MiscUtils.isNull(copy.getDefaultValue().getValue())) {
+
+        if (MiscUtils.isNull(copy.getDefaultValue().getValue()))
             return !MiscUtils.isNull(getDefaultValue().getValue());
-        } else {
-            if (MiscUtils.isNull(getDefaultValue().getValue()))
-                return true;
-        }
+        else if (MiscUtils.isNull(getDefaultValue().getValue()))
+            return true;
+
         return !copy.getDefaultValue().getValue().equalsIgnoreCase(getDefaultValue().getValue());
     }
 
     public boolean isCheckChanged() {
-        if (!hasCopy()) {
+
+        if (!hasCopy())
             return false;
-        }
-        if (MiscUtils.isNull(copy.getCheck())) {
+
+        if (MiscUtils.isNull(copy.getCheck()))
             return !MiscUtils.isNull(getCheck());
-        } else {
-            if (MiscUtils.isNull(getCheck()))
-                return true;
-        }
+        else if (MiscUtils.isNull(getCheck()))
+            return true;
+
         return !copy.getCheck().equalsIgnoreCase(getCheck());
     }
 
     public boolean isTypeChanged() {
-        return hasCopy() && (!getColumnType().equals(copy.getColumnType()) || getColumnSize() != copy.getColumnSize() || getColumnScale() != copy.getColumnScale() || getCharset() != copy.getCharset());
+        return hasCopy() && (!getColumnType().equals(copy.getColumnType())
+                || getColumnSize() != copy.getColumnSize()
+                || getColumnScale() != copy.getColumnScale()
+                || !Objects.equals(getCharset(), copy.getCharset()));
     }
 
     public boolean isDescriptionChanged() {
-        if (!hasCopy()) {
+
+        if (!hasCopy())
             return false;
-        }
-        if (MiscUtils.isNull(copy.getDescription())) {
+
+        if (MiscUtils.isNull(copy.getDescription()))
             return !MiscUtils.isNull(getDescription());
-        } else {
-            if (MiscUtils.isNull(getDescription()))
-                return true;
-        }
+        else if (MiscUtils.isNull(getDescription()))
+            return true;
+
         return !copy.getDescription().equalsIgnoreCase(getDescription());
     }
 
@@ -953,7 +793,11 @@ public class ColumnData implements Serializable {
     }
 
     public boolean isChanged() {
-        return hasCopy() && (isCheckChanged() || isDefaultChanged() || isNameChanged() || isDescriptionChanged() || isTypeChanged());
+        return hasCopy() && (isCheckChanged()
+                || isDefaultChanged()
+                || isNameChanged()
+                || isDescriptionChanged()
+                || isTypeChanged());
     }
 
     public void setTypeParameter(int typeParameter) {
@@ -980,46 +824,53 @@ public class ColumnData implements Serializable {
         return table;
     }
 
+    public void setDefaultValue(String defaultValue, boolean needProcessing, boolean isDomain) {
 
-    public void setDefaultValue(String defaultValue, boolean needProcessing) {
-        if (needProcessing) {
-            defaultValue = processedDefaultValue(defaultValue);
-        }
+        if (needProcessing)
+            defaultValue = processedDefaultValue(defaultValue, isDomain);
         setDefaultValue(defaultValue);
     }
 
-    public String processedDefaultValue(String defaultValue) {
+    public String processedDefaultValue(String defaultValue, boolean isDomain) {
+
         if (!MiscUtils.isNull(defaultValue)) {
             defaultValue = defaultValue.trim();
+
             if (defaultValue.toUpperCase().startsWith("DEFAULT")) {
                 defaultValue = defaultValue.substring(7).trim();
                 this.defaultValue.setOriginOperator("DEFAULT");
             }
+
             if (defaultValue.toUpperCase().startsWith("=")) {
                 defaultValue = defaultValue.substring(1).trim();
                 this.defaultValue.setOriginOperator("=");
             }
+
             if (defaultValue.startsWith("'") && defaultValue.endsWith("'") && defaultValue.length() > 2) {
                 defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
                 this.defaultValue.setUseQuotes(true);
             }
         }
+        this.defaultValue.isDomain = isDomain;
+
         return defaultValue;
     }
 
     public void setTable(String table) {
+
         if (table == null)
             return;
+
         for (NamedObject namedObject : getTables()) {
             if (namedObject.getName().contentEquals(table)) {
                 this.table = (DefaultDatabaseObject) namedObject;
                 break;
             }
         }
+
         columns.clear();
-        for (DatabaseColumn column : this.table.getColumns()) {
-            columns.add(column.getName());
-        }
+        this.table.getColumns().forEach(column -> columns.add(column.getName()));
+
         if (!columns.isEmpty())
             setColumnTable(columns.get(0));
 
@@ -1050,16 +901,23 @@ public class ColumnData implements Serializable {
     }
 
     public List<NamedObject> getTables() {
+
         if (tables.isEmpty()) {
-            tables.addAll(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).getTables());
+            tables.addAll(ConnectionsTreePanel
+                    .getPanelFromBrowser()
+                    .getDefaultDatabaseHostFromConnection(dc)
+                    .getTables()
+            );
         }
+
         return tables;
     }
 
     public List<String> getTableNames() {
+
         ArrayList<String> list = new ArrayList<>();
-        for (NamedObject table : getTables())
-            list.add(table.getName());
+        getTables().forEach(table -> list.add(table.getName()));
+
         return list;
     }
 
@@ -1079,12 +937,12 @@ public class ColumnData implements Serializable {
         this.mechanism = mechanism;
     }
 
-    public boolean isCstring() {
-        return cstring;
+    public boolean isCString() {
+        return cString;
     }
 
-    public void setCstring(boolean cstring) {
-        this.cstring = cstring;
+    public void setCString(boolean cString) {
+        this.cString = cString;
     }
 
     public String getFormattedDomain() {
@@ -1093,10 +951,6 @@ public class ColumnData implements Serializable {
 
     public String getFormattedColumnName() {
         return getFormattedObject(columnName);
-    }
-
-    String getFormattedObject(String obj) {
-        return MiscUtils.getFormattedObject(obj);
     }
 
     public boolean isDescriptionAsSingleComment() {
@@ -1148,12 +1002,16 @@ public class ColumnData implements Serializable {
     }
 
     public void appendDimension(int orderNumber, int lowerBound, int upperBound) {
+
         if (dimensions == null)
             dimensions = new ArrayList<>();
+
         ColumnData.Dimension dimension = new ColumnData.Dimension(lowerBound, upperBound);
         if (orderNumber >= dimensions.size())
             dimensions.add(dimension);
-        else dimensions.add(orderNumber, dimension);
+        else
+            dimensions.add(orderNumber, dimension);
+
     }
 
     public List<ColumnData.Dimension> getDimensions() {
@@ -1164,18 +1022,33 @@ public class ColumnData implements Serializable {
         this.dimensions = dimensions;
     }
 
-    public List<Dimension> getDomainDimensions() {
-        return domainDimensions;
+    public int getColumnPosition() {
+        return columnPosition;
     }
 
-    public void setDomainDimensions(List<Dimension> domainDimensions) {
-        this.domainDimensions = domainDimensions;
+    public void setColumnPosition(int columnPosition) {
+        this.columnPosition = columnPosition;
     }
 
-    public class DefaultValue implements Serializable {
+    // ---
+
+    private String getFormattedObject(String obj) {
+        return MiscUtils.getFormattedObject(obj, dc);
+    }
+
+    @Override
+    public String toString() {
+        return columnName == null ? ColumnConstraint.EMPTY : columnName;
+    }
+
+    // ---
+
+    public static class DefaultValue implements Serializable {
+
         String originOperator;
         String value;
         boolean useQuotes = false;
+        boolean isDomain = false;
 
         public String getOriginOperator() {
             return originOperator;
@@ -1200,9 +1073,19 @@ public class ColumnData implements Serializable {
         public void setUseQuotes(boolean useQuotes) {
             this.useQuotes = useQuotes;
         }
-    }
+
+        public boolean isDomain() {
+            return isDomain;
+        }
+
+        public void setDomain(boolean domain) {
+            isDomain = domain;
+        }
+
+    } // DefaultValue class
 
     public static class Dimension {
+
         int lowerBound;
         int upperBound;
 
@@ -1211,26 +1094,6 @@ public class ColumnData implements Serializable {
             this.upperBound = upperBound;
         }
 
-        public int getLowerBound() {
-            return lowerBound;
-        }
+    } // Dimension class
 
-        public void setLowerBound(int lowerBound) {
-            this.lowerBound = lowerBound;
-        }
-
-        public int getUpperBound() {
-            return upperBound;
-        }
-
-        public void setUpperBound(int upperBound) {
-            this.upperBound = upperBound;
-        }
-    }
 }
-
-
-
-
-
-

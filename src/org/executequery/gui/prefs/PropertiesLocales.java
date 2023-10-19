@@ -160,6 +160,7 @@ public class PropertiesLocales extends AbstractPropertiesBasePanel
     public void valueChanged(ListSelectionEvent e) {
         selectedTimeZoneField.setText((String) timezoneList.getSelectedValue());
         selectedLocaleField.setText(locales[localeList.getSelectedIndex()].getDisplayName());
+        PropertiesPanel.setRestartNeed(true);
     }
 
     public void save() {

@@ -425,7 +425,6 @@ public class DarkBluerpleTheme extends DefaultMetalTheme {
                 "sqlsyntax.colour.multicomment", new ColorUIResource(-8355712),
                 "sqlsyntax.colour.keyword", new ColorUIResource(-3377102),
                 "editor.display.linehighlight.colour", new ColorUIResource(-13947600),
-                "editor.margin.colour", new ColorUIResource(-4144960),
                 "results.alternating.row.background", new ColorUIResource(-14803167),
                 "results.table.cell.background.colour", new ColorUIResource(-14803167),
                 "sqlsyntax.colour.dbobjects", new ColorUIResource(-6785366),

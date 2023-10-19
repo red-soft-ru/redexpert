@@ -20,7 +20,7 @@
 
 package org.underworldlabs.jdbc;
 
-import org.underworldlabs.util.Log;
+import org.executequery.log.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;

@@ -863,7 +863,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
                     int index = wordAtCursor.indexOf(".");
                     insertionIndex += index + 1;
                     wordAtCursorLength -= index + 1;
-                    selectedValue = MiscUtils.getFormattedObject(selectedValue);
+                    selectedValue = MiscUtils.getFormattedObject(selectedValue, connection);
                 }
 
                 document.remove(insertionIndex, wordAtCursorLength);
@@ -963,7 +963,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
             databaseHost = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(selectedConnection);
         }
-
+        autoCompleteListItems = new ArrayList<>();
         selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteSchema, sqlTextPane);
 
         return true;

@@ -33,10 +33,9 @@ import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
 import org.executequery.gui.*;
-import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.databaseobjects.CreateIndexPanel;
+import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.table.KeyCellRenderer;
@@ -656,19 +655,22 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     public void cleanup() {
-
+        super.cleanup();
         if (worker != null) {
 
             worker.interrupt();
             worker = null;
         }
+        if (tableDataPanel != null) {
+            tableDataPanel.closeResultSet();
+            tableDataPanel.cleanup();
+        }
 
-        tableDataPanel.closeResultSet();
-        referencesPanel.cleanup();
+        if (referencesPanel != null)
+            referencesPanel.cleanup();
         EventMediator.deregisterListener(this);
-        alterSqlText.cleanup();
-        createSqlText.cleanup();
     }
+
 
     @Override
     public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
@@ -1187,7 +1189,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             if (row >= 0) {
                 row = ((TableSorter) columnIndexTable.getModel()).modelIndex(row);
                 DefaultDatabaseIndex index = ((TableColumnIndexTableModel) ((TableSorter) columnIndexTable.getModel()).getTableModel()).getIndexes().get(row);
-                String query = "DROP INDEX " + MiscUtils.getFormattedObject(index.getName());
+                String query = "DROP INDEX " + MiscUtils.getFormattedObject(index.getName(), table.getHost().getDatabaseConnection());
                 ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, table.getHost().getDatabaseConnection(), true);
                 eqd.display();
                 if (eqd.getCommit())
@@ -1199,7 +1201,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             if (row >= 0) {
                 row = ((TableSorter) triggersTable.getModel()).modelIndex(row);
                 DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
-                String query = "DROP TRIGGER " + MiscUtils.getFormattedObject(trigger.getName());
+                String query = "DROP TRIGGER " + MiscUtils.getFormattedObject(trigger.getName(), table.getHost().getDatabaseConnection());
                 ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, table.getHost().getDatabaseConnection(), true);
                 eqd.display();
                 if (eqd.getCommit())
@@ -1229,7 +1231,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             dialog = new BaseDialog(CreateIndexPanel.CREATE_TITLE, true);
             panelForDialog = new CreateIndexPanel(table.getHost().getDatabaseConnection(), dialog, table.getName());
         } else if (tabIndex == TABLE_TRIGGERS_INDEX) {
-            dialog = new BaseDialog(CreateIndexPanel.CREATE_TITLE, true);
+            dialog = new BaseDialog(CreateTriggerPanel.CREATE_TITLE, true);
             panelForDialog = new CreateTriggerPanel(table.getHost().getDatabaseConnection(), dialog, DefaultDatabaseTrigger.TABLE_TRIGGER, table.getName());
         }
         dialog.addDisplayComponent(panelForDialog);
@@ -1244,7 +1246,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         StringBuilder sb = new StringBuilder();
         List<DefaultDatabaseIndex> indexes = table.getIndexes();
         for (DefaultDatabaseIndex node : indexes) {
-            sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName())).append(";\n");
+            sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName(), dc)).append(";\n");
             node.reset();
         }
         ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), sb.toString(), dc, true, ";", true, false);
@@ -1291,9 +1293,21 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     public void moveColumnUp() {
+        int tabIndex = tabPane.getSelectedIndex();
+        if (tabIndex == TABLE_COLUMNS_INDEX) {
+
+            descriptionTable.moveUpSelectedColumn();
+
+        }
     }
 
     public void moveColumnDown() {
+        int tabIndex = tabPane.getSelectedIndex();
+        if (tabIndex == TABLE_COLUMNS_INDEX) {
+
+            descriptionTable.moveDownSelectedColumn();
+
+        }
     }
 
     public ColumnData[] getTableColumnData() {
@@ -1365,6 +1379,26 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             }
         });
         bar.add(deleteRolloverButton);
+        RolloverButton moveUpButton = new RolloverButton();
+        moveUpButton.setIcon(GUIUtilities.loadIcon("Up16.png"));
+        moveUpButton.setToolTipText("Move up");
+        moveUpButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                moveColumnUp();
+            }
+        });
+        bar.add(moveUpButton);
+        RolloverButton moveDownButton = new RolloverButton();
+        moveDownButton.setIcon(GUIUtilities.loadIcon("Down16.png"));
+        moveDownButton.setToolTipText("Move down");
+        moveDownButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                moveColumnDown();
+            }
+        });
+        bar.add(moveDownButton);
         RolloverButton commitRolloverButton = new RolloverButton();
         commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
         commitRolloverButton.setToolTipText("Commit");
@@ -1390,7 +1424,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         rollbackRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                table.revert();
+                table.reset();
                 setValues(table);
             }
         });
@@ -1643,7 +1677,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             commentPanel.updateComment();
 
-            String query = "ALTER TABLE " + MiscUtils.getFormattedObject(table.getName());
+            String query = "ALTER TABLE " + MiscUtils.getFormattedObject(table.getName(), table.getHost().getDatabaseConnection());
             String noChangesCheckString = query;
 
             String sqlSecurity = (String) sqlSecurityComboBox.getSelectedItem();

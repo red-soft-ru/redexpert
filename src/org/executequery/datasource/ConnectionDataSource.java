@@ -45,8 +45,6 @@ import java.util.logging.Logger;
 @SuppressWarnings({"rawtypes"})
 public class ConnectionDataSource implements DataSource, DatabaseDataSource {
 
-    public static final int ODBC = 8;
-
     public static final String PORT = "[port]";
     public static final String SOURCE = "[source]";
     public static final String HOST = "[host]";
@@ -56,11 +54,6 @@ public class ConnectionDataSource implements DataSource, DatabaseDataSource {
     private static final String HOST_REGEX = "\\[host\\]";
 
     private static final Map<DatabaseDriver, Driver> loadedDrivers = new HashMap<DatabaseDriver, Driver>();
-
-    /**
-     * flag indicating whether we are using the ODBC bridge driver
-     */
-    protected boolean usingODBC;
 
     /**
      * the generated JDBC URL
@@ -134,11 +127,6 @@ public class ConnectionDataSource implements DataSource, DatabaseDataSource {
             driverLoaded = false;
             int driverType = databaseDriver.getType();
 
-            if (driverType == ODBC) {
-
-                usingODBC = true;
-            }
-
             jdbcUrl = databaseConnection.getURL();
 
             String connectionMethod = databaseConnection.getConnectionMethod();
@@ -183,7 +171,7 @@ public class ConnectionDataSource implements DataSource, DatabaseDataSource {
                 }
 
                 Log.info("JDBC URL generated: " + jdbcUrl);
-                Properties clone = (Properties)databaseConnection.getJdbcProperties().clone();
+                Properties clone = (Properties) databaseConnection.getJdbcProperties().clone();
                 if (clone.getProperty("isc_dpb_repository_pin") != null)
                     clone.setProperty("isc_dpb_repository_pin", "********");
                 Log.info("JDBC properties: " + clone);
@@ -203,28 +191,18 @@ public class ConnectionDataSource implements DataSource, DatabaseDataSource {
 
             Log.info("Loading JDBC driver class: " + driverName);
 
-            if (!usingODBC) {
 
-                String path = databaseDriver.getPath();
+            String path = databaseDriver.getPath();
 
-                if (!MiscUtils.isNull(path)) {
-                    URL[] urls = MiscUtils.loadURLs(path);
+            if (!MiscUtils.isNull(path)) {
+                URL[] urls = MiscUtils.loadURLs(path);
 
-                    /* Load the JDBC libraries and initialise the driver. */
-                    DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
-                    clazz = loader.loadLibrary(driverName);
+                /* Load the JDBC libraries and initialise the driver. */
+                DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
+                clazz = loader.loadLibrary(driverName);
 
-                } else {
-
-                    clazz = Class.forName(driverName, true,
-                            ClassLoader.getSystemClassLoader());
-                }
-
-            } else {
-
-                clazz = Class.forName(driverName, true,
-                        ClassLoader.getSystemClassLoader());
-            }
+            } else
+                clazz = Class.forName(driverName, true, ClassLoader.getSystemClassLoader());
 
             Object object = clazz.newInstance();
             driver = (Driver) object;

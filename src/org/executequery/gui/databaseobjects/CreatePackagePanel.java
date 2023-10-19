@@ -36,12 +36,11 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     }
 
     protected String generateQuery() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(headerPanel.getSQLText()).append("^\n");
-        sb.append(bodyPanel.getSQLText()).append("^\n");
-        sb.append(SQLUtils.generateComment(getFormattedName(), "PACKAGE",
-                simpleCommentPanel.getComment(), "^", true));
-        return sb.toString();
+        String sb = headerPanel.getSQLText() + "^\n" +
+                bodyPanel.getSQLText() + "^\n" +
+                SQLUtils.generateComment(getFormattedName(), "PACKAGE",
+                        simpleCommentPanel.getComment(), "^", true, getDatabaseConnection());
+        return sb;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package org.executequery.sql.sqlbuilder;
 
+import org.executequery.databasemediators.DatabaseConnection;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +19,12 @@ SelectBuilder extends SQLBuilder {
 
     String ordering;
 
-    public static SelectBuilder createSelectBuilder() {
-        return new SelectBuilder();
+    public SelectBuilder(DatabaseConnection databaseConnection) {
+        super(databaseConnection);
+    }
+
+    public static SelectBuilder createSelectBuilder(DatabaseConnection dc) {
+        return new SelectBuilder(dc);
     }
 
     public List<Table> getTables() {

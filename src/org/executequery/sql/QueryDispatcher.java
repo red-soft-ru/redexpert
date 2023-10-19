@@ -40,9 +40,9 @@ import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledResultSet;
 import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.profiler.DefaultProfilerExecutor;
 import org.executequery.gui.browser.profiler.ProfilerPanel;
-import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.editor.InputParametersDialog;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.editor.autocomplete.Parameter;
@@ -325,7 +325,7 @@ public class QueryDispatcher {
 
                     } else {
                         GUIUtilities.displayWarningMessage(Bundles.get(ProfilerPanel.class, "VersionNotSupported"));
-                        setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Action canceled, DB version in not supported");
+                        setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Action canceled, DB version is not supported");
                     }
 
                 } catch (SQLException ex) {
@@ -538,13 +538,13 @@ public class QueryDispatcher {
         before = null;
 
         waiting = false;
-        long totalDuration = 0l;
+        long totalDuration = 0L;
         querySender.setCloseConnectionAfterQuery(false);
 
         try {
 
-            long start = 0l;
-            long end = 0l;
+            long start = 0L;
+            long end = 0L;
 
             // check we are executing the whole block of sql text
             if (executeAsBlock) {
@@ -660,8 +660,8 @@ public class QueryDispatcher {
             }
 
             // reset clock
-            end = 0l;
-            start = 0l;
+            end = 0L;
+            start = 0L;
 
             String derivedQueryString = query.getDerivedQuery();
             String queryToExecute = removeQueryComments ? derivedQueryString : query.getOriginalQuery();
@@ -937,13 +937,13 @@ public class QueryDispatcher {
         after = null;
 
         waiting = false;
-        long totalDuration = 0l;
+        long totalDuration = 0L;
         querySender.setCloseConnectionAfterQuery(false);
 
         try {
 
-            long start = 0l;
-            long end = 0l;
+            long start = 0L;
+            long end = 0L;
 
             // check we are executing the whole block of sql text
 

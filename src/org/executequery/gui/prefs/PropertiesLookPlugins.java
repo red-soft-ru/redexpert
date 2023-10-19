@@ -269,6 +269,7 @@ public class PropertiesLookPlugins extends JPanel
 
     @Override
     public void preferenceChange(PreferenceChangeEvent e) {
+        PropertiesPanel.checkAndSetRestartNeed(e.getKey());
     }
 
     @Override

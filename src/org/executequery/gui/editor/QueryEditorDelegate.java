@@ -22,6 +22,7 @@ package org.executequery.gui.editor;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.log.Log;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.SqlCommandHistoryRepository;
 import org.executequery.sql.QueryDelegate;
@@ -249,17 +250,14 @@ public class QueryEditorDelegate implements QueryDelegate {
         dispatcher.interruptStatement();
     }
 
+    @Override
     public boolean isLogEnabled() {
-
-        return OutputLogger.isLogEnabled();
+        return true;
     }
 
+    @Override
     public void log(String message) {
-
-        if (isLogEnabled()) {
-
-            OutputLogger.info(message);
-        }
+        Log.info(message);
     }
 
     public void setOutputMessage(int type, String text) {

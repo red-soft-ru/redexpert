@@ -436,7 +436,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
 
         return SQLUtils.generateCreateTriggerStatement(nameField.getText(), table, activeBox.isSelected(),
                 triggerType.toString(), (int) positionField.getValue(), sqlBodyText.getSQLText(), engine, external,
-                (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment(), false);
+                (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment(), false, getDatabaseConnection());
     }
 
     private void generateScript() {

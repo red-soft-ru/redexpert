@@ -319,8 +319,11 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
             pp.setEncoding(characterSet.trim());
         pp.setDefaultValue(rs.getString(prefixLabel() + DEFAULT_SOURCE));
-        if (pp.getDefaultValue() == null)
+        if (pp.getDefaultValue() == null) {
             pp.setDefaultValue(rs.getString(DEFAULT_SOURCE));
+            if (pp.getDomain() != null)
+                pp.setDefaultValueFromDomain(true);
+        }
         return pp;
     }
 

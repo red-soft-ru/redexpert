@@ -123,11 +123,11 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
             return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(),
                     vars, returnType, sqlBodyText.getSQLText(),
                     externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
-                    simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected());
+                    simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected(), connection);
         } else {
             return SQLUtils.generateCreateFunction(nameField.getText(), inputParametersPanel.getProcedureParameterModel().getTableVector(), returnType, sqlBodyText.getSQLText(),
                     externalField.getText(), engineField.getText(), (String) sqlSecurityCombo.getSelectedItem(),
-                    simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected());
+                    simpleCommentPanel.getComment(), false, true, deterministicBox.isSelected(), connection);
         }
     }
 

@@ -198,7 +198,7 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("UDF", getName());
+        return SQLUtils.generateDefaultDropQuery("UDF", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -221,7 +221,7 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
     protected SelectBuilder builderCommonQuery() {
 
 
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table functions = getMainTable();
         Table arguments = Table.createTable("RDB$FUNCTION_ARGUMENTS", "FA");
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CR");

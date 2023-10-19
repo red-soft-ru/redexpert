@@ -101,18 +101,18 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), getRemarks());
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("PACKAGE", getName());
+        return SQLUtils.generateDefaultDropQuery("PACKAGE", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
         String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
-        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), comment);
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), comment, getHost().getDatabaseConnection());
     }
 
     @Override
@@ -139,7 +139,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table packages = getMainTable();
         sb.appendFields(packages, getFieldName(), PACKAGE_HEADER_SOURCE, PACKAGE_BODY_SOURCE, VALID_BODY_FLAG,
                 SECURITY_CLASS, OWNER_NAME, SYSTEM_FLAG, DESCRIPTION);

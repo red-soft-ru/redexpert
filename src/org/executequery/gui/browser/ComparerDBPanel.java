@@ -14,7 +14,6 @@ import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.DifferenceSqlTextPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
-import org.executequery.localization.LocaleManager;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -55,6 +54,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private static final int CHECK_DROP = 2;
     private static final int IGNORE_COMMENTS = 3;
     private static final int IGNORE_COMPUTED_FIELDS = 4;
+    private static final int IGNORE_FIELDS_POSITIONS = 5;
     private static final int IGNORE_PK = 50;
     private static final int IGNORE_FK = IGNORE_PK + 1;
     private static final int IGNORE_UK = IGNORE_FK + 1;
@@ -78,6 +78,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private JButton executeScriptButton;
     private JButton selectAllAttributesButton;
     private JButton selectAllPropertiesButton;
+    private JButton switchTargetSourceButton;
 
     private JTabbedPane tabPane;
     private LoggingOutputPanel loggingOutputPanel;
@@ -165,12 +166,21 @@ public class ComparerDBPanel extends JPanel implements TabView {
         selectAllPropertiesButton.setText(bundleString("SelectAllButton"));
         selectAllPropertiesButton.addActionListener(e -> selectAll("properties"));
 
+        switchTargetSourceButton = new JButton();
+        switchTargetSourceButton.setText("<html><p style=\"font-size:20pt\">&#x21C5;</p>"); // Unicode Character '⇅' (U+21C5)
+        switchTargetSourceButton.addActionListener(e -> switchTargetSource());
+
         // --- attributes checkBox defining ---
 
         attributesCheckBoxMap = new HashMap<>();
-        for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++)
-            attributesCheckBoxMap.put(objectType,
-                    new JCheckBox(Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType])));
+        for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++) {
+
+            String checkBoxText = bundleString(NamedObject.META_TYPES_FOR_BUNDLE[objectType]);
+            if (checkBoxText.isEmpty())
+                checkBoxText = Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType]);
+
+            attributesCheckBoxMap.put(objectType, new JCheckBox(checkBoxText));
+        }
 
         // --- properties checkBox defining ---
 
@@ -180,6 +190,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         propertiesCheckBoxMap.put(CHECK_DROP, new JCheckBox(bundleString("CheckDrop")));
         propertiesCheckBoxMap.put(IGNORE_COMMENTS, new JCheckBox(bundleString(("IgnoreComments"))));
         propertiesCheckBoxMap.put(IGNORE_COMPUTED_FIELDS, new JCheckBox(bundleString(("IgnoreComputed"))));
+        propertiesCheckBoxMap.put(IGNORE_FIELDS_POSITIONS, new JCheckBox(bundleString(("IgnorePositions"))));
         propertiesCheckBoxMap.put(IGNORE_PK, new JCheckBox(bundleString("IgnorePK")));
         propertiesCheckBoxMap.put(IGNORE_FK, new JCheckBox(bundleString("IgnoreFK")));
         propertiesCheckBoxMap.put(IGNORE_UK, new JCheckBox(bundleString("IgnoreUK")));
@@ -242,6 +253,18 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         GridBagHelper gridBagHelper;
 
+        // --- connections selector panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+
+        JPanel connectionsSelectorPanel = new JPanel(new GridBagLayout());
+
+        gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
+                bundleString("CompareDatabaseLabel"), dbTargetComboBox, null);
+        gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
+                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
+
         // --- connections panel ---
 
         gridBagHelper = new GridBagHelper();
@@ -250,11 +273,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
         JPanel connectionsPanel = new JPanel(new GridBagLayout());
         connectionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ConnectionsLabel")));
 
-        gridBagHelper.addLabelFieldPair(connectionsPanel,
-                bundleString("CompareDatabaseLabel"), dbTargetComboBox, null);
-        gridBagHelper.addLabelFieldPair(connectionsPanel,
-                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
-        connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().get());
+        connectionsPanel.add(connectionsSelectorPanel, gridBagHelper.setMaxWeightX().get());
+        connectionsPanel.add(switchTargetSourceButton, gridBagHelper.nextCol().setMinWeightX().fillVertical().get());
+        connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().setWidth(2).fillHorizontally().get());
 
         // --- attributes panel ---
 
@@ -380,7 +401,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
                         !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
                 },
                 !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
-                !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected()
+                !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
+                !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
         );
 
         loggingOutputPanel.clear();
@@ -747,6 +769,12 @@ public class ComparerDBPanel extends JPanel implements TabView {
             checkBox.setSelected(!curFlag);
         }
 
+    }
+
+    private void switchTargetSource() {
+        Object sourceConnection = dbMasterComboBox.getSelectedItem();
+        dbMasterComboBox.setSelectedItem(dbTargetComboBox.getSelectedItem());
+        dbTargetComboBox.setSelectedItem(sourceConnection);
     }
 
     @Override

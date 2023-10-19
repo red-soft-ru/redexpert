@@ -227,12 +227,12 @@ public class AutoIncrementPanel extends JPanel {
                 autoincrement.setCreateTrigger(createTriggerBox.isSelected());
                 triggerScroll.setVisible(autoincrement.isCreateTrigger());
                 if (autoincrement.isCreateTrigger()) {
-                    String sql = "CREATE TRIGGER " + MiscUtils.getFormattedObject(tableName + "_BI") + " FOR " + MiscUtils.getFormattedObject(tableName) + "\n" +
+                    String sql = "CREATE TRIGGER " + MiscUtils.getFormattedObject(tableName + "_BI", connection) + " FOR " + MiscUtils.getFormattedObject(tableName, connection) + "\n" +
                             "ACTIVE BEFORE INSERT POSITION 0\n" +
                             "AS\n" +
                             "BEGIN\n" +
-                            "IF (NEW." + MiscUtils.getFormattedObject(autoincrement.getFieldName()) + " IS NULL) THEN\n" +
-                            "NEW." + MiscUtils.getFormattedObject(autoincrement.getFieldName()) + " = GEN_ID(" + MiscUtils.getFormattedObject(autoincrement.getGeneratorName()) + ",1);\n" +
+                            "IF (NEW." + MiscUtils.getFormattedObject(autoincrement.getFieldName(), connection) + " IS NULL) THEN\n" +
+                            "NEW." + MiscUtils.getFormattedObject(autoincrement.getFieldName(), connection) + " = GEN_ID(" + MiscUtils.getFormattedObject(autoincrement.getGeneratorName(), connection) + ",1);\n" +
                             "END";
                     triggerSQLPane.setText(sql);
                 }
@@ -387,9 +387,9 @@ public class AutoIncrementPanel extends JPanel {
         String sql = "";
         getStartValue();
         if (autoincrement.isCreateGenerator()) {
-            sql += "\nCREATE SEQUENCE " + MiscUtils.getFormattedObject(autoincrement.getGeneratorName()) + "^";
+            sql += "\nCREATE SEQUENCE " + MiscUtils.getFormattedObject(autoincrement.getGeneratorName(), connection) + "^";
             if (autoincrement.getStartValue() != 0)
-                sql += "\nALTER SEQUENCE " + MiscUtils.getFormattedObject(autoincrement.getGeneratorName()) +
+                sql += "\nALTER SEQUENCE " + MiscUtils.getFormattedObject(autoincrement.getGeneratorName(), connection) +
                         " RESTART WITH " + autoincrement.getStartValue() + "^";
         }
         if (autoincrement.isCreateTrigger()) {

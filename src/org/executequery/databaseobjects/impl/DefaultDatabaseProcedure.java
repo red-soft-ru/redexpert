@@ -100,7 +100,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName());
+        return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -137,7 +137,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = SelectBuilder.createSelectBuilder();
+        SelectBuilder sb = SelectBuilder.createSelectBuilder(getHost().getDatabaseConnection());
         Table procedures = getMainTable();
         Table parameters = Table.createTable("RDB$PROCEDURE_PARAMETERS", "PP");
         Table fields = Table.createTable("RDB$FIELDS", "F");

@@ -129,7 +129,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("FUNCTION", getName());
+        return SQLUtils.generateDefaultDropQuery("FUNCTION", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -174,7 +174,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = SelectBuilder.createSelectBuilder();
+        SelectBuilder sb = SelectBuilder.createSelectBuilder(getHost().getDatabaseConnection());
         Table functions = getMainTable();
         Table arguments = Table.createTable("RDB$FUNCTION_ARGUMENTS", "FA");
         Table fields = Table.createTable("RDB$FIELDS", "F");

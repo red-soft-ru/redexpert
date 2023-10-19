@@ -656,6 +656,8 @@ public class UpdateLoader extends JFrame {
         updateLoader.replaceFiles();
         if (launch)
             updateLoader.launch();
+        else
+            ExecuteQuery.stop();
     }
 
 }

@@ -31,7 +31,6 @@ import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.sql.SqlMessages;
 import org.executequery.util.UserProperties;
-import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -70,7 +69,6 @@ public class QueryEditorTextPane extends SQLTextArea
      */
     private final QueryEditorTextPanel editorPanel;
     private Map<String, EditorSQLShortcut> editorShortcuts;
-    private boolean isCtrlPressed = false;
 
     public QueryEditorTextPane(QueryEditorTextPanel editorPanel) {
         super(false);
@@ -1052,33 +1050,9 @@ public class QueryEditorTextPane extends SQLTextArea
 
             } else if (keyCode == KeyEvent.VK_SPACE) {
                 checkForShortcutText();
-
-            } else if (e.isControlDown()) {
-
-                isCtrlPressed = true;
-                SwingWorker worker = new SwingWorker("query editor cursor changer") {
-                    @Override
-                    public Object construct() {
-
-                        while (isCtrlPressed) {
-                            if (editorPanel.getQueryArea().isHyperlinkHovered())
-                                GUIUtilities.showHandCursor(editorPanel.getQueryArea());
-                            else
-                                GUIUtilities.showTextCursor(editorPanel.getQueryArea());
-                        }
-
-                        GUIUtilities.showTextCursor(editorPanel.getQueryArea());
-                        return null;
-                    }
-                };
-                worker.start();
-
             }
 
         }
-
-        if (e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_CONTROL)
-            isCtrlPressed = false;
 
         super.processKeyEvent(e);
     }

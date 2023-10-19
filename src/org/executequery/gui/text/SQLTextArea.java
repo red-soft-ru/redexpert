@@ -33,6 +33,8 @@ import javax.swing.text.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.print.Printable;
 import java.util.ArrayList;
@@ -41,7 +43,10 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentListener {
+public class SQLTextArea extends RSyntaxTextArea
+        implements TextEditor,
+        DocumentListener,
+        KeyListener {
 
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
     private static final String FIND_ACTION_KEY = "findActionKey";
@@ -54,6 +59,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
     protected SQLSyntaxDocument document;
     boolean changed = false;
     boolean autocompleteOnlyHotKey = true;
+    private boolean isCtrlPressed = false;
 
     private boolean doCaretUpdate;
 
@@ -316,19 +322,20 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
         lineBorder.updatePreferences(QueryEditorSettings.getEditorFont());
         lineBorder.repaint();
         caretPositionLabel = new JLabel();
-        addCaretListener(new CaretListener() {
-            @Override
-            public void caretUpdate(CaretEvent e) {
-                int currentPosition = getCaretPosition();
 
-                Element map = getElementMap();
-                int row = map.getElementIndex(currentPosition);
+        addCaretListener(e -> {
 
-                Element lineElem = map.getElement(row);
-                int col = currentPosition - lineElem.getStartOffset();
-                setCaretPosition(row+1,col+1);
-            }
+            int currentPosition = getCaretPosition();
+
+            Element map = getElementMap();
+            int row = map.getElementIndex(currentPosition);
+
+            Element lineElem = map.getElement(row);
+            int col = currentPosition - lineElem.getStartOffset();
+            setCaretPosition(row+1,col+1);
         });
+
+        addKeyListener(this);
         setEditorPreferences();
     }
 
@@ -735,6 +742,42 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
         }
     }
 
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+        if (e.isControlDown()) {
+
+            isCtrlPressed = true;
+            SwingWorker worker = new SwingWorker("query editor cursor changer") {
+                @Override
+                public Object construct() {
+
+                    while (isCtrlPressed) {
+                        if (isHyperlinkHovered())
+                            GUIUtilities.showHandCursor(getEditorTextComponent());
+                        else
+                            GUIUtilities.showTextCursor(getEditorTextComponent());
+                    }
+
+                    GUIUtilities.showTextCursor(getEditorTextComponent());
+                    return null;
+                }
+            };
+            worker.start();
+
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_CONTROL)
+            isCtrlPressed = false;
+    }
+
     class CommentAction extends RecordableTextAction {
 
 
@@ -1024,6 +1067,8 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor,DocumentL
                     dialog.addDisplayComponent(panel);
                     dialog.display();
                 }
+
+                isCtrlPressed = false;
             }
         }
 

@@ -104,7 +104,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 type = NamedObject.META_TYPES[NamedObject.TRIGGER];
             else
                 type = NamedObject.META_TYPES[node.getType()];
-            String query = "DROP " + type + " " + MiscUtils.getFormattedObject(node.getName());
+            String query = "DROP " + type + " " + MiscUtils.getFormattedObject(node.getName(), currentSelection);
             ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, currentSelection, true);
             eqd.display();
             if (eqd.getCommit())
@@ -1119,7 +1119,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         DatabaseConnection dc = currentSelection;
         DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
         if (databaseObjectNode.getDatabaseObject() instanceof DefaultDatabaseIndex) {
-            String query = "SET STATISTICS INDEX " + MiscUtils.getFormattedObject(databaseObjectNode.getName()) + ";";
+            String query = "SET STATISTICS INDEX " + MiscUtils.getFormattedObject(databaseObjectNode.getName(), dc) + ";";
             ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), query, dc, true, ";", false, false);
             eqd.display();
             databaseObjectNode.getDatabaseObject().reset();
@@ -1135,7 +1135,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         if (databaseObjectNode != null && GUIUtilities.displayConfirmDialog(bundledString("recompute-message")) == JOptionPane.YES_OPTION) {
             StringBuilder sb = new StringBuilder();
             for (DatabaseObjectNode node : databaseObjectNode.getChildObjects()) {
-                sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName())).append(";\n");
+                sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName(), dc)).append(";\n");
                 node.getDatabaseObject().reset();
             }
             ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), sb.toString(), dc, true, ";", true, false);

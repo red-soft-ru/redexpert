@@ -26,9 +26,9 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledStatement;
+import org.executequery.log.Log;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.Log;
 import org.underworldlabs.util.MiscUtils;
 
 import java.sql.*;
@@ -116,6 +116,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     protected static final String ENTRYPOINT = "ENTRYPOINT";
     protected static final String SQL_SECURITY = "SQL_SECURITY";
     protected static final String DIMENSIONS = "DIMENSIONS";
+    protected static final String DIMENSION = "DIMENSION";
+    protected static final String LOWER_BOUND = "LOWER_BOUND";
+    protected static final String UPPER_BOUND = "UPPER_BOUND";
     protected static final String DEFAULT_COLLATE_NAME = "DEFAULT_COLLATE_NAME";
     protected boolean fullLoadCols = false;
 
@@ -684,7 +687,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     public SelectBuilder getBuilderForCons(boolean allTables) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table relations = getMainTable();
         Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
         Table constraints1 = Table.createTable("RDB$RELATION_CONSTRAINTS", "RCO");
@@ -716,6 +719,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         sb.appendField(Field.createField().setNull(true).setAlias(FIELD_SOURCE));
         sb.appendField(Field.createField().setNull(true).setAlias(DESCRIPTION));
         sb.appendField(Field.createField().setNull(true).setAlias(IDENTITY_TYPE));
+        sb.appendField(Field.createField().setNull(true).setAlias(DIMENSION));
+        sb.appendField(Field.createField().setNull(true).setAlias(LOWER_BOUND));
+        sb.appendField(Field.createField().setNull(true).setAlias(UPPER_BOUND));
         Field fieldPosition = Field.createField(relationFields, FIELD_POSITION);
         fieldPosition.setStatement(fieldPosition.getFieldTable() + " + 1");
         sb.appendField(fieldPosition);
@@ -749,12 +755,13 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     public SelectBuilder getBuilderForCols(boolean allTables) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table relations = getMainTable();
         Table relationFields = Table.createTable("RDB$RELATION_FIELDS", "RF");
         Table fields = Table.createTable("RDB$FIELDS", "F");
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CH");
         Table collations = Table.createTable("RDB$COLLATIONS", "CO");
+        Table dimensions = Table.createTable("RDB$FIELD_DIMENSIONS", "FD");
         Field relName = Field.createField(relationFields, RELATION_NAME);
         sb.appendField(relName);
         Field fieldName = Field.createField(relationFields, FIELD_NAME);
@@ -779,6 +786,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         sb.appendField(fieldSource);
         sb.appendField(Field.createField(relationFields, DESCRIPTION));
         sb.appendField(Field.createField(relationFields, IDENTITY_TYPE).setNull(getDatabaseMajorVersion() < 3));
+        sb.appendField(Field.createField(dimensions, DIMENSION));
+        sb.appendField(Field.createField(dimensions, LOWER_BOUND));
+        sb.appendField(Field.createField(dimensions, UPPER_BOUND));
         Field fieldPosition = Field.createField(relationFields, FIELD_POSITION);
         fieldPosition.setStatement(fieldPosition.getFieldTable() + " + 1");
         sb.appendField(fieldPosition);
@@ -797,14 +807,16 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                         Field.createField(collations, CHARACTER_SET_ID))
                 .appendFields(Field.createField(fields, "COLLATION_ID"),
                         Field.createField(collations, "COLLATION_ID")));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, FIELD_NAME),
+                Field.createField(dimensions, FIELD_NAME)));
         if (allTables)
             sb = builderForInfoAllObjects(sb);
         return sb;
     }
 
     public SelectBuilder getBuilderLoadColsCommon(boolean allTables) {
-        SelectBuilder sb = new SelectBuilder();
-        sb.appendTable(Table.createTable().setStatement(new SelectBuilder().appendSelectBuilder(getBuilderForCols(allTables)).appendSelectBuilder(getBuilderForCons(allTables)).getSQLQuery()));
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
+        sb.appendTable(Table.createTable().setStatement(new SelectBuilder(getHost().getDatabaseConnection()).appendSelectBuilder(getBuilderForCols(allTables)).appendSelectBuilder(getBuilderForCons(allTables)).getSQLQuery()));
         sb.setOrdering(RELATION_NAME + ", " + FIELD_POSITION + ", " + FIELD_TYPE + " NULLS LAST");
         return sb;
     }
@@ -917,7 +929,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             final short fieldScale = rs.getShort(FIELD_SCALE);
             final int characterSetId = rs.getInt(CHARACTER_SET_ID);
             final int dataType = DefaultDatabaseHost.getDataType(fieldType, fieldSubType, fieldScale, characterSetId);
-
+            column.setPosition(rs.getInt(FIELD_POSITION));
             column.setTypeInt(dataType);
             column.setColumnSubtype(fieldSubType);
             column.setColumnScale(fieldScale);
@@ -1036,6 +1048,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 column.setColumnSize(rs.getInt(SEGMENT_LENGTH));
             }
             preColumns.add(column);
+        }
+        if (rs.getObject(DIMENSION) != null) {
+            previousColumn.appendDimension(rs.getInt(DIMENSION), rs.getInt(LOWER_BOUND), rs.getInt(UPPER_BOUND));
         }
         String conType = rs.getString(CONSTRAINT_TYPE);
         if (conType != null) {

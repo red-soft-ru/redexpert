@@ -16,8 +16,9 @@ public class CustomToken implements Token {
     private TokenSource tokenSource;
     private CharStream inputStream;
 
-    public CustomToken(Token token)
-    {
+    private String tableNameForAlias;
+
+    public CustomToken(Token token) {
         setText(token.getText());
         setType(token.getType());
         setLine(token.getLine());
@@ -28,6 +29,9 @@ public class CustomToken implements Token {
         setStopIndex(token.getStopIndex());
         setTokenSource(token.getTokenSource());
         setInputStream(token.getInputStream());
+        if (token instanceof CustomToken) {
+            setTableNameForAlias(((CustomToken) token).getTableNameForAlias());
+        }
     }
 
     @Override
@@ -118,5 +122,13 @@ public class CustomToken implements Token {
 
     public void setInputStream(CharStream inputStream) {
         this.inputStream = inputStream;
+    }
+
+    public String getTableNameForAlias() {
+        return tableNameForAlias;
+    }
+
+    public void setTableNameForAlias(String tableNameForAlias) {
+        this.tableNameForAlias = tableNameForAlias;
     }
 }

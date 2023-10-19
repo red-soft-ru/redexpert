@@ -224,65 +224,74 @@ public class CheckForUpdateNotifier implements Interruptible {
                 @Override
                 public Object construct() {
 
-                    updateLoader.setReleaseHub(releaseHub);
-                    List<String> argsList = new ArrayList<>();
-                    if (releaseHub)
-                        argsList.add("useReleaseHub");
-                    else if (ReddatabaseAPI.getHeadersWithToken() == null)
-                        return Constants.WORKER_CANCEL;
+                    try {
 
-                    String version = bundledString("Version") + "=" + updateLoader.getVersion();
-                    argsList.add(version);
+                        updateLoader.setReleaseHub(releaseHub);
+                        List<String> argsList = new ArrayList<>();
+                        if (releaseHub)
+                            argsList.add("useReleaseHub");
+                        else if (ReddatabaseAPI.getHeadersWithToken() == null)
+                            return Constants.WORKER_CANCEL;
 
-                    ApplicationContext instance = ApplicationContext.getInstance();
-                    String repo = instance.getRepo();
-                    if(!repo.isEmpty()) {
-                        repo = "-repo=" + instance.getRepo();
-                        argsList.add(repo);
-                    }
+                        String version = bundledString("Version") + "=" + updateLoader.getVersion();
+                        argsList.add(version);
 
-                    if (!updateLoader.canDownload(true)) {
-                        setDownloadNotifierInStatusBar();
-                        return Constants.WORKER_CANCEL;
-                    }
+                        ApplicationContext instance = ApplicationContext.getInstance();
+                        String repo = instance.getRepo();
+                        if (!repo.isEmpty()) {
+                            repo = "-repo=" + instance.getRepo();
+                            argsList.add(repo);
+                        }
 
-                    JProgressBar progressbar = new JProgressBar();
-                    updateLoader.setProgressBar(progressbar);
-                    statusBar().addComponent(progressbar, LABEL_INDEX);
+                        if (!updateLoader.canDownload(true)) {
+                            setDownloadNotifierInStatusBar();
+                            return Constants.WORKER_CANCEL;
+                        }
 
-                    updateLoader.downloadUpdate();
-                    updateLoader.unzipLocale();
+                        JProgressBar progressbar = new JProgressBar();
+                        updateLoader.setProgressBar(progressbar);
+                        statusBar().addComponent(progressbar, LABEL_INDEX);
 
-                    argsList.add("-root=" + updateLoader.getRoot());
-                    if (GUIUtilities.displayYesNoDialog(bundledString("restart.message"), bundledString("restart.message.title")) == JOptionPane.YES_OPTION) {
-                        String[] args = argsList.toArray(new String[0]);
-                        String[] run;
+                        updateLoader.downloadUpdate();
+                        updateLoader.unzipLocale();
+
+                        boolean restartNow = GUIUtilities.displayYesNoDialog(
+                                bundledString("restart.message"),
+                                bundledString("restart.message.title")
+                        ) == JOptionPane.YES_OPTION;
+
+                        argsList.add("-root=" + updateLoader.getRoot());
+                        argsList.add("-launch=" + restartNow);
+
                         File file = new File("RedExpert.jar");
                         if (!file.exists())
                             file = new File("../RedExpert.jar");
-                        run = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
-                        run = (String[]) ArrayUtils.addAll(run, args);
-                        try {
-                            File outputLog = new File(ApplicationContext.getInstance().getUserSettingsHome() + System.getProperty("file.separator") + "updater.log");
-                            ProcessBuilder pb = new ProcessBuilder(run);
-                            pb.redirectOutput(ProcessBuilder.Redirect.appendTo(outputLog));
-                            pb.redirectError(ProcessBuilder.Redirect.appendTo(outputLog));
-                            pb.start();
 
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            GUIUtilities.displayExceptionErrorDialog("update error", ex);
-                        }
-                        System.exit(0);
+                        String[] updaterArguments = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
+                        updaterArguments = (String[]) ArrayUtils.addAll(updaterArguments, argsList.toArray(new String[0]));
+
+                        File outputLog = new File(ApplicationContext.getInstance().getUserSettingsHome() + System.getProperty("file.separator") + "updater.log");
+
+                        ProcessBuilder updateProcessBuilder = new ProcessBuilder(updaterArguments);
+                        updateProcessBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(outputLog));
+                        updateProcessBuilder.redirectError(ProcessBuilder.Redirect.appendTo(outputLog));
+                        ExecuteQuery.setShutdownHook(updateProcessBuilder);
+
+                        if (restartNow)
+                            ExecuteQuery.stop();
+                        else
+                            GUIUtilities.displayInformationMessage(bundledString("restart.message.postpone"));
+
+                        return Constants.WORKER_SUCCESS;
+
+                    } catch (Exception e) {
+                        GUIUtilities.displayExceptionErrorDialog("Update error", e);
+                        return Constants.WORKER_CANCEL;
                     }
-
-                    return Constants.WORKER_SUCCESS;
                 }
-
             };
             worker.start();
         }
-
     }
 
     private void resetLabel(MouseListener listener) {

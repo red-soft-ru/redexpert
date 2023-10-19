@@ -34,11 +34,16 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseDriverRepository;
+import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
+import org.executequery.repository.spi.KeywordRepositoryImpl;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.tree.TreeNode;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.TreeSet;
+import java.util.UUID;
 
 /**
  * <p>This class maintains the necessary information for each
@@ -101,17 +106,17 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     private String url;
 
     /**
-     * The unique name of the JDBC/ODBC driver used with this connection
+     * The unique name of the JDBC driver used with this connection
      */
     private String driverName;
 
     /**
-     * The unique ID of the JDBC/ODBC driver used with this connection
+     * The unique ID of the JDBC driver used with this connection
      */
     private long driverId;
 
     /**
-     * The JDBC/ODBC Driver used with this connection
+     * The JDBC Driver used with this connection
      */
     private DatabaseDriver driver;
 
@@ -193,7 +198,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     private transient PasswordEncoderDecoder encoderDecoder;
 
-    private int serverVersion;
+    TreeSet<String> keywords;
+    String serverName;
 
     private boolean namesToUpperCase = true;
 
@@ -201,6 +207,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     String[] dataTypesArray;
     int[] intDataTypesArray;
+    private int majorServerVersion;
+    private int minorServerVersion;
 
 
     @Override
@@ -616,8 +624,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         copy.setContainerPasswordStored(isContainerPasswordStored());
         copy.setVerifyServerCertCheck(isVerifyServerCertCheck());
         copy.setUseNewAPI(useNewAPI());
-        copy.setServerVersion(getServerVersion());
-
+        copy.setMajorServerVersion(getMajorServerVersion());
+        copy.setMinorServerVersion(getMinorServerVersion());
         return copy;
     }
 
@@ -741,13 +749,21 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     }
 
     @Override
-    public int getServerVersion() {
-        return serverVersion;
+    public int getMajorServerVersion() {
+        return majorServerVersion;
     }
 
     @Override
-    public void setServerVersion(int serverVersion) {
-        this.serverVersion = serverVersion;
+    public void setMajorServerVersion(int serverVersion) {
+        this.majorServerVersion = serverVersion;
+    }
+
+    public int getMinorServerVersion() {
+        return minorServerVersion;
+    }
+
+    public void setMinorServerVersion(int minorServerVersion) {
+        this.minorServerVersion = minorServerVersion;
     }
 
     private void addingChild(TreeSet<String> list, DatabaseObjectNode root) {
@@ -810,6 +826,28 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     public void setDBCharset(String dBCharset) {
         this.dBCharset = dBCharset;
+    }
+
+    public String getServerName() {
+        return serverName;
+    }
+
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
+    }
+
+    @Override
+    public TreeSet<String> getKeywords() {
+        if (keywords == null) {
+            keywords = new TreeSet<String>();
+            keywords.addAll(keywords().getServerKeywords(getMajorServerVersion(), getMinorServerVersion(), getServerName()));
+        }
+        return keywords;
+    }
+
+    private KeywordRepository keywords() {
+
+        return new KeywordRepositoryImpl();
     }
 
     private static final long serialVersionUID = 950081216942320441L;

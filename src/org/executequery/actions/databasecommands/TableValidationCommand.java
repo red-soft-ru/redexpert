@@ -83,7 +83,7 @@ public class TableValidationCommand extends OpenFrameCommand
     private void showPanel(TableValidationPanel tableValidationPanel) {
 
         if (isActionableDialogOpen()) {
-            GUIUtilities.acionableDialogToFront();
+            GUIUtilities.actionableDialogToFront();
             return;
         }
 

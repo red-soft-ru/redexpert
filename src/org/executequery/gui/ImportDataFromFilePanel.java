@@ -467,7 +467,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             if (dataFromTableVector.get(i).get(2) != NOTHING_HEADER && dataFromTableVector.get(i).get(2) != null) {
 
-                targetColumnList.append(MiscUtils.getFormattedObject(dataFromTableVector.get(i).get(0).toString()));
+                targetColumnList.append(MiscUtils.getFormattedObject(dataFromTableVector.get(i).get(0).toString(), executor.getDatabaseConnection()));
                 sourceColumnList.append(dataFromTableVector.get(i).get(2).toString());
 
                 targetColumnList.append(",");
@@ -494,7 +494,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         StringBuilder insertPattern = new StringBuilder();
         insertPattern.append("INSERT INTO ");
         insertPattern.append(MiscUtils.getFormattedObject(
-                Objects.requireNonNull(tableCombo.getSelectedItem()).toString()));
+                Objects.requireNonNull(tableCombo.getSelectedItem()).toString(), executor.getDatabaseConnection()));
         insertPattern.append(" (");
         insertPattern.append(targetColumnList);
         insertPattern.append(") VALUES (");
@@ -596,7 +596,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             if (sourceFileStatement == null)
                 return;
 
-            String SQLSourceRequest = "SELECT " + sourceColumnList.toString() + " FROM " + MiscUtils.getFormattedObject(sourceFileName);
+            String SQLSourceRequest = "SELECT " + sourceColumnList.toString() + " FROM " + MiscUtils.getFormattedObject(sourceFileName, executor.getDatabaseConnection());
             ResultSet sourceFileData = sourceFileStatement.executeQuery(SQLSourceRequest);
 
             String[] sourceFields = sourceColumnList.toString().split(",");

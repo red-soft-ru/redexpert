@@ -113,6 +113,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setIdentity(column.isIdentity());
         setCharset(column.getCharset());
         setCollate(column.getCollate());
+        setDimensions(column.getDimensions());
+        setPosition(column.getPosition());
     }
 
     @Override
@@ -138,7 +140,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
     public String getNameEscaped() {
 
-        return MiscUtils.getFormattedObject(getName());
+        return MiscUtils.getFormattedObject(getName(), getTable().getHost().getDatabaseConnection());
     }
 
     /**
@@ -173,6 +175,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
                     || isComputedChanged()
                     || isDescriptionChanged()
                     || isDomainChanged()
+                    || isPositionChanged()
             );
         }
     }
@@ -363,6 +366,16 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         }
 
         return !copy.getDomain().equalsIgnoreCase(getDomain());
+    }
+
+    public boolean isPositionChanged() {
+
+        if (!hasCopy()) {
+
+            return false;
+        }
+
+        return copy.getPosition() != getPosition();
     }
 
     private boolean hasCopy() {
@@ -706,6 +719,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         destination.setDomain(source.getDomain());
         destination.setCharset(source.getCharset());
         destination.setCollate(source.getCollate());
+        destination.setDimensions(source.getDimensions());
+        destination.setPosition(source.getPosition());
     }
 
     /**

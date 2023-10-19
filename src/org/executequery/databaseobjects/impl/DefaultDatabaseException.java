@@ -61,12 +61,12 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateException(getName(), getExceptionText());
+        return SQLUtils.generateCreateException(getName(), getExceptionText(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("EXCEPTION", getName());
+        return SQLUtils.generateDefaultDropQuery("EXCEPTION", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -93,7 +93,7 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table mainTable = getMainTable();
         sb.appendFields(mainTable, getFieldName(), ID, EXCEPTION_TEXT, DESCRIPTION);
         sb.appendTable(mainTable);

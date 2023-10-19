@@ -108,7 +108,7 @@ public abstract class AbstractDatabaseObjectTable extends DefaultTable {
         tcm.getColumn(0).setMinWidth(25);
         tcm.getColumn(1).setPreferredWidth(150);
         tcm.getColumn(2).setPreferredWidth(110);
-        tcm.getColumn(3).setPreferredWidth(50);
+        tcm.getColumn(3).setPreferredWidth(110);
         tcm.getColumn(4).setPreferredWidth(50);
         tcm.getColumn(5).setPreferredWidth(70);
         tcm.getColumn(5).setMaxWidth(70);

@@ -164,6 +164,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
     }
 
     public void cleanup() {
+        super.cleanup();
         sourceTextPane.cleanup();
         createSqlPane.cleanup();
     }

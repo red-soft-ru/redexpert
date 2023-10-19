@@ -168,7 +168,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         // loop through and add this object as the parent object
         addAsParentToObjects(children);
         setMarkedForReload(false);
-        if (type == PACKAGE || type == SYSTEM_PACKAGE) {
+        if (typeTree == DEFAULT && (type == PACKAGE || type == SYSTEM_PACKAGE)) {
             loadChildrenForAllPackages(META_TYPES[PROCEDURE]);
             loadChildrenForAllPackages(META_TYPES[FUNCTION]);
         }
@@ -332,7 +332,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     SelectBuilder getBuilderForPackageChildren(String metatag) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table mainTable = Table.createTable("RDB$" + metatag + "S", metatag + "S");
         sb.appendTable(mainTable);
         sb.appendField(Field.createField(mainTable, metatag + "_NAME"));
@@ -1124,7 +1124,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         String query = null;
         if (metaDataKey.equals(NamedObject.META_TYPES[TABLE])) {
 
-            query = "SELECT RDB$RELATION_NAME\n" +
+            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(63))\n" +
                     "FROM RDB$RELATIONS\n" +
                     "WHERE RDB$VIEW_BLR IS NULL\n" +
                     "AND (RDB$SYSTEM_FLAG IS NULL OR RDB$SYSTEM_FLAG = 0)\n" +

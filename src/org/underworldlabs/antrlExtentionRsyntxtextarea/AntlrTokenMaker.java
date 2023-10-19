@@ -6,9 +6,7 @@ import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMakerBase;
 
 import javax.swing.text.Segment;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class AntlrTokenMaker extends TokenMakerBase {
 
@@ -16,9 +14,12 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
 
     private final List<MultiLineTokenInfo> multiLineTokenInfos;
 
+    protected Map<Token, org.antlr.v4.runtime.Token> tokenMap;
+
     protected AntlrTokenMaker(MultiLineTokenInfo... multiLineTokenInfos) {
         super();
         this.multiLineTokenInfos = Arrays.asList(multiLineTokenInfos);
+        tokenMap = new HashMap<>();
     }
 
     @Override
@@ -84,8 +85,7 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
                                 currentDocumentOffset,
                                 multilineTokenStart,
                                 multilineTokenEnd,
-                                at);
-                        // update from current token
+                                at);// update from current token
                         currentArrayOffset = currentToken.textOffset + currentToken.textCount;
                         currentDocumentOffset = currentToken.getEndOffset();
                     }

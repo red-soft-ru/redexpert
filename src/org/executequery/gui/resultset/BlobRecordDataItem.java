@@ -66,6 +66,10 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
 
     }
 
+    public boolean isMimeType(byte[] data) {
+        return mimeTypeFromByteArray(data) != null;
+    }
+
     public String getLobRecordItemName(byte[] data) {
 
         MimeType mimeType = mimeTypeFromByteArray(data);

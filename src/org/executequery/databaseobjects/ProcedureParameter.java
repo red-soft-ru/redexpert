@@ -26,17 +26,19 @@ package org.executequery.databaseobjects;
 public class ProcedureParameter extends Parameter {
 
 
-
     public ProcedureParameter(String name, int type, int dataType,
                               String sqlType, int size, int nullable) {
-        this.name = name;
-        this.type = type;
+        this(name, type);
         this.dataType = dataType;
         this.sqlType = sqlType;
         this.size = size;
         this.nullable = nullable;
     }
 
+    public ProcedureParameter(String name, int type) {
+        this.name = name;
+        this.type = type;
+    }
 }
 
 

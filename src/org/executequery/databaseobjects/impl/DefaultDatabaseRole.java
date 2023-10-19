@@ -22,12 +22,12 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() throws DataSourceException {
-        return SQLUtils.generateCreateRole(getName());
+        return SQLUtils.generateCreateRole(getName(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("ROLE", getName());
+        return SQLUtils.generateDefaultDropQuery("ROLE", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -52,7 +52,7 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table table = getMainTable();
         sb.appendFields(table, getFieldName(), DESCRIPTION);
         sb.appendTable(table);

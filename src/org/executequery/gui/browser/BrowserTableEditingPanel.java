@@ -25,16 +25,15 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
-import org.executequery.gui.BaseDialog;
-import org.executequery.gui.DefaultPanelButton;
-import org.executequery.gui.DefaultTable;
-import org.executequery.gui.ExecuteQueryDialog;
+import org.executequery.gui.*;
+import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.table.EditConstraintPanel;
@@ -74,6 +73,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.*;
 import java.util.concurrent.Semaphore;
+import java.util.stream.Collectors;
 
 /**
  * @author Takis Diakoumis
@@ -98,6 +98,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private static final int TABLE_SQL_INDEX = TABLE_DATA_TAB_INDEX + 1;
     private static final int TABLE_METADATA_INDEX = TABLE_SQL_INDEX + 1;
     private static final int TABLE_DEPENDENCIES_INDEX = TABLE_METADATA_INDEX + 1;
+    private static final int TABLE_PROPERTIES_INDEX = TABLE_DEPENDENCIES_INDEX + 1;
 
     public static final String NAME = "BrowserTableEditingPanel";
 
@@ -200,7 +201,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private JPanel buttonsEditingConstraintPanel;
     private JPanel buttonsEditingIndexesPanel;
     private JPanel buttonsEditingTriggersPanel;
-    private SimpleCommentPanel simpleCommentPanel;
+    private PropertiesPanel propertiesPanel;
 
     Semaphore lock;
 
@@ -415,6 +416,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         dependenciesPanel = new DependenciesPanel();
         //dependenciesPanel.setDatabaseObject(table);
 
+        propertiesPanel = new PropertiesPanel();
+
         // create the tabbed pane
         tabPane = new JTabbedPane();
         tabPane.setModel(model);
@@ -429,7 +432,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("SQL"), splitPane);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
         tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
-        tabPane.add(bundleString("comment-field-label"), null);
+        tabPane.add(bundleString("preferences-panel-label"), propertiesPanel);
         //dependenciesPanel.load();
 
         tabPane.addChangeListener(this);
@@ -652,36 +655,40 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     public void cleanup() {
-
+        super.cleanup();
         if (worker != null) {
 
             worker.interrupt();
             worker = null;
         }
-
-        tableDataPanel.closeResultSet();
-        referencesPanel.cleanup();
-        EventMediator.deregisterListener(this);
-        alterSqlText.cleanup();
-        createSqlText.cleanup();
-    }
-
-    public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
-
-        if (Integer.valueOf(e.getOldValue().toString()) == TABLE_DATA_TAB_INDEX) {
-
-            if (tableDataPanel.hasChanges()) {
-
-                boolean applyChanges = new DatabaseObjectChangeProvider(table).applyChanges(true);
-                if (!applyChanges) {
-
-                    throw new PropertyVetoException("User cancelled", e);
-                }
-            }
-
+        if (tableDataPanel != null) {
+            tableDataPanel.closeResultSet();
+            tableDataPanel.cleanup();
         }
 
+        if (referencesPanel != null)
+            referencesPanel.cleanup();
+        EventMediator.deregisterListener(this);
+    }
 
+
+    @Override
+    public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
+
+        if (Integer.parseInt(e.getOldValue().toString()) == TABLE_DATA_TAB_INDEX) {
+            if (tableDataPanel.hasChanges()) {
+
+                DatabaseObjectChangeProvider provider = new DatabaseObjectChangeProvider(table);
+                if (!provider.applyChanges(true))
+                    throw new PropertyVetoException("User cancelled", e);
+
+                if (provider.lastOption == JOptionPane.NO_OPTION) {
+                    tableDataPanel.getDeleterRowIndexes().forEach(row -> tableDataPanel.getRowDataForRow(row).forEach(col -> col.setDeleted(false)));
+                    tableDataPanel.getDeleterRowIndexes().clear();
+                    tableDataPanel.markedForReload = false;
+                }
+            }
+        }
     }
 
     /**
@@ -690,6 +697,13 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     public void stateChanged(ChangeEvent e) {
 
         final int index = tabPane.getSelectedIndex();
+
+        if (index == TABLE_PROPERTIES_INDEX)
+            propertiesPanel.update();
+
+        if (index == TABLE_DATA_TAB_INDEX && tableDataPanel.markedForReload)
+            tableDataPanel.loadDataForTable(table);
+
         if (index != TABLE_DATA_TAB_INDEX && tableDataPanel.isExecuting()) {
 
             tableDataPanel.cancelStatement();
@@ -935,12 +949,18 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         }
 
-        simpleCommentPanel = new SimpleCommentPanel(table);
-        simpleCommentPanel.addActionForCommentUpdateButton(action -> {
-            createSqlText.setSQLText(createTableStatementFormatted());
-            setValues(table);
-        });
-        tabPane.setComponentAt(10, simpleCommentPanel.getCommentPanel());
+        if (propertiesPanel != null) {
+
+            SimpleCommentPanel simpleCommentPanel = new SimpleCommentPanel(table);
+            simpleCommentPanel.getCommentPanel().setBorder(BorderFactory.createTitledBorder(bundleString("comment-field-label")));
+            simpleCommentPanel.addActionForCommentUpdateButton(action -> {
+                createSqlText.setSQLText(createTableStatementFormatted());
+                setValues(table);
+            });
+
+            propertiesPanel.setCommentPanel(simpleCommentPanel);
+            propertiesPanel.update();
+        }
 
         reloadView();
         if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
@@ -1169,7 +1189,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             if (row >= 0) {
                 row = ((TableSorter) columnIndexTable.getModel()).modelIndex(row);
                 DefaultDatabaseIndex index = ((TableColumnIndexTableModel) ((TableSorter) columnIndexTable.getModel()).getTableModel()).getIndexes().get(row);
-                String query = "DROP INDEX " + MiscUtils.getFormattedObject(index.getName());
+                String query = "DROP INDEX " + MiscUtils.getFormattedObject(index.getName(), table.getHost().getDatabaseConnection());
                 ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, table.getHost().getDatabaseConnection(), true);
                 eqd.display();
                 if (eqd.getCommit())
@@ -1181,7 +1201,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             if (row >= 0) {
                 row = ((TableSorter) triggersTable.getModel()).modelIndex(row);
                 DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
-                String query = "DROP TRIGGER " + MiscUtils.getFormattedObject(trigger.getName());
+                String query = "DROP TRIGGER " + MiscUtils.getFormattedObject(trigger.getName(), table.getHost().getDatabaseConnection());
                 ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, table.getHost().getDatabaseConnection(), true);
                 eqd.display();
                 if (eqd.getCommit())
@@ -1211,7 +1231,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             dialog = new BaseDialog(CreateIndexPanel.CREATE_TITLE, true);
             panelForDialog = new CreateIndexPanel(table.getHost().getDatabaseConnection(), dialog, table.getName());
         } else if (tabIndex == TABLE_TRIGGERS_INDEX) {
-            dialog = new BaseDialog(CreateIndexPanel.CREATE_TITLE, true);
+            dialog = new BaseDialog(CreateTriggerPanel.CREATE_TITLE, true);
             panelForDialog = new CreateTriggerPanel(table.getHost().getDatabaseConnection(), dialog, DefaultDatabaseTrigger.TABLE_TRIGGER, table.getName());
         }
         dialog.addDisplayComponent(panelForDialog);
@@ -1226,7 +1246,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         StringBuilder sb = new StringBuilder();
         List<DefaultDatabaseIndex> indexes = table.getIndexes();
         for (DefaultDatabaseIndex node : indexes) {
-            sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName())).append(";\n");
+            sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName(), dc)).append(";\n");
             node.reset();
         }
         ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), sb.toString(), dc, true, ";", true, false);
@@ -1273,9 +1293,21 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     public void moveColumnUp() {
+        int tabIndex = tabPane.getSelectedIndex();
+        if (tabIndex == TABLE_COLUMNS_INDEX) {
+
+            descriptionTable.moveUpSelectedColumn();
+
+        }
     }
 
     public void moveColumnDown() {
+        int tabIndex = tabPane.getSelectedIndex();
+        if (tabIndex == TABLE_COLUMNS_INDEX) {
+
+            descriptionTable.moveDownSelectedColumn();
+
+        }
     }
 
     public ColumnData[] getTableColumnData() {
@@ -1347,6 +1379,26 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             }
         });
         bar.add(deleteRolloverButton);
+        RolloverButton moveUpButton = new RolloverButton();
+        moveUpButton.setIcon(GUIUtilities.loadIcon("Up16.png"));
+        moveUpButton.setToolTipText("Move up");
+        moveUpButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                moveColumnUp();
+            }
+        });
+        bar.add(moveUpButton);
+        RolloverButton moveDownButton = new RolloverButton();
+        moveDownButton.setIcon(GUIUtilities.loadIcon("Down16.png"));
+        moveDownButton.setToolTipText("Move down");
+        moveDownButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                moveColumnDown();
+            }
+        });
+        bar.add(moveDownButton);
         RolloverButton commitRolloverButton = new RolloverButton();
         commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
         commitRolloverButton.setToolTipText("Commit");
@@ -1372,7 +1424,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         rollbackRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                table.revert();
+                table.reset();
                 setValues(table);
             }
         });
@@ -1508,10 +1560,167 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         return true;
     }
 
+    private class PropertiesPanel extends JPanel {
+
+        private static final String NONE = "NONE";
+
+        private DynamicComboBoxModel tablespaceComboModel;
+        private List<Object> oldValues;
+
+        private JComboBox<?> sqlSecurityComboBox;
+        private JComboBox<?> tablespaceComboBox;
+        private JCheckBox externalCheckBox;
+        private JCheckBox adapterCheckBox;
+        private JTextField externalFileTextField;
+        private SimpleCommentPanel commentPanel;
+        private JButton savePreferencesButton;
+
+        protected PropertiesPanel() {
+            init();
+        }
+
+        private void init() {
+
+            sqlSecurityComboBox = new JComboBox<>(new String[]{NONE, "DEFINER", "INVOKER"});
+            sqlSecurityComboBox.setMinimumSize(new Dimension(300, 0));
+
+            tablespaceComboModel = new DynamicComboBoxModel(new Vector<>());
+            tablespaceComboBox = WidgetFactory.createComboBox(tablespaceComboModel);
+            tablespaceComboBox.setMinimumSize(new Dimension(300, 0));
+
+            externalCheckBox = new JCheckBox(bundledString("externalCheckBox"));
+            externalCheckBox.setEnabled(false);
+
+            adapterCheckBox = new JCheckBox(bundledString("adapterCheckBox"));
+            adapterCheckBox.setEnabled(false);
+
+            externalFileTextField = new JTextField();
+            externalFileTextField.setMinimumSize(new Dimension(500, 0));
+            externalFileTextField.setEditable(false);
+
+            savePreferencesButton = new JButton(Bundles.get("common.save.button"));
+            savePreferencesButton.addActionListener(e -> saveChanges());
+
+            commentPanel = new SimpleCommentPanel(null);
+
+            arrange();
+        }
+
+        private void arrange() {
+
+            GridBagHelper gbh;
+
+            // properties panel
+            gbh = new GridBagHelper()
+                    .anchorNorthWest().setInsets(5, 5, 5, 5).fillHorizontally();
+
+            JPanel propertiesPanel = new JPanel(new GridBagLayout());
+            gbh.addLabelFieldPair(propertiesPanel, bundledString("sqlSecurityComboBox"), sqlSecurityComboBox, null, true, false);
+            gbh.addLabelFieldPair(propertiesPanel, bundledString("tablespaceComboBox"), tablespaceComboBox, null, false, true);
+            gbh.addLabelFieldPair(propertiesPanel, bundledString("externalFileTextField"), externalFileTextField, null, true, false);
+            propertiesPanel.add(adapterCheckBox, gbh.nextCol().setMinWeightX().spanX().get());
+
+            // main panel
+            gbh = new GridBagHelper()
+                    .anchorNorthWest().setInsets(5, 5, 5, 5).fillHorizontally();
+
+            JPanel mainPanel = new JPanel(new GridBagLayout());
+            mainPanel.add(propertiesPanel, gbh.spanX().get());
+            mainPanel.add(commentPanel.getCommentPanel(), gbh.nextRowFirstCol().setMaxWeightY().fillBoth().get());
+            mainPanel.add(savePreferencesButton, gbh.nextRowFirstCol().anchorSouthEast().fillNone().setMinWeightY().get());
+
+            setLayout(new GridBagLayout());
+            add(mainPanel, gbh.anchorNorthWest().fillBoth().spanX().spanY().get());
+        }
+
+        private void populateTablespace() {
+
+            List<NamedObject> tablespaceList = ConnectionsTreePanel.getPanelFromBrowser()
+                    .getDefaultDatabaseHostFromConnection(table.getHost().getDatabaseConnection())
+                    .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.TABLESPACE]);
+
+            List<String> tablespaceNameList = new ArrayList<>();
+            tablespaceNameList.add(0, NONE);
+            if (tablespaceList != null && !tablespaceList.isEmpty())
+                tablespaceNameList.addAll(tablespaceList.stream().map(Named::getName).collect(Collectors.toList()));
+
+            tablespaceComboModel.setElements(tablespaceNameList);
+        }
+
+        protected void update() {
+
+            populateTablespace();
+
+            DefaultDatabaseTable databaseTable = (DefaultDatabaseTable) table;
+            String sqlSecurity = databaseTable.getSqlSecurity();
+            String tablespace = databaseTable.getTablespace();
+            String externalFile = databaseTable.getExternalFile();
+            String adapter = databaseTable.getAdapter();
+
+            if (databaseTable.getDatabaseMajorVersion() < 5 || !databaseTable.getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
+                tablespaceComboBox.setEnabled(false);
+
+            sqlSecurityComboBox.setSelectedItem(Objects.equals(sqlSecurity, "") ? NONE : sqlSecurity);
+            tablespaceComboBox.setSelectedItem(Objects.equals(tablespace, "") ? NONE : tablespace);
+            externalCheckBox.setSelected(externalFile != null && !externalFile.isEmpty());
+            adapterCheckBox.setSelected(adapter != null && !adapter.isEmpty());
+            externalFileTextField.setText(externalFile);
+
+            oldValues = Arrays.asList(
+                    sqlSecurityComboBox.getSelectedItem(),
+                    tablespaceComboBox.getSelectedItem()
+            );
+
+        }
+
+        private void saveChanges() {
+
+            commentPanel.updateComment();
+
+            String query = "ALTER TABLE " + MiscUtils.getFormattedObject(table.getName(), table.getHost().getDatabaseConnection());
+            String noChangesCheckString = query;
+
+            String sqlSecurity = (String) sqlSecurityComboBox.getSelectedItem();
+            if (!oldValues.get(0).equals(sqlSecurity)) {
+                query += !Objects.equals(sqlSecurity, NONE) ?
+                        "\nALTER SQL SECURITY " + sqlSecurity :
+                        "\nDROP SQL SECURITY";
+            }
+
+            String tablespace = (String) tablespaceComboBox.getSelectedItem();
+            if (!oldValues.get(1).equals(tablespace)) {
+                if (!query.equals(noChangesCheckString)) query += ",";
+                query += "\nSET TABLESPACE TO " + (!Objects.equals(tablespace, NONE) ? tablespace : "PRIMARY");
+            }
+
+            if (!query.equals(noChangesCheckString)) {
+
+                ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(
+                        bundledString("AlterTable"), query, table.getHost().getDatabaseConnection(), true);
+
+                executeQueryDialog.display();
+                if (executeQueryDialog.getCommit())
+                    table.reset();
+
+                setValues(table);
+            }
+
+        }
+
+        protected void setCommentPanel(SimpleCommentPanel commentPanel) {
+            this.commentPanel = commentPanel;
+            super.removeAll();
+            arrange();
+        }
+
+        private String bundledString(String key) {
+            return BrowserTableEditingPanel.bundledString("PreferencesPanel." + key);
+        }
+
+    }
+
     public static String bundledString(String key) {
         return Bundles.get(BrowserTableEditingPanel.class, key);
     }
 
 }
-
-

@@ -20,7 +20,6 @@
 
 package org.executequery.gui.editor.autocomplete;
 
-import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -37,8 +36,7 @@ import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
-import org.executequery.repository.RepositoryCache;
-import org.underworldlabs.util.DynamicLibraryLoader;
+import org.executequery.repository.spi.KeywordRepositoryImpl;
 
 import java.sql.*;
 import java.util.*;
@@ -81,9 +79,6 @@ public class AutoCompleteSelectionsFactory {
         List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
         if (autoCompleteKeywords) {
 
-            addSQL92Keywords(listSelections);
-            addUserDefinedKeywords(listSelections);
-
             addToProvider(listSelections);
         }
 
@@ -92,35 +87,8 @@ public class AutoCompleteSelectionsFactory {
             if (autoCompleteKeywords) {
 
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
-                //databaseSystemFunctionsForHost(databaseHost, listSelections);
-
-                DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
-                Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
-                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
-
-                if (driver.getClass().getName().contains("FBDriver")) {
-
-                    Connection connection = null;
-                    try {
-                        connection = databaseHost.getConnection().unwrap(Connection.class);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-
-
-                    try {
-                        IFBDatabaseConnection db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabaseConnectionImpl");
-                        db.setConnection(connection);
-                        addFirebirdDefnedKeywords(databaseHost, listSelections, db.getMajorVersion(), db.getMinorVersion());
-                    } catch (SQLException | ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-
+                addFirebirdDefinedKeywords(databaseHost, listSelections);
                 addToProvider(listSelections);
-
                 queryEditor.updateSQLKeywords();
             }
 
@@ -143,9 +111,6 @@ public class AutoCompleteSelectionsFactory {
         List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
         if (autoCompleteKeywords) {
 
-            addSQL92Keywords(listSelections);
-            addUserDefinedKeywords(listSelections);
-
             addToProvider(listSelections);
         }
 
@@ -155,34 +120,8 @@ public class AutoCompleteSelectionsFactory {
 
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
                 databaseSystemFunctionsForHost(databaseHost, listSelections);
-
-                DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
-                DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-                Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
-                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
-
-                if (driver.getClass().getName().contains("FBDriver")) {
-
-                    Connection connection = null;
-                    try {
-                        connection = databaseHost.getConnection().unwrap(Connection.class);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-
-                        IFBDatabaseConnection db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabaseConnectionImpl");
-                        db.setConnection(connection);
-                        addFirebirdDefnedKeywords(databaseHost, listSelections, db.getMajorVersion(), db.getMinorVersion());
-                    } catch (SQLException | ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-
+                addFirebirdDefinedKeywords(databaseHost, listSelections);
                 addToProvider(listSelections);
-
                 queryEditor.setSQLKeywords(true);
             }
 
@@ -208,8 +147,6 @@ public class AutoCompleteSelectionsFactory {
 
         List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
         if (autoCompleteKeywords) {
-
-            addSQL92Keywords(listSelections);
             addUserDefinedKeywords(listSelections);
 
             if (databaseHost != null && databaseHost.isConnected()) {
@@ -345,23 +282,17 @@ public class AutoCompleteSelectionsFactory {
 
         Collections.addAll(asList, keywords);
 
-        keywords().setDatabaseKeyWords(asList);
-
         addKeywordsFromList(asList, list,
                 "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
     }
 
-    private void addFirebirdDefnedKeywords(DatabaseHost databaseHost, List<AutoCompleteListItem> list,
-                                           int majorVersion, int minorVersion) {
-        addKeywordsFromList(keywords().getFirebirdKeywords(majorVersion, minorVersion),
+    private void addFirebirdDefinedKeywords(DatabaseHost databaseHost, List<AutoCompleteListItem> list) {
+        List<String> keywords = new ArrayList<>();
+        keywords.addAll(databaseHost.getDatabaseConnection().getKeywords());
+        addKeywordsFromList(keywords,
                 list, "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
     }
 
-    private void addSQL92Keywords(List<AutoCompleteListItem> list) {
-
-        addKeywordsFromList(keywords().getSQL92(),
-                list, "SQL92 Keyword", AutoCompleteListItemType.SQL92_KEYWORD);
-    }
 
     private void addUserDefinedKeywords(List<AutoCompleteListItem> list) {
 
@@ -392,7 +323,7 @@ public class AutoCompleteSelectionsFactory {
 
     private KeywordRepository keywords() {
 
-        return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+        return new KeywordRepositoryImpl();
     }
 
     public List<AutoCompleteListItem> buildItemsForTable(DatabaseHost databaseHost, String tableString) {

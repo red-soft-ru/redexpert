@@ -81,7 +81,6 @@ public class ConnectionsTreePanel extends TreePanel
     private boolean moveScrollAfterExpansion = false;
 
     private SchemaTree tree;
-    private SwingWorker worker;
     private BrowserController controller;
     private TreePath oldSelectionPath;
 
@@ -625,16 +624,25 @@ public class ConnectionsTreePanel extends TreePanel
 
         List<DatabaseHost> hosts = databaseHosts();
         for (DatabaseHost databaseHost : hosts)
-            if (!databaseHost.isConnected())
-                databaseHost.connect();
+            try {
+                if (!databaseHost.isConnected())
+                    databaseHost.connect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
     }
 
     public void disconnectAll() {
 
         List<DatabaseHost> hosts = databaseHosts();
         for (DatabaseHost databaseHost : hosts)
-            if (databaseHost.isConnected())
-                databaseHost.disconnect();
+            try {
+                if (databaseHost.isConnected())
+                    databaseHost.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
     }
 
     public void searchNodes() {
@@ -980,6 +988,7 @@ public class ConnectionsTreePanel extends TreePanel
         DatabaseHostNode host = (DatabaseHostNode) getHostNode(dc);
         host.disconnected();
         nodeStructureChanged(host);
+        oldSelectionPath = null;
 
         if (rootSelectOnDisconnect) {
             tree.setSelectionRow(0);
@@ -1283,7 +1292,7 @@ public class ConnectionsTreePanel extends TreePanel
             final ConnectionsTreePanel c = this;
             c.setInProcess(true);
 
-            worker = new SwingWorker("loadingNode " + node.getName()) {
+            SwingWorker worker = new SwingWorker("loadingNode " + node.getName()) {
 
                 @Override
                 public Object construct() {
@@ -1325,7 +1334,7 @@ public class ConnectionsTreePanel extends TreePanel
             return;
 
         final DatabaseObjectNode node = (DatabaseObjectNode) object;
-        worker = new SwingWorker("nodeExpansion " + node.getName()) {
+        SwingWorker worker = new SwingWorker("nodeExpansion " + node.getName()) {
 
             @Override
             public Object construct() {
@@ -1698,6 +1707,21 @@ public class ConnectionsTreePanel extends TreePanel
 
     public static NamedObject getNamedObjectFromHost(DatabaseConnection dc, int type, String name) {
         return getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).getDatabaseObjectFromTypeAndName(type, name);
+    }
+
+    public static NamedObject getTableOrViewFromHost(DatabaseConnection dc, String name) {
+        List<Integer> list = new ArrayList<>();
+        list.add(NamedObject.TABLE);
+        list.add(NamedObject.GLOBAL_TEMPORARY);
+        list.add(NamedObject.VIEW);
+        list.add(NamedObject.SYSTEM_TABLE);
+        list.add(NamedObject.SYSTEM_VIEW);
+        for (Integer type : list) {
+            NamedObject table = getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).getDatabaseObjectFromTypeAndName(type, name);
+            if (table != null)
+                return table;
+        }
+        return null;
     }
 
     public static NamedObject getNamedObjectFromHost(DatabaseConnection dc, String metaTag, String name) {

@@ -22,9 +22,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
-import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.ProcedureParameter;
-import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -33,7 +31,6 @@ import org.underworldlabs.util.SQLUtils;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 
 /**
@@ -80,6 +77,21 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         return META_TYPES[PROCEDURE];
     }
 
+    @Override
+    protected String prefixLabel() {
+        return PP;
+    }
+
+    @Override
+    protected String mechanismLabel() {
+        return PARAMETER_MECHANISM;
+    }
+
+    @Override
+    protected String positionLabel() {
+        return PARAMETER_NUMBER;
+    }
+
     public String getCreateSQLText() {
         return SQLUtils.generateCreateProcedure(
                 getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(),
@@ -88,7 +100,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName());
+        return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -125,7 +137,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = SelectBuilder.createSelectBuilder();
+        SelectBuilder sb = SelectBuilder.createSelectBuilder(getHost().getDatabaseConnection());
         Table procedures = getMainTable();
         Table parameters = Table.createTable("RDB$PROCEDURE_PARAMETERS", "PP");
         Table fields = Table.createTable("RDB$FIELDS", "F");
@@ -170,53 +182,8 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
         String parameterName = rs.getString(PP + PARAMETER_NAME);
         if (parameterName != null) {
-            ProcedureParameter pp = new ProcedureParameter(parameterName.trim(),
-                    rs.getInt(PP + PARAMETER_TYPE) == 0 ? DatabaseMetaData.procedureColumnIn : DatabaseMetaData.procedureColumnOut,
-                    DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(FIELD_TYPE), rs.getInt(FIELD_SUB_TYPE)),
-                    DatabaseTypeConverter.getDataTypeName(rs.getInt(FIELD_TYPE), rs.getInt(FIELD_SUB_TYPE), rs.getInt(FIELD_SCALE)),
-                    rs.getInt(FIELD_LENGTH),
-                    1 - rs.getInt(PP + NULL_FLAG));
-            final short fieldScale = rs.getShort(FIELD_SCALE);
-            pp.setScale(fieldScale);
-            switch (pp.getDataType()) {
-                case Types.DECIMAL:
-                case Types.NUMERIC:
-                    // TODO column precision
-                    pp.setScale(fieldScale * (-1));
-                    break;
-                default:
-                    break;
-            }
-            if (rs.getInt(FIELD_PRECISION) != 0)
-                pp.setSize(rs.getInt(FIELD_PRECISION));
-            if (rs.getInt(CHARACTER_LENGTH) != 0)
-                pp.setSize(rs.getInt(CHARACTER_LENGTH));
-            if (pp.getDataType() == Types.LONGVARBINARY ||
-                    pp.getDataType() == Types.LONGVARCHAR ||
-                    pp.getDataType() == Types.BLOB) {
-                pp.setSubType(rs.getInt(FIELD_SUB_TYPE));
-                pp.setSize(rs.getInt(SEGMENT_LENGTH));
-            }
-
-            String domain = rs.getString(FIELD_NAME);
-            if (domain != null && !domain.startsWith("RDB$"))
-                pp.setDomain(domain.trim());
-            pp.setTypeOf(rs.getInt(PP + PARAMETER_MECHANISM) == 1);
-            String relationName = rs.getString(PP + RELATION_NAME);
-            if (relationName != null)
-                pp.setRelationName(relationName.trim());
-            String fieldName = rs.getString(PP + FIELD_NAME);
-            if (fieldName != null)
-                pp.setFieldName(fieldName.trim());
-
-            if (pp.getRelationName() != null && pp.getFieldName() != null)
-                pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
-            String characterSet = rs.getString(CHARACTER_SET_NAME);
-            if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
-                pp.setEncoding(characterSet.trim());
-            pp.setDefaultValue(rs.getString(PP + DEFAULT_SOURCE));
-            if (pp.getDefaultValue() == null)
-                pp.setDefaultValue(rs.getString(DEFAULT_SOURCE));
+            ProcedureParameter pp = new ProcedureParameter(parameterName.trim(), rs.getInt(PP + PARAMETER_TYPE) == 0 ? DatabaseMetaData.procedureColumnIn : DatabaseMetaData.procedureColumnOut);
+            pp = (ProcedureParameter) fillParameter(pp, rs);
             if (pp.getType() == DatabaseMetaData.procedureColumnIn)
                 procedureInputParameters.add(pp);
             else if (pp.getType() == DatabaseMetaData.procedureColumnOut)

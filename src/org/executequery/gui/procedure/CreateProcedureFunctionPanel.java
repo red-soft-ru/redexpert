@@ -156,6 +156,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             sqlSecurityCombo.setSelectedItem(executable.getSqlSecurity());
         }
         topPanel.add(executeButton, topGbh.setLabelDefault().get());
+        //TODO for system functions and procedures
         addPrivilegesTab(tabbedPane, (AbstractDatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
         simpleCommentPanel.setDatabaseObject((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));

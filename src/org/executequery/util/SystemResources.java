@@ -233,16 +233,10 @@ public class SystemResources {
     public static boolean createUserHomeDirSettings() {
 
         String fileSeparator = System.getProperty("file.separator");
-
         String eqUserHomeDir = userSettingsHome();
-
-//                        System.getProperty("user.home") +
-//                        fileSeparator +
-//                        System.getProperty("executequery.user.home.dir");
 
         File equeryDir = new File(eqUserHomeDir);
         File confDir = new File(userSettingsDirectoryForCurrentBuild());
-        File logsDir = new File(userLogsPath());
         File newDefaultDir = null;
 
         try {
@@ -251,9 +245,6 @@ public class SystemResources {
 
             // whether the conf dir exists - build number dir
             boolean confDirExists = false;
-
-            // whether the logs dir exists
-            boolean logsDirExists = false;
 
             // whether to copy confg files from old dir
             boolean copyOldFiles = false;
@@ -365,16 +356,8 @@ public class SystemResources {
                 }
             }
 
-            if (!logsDir.exists()) {
-
-                logsDirExists = logsDir.mkdirs();
-            }
-
-            if (!equeryDirExists && !confDirExists && !logsDirExists) {
-
-                error("Error creating profile in user's home directory.\nExiting.");
-                GUIUtilities.displayErrorMessage(
-                        "Error creating profile in user's home directory.\nExiting.");
+            if (!equeryDirExists && !confDirExists) {
+                GUIUtilities.displayErrorMessage("Error creating profile in user's home directory.\nExiting.");
                 System.exit(0);
             }
 
@@ -427,7 +410,6 @@ public class SystemResources {
 
             if (!props.exists()) {
 
-                Log.debug("Creating user properties file eq.user.properties");
                 created = props.createNewFile();
 
             } else {
@@ -438,6 +420,21 @@ public class SystemResources {
             if (!created) {
 
                 return false;
+            }
+
+            // -------------------------------------------
+            // -- Check for log files directory
+            // -------------------------------------------
+            File logsDir = new File(userLogsPath());
+            boolean logsDirExists = logsDir.exists();
+            if (!logsDirExists)
+                logsDirExists = logsDir.mkdirs();
+
+            if (!logsDirExists) {
+
+                error("Error creating logs folder.\nExiting.");
+                GUIUtilities.displayErrorMessage("Error creating logs folder.\nExiting.");
+                System.exit(0);
             }
 
             // -------------------------------------------

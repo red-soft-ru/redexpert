@@ -31,13 +31,14 @@ public class Comparer {
     private static boolean[] TABLE_CONSTRAINTS_NEED;
     private static boolean COMMENTS_NEED;
     private static boolean COMPUTED_FIELDS_NEED;
+    private static boolean FIELDS_POSITIONS_NEED;
 
 
     protected ComparerDBPanel panel;
-    protected StatementExecutor compareConnection;
-    protected StatementExecutor masterConnection;
+    protected DefaultStatementExecutor compareConnection;
+    protected DefaultStatementExecutor masterConnection;
 
-    private int[] counter;
+    private final int[] counter;
     private String constraintsList;
     private String computedFieldsList;
 
@@ -52,7 +53,7 @@ public class Comparer {
 
     public Comparer(
             ComparerDBPanel panel, DatabaseConnection dbSlave, DatabaseConnection dbMaster,
-            boolean[] constraintsNeed, boolean commentsNeed, boolean computedNeed) {
+            boolean[] constraintsNeed, boolean commentsNeed, boolean computedNeed, boolean fieldsPositions) {
 
         script = new ArrayList<>();
         constraintsToCreate = new ArrayList<>();
@@ -68,6 +69,7 @@ public class Comparer {
         Comparer.TABLE_CONSTRAINTS_NEED = constraintsNeed;
         Comparer.COMMENTS_NEED = commentsNeed;
         Comparer.COMPUTED_FIELDS_NEED = computedNeed;
+        Comparer.FIELDS_POSITIONS_NEED = fieldsPositions;
 
     }
 
@@ -448,7 +450,7 @@ public class Comparer {
 
                 script.add("\n/* " + cd.getTableName() + "." + cd.getColumnName() + " */");
                 script.add("\nALTER TABLE " + cd.getTableName());
-                script.add("\n\tDROP " + MiscUtils.getFormattedObject(cd.getColumnName()) + ",");
+                script.add("\n\tDROP " + cd.getFormattedColumnName() + ",");
                 script.add("\n\tADD " + SQLUtils.generateDefinitionColumn(
                         cd, true, false, false) + ";\n");
 
@@ -478,7 +480,7 @@ public class Comparer {
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
         script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
         script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
-                SQLUtils.generateDefinitionColumnConstraint(obj, true, false) + ";\n");
+                SQLUtils.generateDefinitionColumnConstraint(obj, true, false, compareConnection.getDatabaseConnection()) + ";\n");
     }
 
     private void dropConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
@@ -710,7 +712,7 @@ public class Comparer {
                 break;
 
             if ((cc.isPrimaryKey() || cc.isUniqueKey()) && cc.getColumnDisplayList() != null)
-                droppedConstraintsColumns.addAll(Arrays.stream(cc.getColumnDisplayList().split(","))
+                droppedConstraintsColumns.addAll(cc.getColumnDisplayList().stream()
                         .map(i -> cc.getTableName().concat("." + i))
                         .collect(Collectors.toList()));
         }
@@ -730,7 +732,7 @@ public class Comparer {
                 if (droppedConstraints.contains(masterCC) || !masterCC.isForeignKey())
                     continue;
 
-                if (Arrays.stream(masterCC.getReferenceColumnDisplayList().split(","))
+                if (masterCC.getReferenceColumnDisplayList().stream()
                         .map(i -> masterCC.getTableName().concat("." + i))
                         .anyMatch(droppedConstraintsColumns::contains)) {
 
@@ -805,7 +807,7 @@ public class Comparer {
 
             List<String> masterConstraintColumns = new ArrayList<>();
             if (masterCC.getColumnDisplayList() != null)
-                Collections.addAll(masterConstraintColumns, masterCC.getColumnDisplayList().split(","));
+                masterConstraintColumns.addAll(masterCC.getColumnDisplayList());
 
             List<DatabaseColumn> masterColumns = ((DefaultDatabaseTable) masterObject).getColumns();
             List<DatabaseColumn> compareColumns = ((DefaultDatabaseTable) compareObject).getColumns();
@@ -830,7 +832,8 @@ public class Comparer {
                         if (!SQLUtils.generateAlterDefinitionColumn(
                                 new ColumnData(((DefaultDatabaseTable) masterObject).getHost().getDatabaseConnection(), masterC, false),
                                 new ColumnData(((DefaultDatabaseTable) compareObject).getHost().getDatabaseConnection(), comparingC, false),
-                                isComputedFieldsNeed()).equals("")) {
+                                isComputedFieldsNeed(),
+                                isFieldsPositionsNeed()).isEmpty()) {
 
                             constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
                             constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
@@ -1010,6 +1013,10 @@ public class Comparer {
 
     public static boolean isComputedFieldsNeed() {
         return COMPUTED_FIELDS_NEED;
+    }
+
+    public static boolean isFieldsPositionsNeed() {
+        return FIELDS_POSITIONS_NEED;
     }
 
     public void clearLists() {

@@ -870,14 +870,20 @@ Red Expert позволяет одновременно использовать 
 	\pgftext{\includegraphics[width=12pt]{img/Execute16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Выполнить все операторы в редакторе & Ctrl+Shift+Enter\\\hline
 	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/PartialExecute16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Выполнить оператор, на котором находится курсор (операторы должны быть разделены хотя бы одной пустой строкой) & Ctrl+Enter\\\hline
-	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/ExecuteSelection16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Выполнить любой выделенный текст в редакторе & F9\\\hline
+ 	\begin{tikzpicture}
+ 	\pgftext{\includegraphics[width=12pt]{img/ExecuteSqlScript16.png}} at (0pt,0pt)
+ 	\end{tikzpicture}& Выполнить SQL скрипт & F10\\\hline
+ 	\begin{tikzpicture}
+ 	\pgftext{\includegraphics[width=12pt]{img/ExecuteInProfiler.png}} at (0pt,0pt)
+ 	\end{tikzpicture} & Выполнить в профайлере & \\\hline
+ 	\begin{tikzpicture}
+ 	\pgftext{\includegraphics[width=12pt]{img/PrintPlan.png}} at (0pt,0pt)
+ 	\end{tikzpicture}& Печать плана запроса & Ctrl+Shift+P\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/plan.png}} at (0pt,0pt)
-	\end{tikzpicture} & Печать плана запроса & Ctrl+Shift+P\\\hline
+	\end{tikzpicture} & Печать детального плана запроса & Ctrl+Alt+P\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/Stop16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Отмена выполнения текущего оператора & \\\hline
@@ -932,17 +938,38 @@ Red Expert позволяет одновременно использовать 
 	\end{tikzpicture} & Показать/скрыть окно вывода & \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/ShiftTextLeft16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Сдвиг текущей строки влево & \\\hline
+	\end{tikzpicture} & Сдвиг текущей строки влево & Ctrl+Shift+D\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/ShiftTextRight16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Сдвиг текущей строки вправо & \\\hline
+	\end{tikzpicture} & Сдвиг текущей строки вправо & Ctrl+Shift+T\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/AddComment16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Закомментировать текущую строку или выделение & Ctrl+/\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/FormatSql16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Форматирование SQL кода & Ctrl+Shift+F\\\hline
+	\begin{tikzpicture}
+	\pgftext{\includegraphics[width=12pt]{img/split.png}} at (0pt,0pt)
+	\end{tikzpicture}& Изменить ориентацию разделителя & Ctrl+Alt+Q\\\hline
 \end{longtable}	
+
+Горячие клавиши для действий, которых нет в панели инструментов редактора запроса:
+\begin{longtable}[r]{|>{\ttfamily}m{3.5cm}|m{11.5cm}|}
+	\hline
+	\centering\normalfont\bfseries Горячие клавиши &
+	\centering\arraybslash\bfseries Описание\\\hline
+	\endfirsthead
+	\hline
+	\centering\normalfont\bfseries Горячие клавиши &
+	\centering\arraybslash\bfseries Описание\\\hline
+	\endhead
+	Ctrl+F & Поиск \\\hline
+	Ctrl+R & Найти и заменить\\\hline
+	Ctrl+K & Найти слово в позиции курсора, выделить все совпадения и перейти к следующему совпадению\\\hline
+	Ctrl + Shift + К & Найти слово в позиции курсора, выделить все совпадения и перейти к предыдущему совпадению\\\hline
+	Ctrl + D & Удалить текущую строку\\\hline
+	Ctrl + J & Объединить текущую строку со следующей\\\hline
+\end{longtable}
 
 \begin{longtable}[c]{|>{\ttfamily}m{2.8cm}|m{12.5cm}|}
 	\hline
@@ -2869,6 +2896,8 @@ ER-диаграмма визуализирует табличные связи, 
 	&  \\\hline
 	Кодировка файлов по умолчанию
 	&   \\\hline
+	Путь к исполняемому файлу Java
+	& Путь к исполняемому файлу Java. Можно указывать как абсолютный путь, так и относительный. \\\hline
 	\rowcolor[gray]{.9}\multicolumn{2}{|m{15.25cm}|}{\bfseries Настройка прокси}\\\hline 
 	Использовать прокси 
 	&  Использовать прокси-сервер для подключения к интернету \\\hline
@@ -2992,8 +3021,8 @@ ER-диаграмма визуализирует табличные связи, 
 	& \\\hline 
 	Вывод лога в файл
 	&  Сохранять записи панели вывода Редактора запросов в файл\\\hline 
-	Путь к файлу с логом
-	&  \\\hline
+	Путь к директории с логами
+	&  Определяет абсолютный или относительный путь к директории, в которой будет создана папка \ttt{logs}, содержащая файлы логов. Для использования относительного пути в начале строки необходимо дописать \ttt{\%re\%}.\\\hline
 	Количество сохраняемых файлов с логами
 	& Количество сохраненных файлов с логами. При достижении файла с логами размера более 1МБ, он переименовывается в файл logfile.log.1 и т.д. И запись снова продолжается в файл logfile.log. Когда количество файлов будет равно числу, указанному в этом параметре, файлы будут перезаписаны. Если указано 0, то количество файлов неограниченно.\\\hline
 	Открывать новый редактор для нового открытого подключения
@@ -3140,8 +3169,8 @@ ER-диаграмма визуализирует табличные связи, 
 	mm & минуты с лидирующим нулем & 32 \\\hline
 	s & секунды без лидирующих нулей & 11 \\\hline
 	ss & секунды с лидирующим нулем & 11 \\\hline
-	S & миллисекунды с округлением до десятых & 1 \\\hline
-	SS & миллисекунды с округлением до сотых & 11 \\\hline
+	S & миллисекунды (только первая цифра) & 1 \\\hline
+	SS & миллисекунды (только первые две цифры)	 & 11 \\\hline
 	z & часовой пояс & EET \\\hline
 	Z & часовой пояс в формате RFC 822 & +0200 \\\hline
 	' & символ экранирования для текста & 'Date=' \\\hline
@@ -3406,7 +3435,6 @@ ER-диаграмма визуализирует табличные связи, 
 	Definitions & boolean & Можно ли использовать имя каталога в операторе создания таблицы \\\hline 
 	supportsColumnAliasing & boolean & Можно ли давать псевдонимы столбцам \\\hline 
 	supportsConvert & boolean & Поддерживает ли эта СУБД скалярную функцию JDBC \ttt{CONVERT} для преобразования одного типа JDBC в другой. Типы JDBC - это общие типы данных SQL, определенные в \ttt{java.sql.Types}\\\hline 
-	supportsCoreSQLGrammar & boolean & Поддерживает ли СУБД базовый синтаксис ODBC (Core SQL Grammar)\\\hline 
 	supportsCorrelatedSubqueries & boolean & Поддерживает ли эта СУБД коррелированные подзапросы.\\\hline 
 	supportsDataDefinitionAnd
 	
@@ -3418,7 +3446,6 @@ ER-диаграмма визуализирует табличные связи, 
 	
 	CorrelationNames & boolean & Псевдонимы таблиц (если они поддерживаются СУБД) должны отличаться от настоящих имен таблиц \\\hline 
 	supportsExpressionsInOrderBy & boolean & Поддерживает ли эта база данных выражения в списках \ttt{ORDER BY}\\\hline 
-	supportsExtendedSQLGrammar & boolean & Поддерживает ли СУБД расширенный синтаксис ODBC (Extended SQL Grammar)\\\hline 
 	supportsFullOuterJoins & boolean & Поддерживает ли СУБД полные внешние соединения\\\hline 
 	supportsGetGeneratedKeys & boolean & Retrieves whether auto-generated keys can be retrieved after a statement has been executed\\\hline 
 	supportsGroupBy & boolean & Поддерживает ли эта СУБД какую-либо форму предложения \ttt{GROUP BY}\\\hline 
@@ -3429,7 +3456,6 @@ ER-диаграмма визуализирует табличные связи, 
 	Facility & boolean & Поддерживает ли СУБД SQL Integrity Enhancement Facility\\\hline 
 	supportsLikeEscapeClause & boolean & Поддерживает ли СУБД предложение \ttt{LIKE ... ESCAPE}\\\hline 
 	supportsLimitedOuterJoins & boolean & Поддерживает ли СУБД ограниченные внешние соединения(\ttt{true}, если \ttt{supportsFullOuterJoins=true})\\\hline 
-	supportsMinimumSQLGrammar & boolean & Поддерживает ли СУБД минимальный синтаксис ODBC (Minimum SQL Grammar)\\\hline 
 	supportsMixedCaseIdentifiers & boolean &  Идентификаторы, не заключенные в кавычки, чувствительны к регистру и сохраняются в смешанном регистре\\\hline 
 	supportsMixedCaseQuoted
 	

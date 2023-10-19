@@ -21,6 +21,7 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.*;
+import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
@@ -117,6 +118,9 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     String charset;
 
     String collate;
+    private List<ColumnData.Dimension> dimensions;
+
+    private int position;
 
     public DefaultDatabaseColumn() {
     }
@@ -383,11 +387,10 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         boolean generated = isGenerated();
 
         if (generated) {
-            StringBuilder buffer = new StringBuilder();
-            buffer.append("COMPUTED BY ");
-            buffer.append(getComputedSource());
+            String buffer = "COMPUTED BY " +
+                    getComputedSource();
 
-            return buffer.toString();
+            return buffer;
         }
 
         StringBuilder buffer = new StringBuilder();
@@ -412,7 +415,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
                         _type == Types.LONGVARBINARY ||
                         _type == Types.BLOB)) {
 
-            if (isEditSize() && getColumnSize() > 0 && !typeName.contains("" + getColumnSize())
+            if (isEditSize() && getColumnSize() > 0 && !typeName.contains(String.valueOf(getColumnSize()))
                     && !isDateDataType() && !isNonPrecisionType()) {
 
                 buffer.append("(");
@@ -534,7 +537,32 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         constraints.add(constraint);
     }
 
+    public void appendDimension(int orderNumber, int lowerBound, int upperBound) {
+        if (dimensions == null)
+            dimensions = new ArrayList<>();
+        ColumnData.Dimension dimension = new ColumnData.Dimension(lowerBound, upperBound);
+        if (orderNumber >= dimensions.size())
+            dimensions.add(dimension);
+        else dimensions.add(orderNumber, dimension);
+    }
 
+    public List<ColumnData.Dimension> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<ColumnData.Dimension> dimensions) {
+        this.dimensions = dimensions;
+    }
+
+    @Override
+    public int getPosition() {
+        return position;
+    }
+
+    @Override
+    public void setPosition(int position) {
+        this.position = position;
+    }
 }
 
 

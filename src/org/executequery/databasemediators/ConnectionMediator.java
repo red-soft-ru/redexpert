@@ -29,6 +29,9 @@ import org.executequery.event.DefaultConnectionEvent;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -36,7 +39,7 @@ import java.util.List;
  */
 public final class ConnectionMediator {
 
-    private static ConnectionMediator connectionMediator = new ConnectionMediator();
+    private static final ConnectionMediator connectionMediator = new ConnectionMediator();
 
     private ConnectionMediator() {
     }
@@ -60,10 +63,19 @@ public final class ConnectionMediator {
     public boolean connect(DatabaseConnection dc) throws DataSourceException {
 
         if (!establish(dc)) {
-            
+
             return false;
         }
-
+        try {
+            Connection connection = ConnectionManager.getTemporaryConnection(dc);
+            DatabaseMetaData dmd = connection.getMetaData();
+            dc.setMajorServerVersion(dmd.getDatabaseMajorVersion());
+            dc.setMinorServerVersion(dmd.getDatabaseMinorVersion());
+            dc.setServerName(dmd.getDatabaseProductName());
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         fireConnectionOpened(dc);
         GUIUtils.scheduleGC();
 

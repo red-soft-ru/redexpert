@@ -77,7 +77,7 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table collates = getMainTable();
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CH");
         sb.appendFields(collates, getFieldName(), BASE_COLLATE, ATTRIBUTES, DESCRIPTION, COLLATION_ATTRIBUTES);
@@ -205,7 +205,7 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("COLLATION", getName());
+        return SQLUtils.generateDefaultDropQuery("COLLATION", getName(), getHost().getDatabaseConnection());
     }
 
     @Override

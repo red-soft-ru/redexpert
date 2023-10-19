@@ -7,8 +7,8 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
-import org.underworldlabs.swing.cron.CronPanel;
 import org.underworldlabs.swing.EQDateTimePicker;
+import org.underworldlabs.swing.cron.CronPanel;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
@@ -161,7 +161,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
                     jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
                             sqlTextPanel.getSQLText() :
                             bashTextPanel.getTextAreaComponent().getText(),
-                    simpleCommentPanel.getComment(), false);
+                    simpleCommentPanel.getComment(), false, getDatabaseConnection());
 
         } else {
 

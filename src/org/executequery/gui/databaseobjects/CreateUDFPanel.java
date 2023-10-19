@@ -1,7 +1,6 @@
 package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.UDFParameter;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
@@ -19,6 +18,7 @@ import java.util.Vector;
 
 import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_DESCRIPTOR;
 import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_VALUE;
+import static org.underworldlabs.util.SQLUtils.columnDataFromProcedureParameter;
 
 public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
@@ -103,7 +103,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         Vector<ColumnData> params = parametersPanel.getTableColumnDataVector();
         for (int i = 0; i < params.size(); i++) {
             ColumnData param = params.elementAt(i);
-            if (param.isCstring())
+            if (param.isCString())
                 sb.append("CSTRING (").append(param.getColumnSize()).append(") ");
             else {
                 if (param.getSQLType() == Types.BLOB ||
@@ -235,17 +235,12 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             parameterBoxChanged();
         } else {
             UDFParameter udfParameter = editedUDF.getUDFParameters().get(0);
-            if (udfParameter.getDataType() == 40) {// check for cstring type
+            if (udfParameter.getSqlType().contains("CSTRING")) {// check for cstring type
                 cstringBox.setSelected(true);
                 cstringLengthField.setText(String.valueOf(udfParameter.getSize()));
                 cstringBoxChanged();
             } else {
-                returnsType.setColumnSize(udfParameter.getSize());
-                returnsType.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(udfParameter.getDataType(),
-                        udfParameter.getSubType()));
-                returnsType.setColumnSubtype(udfParameter.getSubType());
-                returnsType.setColumnScale(udfParameter.getScale());
-                returnsType.setColumnType(udfParameter.getFieldStringType());
+                returnsType = columnDataFromProcedureParameter(udfParameter, connection, false);
 
                 selectTypePanel.setColumnData(returnsType);
                 selectTypePanel.refresh();
@@ -264,15 +259,9 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 editedUDF.getUDFParameters()) {
             if (parameter.getPosition() == 0)
                 continue;
-            ColumnData cd = new ColumnData(connection);
-            cd.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(parameter.getDataType(),
-                    parameter.getSubType()));
-            cd.setColumnSubtype(parameter.getSubType());
-            cd.setColumnSize(parameter.getSize());
-            cd.setColumnType(DatabaseTypeConverter.getDataTypeName(parameter.getDataType(),
-                    parameter.getSubType(), parameter.getScale()));
+            ColumnData cd = columnDataFromProcedureParameter(parameter, connection, false);
             cd.setMechanism(parameter.getStringMechanism());
-            cd.setCstring(parameter.isCString());
+            cd.setCString(parameter.isCString());
             cd.setNotNull(parameter.isNotNull());
             parametersPanel.addRow(cd);
         }

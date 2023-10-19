@@ -58,7 +58,7 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table jobs = getMainTable();
         sb.appendTable(jobs);
 
@@ -109,12 +109,12 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
     @Override
     public String getCreateSQLText() throws DataSourceException {
         return SQLUtils.generateCreateJob(getName(), getCronSchedule(), isActive(),
-                getStartDate(), getEndDate(), getJobType(), getSource(), getRemarks(), true);
+                getStartDate(), getEndDate(), getJobType(), getSource(), getRemarks(), true, getHost().getDatabaseConnection());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("JOB", getName());
+        return SQLUtils.generateDefaultDropQuery("JOB", getName(), getHost().getDatabaseConnection());
     }
 
     @Override

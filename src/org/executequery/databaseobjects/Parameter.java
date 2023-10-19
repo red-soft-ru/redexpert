@@ -25,7 +25,9 @@ public class Parameter {
     protected String fieldName;
     protected int typeOfFrom;
     protected String defaultValue;
+    protected boolean defaultValueFromDomain = false;
     protected boolean descriptionAsSingleComment;
+    protected String systemDomain;
 
     public int getDataType() {
         return dataType;
@@ -199,6 +201,22 @@ public class Parameter {
 
     public void setDescriptionAsSingleComment(boolean descriptionAsSingleComment) {
         this.descriptionAsSingleComment = descriptionAsSingleComment;
+    }
+
+    public String getSystemDomain() {
+        return systemDomain;
+    }
+
+    public void setSystemDomain(String systemDomain) {
+        this.systemDomain = systemDomain;
+    }
+
+    public boolean isDefaultValueFromDomain() {
+        return defaultValueFromDomain;
+    }
+
+    public void setDefaultValueFromDomain(boolean defaultValueFromDomain) {
+        this.defaultValueFromDomain = defaultValueFromDomain;
     }
 }
 

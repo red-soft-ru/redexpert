@@ -20,7 +20,6 @@
 
 package org.executequery.databaseobjects.impl;
 
-import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -33,7 +32,6 @@ import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -112,12 +110,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             countFinishedMetaTags = 0;
 
             boolean connected = connectionMediator().connect(getDatabaseConnection());
-            if(connected)
-                try {
-                getDatabaseConnection().setServerVersion(connection.getMetaData().getDatabaseMajorVersion());
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
 
             return connected;
         }
@@ -933,11 +925,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
         if (driver.getClass().getName().contains("FBDriver")) {
-            Connection conn = getConnection().unwrap(Connection.class);
-            IFBDatabaseConnection db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), conn, "FBDatabaseConnectionImpl");
-            db.setConnection(conn);
             // TODO check after the 5 version is released
-            if (db.getMajorVersion() == 2) {
+            if (getDatabaseMajorVersion() == 2) {
                 switch (type) {
                     case NamedObject.SYNONYM:
                     case NamedObject.FUNCTION:
@@ -962,11 +951,15 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 case NamedObject.SYSTEM_FUNCTION:
                     return false;
             }
-            if (type == NamedObject.TABLESPACE||type == NamedObject.JOB)
-                return getDatabaseProductName().toUpperCase().contains("REDDATABASE") && db.getMajorVersion() >= 4;
+            if (type == NamedObject.TABLESPACE || type == NamedObject.JOB)
+                return isRDB() && getDatabaseMajorVersion() >= 4;
             return type != NamedObject.TABLE_COLUMN && type != NamedObject.CONSTRAINT;
         }
         return true;
+    }
+
+    protected boolean isRDB() {
+        return getDatabaseProductName().toLowerCase().contains("reddatabase");
     }
 
     private DefaultDatabaseMetaTag createDatabaseMetaTag(
@@ -1294,10 +1287,11 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     public NamedObject getDatabaseObjectFromMetaTagAndName(String metadatakey, String name) {
         List<NamedObject> namedObjects = getDatabaseObjectsForMetaTag(metadatakey);
-        for (NamedObject namedObject : namedObjects) {
-            if (MiscUtils.trimEnd(namedObject.getName()).contentEquals(name))
-                return namedObject;
-        }
+        if (namedObjects != null)
+            for (NamedObject namedObject : namedObjects) {
+                if (MiscUtils.trimEnd(namedObject.getName()).contentEquals(name))
+                    return namedObject;
+            }
         return null;
     }
 

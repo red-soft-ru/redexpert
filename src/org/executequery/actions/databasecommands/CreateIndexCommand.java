@@ -43,7 +43,7 @@ public class CreateIndexCommand extends OpenFrameCommand
         }
 
         if (isActionableDialogOpen()) {
-            GUIUtilities.acionableDialogToFront();
+            GUIUtilities.actionableDialogToFront();
             return;
         }
 

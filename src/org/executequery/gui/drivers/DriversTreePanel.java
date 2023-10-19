@@ -248,11 +248,6 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
 
         DatabaseDriver driver = node.getDriver();
 
-        if (driver.isDefaultSunOdbc()) {
-            GUIUtilities.displayErrorMessage(bundleString("notRemoveDefaultDriver"));
-            return;
-        }
-
         int confirmationResult = GUIUtilities.displayConfirmCancelDialog(
                 String.format(bundleString("confirmRemoving"), driver));
 

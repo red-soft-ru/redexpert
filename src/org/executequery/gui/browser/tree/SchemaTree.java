@@ -501,8 +501,8 @@ public class SchemaTree extends DynamicTree
                 String typeObject = firstNode.getMetaDataKey();
                 String name = firstNode.getName().trim();
 
-                String query = "ALTER " + typeObject + " " + MiscUtils.getFormattedObject(name) + " SET TABLESPACE " +
-                        MiscUtils.getFormattedObject(treePanel.getDatabaseObject().getName()) + ";";
+                String query = "ALTER " + typeObject + " " + MiscUtils.getFormattedObject(name, treePanel.getDatabaseConnection()) + " SET TABLESPACE " +
+                        MiscUtils.getFormattedObject(treePanel.getDatabaseObject().getName(), treePanel.getDatabaseConnection()) + ";";
 
                 DefaultStatementExecutor querySender = new DefaultStatementExecutor(treePanel.getDatabaseConnection());
                 try {

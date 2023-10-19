@@ -13,10 +13,13 @@ import org.underworldlabs.util.MiscUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Objects;
@@ -116,41 +119,24 @@ public class UpdateLoader extends JFrame {
     }
 
     public void launch() {
-
-        try {
-
-            StringBuilder sb = new StringBuilder("./RedExpert");
-            if (System.getProperty("os.arch").toLowerCase().contains("64"))
-                sb.append("64");
-            if (System.getProperty("os.name").toLowerCase().contains("win"))
-                sb.append(".exe");
-            if (repoArg == null)
-                repoArg = "-repo=";
-
-            System.out.println("Executing: " + sb);
-
-            ProcessBuilder processBuilder = new ProcessBuilder(sb.toString(), repoArg);
-            processBuilder.directory(new File(System.getProperty("user.dir")));
-            processBuilder.start();
-
-        } catch (IOException e) {
-            e.printStackTrace(System.err);
-        }
-
-        System.exit(0);
+        ExecuteQuery.restart(repoArg);
     }
 
     private void cleanup() {
 
-        outText.append("\nPreforming clean up...");
+        String zipFilePath = root;
+        if (zipFilePath.endsWith(SEP))
+            zipFilePath = zipFilePath.substring(0, zipFilePath.length() - 1);
+
+        File zipFile = new File(zipFilePath + ".zip");
+        boolean result = zipFile.delete();
+        System.out.println("Removing: " + zipFile + (result ? " [success]" : " [fail]"));
+
+        remove(new File(root));
+
         try {
-
-            new File(pathToZip, UPDATE_NAME + ".zip").delete();
-            remove(new File(root));
             Files.delete(Paths.get(root));
-
-        } catch (IOException e) {
-            e.printStackTrace(System.err);
+        } catch (IOException ignored) {
         }
     }
 
@@ -159,9 +145,12 @@ public class UpdateLoader extends JFrame {
         File[] files = file.listFiles();
         if (files != null) {
             for (File f : files) {
+
                 if (f.isDirectory())
                     remove(f);
-                f.delete();
+
+                boolean result = f.delete();
+                System.out.println("Removing: " + f + (result ? " [success]" : " [fail]"));
             }
         }
     }
@@ -171,9 +160,15 @@ public class UpdateLoader extends JFrame {
         File[] files = file.listFiles();
         if (files != null) {
             for (File f : files) {
+
                 if (f.isDirectory()) {
-                    new File(dir + SEP + f.getName()).mkdir();
+
+                    File newDir = new File(dir + SEP + f.getName());
+                    boolean result = newDir.mkdir();
+                    System.out.println("Creating directory: " + newDir + (result ? " [success]" : " [fail]"));
+
                     copyFiles(f, dir + SEP + f.getName());
+
                 } else
                     copy(f.getAbsolutePath(), dir + SEP + f.getName());
             }
@@ -195,76 +190,62 @@ public class UpdateLoader extends JFrame {
             while ((len = in.read(buf)) > 0)
                 out.write(buf, 0, len);
 
+            System.out.println("Coping file: " + f1 + " to " + f2.getParent() + " [success]");
+
         } catch (IOException e) {
-            outText.append("\nCopying error. " + e.getMessage());
-            e.printStackTrace();
+            System.out.println("Copying error: " + e);
         }
     }
 
-    private void unzip(boolean useLog) {
-
-        if (!canDownload(false))
-            return;
+    private void unzip(boolean useLog) throws IOException {
 
         int bufferSize = 2048;
         BufferedOutputStream outputStream = null;
         BufferedInputStream inputStream;
 
-        try {
+        ZipFile zipfile = new ZipFile(pathToZip + UPDATE_NAME + ".zip");
+        Enumeration<?> entries = zipfile.entries();
+        root = pathToZip + UPDATE_NAME + SEP;
+        new File(root).mkdir();
 
-            ZipFile zipfile = new ZipFile(pathToZip + UPDATE_NAME + ".zip");
-            Enumeration<?> entries = zipfile.entries();
-            root = pathToZip + UPDATE_NAME + SEP;
-            new File(root).mkdir();
+        while (entries.hasMoreElements()) {
+            ZipEntry entry = (ZipEntry) entries.nextElement();
 
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = (ZipEntry) entries.nextElement();
+            if (useLog)
+                Log.info("Extracting: " + entry);
 
-                if (useLog)
-                    Log.info("\nExtracting: " + entry);
-                outText.append("\nExtracting: " + entry);
+            if (entry.isDirectory()) {
+                new File(root + entry.getName()).mkdir();
 
-                if (entry.isDirectory()) {
-                    new File(root + entry.getName()).mkdir();
+            } else {
 
-                } else {
+                new File(root + entry.getName()).createNewFile();
+                inputStream = new BufferedInputStream(zipfile.getInputStream(entry));
 
-                    new File(root + entry.getName()).createNewFile();
-                    inputStream = new BufferedInputStream(zipfile.getInputStream(entry));
+                try {
 
-                    try {
+                    FileOutputStream fos = new FileOutputStream(root + entry.getName());
+                    outputStream = new BufferedOutputStream(fos, bufferSize);
 
-                        FileOutputStream fos = new FileOutputStream(root + entry.getName());
-                        outputStream = new BufferedOutputStream(fos, bufferSize);
+                    int count;
+                    byte[] data = new byte[bufferSize];
+                    while ((count = inputStream.read(data, 0, bufferSize)) != -1)
+                        outputStream.write(data, 0, count);
 
-                        int count;
-                        byte[] data = new byte[bufferSize];
-                        while ((count = inputStream.read(data, 0, bufferSize)) != -1)
-                            outputStream.write(data, 0, count);
-
-                    } catch (FileNotFoundException e) {
-                        outText.append("\nExtracting " + entry + " error. " + e.getMessage());
-                        if (useLog)
-                            Log.info("\nExtracting " + entry + " error. " + e.getMessage());
-
-                    } catch (IOException e) {
-                        outText.append("\nExtracting " + entry + "error." + e.getMessage());
-                        if (useLog)
-                            Log.info("\nExtracting " + entry + " error. " + e.getMessage());
-                    }
-
-                    if (outputStream != null) {
-                        outputStream.flush();
-                        outputStream.close();
-                    }
-                    inputStream.close();
+                } catch (IOException e) {
+                    if (useLog)
+                        Log.error("Extracting " + entry + " error", e);
                 }
-            }
-            zipfile.close();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+                if (outputStream != null) {
+                    outputStream.flush();
+                    outputStream.close();
+                }
+                inputStream.close();
+            }
         }
+
+        zipfile.close();
     }
 
     private static String stringPropertyFromConfig(String key) {
@@ -292,23 +273,18 @@ public class UpdateLoader extends JFrame {
         return localVersion != null && remoteVersion.isNewerThan(localVersion);
     }
 
-    public void downloadUpdate() {
+    public void downloadUpdate() throws IOException {
 
         Log.info("Contacting Download Server...");
 
         if (releaseHub) {
-            try {
 
-                String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                        JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
-                        "artifact_id", "red_expert:bin:" + version + ":zip")).getString("file");
+            String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
+                    JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
+                    "artifact_id", "red_expert:bin:" + version + ":zip")).getString("file");
 
-                downloadLink = "http://builds.red-soft.biz/" + file;
-                downloadArchive();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            downloadLink = "http://builds.red-soft.biz/" + file;
+            downloadArchive();
 
         } else {
 
@@ -317,26 +293,22 @@ public class UpdateLoader extends JFrame {
                 downloadArchive();
 
             } else {
-                try {
 
-                    //изменить эту строку в соответствии с форматом имени файла на сайте
-                    String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
-                    Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
+                //изменить эту строку в соответствии с форматом имени файла на сайте
+                String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
+                Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
 
-                    if (heads != null) {
+                if (heads != null) {
 
-                        String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
-                        String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                                JSONAPI.getJsonArray(prop + version, heads),
-                                "filename", filename)).getString("url");
+                    String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
+                    String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
+                            JSONAPI.getJsonArray(prop + version, heads),
+                            "filename", filename)).getString("url");
 
-                        downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
-                        downloadArchive();
-                    }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
+                    downloadArchive();
                 }
+
             }
         }
     }
@@ -463,18 +435,12 @@ public class UpdateLoader extends JFrame {
         } else return countByte + "b";
     }
 
-    public void unzipLocale() {
+    public void unzipLocale() throws IOException {
         unzip(true);
     }
 
-    private void downloadArchive() {
-        try {
-
-            downloadFile(downloadLink);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void downloadArchive() throws IOException {
+        downloadFile(downloadLink);
     }
 
     public void replaceFiles() {
@@ -483,11 +449,15 @@ public class UpdateLoader extends JFrame {
             String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + SEP;
             File aNew = new File(parent);
             aNew.mkdir();
+
+            System.out.println("\n--- Replacing unzipped files ---\n");
             copyFiles(new File(root), aNew.getAbsolutePath());
+
+            System.out.println("\n--- Removing downloaded sources ---\n");
             cleanup();
 
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            e.printStackTrace(System.out);
         }
     }
 
@@ -508,11 +478,11 @@ public class UpdateLoader extends JFrame {
                 cancelButton.setText("Restart later");
 
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
                 JOptionPane.showMessageDialog(null, "Access denied. Please restart RedExpert as an admin!");
 
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
                 JOptionPane.showMessageDialog(null, "An error occurred while preforming update!");
             }
 
@@ -562,9 +532,32 @@ public class UpdateLoader extends JFrame {
     public boolean canDownload(boolean showMessage) {
 
         pathToZip = System.getProperty("java.io.tmpdir") + SEP;
-        if (!new File(pathToZip).canWrite()) {
+
+        File tempDir = new File(pathToZip);
+        if (!isCanReadWrite(tempDir, showMessage))
+            return false;
+
+        try {
+            File parentDir = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
+            if (!isCanReadWrite(parentDir, showMessage))
+                return false;
+
+        } catch (URISyntaxException e) {
+            Log.error("Permissions check unsuccessful", e);
+            return false;
+        }
+
+        Log.info("Permissions check successful");
+        return true;
+    }
+
+    private boolean isCanReadWrite(File file, boolean showMessage) {
+
+        Log.info("Permissions check for: " + file);
+
+        if (!Files.isWritable(file.toPath()) || !Files.isReadable(file.toPath())) {
             if (showMessage)
-                GUIUtilities.displayWarningMessage(String.format(Bundles.get("UpdateLoader.PermissionsDenied"), pathToZip));
+                GUIUtilities.displayWarningMessage(String.format(Bundles.get("UpdateLoader.PermissionsDenied"), file.getAbsolutePath()));
             return false;
         }
 
@@ -628,6 +621,8 @@ public class UpdateLoader extends JFrame {
 
         applySystemProperties();
         UpdateLoader updateLoader = new UpdateLoader(repo);
+        boolean launch = true;
+
         for (String arg : args) {
 
             if (arg.equalsIgnoreCase("usereleasehub")) {
@@ -647,12 +642,22 @@ public class UpdateLoader extends JFrame {
             } else if (arg.contains("-root")) {
                 String root = arg.substring(arg.indexOf('=') + 1);
                 updateLoader.setRoot(root);
+
+            } else if (arg.contains("-launch")) {
+                launch = Boolean.parseBoolean(arg.substring(arg.indexOf('=') + 1));
             }
         }
 
-        //updateLoader.setVisible(true);
+        System.out.println("\n-------------------------------");
+        System.out.println("------ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy  HH:mm")) + " ------");
+        System.out.println("------ Performing update ------");
+        System.out.println("-------------------------------");
+
         updateLoader.replaceFiles();
-        updateLoader.launch();
+        if (launch)
+            updateLoader.launch();
+        else
+            ExecuteQuery.stop();
     }
 
 }

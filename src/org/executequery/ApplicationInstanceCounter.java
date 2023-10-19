@@ -2,6 +2,7 @@ package org.executequery;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -49,17 +50,20 @@ public class ApplicationInstanceCounter {
         File oldFile = new File(FILE_NAME);
         File newFile = new File(FILE_NAME + ".tmp");
 
-        try (
-                BufferedReader reader = new BufferedReader(new FileReader(oldFile));
-                PrintWriter writer = new PrintWriter(new FileWriter(newFile))
-        ) {
+        try {
+
+            BufferedReader reader = new BufferedReader(new FileReader(oldFile));
+            PrintWriter writer = new PrintWriter(new FileWriter(newFile));
 
             String line;
             while ((line = reader.readLine()) != null)
                 if (!line.startsWith(pid))
                     writer.println(line);
 
-            if (!oldFile.delete())
+            reader.close();
+            writer.close();
+
+            if (!Files.deleteIfExists(oldFile.toPath()))
                 throw new Exception("Unable to delete old instancesCounter file");
             if (!newFile.renameTo(oldFile))
                 throw new Exception("Unable to rename new instancesCounter file");
@@ -73,11 +77,20 @@ public class ApplicationInstanceCounter {
 
         List<String> pidsList = getPidsList();
         File oldFile = new File(FILE_NAME);
-        try (BufferedReader reader = new BufferedReader(new FileReader(oldFile))) {
+
+        try {
+
+            String pidList = "";
+            BufferedReader reader = new BufferedReader(new FileReader(oldFile));
 
             String line;
-            while ((line = reader.readLine()) != null) {
-                String pid = line.split("@")[0];
+            while ((line = reader.readLine()) != null)
+                pidList += line + ";";
+
+            reader.close();
+
+            for (String pidLine : pidList.split(";")) {
+                String pid = pidLine.split("@")[0];
                 if (!pidsList.contains(pid))
                     remove(pid);
             }
@@ -90,7 +103,7 @@ public class ApplicationInstanceCounter {
     private static List<String> getPidsList() {
 
         String[] getPidCmd = System.getProperty("os.name").toLowerCase().contains("win") ?
-                new String[]{"tasklist | find \"RedExpert\""} :
+                new String[]{"cmd.exe", "/c", "tasklist | find \"RedExpert\""} :
                 new String[]{"/bin/sh", "-c", "ps aux | grep RedExpert"};
 
         List<String> pidList = new ArrayList<>();

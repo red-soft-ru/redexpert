@@ -98,8 +98,12 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
             privilegeListener = new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    if (tabPane.getSelectedComponent() == privilegesPanel)
-                        privilegesPanel.setValues((AbstractDatabaseObject) getDatabaseObjectNode().getDatabaseObject());
+                    if (tabPane.getSelectedComponent() == privilegesPanel) {
+                        if (getDatabaseObjectNode() != null)
+                            privilegesPanel.setValues((AbstractDatabaseObject) getDatabaseObjectNode().getDatabaseObject());
+                        else if (databaseObject != null)
+                            privilegesPanel.setValues(databaseObject);
+                    }
                 }
             };
             tabPane.addChangeListener(privilegeListener);

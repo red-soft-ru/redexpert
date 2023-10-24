@@ -53,6 +53,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         TextEditorContainer {
 
     protected String procedureName;
+    private Object oldSelectedTab = null;
 
     protected JTabbedPane parametersTabs;
     protected NewProcedurePanel inputParametersPanel;
@@ -70,8 +71,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     protected abstract String getEmptySqlBody();
 
     protected abstract String getFullSourceBody();
-
-    protected abstract void generateScript();
 
     protected abstract void loadParameters();
 
@@ -367,6 +366,22 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                 treeSet.add(cd.getColumnName().toUpperCase());
 
         return treeSet;
+    }
+
+    protected void generateScript() {
+
+        if (tabbedPane.getSelectedComponent() != ddlPanel && oldSelectedTab == ddlPanel) {
+
+            String ddlText = ddlTextPanel.getSQLText();
+            if (GUIUtilities.displayConfirmDialog(bundleString("confirmTabChange")) != JOptionPane.YES_OPTION) {
+                tabbedPane.setSelectedComponent(ddlPanel);
+                ddlTextPanel.setSQLText(ddlText);
+            }
+
+        } else
+            ddlTextPanel.setSQLText(generateQuery());
+
+        oldSelectedTab = tabbedPane.getSelectedComponent();
     }
 
     @Override

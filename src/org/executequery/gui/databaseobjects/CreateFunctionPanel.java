@@ -132,11 +132,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     }
 
     @Override
-    protected void generateScript() {
-        ddlTextPanel.setSQLText(generateQuery());
-    }
-
-    @Override
     protected void init() {
         super.init();
         deterministicBox = new JCheckBox(bundleStaticString("deterministic"));

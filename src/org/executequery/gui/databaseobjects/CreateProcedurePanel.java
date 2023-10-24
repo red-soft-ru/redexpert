@@ -115,12 +115,6 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                 "END";
     }
 
-    @Override
-    protected void generateScript() {
-        ddlTextPanel.setSQLText(generateQuery());
-
-    }
-
     protected String generateQuery() {
         if (parseVariablesBox.isSelected()) {
             Vector<ColumnData> vars = new Vector<>();

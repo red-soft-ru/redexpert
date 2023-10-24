@@ -574,7 +574,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             return list;
 
         } catch (SQLException e) {
-            logThrowable(e);
+           e.printStackTrace();
             return new ArrayList<>();
 
         } finally {
@@ -821,7 +821,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 e.printStackTrace(System.out);
             }
 
-            String sql = "SELECT RDB$PROCEDURE_NAME AS PROCEDURE_NAME\n" +
+            String sql = "SELECT CAST (RDB$PROCEDURE_NAME as VARCHAR(1024)) AS PROCEDURE_NAME\n" +
                     "FROM RDB$PROCEDURES\n" +
                     ((majorVersion > 2) ? "WHERE RDB$PACKAGE_NAME IS NULL\n" : "") +
                     "ORDER BY PROCEDURE_NAME";
@@ -840,7 +840,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getIndicesResultSet() throws SQLException {
 
         String query = "SELECT\n" +
-                "I.RDB$INDEX_NAME," +
+                "CAST (I.RDB$INDEX_NAME as VARCHAR(1024))," +
                 "I.RDB$INDEX_INACTIVE\n" +
                 "FROM RDB$INDICES AS I\n" +
                 "WHERE I.RDB$SYSTEM_FLAG = 0\n" +
@@ -881,7 +881,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getTriggersResultSet() throws SQLException {
 
         String query = "SELECT\n" +
-                "T.RDB$TRIGGER_NAME,\n" +
+                "CAST (T.RDB$TRIGGER_NAME as VARCHAR(1024)),\n" +
                 "T.RDB$TRIGGER_INACTIVE\n" +
                 "FROM RDB$TRIGGERS T\n" +
                 "WHERE T.RDB$SYSTEM_FLAG = 0\n" +
@@ -899,7 +899,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSequencesResultSet() throws SQLException {
 
-        String query = "SELECT RDB$GENERATOR_NAME\n" +
+        String query = "SELECT CAST (RDB$GENERATOR_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$GENERATORS\n" +
                 "WHERE ((RDB$SYSTEM_FLAG IS NULL) OR (RDB$SYSTEM_FLAG = 0))\n" +
                 "ORDER BY RDB$GENERATOR_NAME";
@@ -914,7 +914,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemSequencesResultSet() throws SQLException {
 
-        String query = "SELECT RDB$GENERATOR_NAME\n" +
+        String query = "SELECT CAST (RDB$GENERATOR_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$GENERATORS\n" +
                 "WHERE ((RDB$SYSTEM_FLAG IS NOT NULL) AND (RDB$SYSTEM_FLAG != 0))\n" +
                 "ORDER BY  RDB$GENERATOR_NAME";
@@ -929,7 +929,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getDomainsResultSet() throws SQLException {
 
-        String query = "SELECT RDB$FIELD_NAME\n" +
+        String query = "SELECT CAST (RDB$FIELD_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$FIELDS\n" +
                 "WHERE (NOT (RDB$FIELD_NAME STARTING WITH 'RDB$')) AND (RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL)\n" +
                 "ORDER BY RDB$FIELD_NAME";
@@ -944,7 +944,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemDomainResultSet() throws SQLException {
 
-        String query = "SELECT RDB$FIELD_NAME\n" +
+        String query = "SELECT CAST (RDB$FIELD_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$FIELDS\n" +
                 "WHERE (RDB$FIELD_NAME STARTING WITH 'RDB$') OR (RDB$SYSTEM_FLAG <> 0 AND RDB$SYSTEM_FLAG IS NOT NULL)\n" +
                 "ORDER BY RDB$FIELD_NAME";
@@ -954,7 +954,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemRolesResultSet() throws SQLException {
 
-        String query = "SELECT RDB$ROLE_NAME\n" +
+        String query = "SELECT CAST (RDB$ROLE_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$ROLES\n" +
                 "WHERE RDB$SYSTEM_FLAG != 0 AND RDB$SYSTEM_FLAG IS NOT NULL\n" +
                 "ORDER BY 1";
@@ -964,7 +964,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemPackagesResultSet() throws SQLException {
 
-        String query = "SELECT RDB$PACKAGE_NAME\n" +
+        String query = "SELECT CAST (RDB$PACKAGE_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$PACKAGES\n" +
                 "WHERE RDB$SYSTEM_FLAG != 0 AND RDB$SYSTEM_FLAG IS NOT NULL\n" +
                 "ORDER BY 1";
@@ -974,7 +974,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getUsersResultSet() throws SQLException {
 
-        String query = "SELECT SEC$USER_NAME FROM SEC$USERS ORDER BY 1";
+        String query = "SELECT CAST (SEC$USER_NAME as VARCHAR(1024)) FROM SEC$USERS ORDER BY 1";
 
         if (typeTree == TreePanel.DEPENDED_ON)
             query = getDependOnQuery(8);
@@ -986,7 +986,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getRolesResultSet() throws SQLException {
 
-        String query = "SELECT RDB$ROLE_NAME\n" +
+        String query = "SELECT CAST (RDB$ROLE_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$ROLES\n" +
                 "WHERE RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL\n" +
                 "ORDER BY 1";
@@ -996,19 +996,19 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getTablespacesResultSet() throws SQLException {
 
-        String query = "SELECT RDB$TABLESPACE_NAME FROM RDB$TABLESPACES ORDER BY 1";
+        String query = "SELECT CAST (RDB$TABLESPACE_NAME as VARCHAR(1024)) FROM RDB$TABLESPACES ORDER BY 1";
         return getResultSetFromQuery(query);
     }
 
     private ResultSet getJobsResultSet() throws SQLException {
 
-        String query = "SELECT RDB$JOB_NAME FROM RDB$JOBS ORDER BY 1";
+        String query = "SELECT CAST (RDB$JOB_NAME as VARCHAR(1024)) FROM RDB$JOBS ORDER BY 1";
         return getResultSetFromQuery(query);
     }
 
     private ResultSet getCollationsResultSet() throws SQLException {
 
-        String query = "SELECT RDB$COLLATION_NAME\n" +
+        String query = "SELECT CAST (RDB$COLLATION_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$COLLATIONS\n" +
                 "WHERE RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL\n" +
                 "ORDER BY 1";
@@ -1018,7 +1018,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getExceptionResultSet() throws SQLException {
 
-        String query = "SELECT RDB$EXCEPTION_NAME, RDB$DESCRIPTION\n" +
+        String query = "SELECT CAST (RDB$EXCEPTION_NAME as VARCHAR(1024)), RDB$DESCRIPTION\n" +
                 "FROM RDB$EXCEPTIONS\n" +
                 "ORDER BY RDB$EXCEPTION_NAME";
 
@@ -1033,7 +1033,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getUDFResultSet() throws SQLException {
 
         String query = "SELECT\n" +
-                "RDB$FUNCTION_NAME," +
+                "CAST (RDB$FUNCTION_NAME as VARCHAR(1024))," +
                 "RDB$DESCRIPTION," +
                 "RDB$MODULE_NAME," +
                 "RDB$ENTRYPOINT," +
@@ -1057,7 +1057,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getSystemIndexResultSet() throws SQLException {
 
         String query = "SELECT\n" +
-                "I.RDB$INDEX_NAME," +
+                "CAST (I.RDB$INDEX_NAME as VARCHAR(1024))," +
                 "I.RDB$INDEX_INACTIVE\n" +
                 "FROM RDB$INDICES AS I\n" +
                 "LEFT JOIN RDB$RELATION_CONSTRAINTS AS C ON I.RDB$INDEX_NAME = C.RDB$INDEX_NAME\n" +
@@ -1070,7 +1070,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getSystemTriggerResultSet() throws SQLException {
 
         String query = "SELECT\n" +
-                "T.RDB$TRIGGER_NAME," +
+                "CAST (T.RDB$TRIGGER_NAME as VARCHAR(1024))," +
                 "T.RDB$TRIGGER_INACTIVE\n" +
                 "FROM RDB$TRIGGERS T\n" +
                 "WHERE T.RDB$SYSTEM_FLAG <> 0\n" +
@@ -1082,7 +1082,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getDDLTriggerResultSet() throws SQLException {
 
         String query = "SELECT\n" +
-                "T.RDB$TRIGGER_NAME," +
+                "CAST (T.RDB$TRIGGER_NAME as VARCHAR(1024))," +
                 "T.RDB$TRIGGER_INACTIVE\n" +
                 "FROM RDB$TRIGGERS T\n" +
                 "WHERE T.RDB$SYSTEM_FLAG = 0\n" +
@@ -1095,7 +1095,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getDatabaseTriggerResultSet() throws SQLException {
 
         String query = "SELECT\n" +
-                "T.RDB$TRIGGER_NAME," +
+                "CAST (T.RDB$TRIGGER_NAME as VARCHAR(1024))," +
                 "T.RDB$TRIGGER_INACTIVE\n" +
                 "FROM RDB$TRIGGERS T\n" +
                 "WHERE T.RDB$SYSTEM_FLAG = 0\n" +
@@ -1107,7 +1107,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getPackagesResultSet() throws SQLException {
 
-        String query = "SELECT P.RDB$PACKAGE_NAME\n" +
+        String query = "SELECT CAST (P.RDB$PACKAGE_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$PACKAGES P\n" +
                 "WHERE RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL ORDER BY 1";
 
@@ -1124,7 +1124,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         String query = null;
         if (metaDataKey.equals(NamedObject.META_TYPES[TABLE])) {
 
-            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(63))\n" +
+            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024))\n" +
                     "FROM RDB$RELATIONS\n" +
                     "WHERE RDB$VIEW_BLR IS NULL\n" +
                     "AND (RDB$SYSTEM_FLAG IS NULL OR RDB$SYSTEM_FLAG = 0)\n" +
@@ -1141,7 +1141,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } else if (metaDataKey.equals(NamedObject.META_TYPES[SYSTEM_TABLE])) {
 
-            query = "SELECT RDB$RELATION_NAME\n" +
+            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024))\n" +
                     "FROM RDB$RELATIONS\n" +
                     "WHERE RDB$VIEW_BLR IS NULL\n" +
                     "AND (RDB$SYSTEM_FLAG IS NOT NULL AND RDB$SYSTEM_FLAG = 1)\n" +
@@ -1149,7 +1149,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } else if (metaDataKey.equals(NamedObject.META_TYPES[VIEW])) {
 
-            query = "SELECT RDB$RELATION_NAME\n" +
+            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024))\n" +
                     "FROM RDB$RELATIONS\n" +
                     "WHERE RDB$VIEW_BLR IS NOT NULL\n" +
                     "AND (RDB$SYSTEM_FLAG IS NULL OR RDB$SYSTEM_FLAG = 0)\n" +
@@ -1162,7 +1162,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } else if (metaDataKey.equals(NamedObject.META_TYPES[SYSTEM_VIEW])) {
 
-            query = "SELECT RDB$RELATION_NAME\n" +
+            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024))\n" +
                     "FROM RDB$RELATIONS\n" +
                     "WHERE RDB$VIEW_BLR IS NOT NULL\n" +
                     "AND (RDB$SYSTEM_FLAG IS NOT NULL AND RDB$SYSTEM_FLAG = 1)\n" +
@@ -1170,7 +1170,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } else if (metaDataKey.equals(NamedObject.META_TYPES[GLOBAL_TEMPORARY])) {
 
-            query = "SELECT R.RDB$RELATION_NAME\n" +
+            query = "SELECT CAST (R.RDB$RELATION_NAME as VARCHAR(1024))\n" +
                     "FROM RDB$RELATIONS R\n" +
                     "JOIN RDB$TYPES T ON R.RDB$RELATION_TYPE = T.RDB$TYPE\n" +
                     "WHERE (T.RDB$FIELD_NAME = 'RDB$RELATION_TYPE')\n" +
@@ -1189,7 +1189,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             String schemaName = schemaNameForQuery();
 
             String query = "SELECT 0, 0,\n" +
-                    "RDB$FUNCTION_NAME AS FUNCTION_NAME,\n" +
+                    "CAST (RDB$FUNCTION_NAME as VARCHAR(1024)) AS FUNCTION_NAME,\n" +
                     "RDB$DESCRIPTION AS REMARKS\n" +
                     "FROM RDB$FUNCTIONS\n" +
                     "WHERE (RDB$MODULE_NAME IS NULL) AND (RDB$PACKAGE_NAME IS NULL)\n" +

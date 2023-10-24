@@ -72,7 +72,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     protected String getFullSourceBody() {
 
         String res = "";
-        String query = "SELECT RDB$FUNCTION_SOURCE FROM RDB$FUNCTIONS WHERE RDB$FUNCTION_NAME = '" + procedure + "'";
+        String query = "SELECT RDB$FUNCTION_SOURCE FROM RDB$FUNCTIONS WHERE RDB$FUNCTION_NAME = '" + procedureName + "'";
         ResultSet rs;
         try {
             rs = sender.getResultSet(query).getResultSet();
@@ -180,7 +180,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     @Override
     public void setDatabaseObject(Object databaseObject) {
 
-        procedure = (String) databaseObject;
+        procedureName = (String) databaseObject;
         returnType = new ColumnData(connection);
     }
 

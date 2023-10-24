@@ -22,6 +22,7 @@ package org.executequery.datasource;
 
 import biz.redsoft.IFBCryptoPluginInit;
 import biz.redsoft.IFBDataSource;
+import biz.redsoft.ITPB;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ApplicationContext;
 import org.executequery.EventMediator;
@@ -67,6 +68,8 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     private final String url;
     private final DatabaseConnection databaseConnection;
 
+    private ClassLoader classLoaderFromPlugin;
+
     IFBCryptoPluginInit cryptoPlugin = null;
 
     public SimpleDataSource(DatabaseConnection databaseConnection) {
@@ -88,6 +91,10 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     }
 
     public Connection getConnection() throws SQLException {
+        return getConnection(null);
+    }
+
+    public Connection getConnection(ITPB tpb) throws SQLException {
         while (MiscUtils.isNull(databaseConnection.getUnencryptedPassword())
                 && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
             LoginPasswordDialog lpd = new LoginPasswordDialog(Bundles.getCommon("title-enter-password"), Bundles.getCommon("message-enter-password"),
@@ -105,19 +112,23 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             }
         }
         try {
-            return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword());
+            return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword(), tpb);
         } catch (SQLException e) {
             if (e.getSQLState().contentEquals("28000")&&e.getErrorCode()==335544472
                     && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
                 databaseConnection.setPassword("");
                 dataSource = null;
-                return getConnection();
+                return getConnection(tpb);
             }
             throw e;
         }
     }
 
     public Connection getConnection(String username, String password) throws SQLException {
+        return getConnection(username, password, null);
+    }
+
+    public Connection getConnection(String username, String password, ITPB tpb) throws SQLException {
 
         Properties advancedProperties = buildAdvancedProperties();
 
@@ -137,7 +148,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
         if (driver != null) {
             if (dataSource != null)
-                return dataSource.getConnection();
+                return dataSource.getConnection(tpb);
 
             // If used jaybird
             if (databaseConnection.getJDBCDriver().getClassName().contains("FBDriver") &&
@@ -197,8 +208,9 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                         dataSource.setNonStandardProperty(entry.getKey().toString(), entry.getValue().toString());
                     }
                     dataSource.setURL(url);
+                    classLoaderFromPlugin = dataSource.getClass().getClassLoader();
 
-                    return dataSource.getConnection();
+                    return dataSource.getConnection(tpb);
                 } catch (ClassNotFoundException e) {
                     // ...original jaybird
                     return driver.connect(url, advancedProperties);
@@ -209,6 +221,27 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         }
 
         throw new DataSourceException("Error loading specified JDBC driver");
+    }
+
+    public ClassLoader getClassLoaderFromPlugin() {
+        return classLoaderFromPlugin;
+    }
+
+    public void setTPBtoConnection(Connection connection, ITPB tpb) throws SQLException {
+        if (dataSource != null) {
+            if (connection instanceof PooledConnection)
+                connection = ((PooledConnection) connection).getRealConnection();
+            dataSource.setTransactionParameters(connection, tpb);
+        }
+    }
+
+    public long getIDTransaction(Connection connection) throws SQLException {
+        if (dataSource != null) {
+            if (connection instanceof PooledConnection)
+                connection = ((PooledConnection) connection).getRealConnection();
+            return dataSource.getIDTransaction(connection);
+        }
+        return -1;
     }
 
     private Properties buildAdvancedProperties() {

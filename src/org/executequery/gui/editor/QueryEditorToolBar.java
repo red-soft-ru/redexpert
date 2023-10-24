@@ -91,6 +91,8 @@ class QueryEditorToolBar extends PanelToolBar {
 
     private static final String EXECUTE_COMMAND = "execute-command";
 
+    private static final String EXECUTE_IN_ANY_CONNECTIONS_COMMAND = "execute-in-any-connections-command";
+
     private static final String PRINT_PLAN_COMMAND = "print-plan-command";
 
     private static final String PRINT_EXPLAINED_PLAN_COMMAND = "print-explained-plan-command";
@@ -136,6 +138,9 @@ class QueryEditorToolBar extends PanelToolBar {
 
         addButton(createButton(EXECUTE_COMMAND,
                 bundleString(EXECUTE_COMMAND)));
+
+        addButton(createButton(EXECUTE_IN_ANY_CONNECTIONS_COMMAND,
+                bundleString(EXECUTE_IN_ANY_CONNECTIONS_COMMAND)));
 
         //addButton(createButton(EXECUTE_AT_CURSOR_COMMAND,
         //bundleString(EXECUTE_AT_CURSOR_COMMAND)));

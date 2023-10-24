@@ -20,6 +20,9 @@
 
 package org.executequery.sql;
 
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.editor.TransactionParametersPanel;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -50,7 +53,7 @@ public interface QueryDelegate {
      * @param the result of the executed query (update)
      * @param the type of statement executed
      */
-    void setResult(int result, int type, String metaName);
+    void setResult(DatabaseConnection dc, int result, int type, String metaName);
 
     /**
      * Sets the text within status bar's left-hand
@@ -68,7 +71,7 @@ public interface QueryDelegate {
      *
      * @param the error message to display
      */
-    void setOutputMessage(int type, String text);
+    void setOutputMessage(DatabaseConnection dc, int type, String text);
 
     /**
      * Sets the error message text within the
@@ -77,7 +80,7 @@ public interface QueryDelegate {
      *
      * @param the error message to display
      */
-    void setOutputMessage(int type, String text, boolean selectTab);
+    void setOutputMessage(DatabaseConnection dc, int type, String text, boolean selectTab);
 
     /**
      * Interrupts any executing statement.
@@ -121,19 +124,19 @@ public interface QueryDelegate {
     /**
      * Attempts to commit any currently open transaction.
      */
-    void commit();
+    void commit(boolean anyConnections);
 
     /**
      * Attempts to rollback any currently open transaction.
      */
-    void rollback();
+    void rollback(boolean anyConnections);
 
     /**
      * Executes the specified query.
      *
      * @param query - the query
      */
-    void executeQuery(String query);
+    void executeQuery(String query, boolean anyConnections);
 
     /**
      * Executes the specified query as a 'block' if specified.
@@ -141,18 +144,14 @@ public interface QueryDelegate {
      * @param the     query
      * @param whether to execute ALL query text as one statement
      */
-    void executeQuery(String query, boolean executeAsBlock);
+    void executeQuery(String query, boolean executeAsBlock, boolean anyConnections);
 
     /**
      * Get current isolation level for transaction.
      */
-    int getTransactionIsolation();
+    void setTPP(TransactionParametersPanel tpp);
 
-    /**
-     * Sets new transaction isolation level.
-     */
-    void setTransactionIsolation(int transactionLevel);
-
+    TransactionParametersPanel getTPP();
 }
 
 

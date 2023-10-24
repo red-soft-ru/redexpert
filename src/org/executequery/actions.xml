@@ -322,6 +322,14 @@
             large-icon="/org/executequery/icons/Execute24.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteCommand"/>
 
+    <action id="execute-in-any-connections-command"
+            name="Execute"
+            accel-key="control shift ENTER"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/Executings16.png"
+            large-icon="/org/executequery/icons/Execute24.png"
+            execute-class="org.executequery.actions.queryeditor.ExecuteInAnyConnectionsCommand"/>
+
     <action id="execute-as-block-command"
             name="Execute as Single Statement"
             accel-key="control shift F5"

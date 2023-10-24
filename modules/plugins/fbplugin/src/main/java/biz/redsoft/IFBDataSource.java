@@ -16,9 +16,15 @@ public interface IFBDataSource {
 
     Connection getConnection() throws SQLException;
 
+    Connection getConnection(ITPB tpb) throws SQLException;
+
     void close() throws ResourceException, SQLException;
 
     void setCertificate(String certificate);
 
     void setNonStandardProperty(String key, String value);
+
+    void setTransactionParameters(Connection connection, ITPB tpb) throws SQLException;
+
+    long getIDTransaction(Connection con) throws SQLException;
 }

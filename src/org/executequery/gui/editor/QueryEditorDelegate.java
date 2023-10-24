@@ -113,14 +113,14 @@ public class QueryEditorDelegate implements QueryDelegate {
         dispatcher.closeConnection();
     }
 
-    public void commit() {
+    public void commit(boolean anyConnections) {
 
-        executeQuery("commit");
+        executeQuery("commit", anyConnections);
     }
 
-    public void rollback() {
+    public void rollback(boolean anyConnections) {
 
-        executeQuery("rollback");
+        executeQuery("rollback", anyConnections);
     }
 
     public void commitModeChanged(boolean autoCommit) {
@@ -128,30 +128,30 @@ public class QueryEditorDelegate implements QueryDelegate {
         queryEditor.commitModeChanged(autoCommit);
     }
 
-    public void executeQuery(String query) {
+    public void executeQuery(String query, boolean anyConnections) {
 
-        executeQuery(queryEditor.getSelectedConnection(), query, false);
+        executeQuery(queryEditor.getSelectedConnection(), query, false, anyConnections);
     }
 
-    public void executeQuery(String query, boolean executeAsBlock) {
+    public void executeQuery(String query, boolean executeAsBlock, boolean anyConnections) {
 
         queryEditor.preExecute();
 
-        executeQuery(queryEditor.getSelectedConnection(), query, executeAsBlock);
+        executeQuery(queryEditor.getSelectedConnection(), query, executeAsBlock, anyConnections);
     }
 
     @Override
-    public int getTransactionIsolation() {
-        return dispatcher.getTransactionIsolation();
+    public void setTPP(TransactionParametersPanel tpp) {
+        dispatcher.setTpp(tpp);
     }
 
     @Override
-    public void setTransactionIsolation(int transactionLevel) {
-        dispatcher.setTransactionIsolation(transactionLevel);
+    public TransactionParametersPanel getTPP() {
+        return dispatcher.getTpp();
     }
 
     public void executeQuery(DatabaseConnection selectedConnection,
-                             String query, boolean executeAsBlock) {
+                             String query, boolean executeAsBlock, boolean anyConnections) {
 
         if (dispatcher.isExecuting()) {
 
@@ -168,7 +168,7 @@ public class QueryEditorDelegate implements QueryDelegate {
             currentStatementHistoryIndex = -1;
             queryEditor.setHasPreviousStatement(true);
             queryEditor.setHasNextStatement(false);
-            dispatcher.executeSQLQuery(selectedConnection, query, executeAsBlock);
+            dispatcher.executeSQLQuery(selectedConnection, query, executeAsBlock, anyConnections);
         }
 
     }
@@ -193,7 +193,7 @@ public class QueryEditorDelegate implements QueryDelegate {
     }
 
     public void executeScript(DatabaseConnection selectedConnection,
-                              String script) {
+                              String script, boolean anyConnections) {
 
         if (dispatcher.isExecuting()) {
 
@@ -210,7 +210,7 @@ public class QueryEditorDelegate implements QueryDelegate {
             currentStatementHistoryIndex = -1;
             queryEditor.setHasPreviousStatement(true);
             queryEditor.setHasNextStatement(false);
-            dispatcher.executeSQLScript(selectedConnection, script);
+            dispatcher.executeSQLScript(selectedConnection, script, anyConnections);
         }
 
     }
@@ -230,7 +230,7 @@ public class QueryEditorDelegate implements QueryDelegate {
 
         if (StringUtils.isNotBlank(query)) {
             query = new SqlParser(query, "").getProcessedSql();
-            dispatcher.printExecutedPlan(selectedConnection, query, explained);
+            dispatcher.printExecutedPlan(selectedConnection, query, explained, false);
         }
 
     }
@@ -260,19 +260,19 @@ public class QueryEditorDelegate implements QueryDelegate {
         Log.info(message);
     }
 
-    public void setOutputMessage(int type, String text) {
+    public void setOutputMessage(DatabaseConnection dc, int type, String text) {
 
-        queryEditor.setOutputMessage(type, text);
+        queryEditor.setOutputMessage(dc, type, text);
     }
 
-    public void setOutputMessage(int type, String text, boolean selectTab) {
+    public void setOutputMessage(DatabaseConnection dc, int type, String text, boolean selectTab) {
 
-        queryEditor.setOutputMessage(type, text, selectTab);
+        queryEditor.setOutputMessage(dc, type, text, selectTab);
     }
 
-    public void setResult(int result, int type, String metaName) {
+    public void setResult(DatabaseConnection dc, int result, int type, String metaName) {
 
-        queryEditor.setResultText(result, type, metaName);
+        queryEditor.setResultText(dc, result, type, metaName);
     }
 
     public void setResultSet(ResultSet rs, String query) throws SQLException {

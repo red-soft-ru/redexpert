@@ -136,12 +136,12 @@ public class QueryEditorPopupMenu extends JPopupMenu
 
     public void execute(ActionEvent e) {
 
-        queryDelegate.executeQuery(null);
+        queryDelegate.executeQuery(null, false);
     }
 
     public void executeAsBlock(ActionEvent e) {
 
-        queryDelegate.executeQuery(null, true);
+        queryDelegate.executeQuery(null, true, false);
     }
 
     public void updateAutoCompleteKeywordUsage(ActionEvent e) {
@@ -187,12 +187,12 @@ public class QueryEditorPopupMenu extends JPopupMenu
 
     public void commit(ActionEvent e) {
 
-        queryDelegate.commit();
+        queryDelegate.commit(false);
     }
 
     public void rollback(ActionEvent e) {
 
-        queryDelegate.rollback();
+        queryDelegate.rollback(false);
     }
 
     public void mousePressed(MouseEvent e) {

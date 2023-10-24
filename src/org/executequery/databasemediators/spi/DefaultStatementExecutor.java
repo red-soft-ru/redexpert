@@ -20,6 +20,7 @@
 
 package org.executequery.databasemediators.spi;
 
+import biz.redsoft.ITPB;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.GUIUtilities;
@@ -117,6 +118,8 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
      * the isolation level for transaction
      */
     private int transactionIsolation;
+
+    private ITPB tpb;
 
     boolean useDatabaseConnection;
 
@@ -326,14 +329,15 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             statementResult.setMessage("Connection closed.");
             return false;
         }
-        connectionIsolationLevel = conn.getTransactionIsolation();
-        if (transactionIsolation != -1) {
+        if (tpb != null)
             try {
-                conn.setTransactionIsolation(transactionIsolation);
+                long idTra = ConnectionManager.getIDTransaction(databaseConnection, conn);
+                if (idTra == -1)
+                    ConnectionManager.setTPBtoConnection(databaseConnection, conn, tpb);
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog("Error transaction isolation", e);
+                GUIUtilities.displayExceptionErrorDialog("Error transaction parameters", e);
             }
-        }
+
         return true;
     }
 
@@ -1936,6 +1940,14 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
     public String bundleString(String key) {
         return Bundles.get(getClass(), key);
+    }
+
+    public ITPB getTpb() {
+        return tpb;
+    }
+
+    public void setTpb(ITPB tpb) {
+        this.tpb = tpb;
     }
 }
 

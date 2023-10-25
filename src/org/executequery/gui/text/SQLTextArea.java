@@ -1048,24 +1048,10 @@ public class SQLTextArea extends RSyntaxTextArea
                 action.install(connectionsTreePanel.getTree());
                 action.findString(connectionsTreePanel.getTree(), lexeme, connectionsTreePanel.getHostNode(databaseConnection));
 
-                BaseDialog dialog = new BaseDialog("find", false);
                 JList<?> jList = action.getResultsList();
-
                 if (jList.getModel().getSize() == 1) {
                     jList.setSelectedIndex(0);
                     action.listValueSelected((TreePath) jList.getSelectedValue());
-
-                } else {
-
-                    jList.addPropertyChangeListener(evt -> {
-                        if (jList.getModel().getSize() == 0)
-                            dialog.finished();
-                    });
-
-                    JPanel panel = new JPanel();
-                    panel.add(new JScrollPane(jList));
-                    dialog.addDisplayComponent(panel);
-                    dialog.display();
                 }
 
                 isCtrlPressed = false;

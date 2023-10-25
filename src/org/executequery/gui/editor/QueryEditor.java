@@ -921,6 +921,15 @@ public class QueryEditor extends DefaultTabView
 
             return false;
         }
+        if (delegate.getIDTransaction() != -1) {
+            int result = GUIUtilities.displayConfirmCancelDialog(bundleString("requestTransactionMessage"));
+            if (result == JOptionPane.YES_OPTION)
+                delegate.commit(false);
+            else if (result == JOptionPane.NO_OPTION)
+                delegate.rollback(false);
+            else return false;
+            return tabViewClosing();
+        }
 
         UserProperties properties = UserProperties.getInstance();
         boolean conFlag = oldConnection == null || oldConnection.isConnected();
@@ -1073,7 +1082,7 @@ public class QueryEditor extends DefaultTabView
     }
 
     public void executeAsBlock() {
-        delegate.executeQuery(null, true);
+        delegate.executeQuery(null, true, true);
     }
 
     /**
@@ -1089,7 +1098,7 @@ public class QueryEditor extends DefaultTabView
 
         editorPanel.resetExecutingLine();
         boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
-        delegate.executeQuery(getSelectedConnection(), query, executeAsBlock, false);
+        delegate.executeQuery(getSelectedConnection(), query, executeAsBlock, false, true);
     }
 
     public void executeSQLQueryInAnyConnections(String query) {
@@ -1105,7 +1114,7 @@ public class QueryEditor extends DefaultTabView
 
             for (DatabaseConnection dc : selectConnectionsPanel.getSelectedConnections()) {
                 preExecute(dc);
-                delegates.get(dc).executeQuery(dc, query, true, true);
+                delegates.get(dc).executeQuery(dc, query, true, true, true);
             }
         }
     }
@@ -1173,7 +1182,7 @@ public class QueryEditor extends DefaultTabView
 
         if (StringUtils.isNotBlank(query)) {
             editorPanel.setExecutingQuery(query);
-            delegate.executeQuery(query, false);
+            delegate.executeQuery(query, false, true);
         }
     }
 

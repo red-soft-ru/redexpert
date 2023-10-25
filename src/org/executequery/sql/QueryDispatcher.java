@@ -224,7 +224,7 @@ public class QueryDispatcher {
      */
     public void executeSQLQuery(String query, boolean executeAsBlock, boolean anyConnections) {
 
-        executeSQLQuery(null, query, executeAsBlock, anyConnections);
+        executeSQLQuery(null, query, executeAsBlock, anyConnections, true);
     }
 
     /**
@@ -238,7 +238,7 @@ public class QueryDispatcher {
      * @param executeAsBlock to execute in entirety, false otherwise
      */
     public void executeSQLQuery(
-            DatabaseConnection dc, final String query, final boolean executeAsBlock, boolean anyConnections) {
+            DatabaseConnection dc, final String query, final boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
 
         if (!checkBeforeExecuteQuery(query, dc, anyConnections))
             return;
@@ -256,36 +256,52 @@ public class QueryDispatcher {
         querySender.setTpb(tpp.getTpb(dc));
 
         statementCancelled = false;
+        if (inBackground) {
+            worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
 
-        worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
+                public Object construct() {
 
-            public Object construct() {
-
-                return executeSQL(query, executeAsBlock, anyConnections);
-            }
-
-            public void finished() {
-
-                delegate.finished(duration);
-
-                if (statementCancelled) {
-
-                    setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE,
-                            "Statement cancelled", anyConnections);
-                    delegate.setStatusMessage(" Statement cancelled");
+                    return executeSQL(query, executeAsBlock, anyConnections);
                 }
-                querySender.setCloseConnectionAfterQuery(false);
-                querySender.releaseResourcesWithoutCommit();
-                executing = false;
-            }
 
-        };
+                public void finished() {
+
+                    delegate.finished(duration);
+
+                    if (statementCancelled) {
+
+                        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE,
+                                "Statement cancelled", anyConnections);
+                        delegate.setStatusMessage(" Statement cancelled");
+                    }
+                    querySender.setCloseConnectionAfterQuery(false);
+                    querySender.releaseResourcesWithoutCommit();
+                    executing = false;
+                }
+
+            };
+        }
 
         setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc, anyConnections);
 
         delegate.executing();
         delegate.setStatusMessage(Constants.EMPTY);
-        worker.start();
+        if (inBackground)
+            worker.start();
+        else {
+            executeSQL(query, executeAsBlock, anyConnections);
+            delegate.finished(duration);
+
+            if (statementCancelled) {
+
+                setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE,
+                        "Statement cancelled", anyConnections);
+                delegate.setStatusMessage(" Statement cancelled");
+            }
+            querySender.setCloseConnectionAfterQuery(false);
+            querySender.releaseResourcesWithoutCommit();
+            executing = false;
+        }
     }
 
     public void executeSQLQueryInProfiler(
@@ -1811,6 +1827,10 @@ public class QueryDispatcher {
         }
 
         return true;
+    }
+
+    public long getIDTransaction() {
+        return querySender.getIDTransaction();
     }
 }
 

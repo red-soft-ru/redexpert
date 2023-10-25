@@ -341,6 +341,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
         return true;
     }
 
+    public long getIDTransaction() {
+        return ConnectionManager.getIDTransaction(databaseConnection, conn);
+    }
+
     /**
      * <p>Executes the specified query (SELECT) and returns
      * a <code>ResultSet</code> object from this query.
@@ -1468,8 +1472,6 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             useCount++;
         } catch (SQLException e) {
             statementResult.setSqlException(e);
-        } finally {
-            //finished();
         }
 
         return statementResult;

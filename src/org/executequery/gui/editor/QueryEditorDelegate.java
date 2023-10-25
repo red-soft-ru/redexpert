@@ -92,6 +92,10 @@ public class QueryEditorDelegate implements QueryDelegate {
         return dispatcher.getCommitMode();
     }
 
+    public long getIDTransaction() {
+        return dispatcher.getIDTransaction();
+    }
+
     public void preferencesChanged() {
 
         dispatcher.preferencesChanged();
@@ -115,12 +119,12 @@ public class QueryEditorDelegate implements QueryDelegate {
 
     public void commit(boolean anyConnections) {
 
-        executeQuery("commit", anyConnections);
+        executeQuery("commit", anyConnections, false);
     }
 
     public void rollback(boolean anyConnections) {
 
-        executeQuery("rollback", anyConnections);
+        executeQuery("rollback", anyConnections, false);
     }
 
     public void commitModeChanged(boolean autoCommit) {
@@ -128,16 +132,16 @@ public class QueryEditorDelegate implements QueryDelegate {
         queryEditor.commitModeChanged(autoCommit);
     }
 
-    public void executeQuery(String query, boolean anyConnections) {
+    public void executeQuery(String query, boolean anyConnections, boolean inBackground) {
 
-        executeQuery(queryEditor.getSelectedConnection(), query, false, anyConnections);
+        executeQuery(queryEditor.getSelectedConnection(), query, false, anyConnections, inBackground);
     }
 
-    public void executeQuery(String query, boolean executeAsBlock, boolean anyConnections) {
+    public void executeQuery(String query, boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
 
         queryEditor.preExecute();
 
-        executeQuery(queryEditor.getSelectedConnection(), query, executeAsBlock, anyConnections);
+        executeQuery(queryEditor.getSelectedConnection(), query, executeAsBlock, anyConnections, inBackground);
     }
 
     @Override
@@ -151,7 +155,7 @@ public class QueryEditorDelegate implements QueryDelegate {
     }
 
     public void executeQuery(DatabaseConnection selectedConnection,
-                             String query, boolean executeAsBlock, boolean anyConnections) {
+                             String query, boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
 
         if (dispatcher.isExecuting()) {
 
@@ -168,7 +172,7 @@ public class QueryEditorDelegate implements QueryDelegate {
             currentStatementHistoryIndex = -1;
             queryEditor.setHasPreviousStatement(true);
             queryEditor.setHasNextStatement(false);
-            dispatcher.executeSQLQuery(selectedConnection, query, executeAsBlock, anyConnections);
+            dispatcher.executeSQLQuery(selectedConnection, query, executeAsBlock, anyConnections, inBackground);
         }
 
     }

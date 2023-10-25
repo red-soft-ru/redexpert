@@ -136,7 +136,7 @@ public interface QueryDelegate {
      *
      * @param query - the query
      */
-    void executeQuery(String query, boolean anyConnections);
+    void executeQuery(String query, boolean anyConnections, boolean inBackground);
 
     /**
      * Executes the specified query as a 'block' if specified.
@@ -144,7 +144,7 @@ public interface QueryDelegate {
      * @param the     query
      * @param whether to execute ALL query text as one statement
      */
-    void executeQuery(String query, boolean executeAsBlock, boolean anyConnections);
+    void executeQuery(String query, boolean executeAsBlock, boolean anyConnections, boolean inBackground);
 
     /**
      * Get current isolation level for transaction.

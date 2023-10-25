@@ -265,10 +265,10 @@ public class ErdExecuteSQL extends ErdPrintableDialog
     public void log(String message) {
     }
 
-    public void executeQuery(String query, boolean anyConnections) {
+    public void executeQuery(String query, boolean anyConnections, boolean inBackground) {
     }
 
-    public void executeQuery(String query, boolean executeAsBlock, boolean anyConnections) {
+    public void executeQuery(String query, boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
     }
 
     @Override

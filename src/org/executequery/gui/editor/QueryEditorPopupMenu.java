@@ -136,12 +136,12 @@ public class QueryEditorPopupMenu extends JPopupMenu
 
     public void execute(ActionEvent e) {
 
-        queryDelegate.executeQuery(null, false);
+        queryDelegate.executeQuery(null, false, true);
     }
 
     public void executeAsBlock(ActionEvent e) {
 
-        queryDelegate.executeQuery(null, true, false);
+        queryDelegate.executeQuery(null, true, false, true);
     }
 
     public void updateAutoCompleteKeywordUsage(ActionEvent e) {

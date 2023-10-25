@@ -58,27 +58,23 @@ public class TreeFindAction extends FindAction<TreePath> {
         searchInCols = SystemProperties.getBooleanProperty("user", "browser.search.in.columns");
     }
 
+    @Override
     protected boolean changed(JComponent comp, String searchString, Position.Bias bias) {
 
-        if (StringUtils.isBlank(searchString)) {
-
+        if (StringUtils.isBlank(searchString))
             return false;
-        }
 
         JTree tree = (JTree) comp;
         String prefix = searchString;
 
-        if (ignoreCase()) {
-
+        if (ignoreCase())
             prefix = prefix.toUpperCase();
-        }
 
-        prefix = prefix.replaceAll("\\*", ".*");
+        prefix = prefix.replaceAll("\\*", ".*")
+                .replace("$", "\\$");
 
-        Matcher matcher = Pattern.compile(prefix).matcher("");
-        List<TreePath> matchedPaths = new ArrayList<TreePath>();
-        findOnTree(tree.getPathForRow(0), matchedPaths, matcher);
-
+        List<TreePath> matchedPaths = new ArrayList<>();
+        findOnTree(tree.getPathForRow(0), matchedPaths, Pattern.compile(prefix).matcher(""));
         foundValues(matchedPaths);
 
         return !(matchedPaths.isEmpty());

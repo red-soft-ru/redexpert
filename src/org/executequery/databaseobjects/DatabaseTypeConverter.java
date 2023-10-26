@@ -278,12 +278,10 @@ DatabaseTypeConverter {
             case time_with_timezone:
                 return Types.TIME_WITH_TIMEZONE;
             case char_type:
-                switch (subtype) {
-                    case 0:
-                        return Types.BINARY;
-                    case 1:
-                        return Types.CHAR;
+                if (subtype == 0) {
+                    return Types.BINARY;
                 }
+                return Types.CHAR;
             case int64_type:
                 switch (subtype) {
                     case 1:
@@ -303,12 +301,10 @@ DatabaseTypeConverter {
             case timestamp_with_timezone:
                 return Types.TIMESTAMP_WITH_TIMEZONE;
             case varchar_type:
-                switch (subtype) {
-                    case 0:
-                        return Types.VARBINARY;
-                    case 1:
-                        return Types.VARCHAR;
+                if (subtype == 0) {
+                    return Types.VARBINARY;
                 }
+                return Types.VARCHAR;
             case blob_type:
                 switch (subtype) {
                     case 1:

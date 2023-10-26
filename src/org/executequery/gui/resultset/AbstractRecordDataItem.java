@@ -23,11 +23,11 @@ package org.executequery.gui.resultset;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.SQLTypeObjectFactory;
+import org.executequery.databaseobjects.Types;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.math.BigDecimal;
-import java.sql.Types;
 import java.time.*;
 
 

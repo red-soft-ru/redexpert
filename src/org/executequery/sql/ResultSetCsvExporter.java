@@ -21,6 +21,7 @@
 package org.executequery.sql;
 
 import org.executequery.Constants;
+import org.executequery.databaseobjects.Types;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -29,7 +30,6 @@ import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 
 public class ResultSetCsvExporter implements ResultSetExporter {
 

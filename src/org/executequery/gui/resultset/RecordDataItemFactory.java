@@ -20,8 +20,7 @@
 
 package org.executequery.gui.resultset;
 
-import java.sql.Types;
-
+import org.executequery.databaseobjects.Types;
 
 public class RecordDataItemFactory {
 

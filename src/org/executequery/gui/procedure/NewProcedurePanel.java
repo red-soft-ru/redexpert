@@ -1,13 +1,7 @@
 package org.executequery.gui.procedure;
 
-import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
-import org.executequery.gui.table.TableFunction;
-import org.executequery.gui.table.TableModifier;
-import org.underworldlabs.util.MiscUtils;
 
-import java.sql.Types;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

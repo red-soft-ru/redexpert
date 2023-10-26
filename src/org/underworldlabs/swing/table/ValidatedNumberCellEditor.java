@@ -1,9 +1,10 @@
 package org.underworldlabs.swing.table;
 
+import org.executequery.databaseobjects.Types;
+
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.math.BigInteger;
-import java.sql.Types;
 
 /**
  * Simple number value table column cell editor

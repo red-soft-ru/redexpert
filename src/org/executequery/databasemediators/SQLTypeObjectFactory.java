@@ -20,12 +20,12 @@
 
 package org.executequery.databasemediators;
 
+import org.executequery.databaseobjects.Types;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

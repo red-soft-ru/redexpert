@@ -22,6 +22,7 @@ package org.executequery.gui.resultset;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.StandardTable;
 import org.underworldlabs.swing.DateCellEditor;
 import org.underworldlabs.swing.DateTimeCellEditor;
@@ -38,7 +39,6 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;

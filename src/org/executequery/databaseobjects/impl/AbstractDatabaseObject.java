@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.Types;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledStatement;
 import org.executequery.log.Log;

@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.Types;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
@@ -55,7 +56,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 

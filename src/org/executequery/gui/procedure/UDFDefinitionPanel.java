@@ -2,6 +2,7 @@ package org.executequery.gui.procedure;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -21,7 +22,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.FocusListener;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;

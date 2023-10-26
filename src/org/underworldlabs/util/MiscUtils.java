@@ -22,6 +22,7 @@ package org.underworldlabs.util;
 
 import org.executequery.ApplicationContext;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
@@ -37,7 +38,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.LocalTime;

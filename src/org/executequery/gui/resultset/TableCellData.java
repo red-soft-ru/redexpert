@@ -21,6 +21,7 @@
 package org.executequery.gui.resultset;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.databaseobjects.Types;
 import org.executequery.log.Log;
 
 import java.io.IOException;
@@ -30,7 +31,6 @@ import java.io.Writer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
-import java.sql.Types;
 
 /**
  * @author Takis Diakoumis

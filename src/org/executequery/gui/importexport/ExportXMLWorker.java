@@ -22,6 +22,7 @@ package org.executequery.gui.importexport;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.log.Log;
 import org.executequery.util.Base64;
@@ -41,7 +42,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.text.DateFormat;
 import java.util.Vector;
 

@@ -1,7 +1,5 @@
 package org.executequery.databaseobjects;
 
-import java.sql.Types;
-
 public class
 DatabaseTypeConverter {
 

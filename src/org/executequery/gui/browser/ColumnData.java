@@ -26,6 +26,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.T;
+import org.executequery.databaseobjects.Types;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.databaseobjects.impl.DefaultDatabaseObject;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
@@ -34,7 +35,6 @@ import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
 
 import java.io.Serializable;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

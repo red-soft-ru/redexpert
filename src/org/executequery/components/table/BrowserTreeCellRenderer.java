@@ -28,6 +28,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
 import org.underworldlabs.util.MiscUtils;
@@ -210,13 +211,13 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
         sb.append(Constants.TABLE_TAG_END);
         sb.append("<hr noshade>");
         sb.append(Constants.TABLE_TAG_START);
-        sb.append("<tr><td>Host:</td><td width='30'></td><td>");
+        sb.append("<tr><td>").append(bundleString("Host")).append("</td><td width='30'></td><td>");
         sb.append(connection.getHost());
-        sb.append("</td></tr><td>Data Source:</td><td></td><td>");
+        sb.append("</td></tr><td>").append(bundleString("DataSource")).append("</td><td></td><td>");
         sb.append(connection.getSourceName());
-        sb.append("</td></tr><td>User:</td><td></td><td>");
+        sb.append("</td></tr><td>").append(bundleString("User")).append("</td><td></td><td>");
         sb.append(connection.getUserName());
-        sb.append("</td></tr><td>Driver:</td><td></td><td>");
+        sb.append("</td></tr><td>").append(bundleString("Driver")).append("</td><td></td><td>");
         sb.append(connection.getDriverName());
         sb.append("</td></tr>");
         sb.append(Constants.TABLE_TAG_END);
@@ -252,6 +253,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
             SystemProperties.setProperty("user", "treeconnection.font.name", treeFont.getFontName());
             reloadFont();
         }
+    }
+
+    private static String bundleString(String key) {
+        return Bundles.get(BrowserTreeCellRenderer.class, key);
     }
 
 }

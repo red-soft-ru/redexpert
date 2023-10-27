@@ -1,5 +1,6 @@
 package org.executequery.sql.sqlbuilder;
 
+import org.executequery.databasemediators.DatabaseConnection;
 import org.underworldlabs.util.MiscUtils;
 
 import java.util.ArrayList;
@@ -18,8 +19,12 @@ public class GrantBuilder extends SQLBuilder {
     String grantorType;
     boolean isGrantOption = false;
 
-    public static GrantBuilder createGrantBuilder() {
-        return new GrantBuilder();
+    public GrantBuilder(DatabaseConnection databaseConnection) {
+        super(databaseConnection);
+    }
+
+    public static GrantBuilder createGrantBuilder(DatabaseConnection dc) {
+        return new GrantBuilder(dc);
     }
 
     public GrantBuilder appendFields(String... fields) {
@@ -105,7 +110,7 @@ public class GrantBuilder extends SQLBuilder {
                 if (!first)
                     sb.append(", ");
                 first = false;
-                sb.append(MiscUtils.getFormattedObject(field));
+                sb.append(MiscUtils.getFormattedObject(field, connection));
             }
             sb.append(")");
         }

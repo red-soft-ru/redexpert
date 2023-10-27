@@ -20,11 +20,15 @@
 
 package org.executequery.gui.prefs;
 
-import org.executequery.Constants;
-import org.executequery.GUIUtilities;
+import org.apache.commons.io.FileExistsException;
+import org.executequery.*;
 import org.executequery.components.table.CategoryHeaderCellRenderer;
 import org.executequery.components.table.FileSelectionTableCell;
+import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
+import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.swing.table.*;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -33,13 +37,17 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Properties panel base.
@@ -126,6 +134,7 @@ public class SimplePreferencesPanel extends JPanel
 
         // lazily create as required
         FileSelectionTableCell fileRenderer = null;
+        FileSelectionTableCell dirRenderer = null;
         ColourTableCellRenderer colourRenderer = null;
         CheckBoxTableCellRenderer checkBoxRenderer = null;
         CategoryHeaderCellRenderer categoryRenderer = null;
@@ -217,12 +226,23 @@ public class SimplePreferencesPanel extends JPanel
                 case UserPreference.FILE_TYPE:
 
                     if (fileRenderer == null) {
-                        fileRenderer = new FileSelectionTableCell();
+                        fileRenderer = new FileSelectionTableCell(JFileChooser.FILES_ONLY);
                         fileRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
                     }
 
                     rowRendererValues.add(i, fileRenderer);
                     rowEditor.setEditorAt(i, fileRenderer);
+                    break;
+
+                case UserPreference.DIR_TYPE:
+
+                    if (dirRenderer == null) {
+                        dirRenderer = new FileSelectionTableCell(JFileChooser.DIRECTORIES_ONLY);
+                        dirRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
+                    }
+
+                    rowRendererValues.add(i, dirRenderer);
+                    rowEditor.setEditorAt(i, dirRenderer);
                     break;
 
             }
@@ -294,25 +314,27 @@ public class SimplePreferencesPanel extends JPanel
 
     protected void restoreDefaults() {
 
-        for (int i = 0; i < preferences.length; i++) {
+        for (UserPreference preference : preferences) {
+            switch (preference.getType()) {
 
-            switch (preferences[i].getType()) {
                 case UserPreference.ENUM_TYPE:
                 case UserPreference.STRING_TYPE:
                 case UserPreference.INTEGER_TYPE:
-                    preferences[i].reset(
-                            SystemProperties.getProperty("defaults", preferences[i].getKey()));
+                case UserPreference.FILE_TYPE:
+                case UserPreference.DIR_TYPE:
+                    preference.reset(SystemProperties.getProperty("defaults", preference.getKey()));
+                    if (preference.getKey().equals("startup.java.path"))
+                        JavaFileProperty.restore();
                     break;
+
                 case UserPreference.BOOLEAN_TYPE:
-                    preferences[i].reset(
-                            Boolean.valueOf(SystemProperties.getProperty("defaults", preferences[i].getKey())));
+                    preference.reset(Boolean.valueOf(SystemProperties.getProperty("defaults", preference.getKey())));
                     break;
+
                 case UserPreference.COLOUR_TYPE:
-                    preferences[i].reset(
-                            SystemProperties.getColourProperty("defaults", preferences[i].getKey()));
+                    preference.reset(SystemProperties.getColourProperty("defaults", preference.getKey()));
                     break;
             }
-
         }
         fireTableDataChanged();
     }
@@ -346,83 +368,123 @@ public class SimplePreferencesPanel extends JPanel
     }
 
     protected void savePreferences() {
-        // stop table editing
-        if (table.isEditing()) {
-            table.editingStopped(null);
-        }
 
         String propertiesName = "user";
 
+        // stop table editing
+        if (table.isEditing())
+            table.editingStopped(null);
+
         // set the new properties
-        for (int i = 0; i < preferences.length; i++) {
+        for (UserPreference preference : preferences) {
+            if (preference.getType() != UserPreference.CATEGORY_TYPE) {
 
-            if (preferences[i].getType() != UserPreference.CATEGORY_TYPE) {
-                SystemProperties.setProperty(propertiesName, preferences[i].getKey(),
-                        preferences[i].getSaveValue());
+                if (preference.getKey().equals("startup.java.path")) {
+                    if (JavaFileProperty.setValue(preference.getSaveValue()))
+                        SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
+                } else
+                    SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
             }
-
         }
 
     }
 
-    public void mouseClicked(MouseEvent evt) {
-        int valueColumn = 2;
-        int row = table.rowAtPoint(evt.getPoint());
-        int col = table.columnAtPoint(evt.getPoint());
-
-        if (row == -1) {
-            return;
-        }
+    private void leftButtonAction(int col, int row, int valueColumn) {
 
         if (col == valueColumn) {
 
             if (preferences[row].getType() == UserPreference.COLOUR_TYPE) {
+
                 Color oldColor = (Color) preferences[row].getValue();
                 Color newColor = JColorChooser.showDialog(
                         GUIUtilities.getInFocusDialogOrWindow(),
-                        "Select Colour",
+                        Bundles.get("LocaleManager.ColorChooser.title"),
                         (Color) tableModel.getValueAt(row, valueColumn));
 
                 if (newColor != null) {
                     tableModel.setValueAt(newColor, row, valueColumn);
                     firePropertyChange(Constants.COLOUR_PREFERENCE, oldColor, newColor);
                 }
-
             }
-
         }
 
     }
 
+    private void rightButtonAction(int col, int row, int valueColumn, MouseEvent evt) {
+
+        JPopupMenu popupMenu = new JPopupMenu();
+
+        JMenuItem editButton = new JMenuItem(Bundles.get("common.edit"));
+        editButton.addActionListener(e -> leftButtonAction(col, row, valueColumn));
+        popupMenu.add(editButton);
+
+        JMenuItem resetButton = new JMenuItem(Bundles.get("common.default"));
+        resetButton.addActionListener(e -> resetColour(tableModel, row, col));
+        popupMenu.add(resetButton);
+
+        popupMenu.show(table, evt.getX(), evt.getY());
+    }
+
+    private void resetColour(TableModel model, int row, int col) {
+
+        if (model instanceof PreferencesTableModel)
+            ((PreferencesTableModel) model).restoreSingleDefault(row, col);
+
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent evt) {
+
+        int valueColumn = 2;
+        int row = table.rowAtPoint(evt.getPoint());
+        int col = table.columnAtPoint(evt.getPoint());
+
+        if (row == -1)
+            return;
+
+        if (evt.getButton() == MouseEvent.BUTTON1)  // left mouse button
+            leftButtonAction(col, row, valueColumn);
+        else if (evt.getButton() == MouseEvent.BUTTON3 && col == 2) // right mouse button
+            rightButtonAction(col, row, valueColumn, evt);
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
-
     class PreferencesTableModel extends AbstractTableModel {
 
+        @Override
         public void setValueAt(Object value, int row, int column) {
             UserPreference preference = preferences[row];
             preference.setValue(value);
             fireTableCellUpdated(row, column);
         }
 
+        @Override
         public int getRowCount() {
             return preferences.length;
         }
 
+        @Override
         public int getColumnCount() {
             return 3;
         }
 
+        @Override
         public Object getValueAt(int row, int column) {
             UserPreference preference = preferences[row];
 
@@ -437,14 +499,48 @@ public class SimplePreferencesPanel extends JPanel
 
         }
 
+        @Override
         public boolean isCellEditable(int row, int column) {
             UserPreference preference = preferences[row];
             return (preference.getType() != UserPreference.CATEGORY_TYPE)
                     && (column == 2);
         }
 
-    } // class PreferencesTableModel
+        public void restoreSingleDefault(int row, int col) {
 
+            Properties defaults = defaultsForTheme();
+            UserPreference userPreference = preferences[row];
+            String property = defaults.getProperty(userPreference.getKey());
+
+            try {
+                setValueAt(new Color(Integer.parseInt(property)), row, col);
+
+            } catch (NumberFormatException e) {
+                Log.error("Unable to set up default color, loaded property [" + property + "] could not convert to Integer");
+            }
+        }
+
+        protected Properties defaultsForTheme() {
+
+            try {
+
+                Properties defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.default.profile");
+                if (currentlySavedLookAndFeel().isDarkTheme())
+                    defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.dark.profile");
+
+                return defaults;
+
+            } catch (IOException e) {
+                throw new ApplicationException(e);
+            }
+        }
+
+        private LookAndFeelType currentlySavedLookAndFeel() {
+            String lookAndFeel = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.lookandfeel");
+            return LookAndFeelType.valueOf(lookAndFeel);
+        }
+
+    } // class PreferencesTableModel
 
     class DisplayViewport extends JViewport {
 
@@ -473,6 +569,76 @@ public class SimplePreferencesPanel extends JPanel
 
     } // class TableComboBox
 
+    private static class JavaFileProperty {
+
+        private static final String CACHE_JAVA_PATH64 =
+                ApplicationContext.getInstance().getUserSettingsHome() + ".cache_java_path64";
+        private static final Path CACHE_JAVA_FILE_PATH = new File(CACHE_JAVA_PATH64).toPath();
+
+        static boolean setValue(String path) {
+            try {
+                rewrite(path);
+
+            } catch (Exception e) {
+                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e);
+                return false;
+            }
+
+            return true;
+        }
+
+        static void restore() {
+            try {
+                delete();
+
+            } catch (Exception e) {
+                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e);
+            }
+        }
+
+        private static void rewrite(String pathToJava) throws Exception {
+
+            String value = "";
+            if (pathToJava.isEmpty()) {
+                delete();
+                return;
+            }
+
+            if (pathToJava.startsWith("%re%")) {
+                pathToJava = pathToJava.substring(4);
+                if (!pathToJava.startsWith(System.getProperty("file.separator")))
+                    pathToJava = System.getProperty("file.separator") + pathToJava;
+                pathToJava = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + pathToJava;
+            }
+
+            if (System.getProperty("os.name").toLowerCase().contains("lin")) {
+
+                if (!new File(pathToJava).exists())
+                    throw new FileExistsException(String.format("File %s doesn't exists", pathToJava));
+
+                value = "jvm=" + pathToJava;
+
+            } else if (System.getProperty("os.name").toLowerCase().contains("win")) {
+
+                if (pathToJava.endsWith("\\"))
+                    pathToJava = pathToJava.substring(0, pathToJava.lastIndexOf("\\") - 1);
+
+                if (!new File(pathToJava + "\\jvm.dll").exists())
+                    throw new FileExistsException(String.format("File %s doesn't exists", pathToJava + "\\jvm.dll"));
+
+                value = "jvm=" + pathToJava + "\\jvm.dll";
+                value += "\npath=" + pathToJava.substring(0, pathToJava.lastIndexOf("\\"));
+            }
+
+            delete();
+            Files.createFile(CACHE_JAVA_FILE_PATH);
+            Files.write(CACHE_JAVA_FILE_PATH, value.getBytes(), StandardOpenOption.WRITE);
+        }
+
+        private static void delete() throws Exception {
+            Files.deleteIfExists(CACHE_JAVA_FILE_PATH);
+        }
+
+    } // class JavaFileProperty
+
 }
-
-

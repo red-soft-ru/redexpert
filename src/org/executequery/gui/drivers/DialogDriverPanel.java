@@ -46,8 +46,7 @@ public class DialogDriverPanel extends ActionDialog {
     private DriverFieldsPanel panel;
 
     public DialogDriverPanel() {
-
-        super("Add New Driver", true);
+        super(bundleString("title"), true);
 
         panel = new DriverFieldsPanel();
         panel.setBorder(BorderFactory.createEtchedBorder());
@@ -77,7 +76,7 @@ public class DialogDriverPanel extends ActionDialog {
 
             if (driverNameExists(driver)) {
 
-                String message = String.format("The driver name %s already exists.", driver.getName());
+                String message = String.format(bundleString("DriverExists"), driver.getName());
                 GUIUtilities.displayErrorMessage(message);
 
                 return;
@@ -134,13 +133,17 @@ public class DialogDriverPanel extends ActionDialog {
                 DatabaseDriverRepository.REPOSITORY_ID));
     }
 
+    private static String bundleString(String key) {
+        return Bundles.get(DialogDriverPanel.class, key);
+    }
+
 
     public class DriverFieldsPanel extends AbstractDriverPanel {
 
         private DriverFieldsPanel() {
 
             setDriver(new DatabaseDriverFactoryImpl().create(
-                    System.currentTimeMillis(), "New Driver"));
+                    System.currentTimeMillis(), bundleString("newDriver")));
         }
 
         public void driverNameChanged() {

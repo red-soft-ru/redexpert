@@ -23,6 +23,8 @@ package org.executequery.gui.prefs;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.ColourTableCellRenderer;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
@@ -451,7 +453,7 @@ public class PropertiesEditorSyntax extends AbstractPropertiesBasePanel
 
                 Color color = JColorChooser.showDialog(
                         GUIUtilities.getInFocusDialogOrWindow(),
-                        "Select Colour",
+                        Bundles.get("LocaleManager.ColorChooser.title"),
                         (Color) tableModel.getValueAt(row, 1));
 
                 if (color != null) {

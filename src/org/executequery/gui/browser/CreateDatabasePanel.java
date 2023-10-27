@@ -1010,7 +1010,7 @@ public class CreateDatabasePanel extends ActionPanel
 
     public void showPassword() {
 
-        GUIUtilities.displayInformationMessage("Password: " +
+        GUIUtilities.displayInformationMessage(Bundles.get("ConnectionPanel.passwordField") +
                 MiscUtils.charsToString(passwordField.getPassword()));
     }
 

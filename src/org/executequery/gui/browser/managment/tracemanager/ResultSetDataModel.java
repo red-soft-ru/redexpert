@@ -9,10 +9,11 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
-class ResultSetDataModel extends AbstractTableModel {
+public class ResultSetDataModel extends AbstractTableModel {
 
     private List<String> columnNames = new ArrayList<>();
     private List<String> visibleColumnNames = new ArrayList<>();
@@ -41,14 +42,14 @@ class ResultSetDataModel extends AbstractTableModel {
         visibleColumnNames = new ArrayList<>();
         visibleColumnNames.addAll(listSelectionPanel.getSelectedValues());
         visibleRows = new ArrayList<>();
-        for (int i = 0; i < rows.size(); i++) {
-            checkFilterMessage(rows.get(i));
-        }
         DynamicComboBoxModel model = (DynamicComboBoxModel) filterColumnBox.getModel();
         Object selectedItem = filterColumnBox.getSelectedItem();
         model.setElements(visibleColumnNames);
         if (visibleColumnNames.contains(selectedItem))
             filterColumnBox.setSelectedItem(selectedItem);
+        for (int i = 0; i < rows.size(); i++) {
+            checkFilterMessage(rows.get(i));
+        }
         fireTableStructureChanged();
     }
 
@@ -70,6 +71,7 @@ class ResultSetDataModel extends AbstractTableModel {
             }
         }
     }
+
 
     @Override
     public int getRowCount() {
@@ -133,9 +135,7 @@ class ResultSetDataModel extends AbstractTableModel {
 
     private void buildHeaders() {
         columnNames = new ArrayList<>();
-        for (int i = 0; i < LogConstants.COLUMNS.length; i++) {
-            columnNames.add(LogConstants.COLUMNS[i]);
-        }
+        Collections.addAll(columnNames, LogConstants.COLUMNS);
     }
 
     public void clearAll() {

@@ -32,6 +32,8 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Comparator;
+import java.util.List;
 
 public class TablePanel extends JPanel {
 
@@ -90,7 +92,7 @@ public class TablePanel extends JPanel {
                 for (int i = 0; i < cols.length; i++) {
                     columnsCheckPanel.selectOneStringAction(cols[i]);
                 }
-            }
+            } else columnsCheckPanel.selectAllAction();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -143,7 +145,27 @@ public class TablePanel extends JPanel {
         dataModel = new ResultSetDataModel(columnsCheckPanel, comboBoxFilterType, comboBoxFilterColumn, txtFldSqlFilter, matchCaseBox);
         table = new JTable(dataModel);
         tableCounterModel = new TableCounterModel();
-        tableCounter = new JTable(tableCounterModel);
+        tableCounter = new JTable(tableCounterModel) {
+            public String getToolTipText(MouseEvent e) {
+                java.awt.Point p = e.getPoint();
+                int colIndex = columnAtPoint(p);
+                int realColumnIndex = convertColumnIndexToModel(colIndex);
+                String tip = tableCounterModel.getColumnName(realColumnIndex);
+                if (realColumnIndex >= 1) {
+                    long sum = 0;
+                    long avg = 0;
+                    for (TableCounter counter : tableCounterModel.getVisibleRows()) {
+                        if (counter.getCounter(realColumnIndex) != null)
+                            sum += (long) counter.getCounter(realColumnIndex);
+                    }
+                    if (tableCounterModel.getVisibleRows().size() > 0) {
+                        avg = sum / tableCounterModel.getVisibleRows().size();
+                    }
+                    tip += "   SUM:" + sum + "    AVG:" + avg;
+                }
+                return tip;
+            }
+        };
         tableCounter.addMouseListener(new TraceManagerPopupMenu(tableCounter));
         loadWidthCols();
         table.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
@@ -181,6 +203,7 @@ public class TablePanel extends JPanel {
         columnsCheckPanel.addListSelectionPanelListener(new ListSelectionPanelListener() {
             @Override
             public void changed(ListSelectionPanelEvent event) {
+                columnsCheckPanel.getAvailableValues().sort(Comparator.naturalOrder());
                 dataModel.rebuildModel();
                 dataModel.fireTableStructureChanged();
                 saveCols();
@@ -303,6 +326,11 @@ public class TablePanel extends JPanel {
 
     }
 
+    public List<LogMessage> getTableRows()
+    {
+        return dataModel.getRows();
+    }
+
     private void fillTableCounters(int row) {
         tableCounterModel.clearAll();
         LogMessage logMessage = dataModel.getVisibleRows().get(row);
@@ -340,6 +368,10 @@ public class TablePanel extends JPanel {
     public void cleanup() {
         txtFieldRawSql.cleanup();
         txtFieldRawSql = null;
+    }
+
+    public int countRows() {
+        return dataModel.getRowCount();
     }
 
 

@@ -30,8 +30,6 @@ public interface KeywordRepository extends Repository {
 
     String REPOSITORY_ID = "keywords";
 
-    List<String> getSQL92();
-
     List<String> getUserDefinedSQL();
 
     TreeSet<String> getSQLKeywords();
@@ -42,9 +40,7 @@ public interface KeywordRepository extends Repository {
 
     void addUserDefinedKeyword(String word);
 
-    List<String> getFirebirdKeywords(int majorVersion, int minorVersion);
-
-    void setDatabaseKeyWords(List<String> list);
+    List<String> getServerKeywords(int majorVersion, int minorVersion, String serverName);
 }
 
 

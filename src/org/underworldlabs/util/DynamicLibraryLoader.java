@@ -81,22 +81,45 @@ public class DynamicLibraryLoader extends URLClassLoader {
 
     }
 
-    public static Object loadingObjectFromClassLoader(int jaybirdVesion, Object unwrapObject, String shortClassName)
+    public static Object loadingObjectFromClassLoader(int jaybirdVersion, Object unwrapObject, String shortClassName)
             throws ClassNotFoundException {
         return loadingObjectFromClassLoader(unwrapObject, "biz.redsoft."
-                + shortClassName, getFbPluginImplPath(jaybirdVesion));
+                + shortClassName, getFbPluginImplPath(jaybirdVersion));
+    }
+
+    public static Object loadingObjectFromClassLoaderWithCS(int jaybirdVersion, ClassLoader classLoader, String shortClassName)
+            throws ClassNotFoundException {
+        return loadingObjectFromClassLoaderWithCS(classLoader, "biz.redsoft."
+                + shortClassName, getFbPluginImplPath(jaybirdVersion));
     }
 
     public static Object loadingObjectFromClassLoader(Object unwrapObject, String className, String jarPath)
             throws ClassNotFoundException {
-
         URL[] urls;
+        ClassLoader cl;
+        try {
+            urls = MiscUtils.loadURLs(jarPath);
+            cl = new URLClassLoader(urls, unwrapObject.getClass().getClassLoader());
+        } catch (Exception e) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Error loading class ");
+            sb.append(className);
+            sb.append(" from ");
+            sb.append(jarPath);
+            throw new ClassNotFoundException(sb.toString(), e.getCause());
+        }
+
+        return loadingObjectFromClassLoaderWithCS(cl, className, jarPath);
+    }
+
+    public static Object loadingObjectFromClassLoaderWithCS(ClassLoader classLoader, String className, String jarPath)
+            throws ClassNotFoundException {
+
+
         Class clazzdb;
         Object odb = null;
         try {
-            urls = MiscUtils.loadURLs(jarPath);
-            ClassLoader cl = new URLClassLoader(urls, unwrapObject.getClass().getClassLoader());
-            clazzdb = cl.loadClass(className);
+            clazzdb = classLoader.loadClass(className);
             odb = clazzdb.newInstance();
         } catch (Exception e) {
             StringBuilder sb = new StringBuilder();
@@ -153,8 +176,8 @@ public class DynamicLibraryLoader extends URLClassLoader {
     }
 
     public static class Parameter {
-        private Class<?> type;
-        private Object parameter;
+        private final Class<?> type;
+        private final Object parameter;
 
         public Parameter(Class<?> type, Object parameter) {
             this.type = type;

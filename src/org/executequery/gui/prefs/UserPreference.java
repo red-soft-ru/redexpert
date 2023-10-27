@@ -38,6 +38,8 @@ public class UserPreference {
     public static final int FILE_TYPE = 5;
     public static final int PASSWORD_TYPE = 6;
     public static final int ENUM_TYPE = 7;
+    public static final int DIR_TYPE = 8;
+
 
     private boolean collapsed;
     private boolean saveActual;
@@ -160,24 +162,21 @@ public class UserPreference {
     }
 
     public void reset(Object value) {
-        if (type == STRING_TYPE) {
 
-            if (availableValues != null && availableValues.length > 0) {
+        if (type == STRING_TYPE && availableValues != null && availableValues.length > 0) {
 
-                if (saveActual) {
-                    this.value = savedValue;
-                }
-                try {
-                    int index = Integer.parseInt(savedValue);
-                    this.value = availableValues[index];
-                } catch (NumberFormatException e) {
-                    this.value = value;
-                }
+            if (saveActual)
+                this.value = savedValue;
+
+            try {
+                int index = Integer.parseInt(savedValue);
+                this.value = availableValues[index];
+            } catch (NumberFormatException e) {
+                this.value = value;
             }
 
-        } else {
+        } else
             this.value = value;
-        }
     }
 
     public void setValue(Object value) {

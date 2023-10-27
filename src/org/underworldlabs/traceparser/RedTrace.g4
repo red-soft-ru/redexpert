@@ -270,8 +270,7 @@ connection_info
 ;
 
 query_and_params
-:query (end_line
- CARETS)? end_line?
+:query CARETS? end_line?
  (plan end_line*)?
  (params end_line+)?
  (records_fetched end_line+)?
@@ -283,6 +282,7 @@ query_and_params
 
 query
 :~(CARETS
+|'param0 = '
 |'records fetched'
 |'sorting memory usage: total: ')*
 ;
@@ -574,6 +574,7 @@ CARETS
 
 param
 :PARAM id ' = '
+|'param0 = '
 ;
 
 id_transaction

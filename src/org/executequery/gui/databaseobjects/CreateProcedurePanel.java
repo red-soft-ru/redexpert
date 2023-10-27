@@ -79,7 +79,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
             DatabaseMetaData dMetaData = poolMetaData.getInner();
             IFBDatabaseMetadata db = (IFBDatabaseMetadata) DynamicLibraryLoader.loadingObjectFromClassLoader(connection.getDriverMajorVersion(), dMetaData, "FBDatabaseMetadataImpl");
 
-            fullProcedureBody = db.getProcedureSourceCode(dMetaData, this.procedure);
+            fullProcedureBody = db.getProcedureSourceCode(dMetaData, this.procedureName);
 
 
         } catch (ClassNotFoundException |
@@ -97,7 +97,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     protected void loadParameters() {
         inputParametersPanel.clearRows();// remove first empty row
         outputParametersPanel.clearRows(); // remove first empty row
-        List<ProcedureParameter> parameters = ((DefaultDatabaseProcedure) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.PROCEDURE, procedure)).getParameters();
+        List<ProcedureParameter> parameters = ((DefaultDatabaseProcedure) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.PROCEDURE, procedureName)).getParameters();
         for (ProcedureParameter pp : parameters) {
             if (pp.getType() == DatabaseMetaData.procedureColumnIn)
                 inputParametersPanel.addRow(pp);
@@ -115,22 +115,23 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                 "END";
     }
 
-    @Override
-    protected void generateScript() {
-        ddlTextPanel.setSQLText(generateQuery());
-
-    }
-
     protected String generateQuery() {
-        Vector<ColumnData> vars = new Vector<>();
-        vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
-        vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
-        return SQLUtils.generateCreateProcedure(
+        if (parseVariablesBox.isSelected()) {
+            Vector<ColumnData> vars = new Vector<>();
+            vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
+            vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
+            return SQLUtils.generateCreateProcedure(
+                    nameField.getText(), externalField.getText(), engineField.getText(),
+                    inputParametersPanel.getProcedureParameterModel().getTableVector(),
+                    outputParametersPanel.getProcedureParameterModel().getTableVector(),
+                    vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
+                    sqlBodyText.getSQLText(), simpleCommentPanel.getComment(), false, true, getDatabaseConnection());
+        } else return SQLUtils.generateCreateProcedure(
                 nameField.getText(), externalField.getText(), engineField.getText(),
                 inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 outputParametersPanel.getProcedureParameterModel().getTableVector(),
-                vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
-                sqlBodyText.getSQLText(), simpleCommentPanel.getComment(), false, true);
+                (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
+                sqlBodyText.getSQLText(), simpleCommentPanel.getComment(), false, true, getDatabaseConnection());
     }
 
 
@@ -259,7 +260,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-        procedure = (String) databaseObject;
+        procedureName = (String) databaseObject;
     }
 
     @Override

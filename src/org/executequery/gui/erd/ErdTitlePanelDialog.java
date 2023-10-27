@@ -76,7 +76,7 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
     private boolean isNew;
 
     public ErdTitlePanelDialog(ErdViewerPanel parent) {
-        super(GUIUtilities.getParentFrame(), "ERD Title", true);
+        super(GUIUtilities.getParentFrame(), bundleString("title"), true);
         this.parent = parent;
         isNew = true;
 
@@ -93,7 +93,7 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
                                String description, String database, String author,
                                String revision, String fileName) {
 
-        super(GUIUtilities.getParentFrame(), "ERD Title", true);
+        super(GUIUtilities.getParentFrame(), bundleString("title"), true);
         this.parent = parent;
         isNew = false;
 
@@ -158,7 +158,7 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel("Title:"), gbc);
+        panel.add(new JLabel(bundleString("titleLabel")), gbc);
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -173,9 +173,9 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
         gbc.gridwidth = 1;
         gbc.insets.left = 5;
         gbc.weightx = 0;
-        panel.add(new JLabel("Date:"), gbc);
+        panel.add(new JLabel(bundleString("dateLabel")), gbc);
         gbc.gridy = 2;
-        panel.add(new JLabel("Description:"), gbc);
+        panel.add(new JLabel(bundleString("DescriptionLabel")), gbc);
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1.0;
@@ -191,9 +191,9 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
         gbc.gridwidth = 1;
         gbc.insets.left = 5;
         gbc.weightx = 0;
-        panel.add(new JLabel("Database:"), gbc);
+        panel.add(new JLabel(bundleString("DatabaseLabel")), gbc);
         gbc.gridy = 4;
-        panel.add(new JLabel("Revision:"), gbc);
+        panel.add(new JLabel(bundleString("RevisionLabel")), gbc);
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets.left = 0;
@@ -208,9 +208,9 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
         gbc.gridwidth = 1;
         gbc.insets.left = 5;
         gbc.weightx = 0;
-        panel.add(new JLabel("Author:"), gbc);
+        panel.add(new JLabel(bundleString("AuthorLabel")), gbc);
         gbc.gridy = 6;
-        panel.add(new JLabel("File Name:"), gbc);
+        panel.add(new JLabel(bundleString("FileNameLabel")), gbc);
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets.left = 0;
@@ -292,20 +292,8 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
 
     }
 
+    private static String bundleString(String key) {
+        return Bundles.get(ErdTitlePanelDialog.class, key);
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

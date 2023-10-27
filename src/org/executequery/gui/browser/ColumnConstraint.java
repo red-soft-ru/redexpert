@@ -21,6 +21,8 @@
 package org.executequery.gui.browser;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static org.executequery.databaseobjects.NamedObject.*;
@@ -59,7 +61,7 @@ public class ColumnConstraint implements Serializable {
     private String column;
 
     /** The columns display list of this constraint */
-    private String columnDisplayList;
+    private List<String> columnDisplayList;
 
     /** The referenced table of this constraint */
     private String refTable;
@@ -68,7 +70,7 @@ public class ColumnConstraint implements Serializable {
     private String refColumn;
 
     /** The referenced column display list of this constraint */
-    private String refColumnDisplayList;
+    private List<String> refColumnDisplayList;
 
 
     /**
@@ -124,8 +126,8 @@ public class ColumnConstraint implements Serializable {
             refTable = EMPTY;
             column = EMPTY;
             refColumn = EMPTY;
-            columnDisplayList = EMPTY;
-            refColumnDisplayList = EMPTY;
+            columnDisplayList = new ArrayList<>();
+            refColumnDisplayList = new ArrayList<>();
             setUpdateRule(RULES[RESTRICT]);
             setDeleteRule(RULES[RESTRICT]);
         }
@@ -140,8 +142,8 @@ public class ColumnConstraint implements Serializable {
             refTable = EMPTY;
             column = EMPTY;
             refColumn = EMPTY;
-            columnDisplayList = EMPTY;
-            refColumnDisplayList = EMPTY;
+            columnDisplayList = new ArrayList<>();
+            refColumnDisplayList = new ArrayList<>();
         }
         this.column = cc.getColumnName();
         this.name = cc.getName();
@@ -324,28 +326,12 @@ public class ColumnConstraint implements Serializable {
         this.tablespace = tablespace;
     }
 
-    public String getColumnDisplayList() {
+    public List<String> getColumnDisplayList() {
         return columnDisplayList;
     }
 
-    public String getRefColumnDisplayList() {
+    public List<String> getRefColumnDisplayList() {
         return refColumnDisplayList;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

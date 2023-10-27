@@ -25,10 +25,10 @@ import org.executequery.GUIUtilities;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
-import org.underworldlabs.swing.AbstractBaseDialog;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -41,7 +41,7 @@ import java.awt.event.FocusListener;
  *
  * @author Takis Diakoumis
  */
-public class ErdPrintableDialog extends AbstractBaseDialog
+public class ErdPrintableDialog extends BaseDialog
         implements TextEditorContainer,
         KeywordListener {
 
@@ -56,7 +56,7 @@ public class ErdPrintableDialog extends AbstractBaseDialog
      * @param the name of this dialog
      */
     public ErdPrintableDialog(String name) {
-        super(GUIUtilities.getParentFrame(), name, false);
+        super(name, false);
         sqlText = new SimpleSqlTextPanel();
 
         GUIUtilities.setFocusedDialog(this);
@@ -81,7 +81,7 @@ public class ErdPrintableDialog extends AbstractBaseDialog
      * @param whether to create the SQL text panel
      */
     public ErdPrintableDialog(String name, boolean createSQLPanel) {
-        super(GUIUtilities.getParentFrame(), name, false);
+        super(name, false);
 
         if (createSQLPanel) {
             sqlText = new SimpleSqlTextPanel();
@@ -144,7 +144,7 @@ public class ErdPrintableDialog extends AbstractBaseDialog
     /**
      * <p>Simple call to make this dialog visible.
      */
-    protected void display() {
+    public void display() {
         pack();
         this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
         setVisible(true);

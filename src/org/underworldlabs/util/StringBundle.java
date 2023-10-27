@@ -20,6 +20,8 @@
 
 package org.underworldlabs.util;
 
+import org.executequery.log.Log;
+
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Locale;

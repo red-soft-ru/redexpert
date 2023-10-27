@@ -51,7 +51,7 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table table = getMainTable();
         sb.appendTable(table);
         sb.setOrdering(getObjectField().getFieldTable());
@@ -262,7 +262,7 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("USER", getName());
+        return SQLUtils.generateDefaultDropQuery("USER", getName(), getHost().getDatabaseConnection());
     }
 
     @Override

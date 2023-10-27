@@ -30,6 +30,8 @@ import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
+import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.event.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -41,7 +43,6 @@ import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.executequery.util.ThreadUtils;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.plaf.UIUtils;
@@ -92,6 +93,8 @@ public class TableDataTab extends JPanel
     private DisabledField rowCountField;
     private JPanel rowCountPanel;
     private List<TableDataChange> tableDataChanges;
+    private List<Integer> deleterRowIndexes;
+    boolean markedForReload;
 
     private JPanel canEditTableNotePanel;
 
@@ -111,7 +114,6 @@ public class TableDataTab extends JPanel
 
     private List<org.executequery.databaseobjects.impl.ColumnConstraint> foreigns;
     private Timer timer;
-    public DefaultTableModel myTableModel;
 
     public ResultSet resultSet;
 
@@ -222,21 +224,19 @@ public class TableDataTab extends JPanel
 
         addInProgressPanel();
 
-        if (timer != null) {
-
+        if (timer != null)
             timer.cancel();
-        }
 
         timer = new Timer();
         timer.schedule(new TimerTask() {
 
             @Override
             public void run() {
-
                 load(databaseObject);
             }
         }, 600);
 
+        markedForReload = false;
     }
 
     private boolean loaded = false;
@@ -291,18 +291,18 @@ public class TableDataTab extends JPanel
 
     private void addInProgressPanel() {
 
-        ThreadUtils.invokeLater(new Runnable() {
-
+        SwingWorker sw = new SwingWorker("loadingDataForTable") {
             @Override
-            public void run() {
-
+            public Object construct() {
                 removeAll();
                 add(cancelPanel, scrollerConstraints);
 
                 repaint();
                 cancelPanel.start();
+                return null;
             }
-        });
+        };
+        sw.start();
 
     }
 
@@ -331,21 +331,66 @@ public class TableDataTab extends JPanel
         tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
     }
 
-    Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String query = "SELECT " + key.getReferencedColumn() + " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
-        Vector items = new Vector();
+    Vector<Object> itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+
+        String query = "SELECT " + key.getReferencedColumn() +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable(), querySender.getDatabaseConnection());
+
+        Vector<Object> items = new Vector<>();
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
+            while (rs.next())
                 items.add(rs.getObject(1));
-            }
+
         } catch (Exception e) {
             Log.error("Error get Foreign keys:" + e.getMessage());
+
         } finally {
             querySender.releaseResources();
         }
-        items.add(null);
+
         return items;
+    }
+
+    Vector<Vector<Object>> allItemsForeign(ColumnConstraint key) {
+
+        String query = "SELECT " + listToString(key.getReferenceColumnDisplayList()) +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable(), querySender.getDatabaseConnection());
+
+        Vector<Vector<Object>> items = new Vector<>();
+        for (int i = 0; i < key.getReferenceColumnDisplayList().size(); i++)
+            items.add(new Vector<>());
+
+        try {
+            ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
+            while (rs.next())
+                for (int i = 0; i < items.size(); i++)
+                    items.get(i).add(rs.getObject(i + 1));
+
+        } catch (Exception e) {
+            Log.error("Error get Foreign keys:" + e.getMessage());
+
+        } finally {
+            querySender.releaseResources();
+        }
+
+        return items;
+    }
+
+    private Vector<String> namesForeign(ColumnConstraint key) {
+        return new Vector<>(key.getReferenceColumnDisplayList());
+    }
+
+    private String listToString(List<String> list) {
+
+        if (list == null || list.isEmpty())
+            return "";
+
+        String result = "";
+        for (String value : list)
+            result += value + ", ";
+
+        return result.substring(0, result.length() - 2);
     }
 
     private Object setTableResultsPanel(DatabaseObject databaseObject) {
@@ -530,18 +575,22 @@ public class TableDataTab extends JPanel
             }
 
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            if (foreigns != null)
-                if (foreigns.size() > 0)
-                    for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
-                        Vector items = itemsForeign(key);
-                        DefaultTableModel defaultTableModel = tableForeign(key);
-                        //table.setComboboxColumn(tableModel.getColumnIndex(key.getColumnName()), items);
+            if (foreigns != null && foreigns.size() > 0) {
+                SwingWorker sw = new SwingWorker("fillForeignsFor_" + databaseObject.getName()) {
+                    @Override
+                    public Object construct() {
+                        for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
 
-                        int columnIndex = tableModel.getColumnIndex(key.getColumnName());
-                        if (columnIndex > -1)
-                            table.setComboboxTable(columnIndex, defaultTableModel, items);
+                            int columnIndex = tableModel.getColumnIndex(key.getColumnName());
+                            if (columnIndex > -1)
+                                table.setForeignKeyTable(columnIndex, tableForeign(key), allItemsForeign(key), namesForeign(key), tableForeignChildren(key));
+                        }
+                        return null;
                     }
+                };
+                sw.start();
 
+            }
 
             scroller.getViewport().add(table);
             if (scroller.getVerticalScrollBar().getAdjustmentListeners().length < 1)
@@ -947,39 +996,49 @@ public class TableDataTab extends JPanel
         }
     }
 
-    public DefaultTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String checked_column = "select R.RDB$FIELD_NAME from RDB$FIELDS F, RDB$RELATION_FIELDS R where (F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE) and (R.RDB$SYSTEM_FLAG = 0) and (R.RDB$RELATION_NAME = " + "'" + key.getReferencedTable() + "'" + ") and (NOT F.RDB$FIELD_NAME IN (select RDB$FIELD_NAME from RDB$FIELD_DIMENSIONS))";
-        ArrayList<String> checked_column_list = new ArrayList<String>();
-        try {
-            ResultSet checked_column_rs = querySender.execute(QueryTypes.SELECT, checked_column).getResultSet();
-            while (checked_column_rs.next()) {
-                checked_column_list.add(checked_column_rs.getObject(1).toString());
-            }
-        } catch (Exception e) {
-            Log.error("Error get Foreign keys:" + e.getMessage());
-        } finally {
-            querySender.releaseResources();
-        }
+    public ResultSetTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+        AbstractDatabaseObject refTable = (AbstractDatabaseObject) ConnectionsTreePanel.getTableOrViewFromHost(databaseObject.getHost().getDatabaseConnection(), MiscUtils.trimEnd(key.getReferencedTable()));
+        if (refTable == null)
+            return null;
+        List<DatabaseColumn> checked_column_list = refTable.getColumns();
 
         String checkedColumns = "";
         for (int i = 0; i < checked_column_list.size(); i++) {
-            checkedColumns += MiscUtils.getFormattedObject(checked_column_list.get(i));
-            if (i < checked_column_list.size() - 1) {
+            if (checked_column_list.get(i).getDimensions() == null)
+                checkedColumns += MiscUtils.getFormattedObject(checked_column_list.get(i).getName(), databaseObject.getHost().getDatabaseConnection());
+            else
+                checkedColumns += "'SQL type not supported' as " + MiscUtils.getFormattedObject(checked_column_list.get(i).getName(), databaseObject.getHost().getDatabaseConnection());
+            if (i < checked_column_list.size() - 1)
                 checkedColumns += " , ";
-            }
         }
 
-        String query = "SELECT " + checkedColumns + " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
-        DefaultTableModel defaultTableModel = new DefaultTableModel();
+        String query = "SELECT " + checkedColumns +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable(), databaseObject.getHost().getDatabaseConnection());
+
+        ResultSetTableModel defaultTableModel = null;
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
-            defaultTableModel = buildTableModel(rs);
+            defaultTableModel = new ResultSetTableModel(rs, -1, false);
+
         } catch (Exception e) {
             Log.error("Error get Foreign keys:" + e.getMessage());
+
         } finally {
             querySender.releaseResources();
         }
+
         return defaultTableModel;
+    }
+
+    private int[] tableForeignChildren(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+
+        List<Integer> indexes = new ArrayList<>();
+
+        for (int i = 0; i < tableModel.getColumnCount(); i++)
+            if (key.getColumnDisplayList().contains(tableModel.getColumnName(i)))
+                indexes.add(i);
+
+        return indexes.stream().mapToInt(Integer::intValue).toArray();
     }
 
     private void createButtonsEditingPanel() {
@@ -1007,18 +1066,28 @@ public class TableDataTab extends JPanel
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+
+                if (deleterRowIndexes == null)
+                    deleterRowIndexes = new ArrayList<>();
+
                 boolean useForm = SystemProperties.getBooleanProperty(
                         Constants.USER_PROPERTIES_KEY, "results.table.use.form.adding.deleting");
-                if (useForm)
+                if (useForm) {
                     delete_record();
-                else {
-                    int[] rows = table.getSelectedRows();
-                    for (int row : rows) {
-                        if (row >= 0)
-                            tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
-                    }
+
+                } else {
+
+                    Arrays.stream(table.getSelectedRows())
+                            .filter(row -> row >= 0)
+                            .forEach(row ->  {
+                                tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
+                                deleterRowIndexes.add(row);
+                            });
+
                     table.clearSelection();
                 }
+
+                markedForReload = true;
             }
         });
         bar.add(deleteRolloverButton);
@@ -1209,6 +1278,7 @@ public class TableDataTab extends JPanel
         }
 
         table.applyUserPreferences();
+        table.setTableColumnWidthFromContents();
         table.setCellSelectionEnabled(false);
 
         tableModel.setMaxRecords(SystemProperties.getIntProperty("user", "browser.max.records"));
@@ -1217,6 +1287,14 @@ public class TableDataTab extends JPanel
     public JTable getTable() {
 
         return table;
+    }
+
+    public List<Integer> getDeleterRowIndexes() {
+        return deleterRowIndexes;
+    }
+
+    public List<RecordDataItem> getRowDataForRow(int row) {
+        return tableModel.getRowDataForRow(row);
     }
 
     public boolean isTransposeAvailable() {
@@ -1321,6 +1399,10 @@ public class TableDataTab extends JPanel
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void cleanup() {
+        EventMediator.deregisterListener(this);
     }
 
     private String bundleString(String key) {

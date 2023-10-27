@@ -20,6 +20,7 @@
 
 package org.executequery.datasource;
 
+import biz.redsoft.ITPB;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionBuilder;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -167,6 +168,10 @@ public final class ConnectionManager {
     }
 
     public static Connection getTemporaryConnection(DatabaseConnection databaseConnection) {
+        return getTemporaryConnection(databaseConnection, null);
+    }
+
+    public static Connection getTemporaryConnection(DatabaseConnection databaseConnection, ITPB tpb) {
 
         if (databaseConnection == null) {
 
@@ -182,14 +187,53 @@ public final class ConnectionManager {
 
             ConnectionPool pool = connectionPools.get(databaseConnection);
             DataSource dataSource = getDataSource(databaseConnection);
+            Connection con;
             try {
-                return new PooledConnection(dataSource.getConnection(), databaseConnection);
+                if (dataSource instanceof SimpleDataSource)
+                    con = ((SimpleDataSource) dataSource).getConnection(tpb);
+                else con = dataSource.getConnection();
+
+                return new PooledConnection(con, databaseConnection);
             } catch (SQLException e) {
                 Log.error("Error get connection", e);
                 return pool.getConnection();
             }
         }
 
+    }
+
+    public static void setTPBtoConnection(DatabaseConnection databaseConnection, Connection connection, ITPB tpb) {
+        DataSource dataSource = getDataSource(databaseConnection);
+        if (dataSource instanceof SimpleDataSource) {
+            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+            try {
+                simpleDataSource.setTPBtoConnection(connection, tpb);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static long getIDTransaction(DatabaseConnection databaseConnection, Connection connection) {
+        DataSource dataSource = getDataSource(databaseConnection);
+        if (dataSource instanceof SimpleDataSource) {
+            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+            try {
+                return simpleDataSource.getIDTransaction(connection);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
+    }
+
+    public static ClassLoader getClassLoaderForDatabaseConnection(DatabaseConnection databaseConnection) {
+        DataSource dataSource = getDataSource(databaseConnection);
+        if (dataSource instanceof SimpleDataSource) {
+            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+            return simpleDataSource.getClassLoaderFromPlugin();
+        }
+        return null;
     }
 
     public static String getURL(DatabaseConnection databaseConnection) {

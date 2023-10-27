@@ -39,7 +39,7 @@ public class DomainPanel extends JPanel {
             else
                 columnData.setDomain(defaultDatabaseDomain.getName());
             if (!editing) {
-                editDomainButton.setEnabled(!columnData.getDomain().equals(""));
+                editDomainButton.setEnabled(columnData.getDomain() != null && !columnData.getDomain().equals(""));
             }
         });
         editDomainButton = new JButton(bundleString("EditDomain"));
@@ -59,13 +59,16 @@ public class DomainPanel extends JPanel {
             dialog.display();
         });
         Vector<NamedObject> domains = new Vector(getDomains());
+        domains.add(0, null);
         domainBox.setModel(new DefaultComboBoxModel(domains));
         if (editing) {
             boolean finded = false;
             for (NamedObject namedObject : domains) {
-                if (namedObject.getName().trim().contentEquals(currentDomain)) {
-                    domainBox.setSelectedItem(namedObject);
-                    finded = true;
+                if (namedObject != null) {
+                    if (namedObject.getName().trim().contentEquals(currentDomain)) {
+                        domainBox.setSelectedItem(namedObject);
+                        finded = true;
+                    }
                 }
             }
             if (!finded) {

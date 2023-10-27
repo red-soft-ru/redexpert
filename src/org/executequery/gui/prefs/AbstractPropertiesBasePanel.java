@@ -78,6 +78,7 @@ abstract class AbstractPropertiesBasePanel extends JPanel
 
     @Override
     public void preferenceChange(PreferenceChangeEvent e) {
+        PropertiesPanel.checkAndSetRestartNeed(e.getKey());
     }
 
     @Override

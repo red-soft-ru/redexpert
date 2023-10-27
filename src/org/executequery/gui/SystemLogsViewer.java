@@ -20,10 +20,12 @@
 
 package org.executequery.gui;
 
+import org.executequery.ApplicationException;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.gui.text.DefaultTextEditorContainer;
 import org.executequery.gui.text.SimpleTextArea;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.LogRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.GUIUtils;
@@ -47,14 +49,11 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         TabView,
         ActionListener {
 
-    public static final String TITLE = "System Log Viewer";
-
+    public static final String TITLE = bundleString("title");
     public static final String FRAME_ICON = "SystemOutput.png";
 
     private JTextArea textArea;
-
-    private JComboBox logCombo;
-
+    private JComboBox<?> logCombo;
     private RolloverButton reloadButton;
     private RolloverButton trashButton;
 
@@ -63,24 +62,24 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         super(new BorderLayout());
 
         try {
-
             init(type);
 
         } catch (Exception e) {
-
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
-
     }
 
     /**
      * <p>Initializes the state of this instance.
      */
-    private void init(final int type) throws Exception {
+    private void init(final int type) {
 
-        String[] logs = {"System Log: ~/.redexpert/logs/eq.output.log",
-                "Export Log: ~/.redexpert/logs/eq.export.log",
-                "Import Log: ~/.redexpert/logs/eq.import.log"};
+        LogRepository logRepository = ((LogRepository) RepositoryCache.load(LogRepository.REPOSITORY_ID));
+        String[] logs = {
+                "System Log: " + logRepository.getLogFilePath(LogRepository.ACTIVITY),
+                "Export Log: " + logRepository.getLogFilePath(LogRepository.EXPORT),
+                "Import Log: " + logRepository.getLogFilePath(LogRepository.IMPORT)
+        };
 
         logCombo = WidgetFactory.createComboBox(logs);
         logCombo.addItemListener(this);
@@ -89,11 +88,8 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         textArea = simpleTextArea.getTextAreaComponent();
         textComponent = textArea;
 
-        reloadButton = new RolloverButton("/org/executequery/icons/Refresh16.png",
-                "Reload this log file");
-
-        trashButton = new RolloverButton("/org/executequery/icons/Delete16.png",
-                "Reset this log file");
+        reloadButton = new RolloverButton("/org/executequery/icons/Refresh16.png", bundleString("reload"));
+        trashButton = new RolloverButton("/org/executequery/icons/Delete16.png", bundleString("reset"));
 
         reloadButton.addActionListener(this);
         trashButton.addActionListener(this);
@@ -112,53 +108,37 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         base.add(simpleTextArea, BorderLayout.CENTER);
 
         add(base, BorderLayout.CENTER);
-
         setFocusable(true);
 
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-
-                load(type);
-            }
-
-        });
-
-    }
-
-    public void itemStateChanged(ItemEvent e) {
-
-        // interested in selections only
-        if (e.getStateChange() == ItemEvent.DESELECTED) {
-
-            return;
-        }
-
-        load(logCombo.getSelectedIndex());
+        SwingUtilities.invokeLater(() -> load(type));
     }
 
     public void setSelectedLog(int type) {
-
         logCombo.setSelectedIndex(type);
     }
 
-    private void load(final int type) {
+    private void load(final int index) {
 
         SwingWorker worker = new SwingWorker("LoadSystemLogs") {
 
+            @Override
             public Object construct() {
 
                 GUIUtilities.showWaitCursor();
                 GUIUtilities.showWaitCursor(textArea);
 
-                return logRepository().load(type);
+                try {
+                    return logRepository().load(index);
+
+                } catch (ApplicationException e) {
+                    GUIUtilities.displayWarningMessage(bundleString("LogFileNotFound"));
+                    return "";
+                }
             }
 
+            @Override
             public void finished() {
-
-                String content = (String) get();
-
-                setLogText(content);
+                setLogText((String) get());
             }
         };
 
@@ -168,84 +148,57 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
     private void setLogText(final String text) {
 
         try {
-
-            GUIUtils.invokeAndWait(new Runnable() {
-
-                public void run() {
-
-                    if (!MiscUtils.isNull(text)) {
-
-                        textArea.setText(text);
-
-                    } else {
-
-                        textArea.setText("");
-                    }
-
-                    textArea.setCaretPosition(0);
-                }
+            GUIUtils.invokeAndWait(() -> {
+                textArea.setText(!MiscUtils.isNull(text) ? text : "");
+                textArea.setCaretPosition(0);
             });
 
         } catch (OutOfMemoryError e) {
-
             GUIUtils.scheduleGC();
-
             GUIUtilities.showNormalCursor();
-
-            GUIUtilities.displayErrorMessage(
-                    "Out of Memory.\nThe file is too large to open for viewing.");
+            GUIUtilities.displayErrorMessage(bundleString("outOfMemory"));
 
         } finally {
-
             GUIUtilities.showNormalCursor();
             GUIUtilities.showNormalCursor(textArea);
         }
-
     }
 
     private LogRepository logRepository() {
-
         return (LogRepository) RepositoryCache.load(LogRepository.REPOSITORY_ID);
     }
 
+    private boolean resetConfirmed() {
+        return GUIUtilities.displayConfirmDialog(bundleString("resetConfirmed")) == JOptionPane.YES_OPTION;
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
 
         Object source = e.getSource();
 
         if (source == reloadButton) {
-
             load(logCombo.getSelectedIndex());
 
-        } else if (source == trashButton) {
-
-            if (resetConfirmed()) {
-
-                int type = logCombo.getSelectedIndex();
-
-                logRepository().reset(type);
-
-                textArea.setText("");
-
-            }
-
+        } else if (source == trashButton && resetConfirmed()) {
+            logRepository().reset(logCombo.getSelectedIndex());
+            textArea.setText("");
         }
 
     }
 
-    private boolean resetConfirmed() {
-
-        String message = "Are you sure you want to reset the selected log file?";
-
-        return GUIUtilities.displayConfirmDialog(message) == JOptionPane.YES_OPTION;
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        if (e.getStateChange() != ItemEvent.DESELECTED)
+            load(logCombo.getSelectedIndex());
     }
 
-    // --------------------------------------------
-    // TabView implementation
-    // --------------------------------------------
+    // --- TabView implementation ---
 
     /**
      * Indicates the panel is being removed from the pane
      */
+    @Override
     public boolean tabViewClosing() {
         textArea = null;
         textComponent = null;
@@ -255,6 +208,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
     /**
      * Indicates the panel is being selected in the pane
      */
+    @Override
     public boolean tabViewSelected() {
         return true;
     }
@@ -262,22 +216,25 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
     /**
      * Indicates the panel is being de-selected in the pane
      */
+    @Override
     public boolean tabViewDeselected() {
         return true;
     }
 
-    // --------------------------------------------
+    // ---
 
+    @Override
     public String getPrintJobName() {
         return "Red Expert - system log";
     }
 
+    @Override
     public String toString() {
         return TITLE;
     }
 
+    private static String bundleString(String key) {
+        return Bundles.get(SystemLogsViewer.class, key);
+    }
+
 }
-
-
-
-

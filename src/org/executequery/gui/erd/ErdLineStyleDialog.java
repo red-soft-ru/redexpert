@@ -81,7 +81,7 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
      */
     public ErdLineStyleDialog(ErdDependanciesPanel dependsPanel) {
 
-        super(GUIUtilities.getParentFrame(), "Line Style", true);
+        super(GUIUtilities.getParentFrame(), bundleString("title"), true);
 
         this.dependsPanel = dependsPanel;
 
@@ -164,7 +164,7 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(14, 10, 5, 10);
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel("Line Style:"), gbc);
+        panel.add(new JLabel(bundleString("LineStyleLabel")), gbc);
         gbc.gridwidth = 2;
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -179,9 +179,9 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0;
         gbc.gridx = 0;
-        panel.add(new JLabel("Line Weight:"), gbc);
+        panel.add(new JLabel(bundleString("LineWeightLabel")), gbc);
         gbc.gridy = 2;
-        panel.add(new JLabel("Arrow Style:"), gbc);
+        panel.add(new JLabel(bundleString("ArrowStyleLabel")), gbc);
         gbc.gridwidth = 2;
         gbc.insets.top = 0;
         gbc.gridx = 1;
@@ -197,7 +197,7 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         gbc.weightx = 0;
         gbc.gridx = 0;
         gbc.gridwidth = 1;
-        panel.add(new JLabel("Line Colour:"), gbc);
+        panel.add(new JLabel(bundleString("LineColourLabel")), gbc);
 
 
         gbc.gridx = 1;
@@ -278,6 +278,10 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
     private boolean isFloatEqual(float value1, float value2) {
 
         return (Math.abs(value1 - value2) < .0000001);
+    }
+
+    private static String bundleString(String key) {
+        return Bundles.get(ErdLineStyleDialog.class, key);
     }
 
 
@@ -487,18 +491,3 @@ class LineStyleIcon extends ImageIcon {
     }
 
 } // LineStyleIcon
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -136,7 +136,6 @@ public class SQLTextPane extends JTextPane
     protected void setEditorPreferences() {
 
         setSelectionColor(QueryEditorSettings.getSelectionColour());
-        setSelectedTextColor(QueryEditorSettings.getSelectedTextColour());
         setBackground(QueryEditorSettings.getEditorBackground());
 
         Font font = QueryEditorSettings.getEditorFont();

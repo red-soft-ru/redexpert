@@ -3,7 +3,6 @@ package org.executequery.gui.table;
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
@@ -451,11 +450,11 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName().trim()));
+        sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName().trim(), getDatabaseConnection()));
         if (editing)
             sb.append("\n\tDROP CONSTRAINT ").append(getFormattedName()).append(",");
         sb.append("\n\tADD ");
-        sb.append(SQLUtils.generateDefinitionColumnConstraint(cc, false, true).trim().substring(1).trim()).append(";");
+        sb.append(SQLUtils.generateDefinitionColumnConstraint(cc, false, true, getDatabaseConnection()).trim().substring(1).trim()).append(";");
 
         return sb.toString();
     }
@@ -479,7 +478,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
             if (!first)
                 sb.append(", ");
             first = false;
-            sb.append(MiscUtils.getFormattedObject(key));
+            sb.append(MiscUtils.getFormattedObject(key, getDatabaseConnection()));
         }
 
         return sb.toString();

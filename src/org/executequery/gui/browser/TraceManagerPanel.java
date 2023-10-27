@@ -9,10 +9,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
-import org.executequery.gui.browser.managment.tracemanager.BuildConfigurationPanel;
-import org.executequery.gui.browser.managment.tracemanager.LogConstants;
-import org.executequery.gui.browser.managment.tracemanager.SessionManagerPanel;
-import org.executequery.gui.browser.managment.tracemanager.TablePanel;
+import org.executequery.gui.browser.managment.tracemanager.*;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.gui.browser.managment.tracemanager.net.SessionInfo;
 import org.executequery.localization.Bundles;
@@ -38,16 +35,18 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Driver;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 public class TraceManagerPanel extends JPanel implements TabView {
 
     public static final String TITLE = Bundles.get(TraceManagerPanel.class, "title");
     private IFBTraceManager traceManager;
     private TablePanel loggerPanel;
+
+    private AnalisePanel analisePanel;
     private FileOutputStream fileLog;
     private PipedOutputStream outputStream;
 
@@ -67,6 +66,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private JTextField userField;
     private JPasswordField passwordField;
     private JCheckBox logToFileBox;
+    LogMessage constMsg = new LogMessage();
     private JCheckBox useBuildConfBox;
     private JTextField hostField;
     private NumberTextField portField;
@@ -87,360 +87,32 @@ public class TraceManagerPanel extends JPanel implements TabView {
     public static String bundleString(String key) {
         return Bundles.get(TraceManagerPanel.class, key);
     }
-
-    private void init() {
-        message = Message.LOG_MESSAGE;
-        sessions = new ArrayList<>();
-        initTraceManager();
-        sessionField = new JTextField();
-        sessionField.setText("Session");
-        sessionManagerPanel = new SessionManagerPanel(traceManager, sessionField);
-        loadCharsets();
-        ListSelectionPanel columnsCheckPanel = new ListSelectionPanel(new Vector<>(Arrays.asList(LogConstants.COLUMNS)));
-        columnsCheckPanel.selectAllAction();
-        loggerPanel = new TablePanel(columnsCheckPanel);
-        fileLogButton = new JButton("...");
-        fileDatabaseButton = new JButton("...");
-        fileConfButton = new JButton("...");
-        openFileLog = new JButton("...");
-        fileLogField = new JTextField();
-        fileDatabaseField = new JTextField();
-        fileConfField = new JTextField();
-        openFileLogField = new JTextField();
-        userField = new JTextField();
-        passwordField = new JPasswordField();
-        logToFileBox = new JCheckBox(bundleString("LogToFile"));
-        logToFileBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                setEnableElements();
-                if (fileLog != null) {
-                    try {
-                        fileLog.close();
-                        fileLog = null;
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        });
-        hostField = new JTextField("127.0.0.1");
-        portField = new NumberTextField();
-        portField.setText("3050");
-        useBuildConfBox = new JCheckBox(bundleString("UseConfigFile"));
-        useBuildConfBox.setSelected(true);
-        useBuildConfBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setEnableElements();
-            }
-        });
-        charsetCombo = new JComboBox<>(charsets.toArray());
-        DynamicComboBoxModel model = new DynamicComboBoxModel();
-        List<DatabaseConnection> databaseConnectionList = new ArrayList<>();
-        databaseConnectionList.add(null);
-        databaseConnectionList.addAll(((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll());
-        model.setElements(databaseConnectionList);
-        databaseBox = new JComboBox<>(model);
-        databaseBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (databaseBox.getSelectedItem() != null) {
-                    DatabaseConnection dc = (DatabaseConnection) databaseBox.getSelectedItem();
-                    fileDatabaseField.setText(dc.getSourceName());
-                    userField.setText(dc.getUserName());
-                    passwordField.setText(dc.getUnencryptedPassword());
-                    hostField.setText(dc.getHost());
-                    portField.setText(dc.getPort());
-                    sessionField.setText(dc.getName() + "_trace_session");
-                    charsetCombo.setSelectedItem(dc.getCharset());
-                    if (dc.getPathToTraceConfig() != null)
-                        fileConfField.setText(dc.getPathToTraceConfig());
-                    if (dc.getServerVersion() >= 3) {
-                        confPanel.getAppropriationBox().setSelectedIndex(1);
-                    } else {
-                        confPanel.getAppropriationBox().setSelectedIndex(0);
-                    }
-                }
-            }
-        });
-        startStopSessionButton = new JButton(bundleString("Start"));
-        clearTableButton = new JButton(bundleString("ClearTable"));
-        clearTableButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                clearAll();
-            }
-        });
-        fileLogButton.addActionListener(new ActionListener() {
-            final FileChooserDialog fileChooser = new FileChooserDialog();
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChooser.showSaveDialog(fileLogButton);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    if (fileLog != null) {
-                        try {
-                            fileLog.close();
-                            fileLog = null;
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                    File file = fileChooser.getSelectedFile();
-                    fileLogField.setText(file.getAbsolutePath());
-                    try {
-                        fileLog = new FileOutputStream(file, false);
-                        fileLog.close();
-                        fileLog = null;
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        });
-
-
-        fileDatabaseButton.addActionListener(new ActionListener() {
-            final FileChooserDialog fileChooser = new FileChooserDialog();
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChooser.showOpenDialog(fileDatabaseButton);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
-                    fileDatabaseField.setText(file.getAbsolutePath());
-                }
-            }
-        });
-
-        fileConfButton.addActionListener(new ActionListener() {
-            final FileChooserDialog fileChooser = new FileChooserDialog();
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChooser.showOpenDialog(fileConfButton);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
-                    fileConfField.setText(file.getAbsolutePath());
-                }
-            }
-        });
-
-        openFileLog.addActionListener(new ActionListener() {
-            final FileChooserDialog fileChooser = new FileChooserDialog();
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChooser.showOpenDialog(openFileLog);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    SwingWorker sw = new SwingWorker("loadTraceFromFile") {
-                        @Override
-                        public Object construct() {
-                            openFileLogField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-                            clearAll();
-                            idLogMessage = 0;
-                            BufferedReader reader = null;
-                            try {
-                                reader = new BufferedReader(
-                                        new InputStreamReader(
-                                                Files.newInputStream(Paths.get(openFileLogField.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
-                                readFromBufferedReader(reader, true);
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
-                            } finally {
-                                if (reader != null) {
-                                    try {
-                                        reader.close();
-                                    } catch (IOException e1) {
-                                    }
-                                }
-                            }
-                            return null;
-                        }
-
-                        @Override
-                        public void finished() {
-                            GUIUtilities.showNormalCursor();
-                            tabPane.setEnabled(true);
-                            loggerPanel.setEnableElements(true);
-                        }
-                    };
-                    GUIUtilities.showWaitCursor();
-                    tabPane.setEnabled(false);
-                    loggerPanel.setEnableElements(false);
-                    sw.start();
-
-                }
-                tabPane.setSelectedComponent(loggerPanel);
-            }
-        });
-
-        startStopSessionButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (startStopSessionButton.getText().toUpperCase().contentEquals(bundleString("Start").toUpperCase())) {
-                    if (logToFileBox.isSelected()) {
-                        if (logToFileBox.isSelected()) {
-                            if (!fileLogField.getText().isEmpty()) {
-                                File file = new File(fileLogField.getText());
-                                try {
-                                    fileLog = new FileOutputStream(file, true);
-                                } catch (FileNotFoundException e1) {
-                                    e1.printStackTrace();
-                                }
-                            }
-                        }
-                        if (fileLog != null) {
-                            outputStream = new TraceOutputStream();
-                        } else {
-                            GUIUtilities.displayErrorMessage("File is empty");
-                            return;
-                        }
-                    } else
-                        outputStream = new PipedOutputStream();
-                    try {
-                        inputStream = new PipedInputStream(outputStream);
-                        String charset = null;
-                        if (charsetCombo.getSelectedIndex() > 0)
-                            charset = MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem());
-                        bufferedReader = new BufferedReader(new InputStreamReader(inputStream, charset));
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                    traceManager.setUser(userField.getText());
-                    traceManager.setPassword(new String(passwordField.getPassword()));
-                    traceManager.setLogger(outputStream);
-                    if (charsetCombo.getSelectedIndex() == 0)
-                        traceManager.setCharSet(null);
-                    else
-                        traceManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem()));
-                    traceManager.setDatabase(fileDatabaseField.getText());
-                    traceManager.setHost(hostField.getText());
-                    traceManager.setPort(portField.getValue());
-                    try {
-                        String conf;
-                        if (useBuildConfBox.isSelected()) {
-                            if (fileConfField.getText().isEmpty()) {
-                                GUIUtilities.displayErrorMessage("Please select configuration file");
-                                return;
-                            }
-                            conf = FileUtils.loadFile(fileConfField.getText());
-                        } else conf = confPanel.getConfig();
-                        traceManager.startTraceSession(sessionField.getText(), conf);
-                        startStopSessionButton.setText(bundleString("Stop"));
-                        tabPane.add(bundleString("SessionManager"), sessionManagerPanel);
-                        for (int i = 0; i < connectionPanel.getComponents().length; i++) {
-                            connectionPanel.getComponents()[i].setEnabled(false);
-                        }
-                        logToFileBox.setEnabled(false);
-                        SwingWorker sw = new SwingWorker("TraceSession") {
-                            @Override
-                            public Object construct() {
-                                readFromBufferedReader(bufferedReader, false);
-                                return null;
-                            }
-                        };
-                        sw.start();
-                        tabPane.setSelectedComponent(loggerPanel);
-                        DatabaseConnection dc = (DatabaseConnection) databaseBox.getSelectedItem();
-                        if (dc != null) {
-                            dc.setPathToTraceConfig(fileConfField.getText());
-                        }
-                        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this,
-                                ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) databaseBox.getSelectedItem()
-                        ));
-                    } catch (Exception e1) {
-                        GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1);
-                    }
-                } else try {
-                    traceManager.stopTraceSession(currentSessionId);
-                } catch (SQLException e1) {
-                    GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1);
-                } finally {
-                    stopSession();
-                }
-            }
-        });
-
-        hideShowTabPaneButton = new JButton(bundleString("HideTopPanel"));
-        hideShowTabPaneButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                tabPane.setVisible(!tabPane.isVisible());
-                if (hideShowTabPaneButton.getText().contentEquals(bundleString("HideTopPanel")))
-                    hideShowTabPaneButton.setText(bundleString("ShowTopPanel"));
-                else hideShowTabPaneButton.setText(bundleString("HideTopPanel"));
-            }
-        });
-
-        tabPane = new JTabbedPane();
-        connectionPanel = new JPanel();
-        confPanel = new BuildConfigurationPanel();
-
-        setLayout(new GridBagLayout());
-        // JSplitPane mainSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(new GridBagLayout());
-        JLabel label = new JLabel(bundleString("OpenFileLog"));
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic().defaults();
-        topPanel.add(label, gbh.setLabelDefault().get());
-        gbh.nextCol();
-        gbh.addLabelFieldPair(topPanel, openFileLog, openFileLogField, null, false, false);
-
-        topPanel.add(tabPane, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
-
-        gbh.fullDefaults();
-
-        add(topPanel, gbh.fillBoth().spanX().setMaxWeightY().topGap(5).get());
-
-
-        add(startStopSessionButton, gbh.nextRowFirstCol().setLabelDefault().get());
-
-        add(clearTableButton, gbh.nextCol().setLabelDefault().get());
-
-
-        tabPane.add(bundleString("Connection"), connectionPanel);
-        tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));
-        tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
-        tabPane.add(bundleString("Logger"), loggerPanel);
-        connectionPanel.setLayout(new GridBagLayout());
-        gbh.fullDefaults();
-        gbh.addLabelFieldPair(connectionPanel, bundleString("Connections"), databaseBox, null, true, true);
-        gbh.nextRowFirstCol();
-        label = new JLabel(bundleString("Database"));
-        connectionPanel.add(label, gbh.setLabelDefault().get());
-        gbh.addLabelFieldPair(connectionPanel, fileDatabaseButton, fileDatabaseField, null, false, true);
-        gbh.addLabelFieldPair(connectionPanel, bundleString("SessionName"), sessionField, null, true, false, 2);
-        gbh.addLabelFieldPair(connectionPanel, bundleString("Host"), hostField, null, false, false);
-        gbh.addLabelFieldPair(connectionPanel, bundleString("Port"), portField, null, false, true);
-        gbh.addLabelFieldPair(connectionPanel, bundleString("Username"), userField, null, true, false, 2);
-        gbh.addLabelFieldPair(connectionPanel, bundleString("Password"), passwordField, null, false, true);
-        gbh.addLabelFieldPair(connectionPanel, bundleString("Charset"), charsetCombo, null, true, true);
-        gbh.nextRowFirstCol();
-        connectionPanel.add(useBuildConfBox, gbh.setLabelDefault().get());
-        gbh.addLabelFieldPair(connectionPanel, fileConfButton, fileConfField, null, false, true);
-        gbh.nextRowFirstCol();
-        connectionPanel.add(logToFileBox, gbh.setLabelDefault().get());
-        gbh.addLabelFieldPair(connectionPanel, fileLogButton, fileLogField, null, false, true);
-        connectionPanel.add(new JPanel(), gbh.anchorSouth().nextRowFirstCol().fillBoth().spanX().spanY().get());
-        setEnableElements();
-
-    }
+    private JCheckBox parseBox;
 
     public TraceManagerPanel() {
         init();
     }
 
-    private void initTraceManager() {
+    private void initTraceManager(DatabaseConnection dc) {
         try {
-            Driver driver = DefaultDriverLoader.getDefaultDriver();
-            traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(),
-                    driver,
-                    "FBTraceManagerImpl");
-        } catch (ClassNotFoundException | SQLException e) {
+
+            Driver driver = null;
+            Map<String, Driver> drivers = DefaultDriverLoader.getLoadedDrivers();
+            if (dc != null) {
+                for (String driverName : drivers.keySet()) {
+                    if (driverName.startsWith(String.valueOf(dc.getDriverId()))) {
+                        driver = drivers.get(driverName);
+                        break;
+                    }
+                }
+            }
+            if (driver == null)
+                driver = DefaultDriverLoader.getDefaultDriver();
+
+            traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(
+                    driver.getMajorVersion(), driver, "FBTraceManagerImpl");
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -531,12 +203,386 @@ public class TraceManagerPanel extends JPanel implements TabView {
         return true;
     }
 
+    private void init() {
+        message = Message.LOG_MESSAGE;
+        sessions = new ArrayList<>();
+        initTraceManager(null);
+        sessionField = new JTextField();
+        sessionField.setText("Session");
+        sessionManagerPanel = new SessionManagerPanel(traceManager, sessionField);
+        loadCharsets();
+        ListSelectionPanel columnsCheckPanel = new ListSelectionPanel(new Vector<>(Arrays.asList(LogConstants.COLUMNS)));
+        columnsCheckPanel.selectAllAction();
+        loggerPanel = new TablePanel(columnsCheckPanel);
+        analisePanel = new AnalisePanel(loggerPanel.getTableRows());
+        fileLogButton = new JButton("...");
+        fileDatabaseButton = new JButton("...");
+        fileConfButton = new JButton("...");
+        openFileLog = new JButton("...");
+        fileLogField = new JTextField();
+        fileDatabaseField = new JTextField();
+        fileConfField = new JTextField();
+        openFileLogField = new JTextField();
+        userField = new JTextField();
+        passwordField = new JPasswordField();
+        parseBox = new JCheckBox(bundleString("parseTraceToGrid"));
+        parseBox.setSelected(true);
+        logToFileBox = new JCheckBox(bundleString("LogToFile"));
+        logToFileBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                setEnableElements();
+                if (fileLog != null) {
+                    try {
+                        fileLog.close();
+                        fileLog = null;
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
+        hostField = new JTextField("127.0.0.1");
+        portField = new NumberTextField();
+        portField.setText("3050");
+        useBuildConfBox = new JCheckBox(bundleString("UseConfigFile"));
+        useBuildConfBox.setSelected(true);
+        useBuildConfBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setEnableElements();
+            }
+        });
+        charsetCombo = new JComboBox<>(charsets.toArray());
+        DynamicComboBoxModel model = new DynamicComboBoxModel();
+        List<DatabaseConnection> databaseConnectionList = new ArrayList<>();
+        databaseConnectionList.add(null);
+        databaseConnectionList.addAll(((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll());
+        model.setElements(databaseConnectionList);
+        databaseBox = new JComboBox<>(model);
+        databaseBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (databaseBox.getSelectedItem() != null) {
+                    DatabaseConnection dc = (DatabaseConnection) databaseBox.getSelectedItem();
+                    fileDatabaseField.setText(dc.getSourceName());
+                    userField.setText(dc.getUserName());
+                    passwordField.setText(dc.getUnencryptedPassword());
+                    hostField.setText(dc.getHost());
+                    portField.setText(dc.getPort());
+                    sessionField.setText(dc.getName() + "_trace_session");
+                    charsetCombo.setSelectedItem(dc.getCharset());
+                    if (dc.getPathToTraceConfig() != null)
+                        fileConfField.setText(dc.getPathToTraceConfig());
+                    if (dc.getMajorServerVersion() >= 3) {
+                        confPanel.getAppropriationBox().setSelectedIndex(1);
+                    } else {
+                        confPanel.getAppropriationBox().setSelectedIndex(0);
+                    }
+                    initTraceManager(dc);
+                    sessionManagerPanel.setFbTraceManager(traceManager);
+                }
+            }
+        });
+        startStopSessionButton = new JButton(bundleString("Start"));
+        clearTableButton = new JButton(bundleString("ClearTable"));
+        clearTableButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clearAll();
+            }
+        });
+        fileLogButton.addActionListener(new ActionListener() {
+            final FileChooserDialog fileChooser = new FileChooserDialog();
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fileChooser.showSaveDialog(fileLogButton);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    if (fileLog != null) {
+                        try {
+                            fileLog.close();
+                            fileLog = null;
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                    File file = fileChooser.getSelectedFile();
+                    fileLogField.setText(file.getAbsolutePath());
+                    try {
+                        fileLog = new FileOutputStream(file, false);
+                        fileLog.close();
+                        fileLog = null;
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
+
+
+        fileDatabaseButton.addActionListener(new ActionListener() {
+            final FileChooserDialog fileChooser = new FileChooserDialog();
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fileChooser.showOpenDialog(fileDatabaseButton);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    fileDatabaseField.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        fileConfButton.addActionListener(new ActionListener() {
+            final FileChooserDialog fileChooser = new FileChooserDialog();
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fileChooser.showOpenDialog(fileConfButton);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    fileConfField.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        openFileLog.addActionListener(new ActionListener() {
+            final FileChooserDialog fileChooser = new FileChooserDialog();
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fileChooser.showOpenDialog(openFileLog);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    SwingWorker sw = new SwingWorker("loadTraceFromFile") {
+                        @Override
+                        public Object construct() {
+                            openFileLogField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+                            clearAll();
+                            idLogMessage = 0;
+                            BufferedReader reader = null;
+                            try {
+                                reader = new BufferedReader(
+                                        new InputStreamReader(
+                                                Files.newInputStream(Paths.get(openFileLogField.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
+                                readFromBufferedReader(reader, true);
+                            } catch (Exception e1) {
+                                GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
+                            } finally {
+                                if (reader != null) {
+                                    try {
+                                        reader.close();
+                                    } catch (IOException e1) {
+                                    }
+                                }
+                            }
+                            return null;
+                        }
+
+                        @Override
+                        public void finished() {
+                            GUIUtilities.showNormalCursor();
+                            tabPane.setEnabled(true);
+                            loggerPanel.setEnableElements(true);
+                            SwingWorker sw = new SwingWorker("buildAnalise") {
+                                @Override
+                                public Object construct() {
+                                    analisePanel.setMessages(loggerPanel.getTableRows());
+                                    analisePanel.rebuildRows();
+                                    return null;
+                                }
+                            };
+                            sw.start();
+
+                        }
+                    };
+                    GUIUtilities.showWaitCursor();
+                    tabPane.setEnabled(false);
+                    loggerPanel.setEnableElements(false);
+                    sw.start();
+
+                }
+                tabPane.setSelectedComponent(loggerPanel);
+            }
+        });
+
+        startStopSessionButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (startStopSessionButton.getText().toUpperCase().contentEquals(bundleString("Start").toUpperCase())) {
+                    if (logToFileBox.isSelected()) {
+                        if (logToFileBox.isSelected()) {
+                            if (!fileLogField.getText().isEmpty()) {
+                                File file = new File(fileLogField.getText());
+                                try {
+                                    fileLog = new FileOutputStream(file, true);
+                                } catch (FileNotFoundException e1) {
+                                    e1.printStackTrace();
+                                }
+                            }
+                        }
+                        if (fileLog != null) {
+                            outputStream = new TraceOutputStream();
+                        } else {
+                            GUIUtilities.displayErrorMessage("File is empty");
+                            return;
+                        }
+                    } else
+                        outputStream = new PipedOutputStream();
+                    try {
+                        inputStream = new PipedInputStream(outputStream);
+                        String charset = null;
+                        if (charsetCombo.getSelectedIndex() > 0)
+                            charset = MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem());
+                        bufferedReader = new BufferedReader(new InputStreamReader(inputStream, charset));
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    traceManager.setUser(userField.getText());
+                    traceManager.setPassword(new String(passwordField.getPassword()));
+                    traceManager.setLogger(outputStream);
+                    if (charsetCombo.getSelectedIndex() == 0)
+                        traceManager.setCharSet(null);
+                    else
+                        traceManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem()));
+                    traceManager.setDatabase(fileDatabaseField.getText());
+                    traceManager.setHost(hostField.getText());
+                    traceManager.setPort(portField.getValue());
+                    try {
+                        String conf;
+                        if (useBuildConfBox.isSelected()) {
+                            if (fileConfField.getText().isEmpty()) {
+                                GUIUtilities.displayErrorMessage("Please select configuration file");
+                                return;
+                            }
+                            conf = FileUtils.loadFile(fileConfField.getText());
+                        } else conf = confPanel.getConfig();
+                        traceManager.startTraceSession(sessionField.getText(), conf);
+                        startStopSessionButton.setText(bundleString("Stop"));
+                        tabPane.add(bundleString("SessionManager"), sessionManagerPanel);
+                        for (int i = 0; i < connectionPanel.getComponents().length; i++) {
+                            connectionPanel.getComponents()[i].setEnabled(false);
+                        }
+                        logToFileBox.setEnabled(false);
+                        SwingWorker sw = new SwingWorker("TraceSession") {
+                            @Override
+                            public Object construct() {
+                                try {
+                                    readFromBufferedReader(bufferedReader, false);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                while (startStopSessionButton.getText().contentEquals(bundleString("Stop"))) {
+                                    try {
+                                        Thread.sleep(1000);
+                                        traceManager.startTraceSession(sessionField.getText(), conf);
+                                        readFromBufferedReader(bufferedReader, false);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                return null;
+                            }
+                        };
+                        sw.start();
+                        tabPane.setSelectedComponent(loggerPanel);
+                        DatabaseConnection dc = (DatabaseConnection) databaseBox.getSelectedItem();
+                        if (dc != null) {
+                            dc.setPathToTraceConfig(fileConfField.getText());
+                        }
+                        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this,
+                                ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) databaseBox.getSelectedItem()
+                        ));
+                    } catch (Exception e1) {
+                        GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1);
+                    }
+                } else try {
+                    traceManager.stopTraceSession(currentSessionId);
+                } catch (SQLException e1) {
+                    GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1);
+                } finally {
+                    stopSession();
+                }
+            }
+        });
+
+        hideShowTabPaneButton = new JButton(bundleString("HideTopPanel"));
+        hideShowTabPaneButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabPane.setVisible(!tabPane.isVisible());
+                if (hideShowTabPaneButton.getText().contentEquals(bundleString("HideTopPanel")))
+                    hideShowTabPaneButton.setText(bundleString("ShowTopPanel"));
+                else hideShowTabPaneButton.setText(bundleString("HideTopPanel"));
+            }
+        });
+
+        tabPane = new JTabbedPane();
+        connectionPanel = new JPanel();
+        confPanel = new BuildConfigurationPanel();
+
+        setLayout(new GridBagLayout());
+        // JSplitPane mainSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new GridBagLayout());
+        JLabel label = new JLabel(bundleString("OpenFileLog"));
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
+        topPanel.add(label, gbh.setLabelDefault().get());
+        gbh.nextCol();
+        gbh.addLabelFieldPair(topPanel, openFileLog, openFileLogField, null, false, false);
+
+        topPanel.add(tabPane, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
+
+        gbh.fullDefaults();
+
+        add(topPanel, gbh.fillBoth().spanX().setMaxWeightY().topGap(5).get());
+
+
+        add(startStopSessionButton, gbh.nextRowFirstCol().setLabelDefault().get());
+
+        add(clearTableButton, gbh.nextCol().setLabelDefault().get());
+
+
+        tabPane.add(bundleString("Connection"), connectionPanel);
+        tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));
+        tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
+        tabPane.add(bundleString("Logger"), loggerPanel);
+        tabPane.add(bundleString("Analise"), analisePanel);
+        connectionPanel.setLayout(new GridBagLayout());
+        gbh.fullDefaults();
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Connections"), databaseBox, null, true, true);
+        gbh.nextRowFirstCol();
+        label = new JLabel(bundleString("Database"));
+        connectionPanel.add(label, gbh.setLabelDefault().get());
+        gbh.addLabelFieldPair(connectionPanel, fileDatabaseButton, fileDatabaseField, null, false, true);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("SessionName"), sessionField, null, true, false, 2);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Host"), hostField, null, false, false);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Port"), portField, null, false, true);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Username"), userField, null, true, false, 2);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Password"), passwordField, null, false, true);
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Charset"), charsetCombo, null, true, true);
+        gbh.nextRowFirstCol();
+        connectionPanel.add(useBuildConfBox, gbh.setLabelDefault().get());
+        gbh.addLabelFieldPair(connectionPanel, fileConfButton, fileConfField, null, false, true);
+        gbh.nextRowFirstCol();
+        connectionPanel.add(logToFileBox, gbh.setLabelDefault().get());
+        gbh.addLabelFieldPair(connectionPanel, fileLogButton, fileLogField, null, false, true);
+        connectionPanel.add(parseBox, gbh.nextRowFirstCol().setLabelDefault().get());
+        connectionPanel.add(new JPanel(), gbh.anchorSouth().nextRowFirstCol().fillBoth().spanX().spanY().get());
+        setEnableElements();
+
+    }
+
     private void parseMessage(String msg, Message message, boolean fromFile) {
-        if (message == Message.LOG_MESSAGE) {
+        if (message == Message.LOG_MESSAGE && (parseBox.isSelected() || fromFile)) {
             LogMessage logMessage = new LogMessage(msg);
             idLogMessage++;
             logMessage.setId(idLogMessage);
             loggerPanel.addRow(logMessage);
+            if (!fromFile)
+                analisePanel.addMessage(logMessage, !fromFile);
         } else {
             if (fromFile)
                 return;
@@ -548,10 +594,19 @@ public class TraceManagerPanel extends JPanel implements TabView {
             sessions.add(sessionInfo);
             sessionManagerPanel.setSessions(sessions);
         }
+        if (!parseBox.isSelected() && !fromFile) {
+            if (loggerPanel.countRows() < 1)
+                loggerPanel.addRow(constMsg);
+            constMsg.setTimestamp(Timestamp.valueOf(LocalDateTime.now()));
+            constMsg.setTypeEvent("WRITE_TO_FILE");
+            loggerPanel.repaint();
+        }
     }
 
     public void clearAll() {
         loggerPanel.clearAll();
+        analisePanel.setMessages(loggerPanel.getTableRows());
+        analisePanel.rebuildRows();
         idLogMessage = 0;
     }
 

@@ -166,7 +166,7 @@ public final class QueryTypes {
                 rText = metaName + " " + objectName + " dropped.";
                 break;
             case QueryTypes.COMMENT:
-                rText = "Description added";
+                rText = "Comment added";
                 break;
             case QueryTypes.CREATE_OBJECT:
             case QueryTypes.CREATE_OR_ALTER:
@@ -177,6 +177,9 @@ public final class QueryTypes {
                 break;
             case QueryTypes.ALTER_OBJECT:
                 rText = metaName + " " + objectName + " altered";
+                break;
+            case QueryTypes.SET_STATISTICS:
+                rText = "Statement executed successfully.";
                 break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:

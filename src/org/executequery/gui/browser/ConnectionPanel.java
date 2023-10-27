@@ -37,6 +37,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
 import org.executequery.gui.editor.TransactionIsolationCombobox;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -430,7 +431,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         mainPanel.add(urlLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         jdbcUrlComponents.add(urlLabel);
 
-        mainPanel.add(urlField, gbh.nextCol().spanX().get());
+        mainPanel.add(urlField, gbh.nextCol().fillHorizontally().spanX().get());
         jdbcUrlComponents.add(urlField);
         orderList.add(urlField);
 
@@ -755,6 +756,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
                         if (driverCombo.getSelectedIndex() >= 0)
                             driverCombo.setBorder(null);
                         else driverCombo.setBorder(redBorder);
+                        setNewAPI();
                     }
                 }
             });
@@ -1299,16 +1301,23 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     public void setNewAPI() {
 
-        boolean useAPI = useNewAPI.isSelected();
-        int majorVersion = new DefaultDriverLoader().load(jdbcDrivers.get(driverCombo.getSelectedIndex())).getMajorVersion();
-        if (majorVersion < 4 && useAPI) {
-            GUIUtilities.displayWarningMessage(bundleString("warning.useNewAPI"));
-            useNewAPI.setSelected(false);
-            databaseConnection.setUseNewAPI(false);
-        } else {
-            if (databaseConnection != null)
-                databaseConnection.setUseNewAPI(useAPI);
+        try {
+
+            boolean useAPI = useNewAPI.isSelected();
+            int majorVersion = new DefaultDriverLoader().load(jdbcDrivers.get(driverCombo.getSelectedIndex())).getMajorVersion();
+            if (majorVersion < 4 && useAPI) {
+                GUIUtilities.displayWarningMessage(bundleString("warning.useNewAPI"));
+                useNewAPI.setSelected(false);
+                databaseConnection.setUseNewAPI(false);
+            } else {
+                if (databaseConnection != null)
+                    databaseConnection.setUseNewAPI(useAPI);
+            }
+
+        } catch (DataSourceException e) {
+            Log.error(e.getExtendedMessage(), e);
         }
+
     }
 
     /**

@@ -24,6 +24,7 @@ import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
@@ -190,7 +191,7 @@ public class ErdToolBarPalette extends PanelToolBar
         }
 
         Color newColour = JColorChooser.showDialog(parent,
-                "Select Background Colour",
+                Bundles.get("LocaleManager.ColorChooser.title"),
                 currentColour);
 
         if (newColour == null) {
@@ -251,7 +252,7 @@ public class ErdToolBarPalette extends PanelToolBar
             int v_size = tables.size();
 
             if (v_size == 0) {
-                GUIUtilities.displayErrorMessage("No tables in ERD");
+                GUIUtilities.displayErrorMessage(bundleString("NoTablesError"));
                 return;
             }
 
@@ -268,7 +269,7 @@ public class ErdToolBarPalette extends PanelToolBar
             if (sql != null && sql.length() > 0)
                 new ErdExecuteSQL(parent, sql);
             else
-                GUIUtilities.displayErrorMessage("No schema changes have been recorded");
+                GUIUtilities.displayErrorMessage(bundleString("NoSchemaChangesRecordedError"));
 
         } else if (btnObject == dropTableButton) {
             parent.removeSelectedTables();
@@ -283,8 +284,7 @@ public class ErdToolBarPalette extends PanelToolBar
         } else if (btnObject == relationButton) {
 
             if (parent.getAllComponentsVector().size() <= 1) {
-                GUIUtilities.displayErrorMessage(
-                        "You need at least 2 tables to create a relationship");
+                GUIUtilities.displayErrorMessage(Bundles.get("ErdPopupMenu.needMoreTablesError"));
                 return;
             }
 
@@ -296,8 +296,7 @@ public class ErdToolBarPalette extends PanelToolBar
             if (tables.length < 2) {
                 return;
             } else if (tables.length > 2) {
-                GUIUtilities.displayErrorMessage(
-                        "Please select only 2 related tables");
+                GUIUtilities.displayErrorMessage(bundleString("SelectOnlyTwoTablesError"));
                 return;
             }
             new ErdDeleteRelationshipDialog(parent, tables);
@@ -361,18 +360,3 @@ public class ErdToolBarPalette extends PanelToolBar
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

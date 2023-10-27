@@ -20,16 +20,14 @@
 
 package org.executequery.gui.editor.autocomplete;
 
-import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.ColumnInformation;
-import org.executequery.databaseobjects.impl.ColumnInformationFactory;
+import org.executequery.databaseobjects.impl.DefaultDatabaseFunction;
+import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
@@ -38,8 +36,7 @@ import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
-import org.executequery.repository.RepositoryCache;
-import org.underworldlabs.util.DynamicLibraryLoader;
+import org.executequery.repository.spi.KeywordRepositoryImpl;
 
 import java.sql.*;
 import java.util.*;
@@ -51,6 +48,7 @@ public class AutoCompleteSelectionsFactory {
     private static final String DATABASE_FUNCTION_DESCRIPTION = "Database Function";
 
     private static final String DATABASE_PROCEDURE_DESCRIPTION = "Database Procedure";
+    private static final String DATABASE_PACKAGE_DESCRIPTION = "Database Package";
 
     private static final String DATABASE_TABLE_VIEW = "Database View";
 
@@ -81,9 +79,6 @@ public class AutoCompleteSelectionsFactory {
         List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
         if (autoCompleteKeywords) {
 
-            addSQL92Keywords(listSelections);
-            addUserDefinedKeywords(listSelections);
-
             addToProvider(listSelections);
         }
 
@@ -92,35 +87,8 @@ public class AutoCompleteSelectionsFactory {
             if (autoCompleteKeywords) {
 
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
-                //databaseSystemFunctionsForHost(databaseHost, listSelections);
-
-                DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
-                Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
-                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
-
-                if (driver.getClass().getName().contains("FBDriver")) {
-
-                    Connection connection = null;
-                    try {
-                        connection = databaseHost.getConnection().unwrap(Connection.class);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-
-
-                    try {
-                        IFBDatabaseConnection db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabaseConnectionImpl");
-                        db.setConnection(connection);
-                        addFirebirdDefnedKeywords(databaseHost, listSelections, db.getMajorVersion(), db.getMinorVersion());
-                    } catch (SQLException | ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-
+                addFirebirdDefinedKeywords(databaseHost, listSelections);
                 addToProvider(listSelections);
-
                 queryEditor.updateSQLKeywords();
             }
 
@@ -128,7 +96,7 @@ public class AutoCompleteSelectionsFactory {
 
                 databaseTablesForHost(databaseHost);
 //                databaseColumnsForTables(databaseHost, tables);
-                databaseFunctionsAndProceduresForHost(databaseHost);
+                databaseExecutablesForHost(databaseHost);
             }
 
         }
@@ -143,9 +111,6 @@ public class AutoCompleteSelectionsFactory {
         List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
         if (autoCompleteKeywords) {
 
-            addSQL92Keywords(listSelections);
-            addUserDefinedKeywords(listSelections);
-
             addToProvider(listSelections);
         }
 
@@ -155,34 +120,8 @@ public class AutoCompleteSelectionsFactory {
 
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
                 databaseSystemFunctionsForHost(databaseHost, listSelections);
-
-                DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
-                DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-                Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
-                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
-
-                if (driver.getClass().getName().contains("FBDriver")) {
-
-                    Connection connection = null;
-                    try {
-                        connection = databaseHost.getConnection().unwrap(Connection.class);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-
-                        IFBDatabaseConnection db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabaseConnectionImpl");
-                        db.setConnection(connection);
-                        addFirebirdDefnedKeywords(databaseHost, listSelections, db.getMajorVersion(), db.getMinorVersion());
-                    } catch (SQLException | ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-
+                addFirebirdDefinedKeywords(databaseHost, listSelections);
                 addToProvider(listSelections);
-
                 queryEditor.setSQLKeywords(true);
             }
 
@@ -190,7 +129,7 @@ public class AutoCompleteSelectionsFactory {
 
                 databaseTablesForHost(databaseHost);
 //                databaseColumnsForTables(databaseHost, tables);
-                databaseFunctionsAndProceduresForHost(databaseHost);
+                databaseExecutablesForHost(databaseHost);
             }
             addParametersToProvider();
             addVariablesToProvider();
@@ -208,8 +147,6 @@ public class AutoCompleteSelectionsFactory {
 
         List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
         if (autoCompleteKeywords) {
-
-            addSQL92Keywords(listSelections);
             addUserDefinedKeywords(listSelections);
 
             if (databaseHost != null && databaseHost.isConnected()) {
@@ -244,9 +181,11 @@ public class AutoCompleteSelectionsFactory {
     }
 
 
-    private void databaseFunctionsAndProceduresForHost(DatabaseHost databaseHost) {
+    private void databaseExecutablesForHost(DatabaseHost databaseHost) {
         databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.FUNCTION], DATABASE_FUNCTION_DESCRIPTION, AutoCompleteListItemType.DATABASE_FUNCTION);
         databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.PROCEDURE], DATABASE_PROCEDURE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PROCEDURE);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.PACKAGE], DATABASE_PACKAGE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PACKAGE);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.SYSTEM_PACKAGE], DATABASE_PACKAGE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PACKAGE);
     }
 
     private void databaseTablesForHost(DatabaseHost databaseHost) {
@@ -299,10 +238,7 @@ public class AutoCompleteSelectionsFactory {
         if (StringUtils.isNotEmpty(functions)) {
 
             String[] names = functions.split(",");
-            for (String name : names) {
-
-                tableNames.add(name);
-            }
+            Collections.addAll(tableNames, names);
 
         }
     }
@@ -344,28 +280,19 @@ public class AutoCompleteSelectionsFactory {
         String[] keywords = databaseHost.getDatabaseKeywords();
         List<String> asList = new ArrayList<String>();
 
-        for (String keyword : keywords) {
-
-            asList.add(keyword);
-        }
-
-        keywords().setDatabaseKeyWords(asList);
+        Collections.addAll(asList, keywords);
 
         addKeywordsFromList(asList, list,
                 "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
     }
 
-    private void addFirebirdDefnedKeywords(DatabaseHost databaseHost, List<AutoCompleteListItem> list,
-                                           int majorVersion, int minorVersion) {
-        addKeywordsFromList(keywords().getFirebirdKeywords(majorVersion, minorVersion),
+    private void addFirebirdDefinedKeywords(DatabaseHost databaseHost, List<AutoCompleteListItem> list) {
+        List<String> keywords = new ArrayList<>();
+        keywords.addAll(databaseHost.getDatabaseConnection().getKeywords());
+        addKeywordsFromList(keywords,
                 list, "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
     }
 
-    private void addSQL92Keywords(List<AutoCompleteListItem> list) {
-
-        addKeywordsFromList(keywords().getSQL92(),
-                list, "SQL92 Keyword", AutoCompleteListItemType.SQL92_KEYWORD);
-    }
 
     private void addUserDefinedKeywords(List<AutoCompleteListItem> list) {
 
@@ -396,7 +323,7 @@ public class AutoCompleteSelectionsFactory {
 
     private KeywordRepository keywords() {
 
-        return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+        return new KeywordRepositoryImpl();
     }
 
     public List<AutoCompleteListItem> buildItemsForTable(DatabaseHost databaseHost, String tableString) {
@@ -409,7 +336,9 @@ public class AutoCompleteSelectionsFactory {
         for (DatabaseMetaTag databaseMetaTag : databaseMetaTags) {
             if (databaseMetaTag.getSubType() == NamedObject.TABLE || databaseMetaTag.getSubType() == NamedObject.GLOBAL_TEMPORARY
                     || databaseMetaTag.getSubType() == NamedObject.VIEW || databaseMetaTag.getSubType() == NamedObject.SYSTEM_TABLE
-                    || databaseMetaTag.getSubType() == NamedObject.SYSTEM_VIEW) {
+                    || databaseMetaTag.getSubType() == NamedObject.SYSTEM_VIEW
+                    || databaseMetaTag.getSubType() == NamedObject.PACKAGE
+                    || databaseMetaTag.getSubType() == NamedObject.SYSTEM_PACKAGE) {
                 table = databaseMetaTag.getNamedObject(tableString);
                 if (table != null)
                     break;
@@ -418,8 +347,18 @@ public class AutoCompleteSelectionsFactory {
         if (table != null) {
             List<NamedObject> cols = table.getObjects();
             for (NamedObject col : cols) {
-                list.add(new AutoCompleteListItem(col.getName(), tableString, col.getDescription(), DATABASE_COLUMN_DESCRIPTION,
-                        AutoCompleteListItemType.DATABASE_TABLE_COLUMN));
+                String desc = DATABASE_COLUMN_DESCRIPTION;
+                AutoCompleteListItemType colType = AutoCompleteListItemType.DATABASE_TABLE_COLUMN;
+                if (col instanceof DefaultDatabaseProcedure) {
+                    desc = DATABASE_PROCEDURE_DESCRIPTION;
+                    colType = AutoCompleteListItemType.DATABASE_PROCEDURE;
+                }
+                if (col instanceof DefaultDatabaseFunction) {
+                    desc = DATABASE_FUNCTION_DESCRIPTION;
+                    colType = AutoCompleteListItemType.DATABASE_FUNCTION;
+                }
+                list.add(new AutoCompleteListItem(col.getName(), tableString, col.getDescription(), desc,
+                        colType));
             }
         }
 

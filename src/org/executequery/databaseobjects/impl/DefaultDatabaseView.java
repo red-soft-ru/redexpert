@@ -65,12 +65,12 @@ public class DefaultDatabaseView extends AbstractTableObject
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table rels = getMainTable();
         Table rf = Table.createTable("RDB$RELATION_FIELDS", "RF");
         sb.appendFields(rels, getFieldName(), SOURCE, DESCRIPTION);
         sb.appendFields(rf, FIELD_NAME);
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(getObjectField(), Field.createField(rf, getFieldName())));
+        sb.appendJoin(Join.createLeftJoin().appendFields(getObjectField(), Field.createField(rf, getFieldName())));
         sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(rf, FIELD_POSITION).getFieldTable());
         return sb;
     }
@@ -112,19 +112,19 @@ public class DefaultDatabaseView extends AbstractTableObject
     @Override
     public String getCreateSQLText() throws DataSourceException {
         return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
-                getRemarks(), getDatabaseMajorVersion(), false);
+                getRemarks(), getDatabaseMajorVersion(), false, true, getHost().getDatabaseConnection());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("VIEW", getName());
+        return SQLUtils.generateDefaultDropQuery("VIEW", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
         String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
         return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
-                comment, getDatabaseMajorVersion(), false);
+                comment, getDatabaseMajorVersion(), false, true, getHost().getDatabaseConnection());
     }
 
     @Override
@@ -154,7 +154,7 @@ public class DefaultDatabaseView extends AbstractTableObject
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields));
+        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields, getHost().getDatabaseConnection()));
     }
 
     @Override
@@ -184,7 +184,7 @@ public class DefaultDatabaseView extends AbstractTableObject
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
+        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values, getHost().getDatabaseConnection()));
     }
 
     @Override
@@ -209,7 +209,7 @@ public class DefaultDatabaseView extends AbstractTableObject
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings));
+        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings, getHost().getDatabaseConnection()));
     }
 
     TokenizingFormatter formatter;
@@ -240,7 +240,7 @@ public class DefaultDatabaseView extends AbstractTableObject
                 fields = "";
 
                 for (int i = 0; i < columns.size(); i++) {
-                    fields += MiscUtils.getFormattedObject(columns.get(i));
+                    fields += MiscUtils.getFormattedObject(columns.get(i), getHost().getDatabaseConnection());
                     if (i != columns.size() - 1)
                         fields += ", ";
                 }

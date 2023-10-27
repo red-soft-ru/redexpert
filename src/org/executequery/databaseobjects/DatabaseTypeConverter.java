@@ -2,7 +2,8 @@ package org.executequery.databaseobjects;
 
 import java.sql.Types;
 
-public class DatabaseTypeConverter {
+public class
+DatabaseTypeConverter {
 
     private static final int SUBTYPE_NUMERIC = 1;
     private static final int SUBTYPE_DECIMAL = 2;
@@ -102,7 +103,12 @@ public class DatabaseTypeConverter {
             case decfloat34_type:
                 return "DECFLOAT(34)";
             case int128:
-                return "INT128";
+                if (sqlSubtype == SUBTYPE_NUMERIC || (sqlSubtype == 0 && sqlScale < 0))
+                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                else if (sqlSubtype == SUBTYPE_DECIMAL)
+                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                else
+                    return "INT128";
             default:
                 return "NULL";
         }
@@ -180,7 +186,12 @@ public class DatabaseTypeConverter {
             case decfloat34_type:
                 return "DECFLOAT(34)";
             case int128:
-                return "INT128";
+                if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
+                    return "NUMERIC";
+                else if (sqlsubtype == SUBTYPE_DECIMAL)
+                    return "DECIMAL";
+                else
+                    return "INT128";
             default:
                 return "NULL";
         }
@@ -267,12 +278,10 @@ public class DatabaseTypeConverter {
             case time_with_timezone:
                 return Types.TIME_WITH_TIMEZONE;
             case char_type:
-                switch (subtype) {
-                    case 0:
-                        return Types.BINARY;
-                    case 1:
-                        return Types.CHAR;
+                if (subtype == 0) {
+                    return Types.BINARY;
                 }
+                return Types.CHAR;
             case int64_type:
                 switch (subtype) {
                     case 1:
@@ -292,12 +301,10 @@ public class DatabaseTypeConverter {
             case timestamp_with_timezone:
                 return Types.TIMESTAMP_WITH_TIMEZONE;
             case varchar_type:
-                switch (subtype) {
-                    case 0:
-                        return Types.VARBINARY;
-                    case 1:
-                        return Types.VARCHAR;
+                if (subtype == 0) {
+                    return Types.VARBINARY;
                 }
+                return Types.VARCHAR;
             case blob_type:
                 switch (subtype) {
                     case 1:
@@ -311,7 +318,14 @@ public class DatabaseTypeConverter {
             case decfloat34_type:
                 return -6001;
             case int128:
-                return Types.TINYINT;
+                switch (subtype) {
+                    case 1:
+                        return Types.NUMERIC;
+                    case 2:
+                        return Types.DECIMAL;
+                    default:
+                        return Types.TINYINT;
+                }
             default:
                 return 0;
         }

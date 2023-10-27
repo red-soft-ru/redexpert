@@ -37,7 +37,6 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
     private SimplePreferencesPanel preferencesPanel;
 
     public PropertiesResultSetTableColours() {
-
         super();
         try {
             init();
@@ -48,7 +47,7 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
 
     private void init() {
 
-        List<UserPreference> list = new ArrayList<UserPreference>();
+        List<UserPreference> list = new ArrayList<>();
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
@@ -167,27 +166,21 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
 
     }
 
+    @Override
     public void restoreDefaults() {
 
         Properties defaults = defaultsForTheme();
         UserPreference[] preferences = preferencesPanel.getPreferences();
-        for (UserPreference userPreference : preferences) {
-
-            if (userPreference.getType() == UserPreference.COLOUR_TYPE) {
-
+        for (UserPreference userPreference : preferences)
+            if (userPreference.getType() == UserPreference.COLOUR_TYPE)
                 userPreference.reset(asColour(defaults.getProperty(userPreference.getKey())));
-            }
-
-        }
 
         preferencesPanel.fireTableDataChanged();
     }
 
+    @Override
     public void save() {
-
         preferencesPanel.savePreferences();
     }
 
 }
-
-

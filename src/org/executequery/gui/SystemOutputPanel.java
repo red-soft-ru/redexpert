@@ -81,6 +81,7 @@ public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnl
         scroller.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         add(scroller, BorderLayout.CENTER);
+        setMinimumSize(new Dimension(0, 150));
         reloadFont();
     }
 

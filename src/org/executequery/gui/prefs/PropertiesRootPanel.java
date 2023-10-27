@@ -74,6 +74,7 @@ public class PropertiesRootPanel extends JPanel
     }
 
     public void preferenceChange(PreferenceChangeEvent e) {
+        PropertiesPanel.checkAndSetRestartNeed(e.getKey());
     }
 
     public void addPreferenceChangeListener(PreferenceChangeListener preferenceChangeListener) {

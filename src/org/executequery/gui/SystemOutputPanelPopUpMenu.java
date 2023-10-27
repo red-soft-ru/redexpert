@@ -21,6 +21,7 @@
 package org.executequery.gui;
 
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.LogRepository;
 import org.executequery.repository.RepositoryCache;
 
@@ -35,12 +36,12 @@ public class SystemOutputPanelPopUpMenu extends ReadOnlyTextPanePopUpMenu {
     public SystemOutputPanelPopUpMenu(ReadOnlyTextPane readOnlyTextPane) {
 
         super(readOnlyTextPane);
-        add(createMenuItem("Reset", "reset", "Clear the system output pane and reset the output log file"));
+        add(createMenuItem(bundleString("reset"), "reset", bundleString("reset.tooltip")));
     }
 
     public void reset(ActionEvent e) {
 
-        String message = "Are you sure you want to reset the system activity log?";
+        String message = bundleString("reset.confirm");
         if (GUIUtilities.displayConfirmDialog(message) == JOptionPane.YES_OPTION) {
 
             LogRepository logRepository = (LogRepository) RepositoryCache.load(LogRepository.REPOSITORY_ID);
@@ -48,6 +49,10 @@ public class SystemOutputPanelPopUpMenu extends ReadOnlyTextPanePopUpMenu {
             clear(e);
         }
 
+    }
+
+    private static String bundleString(String key) {
+        return Bundles.get(SystemOutputPanelPopUpMenu.class, key);
     }
 
 }

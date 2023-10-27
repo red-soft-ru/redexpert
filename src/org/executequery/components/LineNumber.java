@@ -26,6 +26,7 @@ import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 /**
  * @author Takis Diakoumis
@@ -33,27 +34,23 @@ import java.awt.*;
 public class LineNumber extends JComponent {
 
     private static final int HEIGHT = Integer.MAX_VALUE - 1000000;
-
     private static final int MARGIN = 5;
 
     private FontMetrics fontMetrics;
-
     private int lineHeight;
     private int currentRowWidth;
-
     private int executingLine;
+    private int totalRows;
 
-    private JComponent component;
-
+    private final JComponent component;
     private int componentFontHeight;
     private int componentFontAscent;
 
-    private int totalRows;
+    private final Image executingIcon;
+    private final int iconHeight;
+    private final int iconWidth;
 
-    private Image executingIcon;
-
-    private int iconHeight;
-    private int iconWidth;
+    private List<String> borderLabels;
 
     /**
      * Convenience constructor for Text Components.
@@ -63,24 +60,15 @@ public class LineNumber extends JComponent {
         setForeground(foregroundColour());
         setBackground(backgroundColour());
 
-        if (component == null) {
+        this.component = (component != null) ? component : this;
+        this.borderLabels = null;
 
-            this.component = this;
-
-        } else {
-
-            this.component = component;
-        }
-
-        Font font = component.getFont();
-        setFont(component.getFont());
+        Font font = this.component.getFont();
+        setFont(this.component.getFont());
 
         if (font != null) {
-
-            componentFontHeight = component.getFontMetrics(
-                    component.getFont()).getHeight();
-            componentFontAscent = component.getFontMetrics(
-                    component.getFont()).getAscent();
+            componentFontHeight = this.component.getFontMetrics(this.component.getFont()).getHeight();
+            componentFontAscent = this.component.getFontMetrics(this.component.getFont()).getAscent();
         }
 
         ImageIcon icon = GUIUtilities.loadIcon("ExecutingPointer.png", true);
@@ -89,7 +77,6 @@ public class LineNumber extends JComponent {
         executingIcon = icon.getImage();
 
         setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, GUIUtilities.getDefaultBorderColour().darker()));
-
         setPreferredWidth(9999);
         totalRows = 1;
     }
@@ -100,25 +87,18 @@ public class LineNumber extends JComponent {
      */
     public void setPreferredWidth(int row) {
 
-        if (fontMetrics == null) {
-
+        if (fontMetrics == null)
             return;
-        }
 
         int width = fontMetrics.stringWidth(String.valueOf(row));
-
         if (currentRowWidth < width) {
-
             currentRowWidth = width;
             setPreferredSize(new Dimension(2 * MARGIN + width, HEIGHT));
         }
-
     }
 
     public void updatePreferences(Font font) {
-
         setFont(font);
-
         setForeground(foregroundColour());
         setBackground(backgroundColour());
     }
@@ -126,33 +106,23 @@ public class LineNumber extends JComponent {
     /**
      * Reset variables that are dependent on the font.
      */
+    @Override
     public void setFont(Font font) {
 
         super.setFont(font);
 
         fontMetrics = getFontMetrics(getFont());
-
         if (fontMetrics != null) {
-
             componentFontHeight = fontMetrics.getHeight();
             componentFontAscent = fontMetrics.getAscent();
         }
-
     }
 
     /**
      * The line height defaults to the line height of the font for this component.
      */
     public int getLineHeight() {
-
-        if (lineHeight == 0) {
-
-            return componentFontHeight;
-
-        } else {
-
-            return lineHeight;
-        }
+        return (lineHeight == 0) ? componentFontHeight : lineHeight;
     }
 
     /**
@@ -160,6 +130,7 @@ public class LineNumber extends JComponent {
      * For example, when you want line numbers for a JTable you could
      * use the JTable row height.
      */
+    @SuppressWarnings("unused")
     public void setLineHeight(int lineHeight) {
         if (lineHeight > 0) {
             this.lineHeight = lineHeight;
@@ -171,6 +142,7 @@ public class LineNumber extends JComponent {
      * calls a repaint if required.
      */
     public void setRowCount(int rows) {
+
         if (totalRows != rows) {
             totalRows = rows;
             repaint();
@@ -181,6 +153,7 @@ public class LineNumber extends JComponent {
         return component.getInsets().top + componentFontAscent;
     }
 
+    @Override
     public void paintComponent(Graphics g) {
 
         UIUtils.antialias(g);
@@ -192,92 +165,98 @@ public class LineNumber extends JComponent {
         // Paint the background
         g.setColor(getBackground());
         g.fillRect(drawHere.x, drawHere.y, drawHere.width, drawHere.height);
-
-        // Determine the number of lines to draw in the foreground.
         g.setColor(getForeground());
-        int startLineNumber = (drawHere.y / lineHeight) + 1;
-        int tempEndLineNumber = startLineNumber + (drawHere.height / lineHeight);
-        int endLineNumber;
 
-        if (totalRows > tempEndLineNumber) {
+        if (borderLabels == null) {
 
-            endLineNumber = tempEndLineNumber;
+            // Determine the number of lines to draw in the foreground.
+            int startLineNumber = (drawHere.y / lineHeight) + 1;
+            int tempEndLineNumber = startLineNumber + (drawHere.height / lineHeight);
+            int endLineNumber = Math.min(totalRows, tempEndLineNumber);
+
+            String lineNumber;
+            int start = (drawHere.y / lineHeight) * lineHeight + startOffset;
+
+            for (int i = startLineNumber; i <= endLineNumber; i++) {
+
+                lineNumber = String.valueOf(i);
+                int width = fontMetrics.stringWidth(lineNumber);
+
+                if (executingLine == i) {
+
+                    g.drawImage(executingIcon(),
+                            MARGIN + currentRowWidth - width - 2,
+                            start - iconHeight + 2,
+                            iconWidth,
+                            iconHeight,
+                            this
+                    );
+
+                } else {
+
+                    g.drawString(lineNumber,
+                            MARGIN + currentRowWidth - width,
+                            start
+                    );
+                }
+
+                start += lineHeight;
+            }
+            setPreferredWidth(endLineNumber);
 
         } else {
 
-            endLineNumber = totalRows;
-        }
+            int start = (drawHere.y / lineHeight) * lineHeight + startOffset;
+            int maxLen = -1;
 
-        String lineNumber = null;
-        int start = (drawHere.y / lineHeight) * lineHeight + startOffset;
+            for (String label : borderLabels) {
 
-        for (int i = startLineNumber; i <= endLineNumber; i++) {
+                g.drawString(label,
+                        MARGIN + currentRowWidth - fontMetrics.stringWidth(label),
+                        start
+                );
 
-            lineNumber = String.valueOf(i);
-            int width = fontMetrics.stringWidth(lineNumber);
-
-            if (executingLine == i) {
-
-                g.drawImage(executingIcon(),
-                        MARGIN + currentRowWidth - width - 2,
-                        start - iconHeight + 2,
-                        iconWidth,
-                        iconHeight,
-                        this);
-
-            } else {
-                g.drawString(lineNumber,
-                        MARGIN + currentRowWidth - width,
-                        start);
+                maxLen = Math.max(label.length(), maxLen);
+                start += lineHeight;
             }
 
-            start += lineHeight;
+            setPreferredWidth(maxLen);
         }
 
-        setPreferredWidth(endLineNumber);
     }
 
     public void resetExecutingLine() {
 
+        resetBorderLabels();
         if (executingLine != -1) {
-
             executingLine = -1;
             repaint();
         }
+    }
 
+    public void setBorderLabels(List<String> borderLabels) {
+        this.borderLabels = borderLabels;
+    }
+
+    public void resetBorderLabels() {
+        this.borderLabels = null;
     }
 
     public void setExecutingLine(int lineNumber) {
-
+        resetBorderLabels();
         executingLine = lineNumber + 1;
     }
 
     private Color backgroundColour() {
-
-        return UserProperties.getInstance().
-                getColourProperty("editor.linenumber.background");
+        return UserProperties.getInstance().getColourProperty("editor.linenumber.background");
     }
 
     private Color foregroundColour() {
-
-        return UserProperties.getInstance().
-                getColourProperty("editor.linenumber.foreground");
+        return UserProperties.getInstance().getColourProperty("editor.linenumber.foreground");
     }
 
     private Image executingIcon() {
-
         return executingIcon;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -22,18 +22,16 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.FunctionArgument;
+import org.executequery.databaseobjects.Parameter;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,6 +75,13 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
+    }
+
+    FunctionArgument returnArgument;
+
+    @Override
+    protected String prefixLabel() {
+        return FA;
     }
 
     /**
@@ -124,7 +129,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("FUNCTION", getName());
+        return SQLUtils.generateDefaultDropQuery("FUNCTION", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -169,7 +174,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = SelectBuilder.createSelectBuilder();
+        SelectBuilder sb = SelectBuilder.createSelectBuilder(getHost().getDatabaseConnection());
         Table functions = getMainTable();
         Table arguments = Table.createTable("RDB$FUNCTION_ARGUMENTS", "FA");
         Table fields = Table.createTable("RDB$FIELDS", "F");
@@ -186,13 +191,13 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         sb.appendField(Field.createField(collations1, COLLATION_NAME).setAlias("CO1_" + COLLATION_NAME));
         sb.appendField(Field.createField(collations2, COLLATION_NAME).setAlias("CO2_" + COLLATION_NAME));
 
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(functions, getFieldName()),
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(functions, getFieldName()),
                 Field.createField(arguments, getFieldName())).setCondition(Condition.createCondition(Field.createField(arguments, "PACKAGE_NAME"), "IS", "NULL")));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(arguments, FIELD_SOURCE), Field.createField(fields, FIELD_NAME)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, "COLLATION_ID"), Field.createField(collations1, "COLLATION_ID"))
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, FIELD_SOURCE), Field.createField(fields, FIELD_NAME)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, "COLLATION_ID"), Field.createField(collations1, "COLLATION_ID"))
                 .appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(collations1, CHARACTER_SET_ID)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(arguments, "COLLATION_ID"), Field.createField(collations2, "COLLATION_ID"))
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, "COLLATION_ID"), Field.createField(collations2, "COLLATION_ID"))
                 .appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(collations2, CHARACTER_SET_ID)));
         sb.appendCondition(Condition.createCondition(Field.createField(functions, "PACKAGE_NAME"), "IS", "NULL"));
         sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(arguments, PARAMETER_NUMBER).getFieldTable());
@@ -200,44 +205,17 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     @Override
+    protected String mechanismLabel() {
+        return PARAMETER_MECHANISM;
+    }
+
+    @Override
     public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
         String parameterName = rs.getString(FA + PARAMETER_NAME);
         if (parameterName != null)
             parameterName = parameterName.trim();
-        FunctionArgument fp = new FunctionArgument(parameterName,
-                DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(FIELD_TYPE), rs.getInt(FIELD_SUB_TYPE)),
-                rs.getInt(FIELD_LENGTH),
-                rs.getInt(FIELD_PRECISION),
-                rs.getInt(FIELD_SCALE),
-                rs.getInt(FIELD_SUB_TYPE),
-                rs.getInt(FA + PARAMETER_NUMBER),
-                rs.getInt(FA + PARAMETER_MECHANISM),
-                rs.getString(FA + RELATION_NAME),
-                rs.getString(FA + FIELD_NAME)
-        );
-        int return_arg = rs.getInt(RETURN_ARGUMENT);
-        if (return_arg == fp.getPosition())
-            fp.setType(DatabaseMetaData.procedureColumnReturn);
-        else fp.setType(DatabaseMetaData.procedureColumnIn);
-        String domain = rs.getString(FIELD_NAME);
-        if (domain != null && !domain.startsWith("RDB$"))
-            fp.setDomain(domain.trim());
-        fp.setNullable(rs.getInt(FA + NULL_FLAG) == 1 ? 0 : 1);
-        if (rs.getInt(FIELD_PRECISION) != 0)
-            fp.setSize(rs.getInt(FIELD_PRECISION));
-        if (rs.getInt(CHARACTER_LENGTH) != 0)
-            fp.setSize(rs.getInt(CHARACTER_LENGTH));
-        if (fp.getDataType() == Types.LONGVARBINARY ||
-                fp.getDataType() == Types.LONGVARCHAR ||
-                fp.getDataType() == Types.BLOB) {
-            fp.setSize(rs.getInt(SEGMENT_LENGTH));
-        }
-        String characterSet = rs.getString(CHARACTER_SET_NAME);
-        if (!MiscUtils.isNull(characterSet))
-            fp.setEncoding(characterSet.trim());
-        fp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(FIELD_TYPE), fp.getSubType(), fp.getScale()));
-        fp.setDefaultValue(rs.getString(FA + DEFAULT_SOURCE));
-        fp.setDescription(rs.getString(FA + DESCRIPTION));
+        FunctionArgument fp = new FunctionArgument(parameterName);
+        fp = (FunctionArgument) fillParameter(fp, rs);
         arguments.add(fp);
         if (first) {
             sourceCode = getFromResultSet(rs, PROCEDURE_SOURCE);
@@ -248,6 +226,21 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
             setDeterministic(rs.getInt(DETERMINISTIC_FLAG) == 1);
         }
         return null;
+    }
+
+    public FunctionArgument getReturnArgument() {
+        checkOnReload(returnArgument);
+        return returnArgument;
+    }
+
+    protected Parameter fillParameter(Parameter pp, ResultSet rs) throws SQLException {
+        pp = super.fillParameter(pp, rs);
+        int return_arg = rs.getInt(RETURN_ARGUMENT);
+        if (return_arg == pp.getPosition()) {
+            pp.setType(DatabaseMetaData.procedureColumnReturn);
+            returnArgument = (FunctionArgument) pp;
+        } else pp.setType(DatabaseMetaData.procedureColumnIn);
+        return pp;
     }
 
     @Override
@@ -273,6 +266,10 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         this.deterministic = deterministic;
     }
 
+    @Override
+    protected String positionLabel() {
+        return PARAMETER_NUMBER;
+    }
 }
 
 

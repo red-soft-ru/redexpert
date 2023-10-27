@@ -60,7 +60,7 @@ public class UserDefinedWordsPanel extends DefaultActionButtonsPanel
     /**
      * the parent container
      */
-    private ActionContainer parent;
+    private final ActionContainer parent;
 
     public UserDefinedWordsPanel(ActionContainer parent) {
 
@@ -79,7 +79,7 @@ public class UserDefinedWordsPanel extends DefaultActionButtonsPanel
                 definedTypes.add(word);
             }
 
-            sql92Types = keywordRepository.getSQL92();
+            sql92Types = keywordRepository.getServerKeywords(0, 0, "");
 
             init();
 
@@ -290,8 +290,8 @@ public class UserDefinedWordsPanel extends DefaultActionButtonsPanel
 
     private class KeywordModel extends AbstractTableModel {
 
-        private List<String> words;
-        private String header = "Keyword";
+        private final List<String> words;
+        private final String header = "Keyword";
         private boolean editable = false;
 
         public KeywordModel(List<String> words) {

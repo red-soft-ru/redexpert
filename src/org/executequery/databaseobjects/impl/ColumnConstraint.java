@@ -23,6 +23,8 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.*;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import java.util.List;
+
 /**
  * @author Takis Diakoumis
  */
@@ -115,8 +117,10 @@ public interface ColumnConstraint extends DatabaseObjectElement {
      * @return the column name
      */
     String getColumnName();
-    String getColumnDisplayList();
-    String getReferenceColumnDisplayList();
+
+    List<String> getColumnDisplayList();
+
+    List<String> getReferenceColumnDisplayList();
 
     /**
      * Returns the table column parent to this object.

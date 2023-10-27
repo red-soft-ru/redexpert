@@ -97,12 +97,28 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 bundledString("SaveColumnWidthStateBetweenQueries"),
                 Boolean.valueOf(stringUserProperty(key))));
 
-        key = "resuts.date.pattern";
+        key = "results.date.pattern";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 -1,
                 key,
                 bundledString("DatePatternFormat"),
+                stringUserProperty(key)));
+
+        key = "results.time.pattern";
+        list.add(new UserPreference(
+                UserPreference.STRING_TYPE,
+                -1,
+                key,
+                bundledString("TimePatternFormat"),
+                stringUserProperty(key)));
+
+        key = "results.timestamp.pattern";
+        list.add(new UserPreference(
+                UserPreference.STRING_TYPE,
+                -1,
+                key,
+                bundledString("TimestampPatternFormat"),
                 stringUserProperty(key)));
 
         key = "results.table.cell.null.text";

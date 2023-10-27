@@ -2,6 +2,7 @@
 <!--xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="./InstallBuilder.rng"-->
 <project>
+
     <height>500</height>
     <width>700</width>
     <shortName>RedExpert</shortName>
@@ -10,18 +11,25 @@
     <licenseFile>${redexpert_dir}/LICENSE.txt</licenseFile>
     <logoImage>logos/red_expert.png</logoImage>
     <allowLanguageSelection>1</allowLanguageSelection>
+
+
     <customLanguageFileList>
+
         <language>
             <code>en</code>
             <encoding>utf-8</encoding>
             <file>localization/install_props_en.lng</file>
         </language>
+
         <language>
             <code>ru</code>
             <encoding>cp1251</encoding>
             <file>localization/install_props_ru.lng</file>
         </language>
+
     </customLanguageFileList>
+
+
     <componentList>
         <component>
             <name>default</name>
@@ -29,79 +37,75 @@
             <canBeEdited>1</canBeEdited>
             <selected>1</selected>
             <show>1</show>
+
             <folderList>
+
                 <folder>
                     <description>Program Files</description>
                     <destination>${installdir}</destination>
                     <name>programfiles</name>
                     <platforms>all</platforms>
+
                     <distributionFileList>
                         <distributionDirectory allowWildcards="1">
                             <origin>${redexpert_dir}/*</origin>
                         </distributionDirectory>
                     </distributionFileList>
+
                     <shortcutList>
                         <shortcut>
                             <comment>Uninstall</comment>
                             <exec>${installdir}/${uninstallerName}</exec>
-                            <icon></icon>
+                            <icon/>
                             <name>Uninstall ${product_shortname}</name>
                             <path>${installdir}</path>
                             <platforms>all</platforms>
                             <runAsAdmin>0</runAsAdmin>
                             <runInTerminal>0</runInTerminal>
                             <windowsExec>${installdir}/${uninstallerName}.exe</windowsExec>
-                            <windowsExecArgs></windowsExecArgs>
-                            <windowsIcon></windowsIcon>
+                            <windowsExecArgs/>
+                            <windowsIcon/>
                             <windowsPath>${installdir}</windowsPath>
                         </shortcut>
                     </shortcutList>
                 </folder>
+
                 <folder>
                     <description>Program Files</description>
                     <destination>${installdir}</destination>
                     <name>programfileslinux</name>
                     <platforms>linux</platforms>
                 </folder>
+
                 <folder>
                     <description>Program Files</description>
                     <destination>${installdir}</destination>
                     <name>programfileswindows</name>
                     <platforms>windows</platforms>
                 </folder>
+
                 <folder>
                     <description>Program Files</description>
                     <destination>${installdir}</destination>
                     <name>programfilesosx</name>
                     <platforms>osx</platforms>
                 </folder>
+
             </folderList>
-            <desktopShortcutList>
-                <shortcut>
-                    <comment>Launch ${project.shortName}</comment>
-                    <name>${project.shortName}</name>
-                    <platforms>all</platforms>
-                    <exec>${installdir}/bin/${execute_file}</exec>
-                    <path>${installdir}/bin</path>
-                    <icon>${installdir}/red_expert.png</icon>
-                    <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
-                    <windowsPath>${installdir}/bin/</windowsPath>
-                    <windowsExecArgs></windowsExecArgs>
-                    <windowsIcon>${installdir}/bin/${execute_file}.exe</windowsIcon>
-                    <runAsAdmin>0</runAsAdmin>
-                </shortcut>
-            </desktopShortcutList>
+
             <startMenuShortcutList>
+
                 <startMenuShortcut>
                     <comment>Uninstall ${product_shortname}</comment>
                     <name>Uninstall ${product_shortname}</name>
                     <runAsAdmin>0</runAsAdmin>
                     <runInTerminal>0</runInTerminal>
                     <windowsExec>${installdir}/${uninstallerName}.exe</windowsExec>
-                    <windowsExecArgs></windowsExecArgs>
-                    <windowsIcon></windowsIcon>
+                    <windowsExecArgs/>
+                    <windowsIcon/>
                     <windowsPath>${installdir}/</windowsPath>
                 </startMenuShortcut>
+
                 <startMenuShortcut>
                     <comment>Launch ${project.shortName}</comment>
                     <name>${project.shortName}</name>
@@ -111,48 +115,106 @@
                     <icon>${installdir}/red_expert.png</icon>
                     <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
                     <windowsPath>${installdir}/bin/</windowsPath>
-                    <windowsExecArgs></windowsExecArgs>
+                    <windowsExecArgs/>
                     <windowsIcon>${installdir}/bin/${execute_file}.exe</windowsIcon>
                     <runAsAdmin>0</runAsAdmin>
                     <runInTerminal>0</runInTerminal>
                     <noPinToStart>0</noPinToStart>
                 </startMenuShortcut>
+
             </startMenuShortcutList>
+
         </component>
     </componentList>
+
+
     <preBuildActionList>
+
         <setInstallerVariable>
             <name>execute_file</name>
             <value>${execution_file}</value>
             <persist>1</persist>
         </setInstallerVariable>
+
         <consoleWrite>
             <text>${execution_file}</text>
         </consoleWrite>
+
         <iniFileGet>
             <file>${redexpert_dir}/config/redexpert_config.ini</file>
             <section>Installer_settings</section>
             <key>eq.user.home.dir</key>
             <variable>settings_dir</variable>
         </iniFileGet>
+
     </preBuildActionList>
+
+
     <preInstallationActionList>
+
         <setInstallerVariableFromRegEx>
             <name>settings_dir</name>
             <pattern>\$HOME</pattern>
             <substitution>${user_home_directory}</substitution>
             <text>${settings_dir}</text>
         </setInstallerVariableFromRegEx>
+
         <setInstallerVariableFromRegEx>
             <name>settings_dir</name>
             <pattern>/</pattern>
             <substitution>${platform_path_separator}</substitution>
             <text>${settings_dir}</text>
         </setInstallerVariableFromRegEx>
+
     </preInstallationActionList>
+
+
+    <readyToInstallActionList>
+
+        <!-- find old uninstall registry RE keys -->
+        <registryFind>
+            <findAll>1</findAll>
+            <keyPattern>*Red Expert*</keyPattern>
+            <namePattern>*InstallLocation*</namePattern>
+            <rootKey>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall</rootKey>
+            <searchDepth>1</searchDepth>
+            <variable>installedApplications</variable>
+        </registryFind>
+
+        <!-- remove old uninstaller registry RE keys -->
+        <foreach>
+            <values>${installedApplications}</values>
+            <variables>key name value</variables>
+
+            <actionList>
+                <actionGroup>
+
+                    <actionList>
+                        <registryDelete>
+                            <abortOnError>0</abortOnError>
+                            <key>${key}</key>
+                            <name/>
+                        </registryDelete>
+                    </actionList>
+
+                    <ruleList>
+                        <compareText>
+                            <text>${value}</text>
+                            <logic>equals</logic>
+                            <value>${installdir}</value>
+                        </compareText>
+                    </ruleList>
+
+                </actionGroup>
+            </actionList>
+        </foreach>
+
+    </readyToInstallActionList>
+
+
     <preUninstallationActionList>
-        <showQuestion text="${msg(Installer.Parameter.question_remove_props)}"
-                      variable="remove_props"/>
+        <showQuestion text="${msg(Installer.Parameter.question_remove_props)}" variable="remove_props"/>
+
         <deleteFile>
             <path>${settings_dir}</path>
             <matchHiddenFiles>1</matchHiddenFiles>
@@ -160,17 +222,22 @@
                 <compareText text="${remove_props}" value="yes" logic="equals"/>
             </ruleList>
         </deleteFile>
+
         <deleteFile path="${installdir}/bin"/>
         <deleteFile path="${installdir}/lib"/>
         <deleteFile path="${installdir}/RedExpertInstallation.log"/>
     </preUninstallationActionList>
+
+
     <postInstallationActionList>
+
         <associateWindowsFileExtension>
             <extensions>.fdb</extensions>
             <friendlyName>${project.shortName}</friendlyName>
             <icon>${installdir}\red_expert.ico</icon>
             <mimeType>application/firebird-x-fdb</mimeType>
             <progID>${project.shortName}</progID>
+
             <commandList>
                 <command>
                     <makeDefault>0</makeDefault>
@@ -179,12 +246,16 @@
                     <verb>Open</verb>
                 </command>
             </commandList>
+
             <ruleList>
                 <isTrue>
                     <value>${file_association}</value>
                 </isTrue>
             </ruleList>
+
         </associateWindowsFileExtension>
+
+        <!-- single user linux shortcut -->
         <createShortcuts>
             <destination>${user_home_directory}/.local/share/applications</destination>
             <shortcutList>
@@ -199,61 +270,6 @@
                 </shortcut>
             </shortcutList>
         </createShortcuts>
-        <actionGroup>
-     <actionList>
-        <writeFile>
-           <path>${installdir}/firebird-x-fdb.xml</path>
-           <!-- The CDATA notation allow escaping a
-            block of XML characters -->
-           <text><![CDATA[<?xml version="1.0"?>
-<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
-  <mime-type type="application/firebird-x-fdb">
-    <comment>Database file</comment>
-    <glob pattern="*.fdb"/>
-    <icon name="${installdir}/red_expert.ico"/>
-  </mime-type>
-</mime-info>]]></text>
-        </writeFile>
-        <runProgram>
-            <program>xdg-mime</program>
-            <programArguments>install ${installdir}/firebird-x-fdb.xml</programArguments>
-        </runProgram>
-<writeFile>
-    <path>~/.local/share/applications/${project.shortName}.desktop</path>
-    <encoding>utf-8</encoding>
-    <text>
-[Desktop Entry]
-Version=1.0
-Encoding=UTF-8
-Name=${project.shortName}
-GenericName=${project.shortName}
-Comment=${project.shortName}
-Exec=${installdir}/bin/${execute_file}
-Icon=${installdir}/red_expert.png
-Path=/home/alexey/snap/RedExpert/bin
-Terminal=false
-Type=Application
-Categories=Application;Utility;TextEditor;
-MimeType=application/firebird-x-fdb
-    </text>
-  </writeFile>
-                <runProgram>
-                    <program>xdg-mime</program>
-                    <programArguments>default ${project.shortName}.desktop application/firebird-x-fdb</programArguments>
-                </runProgram>
-                <runProgram>
-                    <program>xdg-icon-resource</program>
-                    <programArguments>install --context mimetypes --size 64 ${installdir}/red_expert.png application-firebird-x-fdb
-                    </programArguments>
-                </runProgram>
-            </actionList>
-            <ruleList>
-                <isTrue>
-                    <value>${file_association}</value>
-                </isTrue>
-                <platformTest type="linux"/>
-            </ruleList>
-        </actionGroup>
         <iniFileSet>
             <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
             <section>Desktop Entry</section>
@@ -265,19 +281,187 @@ MimeType=application/firebird-x-fdb
                 </fileExists>
             </ruleList>
         </iniFileSet>
+        <iniFileSet>
+            <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>Encoding</key>
+            <value>UTF-8</value>
+            <ruleList>
+                <fileExists>
+                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </iniFileSet>
+        <iniFileSet>
+            <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>GenericName</key>
+            <value>${project.shortName}</value>
+            <ruleList>
+                <fileExists>
+                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </iniFileSet>
+
+        <!-- root linux shortcut -->
+        <createShortcuts>
+            <destination>/usr/share/applications</destination>
+            <shortcutList>
+                <shortcut>
+                    <comment>Launches ${project.fullName}</comment>
+                    <name>${project.shortName}</name>
+                    <platforms>linux</platforms>
+                    <exec>${installdir}/bin/${execute_file}</exec>
+                    <path>${installdir}/bin</path>
+                    <icon>${installdir}/red_expert.png</icon>
+                    <runAsAdmin>0</runAsAdmin>
+                </shortcut>
+            </shortcutList>
+        </createShortcuts>
+        <iniFileSet>
+            <file>/usr/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>Categories</key>
+            <value>Development;IDE;</value>
+            <ruleList>
+                <fileExists>
+                    <path>/usr/share/applications/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </iniFileSet>
+        <iniFileSet>
+            <file>/usr/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>Encoding</key>
+            <value>UTF-8</value>
+            <ruleList>
+                <fileExists>
+                    <path>/usr/share/applications/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </iniFileSet>
+        <iniFileSet>
+            <file>/usr/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>GenericName</key>
+            <value>${project.shortName}</value>
+            <ruleList>
+                <fileExists>
+                    <path>/usr/share/applications/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </iniFileSet>
+
+        <!-- desktop shortcut -->
+        <createShortcuts>
+            <destination>${user_home_directory}/Desktop</destination>
+            <shortcutList>
+                <shortcut>
+                    <comment>Launch ${project.shortName}</comment>
+                    <name>${project.shortName}</name>
+                    <platforms>all</platforms>
+                    <exec>${installdir}/bin/${execute_file}</exec>
+                    <path>${installdir}/bin</path>
+                    <icon>${installdir}/red_expert.png</icon>
+                    <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
+                    <windowsPath>${installdir}/bin/</windowsPath>
+                    <windowsExecArgs/>
+                    <windowsIcon>${installdir}/bin/${execute_file}.exe</windowsIcon>
+                    <runAsAdmin>0</runAsAdmin>
+                </shortcut>
+            </shortcutList>
+        </createShortcuts>
+
+        <actionGroup>
+            <actionList>
+
+                <writeFile>
+                    <path>${installdir}/firebird-x-fdb.xml</path>
+                    <!-- The CDATA notation allow escaping a block of XML characters -->
+                    <text>
+                        <![CDATA[<?xml version="1.0"?>
+                            <mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+                                <mime-type type="application/firebird-x-fdb">
+                                    <comment>Database file</comment>
+                                    <glob pattern="*.fdb"/>
+                                    <icon name="${installdir}/red_expert.ico"/>
+                                </mime-type>
+                            </mime-info>
+                        ]]>
+                    </text>
+                </writeFile>
+
+                <runProgram>
+                    <program>xdg-mime</program>
+                    <programArguments>install ${installdir}/firebird-x-fdb.xml</programArguments>
+                </runProgram>
+
+                <iniFileSet>
+                    <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
+                    <section>Desktop Entry</section>
+                    <key>MimeType</key>
+                    <value>application/firebird-x-fdb</value>
+                    <ruleList>
+                        <fileExists>
+                            <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
+                        </fileExists>
+                    </ruleList>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>/usr/share/applications/${project.shortName}.desktop</file>
+                    <section>Desktop Entry</section>
+                    <key>MimeType</key>
+                    <value>application/firebird-x-fdb</value>
+                    <ruleList>
+                        <fileExists>
+                            <path>/usr/share/applications/${project.shortName}.desktop</path>
+                        </fileExists>
+                    </ruleList>
+                </iniFileSet>
+
+                <runProgram>
+                    <program>xdg-mime</program>
+                    <programArguments>default ${project.shortName}.desktop application/firebird-x-fdb</programArguments>
+                </runProgram>
+
+                <runProgram>
+                    <program>xdg-icon-resource</program>
+                    <programArguments>install --context mimetypes --size 64 ${installdir}/red_expert.png application-firebird-x-fdb
+                    </programArguments>
+                </runProgram>
+
+            </actionList>
+
+            <ruleList>
+                <isTrue>
+                    <value>${file_association}</value>
+                </isTrue>
+                <platformTest type="linux"/>
+            </ruleList>
+
+        </actionGroup>
+
     </postInstallationActionList>
+
+
     <postUninstallationActionList>
+
         <removeWindowsFileAssociation>
             <extensions>.fdb</extensions>
             <mimeType>application/firebird-x-fdb</mimeType>
             <progID>${project.shortName}</progID>
         </removeWindowsFileAssociation>
+
         <runProgram>
             <program>xdg-mime</program>
             <programArguments>uninstall ${installdir}/firebird-x-fdb.xml</programArguments>
         </runProgram>
+
         <deleteFile path="~/.local/share/applications/${project.shortName}.desktop"/>
     </postUninstallationActionList>
+
+
     <allowedLanguages>en ru</allowedLanguages>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>
@@ -287,13 +471,18 @@ MimeType=application/firebird-x-fdb
     <disableSplashScreen>1</disableSplashScreen>
     <vendor>Red Soft Corporation</vendor>
     <windows64bitMode>1</windows64bitMode>
+
+
     <parameterList>
+
         <parameterGroup>
             <name>InstallDirAndAssociationFile</name>
             <explanation/>
             <value/>
             <default/>
+
             <parameterList>
+
                 <directoryParameter>
                     <name>installdir</name>
                     <description>Installer.Parameter.installdir.description</description>
@@ -307,6 +496,7 @@ MimeType=application/firebird-x-fdb
                     <mustExist>0</mustExist>
                     <width>40</width>
                 </directoryParameter>
+
                 <booleanParameter>
                     <name>file_association</name>
                     <description>${msg(Installer.Parameter.associate_file)}</description>
@@ -316,20 +506,25 @@ MimeType=application/firebird-x-fdb
                     <cliOptionShow>0</cliOptionShow>
                     <displayStyle>checkbox-left</displayStyle>
                 </booleanParameter>
+
             </parameterList>
         </parameterGroup>
+
         <stringParameter>
             <name>execute_file</name>
             <allowEmptyValue>0</allowEmptyValue>
             <ask>no</ask>
             <width>40</width>
         </stringParameter>
+
         <stringParameter>
             <name>settings_dir</name>
             <allowEmptyValue>0</allowEmptyValue>
             <ask>no</ask>
             <width>40</width>
         </stringParameter>
-    </parameterList>
-</project>
 
+    </parameterList>
+
+
+</project>

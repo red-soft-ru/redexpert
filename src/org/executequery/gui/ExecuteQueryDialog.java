@@ -303,7 +303,7 @@ public class ExecuteQueryDialog extends BaseDialog {
                 copy += "SET TERM " + delimiter + ";\n";
             for (int i = 0; i < v.size(); i++) {
                 if (v.elementAt(i).copyScript)
-                    copy += v.elementAt(i).queryAction + ";\n";
+                    copy += v.elementAt(i).queryAction + delimiter + "\n";
             }
             if (!delimiter.equals(";"))
                 copy += "SET TERM ;" + delimiter;
@@ -416,7 +416,7 @@ public class ExecuteQueryDialog extends BaseDialog {
                     type = result.getType();
                     query.SQLmessage = QueryTypes.getResultText(updateCount, type, metaName, name);
                     query.executed = true;
-                    query.status = "Success";
+                    query.status = bundleString("Success");
                     return true;
 
                 }
@@ -427,13 +427,7 @@ public class ExecuteQueryDialog extends BaseDialog {
             commitButton.setVisible(false);
             return false;
         }
-
-
     }
-
-
-
-
 
     private void logExecution(String query) {
         setOutputMessage(
@@ -520,6 +514,9 @@ public class ExecuteQueryDialog extends BaseDialog {
                 case QueryTypes.CREATE_OR_ALTER:
                     nameOperation = "CREATE OR ALTER " + q.getMetaName();
                     break;
+                case QueryTypes.SET_STATISTICS:
+                    nameOperation="SET STATISTICS";
+                    break;
                 default:
                     nameOperation = "OPERATION";
                     break;
@@ -537,7 +534,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         final int COPY = 3;
 
         Vector<RowAction> data;
-        String[] headers = {"", "Name operation", "Status", "Copy"};
+        String[] headers = {"", bundleString("NameOperation"), bundleString("Status"), bundleString("Copy")};
 
         public ListActionsModel() {
             data = new Vector<>();

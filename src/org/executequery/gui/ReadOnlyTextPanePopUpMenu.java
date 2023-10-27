@@ -23,6 +23,7 @@ package org.executequery.gui;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.LogRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.actions.ReflectiveAction;
@@ -50,9 +51,9 @@ public class ReadOnlyTextPanePopUpMenu extends JPopupMenu {
         this.readOnlyTextArea = readOnlyTextPane;
         reflectiveAction = new ReflectiveAction(this);
 
-        String[] menuLabels = {"Copy", "Select All", "Save to File", "Clear"};
         String[] actionCommands = {"copy", "selectAll", "saveToFile", "clear"};
-        String[] toolTips = {"", "", "Save the contents to file", "Clear the output pane"};
+        String[] menuLabels = getBundles(actionCommands, null);
+        String[] toolTips = getBundles(actionCommands, "tooltip");
 
         for (int i = 0; i < menuLabels.length; i++) {
 
@@ -85,10 +86,10 @@ public class ReadOnlyTextPanePopUpMenu extends JPopupMenu {
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
 
-        fileChooser.setDialogTitle("Select Output File Path");
+        fileChooser.setDialogTitle(bundleString("saveFileDialogTitle"));
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
 
-        int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), "Select");
+        int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), Bundles.get("common.select"));
         if (result == JFileChooser.CANCEL_OPTION) {
 
             return;
@@ -97,7 +98,7 @@ public class ReadOnlyTextPanePopUpMenu extends JPopupMenu {
         File file = fileChooser.getSelectedFile();
         if (file.exists()) {
 
-            result = GUIUtilities.displayConfirmCancelDialog("The selected file exists.\nOverwrite existing file?");
+            result = GUIUtilities.displayConfirmCancelDialog(bundleString("overwriteFile"));
 
             if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.NO_OPTION) {
 
@@ -113,14 +114,14 @@ public class ReadOnlyTextPanePopUpMenu extends JPopupMenu {
 
         } catch (IOException e1) {
 
-            GUIUtilities.displayErrorMessage("Error writing output pane contents to file.\n"
+            GUIUtilities.displayErrorMessage(bundleString("writingError")
                     + e1.getMessage());
         }
     }
 
     public void reset(ActionEvent e) {
 
-        String message = "Are you sure you want to reset the system activity log?";
+        String message = bundleString("resetConfirm");
         if (GUIUtilities.displayConfirmDialog(message) == JOptionPane.YES_OPTION) {
 
             LogRepository logRepository = (LogRepository) RepositoryCache.load(LogRepository.REPOSITORY_ID);
@@ -156,9 +157,19 @@ public class ReadOnlyTextPanePopUpMenu extends JPopupMenu {
         return menuItem;
     }
 
+    private static String[] getBundles(String[] keys, String suffix) {
+
+        String[] result = new String[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            String key = suffix != null ? keys[i] + "." + suffix : keys[i];
+            result[i] = Bundles.get(ReadOnlyTextPanePopUpMenu.class, key);
+        }
+
+        return result;
+    }
+
+    private static String bundleString(String key) {
+        return Bundles.get(ReadOnlyTextPanePopUpMenu.class, key);
+    }
+
 }
-
-
-
-
-

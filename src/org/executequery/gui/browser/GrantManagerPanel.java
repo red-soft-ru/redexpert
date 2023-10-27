@@ -61,7 +61,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
     private PrivilegesTablePanel tablePanel;
     @SuppressWarnings("unchecked")
 
-    private int buttonSize = 20;
+    private final int buttonSize = 20;
 
     /**
      * Creates new form GrantManagerPanel
@@ -125,7 +125,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
         recipients.add("Triggers");
         recipients.add("Procedures");
         if (databaseBox.getSelectedItem() != null)
-            if (((DatabaseConnection) (databaseBox.getSelectedItem())).getServerVersion() >= 3) {
+            if (((DatabaseConnection) (databaseBox.getSelectedItem())).getMajorServerVersion() >= 3) {
                 recipients.add("Functions");
                 recipients.add("Packages");
             }
@@ -144,7 +144,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
     List<NamedObject> getUsers() {
         List<NamedObject> users = new ArrayList<>();
         DatabaseConnection databaseConnection = (DatabaseConnection) databaseBox.getSelectedItem();
-        if (databaseConnection.getServerVersion() >= 3)
+        if (databaseConnection.getMajorServerVersion() >= 3)
             users.addAll(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.USER]));
         else {
             Connection connection = null;

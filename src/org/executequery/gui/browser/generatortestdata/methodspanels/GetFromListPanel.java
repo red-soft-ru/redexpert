@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.T;
 import org.executequery.gui.browser.GeneratorTestDataPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 

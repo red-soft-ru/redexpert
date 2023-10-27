@@ -26,6 +26,7 @@ import org.executequery.base.TabView;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.DefaultTextEditorContainer;
 import org.executequery.gui.text.SimpleTextArea;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 
@@ -45,7 +46,7 @@ public class ScratchPadPanel extends DefaultTextEditorContainer
         NamedView,
         ActionListener {
 
-    public static final String TITLE = "Scratch Pad";
+    public static final String TITLE = bundleString("title");
     public static final String FRAME_ICON = "ScratchPad16.png";
 
     private JTextArea textArea;
@@ -82,11 +83,11 @@ public class ScratchPadPanel extends DefaultTextEditorContainer
     private void init() {
 
         editorButton = new RolloverButton("/org/executequery/icons/ScratchToEditor16.png",
-                "Paste to Query Editor");
+                bundleString("paste"));
         newButton = new RolloverButton("/org/executequery/icons/NewScratchPad16.png",
-                "New Scratch Pad");
+                bundleString("new"));
         trashButton = new RolloverButton("/org/executequery/icons/Delete16.png",
-                "Clear");
+                bundleString("clear"));
 
         editorButton.addActionListener(this);
         trashButton.addActionListener(this);
@@ -159,7 +160,7 @@ public class ScratchPadPanel extends DefaultTextEditorContainer
     }
 
     public String getPrintJobName() {
-        return "Red Expert - scratch pad";
+        return bundleString("JobName");
     }
 
     public String getDisplayName() {
@@ -197,6 +198,10 @@ public class ScratchPadPanel extends DefaultTextEditorContainer
     }
 
     // --------------------------------------------
+
+    private static String bundleString(String key) {
+        return Bundles.get(ScratchPadPanel.class, key);
+    }
 
 }
 

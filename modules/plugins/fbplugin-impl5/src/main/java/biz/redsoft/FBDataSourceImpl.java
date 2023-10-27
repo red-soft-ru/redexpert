@@ -1,8 +1,11 @@
 package biz.redsoft;
 
 
+import org.firebirdsql.gds.TransactionParameterBuffer;
 import org.firebirdsql.gds.impl.GDSType;
+import org.firebirdsql.gds.ng.FbTransaction;
 import org.firebirdsql.jaybird.xca.FBSADataSource;
+import org.firebirdsql.jdbc.FBConnection;
 
 import javax.resource.ResourceException;
 import java.sql.Connection;
@@ -49,6 +52,13 @@ public class FBDataSourceImpl implements IFBDataSource {
     }
 
     @Override
+    public Connection getConnection(ITPB tpb) throws SQLException {
+        Connection conn = getConnection();
+        setTransactionParameters(conn, tpb);
+        return conn;
+    }
+
+    @Override
     public void setCertificate(String certificate) {
         if (!certificate.equals(""))
             fbDataSource.setCertificate(certificate);
@@ -63,6 +73,20 @@ public class FBDataSourceImpl implements IFBDataSource {
     @Override
     public void close() throws ResourceException, SQLException {
         fbDataSource.close();
+    }
+
+    public void setTransactionParameters(Connection connection, biz.redsoft.ITPB tpb) throws SQLException {
+        if (connection instanceof FBConnection) {
+            if (tpb != null)
+                ((FBConnection) connection).setTransactionParameters((TransactionParameterBuffer) tpb.getTpb());
+        }
+    }
+
+    public long getIDTransaction(Connection con) throws SQLException {
+        FbTransaction transaction = ((FBConnection) con).getGDSHelper().getCurrentTransaction();
+        if (transaction != null)
+            return transaction.getTransactionId();
+        else return -1;
     }
 }
 

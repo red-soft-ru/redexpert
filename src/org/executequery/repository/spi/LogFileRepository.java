@@ -21,12 +21,16 @@
 package org.executequery.repository.spi;
 
 import org.executequery.ApplicationException;
+import org.executequery.ExecuteQuery;
 import org.executequery.repository.LogRepository;
 import org.executequery.util.ApplicationProperties;
+import org.executequery.util.UserProperties;
 import org.executequery.util.UserSettingsProperties;
 import org.underworldlabs.util.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class LogFileRepository implements LogRepository {
 
@@ -60,12 +64,29 @@ public class LogFileRepository implements LogRepository {
         return pathForType(type);
     }
 
+    @Override
     public String getLogFileDirectory() {
 
-        UserSettingsProperties settings = new UserSettingsProperties();
+        String logFolderPath = UserProperties.getInstance().getStringProperty("editor.logging.path");
+        if (logFolderPath == null || logFolderPath.isEmpty())
+            logFolderPath = new UserSettingsProperties().getUserSettingsBaseHome();
 
-        return settings.getUserSettingsBaseHome() + LOG_FILE_DIR_NAME +
-                System.getProperty("file.separator");
+        try {
+            if (logFolderPath.startsWith("%re%")) {
+                logFolderPath = logFolderPath.substring(4);
+                if (!logFolderPath.startsWith(System.getProperty("file.separator")))
+                    logFolderPath = System.getProperty("file.separator") + logFolderPath;
+                logFolderPath = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + logFolderPath;
+            }
+
+        } catch (URISyntaxException e) {
+            logFolderPath = new UserSettingsProperties().getUserSettingsBaseHome();
+        }
+
+        if (!logFolderPath.endsWith(System.getProperty("file.separator")))
+            logFolderPath += System.getProperty("file.separator");
+
+        return logFolderPath + LOG_FILE_DIR_NAME + System.getProperty("file.separator");
     }
 
     public String getId() {

@@ -108,6 +108,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         switch (sqlType) {
 
             case Types.TINYINT:
+            case Types.INT128:
             case Types.BIGINT:
             case Types.NUMERIC:
             case Types.DECIMAL:
@@ -187,6 +188,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                     break;
 
                 case Types.TINYINT:
+                case Types.INT128:
                 case Types.BIGINT:
                 case Types.NUMERIC:
                 case Types.DECIMAL:

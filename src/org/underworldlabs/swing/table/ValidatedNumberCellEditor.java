@@ -18,7 +18,7 @@ public class ValidatedNumberCellEditor extends JTextField
     private static final BigInteger INT128_MAX_VALUE =
             new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
     private static final BigInteger INT128_MIN_VALUE =
-            new BigInteger("-800000000000000FFFFFFFFFFFFFFFFF", 16);
+            new BigInteger("-80000000000000000000000000000000", 16);
 
     private final int numberType;
 
@@ -82,11 +82,11 @@ public class ValidatedNumberCellEditor extends JTextField
                             Short.parseShort(value);
                             break;
 
-//                        case Types.INT128:
-//                            BigInteger int128 = new BigInteger(value);
-//                            if (int128.compareTo(INT128_MAX_VALUE) > 0 || int128.compareTo(INT128_MIN_VALUE) < 0)
-//                                throw new NumberFormatException();
-//                            break;
+                        case Types.INT128:
+                            BigInteger int128 = new BigInteger(value);
+                            if (int128.compareTo(INT128_MAX_VALUE) > 0 || int128.compareTo(INT128_MIN_VALUE) < 0)
+                                throw new NumberFormatException();
+                            break;
                     }
 
                 } catch (NumberFormatException e) {

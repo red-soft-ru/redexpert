@@ -658,6 +658,7 @@ public class ColumnData implements Serializable {
 
     public boolean isEditSize() {
         return getColumnType() != null && (getSQLType() == Types.NUMERIC
+                || getSQLType() == Types.INT128
                 || getSQLType() == Types.CHAR
                 || getSQLType() == Types.VARCHAR
                 || getSQLType() == Types.DECIMAL

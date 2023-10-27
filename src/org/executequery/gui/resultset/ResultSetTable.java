@@ -51,6 +51,7 @@ import java.util.Vector;
 public class ResultSetTable extends JTable implements StandardTable {
 
     private DefaultCellEditor defaultCellEditor;
+    private DefaultCellEditor int128CellEditor;
     private DefaultCellEditor bigintCellEditor;
     private DefaultCellEditor integerCellEditor;
     private DefaultCellEditor smallintCellEditor;
@@ -91,6 +92,17 @@ public class ResultSetTable extends JTable implements StandardTable {
             @Override
             public Object getCellEditorValue() {
                 return multiLineStringCellEditor.getValue();
+            }
+        };
+
+        // --- int128Editor ---
+
+        final ValidatedNumberCellEditor int128Editor = new ValidatedNumberCellEditor(Types.INT128);
+        int128Editor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+        int128CellEditor = new DefaultCellEditor(int128Editor) {
+            @Override
+            public Object getCellEditorValue() {
+                return int128Editor.getValue();
             }
         };
 
@@ -442,6 +454,9 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.VARCHAR:
             case Types.NVARCHAR:
                 return multiLineCellEditor;
+
+            case Types.INT128:
+                return int128CellEditor;
 
             case Types.BIGINT:
                 return bigintCellEditor;

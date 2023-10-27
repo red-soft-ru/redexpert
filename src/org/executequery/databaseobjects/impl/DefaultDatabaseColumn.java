@@ -436,8 +436,12 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     }
 
     public boolean isEditSize() {
-        return getTypeName() != null && (getTypeInt() == Types.NUMERIC || getTypeInt() == Types.CHAR || getTypeInt() == Types.VARCHAR
-                || getTypeInt() == Types.DECIMAL || getTypeInt() == Types.BLOB || getTypeInt() == Types.LONGVARCHAR
+        return getTypeName() != null && (getTypeInt() == Types.NUMERIC
+                || getTypeInt() == Types.CHAR
+                || getTypeInt() == Types.VARCHAR
+                || getTypeInt() == Types.DECIMAL
+                || getTypeInt() == Types.BLOB
+                || getTypeInt() == Types.LONGVARCHAR
                 || getTypeInt() == Types.LONGVARBINARY
                 || getTypeName().equalsIgnoreCase("VARCHAR")
                 || getTypeName().equalsIgnoreCase("CHAR"))

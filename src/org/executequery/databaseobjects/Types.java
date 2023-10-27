@@ -311,4 +311,13 @@ public interface Types {
      */
     int TIMESTAMP_WITH_TIMEZONE = 2014;
 
+    //-------------------------- RDB -----------------------------
+
+    /**
+     * The constant as a type code,
+     * that identifies the specific RedDatabase SQL type
+     * {@code INT128}.
+     */
+    int INT128 = -55;
+
 }

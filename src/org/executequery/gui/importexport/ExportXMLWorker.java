@@ -470,6 +470,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                             switch (type) {
                                 case Types.BIT:
                                 case Types.TINYINT:
+                                case Types.INT128:
                                 case Types.BIGINT:
                                 case Types.LONGVARCHAR:
                                 case Types.CHAR:

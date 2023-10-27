@@ -957,6 +957,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                     // TODO column precision
 //                    valueBuilder.at(6).set(DOUBLE_PRECISION);
                     break;
+                case Types.INT128:
+                    // TODO column precision
+                    break;
                 case Types.BIGINT:
                     // TODO column precision
 //                    valueBuilder

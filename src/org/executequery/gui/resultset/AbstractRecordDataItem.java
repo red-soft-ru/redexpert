@@ -28,6 +28,7 @@ import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.*;
 
 
@@ -275,6 +276,11 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
                 case Types.BIGINT: {
                     Long first = (Long) getDisplayValue();
                     Long second = (Long) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.INT128: {
+                    BigInteger first = (BigInteger) getDisplayValue();
+                    BigInteger second = (BigInteger) compar_object.getDisplayValue();
                     return first.compareTo(second);
                 }
                 case Types.DOUBLE:

@@ -355,6 +355,7 @@ public class ExportAsDBUnitWorker extends BaseImportExportWorker {
 
             case Types.BIT:
             case Types.TINYINT:
+            case Types.INT128:
             case Types.BIGINT:
             case Types.NUMERIC:
             case Types.DECIMAL:

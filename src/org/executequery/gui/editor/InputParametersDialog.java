@@ -168,6 +168,7 @@ public class InputParametersDialog extends BaseDialog {
             case Types.BIGINT:
             case Types.INTEGER:
             case Types.SMALLINT:
+            case Types.INT128:
                 component = new ValueOrNullParameterField(new NumberTextField());
                 break;
             default:

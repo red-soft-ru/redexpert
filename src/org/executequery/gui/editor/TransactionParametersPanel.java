@@ -70,6 +70,10 @@ public class TransactionParametersPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (reservingCheckBox.isSelected()) {
+                    if (databaseConnection == null) {
+                        reservingCheckBox.setSelected(false);
+                        return;
+                    }
                     BaseDialog dialog = new BaseDialog("", true);
                     dialog.setContentPane(transactionTablesTable);
                     transactionTablesTable.setDialog(dialog);
@@ -110,7 +114,8 @@ public class TransactionParametersPanel extends JPanel {
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
-        transactionTablesTable = new TransactionTablesTable(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables());
+        if (databaseConnection != null)
+            transactionTablesTable = new TransactionTablesTable(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables());
     }
 
     private void checkEnabled() {

@@ -21,6 +21,7 @@
 package org.executequery.gui.resultset;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.databaseobjects.Types;
 
 import javax.swing.*;
 import java.util.UUID;
@@ -52,7 +53,7 @@ public class ResultSetColumnHeader {
         this.originalIndex = index;
         this.label = label;
         this.name = name;
-        this.dataType = dataType;
+        this.dataType = (dataTypeName != null && dataTypeName.toLowerCase().contains("int128")) ? Types.INT128 : dataType;
         this.dataTypeName = dataTypeName;
         this.visible = true;
         this.editable = true;

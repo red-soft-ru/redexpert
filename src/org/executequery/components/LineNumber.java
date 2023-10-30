@@ -26,6 +26,7 @@ import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -61,7 +62,7 @@ public class LineNumber extends JComponent {
         setBackground(backgroundColour());
 
         this.component = (component != null) ? component : this;
-        this.borderLabels = null;
+        this.borderLabels = new ArrayList<>();
 
         Font font = this.component.getFont();
         setFont(this.component.getFont());
@@ -167,62 +168,36 @@ public class LineNumber extends JComponent {
         g.fillRect(drawHere.x, drawHere.y, drawHere.width, drawHere.height);
         g.setColor(getForeground());
 
-        if (borderLabels == null) {
+        // Determine the number of lines to draw in the foreground.
+        int startLineNumber = (drawHere.y / lineHeight) + 1;
+        int tempEndLineNumber = startLineNumber + (drawHere.height / lineHeight);
+        int endLineNumber = Math.min(totalRows, tempEndLineNumber);
 
-            // Determine the number of lines to draw in the foreground.
-            int startLineNumber = (drawHere.y / lineHeight) + 1;
-            int tempEndLineNumber = startLineNumber + (drawHere.height / lineHeight);
-            int endLineNumber = Math.min(totalRows, tempEndLineNumber);
+        int start = (drawHere.y / lineHeight) * lineHeight + startOffset;
 
-            String lineNumber;
-            int start = (drawHere.y / lineHeight) * lineHeight + startOffset;
+        for (int i = startLineNumber; i <= endLineNumber; i++) {
 
-            for (int i = startLineNumber; i <= endLineNumber; i++) {
+            String lineLabel = String.valueOf(i);
+            if (!borderLabels.isEmpty())
+                lineLabel = (borderLabels.size() > i - 1) ? borderLabels.get(i - 1) : "";
 
-                lineNumber = String.valueOf(i);
-                int width = fontMetrics.stringWidth(lineNumber);
+            int width = fontMetrics.stringWidth(lineLabel);
 
-                if (executingLine == i) {
-
-                    g.drawImage(executingIcon(),
-                            MARGIN + currentRowWidth - width - 2,
-                            start - iconHeight + 2,
-                            iconWidth,
-                            iconHeight,
-                            this
-                    );
-
-                } else {
-
-                    g.drawString(lineNumber,
-                            MARGIN + currentRowWidth - width,
-                            start
-                    );
-                }
-
-                start += lineHeight;
-            }
-            setPreferredWidth(endLineNumber);
-
-        } else {
-
-            int start = (drawHere.y / lineHeight) * lineHeight + startOffset;
-            int maxLen = -1;
-
-            for (String label : borderLabels) {
-
-                g.drawString(label,
-                        MARGIN + currentRowWidth - fontMetrics.stringWidth(label),
-                        start
+            if (executingLine == i) {
+                g.drawImage(executingIcon(),
+                        MARGIN + currentRowWidth - width - 2,
+                        start - iconHeight + 2,
+                        iconWidth,
+                        iconHeight,
+                        this
                 );
+            } else
+                g.drawString(lineLabel, MARGIN + currentRowWidth - width, start);
 
-                maxLen = Math.max(label.length(), maxLen);
-                start += lineHeight;
-            }
-
-            setPreferredWidth(maxLen);
+            start += lineHeight;
         }
 
+        setPreferredWidth(endLineNumber);
     }
 
     public void resetExecutingLine() {
@@ -239,7 +214,7 @@ public class LineNumber extends JComponent {
     }
 
     public void resetBorderLabels() {
-        this.borderLabels = null;
+        this.borderLabels = new ArrayList<>();
     }
 
     public void setExecutingLine(int lineNumber) {

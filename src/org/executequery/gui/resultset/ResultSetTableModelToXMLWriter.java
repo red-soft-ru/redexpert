@@ -20,6 +20,7 @@
 
 package org.executequery.gui.resultset;
 
+import org.executequery.databaseobjects.Types;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -35,7 +36,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
-import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;

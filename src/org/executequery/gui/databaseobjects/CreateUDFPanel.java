@@ -2,6 +2,7 @@ package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.Types;
 import org.executequery.databaseobjects.UDFParameter;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
 import org.executequery.gui.ActionContainer;
@@ -13,7 +14,6 @@ import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import java.sql.Types;
 import java.util.Vector;
 
 import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_DESCRIPTOR;

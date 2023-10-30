@@ -20,7 +20,7 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.sql.Types;
+import org.executequery.databaseobjects.Types;
 
 public class ColumnInformationFactory {
 

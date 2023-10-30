@@ -6,7 +6,6 @@ import org.executequery.actions.searchcommands.FindAction;
 import org.executequery.actions.searchcommands.ReplaceAction;
 import org.executequery.components.LineNumber;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.TreeFindAction;
 import org.executequery.gui.browser.tree.SchemaTree;
@@ -37,9 +36,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.print.Printable;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -350,11 +348,39 @@ public class SQLTextArea extends RSyntaxTextArea
 
     private int lastElementCount;
     private void updateLineBorder() {
-        int elementCount = document.getDefaultRootElement().getElementCount();
-        if (elementCount != lastElementCount) {
-            lineBorder.setRowCount(elementCount);
-            lastElementCount = elementCount;
+
+        if (!getLineWrap()) {
+
+            int elementCount = getLineCount();
+            if (elementCount != lastElementCount) {
+                lineBorder.setRowCount(elementCount);
+                lastElementCount = elementCount;
+            }
+
+        } else {
+            List<String> borderLabels = getCreateLineBorderLabels();
+            lineBorder.setBorderLabels(borderLabels);
+            lineBorder.setRowCount(borderLabels.size());
+            lastElementCount = borderLabels.size();
         }
+    }
+
+    private List<String> getCreateLineBorderLabels() {
+
+        int lineLength = (int) (getVisibleRect().getWidth() / getColumnWidth());
+
+        List<String> lineBorderLabels = new LinkedList<>();
+        for (int i = 0; i < getLineCount(); i++) {
+            lineBorderLabels.add(String.valueOf(i + 1));
+
+            int displayLineCountForString = getTextAtRow(i).length() / lineLength
+                    + (getTextAtRow(i).length() % lineLength != 0 ? 1 : 0);
+
+            for (int j = 1; j < displayLineCountForString; j++)
+                lineBorderLabels.add("");
+        }
+
+        return lineBorderLabels;
     }
 
     public void showLineNumbers(boolean show) {
@@ -960,11 +986,14 @@ public class SQLTextArea extends RSyntaxTextArea
         updateLineBorder();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         insertUpdate(e);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
+        insertUpdate(e);
     }
 
     public String getTriggerTable() {

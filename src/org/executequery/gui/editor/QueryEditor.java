@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabView;
+import org.executequery.components.LineNumber;
 import org.executequery.components.SplitPaneFactory;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
@@ -394,6 +395,7 @@ public class QueryEditor extends DefaultTabView
 
     private void switchLineWrapping() {
         editorPanel.getQueryArea().setLineWrap(!editorPanel.getQueryArea().getLineWrap());
+        editorPanel.getQueryArea().changedUpdate(null);
     }
 
     private void maxRowCountCheckBoxSelected() {

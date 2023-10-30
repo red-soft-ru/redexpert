@@ -24,6 +24,7 @@ import biz.redsoft.IFBBlob;
 import biz.redsoft.IFBClob;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.Types;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -46,6 +47,7 @@ import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.text.ParseException;
 import java.time.*;
@@ -626,6 +628,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                         case Types.TINYINT:
                         case Types.SMALLINT:
                         case Types.INTEGER:
+                        case Types.INT128:
                         case Types.BIGINT:
                         case Types.FLOAT:
                         case Types.REAL:
@@ -1078,6 +1081,9 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
             case Types.TINYINT:
                 return Byte.class;
+
+            case Types.INT128:
+                return BigInteger.class;
 
             case Types.BIGINT:
                 return Long.class;

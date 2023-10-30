@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.Types;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledStatement;
 import org.executequery.log.Log;
@@ -955,6 +956,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 case Types.DOUBLE:
                     // TODO column precision
 //                    valueBuilder.at(6).set(DOUBLE_PRECISION);
+                    break;
+                case Types.INT128:
+                    // TODO column precision
                     break;
                 case Types.BIGINT:
                     // TODO column precision

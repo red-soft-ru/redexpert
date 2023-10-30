@@ -27,7 +27,6 @@ import org.underworldlabs.jdbc.DataSourceException;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -437,8 +436,12 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     }
 
     public boolean isEditSize() {
-        return getTypeName() != null && (getTypeInt() == Types.NUMERIC || getTypeInt() == Types.CHAR || getTypeInt() == Types.VARCHAR
-                || getTypeInt() == Types.DECIMAL || getTypeInt() == Types.BLOB || getTypeInt() == Types.LONGVARCHAR
+        return getTypeName() != null && (getTypeInt() == Types.NUMERIC
+                || getTypeInt() == Types.CHAR
+                || getTypeInt() == Types.VARCHAR
+                || getTypeInt() == Types.DECIMAL
+                || getTypeInt() == Types.BLOB
+                || getTypeInt() == Types.LONGVARCHAR
                 || getTypeInt() == Types.LONGVARBINARY
                 || getTypeName().equalsIgnoreCase("VARCHAR")
                 || getTypeName().equalsIgnoreCase("CHAR"))

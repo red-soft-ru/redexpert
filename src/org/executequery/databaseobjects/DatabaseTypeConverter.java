@@ -1,7 +1,5 @@
 package org.executequery.databaseobjects;
 
-import java.sql.Types;
-
 public class
 DatabaseTypeConverter {
 
@@ -210,10 +208,11 @@ DatabaseTypeConverter {
             case "BLOB SUB_TYPE TEXT":
                 return Types.LONGVARCHAR;
             case "NUMERIC":
-            case "INT128":
                 return Types.NUMERIC;
             case "DECIMAL":
                 return Types.DECIMAL;
+            case "INT128":
+                return Types.INT128;
             case "INTEGER":
                 return Types.INTEGER;
             case "SMALLINT":
@@ -324,7 +323,7 @@ DatabaseTypeConverter {
                     case 2:
                         return Types.DECIMAL;
                     default:
-                        return Types.TINYINT;
+                        return Types.INT128;
                 }
             default:
                 return 0;

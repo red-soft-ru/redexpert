@@ -20,6 +20,7 @@
 
 package org.executequery.gui.browser;
 
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.SortableColumnsTable;
 import org.underworldlabs.swing.table.AbstractSortableTableModel;
 import org.underworldlabs.swing.table.SortableTableModel;
@@ -29,7 +30,7 @@ import java.awt.*;
 import java.lang.reflect.Field;
 
 /**
- * Displays java.sql.Types in a table with full properties
+ * Displays {@code org.executequery.databaseobjects.Types} in a table with full properties
  *
  * @author Takis Diakoumis
  */
@@ -70,7 +71,7 @@ public class JavaSQLTypesPanel extends ConnectionPropertiesPanel {
 
     private SortableTableModel createModel() {
 
-        Field[] fields = java.sql.Types.class.getDeclaredFields();
+        Field[] fields = Types.class.getDeclaredFields();
 
         String[][] values = new String[fields.length][2];
 

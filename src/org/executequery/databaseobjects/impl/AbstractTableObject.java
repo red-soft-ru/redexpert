@@ -251,7 +251,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
                 throw e;
 
             } finally {
-                setMarkedForReload(false);
+                setMarkedForReloadCols(false);
             }
         }
 

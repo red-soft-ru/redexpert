@@ -940,6 +940,13 @@
             description="Trace Manager"
             execute-class="org.executequery.actions.toolscommands.TraceManagerCommands"/>
 
+    <action id="database-statistic-command"
+            name="Database Statistic"
+            mnemonic="DS"
+            accel-editable="true"
+            description="Database Statistic"
+            execute-class="org.executequery.actions.toolscommands.DatabaseStatisticCommands"/>
+
     <action id="profiler-command"
             name="Profiler"
             mnemonic="PF"

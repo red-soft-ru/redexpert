@@ -259,7 +259,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         passwordField.setPreferredSize(hostField.getPreferredSize());
 
         certificateFileField = createMatchedWidthTextField();
-        containerPasswordField = createPasswordField();
+        containerPasswordField = createPasswordField("containerPasswordField");
         saveContPwdCheck = ActionUtilities.createCheckBox(bundleString("Store-container-password"), "setStoreContainerPassword");
         saveContPwdCheck.addActionListener(this);
         verifyServerCertCheck = ActionUtilities.createCheckBox(bundleString("Verify-server-certificate"), "setVerifyServerCertCheck");
@@ -651,9 +651,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     }
 
-    private JPasswordField createPasswordField() {
+    private JPasswordField createPasswordField(String name) {
 
-        JPasswordField field = WidgetFactory.createPasswordField();
+        JPasswordField field = WidgetFactory.createPasswordField(name);
         formatTextField(field);
 
         return field;

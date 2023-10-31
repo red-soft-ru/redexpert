@@ -218,7 +218,7 @@ public class CreateDatabasePanel extends ActionPanel
         encryptPwdCheck.addActionListener(this);
 
         certificateFileField = createMatchedWidthTextField();
-        containerPasswordField = createPasswordField();
+        containerPasswordField = createPasswordField("containerPasswordField");
         saveContPwdCheck = ActionUtilities.createCheckBox(bundledString("Store-container-password"), "setStoreContainerPassword");
         saveContPwdCheck.addActionListener(this);
         verifyServerCertCheck = ActionUtilities.createCheckBox(bundledString("Verify-server-certificate"), "setVerifyServerCertCheck");
@@ -491,9 +491,9 @@ public class CreateDatabasePanel extends ActionPanel
         }
     }
 
-    private JPasswordField createPasswordField() {
+    private JPasswordField createPasswordField(String name) {
 
-        JPasswordField field = WidgetFactory.createPasswordField();
+        JPasswordField field = WidgetFactory.createPasswordField(name);
         formatTextField(field);
 
         return field;

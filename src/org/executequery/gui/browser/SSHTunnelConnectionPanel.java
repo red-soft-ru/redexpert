@@ -67,9 +67,9 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
         gbh = new GridBagHelper();
         hostField = new JTextField();
-        userNameField = WidgetFactory.createTextField();
+        userNameField = WidgetFactory.createTextField("userNameField");
         passwordField = WidgetFactory.createPasswordField();
-        portField = WidgetFactory.createNumberTextField();
+        portField = WidgetFactory.createNumberTextField("portField");
 
         mainPanel = new TextFieldPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -105,9 +105,8 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
         JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
         addComponents(passwordOptionsPanel,
-                new ComponentToolTipPair[]{
-                        new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
-                        new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip"))});
+                new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
+                new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip")));
         gbc = gbh.get();
         gbc.gridy++;
         gbc.gridx = 1;
@@ -131,14 +130,7 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
     public void useSshSelected() {
 
-        if (useSshCheckbox.isSelected()) {
-
-            enableFields(true);
-
-        } else {
-
-            enableFields(false);
-        }
+        enableFields(useSshCheckbox.isSelected());
 
     }
 

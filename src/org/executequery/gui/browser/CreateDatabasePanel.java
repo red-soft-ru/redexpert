@@ -1,6 +1,5 @@
 package org.executequery.gui.browser;
 
-import org.executequery.gui.DefaultNumberTextField;
 import biz.redsoft.IFBCreateDatabase;
 import biz.redsoft.IFBCryptoPluginInit;
 import org.apache.commons.lang.StringUtils;
@@ -14,6 +13,7 @@ import org.executequery.databasemediators.spi.DatabaseConnectionFactoryImpl;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.*;
+import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
@@ -403,9 +403,7 @@ public class CreateDatabasePanel extends ActionPanel
         // add a dummy select value to the tx levels
         String[] txLevels = new String[Constants.TRANSACTION_LEVELS.length + 1];
         txLevels[0] = "Database Default";
-        for (int i = 1; i < txLevels.length; i++) {
-            txLevels[i] = Constants.TRANSACTION_LEVELS[i - 1];
-        }
+        System.arraycopy(Constants.TRANSACTION_LEVELS, 0, txLevels, 1, txLevels.length - 1);
         txCombo = WidgetFactory.createComboBox(txLevels);
 
         JPanel advTxPanel = new JPanel(new GridBagLayout());
@@ -490,16 +488,7 @@ public class CreateDatabasePanel extends ActionPanel
 
         } catch (Exception e) {
             e.printStackTrace();
-            return;
         }
-    }
-
-    private NumberTextField createNumberTextField() {
-
-        NumberTextField textField = WidgetFactory.createNumberTextField();
-        formatTextField(textField);
-
-        return textField;
     }
 
     private JPasswordField createPasswordField() {
@@ -518,14 +507,6 @@ public class CreateDatabasePanel extends ActionPanel
             }
 
         };
-        formatTextField(textField);
-
-        return textField;
-    }
-
-    private JTextField createTextField() {
-
-        JTextField textField = WidgetFactory.createTextField();
         formatTextField(textField);
 
         return textField;
@@ -799,13 +780,12 @@ public class CreateDatabasePanel extends ActionPanel
             } else {
                 // Convert from the DER to BASE64
                 base64cert = Base64.encodeBytes(bytes);
-                StringBuilder sb = new StringBuilder();
-                sb.append("-----BEGIN CERTIFICATE-----");
-                sb.append("\n");
-                sb.append(base64cert);
-                sb.append("\n");
-                sb.append("-----END CERTIFICATE-----");
-                base64cert = sb.toString();
+                String sb = "-----BEGIN CERTIFICATE-----" +
+                        "\n" +
+                        base64cert +
+                        "\n" +
+                        "-----END CERTIFICATE-----";
+                base64cert = sb;
                 properties.setProperty("isc_dpb_certificate_base64", base64cert);
             }
         } catch (IOException e) {
@@ -840,9 +820,7 @@ public class CreateDatabasePanel extends ActionPanel
             Log.info("Driver version: " + driver.getMajorVersion() + "." + driver.getMinorVersion());
 
             if (driver.getMajorVersion() < 3) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("Cannot create database, Jaybird 2.x has no implementation for creation database.");
-                GUIUtilities.displayErrorMessage(sb.toString());
+                GUIUtilities.displayErrorMessage("Cannot create database, Jaybird 2.x has no implementation for creation database.");
                 return;
             }
 
@@ -877,21 +855,19 @@ public class CreateDatabasePanel extends ActionPanel
             db.exec();
 
         } catch (UnsatisfiedLinkError linkError) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Cannot create database, because fbclient library not found in environment path variable. \n");
-            sb.append("Please, add fbclient library to environment path variable.\n");
-            sb.append("Example for Windows system: setx path \"%path%;C:\\Program Files (x86)\\RedDatabase\\bin\\\"\n\n");
-            sb.append("Example for Linux system: export PATH=$PATH:/opt/RedDatabase/lib\n\n");
-            sb.append(linkError.getMessage());
-            GUIUtilities.displayExceptionErrorDialog(sb.toString(), linkError);
+            String sb = "Cannot create database, because fbclient library not found in environment path variable. \n" +
+                    "Please, add fbclient library to environment path variable.\n" +
+                    "Example for Windows system: setx path \"%path%;C:\\Program Files (x86)\\RedDatabase\\bin\\\"\n\n" +
+                    "Example for Linux system: export PATH=$PATH:/opt/RedDatabase/lib\n\n" +
+                    linkError.getMessage();
+            GUIUtilities.displayExceptionErrorDialog(sb, linkError);
             return;
         } catch (Exception e) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("The connection to the database could not be established.");
-            sb.append("\nPlease ensure all required fields have been entered ");
-            sb.append("correctly and try again.\n\nThe system returned:\n");
-            sb.append(e.getMessage());
-            GUIUtilities.displayExceptionErrorDialog(sb.toString(), e);
+            String sb = "The connection to the database could not be established." +
+                    "\nPlease ensure all required fields have been entered " +
+                    "correctly and try again.\n\nThe system returned:\n" +
+                    e.getMessage();
+            GUIUtilities.displayExceptionErrorDialog(sb, e);
             return;
         } finally {
             GUIUtilities.showNormalCursor();
@@ -927,7 +903,6 @@ public class CreateDatabasePanel extends ActionPanel
 
             GUIUtilities.closeSelectedCentralPane();
         }
-        return;
     }
 
     private void storeJdbcProperties(DatabaseConnection databaseConnection) {

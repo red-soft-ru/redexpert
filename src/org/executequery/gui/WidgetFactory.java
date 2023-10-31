@@ -22,11 +22,9 @@ package org.executequery.gui;
 
 import org.executequery.gui.browser.DefaultInlineFieldButton;
 import org.underworldlabs.swing.DefaultButton;
-import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 
@@ -107,46 +105,10 @@ public final class WidgetFactory {
         return textField;
     }
 
-    public static JPasswordField createPasswordField() {
-
-        return new JPasswordField();
-    }
-
-    public static void addLabelFieldPair(JPanel panel, String label,
-                                         JComponent field, GridBagConstraints gbc) {
-
-        addLabelFieldPair(panel, label, field, null, gbc);
-    }
-
-    public static void addLabelFieldPair(JPanel panel, String label,
-                                         JComponent field, String toolTip, GridBagConstraints gbc) {
-
-        gbc.insets = new Insets(10, 10, 5, 10);
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-
-        if (panel.getComponentCount() > 0) {
-
-            gbc.insets.top = 0;
-        }
-
-        gbc.weightx = 0;
-        panel.add(new DefaultFieldLabel(label), gbc);
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.gridx = 1;
-        gbc.insets.left = 5;
-        gbc.weightx = 1.0;
-        panel.add(field, gbc);
-
-        if (toolTip != null) {
-
-            field.setToolTipText(toolTip);
-        }
-
+    public static JPasswordField createPasswordField(String name) {
+        JPasswordField passwordField = new JPasswordField();
+        passwordField.setName(name);
+        return passwordField;
     }
 
 }

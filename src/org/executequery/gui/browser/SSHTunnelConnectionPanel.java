@@ -68,7 +68,7 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         gbh = new GridBagHelper();
         hostField = new JTextField();
         userNameField = WidgetFactory.createTextField("userNameField");
-        passwordField = WidgetFactory.createPasswordField();
+        passwordField = WidgetFactory.createPasswordField("passwordField");
         portField = WidgetFactory.createNumberTextField("portField");
 
         mainPanel = new TextFieldPanel(new GridBagLayout());
@@ -206,7 +206,7 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
             if (!hasValue(passwordField)) {
 
-                final JPasswordField field = WidgetFactory.createPasswordField();
+                final JPasswordField field = WidgetFactory.createPasswordField("tempPasswordField");
 
                 JOptionPane optionPane = new JOptionPane(field, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
                 JDialog dialog = optionPane.createDialog("Enter SSH password");

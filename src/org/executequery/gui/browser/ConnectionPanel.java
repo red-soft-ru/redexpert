@@ -637,7 +637,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         } catch (Exception e) {
             e.printStackTrace();
-            return;
         }
     }
 
@@ -650,14 +649,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
             sshTunnelConnectionPanel.setValues(databaseConnection);
         }
 
-    }
-
-    private NumberTextField createNumberTextField() {
-
-        NumberTextField textField = WidgetFactory.createNumberTextField();
-        formatTextField(textField);
-
-        return textField;
     }
 
     private JPasswordField createPasswordField() {
@@ -676,14 +667,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
             }
 
         };
-        formatTextField(textField);
-
-        return textField;
-    }
-
-    private JTextField createTextField() {
-
-        JTextField textField = WidgetFactory.createTextField();
         formatTextField(textField);
 
         return textField;
@@ -914,10 +897,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private void connectionError(DataSourceException e) {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(Bundles.getCommon("error.connection"));
-        sb.append(e.getExtendedMessage());
-        GUIUtilities.displayExceptionErrorDialog(sb.toString(), e);
+        String sb = Bundles.getCommon("error.connection") +
+                e.getExtendedMessage();
+        GUIUtilities.displayExceptionErrorDialog(sb, e);
     }
 
     private boolean valid() {
@@ -1148,13 +1130,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
             } else {
                 // Convert from the DER to BASE64
                 base64cert = Base64.encodeBytes(bytes);
-                StringBuilder sb = new StringBuilder();
-                sb.append("-----BEGIN CERTIFICATE-----");
-                sb.append("\n");
-                sb.append(base64cert);
-                sb.append("\n");
-                sb.append("-----END CERTIFICATE-----");
-                base64cert = sb.toString();
+                String sb = "-----BEGIN CERTIFICATE-----" +
+                        "\n" +
+                        base64cert +
+                        "\n" +
+                        "-----END CERTIFICATE-----";
+                base64cert = sb;
                 properties.setProperty("isc_dpb_certificate_base64", base64cert);
             }
         } catch (IOException e) {

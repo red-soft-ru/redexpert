@@ -90,19 +90,21 @@ public final class WidgetFactory {
         return new JComboBox();
     }
 
-    public static NumberTextField createNumberTextField() {
-
-        return new NumberTextField();
+    public static NumberTextField createNumberTextField(String name) {
+        NumberTextField numberTextField = new NumberTextField();
+        numberTextField.setName(name);
+        return numberTextField;
     }
 
-    public static JTextField createTextField() {
-
-        return new JTextField();
+    public static JTextField createTextField(String name) {
+        return createTextField(name, "");
     }
 
-    public static JTextField createTextField(String text) {
-
-        return new JTextField(text);
+    public static JTextField createTextField(String name, String text) {
+        JTextField textField = new JTextField();
+        textField.setText(text);
+        textField.setName(name);
+        return textField;
     }
 
     public static JPasswordField createPasswordField() {

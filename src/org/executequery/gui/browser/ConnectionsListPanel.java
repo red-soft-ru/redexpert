@@ -109,10 +109,10 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         tcm.getColumn(0).setCellRenderer(new ConnectCellRenderer());
 
         // new connection button
-        connButton = WidgetFactory.createButton(Bundles.getCommon("newConnection.button"));
+        connButton = WidgetFactory.createButton("connButton", Bundles.getCommon("newConnection.button"));
         connButton.addActionListener(this);
 
-        newDBButton = WidgetFactory.createButton(Bundles.get("action.create-database-command"));
+        newDBButton = WidgetFactory.createButton("newDBButton", Bundles.get("action.create-database-command"));
         newDBButton.addActionListener(this);
 
         JPanel tablePanel = new JPanel(new GridBagLayout());

@@ -134,7 +134,7 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
         PanelToolBar tools = new PanelToolBar();
 
         tools.addLabel("Find: ");
-        searchField = WidgetFactory.createTextField();
+        searchField = WidgetFactory.createTextField("searchField");
         searchField.addActionListener(this);
         searchField.setActionCommand("search");
         tools.addTextField(searchField);

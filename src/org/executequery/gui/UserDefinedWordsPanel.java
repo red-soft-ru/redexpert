@@ -137,10 +137,10 @@ public class UserDefinedWordsPanel extends DefaultActionButtonsPanel
         sql92Panel.add(js2, BorderLayout.CENTER);
         sql92Panel.setPreferredSize(dim);
 
-        newWordField = WidgetFactory.createTextField();
+        newWordField = WidgetFactory.createTextField("newWordField");
         actionToField(newWordField, "addWord");
 
-        addButton = WidgetFactory.createButton("Add");
+        addButton = WidgetFactory.createButton("addButton", "Add");
         actionToButton(addButton, "addWord");
 
         JPanel addPanel = new JPanel(new GridBagLayout());

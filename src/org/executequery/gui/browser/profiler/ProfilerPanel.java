@@ -92,11 +92,11 @@ public class ProfilerPanel extends JPanel
 
         // --- attachments comboBox ---
 
-        attachmentsComboBox = WidgetFactory.createComboBox();
+        attachmentsComboBox = WidgetFactory.createComboBox("attachmentsComboBox");
 
         // --- connections comboBox ---
 
-        connectionsComboBox = WidgetFactory.createComboBox();
+        connectionsComboBox = WidgetFactory.createComboBox("connectionsComboBox");
         connectionsComboBox.setModel(new DynamicComboBoxModel(new Vector<>(ConnectionManager.getActiveConnections())));
         connectionsComboBox.addActionListener(e -> refreshAttachments());
         combosGroup = new TableSelectionCombosGroup(connectionsComboBox);

@@ -22,7 +22,7 @@ public class OpenConnectionsComboboxPanel extends JPanel {
     void init() {
         Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
         connectionsModel = new DynamicComboBoxModel(connections);
-        connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", connectionsModel);
 
         setLayout(new GridBagLayout());
         JLabel connLabel = new JLabel(Bundles.getCommon("connection"));

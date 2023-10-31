@@ -122,7 +122,7 @@ class ExportAsSQLPanelFour extends AbstractImportExportPanel {
                 bundledString("ImportExportPanelFour.onErrorOptionTwo")
         };
 
-        JComboBox comboBox = WidgetFactory.createComboBox(options);
+        JComboBox comboBox = WidgetFactory.createComboBox("ErrorCombo", options);
         comboBox.setPreferredSize(new Dimension(150, 20));
 
         return comboBox;

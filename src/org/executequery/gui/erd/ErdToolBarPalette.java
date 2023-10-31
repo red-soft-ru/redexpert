@@ -146,7 +146,7 @@ public class ErdToolBarPalette extends PanelToolBar
         addButton(canvasBgButton);
 
         String[] scaleValues = ErdViewerPanel.scaleValues;
-        scaleCombo = WidgetFactory.createComboBox(scaleValues);
+        scaleCombo = WidgetFactory.createComboBox("scaleCombo", scaleValues);
         scaleCombo.setFont(new Font("dialog", Font.PLAIN, 10));
         scaleCombo.setPreferredSize(new Dimension(58, 20));
         scaleCombo.setLightWeightPopupEnabled(false);

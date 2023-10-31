@@ -81,7 +81,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
                 "Import Log: " + logRepository.getLogFilePath(LogRepository.IMPORT)
         };
 
-        logCombo = WidgetFactory.createComboBox(logs);
+        logCombo = WidgetFactory.createComboBox("logCombo", logs);
         logCombo.addItemListener(this);
 
         SimpleTextArea simpleTextArea = new SimpleTextArea();

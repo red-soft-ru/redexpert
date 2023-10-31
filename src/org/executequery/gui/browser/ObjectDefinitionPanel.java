@@ -167,7 +167,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         metaDataPanel = new DatabaseObjectMetaDataPanel();
 
         sqlTextPanel = new SimpleSqlTextPanel();
-        JButton formatSqlButton = WidgetFactory.createButton(Bundles.getCommon("FormatSQL"));
+        JButton formatSqlButton = WidgetFactory.createButton("formatSQLButton", Bundles.getCommon("FormatSQL"));
         formatSqlButton.addActionListener(e -> formatSql());
 
         //sql panel

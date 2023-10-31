@@ -284,7 +284,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // retrieve the available charsets
         loadCharsets();
-        charsetsCombo = WidgetFactory.createComboBox(charsets.toArray());
+        charsetsCombo = WidgetFactory.createComboBox("charsetsCombo", charsets.toArray());
 
         // ---------------------------------
         // add the basic connection fields
@@ -487,7 +487,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         advPropsPanel.add(scroller, gbh.get());
 
         // transaction isolation
-        txApplyButton = WidgetFactory.createButton(Bundles.get("common.apply.button"));
+        txApplyButton = WidgetFactory.createButton("txApplyButton", Bundles.get("common.apply.button"));
         txApplyButton.setActionCommand("transactionLevelChanged");
         txApplyButton.setToolTipText(bundleString("txApplyButton.tool-tip"));
         txApplyButton.setEnabled(false);
@@ -730,7 +730,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             DynamicComboBoxModel comboModel = new DynamicComboBoxModel();
             comboModel.setElements(driverNames);
-            driverCombo = WidgetFactory.createComboBox(comboModel);
+            driverCombo = WidgetFactory.createComboBox("driverCombo", comboModel);
             driverCombo.setBorder(redBorder);
             driverCombo.addItemListener(new ItemListener() {
                 @Override

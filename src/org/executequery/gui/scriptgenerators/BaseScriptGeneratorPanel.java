@@ -122,8 +122,8 @@ public class BaseScriptGeneratorPanel extends JPanel
                 "Selected Tables:");
 
         // combo boxes
-        connectionsCombo = WidgetFactory.createComboBox();
-        schemaCombo = WidgetFactory.createComboBox();
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo");
+        schemaCombo = WidgetFactory.createComboBox("schemaCombo");
 
         if (tables != null) {
             schemaCombo.setEnabled(false);
@@ -160,7 +160,7 @@ public class BaseScriptGeneratorPanel extends JPanel
             }
         }
 
-        pathField = WidgetFactory.createTextField();
+        pathField = WidgetFactory.createTextField("pathField");
         browseButton = new DefaultPanelButton("Browse");
         browseButton.setMnemonic('B');
 

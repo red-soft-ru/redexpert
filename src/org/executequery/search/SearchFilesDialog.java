@@ -147,8 +147,8 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
 
         enableReplaceTextArea(false);
 
-        fileTypesCombo = WidgetFactory.createComboBox(FileSearch.getTypesValues());
-        pathCombo = WidgetFactory.createComboBox(FileSearch.getPathValues());
+        fileTypesCombo = WidgetFactory.createComboBox("fileTypesCombo", FileSearch.getTypesValues());
+        pathCombo = WidgetFactory.createComboBox("pathCombo", FileSearch.getPathValues());
         fileTypesCombo.setEditable(true);
         pathCombo.setEditable(true);
 

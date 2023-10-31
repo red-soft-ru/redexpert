@@ -66,7 +66,7 @@ public class GenerateScriptsPanelTwo extends JPanel implements GenerateScriptsPa
 
     private void init() throws Exception {
 
-        schemaCombo = WidgetFactory.createComboBox();
+        schemaCombo = WidgetFactory.createComboBox("schemaCombo");
 
         list = new ListSelectionPanel("Available Tables:", "Selected Tables:");
 

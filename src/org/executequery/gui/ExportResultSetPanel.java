@@ -101,11 +101,11 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
 
     private void init() {
 
-        fileNameField = WidgetFactory.createTextField();
-        connectionsCombo = WidgetFactory.createComboBox();
+        fileNameField = WidgetFactory.createTextField("fileNameField");
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo");
 
         String[] delims = {"|", ",", ";", "#"};
-        delimiterCombo = WidgetFactory.createComboBox(delims);
+        delimiterCombo = WidgetFactory.createComboBox("delimiterCombo", delims);
         delimiterCombo.setEditable(true);
 
         combosGroup = new TableSelectionCombosGroup(connectionsCombo);

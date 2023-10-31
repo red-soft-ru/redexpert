@@ -148,7 +148,7 @@ public class PrintPreviewer extends AbstractBaseDialog
         closeButton.setMnemonic('C');
 
         String[] scales = {"10 %", "25 %", "50 %", "75 %", "100 %"};
-        scaleCombo = WidgetFactory.createComboBox(scales);
+        scaleCombo = WidgetFactory.createComboBox("scaleCombo", scales);
         scaleCombo.setActionCommand("scales");
         scaleCombo.setPreferredSize(new Dimension(70, 28));
         scaleCombo.setSelectedIndex(2);

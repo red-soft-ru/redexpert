@@ -158,7 +158,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         customDelimiterField = new CharLimitedTextField(1);
         customNameTable = new CharLimitedTextField(20);
-        fileNameField = WidgetFactory.createTextField();
+        fileNameField = WidgetFactory.createTextField("fileNameField");
 
         browse = new DefaultInlineFieldButton(action);
         browse.setText(Bundles.get("ExecuteSqlScriptPanel.Browse"));

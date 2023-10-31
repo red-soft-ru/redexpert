@@ -229,10 +229,10 @@ public class CreateDatabasePanel extends ActionPanel
 
         // retrieve the available charsets
         loadCharsets();
-        charsetsCombo = WidgetFactory.createComboBox(charsets.toArray());
+        charsetsCombo = WidgetFactory.createComboBox("charsetsCombo", charsets.toArray());
         charsetsCombo.setName("charsetsCombo");
 
-        pageSizeCombo = WidgetFactory.createComboBox(pageSizes.toArray());
+        pageSizeCombo = WidgetFactory.createComboBox("pageSizeCombo", pageSizes.toArray());
         pageSizeCombo.setSelectedItem("8192");
         pageSizeCombo.setEditable(false);
 
@@ -404,7 +404,7 @@ public class CreateDatabasePanel extends ActionPanel
         String[] txLevels = new String[Constants.TRANSACTION_LEVELS.length + 1];
         txLevels[0] = "Database Default";
         System.arraycopy(Constants.TRANSACTION_LEVELS, 0, txLevels, 1, txLevels.length - 1);
-        txCombo = WidgetFactory.createComboBox(txLevels);
+        txCombo = WidgetFactory.createComboBox("txCombo", txLevels);
 
         JPanel advTxPanel = new JPanel(new GridBagLayout());
         advTxPanel.setBorder(BorderFactory.createTitledBorder(bundledString("TransactionIsolation")));
@@ -569,7 +569,7 @@ public class CreateDatabasePanel extends ActionPanel
 
             DynamicComboBoxModel comboModel = new DynamicComboBoxModel();
             comboModel.setElements(driverNames);
-            driverCombo = WidgetFactory.createComboBox(comboModel);
+            driverCombo = WidgetFactory.createComboBox("driverCombo", comboModel);
             driverCombo.setName("driverCombo");
 
         } else {

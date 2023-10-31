@@ -118,7 +118,7 @@ public class GenerateScriptsPanelThree extends JPanel
 
     private JPanel createFileOutputPanel() {
 
-        pathField = WidgetFactory.createTextField();
+        pathField = WidgetFactory.createTextField("pathField");
 
         final JButton browseButton = new DefaultPanelButton("Browse");
         browseButton.setMnemonic('B');

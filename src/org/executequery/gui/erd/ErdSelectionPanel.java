@@ -103,11 +103,11 @@ public class ErdSelectionPanel extends JPanel
         // combo boxes
         Vector connections = ConnectionManager.getActiveConnections();
         connectionsModel = new DynamicComboBoxModel(connections);
-        connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", connectionsModel);
         connectionsCombo.addItemListener(this);
 
         schemaModel = new DynamicComboBoxModel();
-        schemaCombo = WidgetFactory.createComboBox(schemaModel);
+        schemaCombo = WidgetFactory.createComboBox("schemaCombo", schemaModel);
         schemaCombo.addItemListener(this);
 
         setBorder(BorderFactory.createEtchedBorder());

@@ -155,12 +155,12 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         connectionsCombo.connectionsCombo.addItemListener(e -> connectionSelectionMade());
         connectionsCombo.setEnabled(nameStoredObject == null);
 
-        objectTypeCombo = WidgetFactory.createComboBox(createAvailableObjectTypes());
+        objectTypeCombo = WidgetFactory.createComboBox("objectTypeCombo", createAvailableObjectTypes());
         objectTypeCombo.setToolTipText(bundleString("ObjectType.tool-tip"));
         objectTypeCombo.addItemListener(this);
 
         proceduresModel = new DynamicComboBoxModel();
-        procedureCombo = WidgetFactory.createComboBox(proceduresModel);
+        procedureCombo = WidgetFactory.createComboBox("procedureCombo", proceduresModel);
         procedureCombo.setActionCommand("procedureSelectionChanged");
         procedureCombo.setToolTipText(bundleString("ObjectName.tool-tip"));
         procedureCombo.addActionListener(this);

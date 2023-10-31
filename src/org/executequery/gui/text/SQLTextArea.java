@@ -347,7 +347,7 @@ public class SQLTextArea extends RSyntaxTextArea
     }
 
     private int lastElementCount;
-    private void updateLineBorder() {
+    protected void updateLineBorder() {
 
         if (!getLineWrap()) {
 

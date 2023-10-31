@@ -21,7 +21,6 @@
 package org.executequery.gui;
 
 import org.executequery.gui.browser.DefaultInlineFieldButton;
-import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
@@ -58,34 +57,36 @@ public final class WidgetFactory {
         return button;
     }
 
-    public static JButton createButton(String text) {
-
-        return new JButton(text);
+    public static JButton createButton(String name, String text) {
+        JButton button = new JButton(text);
+        button.setName(name);
+        return button;
     }
 
-    public static JButton createButton(ActionListener actionListener, String text) {
-
-        return new DefaultButton(actionListener, text, null);
+    public static JComboBox createComboBox(String name, Vector<?> items) {
+        JComboBox comboBox = new JComboBox(items);
+        comboBox.setName(name);
+        return comboBox;
     }
 
-    public static JComboBox createComboBox(Vector<?> items) {
-
-        return new JComboBox(items);
+    public static JComboBox createComboBox(String name, ComboBoxModel model) {
+        JComboBox comboBox = new JComboBox(model);
+        comboBox.setName(name);
+        return comboBox;
     }
 
-    public static JComboBox createComboBox(ComboBoxModel model) {
+    public static JComboBox createComboBox(String name, Object[] items) {
 
-        return new JComboBox(model);
+        JComboBox comboBox = new JComboBox(items);
+        comboBox.setName(name);
+        return comboBox;
     }
 
-    public static JComboBox createComboBox(Object[] items) {
+    public static JComboBox createComboBox(String name) {
 
-        return new JComboBox(items);
-    }
-
-    public static JComboBox createComboBox() {
-
-        return new JComboBox();
+        JComboBox comboBox = new JComboBox();
+        comboBox.setName(name);
+        return comboBox;
     }
 
     public static NumberTextField createNumberTextField(String name) {
@@ -109,6 +110,12 @@ public final class WidgetFactory {
         JPasswordField passwordField = new JPasswordField();
         passwordField.setName(name);
         return passwordField;
+    }
+
+    public static JCheckBox createCheckBox(String name, String text) {
+        JCheckBox checkBox = new JCheckBox(text);
+        checkBox.setName(name);
+        return checkBox;
     }
 
 }

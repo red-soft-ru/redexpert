@@ -9,10 +9,10 @@ import java.sql.SQLException;
 public class FBStatisticManagerImpl implements IFBStatisticManager{
 
     FBStatisticsManager fbStatisticsManager;
-    FBStatisticManagerImpl()
-    {
-        fbStatisticsManager=new FBStatisticsManager();
+    public FBStatisticManagerImpl() {
+        fbStatisticsManager = new FBStatisticsManager();
     }
+
     @Override
     public String getCharSet() {
         return fbStatisticsManager.getCharSet();

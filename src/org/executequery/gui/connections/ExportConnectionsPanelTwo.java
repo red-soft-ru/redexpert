@@ -43,7 +43,7 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
 
     private void init() {
 
-        fileNameField = WidgetFactory.createTextField();
+        fileNameField = WidgetFactory.createTextField("fileNameField");
 
         JButton button = WidgetFactory.createInlineFieldButton(Bundles.get("CreateTableFunctionPanel.BrowseButtonText"));
         button.setActionCommand("browse");

@@ -87,11 +87,11 @@ public class ImportExportXMLPanel_5 extends JPanel {
 //        dateFormatField = WidgetFactory.createTextField();
 
         String[] errors = {"Log and Continue", "Stop Transfer"};
-        errorCombo = WidgetFactory.createComboBox(errors);
+        errorCombo = WidgetFactory.createComboBox("errorCombo", errors);
 
         String[] rolls = {"50", "100", "500", "1000", "5000",
                 "10000", "50000", "End of File", "End of all Files"};
-        rollbackCombo = WidgetFactory.createComboBox(rolls);
+        rollbackCombo = WidgetFactory.createComboBox("rollbackCombo", rolls);
         rollbackCombo.setSelectedIndex(2);
 
         batchCheck = new JCheckBox("Run as a batch process");

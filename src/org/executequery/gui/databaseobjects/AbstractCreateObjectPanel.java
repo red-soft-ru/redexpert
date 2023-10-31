@@ -145,7 +145,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         tabbedPane.setPreferredSize(new Dimension(700, 400));
         Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
         connectionsModel = new DynamicComboBoxModel(connections);
-        connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", connectionsModel);
         sender = new DefaultStatementExecutor(connection, true);
         connectionsCombo.addItemListener(event -> {
             if (event.getStateChange() == ItemEvent.DESELECTED) {

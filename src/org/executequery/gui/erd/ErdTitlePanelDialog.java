@@ -141,12 +141,12 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
         cancelButton.addActionListener(btnListener);
         createButton.addActionListener(btnListener);
 
-        nameTextField = WidgetFactory.createTextField();
-        dateTextField = WidgetFactory.createTextField();
-        revTextField = WidgetFactory.createTextField();
-        databaseTextField = WidgetFactory.createTextField();
-        authorTextField = WidgetFactory.createTextField();
-        fileTextField = WidgetFactory.createTextField();
+        nameTextField = WidgetFactory.createTextField("nameTextField");
+        dateTextField = WidgetFactory.createTextField("dateTextField");
+        revTextField = WidgetFactory.createTextField("revTextField");
+        databaseTextField = WidgetFactory.createTextField("databaseTextField");
+        authorTextField = WidgetFactory.createTextField("authorTextField");
+        fileTextField = WidgetFactory.createTextField("fileTextField");
         descTextArea = new JTextArea();
 
         descTextArea.setLineWrap(true);

@@ -69,7 +69,7 @@ public abstract class FindAction<T> extends AbstractAction
         searchPanel = new JPanel(new GridBagLayout());
         popup = new JPopupMenu();
 
-        searchField = WidgetFactory.createTextField();
+        searchField = WidgetFactory.createTextField("searchField");
         searchField.setPreferredSize(new Dimension(270, 22));
 
         resultsList = initSearchResultsList();

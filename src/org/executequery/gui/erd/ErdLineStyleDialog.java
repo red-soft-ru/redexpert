@@ -131,18 +131,18 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
                 new LineWeightIcon(1),
                 new LineWeightIcon(2),
                 new LineWeightIcon(3)};
-        weightCombo = WidgetFactory.createComboBox(weightIcons);
+        weightCombo = WidgetFactory.createComboBox("weightCombo", weightIcons);
         weightCombo.setRenderer(renderer);
 
         LineStyleIcon[] styleIcons = {new LineStyleIcon(0),
                 new LineStyleIcon(1),
                 new LineStyleIcon(2)};
-        styleCombo = WidgetFactory.createComboBox(styleIcons);
+        styleCombo = WidgetFactory.createComboBox("styleCombo", styleIcons);
         styleCombo.setRenderer(renderer);
 
         ArrowStyleIcon[] arrowIcons = {new ArrowStyleIcon(0),
                 new ArrowStyleIcon(1)};
-        arrowCombo = WidgetFactory.createComboBox(arrowIcons);
+        arrowCombo = WidgetFactory.createComboBox("arrowCombo", arrowIcons);
         arrowCombo.setRenderer(renderer);
 
         JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));

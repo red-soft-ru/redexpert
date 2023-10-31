@@ -124,29 +124,29 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // ---------- comboBoxes ----------
 
-        delimiterCombo = WidgetFactory.createComboBox(delimiters);
+        delimiterCombo = WidgetFactory.createComboBox("delimiterCombo", delimiters);
         delimiterCombo.addActionListener(e -> readDataPropsChanged());
         delimiterCombo.setEditable(true);
 
-        sourceCombo = WidgetFactory.createComboBox(sourceTypes);
+        sourceCombo = WidgetFactory.createComboBox("sourceCombo", sourceTypes);
         sourceCombo.setSelectedIndex(1);    //remove when adding support new for file formats
         sourceCombo.setEnabled(false);      //remove when adding support new for file formats
 
-        timeFormatCombo = WidgetFactory.createComboBox(timeFormats);
+        timeFormatCombo = WidgetFactory.createComboBox("timeFormatCombo", timeFormats);
         timeFormatCombo.setEditable(true);
 
-        dateFormatCombo = WidgetFactory.createComboBox(dateFormats);
+        dateFormatCombo = WidgetFactory.createComboBox("dateFormatCombo", dateFormats);
         dateFormatCombo.setEditable(true);
 
-        timestampDelimiterCombo = WidgetFactory.createComboBox(timestampDelimiters);
+        timestampDelimiterCombo = WidgetFactory.createComboBox("timestampDelimiterCombo", timestampDelimiters);
         timestampDelimiterCombo.setEditable(true);
 
-        connectionsCombo = WidgetFactory.createComboBox();
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo");
         connectionsCombo.addActionListener(e -> connectionComboChanged());
 
         combosGroup = new TableSelectionCombosGroup(connectionsCombo);
 
-        tableCombo = WidgetFactory.createComboBox();
+        tableCombo = WidgetFactory.createComboBox("tableCombo");
         tableCombo.addActionListener(e -> tableComboChanged());
 
         // ---------- checkBoxes ----------
@@ -180,7 +180,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // ---------- other ----------
 
-        fileNameField = WidgetFactory.createTextField();
+        fileNameField = WidgetFactory.createTextField("fileNameField");
         outputPanel = new LoggingOutputPanel();
 
         // ---------- buttons ----------

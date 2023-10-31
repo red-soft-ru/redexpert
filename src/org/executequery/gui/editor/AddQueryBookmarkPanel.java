@@ -131,7 +131,7 @@ public class AddQueryBookmarkPanel extends DefaultActionButtonsPanel
             names.add(bookmark.getName());
         }
 
-        nameField = WidgetFactory.createComboBox(names);
+        nameField = WidgetFactory.createComboBox("nameField", names);
         nameField.setEditable(true);
         nameField.setActionCommand(SAVE_COMMAND_NAME);
 

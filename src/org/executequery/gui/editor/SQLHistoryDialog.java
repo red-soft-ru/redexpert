@@ -140,7 +140,7 @@ public class SQLHistoryDialog extends AbstractBaseDialog
         Container c = getContentPane();
         c.setLayout(new GridBagLayout());
 
-        searchField = WidgetFactory.createTextField();
+        searchField = WidgetFactory.createTextField("searchField");
         searchField.addActionListener(this);
         JButton searchButton = createButton("Search", null);
 

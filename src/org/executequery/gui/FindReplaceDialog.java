@@ -95,8 +95,8 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
             addFind(selectedText);
         }
 
-        findField = WidgetFactory.createComboBox(TextAreaSearch.getPrevFindValues());
-        replaceField = WidgetFactory.createComboBox(TextAreaSearch.getPrevReplaceValues());
+        findField = WidgetFactory.createComboBox("findField", TextAreaSearch.getPrevFindValues());
+        replaceField = WidgetFactory.createComboBox("replaceField", TextAreaSearch.getPrevReplaceValues());
         findField.setEditable(true);
         replaceField.setEditable(true);
 

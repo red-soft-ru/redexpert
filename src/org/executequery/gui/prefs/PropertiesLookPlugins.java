@@ -105,10 +105,10 @@ public class PropertiesLookPlugins extends JPanel
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.addListSelectionListener(this);
 
-        nameField = WidgetFactory.createTextField();
-        libPathField = WidgetFactory.createTextField();
-        classField = WidgetFactory.createTextField();
-        themeField = WidgetFactory.createTextField();
+        nameField = WidgetFactory.createTextField("nameField");
+        libPathField = WidgetFactory.createTextField("libPathField");
+        classField = WidgetFactory.createTextField("classField");
+        themeField = WidgetFactory.createTextField("themeField");
 
         findClassButton = new JButton(bundleString("Find"));
         libBrowseButton = new JButton(bundleString("Browse"));

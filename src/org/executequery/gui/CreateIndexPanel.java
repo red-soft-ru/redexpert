@@ -128,11 +128,11 @@ public class CreateIndexPanel extends ActionPanel
 
     private void init() throws Exception {
 
-        nameField = WidgetFactory.createTextField();
+        nameField = WidgetFactory.createTextField("nameField");
 
-        connectionsCombo = WidgetFactory.createComboBox();
-        schemaCombo = WidgetFactory.createComboBox();
-        tableCombo = WidgetFactory.createComboBox();
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo");
+        schemaCombo = WidgetFactory.createComboBox("schemaCombo");
+        tableCombo = WidgetFactory.createComboBox("tableCombo");
 
         combosGroup = new TableSelectionCombosGroup(
                 connectionsCombo, schemaCombo, tableCombo);

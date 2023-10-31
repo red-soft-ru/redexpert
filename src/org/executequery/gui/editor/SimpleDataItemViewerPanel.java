@@ -101,7 +101,7 @@ public class SimpleDataItemViewerPanel extends DefaultActionButtonsPanel {
 
     private JButton create(String text, String actionCommand) {
 
-        JButton button = WidgetFactory.createButton(text);
+        JButton button = WidgetFactory.createButton(actionCommand + "Button", text);
         button.setActionCommand(actionCommand);
         button.addActionListener(this);
 

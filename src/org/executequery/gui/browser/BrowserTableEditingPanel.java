@@ -1585,7 +1585,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             sqlSecurityComboBox.setMinimumSize(new Dimension(300, 0));
 
             tablespaceComboModel = new DynamicComboBoxModel(new Vector<>());
-            tablespaceComboBox = WidgetFactory.createComboBox(tablespaceComboModel);
+            tablespaceComboBox = WidgetFactory.createComboBox("tablespaceComboBox", tablespaceComboModel);
             tablespaceComboBox.setMinimumSize(new Dimension(300, 0));
 
             externalCheckBox = new JCheckBox(bundledString("externalCheckBox"));

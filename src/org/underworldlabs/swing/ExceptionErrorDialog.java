@@ -142,8 +142,8 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             errorIcon = UIManager.getIcon("OptionPane.warningIcon");
         }
 
-        closeButton = WidgetFactory.createButton(this, Bundles.getCommon("close.button"));
-        showStackButton = WidgetFactory.createButton(this, bundleString("ShowStackTrace"));
+        closeButton = WidgetFactory.createButton("closeButton", this, Bundles.getCommon("close.button"));
+        showStackButton = WidgetFactory.createButton("showStackButton", this, bundleString("ShowStackTrace"));
 
         // format the text
         StringBuilder sb = new StringBuilder();

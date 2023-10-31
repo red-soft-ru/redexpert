@@ -212,12 +212,12 @@ public class TableSelectionPanel extends ActionPanel
 
     private JComboBox createSchemasCombo() {
 
-        return comboBoxForModel(new DynamicComboBoxModel());
+        return comboBoxForModel("schemaCombo", new DynamicComboBoxModel());
     }
 
     private JComboBox createTablesCombo() {
 
-        return comboBoxForModel(new DynamicComboBoxModel());
+        return comboBoxForModel("tableCombo", new DynamicComboBoxModel());
     }
 
     private JComboBox createConnectionsCombo() {
@@ -233,15 +233,15 @@ public class TableSelectionPanel extends ActionPanel
 
         ComboBoxModel model = new DynamicComboBoxModel(hosts);
 
-        JComboBox comboBox = comboBoxForModel(model);
+        JComboBox comboBox = comboBoxForModel("connectionCombo", model);
         comboBox.setEnabled(true);
 
         return comboBox;
     }
 
-    private JComboBox comboBoxForModel(ComboBoxModel model) {
+    private JComboBox comboBoxForModel(String name, ComboBoxModel model) {
 
-        JComboBox comboBox = WidgetFactory.createComboBox(model);
+        JComboBox comboBox = WidgetFactory.createComboBox(name, model);
         comboBox.addItemListener(this);
         comboBox.setEnabled(false);
 

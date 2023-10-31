@@ -106,10 +106,10 @@ public class DriversPanel extends AbstractFormObjectViewPanel
 
         jarPathListModel = new DefaultListModel();
 
-        nameField = WidgetFactory.createTextField();
-        descField = WidgetFactory.createTextField();
+        nameField = WidgetFactory.createTextField("nameField");
+        descField = WidgetFactory.createTextField("descField");
         jarPathList = new JList(jarPathListModel);
-        classField = WidgetFactory.createTextField();
+        classField = WidgetFactory.createTextField("classField");
 
         nameField.addFocusListener(new DriverNameFieldListener(this));
 
@@ -129,11 +129,11 @@ public class DriversPanel extends AbstractFormObjectViewPanel
         _databases.insertElementAt(new DatabaseDefinition(
                 DatabaseDefinition.INVALID_DATABASE_ID, "Select..."), 0);
 
-        databaseNameCombo = WidgetFactory.createComboBox(_databases);
+        databaseNameCombo = WidgetFactory.createComboBox("databaseNameCombo", _databases);
         databaseNameCombo.addItemListener(this);
 
         urlComboModel = new DynamicComboBoxModel();
-        driverUrlCombo = WidgetFactory.createComboBox(urlComboModel);
+        driverUrlCombo = WidgetFactory.createComboBox("driverUrlCombo", urlComboModel);
         driverUrlCombo.setEditable(true);
 
         JPanel base = new TextFieldPanel(new GridBagLayout());

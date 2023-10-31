@@ -149,8 +149,8 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
                 bundleString("Plain"), bundleString("Italic"),
                 bundleString("Bold"), bundleString("Bold-Italic")
         };
-        tableNameCombo = WidgetFactory.createComboBox(fontStyles);
-        columnNameCombo = WidgetFactory.createComboBox(fontStyles);
+        tableNameCombo = WidgetFactory.createComboBox("tableNameCombo", fontStyles);
+        columnNameCombo = WidgetFactory.createComboBox("columnNameCombo", fontStyles);
 
         Dimension comboDim = new Dimension(90, 20);
         tableNameCombo.setPreferredSize(comboDim);

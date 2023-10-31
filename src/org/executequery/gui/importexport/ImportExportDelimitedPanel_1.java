@@ -115,7 +115,7 @@ public class ImportExportDelimitedPanel_1 extends JPanel {
         // combo boxes
         Vector connections = ConnectionManager.getActiveConnections();
         connectionsModel = new DynamicComboBoxModel(connections);
-        connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", connectionsModel);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy++;

@@ -1,15 +1,14 @@
 package org.executequery.gui.browser;
 
+import biz.redsoft.IFBStatisticManager;
 import org.executequery.base.TabView;
-import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.browser.managment.AbstractServiceManagerPanel;
 import org.executequery.localization.Bundles;
 
-import javax.swing.*;
-
-public class DatabaseStatisticPanel extends JPanel implements TabView {
+public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implements TabView {
     public static final String TITLE = Bundles.get(DatabaseStatisticPanel.class, "title");
-    JTabbedPane tabbedPane;
-    private JComboBox<DatabaseConnection> databaseBox;
+    private IFBStatisticManager statisticManager;
+
 
     @Override
     public boolean tabViewClosing() {
@@ -24,5 +23,30 @@ public class DatabaseStatisticPanel extends JPanel implements TabView {
     @Override
     public boolean tabViewDeselected() {
         return true;
+    }
+
+    @Override
+    protected void initOtherComponents() {
+
+    }
+
+    @Override
+    protected void setEnableElements() {
+
+    }
+
+    @Override
+    protected void changeDatabaseConnection() {
+
+    }
+
+    @Override
+    protected void arrangeComponents() {
+
+    }
+
+    @Override
+    protected void postInitActions() {
+
     }
 }

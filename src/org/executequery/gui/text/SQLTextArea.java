@@ -31,10 +31,7 @@ import javax.swing.event.*;
 import javax.swing.text.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.print.Printable;
 import java.util.*;
 import java.util.List;
@@ -334,6 +331,13 @@ public class SQLTextArea extends RSyntaxTextArea
         });
 
         addKeyListener(this);
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                if (getLineWrap())
+                    updateLineBorder();
+            }
+        });
         setEditorPreferences();
     }
 

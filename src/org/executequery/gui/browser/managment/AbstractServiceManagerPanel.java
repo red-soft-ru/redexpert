@@ -47,6 +47,8 @@ public abstract class AbstractServiceManagerPanel extends AbstractPanel {
 
     protected JPanel connectionPanel;
 
+    protected JCheckBox parseBox;
+
     public AbstractServiceManagerPanel() {
         super();
     }
@@ -134,6 +136,8 @@ public abstract class AbstractServiceManagerPanel extends AbstractPanel {
                 changeDatabaseConnection();
             }
         });
+        parseBox = WidgetFactory.createCheckBox("parseCheckBox", bundleString("parseTraceToGrid"));
+        parseBox.setSelected(true);
         tabPane = new JTabbedPane();
         connectionPanel = new JPanel();
         initOtherComponents();
@@ -179,6 +183,19 @@ public abstract class AbstractServiceManagerPanel extends AbstractPanel {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public class ServiceOutputStream extends PipedOutputStream {
+        @Override
+        public void write(int b) throws IOException {
+            fileLog.write(b);
+            super.write(b);
+        }
+
+        public void close() throws IOException {
+            fileLog.close();
+            super.close();
         }
     }
 }

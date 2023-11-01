@@ -128,6 +128,19 @@ public final class WidgetFactory {
         return checkBox;
     }
 
+    public static JTabbedPane createTabbedPane(String name) {
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.setName(name);
+        return tabbedPane;
+    }
+
+    public static JPanel createPanel(String name) {
+        JPanel panel = new JPanel();
+        panel.setName(name);
+        return panel;
+    }
+
+    @Deprecated /*use GridBagHelper.addLabelFieldPair instead this method*/
     public static void addLabelFieldPair(JPanel panel, String label,
                                          JComponent field, GridBagConstraints gbc) {
 

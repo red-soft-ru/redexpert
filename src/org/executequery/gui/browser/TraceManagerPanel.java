@@ -60,7 +60,6 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
     private SessionManagerPanel sessionManagerPanel;
     private BuildConfigurationPanel confPanel;
     private int currentSessionId;
-    private JCheckBox parseBox;
     ListSelectionPanel columnsCheckPanel;
 
     private void initTraceManager(DatabaseConnection dc) {
@@ -176,8 +175,6 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         openFileLog = new JButton("...");
         fileConfField = new JTextField();
         openFileLogField = new JTextField();
-        parseBox = new JCheckBox(bundleString("parseTraceToGrid"));
-        parseBox.setSelected(true);
 
         useBuildConfBox = new JCheckBox(bundleString("UseConfigFile"));
         useBuildConfBox.setSelected(true);
@@ -284,7 +281,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                             }
                         }
                         if (fileLog != null) {
-                            outputStream = new TraceOutputStream();
+                            outputStream = new ServiceOutputStream();
                         } else {
                             GUIUtilities.displayErrorMessage("File is empty");
                             return;
@@ -528,16 +525,5 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         SESSION_INFO
     }
 
-    class TraceOutputStream extends PipedOutputStream {
-        @Override
-        public void write(int b) throws IOException {
-            fileLog.write(b);
-            super.write(b);
-        }
 
-        public void close() throws IOException {
-            fileLog.close();
-            super.close();
-        }
-    }
 }

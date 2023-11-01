@@ -246,16 +246,6 @@ test:windows:
    - start-process "${PYTHON}" "-m pip install beautifulsoup4" -wait -nonewwindow
    - start-process "${PYTHON}" ".\download_dbms.py ${DBMS} ${ARCH}" -wait -nonewwindow
    - powershell -ExecutionPolicy ByPass -file install_dbms.ps1
-   - cd $DIST\bin
-   - |
-      if ($env:ARCH -eq "x86_64")
-      {
-        start-process .\RedExpert64.exe
-      }
-      else
-      {
-        start-process .\RedExpert.exe
-      }
   script:
    - cd $TEST_DIR\RedExpert-$env:VERSION\ci
    - powershell -ExecutionPolicy ByPass -file test.ps1

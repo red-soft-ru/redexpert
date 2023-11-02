@@ -152,6 +152,44 @@
 
     <preInstallationActionList>
 
+        <validatedActionGroup>
+            <severity>warning</severity>
+            <showMessageOnError>0</showMessageOnError>
+            <text>${msg(Installer.Parameter.warning_app_already_run)}</text>
+            <type>abortRetry</type>
+            <actionList>
+                <if>
+                    <conditionRuleEvaluationLogic>or</conditionRuleEvaluationLogic>
+                    <actionList>
+                        <throwError>
+                            <text>${msg(Installer.Parameter.warning_app_already_run)}</text>
+                        </throwError>
+                    </actionList>
+                    <conditionRuleList>
+                        <processTest>
+                            <logic>is_running</logic>
+                            <name>RedExpert64</name>
+                        </processTest>
+                        <processTest>
+                            <logic>is_running</logic>
+                            <name>RedExpert.exe</name>
+                        </processTest>
+                        <processTest>
+                            <logic>is_running</logic>
+                            <name>RedExpert64.exe</name>
+                        </processTest>
+                        <processTest>
+                            <logic>is_running</logic>
+                            <name>RedExpert</name>
+                        </processTest>
+                    </conditionRuleList>
+                </if>
+            </actionList>
+            <onErrorActionList>
+                <exit/>
+            </onErrorActionList>
+        </validatedActionGroup>
+
         <setInstallerVariableFromRegEx>
             <name>settings_dir</name>
             <pattern>\$HOME</pattern>

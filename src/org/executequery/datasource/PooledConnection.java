@@ -77,9 +77,9 @@ public class PooledConnection implements Connection {
 
     private List<PooledConnectionListener> listeners;
 
-    private final Timer timer;
+    private Timer timer;
     private Timer timerDelay;
-    private final TimerTask task;
+    private TimerTask task;
     private final int timeoutShutdown;
     private PooledStatement lastStatement;
     private final boolean timerCheckConnection;
@@ -90,7 +90,6 @@ public class PooledConnection implements Connection {
      * specified connection as the source.
      *
      * @param realConnection real java.sql.Connection
-     *
      */
     public PooledConnection(Connection realConnection, DatabaseConnection databaseConnection) {
         this(realConnection, databaseConnection, false,false);
@@ -105,32 +104,38 @@ public class PooledConnection implements Connection {
      *
      * @param realConnection real java.sql.Connection
      */
-    public PooledConnection(Connection realConnection, DatabaseConnection databaseConnection, boolean closeOnReturn,boolean timerCheckConnection) {
+    public PooledConnection(
+            Connection realConnection, DatabaseConnection databaseConnection,
+            boolean closeOnReturn, boolean timerCheckConnection) {
+
         this.databaseConnection = databaseConnection;
-        this.timerCheckConnection=timerCheckConnection;
+        this.timerCheckConnection = timerCheckConnection;
+
         mutex = new Semaphore(1);
         useCount = 0;
         timeoutShutdown = SystemProperties.getIntProperty("user", "connection.shutdown.timeout");
+
         this.realConnection = realConnection;
         this.closeOnReturn = closeOnReturn;
-        timer = new Timer();
-        timerDelay = new Timer();
-        task = new TimerTask() {
-            @Override
-            public void run() {
-                checkConnectionToServer();
-            }
-        };
-        if(this.timerCheckConnection)
+
+        if (this.timerCheckConnection) {
+
+            timer = new Timer("check '" + databaseConnection.getName() + "' connection Timer");
+            timerDelay = new Timer();
+            task = new TimerTask() {
+                @Override
+                public void run() {
+                    checkConnectionToServer();
+                }
+            };
             timer.schedule(task, timeoutShutdown);
+
+        }
+
         try {
-
             originalAutoCommit = realConnection.getAutoCommit();
-
         } catch (SQLException e) {
-
-            // default to true on dump
-            originalAutoCommit = true;
+            originalAutoCommit = true; // default to true on dump
         }
 
     }
@@ -261,13 +266,13 @@ public class PooledConnection implements Connection {
     public void checkConnectionToServer()
     {
         try {
-            IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(realConnection, "FBDatabasePerformanceImpl");
+            IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), realConnection, "FBDatabasePerformanceImpl");
             db.setConnection(realConnection);
             TimerTask task = new TimerTask() {
                 @Override
                 public void run() {
                     if (databaseConnection.isConnected()) {
-                        if (GUIUtilities.displayConfirmDialog("The server is not responding. do you want to close the connection?") == JOptionPane.OK_OPTION) {
+                        if (GUIUtilities.displayConfirmDialog("The server is not responding. Do you want to close the connection?") == JOptionPane.OK_OPTION) {
                             closeDatabaseConnection();
                             timerDelay.cancel();
                         }
@@ -275,7 +280,7 @@ public class PooledConnection implements Connection {
                         timerDelay.cancel();
                 }
             };
-            timerDelay = new Timer();
+            timerDelay = new Timer("check "+databaseConnection.getName()+ "conToServer");
             /*StackTraceElement[] stack = Thread.currentThread().getStackTrace();
             Log.info("---------------------------------Start check----------------------------------\n\n\n");
             for (int i = 0; i < stack.length - 2; i++)
@@ -291,7 +296,7 @@ public class PooledConnection implements Connection {
             timerDelay.cancel();
         } catch (ClassNotFoundException e) {
             if (databaseConnection.isConnected()) {
-                if (GUIUtilities.displayConfirmDialog("The server is not responding. do you want to close the connection?") == JOptionPane.OK_OPTION) {
+                if (GUIUtilities.displayConfirmDialog("The server is not responding. Do you want to close the connection?") == JOptionPane.OK_OPTION) {
                     closeDatabaseConnection();
                 }
             }

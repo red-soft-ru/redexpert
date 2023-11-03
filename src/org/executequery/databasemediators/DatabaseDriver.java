@@ -24,10 +24,6 @@ import java.io.Serializable;
 
 public interface DatabaseDriver extends Serializable {
 
-    long SUN_ODBC_ID = 9999999999999l;
-
-    String SUN_ODBC_DRIVER = "sun.jdbc.odbc.JdbcOdbcDriver";
-
     String getName();
 
     void setName(String name);
@@ -56,21 +52,10 @@ public interface DatabaseDriver extends Serializable {
 
     void setId(long id);
 
-    boolean isDefaultSunOdbc();
-
     boolean isIdValid();
 
     boolean isDatabaseTypeValid();
 
+    int getMajorVersion();
+
 }
-
-
-
-
-
-
-
-
-
-
-

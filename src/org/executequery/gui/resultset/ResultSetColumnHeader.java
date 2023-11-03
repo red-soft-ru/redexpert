@@ -21,37 +21,44 @@
 package org.executequery.gui.resultset;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.databaseobjects.Types;
 
+import javax.swing.*;
 import java.util.UUID;
 
 public class ResultSetColumnHeader {
 
-    private String id;
-    private int originalIndex;
-    private String label;
-    private String name;
+    private final String id;
+    private final int originalIndex;
+    private final String label;
+    private final String name;
     private boolean visible;
-    private int dataType;
-    private String dataTypeName;
+    private final int dataType;
+    private final String dataTypeName;
     private boolean editable;
+    private int colWidth;
+    private int displaySize;
+
 
     public ResultSetColumnHeader(int index, String label) {
         this(index, label, label);
     }
 
     public ResultSetColumnHeader(int index, String label, String name) {
-        this(index, label, name, -1, null);
+        this(index, label, name, -1, null, 0);
     }
 
-    public ResultSetColumnHeader(int index, String label, String name, int dataType, String dataTypeName) {
+    public ResultSetColumnHeader(int index, String label, String name, int dataType, String dataTypeName, int displaySize) {
         this.id = UUID.randomUUID().toString();
         this.originalIndex = index;
         this.label = label;
         this.name = name;
-        this.dataType = dataType;
+        this.dataType = (dataTypeName != null && dataTypeName.toLowerCase().contains("int128")) ? Types.INT128 : dataType;
         this.dataTypeName = dataTypeName;
         this.visible = true;
         this.editable = true;
+        this.colWidth = (int) (new JLabel(label).getPreferredSize().getWidth() + 30);
+        this.displaySize = displaySize;
     }
 
     public String getId() {
@@ -103,6 +110,21 @@ public class ResultSetColumnHeader {
         return label + " [ " + name + " ]";
     }
 
+    public int getColWidth() {
+        return colWidth;
+    }
+
+    public void setColWidth(int colWidth) {
+        this.colWidth = colWidth;
+    }
+
+    public int getDisplaySize() {
+        return displaySize;
+    }
+
+    public void setDisplaySize(int displaySize) {
+        this.displaySize = displaySize;
+    }
 }
 
 

@@ -20,16 +20,18 @@
 
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.FunctionArgument;
+import org.executequery.databaseobjects.Parameter;
+import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
-import java.sql.*;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,10 +48,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
      */
     private ArrayList<FunctionArgument> arguments;
 
-    /**
-     * function sql
-     */
-    private String functionSourceCode;
+    private boolean deterministic;
 
     /**
      * Creates a new instance of DefaultDatabaseFunction
@@ -70,12 +69,19 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
+    }
+
+    FunctionArgument returnArgument;
+
+    @Override
+    protected String prefixLabel() {
+        return FA;
     }
 
     /**
@@ -97,74 +103,6 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         return arguments;
     }
 
-
-
-    void loadFunctionArguments() {
-        ResultSet rs = null;
-        try {
-
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-            arguments = new ArrayList<>();
-
-
-            rs = getFunctionArguments(getName());
-
-            while (rs.next()) {
-                FunctionArgument fp = new FunctionArgument(rs.getString(4),
-                        DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(6), rs.getInt(9)),
-                        rs.getInt(7),
-                        rs.getInt(18),
-                        rs.getInt(8),
-                        rs.getInt(9),
-                        rs.getInt(14),
-                        rs.getInt("AM"),
-                        rs.getString("RN"),
-                        rs.getString("FN")
-                );
-                int return_arg = rs.getInt("RETURN_ARGUMENT");
-                if (return_arg == fp.getPosition())
-                    fp.setType(DatabaseMetaData.procedureColumnReturn);
-                else fp.setType(DatabaseMetaData.procedureColumnIn);
-                String domain = rs.getString("FS");
-                if (domain != null && !domain.startsWith("RDB$"))
-                    fp.setDomain(domain.trim());
-                fp.setNullable(rs.getInt("null_flag"));
-                if (fp.getDataType() == Types.LONGVARBINARY ||
-                        fp.getDataType() == Types.LONGVARCHAR ||
-                        fp.getDataType() == Types.BLOB) {
-                    fp.setSize(rs.getInt("segment_length"));
-                }
-                String characterSet = rs.getString("character_set_name");
-                if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
-                    fp.setEncoding(characterSet.trim());
-                fp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(6), fp.getSubType(), fp.getScale()));
-                fp.setDefaultValue(rs.getString("DEFAULT_SOURCE"));
-                arguments.add(fp);
-                if (functionSourceCode == null || functionSourceCode.isEmpty())
-                    functionSourceCode = rs.getString(2);
-                if ((entryPoint == null || entryPoint.isEmpty())) {
-                    if (rs.getString("ENTRY_POINT") != null)
-                        entryPoint = rs.getString("ENTRY_POINT").trim();
-                    else entryPoint = "";
-                }
-                if ((engine == null || engine.isEmpty())) {
-                    if (rs.getString("ENGINE") != null)
-                        engine = rs.getString("ENGINE").trim();
-                    else engine = "";
-                }
-
-                setRemarks(rs.getString(3));
-            }
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-
-        } finally {
-
-            releaseResources(rs, this.getMetaTagParent().getHost().getConnection());
-        }
-    }
     /**
      * Returns this object's arguments as an array.
      */
@@ -181,105 +119,156 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
      *
      * @return the result set
      */
-    private ResultSet getFunctionArguments(String name) throws SQLException {
-
-        Connection connection = this.getMetaTagParent().getHost().getConnection();
-        Statement statement = connection.createStatement();
-
-        String sql = "select fnc.rdb$function_name,\n" +
-                "fnc.rdb$function_source,\n" +
-                "fnc.rdb$description,\n" +
-                "fa.rdb$argument_name,\n" +
-                "fs.rdb$field_name,\n" +
-                "fs.rdb$field_type,\n" +
-                "fs.rdb$field_length,\n" +
-                "fs.rdb$field_scale,\n" +
-                "fs.rdb$field_sub_type,\n" +
-                "fs.rdb$segment_length as segment_length,\n" +
-                "fs.rdb$dimensions,\n" +
-                "cr.rdb$character_set_name as character_set_name,\n" +
-                "co.rdb$collation_name,\n" +
-                "fa.rdb$argument_position,\n" +
-                "fs.rdb$character_length,\n" +
-                "fa.rdb$description,\n" +
-                "fa.rdb$default_source as DEFAULT_SOURCE,\n" +
-                "fs.rdb$field_precision,\n" +
-                "fa.rdb$argument_mechanism as AM,\n" +
-                "fa.rdb$field_source as FS,\n" +
-                "fs.rdb$default_source,\n" +
-                "fa.rdb$null_flag as null_flag,\n" +
-                "fa.rdb$relation_name as RN,\n" +
-                "fa.rdb$field_name as FN,\n" +
-                "co2.rdb$collation_name,\n" +
-                "cr.rdb$default_collate_name,\n" +
-                "fnc.rdb$return_argument as RETURN_ARGUMENT,\n" +
-                "fa.rdb$argument_position,\n" +
-                "fnc.rdb$deterministic_flag,\n" +
-                "fnc.rdb$engine_name as ENGINE,\n" +
-                "fnc.rdb$entrypoint as ENTRY_POINT\n" +
-                "from rdb$functions fnc\n" +
-                "left join rdb$function_arguments fa on fa.rdb$function_name = fnc.rdb$function_name\n" +
-                "and (fa.rdb$package_name is null)\n" +
-                "left join rdb$fields fs on fs.rdb$field_name = fa.rdb$field_source\n" +
-                "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id\n" +
-                "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id))\n" +
-                "left join rdb$collations co2 on ((fa.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
-                "where fnc.rdb$function_name = '" + name + "'\n" +
-                "and (fnc.rdb$package_name is null)\n" +
-                "order by fa.rdb$argument_position";
-
-        return statement.executeQuery(sql);
-    }
-
-    public String getFunctionSourceCode() {
-        return functionSourceCode;
-    }
-
+    @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getFunctionSourceCode(), getEntryPoint(), getEngine(), getRemarks(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateFunction(
+                getName(), getFunctionArguments(), getSourceCode(),
+                getEntryPoint(), getEngine(), getSqlSecurity(), getRemarks(),
+                false, true, isDeterministic(), getHost().getDatabaseConnection());
     }
 
-    protected void getObjectInfo() {
-        try {
-            loadFunctionArguments();
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Error loading info about Function", e);
-        } finally {
-            setMarkedForReload(false);
-        }
-
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        try {
-            ResultSet rs = querySender.getResultSet(getDescriptionQuery()).getResultSet();
-            setInfoFromResultSet(rs);
-        } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
-        } finally {
-            querySender.releaseResources();
-            setMarkedForReload(false);
-        }
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("FUNCTION", getName(), getHost().getDatabaseConnection());
     }
 
-    protected String getDescriptionQuery() {
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(),
+                getEngine(), getSqlSecurity(), getRemarks(), true, Comparer.isCommentsNeed(),
+                isDeterministic(), getHost().getDatabaseConnection());
+    }
 
-        String query = "select r.rdb$description\n" +
-                "from rdb$relations r\n" +
-                "where r.rdb$relation_name = '" + getName() + "'";
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
+    }
 
-        return query;
+    protected static final String FA = "FA_";
+    protected static final String PROCEDURE_SOURCE = "FUNCTION_SOURCE";
+    protected static final String PARAMETER_NAME = "ARGUMENT_NAME";
+    protected static final String PARAMETER_NUMBER = "ARGUMENT_POSITION";
+    protected static final String PARAMETER_MECHANISM = "ARGUMENT_MECHANISM";
+    protected static final String DETERMINISTIC_FLAG = "DETERMINISTIC_FLAG";
+    protected static final String RETURN_ARGUMENT = "RETURN_ARGUMENT";
+
+
+    @Override
+    protected String getFieldName() {
+        return "FUNCTION_NAME";
+    }
+
+    @Override
+    protected Table getMainTable() {
+        return Table.createTable("RDB$FUNCTIONS", "FNC");
+    }
+
+    @Override
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
+        if (!(this instanceof DefaultDatabaseUDF))
+            sb.appendCondition(Condition.createCondition(Field.createField(getMainTable(), "MODULE_NAME"), "IS", "NULL"));
+        return sb;
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = SelectBuilder.createSelectBuilder(getHost().getDatabaseConnection());
+        Table functions = getMainTable();
+        Table arguments = Table.createTable("RDB$FUNCTION_ARGUMENTS", "FA");
+        Table fields = Table.createTable("RDB$FIELDS", "F");
+        Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CR");
+        Table collations1 = Table.createTable("RDB$COLLATIONS", "CO1");
+        Table collations2 = Table.createTable("RDB$COLLATIONS", "CO2");
+        sb.appendFields(functions, getFieldName(), PROCEDURE_SOURCE, DESCRIPTION, DETERMINISTIC_FLAG, RETURN_ARGUMENT);
+        sb.appendFields(functions, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
+        sb.appendField(buildSqlSecurityField(functions));
+        sb.appendFields(FA, arguments, PARAMETER_NAME, PARAMETER_NUMBER, FIELD_SOURCE, DESCRIPTION, PARAMETER_MECHANISM, DEFAULT_SOURCE, RELATION_NAME, FIELD_NAME, NULL_FLAG);
+        sb.appendFields(fields, FIELD_NAME, FIELD_TYPE, FIELD_LENGTH, FIELD_SCALE, FIELD_SUB_TYPE, SEGMENT_LENGTH, DIMENSIONS, FIELD_PRECISION, DEFAULT_SOURCE);
+        sb.appendFields(charsets, CHARACTER_SET_NAME, DEFAULT_COLLATE_NAME);
+        sb.appendField(Field.createField(fields, "CHARACTER_LENGTH").setAlias(CHARACTER_LENGTH));
+        sb.appendField(Field.createField(collations1, COLLATION_NAME).setAlias("CO1_" + COLLATION_NAME));
+        sb.appendField(Field.createField(collations2, COLLATION_NAME).setAlias("CO2_" + COLLATION_NAME));
+
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(functions, getFieldName()),
+                Field.createField(arguments, getFieldName())).setCondition(Condition.createCondition(Field.createField(arguments, "PACKAGE_NAME"), "IS", "NULL")));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, FIELD_SOURCE), Field.createField(fields, FIELD_NAME)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, "COLLATION_ID"), Field.createField(collations1, "COLLATION_ID"))
+                .appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(collations1, CHARACTER_SET_ID)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, "COLLATION_ID"), Field.createField(collations2, "COLLATION_ID"))
+                .appendFields(Field.createField(fields, CHARACTER_SET_ID), Field.createField(collations2, CHARACTER_SET_ID)));
+        sb.appendCondition(Condition.createCondition(Field.createField(functions, "PACKAGE_NAME"), "IS", "NULL"));
+        sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(arguments, PARAMETER_NUMBER).getFieldTable());
+        return sb;
+    }
+
+    @Override
+    protected String mechanismLabel() {
+        return PARAMETER_MECHANISM;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        String parameterName = rs.getString(FA + PARAMETER_NAME);
+        if (parameterName != null)
+            parameterName = parameterName.trim();
+        FunctionArgument fp = new FunctionArgument(parameterName);
+        fp = (FunctionArgument) fillParameter(fp, rs);
+        arguments.add(fp);
+        if (first) {
+            sourceCode = getFromResultSet(rs, PROCEDURE_SOURCE);
+            entryPoint = getFromResultSet(rs, ENTRYPOINT);
+            engine = getFromResultSet(rs, ENGINE_NAME);
+            setRemarks(getFromResultSet(rs, DESCRIPTION));
+            setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+            setDeterministic(rs.getInt(DETERMINISTIC_FLAG) == 1);
+        }
+        return null;
+    }
+
+    public FunctionArgument getReturnArgument() {
+        checkOnReload(returnArgument);
+        return returnArgument;
+    }
+
+    protected Parameter fillParameter(Parameter pp, ResultSet rs) throws SQLException {
+        pp = super.fillParameter(pp, rs);
+        int return_arg = rs.getInt(RETURN_ARGUMENT);
+        if (return_arg == pp.getPosition()) {
+            pp.setType(DatabaseMetaData.procedureColumnReturn);
+            returnArgument = (FunctionArgument) pp;
+        } else pp.setType(DatabaseMetaData.procedureColumnIn);
+        return pp;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+        arguments = new ArrayList<>();
+    }
+
+    @Override
+    public void finishLoadingInfo() {
 
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) {
+    public boolean isAnyRowsResultSet() {
+        return true;
+    }
 
-        try {
-            if (rs.next())
-                setRemarks(rs.getString(1));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public boolean isDeterministic() {
+        return deterministic;
+    }
 
+    public void setDeterministic(boolean deterministic) {
+        this.deterministic = deterministic;
+    }
+
+    @Override
+    protected String positionLabel() {
+        return PARAMETER_NUMBER;
     }
 }
 

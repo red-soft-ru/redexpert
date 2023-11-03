@@ -1,53 +1,919 @@
 package org.executequery.gui.browser;
 
+import org.executequery.GUIUtilities;
+import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.datasource.ConnectionManager;
+import org.executequery.datasource.SimpleDataSource;
+import org.executequery.gui.LoggingOutputPanel;
+import org.executequery.gui.browser.comparer.ComparedObject;
 import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.gui.editor.QueryEditor;
+import org.executequery.gui.text.DifferenceSqlTextPanel;
+import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.BackgroundProgressDialog;
+import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
+import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class ComparerDBPanel extends JPanel {
+public class ComparerDBPanel extends JPanel implements TabView {
+
+    public static final String TITLE = bundleString("ComparerDB");
+    public static final String FRAME_ICON = "ComparerDB_16.png";
+
+    private static final int CHECK_CREATE = 0;
+    private static final int CHECK_ALTER = 1;
+    private static final int CHECK_DROP = 2;
+    private static final int IGNORE_COMMENTS = 3;
+    private static final int IGNORE_COMPUTED_FIELDS = 4;
+    private static final int IGNORE_FIELDS_POSITIONS = 5;
+    private static final int IGNORE_PK = 50;
+    private static final int IGNORE_FK = IGNORE_PK + 1;
+    private static final int IGNORE_UK = IGNORE_FK + 1;
+    private static final int IGNORE_CK = IGNORE_UK + 1;
+    private static final int STUBS = -100;
+
+    private static boolean isComparing = false;
+
+    private Comparer comparer;
+    private List<DatabaseConnection> databaseConnectionList;
+    private List<Integer> scriptGenerationOrder;
+    private List<ComparedObject> comparedObjectList;
+    private boolean isScriptGeneratorOrderReversed;
+
+    // --- panel components ---
+
+    private JComboBox dbMasterComboBox;
+    private JComboBox dbTargetComboBox;
+    private JButton compareButton;
+    private JButton saveScriptButton;
+    private JButton executeScriptButton;
+    private JButton selectAllAttributesButton;
+    private JButton selectAllPropertiesButton;
+    private JButton switchTargetSourceButton;
+
+    private JTabbedPane tabPane;
+    private LoggingOutputPanel loggingOutputPanel;
+    private SimpleSqlTextPanel sqlTextPanel;
+    private DifferenceSqlTextPanel differenceSqlTextPanel;
+    private JTree dbComponentsTree;
+    private ComparerTreeNode rootTreeNode;
+
+    private JProgressBar progressBar;
+    private BackgroundProgressDialog progressDialog;
+
+    private Map<Integer, JCheckBox> attributesCheckBoxMap;
+    private Map<Integer, JCheckBox> propertiesCheckBoxMap;
+
+    private StringBuilder settingScriptProps;
+
+    // ---
 
     public ComparerDBPanel() {
-        initComponents();
-        jTextArea1.setEditable(false);
-        jTextArea1.setLineWrap(true);
-        //jTextArea2.setLineWrap(true);
 
-        jTextArea1.append("1st DB is an example - 2nd DB will be modified" + '\n'
-                + "Start with connecting to DBs");
-        dcs = new ArrayList<DatabaseConnection>();
-        dbBox1.removeAllItems();
-        dbBox2.removeAllItems();
-        List<DatabaseConnection> connections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
+        init();
+
+        List<DatabaseConnection> connections =
+                ((DatabaseConnectionRepository) Objects.requireNonNull(
+                        RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
+
         for (DatabaseConnection dc : connections) {
-            if (dc.isConnected()) {
-                dcs.add(dc);
-                dbBox1.addItem(dc.getName());
-                dbBox2.addItem(dc.getName());
+            databaseConnectionList.add(dc);
+            dbTargetComboBox.addItem(dc.getName());
+            dbMasterComboBox.addItem(dc.getName());
+        }
+
+    }
+
+    private void init() {
+
+        databaseConnectionList = new ArrayList<>();
+        comparedObjectList = new ArrayList<>();
+
+        // --- script generation order defining ---
+
+        scriptGenerationOrder = new LinkedList<>();
+        isScriptGeneratorOrderReversed = false;
+
+        scriptGenerationOrder.add(NamedObject.COLLATION);
+        scriptGenerationOrder.add(NamedObject.DOMAIN);
+        scriptGenerationOrder.add(NamedObject.TABLESPACE);
+        scriptGenerationOrder.add(NamedObject.TABLE);
+        scriptGenerationOrder.add(NamedObject.GLOBAL_TEMPORARY);
+        scriptGenerationOrder.add(NamedObject.VIEW);
+        scriptGenerationOrder.add(NamedObject.INDEX);
+        scriptGenerationOrder.add(NamedObject.SEQUENCE);
+        scriptGenerationOrder.add(NamedObject.EXCEPTION);
+        scriptGenerationOrder.add(NamedObject.ROLE);
+        scriptGenerationOrder.add(NamedObject.USER);
+        scriptGenerationOrder.add(STUBS);
+        scriptGenerationOrder.add(NamedObject.FUNCTION);
+        scriptGenerationOrder.add(NamedObject.PROCEDURE);
+        scriptGenerationOrder.add(NamedObject.JOB);
+        scriptGenerationOrder.add(NamedObject.UDF);
+        scriptGenerationOrder.add(NamedObject.TRIGGER);
+        scriptGenerationOrder.add(NamedObject.DDL_TRIGGER);
+        scriptGenerationOrder.add(NamedObject.DATABASE_TRIGGER);
+        scriptGenerationOrder.add(NamedObject.PACKAGE);
+
+        // --- buttons defining ---
+
+        compareButton = new JButton();
+        compareButton.setText(bundleString("CompareButton"));
+        compareButton.addActionListener(e -> compareDatabase());
+
+        saveScriptButton = new JButton();
+        saveScriptButton.setText(bundleString("SaveScriptButton"));
+        saveScriptButton.addActionListener(e -> saveScript());
+
+        executeScriptButton = new JButton();
+        executeScriptButton.setText(bundleString("ExecuteScriptButton"));
+        executeScriptButton.addActionListener(e -> executeScript());
+
+        selectAllAttributesButton = new JButton();
+        selectAllAttributesButton.setText(bundleString("SelectAllButton"));
+        selectAllAttributesButton.addActionListener(e -> selectAll("attributes"));
+
+        selectAllPropertiesButton = new JButton();
+        selectAllPropertiesButton.setText(bundleString("SelectAllButton"));
+        selectAllPropertiesButton.addActionListener(e -> selectAll("properties"));
+
+        switchTargetSourceButton = new JButton();
+        switchTargetSourceButton.setText("<html><p style=\"font-size:20pt\">&#x21C5;</p>"); // Unicode Character '⇅' (U+21C5)
+        switchTargetSourceButton.addActionListener(e -> switchTargetSource());
+
+        // --- attributes checkBox defining ---
+
+        attributesCheckBoxMap = new HashMap<>();
+        for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++) {
+
+            String checkBoxText = bundleString(NamedObject.META_TYPES_FOR_BUNDLE[objectType]);
+            if (checkBoxText.isEmpty())
+                checkBoxText = Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType]);
+
+            attributesCheckBoxMap.put(objectType, new JCheckBox(checkBoxText));
+        }
+
+        // --- properties checkBox defining ---
+
+        propertiesCheckBoxMap = new LinkedHashMap<>();
+        propertiesCheckBoxMap.put(CHECK_CREATE, new JCheckBox(bundleString("CheckCreate")));
+        propertiesCheckBoxMap.put(CHECK_ALTER, new JCheckBox(bundleString("CheckAlter")));
+        propertiesCheckBoxMap.put(CHECK_DROP, new JCheckBox(bundleString("CheckDrop")));
+        propertiesCheckBoxMap.put(IGNORE_COMMENTS, new JCheckBox(bundleString(("IgnoreComments"))));
+        propertiesCheckBoxMap.put(IGNORE_COMPUTED_FIELDS, new JCheckBox(bundleString(("IgnoreComputed"))));
+        propertiesCheckBoxMap.put(IGNORE_FIELDS_POSITIONS, new JCheckBox(bundleString(("IgnorePositions"))));
+        propertiesCheckBoxMap.put(IGNORE_PK, new JCheckBox(bundleString("IgnorePK")));
+        propertiesCheckBoxMap.put(IGNORE_FK, new JCheckBox(bundleString("IgnoreFK")));
+        propertiesCheckBoxMap.put(IGNORE_UK, new JCheckBox(bundleString("IgnoreUK")));
+        propertiesCheckBoxMap.put(IGNORE_CK, new JCheckBox(bundleString("IgnoreCK")));
+
+        propertiesCheckBoxMap.get(CHECK_CREATE).setSelected(true);
+        propertiesCheckBoxMap.get(CHECK_ALTER).setSelected(true);
+        propertiesCheckBoxMap.get(CHECK_DROP).setSelected(true);
+
+        // --- comboBoxes defining ---
+
+        dbTargetComboBox = new JComboBox<DatabaseConnection>();
+        dbTargetComboBox.removeAllItems();
+
+        dbMasterComboBox = new JComboBox<DatabaseConnection>();
+        dbMasterComboBox.removeAllItems();
+
+        // --- db components tree view ---
+
+        rootTreeNode = new ComparerTreeNode(bundleString("DatabaseChanges"));
+        dbComponentsTree = new JTree(new DefaultTreeModel(rootTreeNode));
+        dbComponentsTree.setCellRenderer(new ComparerTreeCellRenderer());
+        dbComponentsTree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                TreePath selectionPath = dbComponentsTree.getSelectionPath();
+                if (selectionPath != null) {
+
+                    ComparerTreeNode node = (ComparerTreeNode) selectionPath.getLastPathComponent();
+                    comparedObjectList.stream()
+                            .filter(i -> (i.getType() == node.type && i.getName().equals(node.name))).findFirst()
+                            .ifPresent(i -> differenceSqlTextPanel.setTexts(i.getSourceObjectScript(), i.getTargetObjectScript()));
+
+                    if (e.getClickCount() > 1)
+                        goToScript(node);
+
+                }
+            }
+        });
+
+        // --- other components ---
+
+        loggingOutputPanel = new LoggingOutputPanel();
+        loggingOutputPanel.append(bundleString("WelcomeText"));
+
+        progressBar = new JProgressBar();
+        progressBar.setStringPainted(true);
+        progressBar.setMinimum(0);
+
+        sqlTextPanel = new SimpleSqlTextPanel();
+        differenceSqlTextPanel = new DifferenceSqlTextPanel(bundleString("SourceLabel"), bundleString("TargetLabel"));
+
+        // ---
+
+        arrangeComponents();
+    }
+
+    private void arrangeComponents() {
+
+        GridBagHelper gridBagHelper;
+
+        // --- connections selector panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+
+        JPanel connectionsSelectorPanel = new JPanel(new GridBagLayout());
+
+        gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
+                bundleString("CompareDatabaseLabel"), dbTargetComboBox, null);
+        gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
+                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
+
+        // --- connections panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+
+        JPanel connectionsPanel = new JPanel(new GridBagLayout());
+        connectionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ConnectionsLabel")));
+
+        connectionsPanel.add(connectionsSelectorPanel, gridBagHelper.setMaxWeightX().get());
+        connectionsPanel.add(switchTargetSourceButton, gridBagHelper.nextCol().setMinWeightX().fillVertical().get());
+        connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().setWidth(2).fillHorizontally().get());
+
+        // --- attributes panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+
+        JPanel attributesPanel = new JPanel(new GridBagLayout());
+
+        attributesPanel.add(selectAllAttributesButton, gridBagHelper.nextRowFirstCol().setLabelDefault().anchorNorthWest().get());
+        for (JCheckBox checkBox : attributesCheckBoxMap.values())
+            attributesPanel.add(checkBox, gridBagHelper.nextRowFirstCol().get());
+        attributesPanel.add(new JPanel(), gridBagHelper.nextRowFirstCol().setMaxWeightY().spanY().get());
+
+        attributesPanel.add(new JScrollPane());
+
+        JScrollPane attributesPanelWithScrolls = new JScrollPane(attributesPanel,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        attributesPanelWithScrolls.setBorder(BorderFactory.createTitledBorder(bundleString("AttributesLabel")));
+        attributesPanelWithScrolls.setMinimumSize(new Dimension(220, 150));
+
+        // --- properties panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+
+        JPanel propertiesPanel = new JPanel(new GridBagLayout());
+
+        propertiesPanel.add(selectAllPropertiesButton, gridBagHelper.nextRowFirstCol().setLabelDefault().anchorNorthWest().get());
+        for (JCheckBox checkBox : propertiesCheckBoxMap.values())
+            propertiesPanel.add(checkBox, gridBagHelper.nextRowFirstCol().get());
+        propertiesPanel.add(new JPanel(), gridBagHelper.nextRowFirstCol().setMaxWeightY().spanY().get());
+
+        JScrollPane propertiesPanelWithScrolls = new JScrollPane(propertiesPanel,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        propertiesPanelWithScrolls.setBorder(BorderFactory.createTitledBorder(bundleString("PropertiesLabel")));
+        propertiesPanelWithScrolls.setMinimumSize(new Dimension(220, 150));
+
+        // --- SQL panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+
+        JPanel sqlPanel = new JPanel(new GridBagLayout());
+
+        sqlPanel.add(sqlTextPanel, gridBagHelper.setWidth(3).setMaxWeightY().spanX().get());
+        sqlPanel.add(saveScriptButton, gridBagHelper.setLabelDefault().nextRowFirstCol().get());
+        sqlPanel.add(executeScriptButton, gridBagHelper.nextCol().get());
+        sqlPanel.add(new JPanel(), gridBagHelper.nextCol().get());
+
+        // --- view panel ---
+
+        JScrollPane dbComponentsTreePanel = new JScrollPane(dbComponentsTree,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        JSplitPane viewPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        viewPanel.setResizeWeight(0.25);
+        viewPanel.setTopComponent(dbComponentsTreePanel);
+        viewPanel.setBottomComponent(differenceSqlTextPanel);
+
+        // --- tabbed pane ---
+
+        tabPane = new JTabbedPane();
+
+        tabPane.add(bundleString("OutputLabel"), loggingOutputPanel);
+        tabPane.add(bundleString("TreeView"), viewPanel);
+        tabPane.add("SQL", sqlPanel);
+
+        // --- compare panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+
+        JPanel comparePanel = new JPanel(new GridBagLayout());
+
+        comparePanel.add(connectionsPanel, gridBagHelper.setWidth(2).get());
+        comparePanel.add(attributesPanelWithScrolls, gridBagHelper.nextRowFirstCol().setWidth(1).get());
+        comparePanel.add(propertiesPanelWithScrolls, gridBagHelper.nextCol().spanY().get());
+
+        // --- main panel ---
+
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        mainPanel.add(comparePanel, gridBagHelper.setMaxWeightY().get());
+        mainPanel.add(tabPane, gridBagHelper.nextCol().spanX().get());
+        mainPanel.add(progressBar, gridBagHelper.nextRowFirstCol().setMinWeightY().spanX().get());
+
+        // --- layout configure ---
+
+        setLayout(new BorderLayout());
+        add(mainPanel, BorderLayout.CENTER);
+
+    }
+
+    private boolean prepareComparer() {
+
+        DatabaseConnection masterConnection = databaseConnectionList.get(dbMasterComboBox.getSelectedIndex());
+        DatabaseConnection targetConnection = databaseConnectionList.get(dbTargetComboBox.getSelectedIndex());
+
+        try {
+
+            if (!masterConnection.isConnected())
+                ConnectionManager.createDataSource(masterConnection);
+            if (!targetConnection.isConnected())
+                ConnectionManager.createDataSource(targetConnection);
+
+        } catch (DataSourceException e) {
+            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
+            return false;
+        }
+
+        comparer = new Comparer(
+                this, targetConnection, masterConnection,
+                new boolean[]{
+                        !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
+                },
+                !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
+                !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
+                !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
+        );
+
+        loggingOutputPanel.clear();
+        sqlTextPanel.setSQLText("");
+        comparer.clearLists();
+        comparedObjectList.clear();
+
+        try {
+
+            DefaultDatabaseHost masterHost = new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()));
+            DefaultDatabaseHost slaveHost = new DefaultDatabaseHost(databaseConnectionList.get(dbTargetComboBox.getSelectedIndex()));
+
+            if (!slaveHost.getDatabaseProductName().toLowerCase().contains("reddatabase") ||
+                    !masterHost.getDatabaseProductName().toLowerCase().contains("reddatabase")) {
+
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
+                loggingOutputPanel.append(bundleString("FDBCompared"));
+            }
+
+            if (slaveHost.getDatabaseMajorVersion() < 3 || masterHost.getDatabaseMajorVersion() < 3) {
+
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("USER")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("PACKAGE")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("FUNCTION")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("DDL_TRIGGER")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
+                loggingOutputPanel.append(bundleString("RDBVersionBelow3"));
+
+            } else if (slaveHost.getDatabaseMajorVersion() < 4 || masterHost.getDatabaseMajorVersion() < 4) {
+
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
+                loggingOutputPanel.append(bundleString("RDBVersionBelow4"));
+            }
+
+        } catch (SQLException | NullPointerException e) {
+            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
+            return false;
+        }
+
+        settingScriptProps = new StringBuilder();
+        settingScriptProps.append("\n/* Setting properties */\n\n");
+        settingScriptProps.append("SET NAMES ").append(getMasterDBCharset()).append(";\n");
+        settingScriptProps.append("SET SQL DIALECT ").append(getMasterDBDialect()).append(";\n");
+        settingScriptProps.append("CONNECT '").append(SimpleDataSource.generateUrl(
+                        comparer.getMasterConnection().getDatabaseConnection(),
+                        SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection().getDatabaseConnection()))
+                .replace("jdbc:firebirdsql://", "")
+        );
+        settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getDatabaseConnection().getUserName());
+        settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword());
+        settingScriptProps.append("';\nSET AUTODDL ON;\n");
+
+        comparer.addToScript(settingScriptProps.toString());
+
+        return true;
+    }
+
+    private void compare() {
+
+        comparer.dropConstraints(
+                attributesCheckBoxMap.get(NamedObject.TABLE).isSelected(),
+                attributesCheckBoxMap.get(NamedObject.GLOBAL_TEMPORARY).isSelected(),
+                propertiesCheckBoxMap.get(CHECK_DROP).isSelected(),
+                propertiesCheckBoxMap.get(CHECK_ALTER).isSelected());
+
+        rootTreeNode.removeAllChildren();
+
+        if (propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() && !isCanceled()) {
+
+            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.CREATE, bundleString("CreateObjects")));
+
+            if (isScriptGeneratorOrderReversed) {
+                isScriptGeneratorOrderReversed = false;
+                Collections.reverse(scriptGenerationOrder);
+            }
+
+            for (Integer type : scriptGenerationOrder) {
+
+                if (isCanceled())
+                    break;
+
+                if (type == STUBS) {
+                    comparer.createStubs(attributesCheckBoxMap.get(NamedObject.FUNCTION).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.JOB).isSelected());
+
+                    continue;
+                }
+
+                if (attributesCheckBoxMap.get(type).isSelected()) {
+
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.CREATE))
+                            .add(new ComparerTreeNode(ComparerTreeNode.CREATE, type,
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
+
+                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
+                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                    comparer.createObjects(type);
+                }
+            }
+        }
+
+        if (propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() && !isCanceled()) {
+
+            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.ALTER, bundleString("AlterObjects")));
+
+            if (isScriptGeneratorOrderReversed) {
+                isScriptGeneratorOrderReversed = false;
+                Collections.reverse(scriptGenerationOrder);
+            }
+
+            for (Integer type : scriptGenerationOrder) {
+
+                if (isCanceled())
+                    break;
+
+                if (type == STUBS)
+                    continue;
+
+                if (attributesCheckBoxMap.get(type).isSelected()) {
+
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.ALTER))
+                            .add(new ComparerTreeNode(ComparerTreeNode.ALTER, type,
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
+
+                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to ALTER  =============",
+                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                    comparer.alterObjects(type);
+                }
+            }
+        }
+
+        if (propertiesCheckBoxMap.get(CHECK_DROP).isSelected() && !isCanceled()) {
+
+            rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.DROP, bundleString("DropObjects")));
+
+            if (!isScriptGeneratorOrderReversed) {
+                isScriptGeneratorOrderReversed = true;
+                Collections.reverse(scriptGenerationOrder);
+            }
+
+            for (Integer type : scriptGenerationOrder) {
+
+                if (isCanceled())
+                    break;
+
+                if (type == STUBS)
+                    continue;
+
+                if (attributesCheckBoxMap.get(type).isSelected()) {
+
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.DROP))
+                            .add(new ComparerTreeNode(ComparerTreeNode.DROP, type,
+                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
+
+                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to DROP  =============",
+                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
+                    comparer.dropObjects(type);
+                }
+            }
+        }
+
+        if (!isCanceled()) {
+            loggingOutputPanel.append("\n============= CONSTRAINTS defining  =============");
+            if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null)
+                loggingOutputPanel.append(comparer.getConstraintsList());
+            comparer.createConstraints();
+        }
+
+        if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !isCanceled()) {
+            loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
+            if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
+                loggingOutputPanel.append(comparer.getComputedFieldsList());
+            comparer.createComputedFields();
+        }
+
+    }
+
+    // --- buttons handlers ---
+
+    private void compareDatabase() {
+
+        if (isComparing) {
+            isComparing = false;
+            compareButton.setEnabled(false);
+            compareButton.setText(bundleString("Canceling"));
+            return;
+        }
+
+        if (databaseConnectionList.size() < 2 ||
+                dbTargetComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
+            GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
+            return;
+        }
+
+        for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++) {
+            if (attributesCheckBoxMap.get(i).isSelected())
+                break;
+            if (i == NamedObject.SYSTEM_DOMAIN - 1) {
+                GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoAttributes"));
+                return;
+            }
+        }
+
+        if (!propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() &&
+                !propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() &&
+                !propertiesCheckBoxMap.get(CHECK_DROP).isSelected()) {
+            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoProperties"));
+            return;
+        }
+
+        progressDialog = new BackgroundProgressDialog(bundleString("Executing"));
+        SwingWorker worker = new SwingWorker("DBComparerProcess", this) {
+
+            @Override
+            public Object construct() {
+
+                compareButton.setText(Bundles.get("common.cancel.button"));
+                isComparing = true;
+
+                long startTime = System.currentTimeMillis();
+
+                if (prepareComparer()) {
+
+                    try {
+                        compare();
+                    } catch (Throwable e) {
+                        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorOccurred"), e);
+                        Log.error("Error occurred while comparing DBs", e);
+                    }
+
+                    int[] counter = comparer.getCounter();
+                    long elapsedTime = System.currentTimeMillis() - startTime;
+
+                    GUIUtilities.displayInformationMessage(
+                            String.format(bundleString("ComparingEnds"), counter[0], counter[1], counter[2]));
+                    Log.info(String.format("Comparing has been finished. Time elapsed: %d ms", elapsedTime));
+                }
+
+                return null;
+            }
+
+            @Override
+            public void finished() {
+
+                if (progressDialog != null)
+                    progressDialog.dispose();
+
+                finishCompare();
+            }
+        };
+
+        worker.start();
+        progressDialog.run();
+
+        if (progressDialog.isCancel()) {
+            worker.setCancel(true);
+            compareButton.setText(bundleString("Canceling"));
+            compareButton.setEnabled(false);
+        }
+    }
+
+    private void finishCompare() {
+
+        for (int i = 0; comparer != null && i < comparer.getScript().size(); i++)
+            sqlTextPanel.getTextPane().append(comparer.getScript(i));
+
+        isComparing = false;
+        compareButton.setEnabled(true);
+        compareButton.setText(bundleString("CompareButton"));
+        progressBar.setValue(progressBar.getMaximum());
+        progressBar.setString(bundleString("ProgressBarFinish"));
+
+        for (int i = 0; i < rootTreeNode.getChildCount(); i++)
+            sortTreeNodes(rootTreeNode.getChildAt(i));
+
+        dbComponentsTree.setModel(new DefaultTreeModel(rootTreeNode));
+    }
+
+    private void saveScript() {
+
+        if (comparer == null || comparer.getScript().isEmpty()) {
+            GUIUtilities.displayWarningMessage(bundleString("NothingToSave"));
+            return;
+        }
+
+        JFileChooser fileSave = new JFileChooser("C:\\");
+
+        FileFilter sqlFilter = new FileTypeFilter(".sql", "SQL files");
+        FileFilter txtFilter = new FileTypeFilter(".txt", "Text files");
+
+        fileSave.addChoosableFileFilter(sqlFilter);
+        fileSave.addChoosableFileFilter(txtFilter);
+        fileSave.setAcceptAllFileFilterUsed(false);
+
+        int ret = fileSave.showDialog(null, bundleString("SaveScriptButton"));
+
+        if (ret == JFileChooser.APPROVE_OPTION) {
+
+            File file = fileSave.getSelectedFile();
+            String name = file.getAbsoluteFile().toString();
+
+            int dot = name.lastIndexOf(".");
+            dot = (dot == -1) ? name.length() : dot;
+
+            String fileSavePath = name.substring(0, dot)
+                    + fileSave.getFileFilter().getDescription().substring(fileSave.getFileFilter().getDescription().indexOf("(*") + 2,
+                    fileSave.getFileFilter().getDescription().lastIndexOf(")"));
+
+            try (FileOutputStream path = new FileOutputStream(fileSavePath)) {
+
+                for (int i = 0; i < comparer.getScript().size(); i++) {
+                    String text = comparer.getScript(i);
+                    byte[] buffer = text.getBytes();
+                    path.write(buffer, 0, buffer.length);
+                }
+
+                loggingOutputPanel.appendAction(bundleString("ScriptSaved"));
+                loggingOutputPanel.append(bundleString("SavedTo") + fileSavePath);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void executeScript() {
+
+        if (comparer == null || comparer.getScript().isEmpty()) {
+            GUIUtilities.displayWarningMessage(bundleString("NothingToExecute"));
+            return;
+        }
+
+        QueryEditor queryEditor = new QueryEditor(sqlTextPanel.getSQLText().replace(settingScriptProps.toString(), ""));
+        queryEditor.setSelectedConnection(comparer.getMasterConnection().getDatabaseConnection());
+        GUIUtilities.addCentralPane(
+                QueryEditor.TITLE, QueryEditor.FRAME_ICON,
+                queryEditor, null, true);
+
+    }
+
+    private void selectAll(String selectedBox) {
+
+        boolean curFlag = true;
+        Map<Integer, JCheckBox> checkBoxMap;
+
+        if (Objects.equals(selectedBox, "attributes"))
+            checkBoxMap = attributesCheckBoxMap;
+        else if (Objects.equals(selectedBox, "properties"))
+            checkBoxMap = propertiesCheckBoxMap;
+        else
+            return;
+
+        for (JCheckBox checkBox : checkBoxMap.values()) {
+            curFlag = curFlag && checkBox.isSelected();
+        }
+        for (JCheckBox checkBox : checkBoxMap.values()) {
+            checkBox.setSelected(!curFlag);
+        }
+
+    }
+
+    private void switchTargetSource() {
+        Object sourceConnection = dbMasterComboBox.getSelectedItem();
+        dbMasterComboBox.setSelectedItem(dbTargetComboBox.getSelectedItem());
+        dbTargetComboBox.setSelectedItem(sourceConnection);
+    }
+
+    @Override
+    public boolean tabViewClosing() {
+        sqlTextPanel.cleanup();
+        return true;
+    }
+
+    @Override
+    public boolean tabViewSelected() {
+        return true;
+    }
+
+    @Override
+    public boolean tabViewDeselected() {
+        return true;
+    }
+
+    // ---
+
+    private String getMasterDBCharset() {
+
+        String charset = "";
+        String query = "select rdb$database.rdb$character_set_name from rdb$database";
+
+        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
+            while (rs.next())
+                charset = rs.getString(1).trim();
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+
+        } finally {
+            comparer.getMasterConnection().releaseResources();
+        }
+
+        return charset;
+    }
+
+    private String getMasterDBDialect() {
+
+        String dialect = "";
+        String query = "select mon$database.mon$sql_dialect from mon$database";
+
+        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
+            while (rs.next())
+                dialect = rs.getString(1).trim();
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+
+        } finally {
+            comparer.getMasterConnection().releaseResources();
+        }
+
+        return dialect;
+    }
+
+    public void recreateProgressBar(String label, String metaTag, int maxValue) {
+        progressBar.setValue(0);
+        progressBar.setMaximum(maxValue);
+        progressBar.setString(MiscUtils.isNull(metaTag) ? bundleString(label) : String.format(bundleString(label), Bundles.get(NamedObject.class, metaTag)));
+    }
+
+    public void incrementProgressBarValue() {
+        progressBar.setValue(progressBar.getValue() + 1);
+    }
+
+    public void goToScript(ComparerTreeNode node) {
+
+        if (node.isComponent) {
+            tabPane.setSelectedIndex(2);
+
+            String searchText = "/\\* " + node.name.replace("$", "\\$") + " \\*/";
+            Pattern pattern = Pattern.compile(searchText);
+            Matcher matcher = pattern.matcher(sqlTextPanel.getSQLText());
+
+            if (matcher.find()) {
+                int start = matcher.start();
+                int end = matcher.end();
+                sqlTextPanel.getTextPane().select(start, end);
             }
         }
 
     }
 
-    Comparer comparer;
-    List<DatabaseConnection> dcs;
-    public static final String TITLE = Bundles.get(ComparerDBPanel.class, "ComparerDB");
-    public static final String FRAME_ICON = "ComparerDB_16.png";
+    public void addTreeComponent(int action, int type, String name) {
 
-    public class FileTypeFilter extends FileFilter {
+        ComparerTreeNode actionNode = (ComparerTreeNode) rootTreeNode.getChildByAction(action);
+        if (actionNode != null) {
 
-        private String extension;
-        private String description;
+            ComparerTreeNode typeNode = (ComparerTreeNode) actionNode.getChildByType(type);
+            if (typeNode != null)
+                typeNode.add(new ComparerTreeNode(action, type, name, ComparerTreeNode.COMPONENT));
+        }
+
+    }
+
+    private void sortTreeNodes(TreeNode node) {
+
+        ComparerTreeNode comparerTreeNode = (ComparerTreeNode) node;
+        Map<Integer, ComparerTreeNode> childrenMap = new HashMap<>();
+
+        Enumeration<TreeNode> childrenEnumeration = comparerTreeNode.children();
+        while (childrenEnumeration.hasMoreElements()) {
+            ComparerTreeNode child = (ComparerTreeNode) childrenEnumeration.nextElement();
+            childrenMap.put(child.type, child);
+        }
+        comparerTreeNode.removeAllChildren();
+
+        for (int type = 0; type < NamedObject.SYSTEM_DOMAIN; type++) {
+
+            ComparerTreeNode child = childrenMap.get(type);
+            if (child != null)
+                comparerTreeNode.add(child);
+        }
+
+    }
+
+    public List<ComparedObject> getComparedObjectList() {
+        return comparedObjectList;
+    }
+
+    public boolean isCanceled() {
+        return progressDialog.isCancel() || !isComparing;
+    }
+
+    public void addToLog(String text) {
+        loggingOutputPanel.append(text);
+    }
+
+    public static String bundleString(String key) {
+        return Bundles.get(ComparerDBPanel.class, key);
+    }
+
+    private static class FileTypeFilter extends FileFilter {
+
+        private final String extension;
+        private final String description;
 
         public FileTypeFilter(String extension, String description) {
             this.extension = extension;
@@ -55,713 +921,187 @@ public class ComparerDBPanel extends JPanel {
         }
 
         public boolean accept(File file) {
-            if (file.isDirectory()) {
+            if (file.isDirectory())
                 return true;
-            }
+
             return file.getName().endsWith(extension);
         }
 
         public String getDescription() {
             return description + String.format(" (*%s)", extension);
         }
+
     }
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    public static class ComparerTreeNode extends DefaultMutableTreeNode {
 
-        jPanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        btnSaveScript = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
-        jCheckBox2 = new javax.swing.JCheckBox();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jCheckBox3 = new javax.swing.JCheckBox();
-        jCheckBox4 = new javax.swing.JCheckBox();
-        jCheckBox5 = new javax.swing.JCheckBox();
-        jCheckBox6 = new javax.swing.JCheckBox();
-        jCheckBox7 = new javax.swing.JCheckBox();
-        jCheckBox8 = new javax.swing.JCheckBox();
-        jCheckBox9 = new javax.swing.JCheckBox();
-        jCheckBox10 = new javax.swing.JCheckBox();
-        jCheckBox11 = new javax.swing.JCheckBox();
-        jCheckBox12 = new javax.swing.JCheckBox();
-        jCheckBox13 = new javax.swing.JCheckBox();
-        jCheckBox14 = new javax.swing.JCheckBox();
-        jButton2 = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea2 = new javax.swing.JTextArea();
-        dbBox1 = new JComboBox();
-        dbBox2 = new JComboBox();
-        dbBox1label = new JLabel();
-        dbBox2label = new JLabel();
+        // --- Action constraints ---
 
-        dbBox1label.setText("First Connection");
-        dbBox2label.setText("Second Connection");
+        public static final int CREATE = 0;
+        public static final int ALTER = CREATE + 1;
+        public static final int DROP = ALTER + 1;
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Connections"));
+        // --- Level constraints ---
 
+        public static final int ROOT = 0;
+        public static final int TYPE_FOLDER = ROOT + 1;
+        public static final int COMPONENT = TYPE_FOLDER + 1;
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addComponent(dbBox1label)
-                                                .addComponent(dbBox2label)
-                                        )
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addComponent(dbBox1)
-                                                .addComponent(dbBox2)
-                                        )
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addContainerGap())
-                        )
-        );
-        jPanel1Layout.setVerticalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(dbBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(dbBox1label)
-                                )
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(dbBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(dbBox2label)
-                                )
-                                .addGap(7, 7, 7))
+        // ---
 
-        );
+        private final boolean isComponent;
+        private final int level;
+        private final int action;
+        private final int type;
+        private final String name;
 
-
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
-
-        btnSaveScript.setText("Save script");
-        btnSaveScript.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSaveScriptActionPerformed(evt);
-            }
-        });
-
-
-        jButton1.setText("Compare");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
-
-        jCheckBox2.setSelected(true);
-        jCheckBox2.setText("Domains");
-
-        jCheckBox1.setSelected(true);
-        jCheckBox1.setText("Tables");
-
-        jCheckBox3.setSelected(true);
-        jCheckBox3.setText("Views");
-
-        jCheckBox4.setSelected(true);
-        jCheckBox4.setText("Procedures");
-
-        jCheckBox5.setSelected(true);
-        jCheckBox5.setText("Triggers");
-
-        jCheckBox6.setSelected(true);
-        jCheckBox6.setText("Generators");
-
-        jCheckBox7.setSelected(true);
-        jCheckBox7.setText("Exceptions");
-
-        jCheckBox8.setSelected(true);
-        jCheckBox8.setText("UDFs");
-
-        jCheckBox9.setSelected(true);
-        jCheckBox9.setText("Roles");
-
-        jCheckBox10.setSelected(true);
-        jCheckBox10.setText("Indices");
-
-        jCheckBox11.setSelected(true);
-        jCheckBox11.setText("Primary keys");
-
-        jCheckBox12.setSelected(true);
-        jCheckBox12.setText("Foreign keys");
-
-        jCheckBox13.setSelected(true);
-        jCheckBox13.setText("Uniques");
-
-        jCheckBox14.setSelected(true);
-        jCheckBox14.setText("Checks");
-
-        jButton2.setText("All");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(jCheckBox12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jCheckBox1)
-                                        .addComponent(jCheckBox3)
-                                        .addComponent(jCheckBox4)
-                                        .addComponent(jCheckBox5)
-                                        .addComponent(jCheckBox11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jCheckBox6)
-                                        .addComponent(jCheckBox8)
-                                        .addComponent(jCheckBox9)
-                                        .addComponent(jCheckBox10)
-                                        .addComponent(jCheckBox13, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jCheckBox14)
-                                        .addComponent(jCheckBox7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(jCheckBox2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton2))
-        );
-        jPanel2Layout.setVerticalGroup(
-                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jCheckBox2)
-                                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox4)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox6)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox7)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox8)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox10)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox13)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox14)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox11)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox12)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox9, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(39, Short.MAX_VALUE))
-        );
-
-        jTextArea2.setColumns(20);
-        jTextArea2.setRows(5);
-        jScrollPane2.setViewportView(jTextArea2);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                .addContainerGap()
-                                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(btnSaveScript, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(8, 8, 8))
-                                        .addComponent(jScrollPane1, GroupLayout.PREFERRED_SIZE, 500, Short.MAX_VALUE)
-                                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                )
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(btnSaveScript)
-                                        .addComponent(jButton1))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane1))
-                        .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jScrollPane2)
-                                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-        );
-
-    }// </editor-fold>//GEN-END:initComponents
-
-
-    //GEN-LAST:event_btnConnectDBActionPerformed
-
-    private void btnSaveScriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveScriptActionPerformed
-        /*String s = "";
-
-         for (int i = 0; i < comparer.script.size(); i++){
-         s = s + comparer.script.get(i);
-         }
-
-         try{
-         BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("output_file.txt"), "Cp1251"));
-         w.write(s);
-         w.flush();
-         w.close();}
-         catch(IOException ex){}*/
-
-        if (comparer == null) {
-            jTextArea1.append("\nNothing to save - script is empty");
-            return;
-        }
-        if (comparer.script.isEmpty()) {
-            jTextArea1.append("\nNothing to save - script is empty");
-            return;
+        public ComparerTreeNode(String name) {
+            this(-1, -1, name, ROOT);
         }
 
-        JFileChooser filesave = new JFileChooser("C:\\");
-
-        //FileNameExtensionFilter filter = new FileNameExtensionFilter("*.*");
-        //filesave.setFileFilter(filter);
-        FileFilter sqlFilter = new FileTypeFilter(".sql", "SQL files");
-        FileFilter txtFilter = new FileTypeFilter(".txt", "Text files");
-
-        filesave.addChoosableFileFilter(sqlFilter);
-        filesave.addChoosableFileFilter(txtFilter);
-        filesave.setAcceptAllFileFilterUsed(false);
-
-        int ret = filesave.showDialog(null, "Save Script");
-
-        if (ret == JFileChooser.APPROVE_OPTION) {
-            File file = filesave.getSelectedFile();
-
-            String text, n = "\n";
-
-            String name = file.getAbsoluteFile().toString();
-
-            int dot = name.lastIndexOf(".");
-            dot = dot == -1 ? name.length() : dot;
-
-            String name_ = name.substring(0, dot)
-                    + filesave.getFileFilter().getDescription().substring(filesave.getFileFilter().getDescription().indexOf("(*") + 2,
-                    filesave.getFileFilter().getDescription().lastIndexOf(")"));
-            comparer.script.add("русский текст");
-            try (FileOutputStream path = new FileOutputStream(name_)) {
-                for (int i = 0; i < comparer.script.size(); i++) {
-                    text = comparer.script.get(i);
-
-                    //String str = new String(text.getBytes(), "Cp1251");
-                    byte[] buffer = text.getBytes();
-
-                    path.write(buffer, 0, buffer.length);
-
-                    /*byte[] bufferN = n.getBytes();
-                     path.write(bufferN, 0, bufferN.length);*/
-                }
-
-                jTextArea1.append("\nScript was saved:\n" + "«" + name_ + "»");
-            } catch (IOException ex) {
-
-                System.out.println(ex.getMessage());
-            }
+        public ComparerTreeNode(int action, String name) {
+            this(action, -1, name, ROOT);
         }
+
+        public ComparerTreeNode(int action, int type, String name, int level) {
+            super();
+            this.action = action;
+            this.type = type;
+            this.name = name;
+            this.level = level;
+            this.isComponent = (level == COMPONENT);
+        }
+
+        public TreeNode getChildByAction(int type) {
+
+            for (Object child : children) {
+                ComparerTreeNode comparerTreeNode = (ComparerTreeNode) child;
+                if (comparerTreeNode.action == type)
+                    return comparerTreeNode;
+            }
+
+            return null;
+        }
+
+        public TreeNode getChildByType(int type) {
+
+            for (Object child : children) {
+                ComparerTreeNode comparerTreeNode = (ComparerTreeNode) child;
+                if (comparerTreeNode.type == type)
+                    return comparerTreeNode;
+            }
+
+            return null;
+        }
+
     }
 
+    private static class ComparerTreeCellRenderer extends AbstractTreeCellRenderer {
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        @Override
+        public Component getTreeCellRendererComponent(
+                JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
-        if (dcs.size() < 2 || dbBox1.getSelectedIndex() == dbBox2.getSelectedIndex()) {
-            jTextArea1.append("\nError: Unable to compare");
-            return;
-        }
-        comparer = new Comparer(dcs.get(dbBox1.getSelectedIndex()), dcs.get(dbBox2.getSelectedIndex()));
-        jTextArea1.append("\nComparing...\n");
+            ComparerTreeNode treeNode = (ComparerTreeNode) value;
+            switch (treeNode.type) {
 
-        jTextArea2.setText(null);
-        comparer.script.clear();
-        comparer.createdObjects.clear();
-        comparer.alteredObjects.clear();
-        comparer.droppedObjects.clear();
+                case NamedObject.DOMAIN:
+                    setIcon(GUIUtilities.loadIcon("domain16.png"));
+                    break;
 
+                case NamedObject.TABLE:
+                    setIcon(GUIUtilities.loadIcon("PlainTable16.png"));
+                    break;
 
-        String charset = "";
-        String dialect = "";
+                case NamedObject.GLOBAL_TEMPORARY:
+                    setIcon(GUIUtilities.loadIcon("GlobalTable16.png"));
+                    break;
 
-        String query = "select rdb$database.rdb$character_set_name\n"
-                + "from rdb$database\n";
+                case NamedObject.VIEW:
+                    setIcon(GUIUtilities.loadIcon("TableView16.png"));
+                    break;
 
-        try {
-            ResultSet rs = comparer.secondConnection.execute(query, true).getResultSet();
+                case NamedObject.PROCEDURE:
+                    setIcon(GUIUtilities.loadIcon("Procedure16.png"));
+                    break;
 
-            while (rs.next()) {
+                case NamedObject.FUNCTION:
+                    setIcon(GUIUtilities.loadIcon("Function16.png"));
+                    break;
 
-                charset = rs.getString(1).trim();
+                case NamedObject.PACKAGE:
+                    setIcon(GUIUtilities.loadIcon("package16.png"));
+                    break;
+
+                case NamedObject.TRIGGER:
+                    setIcon(GUIUtilities.loadIcon("Trigger.png"));
+                    break;
+
+                case NamedObject.DDL_TRIGGER:
+                    setIcon(GUIUtilities.loadIcon("TriggerDDL.png"));
+                    break;
+
+                case NamedObject.DATABASE_TRIGGER:
+                    setIcon(GUIUtilities.loadIcon("TriggerDB.png"));
+                    break;
+
+                case NamedObject.SEQUENCE:
+                    setIcon(GUIUtilities.loadIcon("Sequence16.png"));
+                    break;
+
+                case NamedObject.EXCEPTION:
+                    setIcon(GUIUtilities.loadIcon("exception16.png"));
+                    break;
+
+                case NamedObject.UDF:
+                    setIcon(GUIUtilities.loadIcon("udf16.png"));
+                    break;
+
+                case NamedObject.USER:
+                    setIcon(GUIUtilities.loadIcon("User16.png"));
+                    break;
+
+                case NamedObject.ROLE:
+                    setIcon(GUIUtilities.loadIcon("user_manager_16.png"));
+                    break;
+
+                case NamedObject.INDEX:
+                    setIcon(GUIUtilities.loadIcon("TableIndex16.png"));
+                    break;
+
+                case NamedObject.TABLESPACE:
+                    setIcon(GUIUtilities.loadIcon("tablespace16.png"));
+                    break;
+
+                case NamedObject.JOB:
+                    setIcon(GUIUtilities.loadIcon("job16.png"));
+                    break;
+
+                case NamedObject.COLLATION:
+                    setIcon(GUIUtilities.loadIcon("XmlFile16.png"));
+                    break;
+
+                default:
+                    setIcon(getDefaultOpenIcon());
+                    break;
+
             }
 
-            rs.close();
-        } catch (java.sql.SQLException e) {
-            System.out.println(e);
-        }
+            Font font = getFont();
+            if (treeNode.level == ComparerTreeNode.TYPE_FOLDER && treeNode.getChildCount() > 0) {
+                setText(treeNode.name + " (" + treeNode.getChildCount() + ")");
+                if (font != null)
+                    setFont(font.deriveFont(Font.BOLD));
 
-        query = "select mon$database.mon$sql_dialect\n"
-                + "from mon$database\n";
-
-        try {
-            ResultSet rs = comparer.secondConnection.execute(query, true).getResultSet();
-
-            while (rs.next()) {
-
-                dialect = rs.getString(1).trim();
+            } else {
+                setText(treeNode.name);
+                if (font != null)
+                    setFont(font.deriveFont(Font.PLAIN));
             }
 
-            rs.close();
-        } catch (java.sql.SQLException e) {
-            System.out.println(e);
+            return this;
         }
 
-        comparer.script.add("set names " + charset + ";\n\n");
-        comparer.script.add("set sql dialect " + dialect + ";\n\n");
-        comparer.script.add("connect '" + comparer.secondConnection.getDatabaseConnection().getName() + " ' user '" + comparer.secondConnection.getDatabaseConnection().getUserName() + "' "
-                + "password '" + comparer.secondConnection.getDatabaseConnection().getUnencryptedPassword() + "';\n\n");
-        comparer.script.add("set autoddl on;\n\n");
-
-        comparer.lists = "";
-        comparer.dropFKs(jCheckBox12.isSelected());
-        jTextArea1.append("\n============= Foreign keys to drop =============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropPKs(jCheckBox11.isSelected());
-        jTextArea1.append("\n============= Primary keys to drop =============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropUniques(jCheckBox13.isSelected());
-        jTextArea1.append("\n=============== Uniques to drop ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropChecks(jCheckBox14.isSelected());
-        jTextArea1.append("\n=============== Checks to drop  ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createExceptions(jCheckBox7.isSelected());
-        jTextArea1.append("\n============= Exceptions to create  =============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterExceptions(jCheckBox7.isSelected());
-        jTextArea1.append("\n============== Exceptions to alter ==============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createGenerators(jCheckBox6.isSelected());
-        jTextArea1.append("\n============= Generators to create  =============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterGenerators(jCheckBox6.isSelected());
-        jTextArea1.append("\n============== Generators to alter ==============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createUDFs(jCheckBox8.isSelected());
-        jTextArea1.append("\n=============== UDFs to create  ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterUDFs(jCheckBox8.isSelected());
-        jTextArea1.append("\n================ UDFs to alter ================\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createDomains(jCheckBox2.isSelected());
-        jTextArea1.append("\n============== Domains to create ==============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterDomains(jCheckBox2.isSelected());
-        jTextArea1.append("\n=============== Domains to alter ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropIndices(jCheckBox10.isSelected());
-        jTextArea1.append("\n================ Indices to drop  ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropTriggers(jCheckBox5.isSelected());
-        jTextArea1.append("\n=============== Triggers to drop  ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropViews(jCheckBox3.isSelected());
-        jTextArea1.append("\n================ Views to drop ================\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createTables(jCheckBox1.isSelected());
-        jTextArea1.append("\n=============== Tables to create  ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterTables(jCheckBox1.isSelected());
-        jTextArea1.append("\n================ Tables to alter ================\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropTables(jCheckBox1.isSelected());
-        jTextArea1.append("\n================ Tables to drop ================\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createProcedures(jCheckBox4.isSelected());
-        jTextArea1.append("\n============== Procedures to create =============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterProcedures(jCheckBox4.isSelected());
-        jTextArea1.append("\n============== Procedures to alter ==============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropProcedures(jCheckBox4.isSelected());
-        jTextArea1.append("\n============== Procedures to drop  ==============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createViews(jCheckBox3.isSelected());
-        comparer.retViews(true);
-        jTextArea1.append("\n================ Views to create  ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterViews(jCheckBox3.isSelected());
-        jTextArea1.append("\n================= Views to alter ================\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createTriggers(jCheckBox5.isSelected());
-        jTextArea1.append("\n=============== Triggers to create  ==============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createChecks(jCheckBox14.isSelected());
-        jTextArea1.append("\n=============== Checks to create  ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterChecks(jCheckBox14.isSelected());
-        jTextArea1.append("\n================ Checks to alter ================\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createUniques(jCheckBox13.isSelected());
-        jTextArea1.append("\n=============== Uniques to create ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterUniques(jCheckBox13.isSelected());
-        jTextArea1.append("\n================ Uniques to alter  ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createPKs(jCheckBox11.isSelected());
-        jTextArea1.append("\n============= Primary keys to create =============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterPKs(jCheckBox11.isSelected());
-        jTextArea1.append("\n=============  Primary keys to alter ==============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createFKs(jCheckBox12.isSelected());
-        jTextArea1.append("\n============= Foreign keys to create =============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterFKs(jCheckBox12.isSelected());
-        jTextArea1.append("\n============== Foreign keys to alter  =============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropDomains(jCheckBox2.isSelected());
-        jTextArea1.append("\n=============== Domains to drop ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropUDFs(jCheckBox8.isSelected());
-        jTextArea1.append("\n================ UDFs to drop  ================\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropExceptions(jCheckBox7.isSelected());
-        jTextArea1.append("\n============== Exceptions to drop  ==============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.dropGenerators(jCheckBox6.isSelected());
-        jTextArea1.append("\n============== Generators to drop  ==============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterTriggers(jCheckBox5.isSelected());
-        jTextArea1.append("\n=============== Triggers to alter  ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.computedField(true);
-        comparer.fillViews(true);
-        comparer.fillProcedures(true);
-        comparer.fillTriggers(true);
-        comparer.recreateChecks(true);
-
-        comparer.lists = "";
-        comparer.createIndices(jCheckBox10.isSelected());
-        jTextArea1.append("\n=============== Indices to create ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.alterIndices(jCheckBox10.isSelected());
-        jTextArea1.append("\n================ Indices to alter  ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.fillIndices(true);
-
-        comparer.lists = "";
-        comparer.dropRoles(jCheckBox9.isSelected());
-        jTextArea1.append("\n================ Roles to drop  ================\n\n");
-        jTextArea1.append(comparer.lists);
-
-        comparer.lists = "";
-        comparer.createRoles(jCheckBox9.isSelected());
-        jTextArea1.append("\n================ Roles to create ===============\n\n");
-        jTextArea1.append(comparer.lists);
-
-        for (int i = 0; i < comparer.script.size(); i++) {
-            //System.out.println(comparer.script.get(i));
-            jTextArea2.append(comparer.script.get(i));
-        }
-        /*for (int i = 0; i < comparer.warnings.size(); i++) {
-         System.out.println(i + 1 + ": " + comparer.warnings.get(i));
-         }*/
-
-
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        if (jCheckBox1.isSelected() == true
-                && jCheckBox2.isSelected() == true
-                && jCheckBox3.isSelected() == true
-                && jCheckBox4.isSelected() == true
-                && jCheckBox5.isSelected() == true
-                && jCheckBox6.isSelected() == true
-                && jCheckBox7.isSelected() == true
-                && jCheckBox8.isSelected() == true
-                && jCheckBox9.isSelected() == true
-                && jCheckBox10.isSelected() == true
-                && jCheckBox11.isSelected() == true
-                && jCheckBox12.isSelected() == true
-                && jCheckBox13.isSelected() == true
-                && jCheckBox14.isSelected() == true) {
-            jCheckBox1.setSelected(false);
-            jCheckBox2.setSelected(false);
-            jCheckBox3.setSelected(false);
-            jCheckBox4.setSelected(false);
-            jCheckBox5.setSelected(false);
-            jCheckBox6.setSelected(false);
-            jCheckBox7.setSelected(false);
-            jCheckBox8.setSelected(false);
-            jCheckBox9.setSelected(false);
-            jCheckBox10.setSelected(false);
-            jCheckBox11.setSelected(false);
-            jCheckBox12.setSelected(false);
-            jCheckBox13.setSelected(false);
-            jCheckBox14.setSelected(false);
-        } else {
-            jCheckBox1.setSelected(true);
-            jCheckBox2.setSelected(true);
-            jCheckBox3.setSelected(true);
-            jCheckBox4.setSelected(true);
-            jCheckBox5.setSelected(true);
-            jCheckBox6.setSelected(true);
-            jCheckBox7.setSelected(true);
-            jCheckBox8.setSelected(true);
-            jCheckBox9.setSelected(true);
-            jCheckBox10.setSelected(true);
-            jCheckBox11.setSelected(true);
-            jCheckBox12.setSelected(true);
-            jCheckBox13.setSelected(true);
-            jCheckBox14.setSelected(true);
-        }
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    //GEN-LAST:event_btnInstall_libActionPerformed
-
-
-    String bundleString(String key) {
-        return Bundles.get(ComparerDBPanel.class, key);
     }
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-
-    private javax.swing.JButton btnSaveScript;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox10;
-    private javax.swing.JCheckBox jCheckBox11;
-    private javax.swing.JCheckBox jCheckBox12;
-    private javax.swing.JCheckBox jCheckBox13;
-    private javax.swing.JCheckBox jCheckBox14;
-    private javax.swing.JCheckBox jCheckBox2;
-    private javax.swing.JCheckBox jCheckBox3;
-    private javax.swing.JCheckBox jCheckBox4;
-    private javax.swing.JCheckBox jCheckBox5;
-    private javax.swing.JCheckBox jCheckBox6;
-    private javax.swing.JCheckBox jCheckBox7;
-    private javax.swing.JCheckBox jCheckBox8;
-    private javax.swing.JCheckBox jCheckBox9;
-    private javax.swing.JLabel dbBox1label;
-    private javax.swing.JLabel dbBox2label;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextArea jTextArea2;
-    private javax.swing.JComboBox dbBox1;
-    private javax.swing.JComboBox dbBox2;
-
-
-    // End of variables declaration//GEN-END:variables
 
 }

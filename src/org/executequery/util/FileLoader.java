@@ -48,7 +48,7 @@ public class FileLoader {
 
     public void openFile(final File file, final int openWith) {
 
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("FileLoading") {
 
             public Object construct() {
 

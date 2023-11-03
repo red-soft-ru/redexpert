@@ -1,10 +1,11 @@
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
-import org.underworldlabs.util.MiscUtils;
+import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.sql.sqlbuilder.*;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,12 +13,13 @@ import java.sql.SQLException;
 /**
  * Created by vasiliy on 26.01.17.
  */
-public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
+public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
+
+    private int type = -1;
 
     private String triggerSourceCode;
     private boolean triggerActive;
     private String tableName;
-    private String triggerDescription;
     private int triggerSequence;
     private String triggerType;
     private int intTriggerType;
@@ -134,9 +136,9 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
     final int DDL_TRIGGER_CREATE_MAPPING = 45;
     final int DDL_TRIGGER_ALTER_MAPPING = 46;
     final int DDL_TRIGGER_DROP_MAPPING = 47;
-    public static final int DATABASE_TRIGGER = 1;
-    public static final int TABLE_TRIGGER = 0;
-    public static final int DDL_TRIGGER = 2;
+    public static final int DATABASE_TRIGGER = NamedObject.DATABASE_TRIGGER;
+    public static final int TABLE_TRIGGER = NamedObject.TRIGGER;
+    public static final int DDL_TRIGGER = NamedObject.DDL_TRIGGER;
 
 
     /**
@@ -152,8 +154,6 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
      *
      * @return the object type
      */
-
-    private int type = -1;
     public int getType() {
         if (type == -1) {
             if (getParent().getMetaDataKey().equalsIgnoreCase(META_TYPES[NamedObject.DATABASE_TRIGGER]))
@@ -168,9 +168,9 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     public String getMetaDataKey() {
         return META_TYPES[getType()];
@@ -179,6 +179,21 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
     @Override
     public boolean allowsChildren() {
         return false;
+    }
+
+    @Override
+    protected String prefixLabel() {
+        return null;
+    }
+
+    @Override
+    protected String mechanismLabel() {
+        return null;
+    }
+
+    @Override
+    protected String positionLabel() {
+        return null;
     }
 
     public String getTriggerSourceCode() {
@@ -196,15 +211,7 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
     public String getTriggerTableName() {
         if (isMarkedForReload())
             getObjectInfo();
-        if (tableName == null)
-            return "";
         return tableName;
-    }
-
-    public String getTriggerDescription() {
-        if (isMarkedForReload())
-            getObjectInfo();
-        return triggerDescription;
     }
 
     public void setTriggerSourceCode(String triggerSourceCode) {
@@ -218,10 +225,6 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
-    }
-
-    public void setTriggerDescription(String triggerDescription) {
-        this.triggerDescription = triggerDescription;
     }
 
     public boolean isMarkedReloadActive() {
@@ -310,35 +313,6 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
                 parse_type = parse_type >> 2;
             }
             return buffer;
-           /* if (type == 1)
-                return "BEFORE INSERT"; // 	Триггер выполняется перед вставкой записи в таблицу или просмотр.
-            if (type == 2)
-                return "AFTER INSERT"; // 	Триггер выполняется после вставки записи в таблицу или просмотр.
-            if (type == 3)
-                return "BEFORE UPDATE"; // 	Триггер выполняется перед изменением записи в таблице или просмотре.
-            if (type == 4)
-                return "AFTER UPDATE"; // 	Триггер выполняется после изменения записи в таблице или просмотре.
-            if (type == 5)
-                return "BEFORE DELETE"; // 	Триггер выполняется перед удалением записи из таблицы или просмотра.
-            if (type == 6)
-                return "AFTER DELETE"; // 	Триггер выполняется после удаления записи из таблицы или просмотра.
-            if (type == 17)
-                return "BEFORE INSERT OR UPDATE"; // 	Триггер выполняется перед вставкой или изменением записи в таблице или просмотре.
-            if (type == 18)
-                return "AFTER INSERT OR UPDATE"; // 	Триггер выполняется после вставки или изменения записи в таблице или просмотре.
-            if (type == 25)
-                return "BEFORE INSERT OR DELETE"; // 	Триггер выполняется перед вставкой или удалением записи в таблице или просмотре.
-            if (type == 26)
-                return "AFTER INSERT OR DELETE"; // 	Триггер выполняется после вставки или удаления записи в таблице или просмотре.
-            if (type == 27)
-                return "BEFORE UPDATE OR DELETE"; // 	Триггер выполняется перед изменением или удалением записи в таблице или просмотре.
-            if (type == 28)
-                return "AFTER UPDATE OR DELETE"; // 	Триггер выполняется после изменения или удаления записи в таблице или просмотре.
-            if (type == 113)
-                return "BEFORE INSERT OR UPDATE OR DELETE"; // 	Триггер выполняется перед вставкой, изменением или удалением записи в таблице или просмотре.
-            if (type == 114)
-                return "AFTER INSERT OR UPDATE OR DELETE"; // 	Триггер выполняется после вставки, изменения или удаления записи в таблице или просмотре.
-        */
         }
 
         if (getIntTypeTrigger(type) == DATABASE_TRIGGER) {
@@ -387,66 +361,107 @@ public class DefaultDatabaseTrigger extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE OR ALTER TRIGGER ");
-        sb.append(MiscUtils.getFormattedObject(getName()));
-        if (!getTriggerTableName().isEmpty()) {
-            sb.append(" FOR ");
-            sb.append(MiscUtils.getFormattedObject(getTriggerTableName()));
-        }
-        sb.append("\n");
-        sb.append(isTriggerActive() ? "ACTIVE" : "INACTIVE");
-        sb.append(" ");
-        sb.append(getStringTriggerType());
-        sb.append(" POSITION ");
-        sb.append(getTriggerSequence());
-        sb.append("\n");
-        if (triggerSourceCode != null) {
-            sb.append(getTriggerSourceCode());
-        }
-        return sb.toString();
-    }
-
-    protected String queryForInfo() {
-        return "select 0,\n" +
-                "t.rdb$trigger_source,\n" +
-                "t.rdb$relation_name,\n" +
-                "t.rdb$trigger_sequence,\n" +
-                "t.rdb$trigger_type,\n" +
-                "t.rdb$trigger_inactive,\n" +
-                "t.rdb$description\n" +
-                "from rdb$triggers t\n" +
-                "where t.rdb$trigger_name = '" + getName().trim() + "'";
+        return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), getRemarks(), false, getHost().getDatabaseConnection());
     }
 
     @Override
-    protected void getObjectInfo() {
-        super.getObjectInfo();
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        try {
-            ResultSet rs = querySender.getResultSet(queryForInfo()).getResultSet();
-            setInfoFromResultSet(rs);
-        } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
-        } finally {
-            querySender.releaseResources();
-            setMarkedForReload(false);
-        }
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("TRIGGER", getName(), getHost().getDatabaseConnection());
+    }
 
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
+        return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), comment, true, getHost().getDatabaseConnection());
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
+    }
+
+    protected static final String TRIGGER_SOURCE = "TRIGGER_SOURCE";
+    protected static final String TRIGGER_SEQUENCE = "TRIGGER_SEQUENCE";
+    protected static final String TRIGGER_TYPE = "TRIGGER_TYPE";
+    protected static final String TRIGGER_INACTIVE = "TRIGGER_INACTIVE";
+
+
+    @Override
+    protected String getFieldName() {
+        return "TRIGGER_NAME";
+    }
+
+    @Override
+    protected Table getMainTable() {
+        return Table.createTable("RDB$TRIGGERS", "T");
+    }
+
+
+    Condition checkTriggerType(long longTriggerType) {
+        return Condition.createCondition()
+                .setStatement(Function.createFunction("BIN_AND")
+                        .appendArgument(Field.createField(getMainTable(), TRIGGER_TYPE).getFieldTable())
+                        .appendArgument(DefaultDatabaseTrigger.RDB_TRIGGER_TYPE_MASK + "")
+                        .getStatement()
+                        + " = " + longTriggerType);
+    }
+
+    @Override
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        SelectBuilder sb = super.builderForInfoAllObjects(commonBuilder);
+        if (getType() == NamedObject.DDL_TRIGGER)
+            sb.appendCondition(checkTriggerType(TRIGGER_TYPE_DDL));
+        else if (getType() == NamedObject.DATABASE_TRIGGER)
+            sb.appendCondition(checkTriggerType(TRIGGER_TYPE_DB));
+        else if (getType() == NamedObject.TRIGGER)
+            sb.appendCondition(Condition.createCondition(Field.createField(getMainTable(), TRIGGER_TYPE), "<=", "114"));
+        return sb;
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = SelectBuilder.createSelectBuilder(getHost().getDatabaseConnection());
+        Table triggers = getMainTable();
+        sb.appendTable(triggers);
+        sb.appendFields(triggers, getFieldName(), TRIGGER_SOURCE, RELATION_NAME, TRIGGER_SEQUENCE, TRIGGER_TYPE, TRIGGER_INACTIVE, DESCRIPTION);
+        sb.appendFields(triggers, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
+        sb.appendField(buildSqlSecurityField(triggers));
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setTableName(getFromResultSet(rs, RELATION_NAME));
+        setTriggerSequence(rs.getInt(TRIGGER_SEQUENCE));
+        setTriggerActive(rs.getInt(TRIGGER_INACTIVE) != 1);
+        setTriggerType(rs.getLong(TRIGGER_TYPE));
+        setTriggerSourceCode(getFromResultSet(rs, TRIGGER_SOURCE));
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        setEngine(getFromResultSet(rs, ENGINE_NAME));
+        setEntryPoint(getFromResultSet(rs, ENTRYPOINT));
+        setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
 
     }
 
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        if (rs.next()) {
-            setTableName(rs.getString(3));
-            setTriggerSequence(rs.getInt(4));
-            setTriggerActive(rs.getInt(6) != 1);
-            setTriggerType(rs.getLong(5));
-            setTriggerDescription(rs.getString(7));
-            setTriggerSourceCode(rs.getString(2));
-            setRemarks(rs.getString(7));
-        }
+    @Override
+    public void finishLoadingInfo() {
+
     }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
+    }
+
 
     public void reset() {
         super.reset();

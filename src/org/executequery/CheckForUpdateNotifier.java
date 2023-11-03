@@ -73,7 +73,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     public void startupCheckForUpdate() {
 
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("startupCheckUpdate") {
 
             public Object construct() {
                 startupCheck();
@@ -210,72 +210,88 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     void displayDialogDownload(MouseListener listener) {
-        int yesNo = displayNewDownloadVersionMessage();
-        if (yesNo == JOptionPane.YES_OPTION) {
+
+        if (ApplicationInstanceCounter.getCount() > 1) {
+            GUIUtilities.displayWarningMessage(bundledString("CloseAllInstances"));
+            return;
+        }
+
+        if (displayNewDownloadVersionMessage() == JOptionPane.YES_OPTION) {
 
             resetLabel(listener);
+            worker = new SwingWorker("downloadUpdate") {
 
-            worker = new org.underworldlabs.swing.util.SwingWorker() {
-
+                @Override
                 public Object construct() {
 
-                    updateLoader.setReleaseHub(releaseHub);
-                    List<String> argsList = new ArrayList<String>();
-                    if (releaseHub)
-                        argsList.add("useReleaseHub");
-                    else if (ReddatabaseAPI.getHeadersWithToken() == null) {
-                        return Constants.WORKER_CANCEL;
-                    }
+                    try {
 
-                    String version = bundledString("Version") + "=" + updateLoader.getVersion();
-                    argsList.add(version);
-                    ApplicationContext instance = ApplicationContext.getInstance();
-                    String repo = "";
-                    if(instance.getRepo() != null && !instance.getRepo().isEmpty()) {
-                        repo = "-repo=" + instance.getRepo();
-                        argsList.add(repo);
-                    }
-                    JProgressBar progbar = new JProgressBar();
-                    updateLoader.setProgressBar(progbar);
-                    statusBar().addComponent(progbar, LABEL_INDEX);
-                    updateLoader.downloadUpdate();
-                    updateLoader.unzipLocale();
-                    argsList.add("-root=" + updateLoader.getRoot());
-                    if (GUIUtilities.displayYesNoDialog(bundledString("restart.message"), bundledString("restart.message.title")) == JOptionPane.YES_OPTION) {
-                        String[] args = argsList.toArray(new String[0]);
-                        String[] run;
+                        updateLoader.setReleaseHub(releaseHub);
+                        List<String> argsList = new ArrayList<>();
+                        if (releaseHub)
+                            argsList.add("useReleaseHub");
+                        else if (ReddatabaseAPI.getHeadersWithToken() == null)
+                            return Constants.WORKER_CANCEL;
+
+                        String version = bundledString("Version") + "=" + updateLoader.getVersion();
+                        argsList.add(version);
+
+                        ApplicationContext instance = ApplicationContext.getInstance();
+                        String repo = instance.getRepo();
+                        if (!repo.isEmpty()) {
+                            repo = "-repo=" + instance.getRepo();
+                            argsList.add(repo);
+                        }
+
+                        if (!updateLoader.canDownload(true)) {
+                            setDownloadNotifierInStatusBar();
+                            return Constants.WORKER_CANCEL;
+                        }
+
+                        JProgressBar progressbar = new JProgressBar();
+                        updateLoader.setProgressBar(progressbar);
+                        statusBar().addComponent(progressbar, LABEL_INDEX);
+
+                        updateLoader.downloadUpdate();
+                        updateLoader.unzipLocale();
+
+                        boolean restartNow = GUIUtilities.displayYesNoDialog(
+                                bundledString("restart.message"),
+                                bundledString("restart.message.title")
+                        ) == JOptionPane.YES_OPTION;
+
+                        argsList.add("-root=" + updateLoader.getRoot());
+                        argsList.add("-launch=" + restartNow);
+
                         File file = new File("RedExpert.jar");
                         if (!file.exists())
                             file = new File("../RedExpert.jar");
-                        run = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
-                        run = (String[]) ArrayUtils.addAll(run, args);
-                        try {
-                            File outputLog = new File(ApplicationContext.getInstance().getUserSettingsHome() + System.getProperty("file.separator") + "updater.log");
-                            ProcessBuilder pb = new ProcessBuilder(run);
-                            pb.redirectOutput(ProcessBuilder.Redirect.appendTo(outputLog));
-                            pb.redirectError(ProcessBuilder.Redirect.appendTo(outputLog));
-                            pb.start();
 
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            GUIUtilities.displayExceptionErrorDialog("update error", ex);
-                        }
-                        System.exit(0);
+                        String[] updaterArguments = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
+                        updaterArguments = (String[]) ArrayUtils.addAll(updaterArguments, argsList.toArray(new String[0]));
+
+                        File outputLog = new File(ApplicationContext.getInstance().getUserSettingsHome() + System.getProperty("file.separator") + "updater.log");
+
+                        ProcessBuilder updateProcessBuilder = new ProcessBuilder(updaterArguments);
+                        updateProcessBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(outputLog));
+                        updateProcessBuilder.redirectError(ProcessBuilder.Redirect.appendTo(outputLog));
+                        ExecuteQuery.setShutdownHook(updateProcessBuilder);
+
+                        if (restartNow)
+                            ExecuteQuery.stop();
+                        else
+                            GUIUtilities.displayInformationMessage(bundledString("restart.message.postpone"));
+
+                        return Constants.WORKER_SUCCESS;
+
+                    } catch (Exception e) {
+                        GUIUtilities.displayExceptionErrorDialog("Update error", e);
+                        return Constants.WORKER_CANCEL;
                     }
-
-                    return Constants.WORKER_SUCCESS;
                 }
-
-                public void finished() {
-
-//                        closeProgressDialog();
-//                        GUIUtilities.showNormalCursor();
-                }
-
             };
             worker.start();
         }
-
     }
 
     private void resetLabel(MouseListener listener) {
@@ -324,7 +340,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             int yesNo = displayNewVersionMessage();
             if (yesNo == JOptionPane.YES_OPTION) {
 
-                worker = new SwingWorker() {
+                worker = new SwingWorker("displayReleaseNotes") {
 
                     public Object construct() {
 
@@ -418,7 +434,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     public void checkForUpdate(boolean monitorProgress) {
 
         this.monitorProgress = monitorProgress;
-        worker = new SwingWorker() {
+        worker = new SwingWorker("checkForUpdate") {
 
             public Object construct() {
 

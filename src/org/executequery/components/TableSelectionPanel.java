@@ -126,7 +126,6 @@ public class TableSelectionPanel extends ActionPanel
 
         } else if (source == schemasCombo) {
 
-            schemaSelected();
 
         } else if (source == tablesCombo) {
 
@@ -164,8 +163,6 @@ public class TableSelectionPanel extends ActionPanel
 
                 }
 
-                schemaSelected();
-
             } else {
 
                 clearCombos();
@@ -177,29 +174,7 @@ public class TableSelectionPanel extends ActionPanel
         }
     }
 
-    private void schemaSelected() {
 
-        try {
-
-            DatabaseSource schema = getSelectedSource();
-
-            if (schema != null) {
-
-                List<NamedObject> tables = schema.getTables();
-
-                populateModelForCombo(tablesCombo, tables);
-
-            } else {
-
-                populateModelForCombo(tablesCombo, null);
-            }
-
-        } catch (DataSourceException e) {
-
-            handleDataSourceException(e);
-        }
-
-    }
 
     private void tableSelected() {
 
@@ -237,12 +212,12 @@ public class TableSelectionPanel extends ActionPanel
 
     private JComboBox createSchemasCombo() {
 
-        return comboBoxForModel(new DynamicComboBoxModel());
+        return comboBoxForModel("schemaCombo", new DynamicComboBoxModel());
     }
 
     private JComboBox createTablesCombo() {
 
-        return comboBoxForModel(new DynamicComboBoxModel());
+        return comboBoxForModel("tableCombo", new DynamicComboBoxModel());
     }
 
     private JComboBox createConnectionsCombo() {
@@ -258,15 +233,15 @@ public class TableSelectionPanel extends ActionPanel
 
         ComboBoxModel model = new DynamicComboBoxModel(hosts);
 
-        JComboBox comboBox = comboBoxForModel(model);
+        JComboBox comboBox = comboBoxForModel("connectionCombo", model);
         comboBox.setEnabled(true);
 
         return comboBox;
     }
 
-    private JComboBox comboBoxForModel(ComboBoxModel model) {
+    private JComboBox comboBoxForModel(String name, ComboBoxModel model) {
 
-        JComboBox comboBox = WidgetFactory.createComboBox(model);
+        JComboBox comboBox = WidgetFactory.createComboBox(name, model);
         comboBox.addItemListener(this);
         comboBox.setEnabled(false);
 

@@ -1,5 +1,7 @@
 package org.executequery.gui.editor.autocomplete;
 
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonToken;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -11,10 +13,13 @@ import org.executequery.gui.editor.ConnectionChangeListener;
 import org.executequery.gui.editor.QueryWithPosition;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.log.Log;
-import org.executequery.repository.spi.KeywordRepositoryImpl;
 import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.QueryTable;
 import org.executequery.util.UserProperties;
+import org.fife.ui.rsyntaxtextarea.Token;
+import org.underworldlabs.sqlLexer.CustomToken;
+import org.underworldlabs.sqlLexer.SqlLexer;
+import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
@@ -32,12 +37,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
 
 public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvider, AutoCompletePopupListener,
         CaretListener, ConnectionChangeListener, FocusListener {
@@ -149,6 +150,10 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         }
 
         return autoCompletePopup;
+    }
+
+    public boolean isShow() {
+        return autoCompletePopup != null && autoCompletePopup.isVisible();
     }
 
     private JTextComponent queryEditorTextComponent() {
@@ -457,20 +462,20 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         return (tables != null && !tables.isEmpty());
     }*/
 
-    private List<AutoCompleteListItem> itemsStartingWith(List<QueryTable> tables, String prefix) {
+    private List<AutoCompleteListItem> itemsStartingWith(String prefix) {
 
-        String editorText = sqlTextPane.getText();
+        //String editorText = sqlTextPane.getText();
         if (StringUtils.isBlank(prefix)) {
             return new ArrayList<>();
         }
 
 
-        trace("Building list of items starting with [ " + prefix + " ] from table list with size " + tables.size());
+        //trace("Building list of items starting with [ " + prefix + " ] from table list with size " + tables.size());
 
         List<AutoCompleteListItem> searchList = autoCompleteListItems;
         String wordPrefix = prefix.trim().toUpperCase();
         String tableString = "";
-
+        List<QueryTable> tables = new ArrayList<>();
         int dotIndex = prefix.indexOf('.');
         boolean hasDotIndex = (dotIndex != -1);
         if (hasDotIndex) {
@@ -478,6 +483,8 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
             tableString = wordPrefix.substring(0, dotIndex);
             tableString = tableString.replace("(", "");
             wordPrefix = wordPrefix.substring(dotIndex + 1);
+            DerivedQuery derivedQuery = new DerivedQuery(getQueryAt(sqlTextPane.getCaretPosition()).getQuery());
+            tables = getQueryTables(derivedQuery.getDerivedQuery());
 
         } else if (wordPrefix.length() < MINIMUM_CHARS_FOR_DATABASE_LOOKUP /*&& !hasTables*/) {
             return buildItemsStartingWithForList(
@@ -501,35 +508,19 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
         // maybe alias?
         if (hasDotIndex) {
-            KeywordRepositoryImpl kw = new KeywordRepositoryImpl();
-            List<String> sql92 = kw.getSQL92();
-            String regex = "([A-z]*\\$\\w+)\\s("
-                    + tableString
-                    + "\\b)|(\\w+)\\s("
-                    + tableString
-                    + "\\b)"
-                    + "|(\".+\")\\s("
-                    + tableString
-                    + "\\b)";
-            Pattern pattern = Pattern.compile(regex,
-                    Pattern.CASE_INSENSITIVE);
-            Matcher matcher = pattern.matcher(editorText);
-            while (matcher.find()) {
-                String tableFromAlias = "";
-                String tableFromAlias1 = matcher.group(1);
-                String tableFromAlias3 = matcher.group(3);
-                String tableFromAlias5 = matcher.group(5);
+            String tableFromAlias = null;
+            if ((tableString.equalsIgnoreCase("new") || tableString.equalsIgnoreCase("old")) && sqlTextPane.getTriggerTable() != null) {
+                tableFromAlias = sqlTextPane.getTriggerTable();
+            } else {
+                for (QueryTable queryTable : tables) {
+                    if (queryTable.getAlias().equalsIgnoreCase(tableString)) {
+                        tableFromAlias = queryTable.getName();
+                        break;
+                    }
 
-                if (tableFromAlias1 != null)
-                    tableFromAlias = tableFromAlias1;
-                else if (tableFromAlias3 != null)
-                    tableFromAlias = tableFromAlias3;
-                else if (tableFromAlias5 != null)
-                    tableFromAlias = tableFromAlias5;
-
-                if (!tableFromAlias.startsWith("\"") && sql92.contains(tableFromAlias.toUpperCase()))
-                    continue;
-
+                }
+            }
+            if (tableFromAlias != null) {
                 List<AutoCompleteListItem> itemsForTable =
                         selectionsFactory.buildItemsForTable(databaseHost, tableFromAlias.startsWith("\"") ? tableFromAlias : tableFromAlias.toUpperCase());
 
@@ -564,6 +555,62 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         return itemsStartingWith;
     }
 
+    List<QueryTable> getQueryTables(String query) {
+        List<QueryTable> queryTables = new ArrayList<>();
+        List<CustomToken> aliases = getAliasesFromQuery(query);
+        for (CustomToken alias : aliases) {
+            if (alias.getType() == SqlLexerTokenMaker.ALIAS) {
+                queryTables.add(new QueryTable(alias.getTableNameForAlias(), alias.getText()));
+            }
+        }
+        return queryTables;
+    }
+
+    List<CustomToken> getAliasesFromQuery(String query) {
+        SqlLexer lexer = new SqlLexer(CharStreams.fromString(query));
+
+        List<CustomToken> aliases = new ArrayList<>();
+        if (databaseHost != null) {
+            List<String> dbobjects = databaseHost.getTableNames();
+            String lastDBObject = null;
+            while (true) {
+
+                org.antlr.v4.runtime.Token token = lexer.nextToken();
+                if (token.getType() != SqlLexer.SPACES
+                        && token.getType() != SqlLexer.SINGLE_LINE_COMMENT
+                        && token.getType() != SqlLexer.MULTILINE_COMMENT
+                        && token.getType() != SqlLexer.QUOTE_IDENTIFIER
+                        && token.getType() != SqlLexer.IDENTIFIER
+                        && !token.getText().equalsIgnoreCase("as")
+                )
+                    lastDBObject = null;
+                if (token.getType() == SqlLexer.IDENTIFIER || token.getType() == SqlLexer.QUOTE_IDENTIFIER) {
+                    if (dbobjects != null) {
+                        String x = token.getText();
+                        if (x.length() > 0 && x.charAt(0) >= 'A' && x.charAt(0) <= 'z')
+                            x = x.toUpperCase();
+                        if (x.startsWith("\"") && x.endsWith("\"") && x.length() > 1)
+                            x = x.substring(1, x.length() - 1);
+                        if (lastDBObject != null) {
+                            CustomToken customToken = new CustomToken(token);
+                            customToken.setType(SqlLexerTokenMaker.ALIAS);
+                            customToken.setTableNameForAlias(lastDBObject);
+                            lastDBObject = null;
+                            aliases.add(customToken);
+                        } else if (dbobjects.contains(x)) {
+                            CustomToken customToken = new CustomToken(token);
+                            customToken.setType(SqlLexerTokenMaker.DB_OBJECT);
+                            lastDBObject = x;
+                        }
+                    }
+                }
+                if (token.getType() == CommonToken.EOF)
+                    break;
+            }
+        }
+        return aliases;
+    }
+
     private final DefaultAutoCompletePopupProvider.AutoCompleteListItemComparator autoCompleteListItemComparator = new DefaultAutoCompletePopupProvider.AutoCompleteListItemComparator();
 
     static class AutoCompleteListItemComparator implements Comparator<AutoCompleteListItem> {
@@ -591,13 +638,19 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
     private void captureAndResetListValues() {
         noProposals = false;
         int dot = sqlTextPane.getCaretPosition();
+        int tok_dot = dot;
+        if (tok_dot > 0)
+            tok_dot = tok_dot - 1;
+        Token token = sqlTextPane.getTokenForPosition(tok_dot);
+        if (token != null && token.getType() == Token.LITERAL_STRING_DOUBLE_QUOTE) {
+            noProposals = true;
+            popupMenu().hidePopup();
+            return;
+        }
         String wordAtCursor = getWordEndingAt(dot);
         trace("Capturing and resetting list values for word [ " + wordAtCursor + " ]");
-        DerivedQuery derivedQuery = new DerivedQuery(getQueryAt(sqlTextPane.getCaretPosition()).getQuery());
-        List<QueryTable> tables = derivedQuery.tableForWord(wordAtCursor);
-        List<AutoCompleteListItem> itemsStartingWith = itemsStartingWith(tables, wordAtCursor);
+        List<AutoCompleteListItem> itemsStartingWith = itemsStartingWith(wordAtCursor);
         if (itemsStartingWith.isEmpty()) {
-            //noProposals = true;
             noProposalsAvailable(itemsStartingWith);
         }
 
@@ -810,7 +863,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
                     int index = wordAtCursor.indexOf(".");
                     insertionIndex += index + 1;
                     wordAtCursorLength -= index + 1;
-                    selectedValue = MiscUtils.getFormattedObject(selectedValue);
+                    selectedValue = MiscUtils.getFormattedObject(selectedValue, connection);
                 }
 
                 document.remove(insertionIndex, wordAtCursorLength);
@@ -910,7 +963,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
             databaseHost = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(selectedConnection);
         }
-
+        autoCompleteListItems = new ArrayList<>();
         selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteSchema, sqlTextPane);
 
         return true;
@@ -945,25 +998,29 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         }
     }
 
+    public void resetAutoCompleteListItems() {
+        if (!rebuildingList)
+            autoCompleteListItems = new ArrayList<>();
+    }
+
     private boolean rebuildingList;
     private org.underworldlabs.swing.util.SwingWorker worker;
 
-    private void scheduleListItemLoad() {
+    public void scheduleListItemLoad() {
 
         if (rebuildingList || !autoCompleteListItems.isEmpty()) {
 
             return;
         }
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("rebuildAutocomplete") {
 
             public Object construct() {
-
                 try {
 
                     debug("Rebuilding suggestions list...");
 
-                    rebuildingList = true;
+
                     rebuildListSelectionsItems();
 
                     return "done";
@@ -994,6 +1051,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         };
 
         debug("Starting worker thread for suggestions list");
+        rebuildingList = true;
         worker.start();
     }
 
@@ -1023,5 +1081,14 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
         Log.debug(message, e);
     }
-
+    public void setVariables(TreeSet<String> variables)
+    {
+        selectionsFactory.setVariables(variables);
+        rebuildListSelectionsItems();
+    }
+    public void setParameters(TreeSet<String> parameters)
+    {
+        selectionsFactory.setParameters(parameters);
+        rebuildListSelectionsItems();
+    }
 }

@@ -22,23 +22,23 @@ package org.executequery.gui.resultset;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.StandardTable;
 import org.underworldlabs.swing.DateCellEditor;
 import org.underworldlabs.swing.DateTimeCellEditor;
+import org.underworldlabs.swing.ForeignKeyCellEditor;
 import org.underworldlabs.swing.TimeCellEditor;
 import org.underworldlabs.swing.table.MultiLineStringCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.swing.table.TableSorter;
+import org.underworldlabs.swing.table.ValidatedNumberCellEditor;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -51,66 +51,111 @@ import java.util.Vector;
 public class ResultSetTable extends JTable implements StandardTable {
 
     private DefaultCellEditor defaultCellEditor;
-
+    private DefaultCellEditor int128CellEditor;
+    private DefaultCellEditor bigintCellEditor;
+    private DefaultCellEditor integerCellEditor;
+    private DefaultCellEditor smallintCellEditor;
     private DefaultCellEditor multiLineCellEditor;
-
     private DateCellEditor dateEditor;
-
     private DateTimeCellEditor dateTimeCellEditor;
-
     private TimeCellEditor timeCellEditor;
 
-    List<Integer> comboboxColumns;
-
-
+    private boolean isAutoResizeable;
+    private List<Integer> foreignColumnsIndexes;
     private ResultsTableColumnModel columnModel;
-
     private ResultSetTableCellRenderer cellRenderer;
 
     private final TableColumn dummyColumn = new TableColumn();
-
-    public DefaultTableModel myTableModel = new DefaultTableModel();
+    private final ArrayList<ForeignData> foreignColumnsData = new ArrayList<>();
 
     public ResultSetTable() {
 
         super();
         setDefaultOptions();
 
+        // --- stringCellEditor ---
+
         final StringCellEditor stringCellEditor = new StringCellEditor();
         stringCellEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
         defaultCellEditor = new DefaultCellEditor(stringCellEditor) {
+            @Override
             public Object getCellEditorValue() {
                 return stringCellEditor.getValue();
             }
         };
 
+        // --- multiLineStringCellEditor ---
+
         final MultiLineStringCellEditor multiLineStringCellEditor = new MultiLineStringCellEditor();
         multiLineStringCellEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
         multiLineCellEditor = new DefaultCellEditor(multiLineStringCellEditor) {
+            @Override
             public Object getCellEditorValue() {
                 return multiLineStringCellEditor.getValue();
             }
         };
+
+        // --- int128Editor ---
+
+        final ValidatedNumberCellEditor int128Editor = new ValidatedNumberCellEditor(Types.INT128);
+        int128Editor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+        int128CellEditor = new DefaultCellEditor(int128Editor) {
+            @Override
+            public Object getCellEditorValue() {
+                return int128Editor.getValue();
+            }
+        };
+
+        // --- bigintEditor ---
+
+        final ValidatedNumberCellEditor bigintEditor = new ValidatedNumberCellEditor(Types.BIGINT);
+        bigintEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+        bigintCellEditor = new DefaultCellEditor(bigintEditor) {
+            @Override
+            public Object getCellEditorValue() {
+                return bigintEditor.getValue();
+            }
+        };
+
+        // --- integerEditor ---
+
+        final ValidatedNumberCellEditor integerEditor = new ValidatedNumberCellEditor(Types.INTEGER);
+        integerEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+        integerCellEditor = new DefaultCellEditor(integerEditor) {
+            @Override
+            public Object getCellEditorValue() {
+                return integerEditor.getValue();
+            }
+        };
+
+        // --- smallintEditor ---
+
+        final ValidatedNumberCellEditor smallintEditor = new ValidatedNumberCellEditor(Types.SMALLINT);
+        smallintEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+        smallintCellEditor = new DefaultCellEditor(smallintEditor) {
+            @Override
+            public Object getCellEditorValue() {
+                return smallintEditor.getValue();
+            }
+        };
+
+        // ---
+
         dateEditor = new DateCellEditor();
         dateTimeCellEditor = new DateTimeCellEditor();
         timeCellEditor = new TimeCellEditor();
 
+        isAutoResizeable = false;
     }
 
     public ResultSetTable(TableModel model) {
-
         super(model);
         setDefaultOptions();
-    }
 
-    public void setModel(TableModel model) {
-        super.setModel(model);
-        setDefaultColumnOptions();
-
+        isAutoResizeable = false;
     }
 
     private void setDefaultOptions() {
-
 
         setColumnSelectionAllowed(true);
         columnModel = new ResultsTableColumnModel();
@@ -125,22 +170,24 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     private void setDefaultColumnOptions() {
 
-        comboboxColumns = new ArrayList<>();
+        foreignColumnsIndexes = new ArrayList<>();
         int cols = dataModel.getColumnCount();
-        if (columnModel != null) {
-            columnModel.init_tcs(cols);
-        }
-
-        /*cellRenderer = new ResultSetTableCellRenderer();
-        cellRenderer.setFont(getFont());*/
-
+        if (columnModel != null)
+            columnModel.initTCS(cols);
 
     }
 
-    protected JTableHeader createDefaultTableHeader() {
+    @Override
+    public void setModel(TableModel model) {
+        super.setModel(model);
+        setDefaultColumnOptions();
+    }
 
+    @Override
+    protected JTableHeader createDefaultTableHeader() {
         return new JTableHeader(columnModel) {
 
+            @Override
             public String getToolTipText(MouseEvent e) {
 
                 if (getModel() instanceof TableSorter) {
@@ -160,7 +207,6 @@ public class ResultSetTable extends JTable implements StandardTable {
 
                 return super.getToolTipText(e);
             }
-
         };
     }
 
@@ -174,11 +220,7 @@ public class ResultSetTable extends JTable implements StandardTable {
     }
 
     public boolean hasMultipleColumnAndRowSelections() {
-
-        int cols = getSelectedColumnCount();
-        int rows = getSelectedRowCount();
-
-        return (cols > 1 || rows > 1);
+        return (getSelectedColumnCount() > 1 || getSelectedRowCount() > 1);
     }
 
     public void selectRow(Point point) {
@@ -200,7 +242,6 @@ public class ResultSetTable extends JTable implements StandardTable {
                 int row = rowAtPoint(point);
                 setRowSelectionInterval(row, row);
             }
-
         }
 
     }
@@ -224,99 +265,47 @@ public class ResultSetTable extends JTable implements StandardTable {
                 int column = columnAtPoint(point);
                 setColumnSelectionInterval(column, column);
             }
-
         }
 
     }
 
     public void copySelectedCells() {
-
         copySelectedCells('\t', false, false);
-
-        /*
-
-        StringBuilder sb = new StringBuilder();
-
-        int cols = getSelectedColumnCount();
-        int rows = getSelectedRowCount();
-
-        if (cols == 0 && rows == 0) {
-
-            return;
-        }
-
-        int[] selectedRows = getSelectedRows();
-        int[] selectedCols = getSelectedColumns();
-
-        for (int i = 0; i < rows; i++) {
-
-            for (int j = 0; j < cols; j++) {
-
-                sb.append(getValueAt(selectedRows[i], selectedCols[j]));
-
-                if (j < cols - 1) {
-
-                    sb.append('\t');
-                }
-
-            }
-
-            if (i < rows - 1) {
-
-                sb.append('\n');
-            }
-
-        }
-
-        GUIUtilities.copyToClipBoard(sb.toString());
-
-        */
     }
 
     public void copySelectedCellsAsCSV() {
-
         copySelectedCells(',', false, false);
     }
 
     public void copySelectedCellsAsCSVWithNames() {
-
         copySelectedCells(',', false, true);
     }
 
     public void copySelectedCellsAsCSVQuoted() {
-
         copySelectedCells(',', true, false);
     }
 
     public void copySelectedCellsAsCSVQuotedWithNames() {
-
         copySelectedCells(',', true, true);
     }
 
     private void copySelectedCells(char delimiter, boolean quoted, boolean withNames) {
 
         StringBuilder sb = new StringBuilder();
-
         int cols = getSelectedColumnCount();
         int rows = getSelectedRowCount();
 
-        if (cols == 0 && rows == 0) {
-
+        if (cols == 0 && rows == 0)
             return;
-        }
 
         int[] selectedRows = getSelectedRows();
         int[] selectedCols = getSelectedColumns();
 
         if (withNames) {
-
             sb.append("#");
-            List<String> list = new ArrayList<String>();
-            for (int j = 0; j < cols; j++) {
-
+            List<String> list = new ArrayList<>();
+            for (int j = 0; j < cols; j++)
                 list.add(getColumnName(selectedCols[j]));
-            }
-
             sb.append(StringUtils.join(list, delimiter)).append('\n');
         }
 
@@ -324,48 +313,33 @@ public class ResultSetTable extends JTable implements StandardTable {
         for (int i = 0; i < rows; i++) {
 
             for (int j = 0; j < cols; j++) {
-
                 sb.append(quote);
                 sb.append(getValueAt(selectedRows[i], selectedCols[j]));
                 sb.append(quote);
                 sb.append(delimiter);
             }
 
-            if (cols > 1) {
-
+            if (cols > 1)
                 sb.deleteCharAt(sb.length() - 1);
-            }
-
-            if (i < rows - 1) {
-
+            if (i < rows - 1)
                 sb.append('\n');
-            }
-
         }
 
-        if (cols == 1) {
-
+        if (cols == 1)
             sb.deleteCharAt(sb.length() - 1);
-        }
 
         GUIUtilities.copyToClipBoard(sb.toString());
     }
 
     public Object valueAtPoint(Point point) {
-
-        int row = rowAtPoint(point);
-        int col = columnAtPoint(point);
-
-        return getValueAt(row, col);
+        return getValueAt(rowAtPoint(point), columnAtPoint(point));
     }
 
     public int[] getSelectedCellsRowsIndexes() {
-
         return getSelectedRows();
     }
 
     public int[] getSelectedCellsColumnsIndexes() {
-
         return getSelectedColumns();
     }
 
@@ -374,9 +348,8 @@ public class ResultSetTable extends JTable implements StandardTable {
         int cols = getSelectedColumnCount();
         int rows = getSelectedRowCount();
 
-        if (cols == 0 && rows == 0) {
+        if (cols == 0 && rows == 0)
             return null;
-        }
 
         int[] selectedRows = getSelectedRows();
         int[] selectedCols = getSelectedColumns();
@@ -387,16 +360,11 @@ public class ResultSetTable extends JTable implements StandardTable {
         for (int i = 0; i < rows; i++) {
 
             Vector rowVector = new Vector(cols);
-
             for (int j = 0; j < cols; j++) {
 
                 rowVector.add(getValueAt(selectedRows[i], selectedCols[j]));
-
-                if (i == 0) {
-
+                if (i == 0)
                     columns.add(getColumnName(selectedCols[j]));
-                }
-
             }
 
             data.add(rowVector);
@@ -430,183 +398,50 @@ public class ResultSetTable extends JTable implements StandardTable {
         cellRenderer.applyUserPreferences();
     }
 
-    public void resetTableColumnWidth() {
-        setTableColumnWidth(getUserPreferredColumnWidth());
-    }
-
+    @Override
     public void setBackground(Color background) {
-        if (cellRenderer != null) {
+        if (cellRenderer != null)
             cellRenderer.setTableBackground(background);
-        }
         super.setBackground(background);
     }
 
+    @Override
     public void setFont(Font font) {
         super.setFont(font);
-        if (cellRenderer != null) {
+        if (cellRenderer != null)
             cellRenderer.setFont(font);
-        }
     }
 
-    public Boolean isComboColumn(int index) {
-        return comboboxColumns.contains(index);
-    }
-
+    @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
         return cellRenderer;
     }
 
-    private final ArrayList<DefaultTableModel> dtm = new ArrayList<DefaultTableModel>();
-    private final ArrayList<Integer> foreignIndex = new ArrayList<Integer>();
-    private final ArrayList<Vector<Object>> foreignKeys = new ArrayList<Vector<Object>>();
+    public Boolean isComboColumn(int index) {
+        return foreignColumnsIndexes.contains(index);
+    }
 
-
+    @Override
     public TableCellEditor getCellEditor(int row, int column) {
-
-        int columnIndex = 0;
-
-
-        for (int i = 0; i < foreignIndex.size(); i++) {
-            if (foreignIndex.get(i) == column) {
-                columnIndex = i;
-            }
-        }
-
-        ArrayList<DefaultTableModel> rowTabelModelsList = new ArrayList<DefaultTableModel>();
-
-        class ComboBoxRenderer extends JTable implements ListCellRenderer {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (isSelected) {
-                    setBackground(list.getSelectionBackground());
-                    setForeground(list.getSelectionForeground());
-                } else {
-                    setBackground(list.getBackground());
-                    setForeground(list.getForeground());
-                }
-
-                if (index == 0) {
-                    setBackground(list.getSelectionBackground());
-                }
-
-                setFont(list.getFont());
-                setModel(rowTabelModelsList.get(index));
-                return this;
-            }
-        }
 
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
         if (isComboColumn(column)) {
-            class SampleJComboBoxWithScrollBar extends JComboBox {
 
-                SampleJComboBoxWithScrollBar() {
-                    super();
-                    this.addPopupMenuListener(this.getPopupMenuListener());
-                    this.adjustScrollBar();
-                }
-
-                private void adjustPopupWidth() {
-                    if (getItemCount() == 0) {
-                        return;
-                    }
-                    Object comp = getUI().getAccessibleChild(this, 0);
-                    if (!(comp instanceof JPopupMenu)) {
-                        return;
-                    }
-                    JPopupMenu popup = (JPopupMenu) comp;
-                    JScrollPane scrollPane = (JScrollPane) popup.getComponent(0);
-                    Object value = getItemAt(0);
-                    Component rendererComp = getRenderer().getListCellRendererComponent(new JList(), value, 0, false, false);
-                    if (rendererComp instanceof JTable) {
-                        scrollPane.setColumnHeaderView(((JTable) rendererComp).getTableHeader());
-                    }
-                    Dimension prefSize = rendererComp.getPreferredSize();
-                    Dimension size = scrollPane.getPreferredSize();
-                    size.width = Math.max(size.width, prefSize.width);
-                    scrollPane.setPreferredSize(size);
-                    scrollPane.setMaximumSize(size);
-                    scrollPane.revalidate();
-                }
-
-                private void adjustScrollBar() {
-                    if (getItemCount() == 0) {
-                        return;
-                    }
-                    Object comp = getUI().getAccessibleChild(this, 0);
-                    if (!(comp instanceof JPopupMenu)) {
-                        return;
-                    }
-                    JPopupMenu popup = (JPopupMenu) comp;
-                    JScrollPane scrollPane = (JScrollPane) popup.getComponent(0);
-                    scrollPane.setHorizontalScrollBar(new JScrollBar(JScrollBar.HORIZONTAL));
-                    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                }
-
-                private PopupMenuListener getPopupMenuListener() {
-
-                    return new PopupMenuListener() {
-
-                        @Override
-                        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                            //adjustPopupWidth();
-                            adjustScrollBar();
-                        }
-
-                        @Override
-                        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                        }
-
-                        @Override
-                        public void popupMenuCanceled(PopupMenuEvent e) {
-                        }
-                    };
+            int columnIndex = 0;
+            for (int i = 0; i < foreignColumnsData.size(); i++) {
+                if (foreignColumnsData.get(i).getColumnIndex() == column) {
+                    columnIndex = i;
+                    break;
                 }
             }
 
-            SampleJComboBoxWithScrollBar comboBox = new SampleJComboBoxWithScrollBar();
-            comboBox.setEditable(true);
-
-            comboBox.addItem(foreignKeys.get(columnIndex).get(0));
-
-            for (int i = -1; i < dtm.get(columnIndex).getRowCount(); i++) {
-                DefaultTableModel rowTableModel = new DefaultTableModel();
-                for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
-                    rowTableModel.addColumn("");
-                }
-                rowTableModel.insertRow(0, new Object[] {});
-                if (i != -1) {
-                    for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
-                        rowTableModel.setValueAt(dtm.get(columnIndex).getValueAt(i, j), 0, j);
-                    }
-                }
-                else {
-                    for (int j = 0; j < dtm.get(columnIndex).getColumnCount(); j++) {
-                        rowTableModel.setValueAt(dtm.get(columnIndex).getColumnName(j), 0, j);
-                    }
-                }
-
-                rowTabelModelsList.add(rowTableModel);
-
-                if (i == -1) {
-                    continue;
-                }
-
-                comboBox.addItem(foreignKeys.get(columnIndex).get(i));
-
-
-            }
-
-            ComboBoxRenderer renderer = new ComboBoxRenderer();
-            comboBox.setRenderer(renderer);
-
-            TableCellEditor editor = new DefaultCellEditor(comboBox);
-
-            if (value.getValue() == null)
-                comboBox.setSelectedIndex(0);
-            else
-                comboBox.setSelectedItem(value.getValue());
-
-            return editor;
+            return new ForeignKeyCellEditor(
+                    getModel(),
+                    foreignColumnsData.get(columnIndex).getTableModel(),
+                    foreignColumnsData.get(columnIndex).getItems(),
+                    foreignColumnsData.get(columnIndex).getNames(),
+                    value.getValue(), row,
+                    foreignColumnsData.get(columnIndex).getChildColumnIndexes());
         }
 
         int sqlType = value.getDataType();
@@ -619,32 +454,51 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.VARCHAR:
             case Types.NVARCHAR:
                 return multiLineCellEditor;
+
+            case Types.INT128:
+                return int128CellEditor;
+
+            case Types.BIGINT:
+                return bigintCellEditor;
+
+            case Types.INTEGER:
+                return integerCellEditor;
+
+            case Types.SMALLINT:
+                return smallintCellEditor;
+
             case Types.DATE:
                 return dateEditor;
+
             case Types.TIMESTAMP:
                 dateTimeCellEditor.getDateTimePicker().setVisibleTimeZone(false);
                 return dateTimeCellEditor;
+
             case Types.TIMESTAMP_WITH_TIMEZONE:
                 dateTimeCellEditor.getDateTimePicker().setVisibleTimeZone(true);
                 return dateTimeCellEditor;
+
             case Types.TIME_WITH_TIMEZONE:
                 timeCellEditor.getPicker().setVisibleTimeZone(true);
                 return timeCellEditor;
+
             case Types.TIME:
                 timeCellEditor.getPicker().setVisibleTimeZone(false);
                 return timeCellEditor;
+
             case Types.BOOLEAN:
-                JComboBox comboBox1 = new JComboBox(new String[]{"true", "false", "null"});
+                JComboBox comboBox = new JComboBox(new String[]{"true", "false", "null"});
                 String booleanValue = String.valueOf(value.getValue());
+
                 if (MiscUtils.isNull(booleanValue))
-                    comboBox1.setSelectedItem(2);
+                    comboBox.setSelectedItem(2);
                 else if (booleanValue.equalsIgnoreCase("true"))
-                    comboBox1.setSelectedIndex(0);
+                    comboBox.setSelectedIndex(0);
                 else if (booleanValue.equalsIgnoreCase("false"))
-                    comboBox1.setSelectedIndex(1);
+                    comboBox.setSelectedIndex(1);
                 else
-                    comboBox1.setSelectedItem(2);
-                return new DefaultCellEditor(comboBox1);
+                    comboBox.setSelectedItem(2);
+                return new DefaultCellEditor(comboBox);
 
         }
 
@@ -655,74 +509,90 @@ public class ResultSetTable extends JTable implements StandardTable {
         return SystemProperties.getIntProperty("user", "results.table.column.width");
     }
 
+    @Override
     public void setTableColumnWidth(int columnWidth) {
 
         TableColumnModel tcm = getColumnModel();
         if (columnWidth != 75) {
 
-            TableColumn col = null;
+            TableColumn col;
             for (Enumeration<TableColumn> i = tcm.getColumns(); i.hasMoreElements(); ) {
                 col = i.nextElement();
                 col.setWidth(columnWidth);
                 col.setPreferredWidth(columnWidth);
             }
-
         }
+
     }
 
-    public void setComboboxColumn(int ind, Vector<Object> items) {
-        comboboxColumns.add(ind);
-        TableColumn column = new TableColumn();
-        JComboBox comboBox = new JComboBox();
-        comboBox.setModel(new DefaultComboBoxModel(items));
-        column.setCellEditor(new DefaultCellEditor(comboBox));
-        columnModel.setColumn(column, ind);
-    }
+    public void setTableColumnWidthFromContents() {
 
-    public void setComboboxTable(int ind, DefaultTableModel defaultTableModel, Vector<Object> items) {
-        comboboxColumns.add(ind);
-        TableColumn column = new TableColumn();
-        JComboBox comboBox = new JComboBox();
-        dtm.add(defaultTableModel);
-        foreignIndex.add(ind);
-        foreignKeys.add(items);
-        class ComboBoxRenderer extends JTable implements ListCellRenderer {
-            public DefaultTableModel rowTabelModel;
+        if (getModel() instanceof ResultSetTableModel) {
+            ResultSetTableModel tableModel = (ResultSetTableModel) getModel();
+            setColWidthFromContents(tableModel);
 
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                setModel(rowTabelModel);
-                return this;
+        } else if (getModel() instanceof TableSorter) {
+            if (((TableSorter) getModel()).getTableModel() instanceof ResultSetTableModel) {
+                ResultSetTableModel tableModel = (ResultSetTableModel) ((TableSorter) getModel()).getTableModel();
+                setColWidthFromContents(tableModel);
             }
         }
-        ComboBoxRenderer renderer = new ComboBoxRenderer();
-        comboBox.setRenderer(renderer);
-        column.setCellEditor(new DefaultCellEditor(comboBox));
-        columnModel.setColumn(column, ind);
+    }
+
+    private void setColWidthFromContents(ResultSetTableModel tableModel) {
+
+        TableColumnModel tcm = getColumnModel();
+        TableColumn col;
+
+        for (int i = 0; i < tcm.getColumnCount(); i++) {
+            ResultSetColumnHeader header = tableModel.getColumnHeaders().get(i);
+            col = tcm.getColumn(i);
+            col.setWidth(header.getColWidth());
+            col.setPreferredWidth(header.getColWidth());
+        }
+
+    }
+
+    public void setForeignKeyTable(
+            int ind, ResultSetTableModel defaultTableModel, Vector<Vector<Object>> items,
+            Vector<String> names, int[] childColumnIndexes) {
+
+        foreignColumnsIndexes.add(ind);
+        foreignColumnsData.add(new ForeignData(ind, defaultTableModel, items, names, childColumnIndexes));
+        columnModel.setColumn(new TableColumn(), ind);
+    }
+
+    public void columnVisibilityChanged() {
+        ResultSetTableModel model = (ResultSetTableModel) ((TableSorter) getModel()).getTableModel();
+        model.fireTableStructureChanged();
+        applyUserPreferences();
+    }
+
+    public void stopEditing() {
+        if (isEditing())
+            getCellEditor().stopCellEditing();
+    }
+
+    public void switchAutoResizeMode() {
+        isAutoResizeable = !isAutoResizeable;
+        setAutoResizeMode(isAutoResizeable ? JTable.AUTO_RESIZE_ALL_COLUMNS : JTable.AUTO_RESIZE_OFF);
     }
 
     class ResultsTableColumnModel extends DefaultTableColumnModel {
+
         Vector<TableColumn> tcs;
 
         // dumb work-around for update issue noted
-        public void init_tcs(int cols) {
-            tcs = new Vector<TableColumn>();
-            for (int i = 0; i < cols; i++) {
+        public void initTCS(int cols) {
+            tcs = new Vector<>();
+            for (int i = 0; i < cols; i++)
                 tcs.add(new TableColumn());
-            }
         }
 
+        @Override
         public TableColumn getColumn(int columnIndex) {
             try {
                 return super.getColumn(columnIndex);
-            } catch (Exception e) {
-                return dummyColumn;
-            }
-        }
-
-        public TableColumn getComboColumn(int columnIndex) {
-            try {
-                return tcs.elementAt(columnIndex);
             } catch (Exception e) {
                 return dummyColumn;
             }
@@ -734,28 +604,57 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     } // class ResultsTableColumnModel
 
+    static class ComboBoxRenderer extends JTable implements ListCellRenderer {
 
-    class ResultSetTableHeader extends JTableHeader {
+        public DefaultTableModel rowTableModel;
 
         @Override
-        public String getToolTipText(MouseEvent event) {
-
-            return super.getToolTipText(event);
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            setModel(rowTableModel);
+            return this;
         }
 
-    }
+    } // class ComboBoxRenderer
 
-    public void columnVisibilityChanged() {
+    private static class ForeignData {
 
-        ResultSetTableModel model = (ResultSetTableModel) ((TableSorter) getModel()).getTableModel();
-        model.fireTableStructureChanged();
-        applyUserPreferences();
-    }
+        private final int columnIndex;
+        private final int[] childColumnIndexes;
+        private final ResultSetTableModel tableModel;
+        private final Vector<Vector<Object>> items;
+        private final Vector<String> names;
 
-    public void stopEditing() {
-        if (isEditing())
-            getCellEditor().stopCellEditing();
-    }
+        public ForeignData(
+                int columnIndex, ResultSetTableModel tableModel, Vector<Vector<Object>> items,
+                Vector<String> names, int[] childColumnIndexes) {
+
+            this.columnIndex = columnIndex;
+            this.tableModel = tableModel;
+            this.items = items;
+            this.names = names;
+            this.childColumnIndexes = childColumnIndexes;
+        }
+
+        public int getColumnIndex() {
+            return columnIndex;
+        }
+
+        public ResultSetTableModel getTableModel() {
+            return tableModel;
+        }
+
+        public Vector<Vector<Object>> getItems() {
+            return items;
+        }
+
+        public Vector<String> getNames() {
+            return names;
+        }
+
+        public int[] getChildColumnIndexes() {
+            return childColumnIndexes;
+        }
+
+    } // class ForeignData
 
 }
-

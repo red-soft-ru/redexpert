@@ -182,14 +182,6 @@
     </database>
 
     <database>
-        <id>8</id>
-        <name>ODBC</name>
-        <url-patterns>
-            <url>jdbc:odbc:[source]</url>
-        </url-patterns>
-    </database>
-
-    <database>
         <id>9</id>
         <name>Other</name>
         <url-patterns/>

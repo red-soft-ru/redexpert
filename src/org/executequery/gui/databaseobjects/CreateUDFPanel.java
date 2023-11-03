@@ -1,32 +1,29 @@
 package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.Types;
+import org.executequery.databaseobjects.UDFParameter;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.procedure.UDFDefinitionPanel;
-import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import java.awt.*;
-import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Vector;
 
 import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_DESCRIPTOR;
 import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_VALUE;
+import static org.underworldlabs.util.SQLUtils.columnDataFromProcedureParameter;
 
 public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.UDF);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.UDF);
-    SimpleTextArea descriptionPanel;
     JTextField nameModuleField;
     JTextField entryPointField;
     NumberTextField parameterNumberField;
@@ -51,7 +48,6 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void init() {
-        descriptionPanel = new SimpleTextArea();
         nameModuleField = new JTextField();
         entryPointField = new JTextField();
         mechanismModel = new DynamicComboBoxModel();
@@ -78,60 +74,16 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         });
 
         tabbedPane.insertTab(bundleString("InputParameters"), null, parametersPanel, null, 0);
-        tabbedPane.add(bundleString("Description"), descriptionPanel);
-        centralPanel.setLayout(new GridBagLayout());
-        centralPanel.add(new JLabel(bundleString("ModuleName")), new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(nameModuleField, new GridBagConstraints(1, 0,
-                5, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(new JLabel(bundleString("EntryPoint")), new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(entryPointField, new GridBagConstraints(1, 1,
-                5, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(new JLabel(bundleString("Mechanism")), new GridBagConstraints(0, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(mechanismBox, new GridBagConstraints(1, 2,
-                5, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(parameterBox, new GridBagConstraints(0, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(new JLabel(bundleString("Position")), new GridBagConstraints(1, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(parameterNumberField, new GridBagConstraints(2, 3,
-                1, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(cstringBox, new GridBagConstraints(3, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(new JLabel(bundleString("MaxCountCharacters")), new GridBagConstraints(4, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(cstringLengthField, new GridBagConstraints(5, 3,
-                1, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(freeItBox, new GridBagConstraints(0, 4,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        addCommentTab(null);
+        centralPanel.setVisible(false);
+        topGbh.addLabelFieldPair(topPanel, bundleString("ModuleName"), nameModuleField, null, true, false);
+        topGbh.addLabelFieldPair(topPanel, bundleString("EntryPoint"), entryPointField, null, false, true);
+        topGbh.addLabelFieldPair(topPanel, bundleString("Mechanism"), mechanismBox, null, true, false);
+        topPanel.add(parameterBox, topGbh.nextCol().setLabelDefault().get());
+        topGbh.addLabelFieldPair(topPanel, bundleString("Position"), parameterNumberField, null, false, true);
+        topPanel.add(freeItBox, topGbh.nextRowFirstCol().setLabelDefault().setWidth(2).get());
+        topPanel.add(cstringBox, topGbh.nextCol().setLabelDefault().get());
+        topGbh.addLabelFieldPair(topPanel, bundleString("MaxCountCharacters"), cstringLengthField, null, false, true);
         parameterBoxChanged();
         cstringBoxChanged();
 
@@ -151,7 +103,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         Vector<ColumnData> params = parametersPanel.getTableColumnDataVector();
         for (int i = 0; i < params.size(); i++) {
             ColumnData param = params.elementAt(i);
-            if (param.isCstring())
+            if (param.isCString())
                 sb.append("CSTRING (").append(param.getColumnSize()).append(") ");
             else {
                 if (param.getSQLType() == Types.BLOB ||
@@ -161,7 +113,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 else
                     sb.append(param.getFormattedDataType()).append(" ");
                 if (!MiscUtils.isNull(param.getMechanism()) &&
-                        param.getColumnRequired() == 1 &&
+                        !param.isNotNull() &&
                         !param.getMechanism().contains("BY VALUE") &&
                         !param.getMechanism().contains("BY REFERENCE") &&
                         !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
@@ -194,7 +146,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             sb.append("FREE_IT\n");
         sb.append("ENTRY_POINT '").append(entryPointField.getText()).append("'\n");
         sb.append("MODULE_NAME '").append(nameModuleField.getText()).append("';\n");
-        String text = descriptionPanel.getTextAreaComponent().getText();
+        String text = simpleCommentPanel.getComment();
         if (!MiscUtils.isNull(text) && !text.trim().isEmpty()) {
             sb.append("COMMENT ON EXTERNAL FUNCTION ").append(getFormattedName()).append(" IS '");
             text = text.replace("'", "''");
@@ -267,18 +219,13 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
     protected void reset() {
         if (editedUDF == null)
             return;
-
-        try {
-            editedUDF.loadParameters();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        editedUDF.getEntryPoint();
         nameField.setText(editedUDF.getName());
         nameField.setEnabled(false);
         freeItBox.setSelected(editedUDF.getFreeIt());
         nameModuleField.setText(editedUDF.getModuleName());
         entryPointField.setText(editedUDF.getEntryPoint());
-        descriptionPanel.getTextAreaComponent().setText(editedUDF.getDescription());
+        simpleCommentPanel.setDatabaseObject(editedUDF);
 
         int returnArg = editedUDF.getReturnArg();
 
@@ -287,18 +234,13 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             parameterNumberField.setText(String.valueOf(returnArg));
             parameterBoxChanged();
         } else {
-            DefaultDatabaseUDF.UDFParameter udfParameter = editedUDF.getUDFParameters().get(0);
-            if (udfParameter.getFieldType() == 40) {// check for cstring type
+            UDFParameter udfParameter = editedUDF.getUDFParameters().get(0);
+            if (udfParameter.getSqlType().contains("CSTRING")) {// check for cstring type
                 cstringBox.setSelected(true);
-                cstringLengthField.setText(String.valueOf(udfParameter.getFieldLenght()));
+                cstringLengthField.setText(String.valueOf(udfParameter.getSize()));
                 cstringBoxChanged();
             } else {
-                returnsType.setColumnSize(udfParameter.getFieldLenght());
-                returnsType.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(udfParameter.getFieldType(),
-                        udfParameter.getFieldSubType()));
-                returnsType.setColumnSubtype(udfParameter.getFieldSubType());
-                returnsType.setColumnScale(udfParameter.getFieldScale());
-                returnsType.setColumnType(udfParameter.getFieldStringType());
+                returnsType = columnDataFromProcedureParameter(udfParameter, connection, false);
 
                 selectTypePanel.setColumnData(returnsType);
                 selectTypePanel.refresh();
@@ -313,20 +255,14 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
         // remove first empty row
         parametersPanel.removeRow(0);
-        for (DefaultDatabaseUDF.UDFParameter parameter :
+        for (UDFParameter parameter :
                 editedUDF.getUDFParameters()) {
-            if (parameter.getArgPosition() == 0)
+            if (parameter.getPosition() == 0)
                 continue;
-            ColumnData cd = new ColumnData(connection);
-            cd.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(parameter.getFieldType(),
-                    parameter.getFieldSubType()));
-            cd.setColumnSubtype(parameter.getFieldSubType());
-            cd.setColumnSize(parameter.getFieldLenght());
-            cd.setColumnType(DatabaseTypeConverter.getDataTypeName(parameter.getFieldType(),
-                    parameter.getFieldSubType(), parameter.getFieldScale()));
+            ColumnData cd = columnDataFromProcedureParameter(parameter, connection, false);
             cd.setMechanism(parameter.getStringMechanism());
-            cd.setCstring(parameter.isCString());
-            cd.setColumnRequired(parameter.isNotNull() ? 0 : 1);
+            cd.setCString(parameter.isCString());
+            cd.setNotNull(parameter.isNotNull());
             parametersPanel.addRow(cd);
         }
     }

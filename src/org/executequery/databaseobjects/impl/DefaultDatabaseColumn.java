@@ -21,12 +21,13 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.*;
+import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -61,6 +62,8 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
      */
     private boolean required;
 
+    private boolean domainNotNull;
+
     /**
      * the column data type name
      */
@@ -90,6 +93,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
      * the column default value
      */
     private String defaultValue;
+    private String domainDefaultValue;
 
     /**
      * generated column
@@ -113,13 +117,14 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     String charset;
 
     String collate;
+    private List<ColumnData.Dimension> dimensions;
+
+    private int position;
 
     public DefaultDatabaseColumn() {
     }
 
-    public List<ColumnConstraint> getConstraints() {
-        return null;
-    }
+    List<ColumnConstraint> constraints;
 
     @Override
     public void setColumnDescription(String description) {
@@ -181,6 +186,14 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         this.required = required;
     }
 
+    public boolean isDomainNotNull() {
+        return domainNotNull;
+    }
+
+    public void setDomainNotNull(boolean domainNotNull) {
+        this.domainNotNull = domainNotNull;
+    }
+
     public String getTypeName() {
         return typeName;
     }
@@ -231,6 +244,14 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
      */
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public String getDomainDefaultValue() {
+        return domainDefaultValue;
+    }
+
+    public void setDomainDefaultValue(String domainDefaultValue) {
+        this.domainDefaultValue = domainDefaultValue;
     }
 
     /**
@@ -365,11 +386,10 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         boolean generated = isGenerated();
 
         if (generated) {
-            StringBuilder buffer = new StringBuilder();
-            buffer.append("COMPUTED BY ");
-            buffer.append(getComputedSource());
+            String buffer = "COMPUTED BY " +
+                    getComputedSource();
 
-            return buffer.toString();
+            return buffer;
         }
 
         StringBuilder buffer = new StringBuilder();
@@ -394,7 +414,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
                         _type == Types.LONGVARBINARY ||
                         _type == Types.BLOB)) {
 
-            if (isEditSize() && getColumnSize() > 0 && !typeName.contains("" + getColumnSize())
+            if (isEditSize() && getColumnSize() > 0 && !typeName.contains(String.valueOf(getColumnSize()))
                     && !isDateDataType() && !isNonPrecisionType()) {
 
                 buffer.append("(");
@@ -416,8 +436,12 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     }
 
     public boolean isEditSize() {
-        return getTypeName() != null && (getTypeInt() == Types.NUMERIC || getTypeInt() == Types.CHAR || getTypeInt() == Types.VARCHAR
-                || getTypeInt() == Types.DECIMAL || getTypeInt() == Types.BLOB || getTypeInt() == Types.LONGVARCHAR
+        return getTypeName() != null && (getTypeInt() == Types.NUMERIC
+                || getTypeInt() == Types.CHAR
+                || getTypeInt() == Types.VARCHAR
+                || getTypeInt() == Types.DECIMAL
+                || getTypeInt() == Types.BLOB
+                || getTypeInt() == Types.LONGVARCHAR
                 || getTypeInt() == Types.LONGVARBINARY
                 || getTypeName().equalsIgnoreCase("VARCHAR")
                 || getTypeName().equalsIgnoreCase("CHAR"))
@@ -487,6 +511,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         }
     }
 
+
     @Override
     public String getCharset() {
         return charset;
@@ -503,6 +528,43 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
 
     public void setCollate(String collate) {
         this.collate = collate;
+    }
+
+    public List<ColumnConstraint> getConstraints() {
+        return constraints;
+    }
+
+    public void addConstraint(ColumnConstraint constraint) {
+        if (constraints == null)
+            constraints = new ArrayList<>();
+        constraints.add(constraint);
+    }
+
+    public void appendDimension(int orderNumber, int lowerBound, int upperBound) {
+        if (dimensions == null)
+            dimensions = new ArrayList<>();
+        ColumnData.Dimension dimension = new ColumnData.Dimension(lowerBound, upperBound);
+        if (orderNumber >= dimensions.size())
+            dimensions.add(dimension);
+        else dimensions.add(orderNumber, dimension);
+    }
+
+    public List<ColumnData.Dimension> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<ColumnData.Dimension> dimensions) {
+        this.dimensions = dimensions;
+    }
+
+    @Override
+    public int getPosition() {
+        return position;
+    }
+
+    @Override
+    public void setPosition(int position) {
+        this.position = position;
     }
 }
 

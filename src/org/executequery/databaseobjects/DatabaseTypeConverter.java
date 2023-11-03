@@ -1,8 +1,7 @@
 package org.executequery.databaseobjects;
 
-import java.sql.Types;
-
-public class DatabaseTypeConverter {
+public class
+DatabaseTypeConverter {
 
     private static final int SUBTYPE_NUMERIC = 1;
     private static final int SUBTYPE_DECIMAL = 2;
@@ -64,15 +63,15 @@ public class DatabaseTypeConverter {
             case timestamp_type:
                 return "TIMESTAMP";
             case timestamp_with_timezone:
-                return "TIMESTAMP WITH TIMEZONE";
+                return "TIMESTAMP WITH TIME ZONE";
             case timestamp_without_timezone:
-                return "TIMESTAMP WITHOUT TIMEZONE";
+                return "TIMESTAMP WITHOUT TIME ZONE";
             case time_type:
                 return "TIME";
             case time_with_timezone:
-                return "TIME WITH TIMEZONE";
+                return "TIME WITH TIME ZONE";
             case time_without_timezone:
-                return "TIME WITHOUT TIMEZONE";
+                return "TIME WITHOUT TIME ZONE";
             case date_type:
                 return "DATE";
             case int64_type:
@@ -102,7 +101,12 @@ public class DatabaseTypeConverter {
             case decfloat34_type:
                 return "DECFLOAT(34)";
             case int128:
-                return "INT128";
+                if (sqlSubtype == SUBTYPE_NUMERIC || (sqlSubtype == 0 && sqlScale < 0))
+                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                else if (sqlSubtype == SUBTYPE_DECIMAL)
+                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                else
+                    return "INT128";
             default:
                 return "NULL";
         }
@@ -141,15 +145,15 @@ public class DatabaseTypeConverter {
             case timestamp_type:
                 return "TIMESTAMP";
             case timestamp_with_timezone:
-                return "TIMESTAMP WITH TIMEZONE";
+                return "TIMESTAMP WITH TIME ZONE";
             case timestamp_without_timezone:
-                return "TIMESTAMP WITHOUT TIMEZONE";
+                return "TIMESTAMP WITHOUT TIME ZONE";
             case time_type:
                 return "TIME";
             case time_with_timezone:
-                return "TIME WITH TIMEZONE";
+                return "TIME WITH TIME ZONE";
             case time_without_timezone:
-                return "TIME WITHOUT TIMEZONE";
+                return "TIME WITHOUT TIME ZONE";
             case date_type:
                 return "DATE";
             case int64_type:
@@ -180,7 +184,12 @@ public class DatabaseTypeConverter {
             case decfloat34_type:
                 return "DECFLOAT(34)";
             case int128:
-                return "INT128";
+                if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
+                    return "NUMERIC";
+                else if (sqlsubtype == SUBTYPE_DECIMAL)
+                    return "DECIMAL";
+                else
+                    return "INT128";
             default:
                 return "NULL";
         }
@@ -199,10 +208,11 @@ public class DatabaseTypeConverter {
             case "BLOB SUB_TYPE TEXT":
                 return Types.LONGVARCHAR;
             case "NUMERIC":
-            case "INT128":
                 return Types.NUMERIC;
             case "DECIMAL":
                 return Types.DECIMAL;
+            case "INT128":
+                return Types.INT128;
             case "INTEGER":
                 return Types.INTEGER;
             case "SMALLINT":
@@ -216,14 +226,14 @@ public class DatabaseTypeConverter {
             case "DATE":
                 return Types.DATE;
             case "TIME":
-            case "TIME WITHOUT TIMEZONE":
+            case "TIME WITHOUT TIME ZONE":
                 return Types.TIME;
-            case "TIME WITH TIMEZONE":
+            case "TIME WITH TIME ZONE":
                 return Types.TIME_WITH_TIMEZONE;
             case "TIMESTAMP":
-            case "TIMESTAMP WITHOUT TIMEZONE":
+            case "TIMESTAMP WITHOUT TIME ZONE":
                 return Types.TIMESTAMP;
-            case "TIMESTAMP WITH TIMEZONE":
+            case "TIMESTAMP WITH TIME ZONE":
                 return Types.TIMESTAMP_WITH_TIMEZONE;
             case "ARRAY":
                 return Types.OTHER;
@@ -267,12 +277,10 @@ public class DatabaseTypeConverter {
             case time_with_timezone:
                 return Types.TIME_WITH_TIMEZONE;
             case char_type:
-                switch (subtype) {
-                    case 0:
-                        return Types.BINARY;
-                    case 1:
-                        return Types.CHAR;
+                if (subtype == 0) {
+                    return Types.BINARY;
                 }
+                return Types.CHAR;
             case int64_type:
                 switch (subtype) {
                     case 1:
@@ -292,12 +300,10 @@ public class DatabaseTypeConverter {
             case timestamp_with_timezone:
                 return Types.TIMESTAMP_WITH_TIMEZONE;
             case varchar_type:
-                switch (subtype) {
-                    case 0:
-                        return Types.VARBINARY;
-                    case 1:
-                        return Types.VARCHAR;
+                if (subtype == 0) {
+                    return Types.VARBINARY;
                 }
+                return Types.VARCHAR;
             case blob_type:
                 switch (subtype) {
                     case 1:
@@ -311,7 +317,14 @@ public class DatabaseTypeConverter {
             case decfloat34_type:
                 return -6001;
             case int128:
-                return Types.TINYINT;
+                switch (subtype) {
+                    case 1:
+                        return Types.NUMERIC;
+                    case 2:
+                        return Types.DECIMAL;
+                    default:
+                        return Types.INT128;
+                }
             default:
                 return 0;
         }

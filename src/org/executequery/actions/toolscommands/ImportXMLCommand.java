@@ -43,7 +43,7 @@ public class ImportXMLCommand extends OpenFrameCommand implements BaseCommand {
         }
 
         if (isActionableDialogOpen()) {
-            GUIUtilities.acionableDialogToFront();
+            GUIUtilities.actionableDialogToFront();
             return;
         }
 

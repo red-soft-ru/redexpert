@@ -247,9 +247,6 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
 
                 if (value instanceof DatabaseSchema) {
 
-                    DatabaseSchema schema = (DatabaseSchema) value;
-                    Object[] tables = schema.getTables().toArray();
-                    refTableEditor.setSelectionValues(tables);
 
                 } else {
 

@@ -23,7 +23,9 @@ package org.underworldlabs.swing.table;
 import org.executequery.event.DefaultSortingEvent;
 import org.executequery.event.SortingEvent;
 import org.executequery.event.SortingListener;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -33,6 +35,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.time.*;
 import java.util.List;
 import java.util.*;
 
@@ -207,8 +210,8 @@ public class TableSorter extends AbstractTableModel {
     }
 
     private Directive getDirective(int column) {
-        for (int i = 0, n = sortingColumns.size(); i < n; i++) {
-            Directive directive = (Directive) sortingColumns.get(i);
+        for (Object sortingColumn : sortingColumns) {
+            Directive directive = (Directive) sortingColumn;
             if (directive.column == column) {
                 return directive;
             }
@@ -420,9 +423,9 @@ public class TableSorter extends AbstractTableModel {
             int row1 = modelIndex;
             int row2 = ((Row) o).modelIndex;
 
-            for (Iterator it = sortingColumns.iterator(); it.hasNext(); ) {
+            for (Object sortingColumn : sortingColumns) {
 
-                Directive directive = (Directive) it.next();
+                Directive directive = (Directive) sortingColumn;
 
                 int column = directive.column;
 
@@ -520,26 +523,26 @@ public class TableSorter extends AbstractTableModel {
 
         private int compareAsDate(Object o1, Object o2) {
 
-            long n1 = -1;
-            try {
-                Date d1 = (Date) o1;
-                n1 = d1.getTime();
-            } catch (ClassCastException e) {
-            }
-
-            long n2 = -1;
-            try {
-                Date d2 = (Date) o2;
-                n2 = d2.getTime();
-            } catch (ClassCastException e) {
-            }
-
-            if (n1 < n2)
+            if (o1 == null)
+                return (o2 == null) ? 0 : 1;
+            if (o2 == null)
                 return -1;
-            else if (n1 > n2)
-                return 1;
-            else
-                return 0;
+
+            if (o1 instanceof LocalDateTime)
+                return ((LocalDateTime) o1).compareTo((LocalDateTime) o2);
+
+            else if (o1 instanceof LocalDate)
+                return ((LocalDate) o1).compareTo((LocalDate) o2);
+
+            else if (o1 instanceof LocalTime)
+                return ((LocalTime) o1).compareTo((LocalTime) o2);
+
+            else if (o1 instanceof OffsetDateTime)
+                return ((OffsetDateTime) o1).compareTo((OffsetDateTime) o2);
+
+            else /*if (o1 instanceof OffsetTime)*/
+                return ((OffsetTime) o1).compareTo((OffsetTime) o2);
+
         }
 
         private int compareAsString(Object o1, Object o2) {
@@ -565,10 +568,8 @@ public class TableSorter extends AbstractTableModel {
 
         private int compareAsBoolean(Object o1, Object o2) {
 
-            Boolean bool1 = (Boolean) o1;
-            boolean b1 = bool1.booleanValue();
-            Boolean bool2 = (Boolean) o2;
-            boolean b2 = bool2.booleanValue();
+            boolean b1 = (Boolean) o1;
+            boolean b2 = (Boolean) o2;
 
             if (b1 == b2)
                 return 0;
@@ -685,7 +686,7 @@ public class TableSorter extends AbstractTableModel {
             if (e.getClickCount() >= 2 && resizeColumn != -1) {
 
                 final int selectedColumn = resizeColumn;
-                SwingWorker worker = new SwingWorker() {
+                SwingWorker worker = new SwingWorker("resizeColumn") {
                     public Object construct() {
                         resizeColumn(selectedColumn);
                         return "done";
@@ -711,7 +712,7 @@ public class TableSorter extends AbstractTableModel {
                     status = status + (e.isShiftDown() ? -1 : 1);
                     status = (status + 4) % 3 - 1; // signed mod, returning {-1, 0, 1}
 
-                    SwingWorker worker = new SwingWorker() {
+                    SwingWorker worker = new SwingWorker("postSortingInTableSorter") {
                         public Object construct() {
                             setSortingStatus(column, status);
                             for (SortingListener listener : sortingListeners) {

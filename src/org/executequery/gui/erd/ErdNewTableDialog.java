@@ -21,11 +21,14 @@
 package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.ActionContainer;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.browser.ColumnData;
-import org.executequery.gui.table.CreateTableFunctionPanel;
+import org.executequery.gui.table.CreateTablePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -37,12 +40,12 @@ import java.util.Vector;
 /**
  * @author Takis Diakoumis
  */
-public class ErdNewTableDialog extends ErdPrintableDialog {
+public class ErdNewTableDialog extends ErdPrintableDialog implements ActionContainer {
 
     /**
      * The ERD parent panel
      */
-    private final ErdViewerPanel parent;
+    private final ErdViewerPanel erdViewerPanel;
 
     /**
      * The <code>ErdTable</code> representing this dialog
@@ -52,7 +55,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
     /**
      * The common create table panel
      */
-    private CreateTablePanel createPanel;
+    private CreateTableERDPanel createPanel;
 
     /**
      * A new line character
@@ -60,8 +63,8 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
     private static final char NEW_LINE_CHAR = '\n';
 
     public ErdNewTableDialog(ErdViewerPanel parent) {
-        super("New Table", false);
-        this.parent = parent;
+        super(bundleString("title"), false);
+        this.erdViewerPanel = parent;
 
         try {
             jbInit();
@@ -76,7 +79,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
 
     public ErdNewTableDialog(ErdViewerPanel parent, ErdTable erdTable) {
         this(parent);
-        this.setTitle("Table: " + erdTable.getTableName());
+        this.setTitle(bundleString("editableTitle") + erdTable.getTableName());
         this.erdTable = erdTable;
 
         createPanel.setTableName(erdTable.getTableName());
@@ -134,7 +137,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
         gbc.insets.left = 7;
         btnPanel.add(cancelButton, gbc);
 
-        createPanel = new CreateTablePanel(false);
+        createPanel = new CreateTableERDPanel(null, this);
         createPanel.addButtonsPanel(btnPanel);
         createPanel.setPreferredSize(new Dimension(700, 550));
         c.add(createPanel, BorderLayout.CENTER);
@@ -148,7 +151,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
             dispose();
         } else if (command.equals("Create")) {
             if (MiscUtils.isNull(createPanel.getTableName())) {
-                GUIUtilities.displayErrorMessage("Table name can not be empty");
+                GUIUtilities.displayErrorMessage(bundleString("TableNameEmptyError"));
             } else {
                 createTable();
                 //dispose();
@@ -169,12 +172,12 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
 
 
         if (erdTable == null) {
-            ErdTable table = new ErdTable(tableName, cda, parent);
+            ErdTable table = new ErdTable(tableName, cda, erdViewerPanel);
             table.setCreateTableScript(sqlText.getSQLText());
             table.setNewTable(true);
             table.setEditable(true);
-            if (!parent.addNewTable(table)) {
-                GUIUtilities.displayErrorMessage("This table name already exists");
+            if (!erdViewerPanel.addNewTable(table)) {
+                GUIUtilities.displayErrorMessage(bundleString("TableExistsError"));
                 return;
             }
         } else {
@@ -188,17 +191,70 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                parent.updateTableRelationships();
+                erdViewerPanel.updateTableRelationships();
             }
         });
 
         dispose();
     }
 
-    class CreateTablePanel extends CreateTableFunctionPanel {
+    @Override
+    public boolean isDialog() {
+        return true;
+    }
 
-        public CreateTablePanel(boolean temporary) {
-            super(temporary);
+    public void block() {
+        GUIUtils.invokeLater(new Runnable() {
+            public void run() {
+                if (getRootPane().getGlassPane().isVisible()) {
+                    return;
+                }
+                getRootPane().getGlassPane().setVisible(true);
+            }
+        });
+        updateCursor(true);
+    }
+
+    /**
+     * Indicates that a [long-running] process has ended.
+     * This triggers the glass pane off and sets the cursor appropriately.
+     */
+    public void unblock() {
+        GUIUtils.invokeLater(new Runnable() {
+            public void run() {
+                if (!getRootPane().getGlassPane().isVisible()) {
+                    return;
+                }
+                getRootPane().getGlassPane().setVisible(false);
+            }
+        });
+        updateCursor(false);
+    }
+
+    private void updateCursor(boolean inProcess) {
+        if (inProcess) {
+            GUIUtilities.showWaitCursor();
+        } else {
+            GUIUtilities.showNormalCursor();
+        }
+    }
+
+    @Override
+    public void finished() {
+
+    }
+
+    class CreateTableERDPanel extends CreateTablePanel {
+
+
+        /**
+         * <p> Constructs a new instance.
+         *
+         * @param dc
+         * @param dialog
+         */
+        public CreateTableERDPanel(DatabaseConnection dc, ActionContainer dialog) {
+            super(dc, dialog);
         }
 
         public void addButtonsPanel(JPanel buttonsPanel) {
@@ -237,43 +293,10 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
             return sqlText;
         }
 
-        public Vector getHostedSchemasVector() {
-            return new Vector(0);
-        }
+    }
 
-        public Vector<String> getSchemaTables(String schemaName) {
-            Vector _tables = parent.getAllComponentsVector();
-
-            int size = _tables.size();
-            Vector<String> tableNames = new Vector<String>(size);
-
-            for (int i = 0; i < size; i++) {
-                tableNames.add(_tables.elementAt(i).toString());
-            }
-
-            return tableNames;
-        }
-
-        public Vector<String> getColumnNamesVector(String tableName, String schemaName) {
-            return parent.getTableColumnsVector(tableName);
-        }
-
+    private static String bundleString(String key) {
+        return Bundles.get(ErdNewTableDialog.class, key);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

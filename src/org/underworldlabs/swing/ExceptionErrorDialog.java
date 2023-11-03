@@ -121,11 +121,11 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
 
         exceptions = new Vector<Throwable>();
         // we want the underlying cause
-        if (exception.getCause() != null) {
+        /*if (exception.getCause() != null) {
             exceptions.add(exception.getCause());
-        } else {
+        } else {*/
             exceptions.add(exception);
-        }
+        // }
         selectedIndex = 0;
 
         try {
@@ -142,8 +142,8 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             errorIcon = UIManager.getIcon("OptionPane.warningIcon");
         }
 
-        closeButton = WidgetFactory.createButton(this, Bundles.getCommon("close.button"));
-        showStackButton = WidgetFactory.createButton(this, bundleString("ShowStackTrace"));
+        closeButton = WidgetFactory.createButton("closeButton", this, Bundles.getCommon("close.button"));
+        showStackButton = WidgetFactory.createButton("showStackButton", this, bundleString("ShowStackTrace"));
 
         // format the text
         StringBuilder sb = new StringBuilder();
@@ -302,6 +302,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
                     gbc.weighty = 0;
                     gbc.gridwidth = 1;
                     gbc.weightx = 1.0;
+                    gbc.gridx = 0;
                     gbc.fill = GridBagConstraints.NONE;
                     gbc.anchor = GridBagConstraints.EAST;
                     stackTracePanel.add(previousButton, gbc);

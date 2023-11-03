@@ -24,6 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.actions.BaseCommand;
@@ -44,7 +45,7 @@ public class ConnectCommand extends OpenFrameCommand implements BaseCommand {
         ConnectionsTreePanel panel = connectionsPanel();
 
         String command = e.getActionCommand();
-        if (MiscUtils.isNull(command) || "New Connection".equals(command)) {
+        if (MiscUtils.isNull(command) || Bundles.get("action.connect-command").equals(command)) {
 
             panel.newConnection();
 

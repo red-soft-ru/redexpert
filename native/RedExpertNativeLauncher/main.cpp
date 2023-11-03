@@ -112,10 +112,10 @@ std::string extension_exe_file()
 #ifdef WIN32
 #if INTPTR_MAX == INT64_MAX
 static TCHAR* url_manual = TEXT("https://www.oracle.com/java/technologies/javase-downloads.html");
-static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14.0.2+13/bellsoft-jre14.0.2+13-windows-amd64.zip");
+static TCHAR* download_url = TEXT("https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8.1%2B1/OpenJDK17U-jre_x64_windows_hotspot_17.0.8.1_1.zip");
 #elif INTPTR_MAX == INT32_MAX
 static TCHAR* url_manual = TEXT("https://www.java.com/ru/download/manual.jsp");
-static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14.0.2+13/bellsoft-jre14.0.2+13-windows-i586.zip");
+static TCHAR* download_url = TEXT("https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8.1%2B1/OpenJDK17U-jre_x86-32_windows_hotspot_17.0.8.1_1.zip");
 #else
 #error "Environment not 32 or 64-bit."
 #endif
@@ -274,7 +274,7 @@ std::string get_property_from_regex(std::string reg_property, std::string source
 #else
 #if INTPTR_MAX == INT64_MAX
 static std::string url_manual = "https://www.oracle.com/java/technologies/javase-downloads.html";
-static std::string download_url = "https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-linux-amd64.tar.gz";
+static std::string download_url = "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8.1%2B1/OpenJDK17U-jre_x64_linux_hotspot_17.0.8.1_1.tar.gz";
 #elif INTPTR_MAX == INT32_MAX
 static std::string url_manual = "https://www.java.com/ru/download/manual.jsp";
 static std::string download_url = "https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-linux-i586.tar.gz";
@@ -419,7 +419,7 @@ static gboolean updateProgress(gpointer data)
             {
                 last_time=cur_time;
             }
-            else if(cur_time-last_time>10)
+            else if(cur_time-last_time>20)
             {
                 status_downl=ERROR_DOWNLOAD;
                 timeout_error = true;
@@ -494,6 +494,7 @@ void init_curl()
             const char* url = download_url.c_str();
             outfile = fopen(archive_path.c_str(), "wb");
             curl_easy_setopt_(curl, CURLOPT_URL, url);
+            curl_easy_setopt_(curl, CURLOPT_FOLLOWLOCATION , 1L);
             curl_easy_setopt_(curl, CURLOPT_WRITEDATA, outfile);
             curl_easy_setopt_(curl, CURLOPT_WRITEFUNCTION, my_write_func);
             curl_easy_setopt_(curl, CURLOPT_READFUNCTION, my_read_func);

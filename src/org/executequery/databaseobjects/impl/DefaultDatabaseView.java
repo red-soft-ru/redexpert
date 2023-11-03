@@ -24,56 +24,116 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
-import org.executequery.log.Log;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.TokenizingFormatter;
+import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultDatabaseView extends AbstractTableObject implements DatabaseView {
+public class DefaultDatabaseView extends AbstractTableObject
+        implements DatabaseView {
 
     public DefaultDatabaseView(DatabaseObject object) {
 
         this(object.getHost());
-
+        metaTagParent = ((DefaultDatabaseObject) object).getMetaTagParent();
         setCatalogName(object.getCatalogName());
         setSchemaName(object.getSchemaName());
         setName(object.getName());
-        setRemarks(object.getRemarks());
-        setSource(object.getSource());
+    }
+
+    private List<String> fields;
+
+    private static final String DESCRIPTION = "DESCRIPTION";
+    private static final String SOURCE = "VIEW_SOURCE";
+
+    @Override
+    protected String getFieldName() {
+        return "RELATION_NAME";
+    }
+
+    @Override
+    protected Table getMainTable() {
+        return Table.createTable("RDB$RELATIONS", "R");
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
+        Table rels = getMainTable();
+        Table rf = Table.createTable("RDB$RELATION_FIELDS", "RF");
+        sb.appendFields(rels, getFieldName(), SOURCE, DESCRIPTION);
+        sb.appendFields(rf, FIELD_NAME);
+        sb.appendJoin(Join.createLeftJoin().appendFields(getObjectField(), Field.createField(rf, getFieldName())));
+        sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(rf, FIELD_POSITION).getFieldTable());
+        return sb;
+    }
+
+    @Override
+    protected SelectBuilder builderForInfoAllObjects(SelectBuilder commonBuilder) {
+        return super.builderForInfoAllObjects(commonBuilder).appendCondition(Condition.createCondition(Field.createField(getMainTable(), "VIEW_BLR"), "IS", "NOT NULL"));
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        if (first) {
+            setRemarks(getFromResultSet(rs, DESCRIPTION));
+            setSource(getFromResultSet(rs, SOURCE));
+        }
+        fields.add(rs.getString(FIELD_NAME).trim());
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+        fields = new ArrayList<>();
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return true;
     }
 
     public DefaultDatabaseView(DatabaseHost host) {
-
         super(host, "VIEW");
     }
 
+    @Override
     public String getCreateSQLText() throws DataSourceException {
-
-        String fields = null;
-
-        try {
-
-            List<DatabaseColumn> columns = getColumns();
-            if (columns != null) {
-                fields = "";
-
-                for (int i = 0; i < columns.size(); i++) {
-                    fields += MiscUtils.getFormattedObject(columns.get(i).getName());
-                    if (i != columns.size() - 1)
-                        fields += ", ";
-                }
-            }
-
-        } catch (Exception ignored) { }
-
-        return getFormatter().format(SQLUtils.generateCreateView(getName(), fields, getSource(),
-                getRemarks(), getDatabaseMajorVersion(), false));
-
+        return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
+                getRemarks(), getDatabaseMajorVersion(), false, true, getHost().getDatabaseConnection());
     }
 
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("VIEW", getName(), getHost().getDatabaseConnection());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
+        return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
+                comment, getDatabaseMajorVersion(), false, true, getHost().getDatabaseConnection());
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
+    }
+
+    @Override
     public String getSelectSQLText() {
 
         String fields = "";
@@ -81,7 +141,6 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         try {
 
             List<DatabaseColumn> columns = getColumns();
-
             for (int i = 0, n = columns.size(); i < n; i++) {
 
                 fields += columns.get(i).getName();
@@ -91,14 +150,14 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
             }
 
         } catch (DataSourceException e) {
-
             fields = "*";
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields));
+        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields, getHost().getDatabaseConnection()));
     }
 
+    @Override
     public String getInsertSQLText() {
 
         String fields = "";
@@ -107,14 +166,12 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         try {
 
             List<DatabaseColumn> columns = getColumns();
-
             for (int i = 0, n = columns.size(); i < n; i++) {
 
                 fields += columns.get(i).getName();
                 values += ":" + toCamelCase(columns.get(i).getName());
 
                 if (i < n - 1) {
-
                     fields += ", ";
                     values += ", ";
                 }
@@ -122,41 +179,37 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
             }
 
         } catch (DataSourceException e) {
-
             fields = "_fields_";
             values = "_values_";
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
-
+        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values, getHost().getDatabaseConnection()));
     }
 
+    @Override
     public String getUpdateSQLText() {
 
         String settings = "";
 
         try {
 
-            List<DatabaseColumn> columns = getColumns();
-
+            List<String> columns = getFields();
             for (int i = 0, n = columns.size(); i < n; i++) {
 
-                settings += columns.get(i).getName() + " = :" +
-                        toCamelCase(columns.get(i).getName());
+                settings += columns.get(i) + " = :" +
+                        toCamelCase(columns.get(i));
                 if (i < n - 1)
                     settings += ", ";
 
             }
 
         } catch (DataSourceException e) {
-
             settings = "_oldValue_ = _newValue_";
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings));
-
+        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings, getHost().getDatabaseConnection()));
     }
 
     TokenizingFormatter formatter;
@@ -169,16 +222,35 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
     @Override
     public boolean hasSQLDefinition() {
-
         return true;
     }
 
     public int getType() {
-        if (isSystem()) {
-            return SYSTEM_VIEW;
-        } else {
-            return VIEW;
+        return isSystem() ? SYSTEM_VIEW : VIEW;
+    }
+
+    private String getCreateFields() {
+
+        String fields = null;
+
+        try {
+
+            List<String> columns = getFields();
+            if (columns != null) {
+                fields = "";
+
+                for (int i = 0; i < columns.size(); i++) {
+                    fields += MiscUtils.getFormattedObject(columns.get(i), getHost().getDatabaseConnection());
+                    if (i != columns.size() - 1)
+                        fields += ", ";
+                }
+            }
+
+        } catch (Exception ignored) {
+            ignored.printStackTrace();
         }
+
+        return fields;
     }
 
     public String getMetaDataKey() {
@@ -189,6 +261,10 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         return true;
     }
 
+    public List<String> getFields() {
+        checkOnReload(fields);
+        return fields;
+    }
 }
 
 

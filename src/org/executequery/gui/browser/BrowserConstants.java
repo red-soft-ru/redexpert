@@ -184,11 +184,13 @@ public class BrowserConstants {
     public static final String USER_IMAGE = "User16.png";
 
     public static final String TABLESPACE_IMAGE = "tablespace16.png";
+    public static final String JOB_IMAGE = "job16.png";
 
 
-    public static final String GRANT_IMAGE = "grant.png";
-    public static final String NO_GRANT_IMAGE = "no_grant.png";
-    public static final String ADMIN_OPTION_IMAGE = "admin_option.png";
+    public static final String GRANT_IMAGE = "grant.svg";
+    public static final String NO_GRANT_IMAGE = "no_grant.svg";
+    public static final String ADMIN_OPTION_IMAGE = "admin_option.svg";
+    public static final String FIELD_GRANT_IMAGE = "grantPart.svg";
 
 
     public static final String[] NODE_ICONS = {CONNECTIONS_IMAGE,
@@ -228,6 +230,7 @@ public class BrowserConstants {
             SYSTEM_ROLE_IMAGE,
             USER_IMAGE,
             TABLESPACE_IMAGE,
+            JOB_IMAGE,
             DB_TRIGGER_IMAGE,
             DDL_TRIGGER_IMAGE,
             SYSTEM_PACKAGE_IMAGE,

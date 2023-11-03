@@ -164,6 +164,9 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
     }
 
     public void cleanup() {
+        super.cleanup();
+        sourceTextPane.cleanup();
+        createSqlPane.cleanup();
     }
 
     public JTable getTable() {
@@ -187,7 +190,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         try {
             funcNameField.setText(defaultDatabaseFunction.getName());
             model.setValues(defaultDatabaseFunction.getFunctionArgumentsArray());
-            sourceTextPane.setText(defaultDatabaseFunction.getFunctionSourceCode());
+            sourceTextPane.setText(defaultDatabaseFunction.getSourceCode());
             createSqlPane.setText(defaultDatabaseFunction.getCreateSQLText());
 
         } catch (DataSourceException e) {

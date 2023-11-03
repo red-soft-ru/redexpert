@@ -86,7 +86,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
 
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
 
-        addPrivilegesTab(tabs);
+        //addPrivilegesTab(tabs);
 
         tabs.add("Description", descriptionPanel);
 
@@ -156,6 +156,10 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
     }
 
     public void cleanup() {
+        super.cleanup();
+        sqlPane.cleanup();
+        headerTextPane.cleanup();
+        bodyTextPane.cleanup();
     }
 
     public void setValues(DefaultDatabasePackage databasePackage) {

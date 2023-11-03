@@ -3,28 +3,29 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
-    public static final String[] COLUMNS =
-            {"ID", "SECURITY_CLASS", "SYSTEM", "DESCRIPTION", "OWNER", "FILE_NAME", "OFFLINE", "READ_ONLY"};
-    public static final int ID = 0;
-    public static final int SECURITY_CLASS = ID + 1;
-    public static final int SYSTEM = SECURITY_CLASS + 1;
-    public static final int DESCRIPTION = SYSTEM + 1;
-    public static final int OWNER = DESCRIPTION + 1;
-    public static final int FILE_NAME = OWNER + 1;
-    public static final int OFFLINE = FILE_NAME + 1;
-    public static final int READ_ONLY = OFFLINE + 1;
 
-    private String[] attributes;
+    public static final String ID = "TABLESPACE_ID";
+    public static final String SYSTEM = "SYSTEM_FLAG";
+    public static final String OWNER = "OWNER_NAME";
+    public static final String FILE_NAME = "FILE_NAME";
+    public static final String OFFLINE = "OFFLINE";
+    public static final String READ_ONLY = "READ_ONLY";
+
+    private String id;
+    private String owner;
+    private String fileName;
+    private boolean offline;
+    private boolean readOnly;
     private List<String> indexes;
     private List<String> tables;
     private final DefaultStatementExecutor querySender;
@@ -39,26 +40,92 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
         return false;
     }
 
-    @Override
-    protected String queryForInfo() {
-        String query = MessageFormat.format("select rdb$tablespace_id as {" + ID + "},rdb$security_class as {" + SECURITY_CLASS + "}," +
-                "rdb$system_flag as {" + SYSTEM + "},rdb$description as {" + DESCRIPTION + "},rdb$owner_name as {" + OWNER + "}," +
-                "rdb$file_name as {" + FILE_NAME + "}, rdb$offline as {" + OFFLINE + "},rdb$read_only as {" + READ_ONLY + "}" +
-                " from rdb$tablespaces where rdb$tablespace_name = ''" + getName() + "''", COLUMNS);
-        return query;
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public String getFileName() {
+        checkOnReload(fileName);
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public boolean isOffline() {
+        return offline;
+    }
+
+    public void setOffline(boolean offline) {
+        this.offline = offline;
+    }
+
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        attributes = new String[COLUMNS.length];
-        if (rs.next()) {
-            for (int i = 0; i < COLUMNS.length; i++) {
-                attributes[i] = rs.getString(COLUMNS[i]);
-            }
-        }
-        setSystemFlag(Integer.parseInt(attributes[SYSTEM].trim()) != 0);
-        setRemarks(attributes[DESCRIPTION]);
+    protected String getFieldName() {
+        return "TABLESPACE_NAME";
+    }
 
+    @Override
+    protected Table getMainTable() {
+        return Table.createTable("RDB$TABLESPACES", "T");
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
+        Table table = getMainTable();
+        sb.appendFields(table, getFieldName(), ID, SYSTEM, DESCRIPTION, OWNER, FILE_NAME, READ_ONLY, OFFLINE);
+        sb.appendTable(table);
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setId(getFromResultSet(rs, ID));
+        setFileName(getFromResultSet(rs, FILE_NAME));
+        setOwner(getFromResultSet(rs, OWNER));
+        setOffline(rs.getBoolean(OFFLINE));
+        setReadOnly(rs.getBoolean(READ_ONLY));
+        setSystemFlag(rs.getInt(SYSTEM) != 0);
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        return null;
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
     }
 
     @Override
@@ -88,41 +155,12 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
         return "SELECT RDB$INDEX_NAME, RDB$INDEX_INACTIVE FROM RDB$INDICES WHERE RDB$TABLESPACE_NAME='" + getName() + "' ORDER BY 1";
     }
 
-    private void loadIndexes() {
-        indexes = new ArrayList<>();
-        try {
-            ResultSet rs = querySender.getResultSet(getIndexesQuery()).getResultSet();
-            while (rs.next()) {
-                tables.add(rs.getString(1));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            querySender.releaseResources();
-        }
-    }
 
     public String getTablesQuery() {
         return "SELECT RDB$RELATION_NAME FROM RDB$RELATIONS WHERE RDB$TABLESPACE_NAME='" + getName() + "' ORDER BY 1";
     }
 
-    private void loadTables() {
-        tables = new ArrayList<>();
 
-        try {
-            ResultSet rs = querySender.getResultSet(getTablesQuery()).getResultSet();
-            while (rs.next()) {
-                tables.add(rs.getString(1));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            querySender.releaseResources();
-        }
-
-    }
 
 
     public List<String> getTables() {
@@ -135,25 +173,27 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
         this.tables = tables;
     }
 
-    public String[] getAttributes() {
-        if (attributes == null || isMarkedForReload())
-            getObjectInfo();
-        return attributes;
-    }
 
-    public String getAttribute(int atrrIndex) {
-        if (attributes == null || isMarkedForReload())
-            getObjectInfo();
-        return attributes[atrrIndex];
-    }
-
-    public String getFileName() {
-        return getAttribute(FILE_NAME);
-    }
-
+    @Override
     public String getCreateSQLText() throws DataSourceException {
-
-        return SQLUtils.generateCreateTablespace(getName(), getFileName());
+        return SQLUtils.generateCreateTablespace(getName(), getFileName(), getHost().getDatabaseConnection());
     }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("TABLESPACE", getName(), getHost().getDatabaseConnection());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return getCreateSQLText();
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        DefaultDatabaseTablespace comparingTablespace = (DefaultDatabaseTablespace) databaseObject;
+        return SQLUtils.generateAlterTablespace(this, comparingTablespace);
+    }
+
 }
 

@@ -23,7 +23,6 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.underworldlabs.util.MiscUtils;
 
 import java.util.ArrayList;
@@ -99,10 +98,13 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setColumnSize(column.getColumnSize());
         setColumnScale(column.getColumnScale());
         setRequired(column.isRequired());
+        setDomainNotNull(column.isDomainNotNull());
         setRemarks(column.getRemarks());
         setDefaultValue(column.getDefaultValue());
+        setDomainDefaultValue(column.getDomainDefaultValue());
         setPrimaryKey(column.isPrimaryKey());
         setForeignKey(column.isForeignKey());
+        setUnique(column.isUnique());
         setGenerated(column.isGenerated());
         setComputedSource(column.getComputedSource());
         setColumnDescription(column.getColumnDescription());
@@ -111,26 +113,26 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setIdentity(column.isIdentity());
         setCharset(column.getCharset());
         setCollate(column.getCollate());
+        setDimensions(column.getDimensions());
+        setPosition(column.getPosition());
     }
 
     @Override
     public String getDescription() {
-
         StringBuilder sb = new StringBuilder();
-        sb.append("TABLE COLUMN: ");
-        sb.append(getName().trim()).append("[").append(getTypeName()).append("]");
+        sb.append(getName().trim()).append(" [").append(getTypeName()).append("]");
 
         if (isPrimaryKey()) {
 
-            sb.append(" PRIMARY KEY");
+            sb.append(" PK");
 
         } else if (isForeignKey()) {
 
-            sb.append(" FOREIGN KEY");
+            sb.append(" FK");
 
         } else if (isUnique()) {
 
-            sb.append(" UNIQUE");
+            sb.append(" UQ");
         }
 
         return sb.toString();
@@ -138,7 +140,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
     public String getNameEscaped() {
 
-        return MiscUtils.getFormattedObject(getName());
+        return MiscUtils.getFormattedObject(getName(), getTable().getHost().getDatabaseConnection());
     }
 
     /**
@@ -173,6 +175,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
                     || isComputedChanged()
                     || isDescriptionChanged()
                     || isDomainChanged()
+                    || isPositionChanged()
             );
         }
     }
@@ -318,8 +321,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
                 || (copy.getColumnSize() != getColumnSize())
                 || (copy.getColumnScale() != getColumnScale());
         if (!changed) {
-            if (!((MiscUtils.isNull(copy.getCharset()) || copy.getCharset().contentEquals(CreateTableSQLSyntax.NONE))
-                    && (MiscUtils.isNull(getCharset()) || getCharset().contentEquals(CreateTableSQLSyntax.NONE))))
+            if (!((MiscUtils.isNull(copy.getCharset()))
+                    && (MiscUtils.isNull(getCharset()))))
                 changed = !Objects.equals(copy.getCharset(), getCharset());
         }
 
@@ -363,6 +366,16 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         }
 
         return !copy.getDomain().equalsIgnoreCase(getDomain());
+    }
+
+    public boolean isPositionChanged() {
+
+        if (!hasCopy()) {
+
+            return false;
+        }
+
+        return copy.getPosition() != getPosition();
     }
 
     private boolean hasCopy() {
@@ -692,8 +705,10 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         destination.setColumnSize(source.getColumnSize());
         destination.setColumnScale(source.getColumnScale());
         destination.setRequired(source.isRequired());
+        destination.setDomainNotNull(source.isDomainNotNull());
         destination.setRemarks(source.getRemarks());
         destination.setDefaultValue(source.getDefaultValue());
+        destination.setDomainDefaultValue(source.getDomainDefaultValue());
         destination.setPrimaryKey(source.isPrimaryKey());
         destination.setForeignKey(source.isForeignKey());
         destination.setNewColumn(source.isNewColumn());
@@ -704,6 +719,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         destination.setDomain(source.getDomain());
         destination.setCharset(source.getCharset());
         destination.setCollate(source.getCollate());
+        destination.setDimensions(source.getDimensions());
+        destination.setPosition(source.getPosition());
     }
 
     /**

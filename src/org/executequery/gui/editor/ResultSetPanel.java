@@ -20,6 +20,7 @@
 
 package org.executequery.gui.editor;
 
+import org.executequery.UserPreferencesManager;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTable;
@@ -30,6 +31,8 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,7 +99,12 @@ public class ResultSetPanel extends JPanel {
 
         Color bg = SystemProperties.getColourProperty("user",
                 "editor.results.background.colour");
-        table = new ResultSetTable();
+        table = new ResultSetTable() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return !UserPreferencesManager.doubleClickOpenItemView();
+            }
+        };
 
         // this is set for the bg of any remaining
         // header region outside the cells themselves
@@ -242,6 +250,12 @@ public class ResultSetPanel extends JPanel {
         } else {
             rowNumberHeader.setTable(table);
         }
+        table.addPropertyChangeListener("rowHeight", new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                rowNumberHeader.setTable(table);
+            }
+        });
         scroller.setRowHeaderView(rowNumberHeader);
     }
 

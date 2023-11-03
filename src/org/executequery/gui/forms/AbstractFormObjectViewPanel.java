@@ -24,7 +24,9 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.gui.browser.BrowserPrivilegesPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.managment.grantmanager.PrivilegesTablePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.GradientLabel;
 
@@ -85,20 +87,27 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
     }
 
     private JTabbedPane tabPaneWithPrivileges;
-    private ChangeListener privilegeListener;
+    protected ChangeListener privilegeListener;
 
-    protected void addPrivilegesTab(JTabbedPane tabPane) {
+
+    protected void addPrivilegesTab(JTabbedPane tabPane, AbstractDatabaseObject databaseObject) {
         tabPaneWithPrivileges = tabPane;
         privilegesPanel = new BrowserPrivilegesPanel();
-        tabPane.add(Bundles.getCommon("privileges"), privilegesPanel);
-        privilegeListener = new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                if (tabPane.getSelectedComponent() == privilegesPanel)
-                    privilegesPanel.setValues((AbstractDatabaseObject) getDatabaseObjectNode().getDatabaseObject());
-            }
-        };
-        tabPane.addChangeListener(privilegeListener);
+        if (databaseObject == null || PrivilegesTablePanel.supportType(databaseObject.getType(), databaseObject.getHost().getDatabaseConnection())) {
+            tabPane.add(Bundles.getCommon("privileges"), privilegesPanel);
+            privilegeListener = new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (tabPane.getSelectedComponent() == privilegesPanel) {
+                        if (getDatabaseObjectNode() != null)
+                            privilegesPanel.setValues((AbstractDatabaseObject) getDatabaseObjectNode().getDatabaseObject());
+                        else if (databaseObject != null)
+                            privilegesPanel.setValues(databaseObject);
+                    }
+                }
+            };
+            tabPane.addChangeListener(privilegeListener);
+        }
     }
 
     protected void removePrivilegesTab() {
@@ -130,7 +139,20 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
     /**
      * Performs some cleanup and releases resources before being closed.
      */
-    public abstract void cleanup();
+    public void cleanup() {
+        if (privilegesPanel != null)
+            privilegesPanel.cleanup();
+        cleanupForSqlTextArea(this);
+    }
+
+    protected void cleanupForSqlTextArea(Component component) {
+        if (component instanceof SQLTextArea)
+            ((SQLTextArea) component).cleanup();
+        else if (component instanceof Container)
+            for (Component child : ((Container) component).getComponents()) {
+                cleanupForSqlTextArea(child);
+            }
+    }
 
     /**
      * Flags to refresh the data and clears the cache - if any.
@@ -192,6 +214,10 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
     @Override
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
+    }
+
+    public BrowserPrivilegesPanel getPrivilegesPanel() {
+        return privilegesPanel;
     }
 
     @Override

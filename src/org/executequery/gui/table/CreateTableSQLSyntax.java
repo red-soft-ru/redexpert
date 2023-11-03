@@ -168,6 +168,17 @@ public interface CreateTableSQLSyntax {
 
     String NONE = "NONE";
 
+    /**
+     * SQL SECURITY { DEFINER | INVOKER }
+     * AUTHID { OWNER | CALLER }
+     */
+    String SQL_SECURITY = "SQL SECURITY ";
+    String DEFINER = "DEFINER";
+    String INVOKER = "INVOKER";
+
+    String AUTHID = "AUTHID ";
+    String OWNER = "OWNER";
+    String CALLER = "CALLER";
 }
 
 

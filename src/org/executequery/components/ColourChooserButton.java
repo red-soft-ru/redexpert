@@ -22,6 +22,8 @@ package org.executequery.components;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -57,7 +59,9 @@ public class ColourChooserButton extends JButton
     public void actionPerformed(ActionEvent e) {
         Color _buttonColour = JColorChooser.showDialog(
                 GUIUtilities.getInFocusDialogOrWindow(),
-                "Select Colour", buttonColour);
+                Bundles.get("LocaleManager.ColorChooser.title"),
+                buttonColour
+        );
 
         if (_buttonColour != null) {
             firePropertyChange(Constants.COLOUR_PREFERENCE, buttonColour, _buttonColour);

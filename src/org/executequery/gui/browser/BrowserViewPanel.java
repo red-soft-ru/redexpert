@@ -69,9 +69,9 @@ public class BrowserViewPanel extends FormObjectViewContainer
      * Informs any panels of a new selection being made.
      */
     protected void selectionChanging() {
-        if (isEmpty()) {
+        if (isEmpty())
             return;
-        }
+
         if (containsPanel(HostPanel.NAME)) {
             HostPanel hostPanel = (HostPanel) getFormObjectView(HostPanel.NAME);
             hostPanel.selectionChanging();
@@ -100,13 +100,23 @@ public class BrowserViewPanel extends FormObjectViewContainer
         ConnectionHistory.remove(currentView);
         if (currentView instanceof BrowserTableEditingPanel)
             return ((BrowserTableEditingPanel) currentView).commitResultSet();
+        if (currentView instanceof ObjectDefinitionPanel)
+            return ((ObjectDefinitionPanel) currentView).commitResultSet();
+        currentView.cleanup();
+        //cleanup();
         return true;
+    }
+
+    public void cleanup() {
+        super.cleanup();
+        controller.setViewPanel(null);
     }
 
     /**
      * Indicates the panel is being selected in the pane
      */
     public boolean tabViewSelected() {
+
         // update the driver list on the host panel
         if (containsPanel(HostPanel.NAME)) {
             HostPanel hostPanel = (HostPanel) getFormObjectView(HostPanel.NAME);
@@ -119,28 +129,28 @@ public class BrowserViewPanel extends FormObjectViewContainer
      * Indicates the panel is being de-selected in the pane
      */
     public boolean tabViewDeselected() {
-        if (isEmpty()) {
+        if (isEmpty())
             return true;
-        }
 
         if (currentView instanceof HostPanel) {
             HostPanel hostPanel = (HostPanel) getFormObjectView(HostPanel.NAME);
             return hostPanel.tabViewDeselected();
         }
+
         return true;
     }
 
     // --------------------------------------------
 
     protected BrowserTableEditingPanel getEditingPanel() {
-        BrowserTableEditingPanel panel = null;
+        BrowserTableEditingPanel panel;
         if (!containsPanel(BrowserTableEditingPanel.NAME)) {
             panel = new BrowserTableEditingPanel(controller);
             addToLayout(panel);
-        } else {
+        } else
             panel = (BrowserTableEditingPanel)
                     getFormObjectView(BrowserTableEditingPanel.NAME);
-        }
+
         return panel;
     }
 
@@ -149,13 +159,13 @@ public class BrowserViewPanel extends FormObjectViewContainer
     }
 
     public void displayConnectionList(ConnectionsFolder folder) {
-        ConnectionsListPanel panel = null;
+        ConnectionsListPanel panel;
         if (!containsPanel(ConnectionsListPanel.NAME)) {
             panel = new ConnectionsListPanel(controller);
             addToLayout(panel);
-        } else {
+        } else
             panel = (ConnectionsListPanel) getFormObjectView(ConnectionsListPanel.NAME);
-        }
+
         panel.selected(folder);
         setView(panel);
     }
@@ -169,9 +179,8 @@ public class BrowserViewPanel extends FormObjectViewContainer
      * that this container holds.
      */
     public TextEditor getTextEditor() {
-        if (currentView instanceof BrowserTableEditingPanel) {
+        if (currentView instanceof BrowserTableEditingPanel)
             return ((BrowserTableEditingPanel) currentView).getFocusedTextEditor();
-        }
         return null;
     }
 
@@ -201,14 +210,8 @@ public class BrowserViewPanel extends FormObjectViewContainer
      * Returns the <code>Printable</code> object.
      */
     public Printable getPrintable() {
-        if (currentView != null) {
-            return currentView.getPrintable();
-        } else {
-            return null;
-        }
+        return (currentView != null) ? currentView.getPrintable() : null;
     }
-
-    // --------------------------------------------------
 
 }
 

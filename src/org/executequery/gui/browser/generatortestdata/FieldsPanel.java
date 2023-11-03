@@ -14,9 +14,11 @@ public class FieldsPanel extends JPanel {
     public final static int SELECTED_FIELD = 0;
     public final static int NAME_FIELD = 1;
     public final static int TYPE_FIELD = 2;
+    public final static int REQUIRED_FIELD = 3;
     private JTable tableFields;
     private List<FieldGenerator> fieldGenerators;
-    private final String[] colNames = Bundles.get(GeneratorTestDataPanel.class, new String[]{"Selected", "Name", "Type"});
+    private final String[] colNames = Bundles.get(GeneratorTestDataPanel.class,
+        new String[]{"Selected", "Name", "Type", "Required"});
     private FieldGeneratorModel model;
     private JPanel rightPanel;
 
@@ -88,6 +90,8 @@ public class FieldsPanel extends JPanel {
                     return fieldGenerators.get(rowIndex).getColumn().getName();
                 case TYPE_FIELD:
                     return fieldGenerators.get(rowIndex).getColumn().getFormattedDataType();
+                case REQUIRED_FIELD:
+                    return fieldGenerators.get(rowIndex).getColumn().isRequired();
                 default:
                     return null;
             }
@@ -102,6 +106,8 @@ public class FieldsPanel extends JPanel {
         public Class<?> getColumnClass(int columnIndex) {
             switch (columnIndex) {
                 case SELECTED_FIELD:
+                    return Boolean.class;
+                case REQUIRED_FIELD:
                     return Boolean.class;
                 default:
                     return String.class;

@@ -22,6 +22,7 @@ package org.executequery.gui.importexport;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.log.Log;
 import org.executequery.util.Base64;
@@ -41,7 +42,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.text.DateFormat;
 import java.util.Vector;
 
@@ -93,7 +93,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
     private void transferData() {
         reset();
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("ExportXml") {
             public Object construct() {
                 return doWork();
             }
@@ -470,6 +470,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                             switch (type) {
                                 case Types.BIT:
                                 case Types.TINYINT:
+                                case Types.INT128:
                                 case Types.BIGINT:
                                 case Types.LONGVARCHAR:
                                 case Types.CHAR:

@@ -22,6 +22,7 @@ package org.executequery.gui.editor;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.editor.autocomplete.AutoCompletePopupProvider;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.TextUtilities;
@@ -115,18 +116,8 @@ public class QueryEditorTextPanel extends JPanel {
         queryPane.addMouseListener(listener);
     }
 
-    public boolean isLogEnabled() {
-
-        return OutputLogger.isLogEnabled();
-    }
-
     public void log(String message) {
-
-        if (isLogEnabled()) {
-
-            OutputLogger.info(message);
-        }
-
+        Log.info(message);
     }
 
     public void setTextPaneBackground(Color c) {
@@ -153,7 +144,7 @@ public class QueryEditorTextPanel extends JPanel {
      * Indicates that the editor is closing and performs some cleanup.
      */
     protected void closingEditor() {
-
+        queryPane.cleanup();
         queryEditor = null;
     }
 
@@ -410,9 +401,9 @@ public class QueryEditorTextPanel extends JPanel {
         queryEditor.setResultSet(rset, query);
     }
 
-    public void setResult(int updateCount, int type, String metaName) {
+    public void setResult(DatabaseConnection dc, int updateCount, int type, String metaName) {
 
-        queryEditor.setResultText(updateCount, type, metaName);
+        queryEditor.setResultText(dc, updateCount, type, metaName);
     }
 
     public String getQueryAreaText() {

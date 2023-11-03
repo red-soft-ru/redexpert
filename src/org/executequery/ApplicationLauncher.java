@@ -28,6 +28,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -45,6 +46,7 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.*;
 
@@ -221,7 +223,6 @@ public class ApplicationLauncher {
                 }
                 QueryEditorHistory.restoreTabs(null);
 
-
                 doCheckForUpdate();
                 GUIUtilities.loadAuthorisationInfo();
             } catch (Exception e) {
@@ -234,6 +235,7 @@ public class ApplicationLauncher {
             System.exit(1);
         }
 
+        ApplicationInstanceCounter.add();
     }
 
     private void printSystemProperties() {
@@ -375,7 +377,7 @@ public class ApplicationLauncher {
         System.setProperty("user.timezone", stringUserProperty("locale.timezone"));
 
         Locale.setDefault(new Locale(stringUserProperty("locale.language")));
-
+        LocaleManager.updateLocaleEverywhere();
     }
 
     private void printVersionInfo() {
@@ -405,7 +407,9 @@ public class ApplicationLauncher {
 
         return new SplashPanel(
                 progressBarColour(),
-                "/org/executequery/images/SplashImage.png",
+                (LocalDate.now().getDayOfYear() >= 349 || LocalDate.now().getDayOfYear() <= 15) ?
+                        "/org/executequery/images/SnowSplashImage.gif" :
+                        "/org/executequery/images/SplashImage.png",
                 versionString(),
                 versionTextColour(),
                 210, 220);

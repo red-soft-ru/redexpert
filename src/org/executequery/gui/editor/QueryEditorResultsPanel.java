@@ -23,6 +23,7 @@ package org.executequery.gui.editor;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.UserPreferencesManager;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.resultset.RecordDataItem;
@@ -58,7 +59,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         ResultSetTableContainer,
         ChangeListener {
 
-    private static final String OUTPUT_TAB_TITLE = Bundles.get(QueryEditorResultsPanel.class, "title");
+    private static final String OUTPUT_TAB_TITLE = bundleString("title");
 
     /**
      * the editor parent
@@ -85,13 +86,13 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      */
     private Icon outputTabIcon;
 
-    private static final String SUCCESS = " Statement executed successfully";
-    private static final String NO_ROWS = "No rows selected";
-    private static final String SUCCESSFULL_NO_ROWS = SUCCESS + "\n" + NO_ROWS;
-    private static final String ZERO_ROWS = " 0 rows returned";
+    private static final String SUCCESS = bundleString("SUCCESS");
+    private static final String NO_ROWS = bundleString("NO_ROWS");
+    private static final String SUCCESS_NO_ROWS = SUCCESS + "\n" + NO_ROWS;
+    private static final String ZERO_ROWS = bundleString("ZERO_ROWS");
     private static final String SPACE = " ";
-    private static final String ROW_RETURNED = " row returned";
-    private static final String ROWS_RETURNED = " rows returned";
+    private static final String ROW_RETURNED = bundleString("ROW_RETURNED");
+    private static final String ROWS_RETURNED = bundleString("ROWS_RETURNED");
 
     private ResultSetTableColumnResizingManager resultSetTableColumnResizingManager;
 
@@ -236,7 +237,19 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         if (indexOfTab(OUTPUT_TAB_TITLE) == -1) {
 
-            insertTab(OUTPUT_TAB_TITLE, outputTabIcon, outputTextPane, "Database output", 0);
+            insertTab(OUTPUT_TAB_TITLE, outputTabIcon, outputTextPane, bundleString("DatabaseOutput"), 0);
+        }
+
+    }
+
+    private void addTextOutputTab(DatabaseConnection databaseConnection) {
+        if (databaseConnection == null)
+            addTextOutputTab();
+        else {
+            if (indexOfTab(databaseConnection.getName()) == -1) {
+
+                insertTab(databaseConnection.getName(), outputTabIcon, new LoggingOutputPanel(), databaseConnection.getName(), 0);
+            }
         }
 
     }
@@ -359,7 +372,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      * @param maxRecords    - the maximum records to return
      * @param query         - the executed query of the result set
      */
-    public int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords, String query) throws SQLException {
+    public synchronized int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords, String query) throws SQLException {
 
         ResultSetTableModel model = new ResultSetTableModel(rset, maxRecords, query, false);
 
@@ -382,6 +395,14 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
                 resultSetTableColumnResizingManager.suspend(table);
 
                 panel.setResultSet(model, showRowNumber);
+                /*double thisWidth = getParent().getParent().getSize().getWidth();
+                int colWidth = SystemProperties.getIntProperty("user", "results.table.column.width");
+                if (thisWidth / table.getColumnCount() < colWidth)
+                    table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                else table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);*/
+                table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+                table.setTableColumnWidthFromContents();
                 resultSetTableColumnResizingManager.setColumnWidthsForTable(table);
 
             } finally {
@@ -389,6 +410,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
                 resultSetTableColumnResizingManager.reinstate(table);
             }
             addResultSetPanel(query, rowCount, panel);
+
         }
 
         return rowCount;
@@ -422,7 +444,9 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         resetTabCount();
 
-        String title = "Result Set " + resultSetTabTitleCounter + (filtered ? " - Filtered" : "");
+        String title = bundleString("ResultSetTitle") + resultSetTabTitleCounter
+                + (filtered ? " " + bundleString("ResultSetTitleFiltered") : "");
+
         if (useSingleResultSetTabs()) {
 
             if (getResultSetTabCount() >= 1) {
@@ -488,11 +512,11 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
             if (rowCount > 1) {
 
-                queryEditor.setLeftStatusText(SPACE + rowCount + ROWS_RETURNED);
+                queryEditor.setLeftStatusText(SPACE + rowCount + " " + ROWS_RETURNED);
 
             } else if (rowCount == 1) {
 
-                queryEditor.setLeftStatusText(SPACE + rowCount + ROW_RETURNED);
+                queryEditor.setLeftStatusText(SPACE + rowCount + " " + ROW_RETURNED);
 
             } else {
 
@@ -507,7 +531,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         int rowCount = model.getRowCount();
         if (rowCount == 0) {
             if (showRowNumber) {
-                setOutputMessage(SqlMessages.PLAIN_MESSAGE, SUCCESSFULL_NO_ROWS.trim(), true);
+                setOutputMessage(null, SqlMessages.PLAIN_MESSAGE, SUCCESS_NO_ROWS.trim(), true);
                 resetEditorRowCount(rowCount);
                 queryEditor.setMetaDataButtonEnabled(false);
             }
@@ -515,7 +539,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         return rowCount;
     }
 
-    public void setResultText(int result, int type, String metaName) {
+    public void setResultText(DatabaseConnection dc, int result, int type, String metaName) {
 
         if (hasNoTabs()) {
 
@@ -524,70 +548,8 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         setSelectedIndex(0);
 
-        String row = " row ";
-        if (result > 1 || result == 0) {
 
-            row = " rows ";
-        }
-
-        String rText = null;
-        switch (type) {
-            case QueryTypes.INSERT:
-                rText = row + "created.";
-                break;
-            case QueryTypes.UPDATE:
-                rText = row + "updated.";
-                break;
-            case QueryTypes.DELETE:
-                rText = row + "deleted.";
-                break;
-            case QueryTypes.GRANT:
-                rText = "Grant succeeded.";
-                break;
-            case QueryTypes.COMMIT:
-                rText = "Commit complete.";
-                break;
-            case QueryTypes.ROLLBACK:
-                rText = "Rollback complete.";
-                break;
-            case QueryTypes.SELECT_INTO:
-                rText = "Statement executed successfully.";
-                break;
-            case QueryTypes.REVOKE:
-                rText = "Revoke succeeded.";
-                break;
-            case QueryTypes.DROP_OBJECT:
-                rText = metaName + " dropped.";
-                break;
-            case QueryTypes.COMMENT:
-                rText = "Description created.";
-                break;
-            case QueryTypes.CREATE_OBJECT:
-            case QueryTypes.CREATE_OR_ALTER:
-                rText = metaName + " Created";
-                break;
-            case QueryTypes.ALTER_OBJECT:
-                rText = metaName + " altered";
-                break;
-            case QueryTypes.UNKNOWN:
-            case QueryTypes.EXECUTE:
-                if (result > -1) {
-                    rText = result + row + "affected.\nStatement executed successfully.";
-                } else {
-                    rText = "Statement executed successfully.";
-                }
-                break;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        if ((result > -1 && type >= QueryTypes.ALL_UPDATES) && type != QueryTypes.UNKNOWN) {
-
-            sb.append(result);
-        }
-
-        sb.append(rText);
-
-        setOutputMessage(SqlMessages.PLAIN_MESSAGE, sb.toString(), true);
+        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, QueryTypes.getResultText(result, type, metaName, ""), true);
         queryEditor.setLeftStatusText(SUCCESS);
     }
 
@@ -695,25 +657,32 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         }
     }
 
-    public void setOutputMessage(int type, String text) {
-        setOutputMessage(type, text, true);
+    public void setOutputMessage(DatabaseConnection dc, int type, String text) {
+        setOutputMessage(dc, type, text, true);
     }
 
-    public void setOutputMessage(int type, String text, boolean selectTab) {
+    public void setOutputMessage(DatabaseConnection dc, int type, String text, boolean selectTab) {
 
         if (hasNoTabs()) {
-
-            addTextOutputTab();
+            addTextOutputTab(dc);
         }
 
         if (selectTab) {
-
-            setSelectedIndex(0);
+            if (dc == null)
+                setSelectedIndex(0);
+            else {
+                if (indexOfTab(dc.getName()) < 0)
+                    addTextOutputTab(dc);
+                setSelectedIndex(indexOfTab(dc.getName()));
+            }
         }
 
         if (StringUtils.isNotBlank(text)) {
-
-            appendOutput(type, text);
+            if (dc == null)
+                appendOutput(type, text);
+            else {
+                appendOutput(dc, type, text);
+            }
         }
 
         if (queryEditor != null) {
@@ -728,6 +697,15 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
     protected void appendOutput(int type, String text) {
         outputTextPane.append(type, text);
+    }
+
+    protected void appendOutput(DatabaseConnection dc, int type, String text) {
+        int index = indexOfTab(dc.getName());
+        if (index < 0) {
+            addTextOutputTab(dc);
+            index = indexOfTab(dc.getName());
+        }
+        ((LoggingOutputPanel) getComponentAt(index)).append(type, text);
     }
 
     public void clearOutputPane() {
@@ -786,6 +764,12 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         addTextOutputTab();
         setSelectedIndex(indexOfTab(OUTPUT_TAB_TITLE));
+    }
+
+    public void preExecute(DatabaseConnection databaseConnection) {
+
+        addTextOutputTab(databaseConnection);
+        setSelectedIndex(indexOfTab(databaseConnection.getName()));
     }
 
     /**
@@ -898,6 +882,10 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
     public boolean isTransposeAvailable() {
         return true;
+    }
+
+    private static String bundleString(String key) {
+        return Bundles.get(QueryEditorResultsPanel.class, key);
     }
 
 }

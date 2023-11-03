@@ -21,6 +21,8 @@
 package org.executequery.gui.browser;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static org.executequery.databaseobjects.NamedObject.*;
@@ -58,11 +60,17 @@ public class ColumnConstraint implements Serializable {
     /** The column name of this constraint */
     private String column;
 
+    /** The columns display list of this constraint */
+    private List<String> columnDisplayList;
+
     /** The referenced table of this constraint */
     private String refTable;
 
     /** The referenced column of this constraint */
     private String refColumn;
+
+    /** The referenced column display list of this constraint */
+    private List<String> refColumnDisplayList;
 
 
     /**
@@ -118,6 +126,8 @@ public class ColumnConstraint implements Serializable {
             refTable = EMPTY;
             column = EMPTY;
             refColumn = EMPTY;
+            columnDisplayList = new ArrayList<>();
+            refColumnDisplayList = new ArrayList<>();
             setUpdateRule(RULES[RESTRICT]);
             setDeleteRule(RULES[RESTRICT]);
         }
@@ -132,6 +142,8 @@ public class ColumnConstraint implements Serializable {
             refTable = EMPTY;
             column = EMPTY;
             refColumn = EMPTY;
+            columnDisplayList = new ArrayList<>();
+            refColumnDisplayList = new ArrayList<>();
         }
         this.column = cc.getColumnName();
         this.name = cc.getName();
@@ -140,6 +152,8 @@ public class ColumnConstraint implements Serializable {
         this.check = cc.getCheck();
         this.refTable = cc.getReferencedTable();
         this.refColumn = cc.getReferencedColumn();
+        this.columnDisplayList = cc.getColumnDisplayList();
+        this.refColumnDisplayList = cc.getReferenceColumnDisplayList();
         setUpdateRule(cc.getUpdateRule());
         setDeleteRule(cc.getDeleteRule());
     }
@@ -311,20 +325,13 @@ public class ColumnConstraint implements Serializable {
     public void setTablespace(String tablespace) {
         this.tablespace = tablespace;
     }
+
+    public List<String> getColumnDisplayList() {
+        return columnDisplayList;
+    }
+
+    public List<String> getRefColumnDisplayList() {
+        return refColumnDisplayList;
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

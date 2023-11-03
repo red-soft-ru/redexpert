@@ -41,6 +41,9 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
     private static final Icon systemFunction;
     private static final Icon databaseFunction;
     private static final Icon databaseProcedure;
+    private static final Icon databasePackage;
+    private static final Icon variable;
+    private static final Icon parameter;
     private static final ImageIcon animatedSpinner;
     private static final ImageIcon databaseTableView;
 
@@ -56,6 +59,9 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
         systemFunction = GUIUtilities.loadIcon("SystemFunction16.png", true);
         databaseFunction = GUIUtilities.loadIcon("Function16.png", true);
         databaseProcedure = GUIUtilities.loadIcon("Procedure16.png", true);
+        databasePackage = GUIUtilities.loadIcon("package16.png", true);
+        variable = GUIUtilities.loadIcon("Variable16.png", true);
+        parameter = GUIUtilities.loadIcon("Argument16.png",true);
     }
 
 
@@ -104,6 +110,9 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
                 case DATABASE_PROCEDURE:
                     setIcon(databaseProcedure);
                     break;
+                case DATABASE_PACKAGE:
+                    setIcon(databasePackage);
+                    break;
 
                 case SYSTEM_FUNCTION:
                     setIcon(systemFunction);
@@ -121,6 +130,12 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
                     setForeground(list.getForeground());
                     setBorder(noFocusBorder);
                     setIcon(animateImageIcon(animatedSpinner, list, index));
+                    break;
+                case VARIABLE:
+                    setIcon(variable);
+                    break;
+                case PARAMETER:
+                    setIcon(parameter);
                     break;
             }
 
@@ -161,7 +176,6 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
                 return (infoflags & (ALLBITS | ABORT)) == 0;
             }
 
-            ;
         });
 
         return icon;

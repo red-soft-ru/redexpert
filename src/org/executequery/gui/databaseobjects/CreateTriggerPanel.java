@@ -8,18 +8,22 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
-import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
-public class CreateTriggerPanel extends AbstractCreateObjectPanel {
+public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
 
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.TRIGGER);
 
@@ -58,13 +62,12 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     private SimpleSqlTextPanel sqlBodyText;
 
     //components for table trigger
-    private SimpleTextArea descriptionText;
-    private JPanel databaseTriggerPanel;
+    private List<Component> databaseTriggerComponents;
     private JComboBox actionCombo;
     private JLabel actionLabel;
     private JLabel labelTable;
-    private JPanel tableTriggerPanel;
-    private JLabel beforeAfterlabel;
+    private List<Component> tableTriggerComponents;
+    private JLabel beforeAfterLabel;
 
     //components for ddl trigger
     private JComboBox typeTableTriggerCombo;
@@ -72,9 +75,9 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     private JCheckBox deleteBox;
     private JCheckBox updateBox;
     private JPanel ddlTriggerPanel;
-    private JPanel ddlTableTriggerPanel;
+    private List<Component> ddlTableTriggerComponents;
     private List<JCheckBox> ddlCheckBoxes;
-    private JScrollPane scrolDDL;
+    private JScrollPane scrollDDL;
     private JCheckBox anyDdlBox;
     /**
      * The table combo selection
@@ -103,6 +106,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     protected void init() {
+        initExternal();
         if (getDatabaseVersion() > 2) {
             if (this.triggerType == NamedObject.TRIGGER)
                 typeTriggerCombo = new JComboBox(new String[]{TRIGGER});
@@ -121,29 +125,36 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 typeTriggerCombo = new JComboBox(new String[]{TRIGGER, DB_TRIGGER});
         }
         positionLabel = new JLabel(bundleString("position"));
-        descriptionText = new SimpleTextArea();
         SpinnerModel model = new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1);
         positionField = new JSpinner(model);
         positionField.setValue(0);
         activeBox = new JCheckBox(bundleStaticString("active"));
         activeBox.setSelected(true);
-        databaseTriggerPanel = new JPanel();
+        databaseTriggerComponents = new ArrayList<>();
         actionCombo = new JComboBox(new String[]{"CONNECT", "DISCONNECT", "TRANSACTION START", "TRANSACTION COMMIT", "TRANSACTION ROLLBACK"});
         actionLabel = new JLabel(bundleString("event"));
-        tableTriggerPanel = new JPanel();
+        tableTriggerComponents = new ArrayList<>();
         typeTableTriggerCombo = new JComboBox(new String[]{"BEFORE", "AFTER"});
         insertBox = new JCheckBox("INSERT");
         updateBox = new JCheckBox("UPDATE");
         deleteBox = new JCheckBox("DELETE");
         labelTable = new JLabel(bundleStaticString("table"));
-        beforeAfterlabel = new JLabel(bundleString("before-after"));
+        beforeAfterLabel = new JLabel(bundleString("before-after"));
         tablesCombo = new JComboBox(getTables());
+        tablesCombo.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                sqlBodyText.getTextPane().setTriggerTable((String) tablesCombo.getSelectedItem());
+
+            }
+        });
         sqlBodyText = new SimpleSqlTextPanel();
+        sqlBodyText.getTextPane().setDatabaseConnection(connection);
         ddlTriggerPanel = new JPanel(new GridBagLayout());
-        scrolDDL = new JScrollPane(ddlTriggerPanel);
-        scrolDDL.setMinimumSize(new Dimension(100, 200));
+        scrollDDL = new JScrollPane(ddlTriggerPanel);
+        scrollDDL.setMinimumSize(new Dimension(100, 200));
         setPreferredSize(new Dimension(800, 800));
-        ddlTableTriggerPanel = new JPanel(new GridBagLayout());
+        ddlTableTriggerComponents = new ArrayList<>();
         ddlCheckBoxes = new ArrayList<>();
         anyDdlBox = new JCheckBox("ANY DDL STATEMENT");
         sqlBodyText.setSQLText("AS\n" +
@@ -155,108 +166,42 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         typeTriggerCombo.addActionListener(actionEvent -> changeTypeTrigger());
 
         anyDdlBox.addActionListener(actionEvent -> changeAnyDdlBox());
-
-        centralPanel.setLayout(new GridBagLayout());
-        JPanel commonPanel = new JPanel(new GridBagLayout());
-        commonPanel.add(typeTriggerCombo, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        commonPanel.add(positionLabel, new GridBagConstraints(1, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        commonPanel.add(positionField, new GridBagConstraints(2, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        commonPanel.add(activeBox, new GridBagConstraints(3, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        centralPanel.add(commonPanel, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        JPanel topPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
-                1, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0);
-        topPanel.add(databaseTriggerPanel, gbcTop);
-        gbcTop.gridy++;
-        gbcTop.fill = GridBagConstraints.BOTH;
-        topPanel.add(ddlTableTriggerPanel, gbcTop);
-
-        centralPanel.add(topPanel, new GridBagConstraints(0, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        sqlBodyText.getTextPane().setTriggerTable((String) tablesCombo.getSelectedItem());
+        centralPanel.setVisible(false);
+        topPanel.add(activeBox, topGbh.nextRowFirstCol().setLabelDefault().get());
+        topPanel.add(typeTriggerCombo, topGbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        topGbh.addLabelFieldPair(topPanel, positionLabel, positionField, null, false, true);
 
         tabbedPane.add(bundleStaticString("SQL"), sqlBodyText);
-        tabbedPane.add(bundleStaticString("description"), descriptionText);
+        addCommentTab(null);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        databaseTriggerPanel.setLayout(new GridBagLayout());
-        tableTriggerPanel.setLayout(new GridBagLayout());
+        GridBagHelper gbh = new GridBagHelper();
         ddlTriggerPanel.setLayout(new GridBagLayout());
-        ddlTableTriggerPanel.setLayout(new GridBagLayout());
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 0;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.anchor = GridBagConstraints.NORTHEAST;
-        databaseTriggerPanel.add(actionLabel, gbc);
-        tableTriggerPanel.add(labelTable, gbc);
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        ddlTableTriggerPanel.add(beforeAfterlabel, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        ddlTableTriggerPanel.add(typeTableTriggerCombo, new GridBagConstraints(1, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        gbc.gridx++;
-        gbc.weightx = 1;
-        databaseTriggerPanel.add(actionCombo, gbc);
-        tableTriggerPanel.add(tablesCombo, gbc);
-        gbc.gridx++;
-        gbc.weightx = 0.1;
-        tableTriggerPanel.add(insertBox, gbc);
-        gbc.gridx++;
-        tableTriggerPanel.add(updateBox, gbc);
-        gbc.gridx++;
-        tableTriggerPanel.add(deleteBox, gbc);
+        databaseTriggerComponents.add(actionLabel);
+        databaseTriggerComponents.add(actionCombo);
+        topGbh.addLabelFieldPair(topPanel, actionLabel, actionCombo, null, true, false);
+        tableTriggerComponents.add(labelTable);
+        tableTriggerComponents.add(tablesCombo);
+        topGbh.addLabelFieldPair(topPanel, labelTable, tablesCombo, null, true, false);
+        ddlTableTriggerComponents.add(beforeAfterLabel);
+        ddlTableTriggerComponents.add(typeTableTriggerCombo);
+        topGbh.addLabelFieldPair(topPanel, beforeAfterLabel, typeTableTriggerCombo, null, triggerType == NamedObject.DDL_TRIGGER, false);
 
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.weightx = 1;
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.weightx = 1;
-        ddlTableTriggerPanel.add(tableTriggerPanel, gbc);
-        gbc.gridy++;
-        gbc.fill = GridBagConstraints.BOTH;
-        ddlTableTriggerPanel.add(scrolDDL, new GridBagConstraints(0, 1,
-                2, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0));
-//        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.weightx = 1;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 3;
-        ddlTriggerPanel.add(anyDdlBox, gbc);
+        tableTriggerComponents.add(insertBox);
+        tableTriggerComponents.add(updateBox);
+        tableTriggerComponents.add(deleteBox);
+        topPanel.add(insertBox, topGbh.setLabelDefault().nextCol().get());
+        topPanel.add(updateBox, topGbh.setLabelDefault().nextCol().get());
+        topPanel.add(deleteBox, topGbh.setLabelDefault().nextCol().get());
+
+        ddlTableTriggerComponents.addAll(tableTriggerComponents);
+        ddlTableTriggerComponents.add(scrollDDL);
+        topPanel.add(scrollDDL, topGbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        gbh.defaults();
+        ddlTriggerPanel.add(anyDdlBox, gbh.setLabelDefault().get());
         JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-        gbc.gridy++;
-        ddlTriggerPanel.add(separator, gbc);
-        gbc.gridwidth = 1;
+        ddlTriggerPanel.add(separator, gbh.nextRowFirstCol().fillHorizontally().spanX().get());
+        gbh.setWidth(1);
         int[] addingY = {2, 2, 2};
         for (int i = 0; i < meta_types.length; i++) {
             for (int g = 0; g < 3; g++) {
@@ -273,14 +218,14 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                         break;
                 }
                 JCheckBox checkBox = new JCheckBox(operator + " " + meta_types[i]);
-                gbc.gridx = g;
-                gbc.gridy = i + addingY[g];
+                gbh.setX(g);
+                gbh.setY(i + addingY[g]);
                 if (!checkBox.getText().toUpperCase().contains("ALTER COLLATION")
                         && !checkBox.getText().contains("CREATE CHARACTER SET")
                         && !checkBox.getText().contains("DROP CHARACTER SET")
                         && !checkBox.getText().contains("ALTER PACKAGE BODY")
                 ) {
-                    ddlTriggerPanel.add(checkBox, gbc);
+                    ddlTriggerPanel.add(checkBox, gbh.get());
                     ddlCheckBoxes.add(checkBox);
                 } else {
                     addingY[g]--;
@@ -289,6 +234,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         }
 
         changeTypeTrigger();
+        checkExternal();
 
     }
 
@@ -302,23 +248,39 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     protected void initEdited() {
         reset();
-        //addCreateSqlTab(trigger);
         addDependenciesTab(trigger);
+        if (parent == null)
+            addPrivilegesTab(tabbedPane, trigger);
         addCreateSqlTab(trigger);
+    }
+
+    protected void checkExternal() {
+        boolean selected = useExternalBox.isSelected();
+        sqlBodyText.setVisible(!selected);
+        if (!selected) {
+            if (tabbedPane.getComponentZOrder(sqlBodyText) < 0) {
+                tabbedPane.insertTab(bundleStaticString("SQL"), null, sqlBodyText, null, 0);
+                tabbedPane.setSelectedComponent(sqlBodyText);
+            }
+        } else {
+            if (tabbedPane.getComponentZOrder(sqlBodyText) >= 0)
+                tabbedPane.remove(sqlBodyText);
+        }
+        super.checkExternal();
     }
 
     protected void reset() {
         typeTriggerCombo.setEnabled(false);
         nameField.setText(trigger.getName());
-        nameField.setEnabled(false);
-        descriptionText.getTextAreaComponent().setText(trigger.getRemarks());
+        nameField.setEditable(false);
+        simpleCommentPanel.setDatabaseObject(trigger);
         activeBox.setSelected(trigger.isTriggerActive());
         positionField.setValue(trigger.getTriggerSequence());
         sqlBodyText.setSQLText(trigger.getTriggerSourceCode());
         if (trigger.getIntTriggerType() == DefaultDatabaseTrigger.DATABASE_TRIGGER) {
             int type = ((int) trigger.getLongTriggerType()) - 8192;
             actionCombo.setSelectedIndex(type);
-            actionCombo.setEnabled(false);
+            //actionCombo.setEnabled(false);
         } else {
             if (trigger.getStringTriggerType().startsWith("BEFORE"))
                 typeTableTriggerCombo.setSelectedIndex(0);
@@ -331,24 +293,34 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 for (int i = 0; i < tablesCombo.getItemCount(); i++) {
                     if (((String) tablesCombo.getModel().getElementAt(i)).trim().equalsIgnoreCase(trigger.getTriggerTableName().trim())) {
                         tablesCombo.setSelectedIndex(i);
-                        tablesCombo.setEnabled(false);
+                        //tablesCombo.setEnabled(false);
                         break;
                     }
                 }
             } else {
-                typeTableTriggerCombo.setEnabled(false);
-                anyDdlBox.setEnabled(false);
+                //typeTableTriggerCombo.setEnabled(false);
+                //anyDdlBox.setEnabled(false);
                 if (trigger.getStringTriggerType().trim().contains(anyDdlBox.getText())) {
                     anyDdlBox.setSelected(true);
                     changeAnyDdlBox();
                 } else {
                     for (JCheckBox checkBox : ddlCheckBoxes) {
                         checkBox.setSelected(trigger.getStringTriggerType().contains(checkBox.getText()));
-                        checkBox.setEnabled(false);
+                        //checkBox.setEnabled(false);
                     }
                 }
             }
         }
+        if (!MiscUtils.isNull(trigger.getEntryPoint())) {
+            useExternalBox.setSelected(true);
+            engineField.setText(trigger.getEngine());
+            externalField.setText(trigger.getEntryPoint());
+
+        }
+        if (!MiscUtils.isNull(trigger.getSqlSecurity())) {
+            sqlSecurityCombo.setSelectedItem(trigger.getSqlSecurity());
+        }
+        //useExternalBox.setVisible(false);
     }
 
     @Override
@@ -378,7 +350,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     @Override
     public void setParameters(Object[] params) {
-        this.triggerType = (int)params[0];
+        this.triggerType = (int) params[0];
     }
 
     int getVersion() throws SQLException {
@@ -387,10 +359,15 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     private void changeTypeTrigger() {
-        databaseTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DB_TRIGGER);
-        ddlTableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER||typeTriggerCombo.getSelectedItem() == TRIGGER);
-        tableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == TRIGGER);
-        scrolDDL.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER);
+        visibleComponents(databaseTriggerComponents, typeTriggerCombo.getSelectedItem() == DB_TRIGGER);
+        visibleComponents(ddlTableTriggerComponents, typeTriggerCombo.getSelectedItem() == DDL_TRIGGER || typeTriggerCombo.getSelectedItem() == TRIGGER);
+        visibleComponents(tableTriggerComponents, typeTriggerCombo.getSelectedItem() == TRIGGER);
+        scrollDDL.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER);
+    }
+
+    private void visibleComponents(List<Component> components, boolean flag) {
+        for (Component component : components)
+            component.setVisible(flag);
     }
 
     Object[] getTables() {
@@ -398,69 +375,68 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         DefaultDatabaseHost host = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection);
         tables.addAll(host.getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]));
         tables.addAll(host.getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]));
+        tables.addAll(host.getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.VIEW]));
         return tables.toArray();
     }
 
     protected String generateQuery() {
-        StringBuilder query = new StringBuilder("CREATE OR ALTER TRIGGER " + getFormattedName());
         String selectedItem = (String) typeTriggerCombo.getSelectedItem();
-        if (selectedItem == TRIGGER) {
-            String table = (String) tablesCombo.getSelectedItem();
+        String table = null;
+        if (Objects.equals(selectedItem, TRIGGER)) {
+            table = (String) tablesCombo.getSelectedItem();
             if (table != null)
                 table = table.trim();
-            query.append(" FOR ").append(MiscUtils.getFormattedObject(table));
         }
-        query.append("\n");
-        if (activeBox.isSelected())
-            query.append("ACTIVE ");
-        else query.append("INACTIVE ");
-        if (selectedItem == TRIGGER) {
-            query.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
+        StringBuilder triggerType = new StringBuilder();
+        if (Objects.equals(selectedItem, TRIGGER)) {
+            triggerType.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
             boolean first = true;
             if (insertBox.isSelected()) {
                 first = false;
-                query.append("INSERT ");
+                triggerType.append("INSERT ");
             }
             if (updateBox.isSelected()) {
                 if (!first)
-                    query.append("OR ");
+                    triggerType.append("OR ");
                 first = false;
-                query.append("UPDATE ");
+                triggerType.append("UPDATE ");
             }
             if (deleteBox.isSelected()) {
                 if (!first)
-                    query.append("OR ");
-                query.append("DELETE ");
+                    triggerType.append("OR ");
+                triggerType.append("DELETE ");
             }
 
         } else {
-            if (selectedItem == DB_TRIGGER)
-                query.append("ON ").append(actionCombo.getSelectedItem()).append(" ");
+            if (Objects.equals(selectedItem, DB_TRIGGER))
+                triggerType.append("ON ").append(actionCombo.getSelectedItem()).append(" ");
             else {
-                query.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
+                triggerType.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
                 boolean first = true;
                 if (anyDdlBox.isSelected()) {
-                    query.append(anyDdlBox.getText()).append(" ");
+                    triggerType.append(anyDdlBox.getText()).append(" ");
                 } else {
                     for (JCheckBox checkBox : ddlCheckBoxes) {
                         if (checkBox.isSelected()) {
                             if (!first)
-                                query.append("OR ");
-                            query.append(checkBox.getText()).append(" ");
+                                triggerType.append("OR ");
+                            triggerType.append(checkBox.getText()).append(" ");
                             first = false;
                         }
                     }
                 }
             }
         }
-        query.append("POSITION ").append(positionField.getValue()).append("\n");
-        query.append(sqlBodyText.getSQLText()).append("^");
-        String comment = descriptionText.getTextAreaComponent().getText();
-        if (!MiscUtils.isNull(comment) && !comment.trim().isEmpty()) {
-            comment = comment.replace("'", "''");
-            query.append("COMMENT ON TRIGGER ").append(getFormattedName()).append(" IS '").append(comment).append("'^");
+        String engine = engineField.getText();
+        String external = externalField.getText();
+        if (!useExternalBox.isSelected()) {
+            engine = null;
+            external = null;
         }
-        return query.toString();
+
+        return SQLUtils.generateCreateTriggerStatement(nameField.getText(), table, activeBox.isSelected(),
+                triggerType.toString(), (int) positionField.getValue(), sqlBodyText.getSQLText(), engine, external,
+                (String) sqlSecurityCombo.getSelectedItem(), simpleCommentPanel.getComment(), false, getDatabaseConnection());
     }
 
     private void generateScript() {

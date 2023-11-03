@@ -2,6 +2,7 @@ package org.executequery.gui.datatype;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.T;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.localization.Bundles;
@@ -17,7 +18,6 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.ResultSet;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -193,14 +193,20 @@ public class SelectTypePanel extends JPanel {
         if (index >= 0) {
             cd.setColumnType(dataTypes[index]);
             cd.setSQLType(intDataTypes[index]);
-            setSizeVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
-                    || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB
-                    || cd.getSQLType() == Types.LONGVARBINARY || cd.getSQLType() == Types.LONGVARCHAR
+            setSizeVisible(cd.getSQLType() == Types.NUMERIC
+                    || cd.getSQLType() == Types.CHAR
+                    || cd.getSQLType() == Types.VARCHAR
+                    || cd.getSQLType() == Types.DECIMAL
+                    || cd.getSQLType() == Types.BLOB
+                    || cd.getSQLType() == Types.LONGVARBINARY
+                    || cd.getSQLType() == Types.LONGVARCHAR
                     || cd.getColumnType().equalsIgnoreCase("VARCHAR")
                     || cd.getColumnType().equalsIgnoreCase("CHAR")
                     || cd.getColumnType().equalsIgnoreCase(T.DECFLOAT)
             );
-            setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
+            if (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL) {
+                sizeLabel.setText(Bundles.getCommon("precision"));
+            } else sizeLabel.setText(Bundles.getCommon("size"));
             setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
             setSubtypeVisible(cd.getSQLType() == Types.BLOB);
             setEncodingVisible(cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
@@ -341,6 +347,7 @@ public class SelectTypePanel extends JPanel {
             }
             java.util.Collections.sort(charsets);
             charsets.add(0, CreateTableSQLSyntax.NONE);
+            charsets.add(0, "");
 
         } catch (Exception e) {
             Log.error("Error getting charsets for SelectTypePanel:", e);
@@ -355,6 +362,7 @@ public class SelectTypePanel extends JPanel {
         DefaultStatementExecutor sender = new DefaultStatementExecutor();
         sender.setDatabaseConnection(cd.getDatabaseConnection());
         List<String> collates = new ArrayList<>();
+        collates.add("");
         collates.add(CreateTableSQLSyntax.NONE);
         String query = "SELECT RDB$COLLATION_NAME\n" +
                 "FROM RDB$COLLATIONS CO LEFT JOIN RDB$CHARACTER_SETS CS ON CO.RDB$CHARACTER_SET_ID = CS.RDB$CHARACTER_SET_ID\n" +

@@ -40,27 +40,14 @@ import java.util.regex.Pattern;
 public class KeywordRepositoryImpl implements KeywordRepository {
 
     /**
-     * All SQL92 key words
-     */
-    private List<String> sql92KeyWords;
-
-    /**
      * The user's added key words
      */
     private List<String> userDefinedKeyWords;
 
     private List<String> firebirdKeyWords = new ArrayList<>();
-    private List<String> databaseKeyWords = new ArrayList<>();
 
-    public List<String> getSQL92() {
-
-        if (sql92KeyWords == null) {
-
-            sql92KeyWords = loadSQL92();
-        }
-
-        return sql92KeyWords;
-    }
+    private TreeSet<String> allWords;
+    private boolean keyWordsListUpdated;
 
     public boolean contains(String word) {
 
@@ -68,18 +55,18 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         return keywords.contains(word);
     }
 
-    public TreeSet<String> getSQLKeywords() {
+    @Override
+    public synchronized TreeSet<String> getSQLKeywords() {
 
+        if (allWords == null || keyWordsListUpdated) {
 
-        TreeSet<String> allWords = new TreeSet<>();
-        if(sql92KeyWords!=null)
-        allWords.addAll(sql92KeyWords);
-        if(userDefinedKeyWords!=null)
-        allWords.addAll(userDefinedKeyWords);
-        if(firebirdKeyWords!=null)
-        allWords.addAll(this.firebirdKeyWords);
-        if(databaseKeyWords!=null)
-        allWords.addAll(this.databaseKeyWords);
+            allWords = new TreeSet<>();
+            keyWordsListUpdated = false;
+            if (userDefinedKeyWords != null)
+                allWords.addAll(userDefinedKeyWords);
+            if (firebirdKeyWords != null)
+                allWords.addAll(this.firebirdKeyWords);
+        }
 
         return allWords;
     }
@@ -91,11 +78,44 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         setUserDefinedKeywords(list);
     }
 
-    @Override
-    public List<String> getFirebirdKeywords(int majorVersion, int minorVersion) {
+    public List<String> getDefaultKeywords() {
         try {
+            String path = "org/executequery/keywords/default.keywords";
+            String values = FileUtils.loadResource(path);
 
-            String path = "org/executequery/firebird.sql.keywords";
+            StringTokenizer st = new StringTokenizer(values, "\n");
+            List<String> list = new ArrayList<String>(st.countTokens());
+
+            while (st.hasMoreTokens()) {
+                String trim = st.nextToken().trim();
+                list.add(trim);
+            }
+
+            return list;
+
+        } catch (IOException e) {
+
+            if (Log.isDebugEnabled()) {
+
+                e.printStackTrace();
+            }
+
+            Log.error("Error retrieving SQL92 keyword list");
+
+            return new ArrayList<String>(0);
+        }
+    }
+
+    @Override
+    public List<String> getServerKeywords(int majorVersion, int minorVersion, String serverName) {
+        try {
+            if (serverName != null && serverName.toLowerCase().contains("firebird"))
+                serverName = "firebird";
+            else if (serverName != null && serverName.toLowerCase().contains("reddatabase"))
+                serverName = "reddatabase";
+            else
+                serverName = "sql92";
+            String path = "org/executequery/keywords/" + serverName.toLowerCase() + ".keywords";
             String values = FileUtils.loadResource(path);
 
             StringTokenizer st = new StringTokenizer(values, "\n");
@@ -117,7 +137,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
                     version = version.replace(".", "");
 
                     int verFile = Integer.valueOf(version);
-                    int verServer = Integer.valueOf(String.valueOf(majorVersion) + String.valueOf(minorVersion));
+                    int verServer = Integer.valueOf(String.valueOf(majorVersion) + minorVersion);
 
                     if (verFile > verServer)
                         break;
@@ -125,11 +145,21 @@ public class KeywordRepositoryImpl implements KeywordRepository {
                         continue;
 
                 }
-                list.add(trim);
+                if (trim.startsWith("-")) {
+                    trim = trim.substring(1);
+                    int ind = list.indexOf(trim);
+                    if (ind != -1)
+                        list.remove(ind);
+                    else
+                        Log.error("Firebird TOKEN " + trim + " not found");
+                } else
+                    list.add(trim);
             }
 
             this.firebirdKeyWords = list;
-
+            keyWordsListUpdated = true;
+            list.addAll(loadUserDefinedKeywords());
+            list.addAll(getDefaultKeywords());
             return this.firebirdKeyWords;
 
         } catch (IOException e) {
@@ -150,6 +180,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         if (userDefinedKeyWords == null) {
 
             userDefinedKeyWords = loadUserDefinedKeywords();
+            keyWordsListUpdated = true;
         }
 
         return userDefinedKeyWords;
@@ -182,6 +213,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
             FileUtils.writeFile(path, sb.toString());
 
             userDefinedKeyWords = keywords;
+            keyWordsListUpdated = true;
 
             // fire the event to registered listeners
             EventMediator.fireEvent(new DefaultKeywordEvent("KeywordProperties",
@@ -206,41 +238,6 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         return REPOSITORY_ID;
     }
 
-    /**
-     * Loads the SQL92 keywords from file.
-     *
-     * @return the list of keywords
-     */
-    private List<String> loadSQL92() {
-
-        try {
-
-            String path = "org/executequery/sql.92.keywords";
-            String values = FileUtils.loadResource(path);
-
-            StringTokenizer st = new StringTokenizer(values, "|");
-            List<String> list = new ArrayList<String>(st.countTokens());
-
-            while (st.hasMoreTokens()) {
-
-                list.add(st.nextToken().trim());
-            }
-
-            return list;
-
-        } catch (IOException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                e.printStackTrace();
-            }
-
-            Log.error("Error retrieving SQL92 keyword list");
-
-            return new ArrayList<String>(0);
-        }
-
-    }
 
     /**
      * Loads the user added keywords from file.
@@ -299,7 +296,6 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         }
 
     }
-
     /**
      * Returns the path to the user keywords file.
      */
@@ -308,10 +304,6 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         UserSettingsProperties settings = new UserSettingsProperties();
 
         return settings.getUserSettingsDirectory() + "sql.user.keywords";
-    }
-
-    public void setDatabaseKeyWords(List<String> list) {
-        this.databaseKeyWords = list;
     }
 }
 

@@ -25,7 +25,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,6 +44,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.Types;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.log.Log;
 import org.executequery.util.Base64;
@@ -70,7 +70,7 @@ public class ExportAsDBUnitWorker extends BaseImportExportWorker {
 
     protected void export() {
         
-        worker = new ThreadWorker() {
+        worker = new ThreadWorker(this.getClass().getName()) {
 
             public Object construct() {
                 
@@ -355,6 +355,7 @@ public class ExportAsDBUnitWorker extends BaseImportExportWorker {
 
             case Types.BIT:
             case Types.TINYINT:
+            case Types.INT128:
             case Types.BIGINT:
             case Types.NUMERIC:
             case Types.DECIMAL:

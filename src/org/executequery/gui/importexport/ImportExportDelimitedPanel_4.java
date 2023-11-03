@@ -102,16 +102,16 @@ public class ImportExportDelimitedPanel_4 extends JPanel
         JLabel rollbackLabel = new JLabel("Rollback Segment Size:");
 
         String[] delims = {"|", ",", ";", "#"};
-        delimCombo = WidgetFactory.createComboBox(delims);
+        delimCombo = WidgetFactory.createComboBox("delimCombo", delims);
         delimCombo.setEditable(true);
 
         String[] errors = {"Log and Continue", "Stop Transfer"};
-        errorCombo = WidgetFactory.createComboBox(errors);
+        errorCombo = WidgetFactory.createComboBox("errorCombo", errors);
 
         String[] rolls = {"50", "100", "500", "1000", "5000",
                 "10000", "50000", "End of File", "End of all Files"};
 
-        rollbackCombo = WidgetFactory.createComboBox(rolls);
+        rollbackCombo = WidgetFactory.createComboBox("rollbackCombo", rolls);
         rollbackCombo.setSelectedIndex(2);
         rollbackCombo.addActionListener(this);
 

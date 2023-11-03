@@ -23,6 +23,11 @@ package org.executequery.databasemediators.spi;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.datasource.DatabaseDefinition;
+import org.executequery.datasource.DefaultDriverLoader;
+import org.executequery.datasource.SimpleDataSource;
+
+import java.sql.Driver;
+import java.util.Map;
 
 /**
  * @author Takis Diakoumis
@@ -135,11 +140,6 @@ public class DefaultDatabaseDriver implements DatabaseDriver {
         this.id = id;
     }
 
-    public boolean isDefaultSunOdbc() {
-
-        return (getId() == SUN_ODBC_ID);
-    }
-
     public boolean isIdValid() {
 
         return (getId() != 0);
@@ -148,6 +148,11 @@ public class DefaultDatabaseDriver implements DatabaseDriver {
     public boolean isDatabaseTypeValid() {
 
         return (getType() != DatabaseDefinition.INVALID_DATABASE_ID);
+    }
+
+    public int getMajorVersion() {
+        Driver driver = SimpleDataSource.DRIVER_LOADER.load(this);
+        return driver.getMajorVersion();
     }
 
     @Override

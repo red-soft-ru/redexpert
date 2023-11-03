@@ -69,6 +69,10 @@ public interface DatabaseConnection extends Serializable {
 
     void setCharset(String charset);
 
+    String getDBCharset();
+
+    void setDBCharset(String charset);
+
     String getRole();
 
     void setRole(String role);
@@ -205,9 +209,13 @@ public interface DatabaseConnection extends Serializable {
 
     TreeSet<String> getListObjectsDB();
 
-    int getServerVersion();
+    int getMajorServerVersion();
 
-    void setServerVersion(int serverVersion);
+    void setMajorServerVersion(int majorServerVersion);
+
+    int getMinorServerVersion();
+
+    void setMinorServerVersion(int minorServerVersion);
 
     boolean isNamesToUpperCase();
 
@@ -220,6 +228,12 @@ public interface DatabaseConnection extends Serializable {
     String[] getDataTypesArray();
 
     int[] getIntDataTypesArray();
+
+    int getDriverMajorVersion();
+
+    TreeSet<String> getKeywords();
+
+    void setServerName(String serverName);
 }
 
 

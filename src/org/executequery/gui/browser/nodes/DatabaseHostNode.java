@@ -21,10 +21,7 @@
 package org.executequery.gui.browser.nodes;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseSchema;
-import org.executequery.databaseobjects.DatabaseSource;
+import org.executequery.databaseobjects.*;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SystemProperties;
@@ -188,8 +185,10 @@ public class DatabaseHostNode extends DatabaseObjectNode {
                 DatabaseMetaTag metaTag = (DatabaseMetaTag) _children.get(i);
                 DatabaseObjectNode metaTagNode = new DatabaseObjectNode(metaTag);
                 allChildren.add(metaTagNode);
-                if (!metaTag.getMetaDataKey().contains("SYSTEM") || SystemProperties.getBooleanProperty("user", "browser.show.system.objects"))
-                    visibleChildren.add(new DatabaseObjectNode(metaTag));
+                if ((!metaTag.getMetaDataKey().contains("SYSTEM")
+                        || SystemProperties.getBooleanProperty("user", "browser.show.system.objects"))
+                        && metaTag.getSubType() != NamedObject.COLLATION)
+                    visibleChildren.add(metaTagNode);
             }
 
             return visibleChildren;
@@ -210,6 +209,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
     public void reset() {
         super.reset();
         visibleChildren = null;
+        allChildren=null;
     }
 
     public boolean isDefaultCatalogsAndSchemasOnly() {

@@ -22,6 +22,7 @@ package org.executequery.datasource;
 
 import biz.redsoft.IFBCryptoPluginInit;
 import biz.redsoft.IFBDataSource;
+import biz.redsoft.ITPB;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ApplicationContext;
 import org.executequery.EventMediator;
@@ -54,7 +55,7 @@ import java.util.logging.Logger;
 @SuppressWarnings({"rawtypes"})
 public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
-    private static final DriverLoader DRIVER_LOADER = new DefaultDriverLoader();
+    public static final DriverLoader DRIVER_LOADER = new DefaultDriverLoader();
 
     static final String PORT = "[port]";
     static final String SOURCE = "[source]";
@@ -66,6 +67,8 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     private IFBDataSource dataSource;
     private final String url;
     private final DatabaseConnection databaseConnection;
+
+    private ClassLoader classLoaderFromPlugin;
 
     IFBCryptoPluginInit cryptoPlugin = null;
 
@@ -88,6 +91,10 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     }
 
     public Connection getConnection() throws SQLException {
+        return getConnection(null);
+    }
+
+    public Connection getConnection(ITPB tpb) throws SQLException {
         while (MiscUtils.isNull(databaseConnection.getUnencryptedPassword())
                 && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
             LoginPasswordDialog lpd = new LoginPasswordDialog(Bundles.getCommon("title-enter-password"), Bundles.getCommon("message-enter-password"),
@@ -105,18 +112,23 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             }
         }
         try {
-            return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword());
+            return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword(), tpb);
         } catch (SQLException e) {
-            if (e.getSQLState().contentEquals("28000")
+            if (e.getSQLState().contentEquals("28000")&&e.getErrorCode()==335544472
                     && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
                 databaseConnection.setPassword("");
-                return getConnection();
+                dataSource = null;
+                return getConnection(tpb);
             }
             throw e;
         }
     }
 
     public Connection getConnection(String username, String password) throws SQLException {
+        return getConnection(username, password, null);
+    }
+
+    public Connection getConnection(String username, String password, ITPB tpb) throws SQLException {
 
         Properties advancedProperties = buildAdvancedProperties();
 
@@ -136,7 +148,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
         if (driver != null) {
             if (dataSource != null)
-                return dataSource.getConnection();
+                return dataSource.getConnection(tpb);
 
             // If used jaybird
             if (databaseConnection.getJDBCDriver().getClassName().contains("FBDriver") &&
@@ -145,7 +157,12 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                 try {
 
                     // Checking for original jaybird or rdb jaybird...
-                    Class<?> aClass = driver.getClass().getClassLoader().loadClass("org.firebirdsql.jca.FBSADataSource");
+                    try {
+                        Class<?> aClass = driver.getClass().getClassLoader().loadClass("org.firebirdsql.jca.FBSADataSource");
+                    } catch (ClassNotFoundException e) {
+                        Class<?> aClass = driver.getClass().getClassLoader().loadClass("org.firebirdsql.jaybird.xca.FBSADataSource");
+                    }
+
 
                     // ...rdb jaybird
                     // in multifactor authentication case, need to initialize crypto plugin,
@@ -155,7 +172,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                             String path = databaseConnection.getJDBCDriver().getPath();
                             path = path.replace("../", "./") + ";" + path.replace("./", "../");
                             path = path.replace(".../", "../");
-                            path += ";./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar";
+                            path += ";" + DynamicLibraryLoader.getFbPluginImplPath(driver.getMajorVersion());
                             Object odb = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
                                     "biz.redsoft.FBCryptoPluginInitImpl",
                                     path);
@@ -174,16 +191,16 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
                     if (databaseConnection.useNewAPI()) {
                         try {
-                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver,
+                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), driver,
                                     "FBDataSourceImpl",
                                     new DynamicLibraryLoader.Parameter(String.class, "FBOONATIVE"));
                         } catch (ClassNotFoundException e) {
-                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver,
                                     "FBDataSourceImpl");
                         }
 
                     } else {
-                        dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+                        dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver,
                                 "FBDataSourceImpl");
                     }
 
@@ -191,8 +208,9 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                         dataSource.setNonStandardProperty(entry.getKey().toString(), entry.getValue().toString());
                     }
                     dataSource.setURL(url);
+                    classLoaderFromPlugin = dataSource.getClass().getClassLoader();
 
-                    return dataSource.getConnection();
+                    return dataSource.getConnection(tpb);
                 } catch (ClassNotFoundException e) {
                     // ...original jaybird
                     return driver.connect(url, advancedProperties);
@@ -203,6 +221,27 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         }
 
         throw new DataSourceException("Error loading specified JDBC driver");
+    }
+
+    public ClassLoader getClassLoaderFromPlugin() {
+        return classLoaderFromPlugin;
+    }
+
+    public void setTPBtoConnection(Connection connection, ITPB tpb) throws SQLException {
+        if (dataSource != null) {
+            if (connection instanceof PooledConnection)
+                connection = ((PooledConnection) connection).getRealConnection();
+            dataSource.setTransactionParameters(connection, tpb);
+        }
+    }
+
+    public long getIDTransaction(Connection connection) throws SQLException {
+        if (dataSource != null) {
+            if (connection instanceof PooledConnection)
+                connection = ((PooledConnection) connection).getRealConnection();
+            return dataSource.getIDTransaction(connection);
+        }
+        return -1;
     }
 
     private Properties buildAdvancedProperties() {
@@ -368,8 +407,13 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
     public void close() throws ResourceException {
 
-        if (dataSource != null)
-            dataSource.close();
+        if (dataSource != null) {
+            try {
+                dataSource.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 

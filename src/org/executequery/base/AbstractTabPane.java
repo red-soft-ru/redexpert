@@ -432,7 +432,7 @@ public abstract class AbstractTabPane extends JPanel
         }
         for (int i = 0, k = components.size(); i < k; i++) {
             TabComponent tabComponent = components.get(i);
-            if (tabComponent.getTitle().equals(title)) {
+            if (tabComponent.getDisplayName().equals(title)) {
                 return i;
             }
         }
@@ -546,7 +546,8 @@ public abstract class AbstractTabPane extends JPanel
          */
         TabComponent tabComponent = (TabComponent)e.getSource();
         if (tabComponent.getComponent() instanceof BrowserViewPanel) {
-            ((BrowserViewPanel)tabComponent.getComponent()).getCurrentView().cleanup();
+            if (((BrowserViewPanel) tabComponent.getComponent()).getCurrentView() != null)
+                ((BrowserViewPanel) tabComponent.getComponent()).getCurrentView().cleanup();
         }
         parent.fireTabClosed(e);
     }

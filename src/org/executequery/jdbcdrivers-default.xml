@@ -4,37 +4,39 @@
     =======================================================================
     File:         jdbcdrivers-default.xml
     Author:       Takis Diakoumis
-    Description:  Default empty JDBC driver definitions file (contains
-                  ODBC definition only)
+    Description:  Default empty JDBC driver definitions file
     =======================================================================
 -->
 
 <jdbcdrivers>
     <databasedrivers>
-        <id>1111111</id>
-        <name>Jaybird 3 Driver</name>
-        <description>Jaybird 3 Driver</description>
-        <type>16</type>
-        <path>./lib/jaybird-3.jar;../lib/jaybird-3.jar;./lib/jaybird-cryptoapi-3.jar;../lib/jaybird-cryptoapi-3.jar</path>
-        <classname>org.firebirdsql.jdbc.FBDriver</classname>
-        <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
-    </databasedrivers>
-    <databasedrivers>
         <id>2222222</id>
         <name>Jaybird 4 Driver</name>
         <description>Jaybird 4 Driver</description>
         <type>16</type>
-        <path>./lib/jaybird-4.jar;./lib/jaybird-cryptoapi-4.jar;./lib/fbclient-4.jar;../lib/jaybird-4.jar;../lib/jaybird-cryptoapi-4.jar;../lib/fbclient-4.jar</path>
+        <path>./lib/jaybird-4.jar;./lib/jaybird-cryptoapi-4.jar;./lib/fbclient-4.jar;../lib/jaybird-4.jar;../lib/jaybird-cryptoapi-4.jar;../lib/fbclient-4.jar
+        </path>
         <classname>org.firebirdsql.jdbc.FBDriver</classname>
         <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
     </databasedrivers>
     <databasedrivers>
-        <id>9999999999999</id>
-        <name>ODBC Driver</name>
-        <description>Sun ODBC Driver</description>
-        <type>8</type>
-        <path/>
-        <classname>sun.jdbc.odbc.JdbcOdbcDriver</classname>
-        <url>jdbc:odbc:[source]</url>
+        <id>1111111</id>
+        <name>Jaybird 3 Driver</name>
+        <description>Jaybird 3 Driver</description>
+        <type>16</type>
+        <path>./lib/jaybird-3.jar;../lib/jaybird-3.jar;./lib/jaybird-cryptoapi-3.jar;../lib/jaybird-cryptoapi-3.jar
+        </path>
+        <classname>org.firebirdsql.jdbc.FBDriver</classname>
+        <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
+    </databasedrivers>
+    <databasedrivers>
+        <id>5555555</id>
+        <name>Jaybird 5 Driver</name>
+        <description>Jaybird 5 Driver</description>
+        <type>16</type>
+        <path>./lib/jaybird-5.jar;../lib/jaybird-5.jar;./lib/jaybird-cryptoapi-5.jar;../lib/jaybird-cryptoapi-5.jar
+        </path>
+        <classname>org.firebirdsql.jdbc.FBDriver</classname>
+        <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
     </databasedrivers>
 </jdbcdrivers>

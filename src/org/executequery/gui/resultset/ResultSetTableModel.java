@@ -24,9 +24,13 @@ import biz.redsoft.IFBBlob;
 import biz.redsoft.IFBClob;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.Types;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.datasource.PooledConnection;
+import org.executequery.datasource.PooledResultSet;
+import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.ErrorMessagePublisher;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -35,15 +39,15 @@ import org.executequery.sql.SqlStatementResult;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.table.AbstractSortableTableModel;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.math.BigInteger;
 import java.sql.*;
 import java.text.ParseException;
 import java.time.*;
@@ -99,6 +103,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     DefaultStatementExecutor executor;
 
+    private JTable fakeTable;
+
     public ResultSetTableModel(boolean isTable) throws SQLException {
 
         this(null, -1, isTable);
@@ -125,6 +131,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         tableData = new ArrayList<List<RecordDataItem>>();
         recordDataItemFactory = new RecordDataItemFactory();
 
+        fakeTable=new JTable();
         holdMetaData = UserProperties.getInstance().getBooleanProperty("editor.results.metadata");
 
         if (resultSet != null) {
@@ -201,7 +208,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 rsmd.getColumnLabel(i),
                                 rsmd.getColumnName(i),
                                 rsmd.getColumnType(i),
-                                rsmd.getColumnTypeName(i)));
+                                rsmd.getColumnTypeName(i),
+                                rsmd.getColumnDisplaySize(i)));
             }
             interrupted = false;
 
@@ -268,6 +276,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     private boolean fetchAll = false;
     private boolean cancelled = false;
 
+
+
     public synchronized void getDataForTable(ResultSet resultSet, int count, List<ColumnData> columnDataList) throws SQLException, InterruptedException {
         recordCount = 0;
         this.columnDataList = columnDataList;
@@ -323,6 +333,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 } else
                     GUIUtilities.displayExceptionErrorDialog("Error loading data", e);
                 fireTableDataChanged();
+            } finally {
+                fetchAll = false;
             }
     }
 
@@ -372,7 +384,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 resultSet.getString(4),
                                 resultSet.getString(4),
                                 resultSet.getInt(5),
-                                resultSet.getString(6)
+                                resultSet.getString(6),
+                                resultSet.getInt(7)
                         ));
                 tableName = resultSet.getString(3);
                 g++;
@@ -549,6 +562,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
                         case Types.CHAR:
                         case Types.VARCHAR:
+                            value.setValue(resultSet.getString(i));
+                            break;
                         case Types.TIME_WITH_TIMEZONE:
                             value.setValue(resultSet.getObject(i, OffsetTime.class));
                             break;
@@ -568,33 +583,22 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                         case Types.CLOB:
                             Clob clob = resultSet.getClob(i);
                             if (clob != null && clob.getClass().getName().contains("org.firebirdsql.jdbc")) {
-                                URL[] urls = new URL[0];
-                                Class clazzdb = null;
-                                Object odb = null;
                                 try {
-                                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-                                    ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
-                                    clazzdb = cl.loadClass("biz.redsoft.FBClobImpl");
-                                    odb = clazzdb.newInstance();
+                                    PooledResultSet pooledResultSet = (PooledResultSet) resultSet;
+                                    PooledConnection connection = (PooledConnection) pooledResultSet.getStatement().getConnection();
+                                    Connection unwrapCon = connection.unwrap(Connection.class);
+                                    IFBClob ifbClob = (IFBClob) DynamicLibraryLoader.loadingObjectFromClassLoader(connection.getDatabaseConnection().getDriverMajorVersion(), unwrapCon, "FBClobImpl");
+                                    ifbClob.detach(clob, ((PooledStatement) pooledResultSet.getStatement()).getStatement());
+                                    value.setValue(ifbClob);
                                 } catch (ClassNotFoundException e) {
                                     e.printStackTrace();
-                                } catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                } catch (InstantiationException e) {
-                                    e.printStackTrace();
-                                } catch (MalformedURLException e) {
-                                    e.printStackTrace();
                                 }
-
-                                IFBClob ifbClob = (IFBClob) odb;
-                                ifbClob.detach(clob);
-                                value.setValue(ifbClob);
                             } else {
                                 value.setValue(clob);
                             }
                             if (columnDataList != null) {
                                 ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getCharset());
-                                if (columnDataList.get(i - 1).getCharset() == null || Objects.equals(columnDataList.get(i - 1).getCharset(), CreateTableSQLSyntax.NONE))
+                                if (MiscUtils.isNull(columnDataList.get(i - 1).getCharset()) || Objects.equals(columnDataList.get(i - 1).getCharset(), CreateTableSQLSyntax.NONE))
                                     ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getDatabaseConnection().getCharset());
                             } else ((ClobRecordDataItem) value).setCharset(CreateTableSQLSyntax.NONE);
                             break;
@@ -606,27 +610,16 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                         case Types.BLOB:
                             Blob blob = resultSet.getBlob(i);
                             if (blob != null && blob.getClass().getName().contains("org.firebirdsql.jdbc")) {
-                                URL[] urls = new URL[0];
-                                Class clazzdb = null;
-                                Object odb = null;
                                 try {
-                                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-                                    ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
-                                    clazzdb = cl.loadClass("biz.redsoft.FBBlobImpl");
-                                    odb = clazzdb.newInstance();
+                                    PooledResultSet pooledResultSet = (PooledResultSet) resultSet;
+                                    PooledConnection connection = (PooledConnection) pooledResultSet.getStatement().getConnection();
+                                    Connection unwrapCon = connection.unwrap(Connection.class);
+                                    IFBBlob ifbBlob = (IFBBlob) DynamicLibraryLoader.loadingObjectFromClassLoader(connection.getDatabaseConnection().getDriverMajorVersion(), unwrapCon, "FBBlobImpl");
+                                    ifbBlob.detach(blob, ((PooledStatement) pooledResultSet.getStatement()).getStatement());
+                                    value.setValue(ifbBlob);
                                 } catch (ClassNotFoundException e) {
                                     e.printStackTrace();
-                                } catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                } catch (InstantiationException e) {
-                                    e.printStackTrace();
-                                } catch (MalformedURLException e) {
-                                    e.printStackTrace();
                                 }
-
-                                IFBBlob ifbBlob = (IFBBlob) odb;
-                                ifbBlob.detach(blob);
-                                value.setValue(ifbBlob);
                             } else {
                                 value.setValue(blob);
                             }
@@ -635,6 +628,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                         case Types.TINYINT:
                         case Types.SMALLINT:
                         case Types.INTEGER:
+                        case Types.INT128:
                         case Types.BIGINT:
                         case Types.FLOAT:
                         case Types.REAL:
@@ -693,6 +687,11 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 }
 
                 rowData.add(value);
+                if(value.getDisplayValue()!=null) {
+                    int width = fakeTable.getFontMetrics(fakeTable.getFont()).stringWidth(value.getDisplayValue().toString());
+                    if(width>header.getColWidth())
+                        header.setColWidth(width+5);
+                }
             }
 
             tableData.add(rowData);
@@ -1022,7 +1021,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             rdi.setNew(true);
             if (rdi instanceof ClobRecordDataItem) {
                 ((ClobRecordDataItem) rdi).setCharset(columnDataList.get(i).getCharset());
-                if (columnDataList.get(i).getCharset() == null || Objects.equals(columnDataList.get(i).getCharset(), CreateTableSQLSyntax.NONE))
+                if (MiscUtils.isNull(columnDataList.get(i).getCharset()) || Objects.equals(columnDataList.get(i).getCharset(), CreateTableSQLSyntax.NONE))
                     ((ClobRecordDataItem) rdi).setCharset(columnDataList.get(i).getDatabaseConnection().getCharset());
             }
             row.add(rdi);
@@ -1054,7 +1053,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     public String getColumnNameHint(int column) {
 
-        return visibleColumnHeaders.get(column).getNameHint();
+        return visibleColumnHeaders.get(column).getNameHint() + " " + visibleColumnHeaders.get(column).getDataTypeName() + (visibleColumnHeaders.get(column).getDisplaySize() != 0 ? " (" + visibleColumnHeaders.get(column).getDisplaySize() + ")" : "");
     }
 
     @Override
@@ -1082,6 +1081,9 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
             case Types.TINYINT:
                 return Byte.class;
+
+            case Types.INT128:
+                return BigInteger.class;
 
             case Types.BIGINT:
                 return Long.class;

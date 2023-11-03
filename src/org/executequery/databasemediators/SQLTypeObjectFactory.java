@@ -20,12 +20,13 @@
 
 package org.executequery.databasemediators;
 
+import org.executequery.databaseobjects.Types;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -76,6 +77,10 @@ public class SQLTypeObjectFactory {
 
             case Types.INTEGER:
                 valueAsType = Integer.valueOf(valueAsString);
+                break;
+
+            case Types.INT128:
+                valueAsType = new BigInteger(valueAsString);
                 break;
 
             case Types.REAL:
@@ -203,6 +208,9 @@ public class SQLTypeObjectFactory {
 
             case Types.INTEGER:
                 return Integer.class;
+
+            case Types.INT128:
+                return BigInteger.class;
 
             case Types.REAL:
                 return Float.class;

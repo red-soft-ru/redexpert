@@ -1,4 +1,169 @@
 --- RedExpert  - RELEASE NOTES -
+Major changes - v2023.10.1
+----------------------------------------
+Added:
+1.  “Properties” tab on the database table editing panel.
+2.  Configuring SQL templates from the Menu -> Tools.
+3.  Checkbox "Automatic text wrapping" in the text browser of data with the BLOB type.
+4.  Ability to specify a relative path to the log file in the settings.
+5.  View blobs of PDF type.
+6.  Autocomplete when editing table triggers for <new.> and <old.>.
+7.  Ability to change column position.
+8.  Ability to (not)check changes in column positions during DB comparison.
+9.  Changing a cursor in the Query Editor while holding down the CTRL button when hovering over an object that can be opened.
+10. Restart the application only after saving several settings.
+11. Target and source database exchange button on the comparison panel.
+Fixed:
+1.  ODBC driver support has been terminated.
+2.  Recreation a role when adding a comment  for it.
+3.  Errors of editing table foreign keys.
+4.  Inability to add a comment to the index through the editing window.
+5.  Adding extra versions of Red Expert to the list of Windows applications when installing a new version of the application over the old one.
+6.  Action taken when clicking the Select Displayed Dataset Columns button when the Results Pane is closed.
+7.  Selecting  table rows to be deleted after closing the “Data” tab and canceling the deletion.
+8.  An error when the “Close all tabs” button did not close all tabs.
+9.  Incorrect error handling during update.
+10. Syntax highlighting for multi-line identifiers.
+11. Application crash if user settings are broken.
+12. DDL generation for ARRAY, NUMERIC and DECIMAL columns.
+13. Improved autocomplete support for Firebird aliases and keywords.
+14. Working with tables with name length more than31
+15. Updated links for automatic Java downloads.
+16. Unreasonable memory consumption.
+17. Incorrect display of the red_expert.ico file.
+18. Functioning of such application settings as: highlighting the current line; number of saved log files; selected text color; alternative editor background; editor font color; alternative highlight color.
+
+Major changes - v2023.08
+----------------------------------------
+Added:
+1.  Online table validation.
+2.  Ability to set different date-time templates for fields with DATE, TIME and TIMESTAMP types.
+3.  Ability to enable line wrapping mode in the Query Editor.
+4.  Support of the PSQL-profiler.
+5.  Tree view display with a panel of differences for each object as a DB comparer result.
+6.  New Foreign Key selection panel on the “Data” tab when working with DB tables.
+7.  Ability to reset color to default by RMB click in the color settings.
+8.  Ability to filter columns by their names in the “Result Column Visibility” window for a Result Set.
+9.  Audit analysis.
+10. Auto-complete for packages (procedures and functions are suggested after a dot).
+11. Date display in the application log.
+12. Ability to write trace to file without parsing in the application.
+13. Ability to navigate tabs with a mouse wheel.
+14. Ability to enable or disable  parsing of variable declarations in Procedures and Functions.
+15. Ability to recalculate index statistics from the corresponding tab of the table.
+Fixed:
+1.  Inability to add a comment for a table field when editing it.
+2.  An error due to which the content of the “SQL” tab during table creation was not updated when changing the “Comment” tab content.
+3.  Option “Show Grid” in the “Links” tab when working with a DB table.
+4.  Displaying the username in the “Select Result” tab when editing a user is confirmed.
+5.  Generation of the SQL scripts for packages, views, tables and jobs.
+6.  “Description” tabs renamed to “Comment”.
+7.  Incorrect application of theme and style for the Query Editor.
+8.  Wrong SQL script formatting in the Query Editor.
+9.  NPE when navigating through folders in the connection tree.
+10. An error due to which the fields and constraints of the DB table disappeared when changing its comment.
+11. Defects when moving multiple connections to a folder in the connection tree.
+12. Error getting tablespaces and jobs from the Firebird connection during DB comparison.
+13. Error editing cell in the Result Set.
+14. An error due to which when installing an application with root, it was not added to the application menu.
+15. Adding a post-install application shortcut for all users that could not be removed.
+16. Errors while updating the application. Updates are now downloaded and unpacked into the temporary folder, and only one copy of the application must be open to run the update.
+17. Error opening Trace Manager, if there are non-standard drivers.
+18. Error saving ER-diagrams.
+19. Displaying scale for NUMERIC type.
+20. Sorting of visible columns of Trace Manager.
+21. Errors working with column names starting with a space.
+22. Failure to insert a password when creating a user.
+23. Search in the object tree (by string occurrence).
+24. Incorrect authentication error detection.
+25. Failure to copy name when editing an object.
+26. Generating DDL functions containing cursors.
+27. Adjusting width of the Result Set columns by content.
+28. Editing Primary Key fields by multiple fields.
+29. Disabled the ability to use ARRAY data type.
+30. Localized: Driver Selection Panel; Color Selection Panel; File Selection/Saving Panel; labels, hints and context menus in the Query Editor; Password View Panel; Connection Details Panel; Notepad Panel; ER-diagram Editor.
+
+Major changes - v2023.05
+----------------------------------------
+Added:
+1.	Scheduler support
+2.	Database metadata comparison
+3.	Jaybird 5 support
+4.	Ability to recompile all views
+5.	Autocomplete for variables and parameters when working with procedures and functions
+6.	Highlighting paired brackets
+7.	Line number and cursor position in each SQL field
+8.	Ability to set font size greater than 16 pt. in the Query Editor
+9.	DDL tab for exceptions
+Fixed:
+1.	The arrangement of elements on the panels for creating and editing objects has been redesigned
+2.	Reduced connection time to the database
+3.	Reduced metadata loading time for object recompilation
+4.	Generation CREATE and ALTER SQL-scripts for some objects
+5.	Error opening triggers, procedures and functions in Firebird
+6.	Memory leaks after closing objects
+7.	Trace parsing
+8.	Parameters were case-sensitive in the Query Editor
+9.	Working with object privileges
+10.	Problem with restarting RedExpert after installing an update on Linux systems
+11.	Incorrect display (spelling) of the keyword "TIME ZONE"
+12.	Behavior of the "Execute" button in the Query Editor (Now when you click on it, the script is executed as a whole block and isn't divided into several queries in accordance with the delimiters. To execute an SQL-script from several queries, you need to use the "Execute SQL-script" button)
+13.	Buttons tooltips in the Query Editor and in the create (edit) table panel
+14.	Error while editing tables foreign keys (the reference table name and its fields were not substituted into SQL-query)
+
+Major changes - v2023.02
+----------------------------------------
+Fixed:
+1. Bug in developer feedback module (request for new features, bug reports, comments)
+2. Clearing a list of triggers on a "Triggers" tab in a table after opening one of them
+3. Restoring to default settings for query editor colors
+
+Major changes - v2023.01
+----------------------------------------
+Added:
+1.	Recompilation all triggers, procedures, functions and packages
+2.	Association of *.fdb files with RedExpert
+3.	Recalculation of index selectivity
+4.	Support for external triggers
+5.	SQL SECURITY support for procedures, functions and triggers
+6.	"Switch data display" button and key combination [ALT + NUM_ADD] in data tab
+7.	Exit confirmation dialog
+8.	Specifies explicitly how a table field is sorted (COLLATE) when creating a table
+9.	“DDL to create” tab in "Edit constraint" panel
+10.	Ability to view password during user creation and authorization at reddatabase.ru
+11.	Ability to replace "\n" with another symbol when exporting to file with separators
+12.	Ability to work with functions and packages in privilege manager
+13.	Support for triggers on views
+
+Fixed:
+1.	Trace recognition
+2.	Parsing SQL script with queries that have complex nested constructions
+3.	Incorrect default value generation for procedures and functions
+4.	Impossibility to create a new connection through the menu in the Russian localization
+5.	Generating of primary keys when creating a table, if their names must be escaped
+6.	Quotation mark when exporting into CSV
+7.	Error when interacting with table constraints that have invalid default names
+8.	Error when generating SQL script for adding table constraints when only one constraint was inserted into script instead of multiple ones
+9.	Red Expert hangs after a data access error in the “Data” tab of the “Table” menu.
+10.	Adding comments to database elements like “User” or “Domain” while editing them
+11.	Generating SQL script when adding a new column to a table
+12.	Export to a spreadsheet. Now export to Excel 2007 is possible
+13.	Automatic generation of table name on creation
+14.	Updating auto-complete cache after metadata changes
+15.	Incorrect displaying of procedure parameter sizes
+16.	Script execution error output if there is no connection
+17.	Executing non selective procedures in the query editor
+18.	Wrong message about authentication error
+19.	Invalid connection status in the toolbar
+20.	Loading data in a table when moving the cursor to the last table row
+21.	Updated keyword list for syntax highlighting
+22.	Creating a database with default charset
+23.	Flickering interface in privilege manager
+24.	Invalid representation of “DATE” type when exporting to SQL
+25.	Undo/redo (Ctrl+Z/Ctrl+Y) in the query editor
+26.	Nonoptimal space usage by result set in query editor
+27.	Application hangs when opening objects
+
 Major changes - v2022.09
 ----------------------------------------
 Added:

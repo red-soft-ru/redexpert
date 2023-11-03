@@ -15,17 +15,22 @@ public class CheckBoxPanel extends JScrollPane {
 
     private JPanel mainPanel;
     private Map<String, JCheckBox> checkBoxMap;
-    private int x;
+    private int countBoxesInRow;
     private String[] namesBox;
     private boolean selected;
 
+    private JCheckBox allCheckBox;
+
     public CheckBoxPanel(List<Object> objects, int countBoxesInRow, boolean selected) {
         namesBox = new String[objects.size()];
-        for (int i = 0; i < objects.size(); i++)
+        for (int i = 0; i < objects.size(); i++) {
             if (objects.get(i) instanceof Named)
                 namesBox[i] = ((Named) objects.get(i)).getName();
+            else if (objects.get(i) instanceof String)
+                namesBox[i] = (String) objects.get(i);
             else throw new DataSourceException();
-        x = countBoxesInRow;
+        }
+        this.countBoxesInRow = countBoxesInRow;
         this.selected = selected;
         init();
     }
@@ -36,14 +41,14 @@ public class CheckBoxPanel extends JScrollPane {
             if (objects[i] instanceof Named)
                 namesBox[i] = ((Named) objects[i]).getName();
             else throw new DataSourceException();
-        x = countBoxesInRow;
+        this.countBoxesInRow = countBoxesInRow;
         this.selected = selected;
         init();
     }
 
     public CheckBoxPanel(String[] namesBox, int countBoxesInRow, boolean selected) {
         this.namesBox = namesBox;
-        x = countBoxesInRow;
+        this.countBoxesInRow = countBoxesInRow;
         this.selected = selected;
         init();
     }
@@ -55,7 +60,7 @@ public class CheckBoxPanel extends JScrollPane {
         checkBoxMap = new HashMap<>();
         int k = 0;
         for (int i = 1; k < namesBox.length; i++)
-            for (int g = 0; g < x && k < namesBox.length; g++, k++) {
+            for (int g = 0; g < countBoxesInRow && k < namesBox.length; g++, k++) {
                 JCheckBox checkBox = new JCheckBox(namesBox[k]);
                 checkBox.setSelected(selected);
                 GridBagConstraints gbc = new GridBagConstraints(
@@ -66,7 +71,7 @@ public class CheckBoxPanel extends JScrollPane {
                 mainPanel.add(checkBox, gbc);
                 checkBoxMap.put(namesBox[k], checkBox);
             }
-        JCheckBox allCheckBox = new JCheckBox(TraceManagerPanel.bundleString("SelectAll"));
+        allCheckBox = new JCheckBox(TraceManagerPanel.bundleString("SelectAll"));
         allCheckBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -88,6 +93,10 @@ public class CheckBoxPanel extends JScrollPane {
         init();
     }
 
+    public void setVisibleAllCheckBox(boolean flag) {
+        allCheckBox.setVisible(flag);
+    }
+
 
     public Map<String, JCheckBox> getCheckBoxMap() {
         return checkBoxMap;
@@ -95,6 +104,13 @@ public class CheckBoxPanel extends JScrollPane {
 
     public void setCheckBoxMap(Map<String, JCheckBox> checkBoxMap) {
         this.checkBoxMap = checkBoxMap;
+    }
+
+    public void setEnabled(boolean flag) {
+        super.setEnabled(flag);
+        for (JCheckBox checkBox : checkBoxMap.values()) {
+            checkBox.setEnabled(flag);
+        }
     }
 }
 

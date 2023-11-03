@@ -220,13 +220,33 @@ public class GUIUtils {
     }
 
     /**
+     * Sets the application cursor to the system hand cursor
+     * the specified component.
+     *
+     * @param component - the component to set the cursor onto
+     */
+    public static void showHandCursor(Component component) {
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR), component);
+    }
+
+    /**
+     * Sets the application cursor to the system hand cursor
+     * the specified component.
+     *
+     * @param component - the component to set the cursor onto
+     */
+    public static void showTextCursor(Component component) {
+        setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR), component);
+    }
+
+    /**
      * Executes the specified runnable using the
      * <code>SwingWorker</code>.
      *
      * @param runnable - the runnable to be executed
      */
     public static void startWorker(final Runnable runnable) {
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("GUIUtilsThread") {
             public Object construct() {
                 try {
 
@@ -308,7 +328,7 @@ public class GUIUtils {
                 JOptionPane.INFORMATION_MESSAGE,
                 false,
                 "OptionPane.informationIcon",
-                "Message",
+                Bundles.get("common.message"),
                 message, null);
     }
 
@@ -328,7 +348,7 @@ public class GUIUtils {
                 JOptionPane.WARNING_MESSAGE,
                 false,
                 "OptionPane.warningIcon",
-                "Warning",
+                Bundles.get("common.warning"),
                 message, null);
     }
 

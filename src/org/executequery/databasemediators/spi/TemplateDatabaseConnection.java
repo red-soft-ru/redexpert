@@ -74,17 +74,17 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
   private String url;
 
   /**
-   * The unique name of the JDBC/ODBC driver used with this connection
+   * The unique name of the JDBC driver used with this connection
    */
   private String driverName;
 
   /**
-   * The unique ID of the JDBC/ODBC driver used with this connection
+   * The unique ID of the JDBC driver used with this connection
    */
   private long driverId;
 
   /**
-   * The JDBC/ODBC Driver used with this connection
+   * The JDBC Driver used with this connection
    */
   private DatabaseDriver driver;
 
@@ -159,20 +159,19 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
    */
   private transient boolean autoCommit = true;
 
-  /**
-   * Whether this connection is active
-   */
-  private transient boolean connected = false;
-
-  private transient PasswordEncoderDecoder encoderDecoder;
-
-  private int serverVersion;
-
-  private boolean namesToUpperCase = true;
-
-  String pathToTraceConfig;
-  String[] dataTypesArray;
-  int[] intDataTypesArray;
+    private static final long serialVersionUID = 950081216942320441L;
+    String serverName;
+    String pathToTraceConfig;
+    String[] dataTypesArray;
+    int[] intDataTypesArray;
+    String dBCharset;
+    /**
+     * Whether this connection is active
+     */
+    private transient boolean connected = false;
+    private transient PasswordEncoderDecoder encoderDecoder;
+    private int majorServerVersion;
+    private boolean namesToUpperCase = true;
 
   @Override
   public boolean isNamesToUpperCase() {
@@ -204,25 +203,15 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
     return dataTypesArray;
   }
 
-  @Override
-  public int[] getIntDataTypesArray() {
-    if (intDataTypesArray == null) {
-      MetaDataValues metaData = new MetaDataValues(true);
-      metaData.setDatabaseConnection(this);
-      intDataTypesArray = metaData.getIntDataTypesArray();
+    /**
+     * Creates a new empty <code>DatabaseConnection</code> object.
+     */
+    public TemplateDatabaseConnection() {
+
+        this(null);
     }
-    return intDataTypesArray;
-  }
 
-  /**
-   * Creates a new empty <code>DatabaseConnection</code> object.
-   */
-  public TemplateDatabaseConnection() {
-
-    this(null);
-  }
-
-  /**
+    /**
    * Creates a new empty <code>DatabaseConnection</code> object
    * with the specified name.
    *
@@ -233,6 +222,21 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
     this.name = name;
     transactionIsolation = -1;
   }
+
+    @Override
+    public int[] getIntDataTypesArray() {
+        if (intDataTypesArray == null) {
+            MetaDataValues metaData = new MetaDataValues(true);
+            metaData.setDatabaseConnection(this);
+            intDataTypesArray = metaData.getIntDataTypesArray();
+        }
+        return intDataTypesArray;
+    }
+
+    @Override
+    public int getDriverMajorVersion() {
+        return getJDBCDriver().getMajorVersion();
+    }
 
   public TemplateDatabaseConnection(String userName, String password, String charset, boolean passStored) {
     this.userName = userName;
@@ -561,52 +565,7 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
   private String generateId() {
     return UUID.randomUUID().toString();
   }
-
-  public DatabaseConnection copy() {
-
-    DatabaseConnection copy = new DefaultDatabaseConnection(getName());
-
-    copy.setId(generateId());
-    copy.setPasswordStored(isPasswordStored());
-    copy.setPasswordEncrypted(isPasswordEncrypted());
-    copy.setDriverId(getDriverId());
-    copy.setDatabaseType(getDatabaseType());
-    copy.setHost(getHost());
-    copy.setPort(getPort());
-    copy.setSourceName(getSourceName());
-    copy.setTransactionIsolation(getTransactionIsolation());
-    copy.setURL(getURL());
-    copy.setUserName(getUserName());
-
-    if (getJdbcProperties() != null) {
-
-      copy.setJdbcProperties((Properties) getJdbcProperties().clone());
-    }
-
-    if (copy.isPasswordEncrypted()) {
-
-      copy.setEncryptedPassword(getPassword());
-    } else {
-
-      copy.setPassword(getPassword());
-    }
-
-    copy.setSshHost(getSshHost());
-    copy.setSshTunnel(isSshTunnel());
-    copy.setSshUserName(getSshUserName());
-    copy.setSshPort(getSshPort());
-    copy.setEncryptedSshPassword(getSshPassword());
-    copy.setSshPasswordStored(isSshPasswordStored());
-    copy.setCertificate(getCertificate());
-    copy.setAuthMethod(getAuthMethod());
-    copy.setContainerPassword(getContainerPassword());
-    copy.setContainerPasswordStored(isContainerPasswordStored());
-    copy.setVerifyServerCertCheck(isVerifyServerCertCheck());
-    copy.setUseNewAPI(useNewAPI());
-    copy.setServerVersion(getServerVersion());
-
-    return copy;
-  }
+    private int minorServerVersion;
 
   @Override
   public boolean isSshTunnel() {
@@ -719,27 +678,83 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
     return sshHost;
   }
 
-  public TreeSet<String> getListObjectsDB() {
-    TreeSet<String> list = new TreeSet<>();
-    DatabaseObjectNode host = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(this);
-    addingChild(list, host);
-    return list;
+  public DatabaseConnection copy() {
 
+    DatabaseConnection copy = new DefaultDatabaseConnection(getName());
+
+    copy.setId(generateId());
+    copy.setPasswordStored(isPasswordStored());
+    copy.setPasswordEncrypted(isPasswordEncrypted());
+    copy.setDriverId(getDriverId());
+    copy.setDatabaseType(getDatabaseType());
+    copy.setHost(getHost());
+    copy.setPort(getPort());
+    copy.setSourceName(getSourceName());
+    copy.setTransactionIsolation(getTransactionIsolation());
+    copy.setURL(getURL());
+    copy.setUserName(getUserName());
+
+    if (getJdbcProperties() != null) {
+
+      copy.setJdbcProperties((Properties) getJdbcProperties().clone());
+    }
+
+    if (copy.isPasswordEncrypted()) {
+
+      copy.setEncryptedPassword(getPassword());
+    } else {
+
+      copy.setPassword(getPassword());
+    }
+
+    copy.setSshHost(getSshHost());
+    copy.setSshTunnel(isSshTunnel());
+      copy.setSshUserName(getSshUserName());
+      copy.setSshPort(getSshPort());
+      copy.setEncryptedSshPassword(getSshPassword());
+      copy.setSshPasswordStored(isSshPasswordStored());
+      copy.setCertificate(getCertificate());
+      copy.setAuthMethod(getAuthMethod());
+      copy.setContainerPassword(getContainerPassword());
+      copy.setContainerPasswordStored(isContainerPasswordStored());
+      copy.setVerifyServerCertCheck(isVerifyServerCertCheck());
+      copy.setUseNewAPI(useNewAPI());
+      copy.setMajorServerVersion(getMajorServerVersion());
+      copy.setMinorServerVersion(getMinorServerVersion());
+      return copy;
   }
 
-  @Override
-  public int getServerVersion() {
-    return serverVersion;
-  }
+    public TreeSet<String> getListObjectsDB() {
+        TreeSet<String> list = new TreeSet<>();
+        DatabaseObjectNode host = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(this);
+        addingChild(list, host);
+        return list;
 
-  @Override
-  public void setServerVersion(int serverVersion) {
-    this.serverVersion = serverVersion;
-  }
+    }
 
-  private void addingChild(TreeSet<String> list, DatabaseObjectNode root) {
-    root.populateChildren();
-    Enumeration<TreeNode> nodes = root.children();
+    @Override
+    public int getMajorServerVersion() {
+        return majorServerVersion;
+    }
+
+    @Override
+    public void setMajorServerVersion(int serverVersion) {
+        this.majorServerVersion = serverVersion;
+    }
+
+    @Override
+    public int getMinorServerVersion() {
+        return minorServerVersion;
+    }
+
+    @Override
+    public void setMinorServerVersion(int minorServerVersion) {
+        this.minorServerVersion = minorServerVersion;
+    }
+
+    private void addingChild(TreeSet<String> list, DatabaseObjectNode root) {
+        root.populateChildren();
+        Enumeration<TreeNode> nodes = root.children();
     while (nodes.hasMoreElements()) {
       DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
       if (!node.isHostNode() && node.getType() != NamedObject.META_TAG) {
@@ -754,10 +769,25 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
 
       }
     }
-  }
+    }
 
+    public String getDBCharset() {
+        return dBCharset;
+    }
 
-  private static final long serialVersionUID = 950081216942320441L;
+    public void setDBCharset(String dBCharset) {
+        this.dBCharset = dBCharset;
+    }
+
+    @Override
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
+    }
+
+    @Override
+    public TreeSet<String> getKeywords() {
+        return null;
+    }
 
 }
 

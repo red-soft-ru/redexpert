@@ -4,43 +4,47 @@ import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.searchcommands.FindAction;
 import org.executequery.actions.searchcommands.ReplaceAction;
+import org.executequery.components.LineNumber;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.TreeFindAction;
 import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.gui.editor.QueryEditorSettings;
 import org.executequery.gui.editor.autocomplete.DefaultAutoCompletePopupProvider;
 import org.executequery.gui.text.syntax.SQLSyntaxDocument;
+import org.executequery.localization.Bundles;
 import org.executequery.print.TextPrinter;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.RTextArea;
+import org.fife.ui.rtextarea.RTextAreaBase;
+import org.fife.ui.rtextarea.RUndoManager;
 import org.fife.ui.rtextarea.RecordableTextAction;
 import org.underworldlabs.sqlLexer.CustomTokenMakerFactory;
 import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.*;
 import javax.swing.text.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.print.Printable;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
+public class SQLTextArea extends RSyntaxTextArea
+        implements TextEditor,
+        DocumentListener,
+        KeyListener {
 
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
     private static final String FIND_ACTION_KEY = "findActionKey";
@@ -53,8 +57,11 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
     protected SQLSyntaxDocument document;
     boolean changed = false;
     boolean autocompleteOnlyHotKey = true;
+    private boolean isCtrlPressed = false;
 
     private boolean doCaretUpdate;
+
+    protected RUndoManager undoManager;
 
     /**
      * The current font width for painting
@@ -67,11 +74,22 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
     protected int fontHeight;
     private DefaultAutoCompletePopupProvider autoCompletePopup;
 
+    /**
+     * To display line numbers
+     */
+    protected LineNumber lineBorder;
+
+    private final JLabel caretPositionLabel;
+    private String triggerTable;
+
     protected void setEditorPreferences() {
 
         setSelectionColor(QueryEditorSettings.getSelectionColour());
-        setSelectedTextColor(QueryEditorSettings.getSelectedTextColour());
         setBackground(QueryEditorSettings.getEditorBackground());
+        setCurrentLineHighlightColor(QueryEditorSettings.isDisplayLineHighlight() ?
+                QueryEditorSettings.getLineHighlightColour() :
+                new Color(0f, 0f, 0f, 0f)
+        );
 
         Font font = QueryEditorSettings.getEditorFont();
         setFont(font);
@@ -121,7 +139,7 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         TokenImpl clone = new TokenImpl(t);
         TokenImpl cloneEnd = clone;
 
-        while ((t=t.getNextToken())!=null) {
+        while ((t = t.getNextToken()) != null) {
             TokenImpl temp = new TokenImpl(t);
             cloneEnd.setNextToken(temp);
             cloneEnd = temp;
@@ -131,49 +149,46 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
 
     }
 
-    Token getTokenForPosition(int cursor)
-    {
-        TokenImpl tokenList = null;
-        TokenImpl lastToken = null;
-        Element map = getDocument().getDefaultRootElement();
-        int line = map.getElementIndex(cursor);
-        Token token = getTokenListForLine(line);
-        TokenImpl t = (TokenImpl)getTokenListForLine(line);
-        t = cloneTokenList(t);
-        if (tokenList==null) {
-            tokenList = t;
-            lastToken = tokenList;
-        }
-        else {
-            lastToken.setNextToken(t);
-        }
-        while (lastToken.getNextToken()!=null &&
-                lastToken.getNextToken().isPaintable()) {
-            lastToken = (TokenImpl)lastToken.getNextToken();
-        }
-
-            // Document offset MUST be correct to prevent exceptions
-            // in getTokenListFor()
-            int docOffs = map.getElement(line).getEndOffset()-1;
-            t = new TokenImpl(new char[] { '\n' }, 0,0, docOffs,
-                    Token.WHITESPACE, 0);
-            lastToken.setNextToken(t);
-            lastToken = t;
-        if (cursor>=tokenList.getOffset()) {
-            while (!tokenList.containsPosition(cursor)) {
-                tokenList = (TokenImpl)tokenList.getNextToken();
+    public List<TokenImpl> getTokensForType(int type) {
+        List<TokenImpl> result = new ArrayList<>();
+        for (int i = 0; i < getLineCount(); i++) {
+            TokenImpl t = (TokenImpl) getTokenListForLine(i);
+            t = cloneTokenList(t);
+            if (t.getType() == type)
+                result.add(t);
+            while (t.getNextToken() != null) {
+                t = (TokenImpl) t.getNextToken();
+                if (t.getType() == type)
+                    result.add(t);
             }
         }
-        // Be careful to check temp for null here.  It is possible that no
-        // token contains endOffs, if endOffs is at the end of a line
+        return result;
+    }
 
+    public Token getTokenForPosition(int cursor) {
+        TokenImpl tokenList = null;
+        Element map = getDocument().getDefaultRootElement();
+        int line = map.getElementIndex(cursor);
+        TokenImpl t = (TokenImpl) getTokenListForLine(line);
+        tokenList = cloneTokenList(t);
+        if (cursor >= tokenList.getOffset()) {
+            while (!tokenList.containsPosition(cursor) && tokenList.getNextToken() != null) {
+                tokenList = (TokenImpl) tokenList.getNextToken();
+            }
+        }
         return tokenList;
     }
 
+    @Override
+    protected RUndoManager createUndoManager() {
+        undoManager = new SQLTextUndoManager(this);
+        return undoManager;
+    }
+
     private void createStyle(int type, Color fcolor,
-                             Color bcolor,String fontname,int style,int fontSize,boolean underline) {
+                             Color bcolor, String fontname, int style, int fontSize, boolean underline) {
         SyntaxScheme syntaxScheme = getSyntaxScheme();
-        if(syntaxScheme!=null) {
+        if (syntaxScheme != null) {
             syntaxScheme.getStyle(type).foreground = fcolor;
             syntaxScheme.getStyle(type).background = bcolor;
             syntaxScheme.getStyle(type).underline = underline;
@@ -182,21 +197,21 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
     }
 
     private void initialiseStyles() {
+
         int fontSize = SystemProperties.getIntProperty("user", "sqlsyntax.font.size");
         String fontName = SystemProperties.getProperty("user", "sqlsyntax.font.name");
 
         createStyle(Token.ERROR_CHAR, Color.red, null,fontName,Font.PLAIN,fontSize,false);
         createStyle(Token.RESERVED_WORD_2, Color.blue, null,fontName,Font.PLAIN,fontSize,false);
 
-        // -----------------------------
-        // user defined styles
         int fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.multicomment");
         Color color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.multicomment");
         createStyle(Token.COMMENT_MULTILINE, color,  null,fontName,fontStyle,fontSize,false);
 
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.normal");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.normal");
-        createStyle(Token.IDENTIFIER, color,  null,fontName,fontStyle,fontSize,false);
+        createStyle(Token.IDENTIFIER, color, null, fontName, fontStyle, fontSize, false);
+        createStyle(Token.RESERVED_WORD_2, color, null, fontName, fontStyle, fontSize, false);
 
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.singlecomment");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.singlecomment");
@@ -233,14 +248,15 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.dbobjects");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.dbobjects");
         createStyle(Token.VARIABLE, color, null, fontName, fontStyle, fontSize, false);
-        //setCurrentLineHighlightColor(SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour"));
-        setCurrentLineHighlightColor(SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour"));
 
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.datatype");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.datatype");
         createStyle(Token.DATA_TYPE, color, null, fontName, fontStyle, fontSize, false);
 
-
+        setCurrentLineHighlightColor(SystemProperties.getBooleanProperty("user", "editor.display.linehighlight") ?
+                SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour") :
+                new Color(0f, 0f, 0f, 0f)
+        );
     }
 
     public SQLTextArea(boolean autocompleteOnlyHotKey) {
@@ -248,57 +264,135 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
     }
 
+    TreeModelListener treeModelListener;
+
     public SQLTextArea() {
         super();
+
         document = new SQLSyntaxDocument(null, tokenMakerFactory, "antlr/sql");
+        document.setTextComponent(this);
         setDocument(document);
         setSyntaxEditingStyle("antlr/sql");
         initialiseStyles();
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.isControlDown() || e.getClickCount() > 1) {
-                    int cursor = getCaretPosition();
-                    Token token = getTokenForPosition(cursor);
-                    if (token.getType() == Token.PREPROCESSOR) {
-                        String s = token.getLexeme();
-                        if (s != null) {
-                            s = s.replace("$", "\\$");
-                            if (s.startsWith("\"") && s.endsWith("\""))
-                                s = s.substring(1, s.length() - 1);
-                            TreeFindAction action = new TreeFindAction();
-                            SchemaTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
-                            action.install(tree);
-                            action.findString(tree, s, ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection));
-                            BaseDialog dialog = new BaseDialog("find", false);
-                            JPanel panel = new JPanel();
-                            JList jList = action.getResultsList();
-                            if (jList.getModel().getSize() == 1) {
-                                jList.setSelectedIndex(0);
-                                action.listValueSelected((TreePath) jList.getSelectedValue());
-                            } else {
-                                jList.addPropertyChangeListener(new PropertyChangeListener() {
-                                    @Override
-                                    public void propertyChange(PropertyChangeEvent evt) {
-                                        if (jList.getModel().getSize() == 0)
-                                            dialog.finished();
-                                    }
-                                });
-                                JScrollPane scrollPane = new JScrollPane(jList);
-                                panel.add(scrollPane);
-                                dialog.addDisplayComponent(panel);
-                                dialog.display();
-                            }
-                        }
-                    }
-                }
-            }
-        });
+
         this.autoCompletePopup = new DefaultAutoCompletePopupProvider(databaseConnection, this);
         registerAutoCompletePopup();
         registerFindAction();
         registerReplaceAction();
         registerCommentAction();
+        ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        if (treePanel != null) {
+            SchemaTree tree = treePanel.getTree();
+            if (tree != null) {
+                treeModelListener = new TreeModelListener() {
+                    @Override
+                    public void treeNodesChanged(TreeModelEvent e) {
+
+                    }
+
+                    @Override
+                    public void treeNodesInserted(TreeModelEvent e) {
+
+                    }
+
+                    @Override
+                    public void treeNodesRemoved(TreeModelEvent e) {
+
+                    }
+
+                    @Override
+                    public void treeStructureChanged(TreeModelEvent e) {
+                        if (databaseConnection != null) {
+                            setDbobjects(databaseConnection.getListObjectsDB());
+                            if (autoCompletePopup != null) {
+                                autoCompletePopup.resetAutoCompleteListItems();
+                                autoCompletePopup.scheduleListItemLoad();
+                            }
+                        }
+                    }
+                };
+                tree.getModel().addTreeModelListener(treeModelListener);
+            }
+        }
+        lineBorder = new LineNumber(this);
+        if (document!=null)
+            document.addDocumentListener(this);
+        lineBorder.updatePreferences(QueryEditorSettings.getEditorFont());
+        lineBorder.repaint();
+        caretPositionLabel = new JLabel();
+
+        addCaretListener(e -> {
+
+            int currentPosition = getCaretPosition();
+
+            Element map = getElementMap();
+            int row = map.getElementIndex(currentPosition);
+
+            Element lineElem = map.getElement(row);
+            int col = currentPosition - lineElem.getStartOffset();
+            setCaretPosition(row+1,col+1);
+        });
+
+        addKeyListener(this);
+        setEditorPreferences();
+    }
+
+    protected void setCaretPosition(int row,int col)
+    {
+        caretPositionLabel.setText(String.format(Bundles.get("common.care-position.label"), row, col));
+    }
+
+    public JLabel getCaretPositionLabel() {
+        return caretPositionLabel;
+    }
+
+    private int lastElementCount;
+    protected void updateLineBorder() {
+
+        if (!getLineWrap()) {
+
+            int elementCount = getLineCount();
+            if (elementCount != lastElementCount) {
+                lineBorder.setRowCount(elementCount);
+                lastElementCount = elementCount;
+            }
+
+        } else {
+            List<String> borderLabels = getCreateLineBorderLabels();
+            lineBorder.setBorderLabels(borderLabels);
+            lineBorder.setRowCount(borderLabels.size());
+            lastElementCount = borderLabels.size();
+        }
+    }
+
+    private List<String> getCreateLineBorderLabels() {
+
+        int lineLength = (int) (getVisibleRect().getWidth() / getColumnWidth());
+
+        List<String> lineBorderLabels = new LinkedList<>();
+        for (int i = 0; i < getLineCount(); i++) {
+            lineBorderLabels.add(String.valueOf(i + 1));
+
+            int displayLineCountForString = getTextAtRow(i).length() / lineLength
+                    + (getTextAtRow(i).length() % lineLength != 0 ? 1 : 0);
+
+            for (int j = 1; j < displayLineCountForString; j++)
+                lineBorderLabels.add("");
+        }
+
+        return lineBorderLabels;
+    }
+
+    public void showLineNumbers(boolean show) {
+        lineBorder.getParent().setVisible(show);
+    }
+
+    public JComponent getLineBorder() {
+        return lineBorder;
+    }
+
+    public void resetExecutingLine() {
+        lineBorder.resetExecutingLine();
     }
 
     protected void registerCommentAction() {
@@ -341,41 +435,10 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
                 REPLACE_ACTION_KEY);
     }
 
-    private void registerAutoCompletePopup() {
+    DocumentListener autoCompletePopupDocumentListener;
+    CaretListener autoCompletePopupCaretListener;
 
-
-        Action autoCompletePopupAction = autoCompletePopup.getPopupAction();
-
-        getActionMap().put(AUTO_COMPLETE_POPUP_ACTION_KEY, autoCompletePopupAction);
-        getInputMap().put((KeyStroke)
-                        autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
-                AUTO_COMPLETE_POPUP_ACTION_KEY);
-        getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                changed = true;
-            }
-        });
-        addCaretListener(new CaretListener() {
-            @Override
-            public void caretUpdate(CaretEvent e) {
-                if (changed && !autocompleteOnlyHotKey)
-                    autoCompletePopupAction.actionPerformed(null);
-                changed = false;
-            }
-        });
-
-    }
+    boolean updateFromSetText = false;
 
     public void deregisterAutoCompletePopup() {
 
@@ -386,6 +449,14 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
             getActionMap().remove(AUTO_COMPLETE_POPUP_ACTION_KEY);
             getInputMap().remove((KeyStroke)
                     autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY));
+            if (autoCompletePopupCaretListener != null) {
+                removeCaretListener(autoCompletePopupCaretListener);
+                autoCompletePopupCaretListener = null;
+            }
+            if (autoCompletePopupDocumentListener != null) {
+                getDocument().removeDocumentListener(autoCompletePopupDocumentListener);
+                autoCompletePopupDocumentListener = null;
+            }
 
             autoCompletePopup = null;
         }
@@ -413,20 +484,62 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
         SqlLexerTokenMaker maker = (SqlLexerTokenMaker) tokenMakerFactory.getTokenMaker("antlr/sql");
         maker.setDbobjects(dbobjects);
     }
+
+    public void setVariables(TreeSet<String> variables) {
+        SqlLexerTokenMaker maker = (SqlLexerTokenMaker) tokenMakerFactory.getTokenMaker("antlr/sql");
+        maker.setVariables(variables);
+        autoCompletePopup.setVariables(variables);
+    }
+    public void setParameters(TreeSet<String> parameters) {
+        SqlLexerTokenMaker maker = (SqlLexerTokenMaker) tokenMakerFactory.getTokenMaker("antlr/sql");
+        maker.setParameters(parameters);
+        autoCompletePopup.setParameters(parameters);
+    }
     private KeywordRepository keywords() {
 
         return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
-    public void deleteAll() {
+    private void registerAutoCompletePopup() {
 
-        try {
 
-            RSyntaxDocument document = (RSyntaxDocument) getDocument();
-            document.replace(0, document.getLength(), "", null);
+        Action autoCompletePopupAction = autoCompletePopup.getPopupAction();
 
-        } catch (BadLocationException badLoc) {
-        }
+        getActionMap().put(AUTO_COMPLETE_POPUP_ACTION_KEY, autoCompletePopupAction);
+        getInputMap().put((KeyStroke)
+                        autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
+                AUTO_COMPLETE_POPUP_ACTION_KEY);
+        autoCompletePopupDocumentListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changed = true;
+            }
+        };
+        getDocument().addDocumentListener(autoCompletePopupDocumentListener);
+        autoCompletePopupCaretListener = new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                if (updateFromSetText) {
+                    updateFromSetText = false;
+                    changed = false;
+                    return;
+                }
+                if ((changed && !autocompleteOnlyHotKey) || autoCompletePopup.isShow())
+                    autoCompletePopupAction.actionPerformed(null);
+                changed = false;
+            }
+        };
+        addCaretListener(autoCompletePopupCaretListener);
 
     }
 
@@ -500,7 +613,9 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
     }
 
     public void setSQLKeywords(boolean reset) {
-        document.setSQLKeywords(keywords().getSQLKeywords());
+        if (databaseConnection == null)
+            document.setSQLKeywords(keywords().getSQLKeywords());
+        else document.setSQLKeywords(databaseConnection.getKeywords());
     }
 
     public SQLSyntaxDocument getSQLSyntaxDocument() {
@@ -640,6 +755,53 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
             fireTextUpdateFinished();
             setCaretPosition(offset);
         }
+    }
+
+    public void cleanup() {
+        ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        if (treePanel != null) {
+            SchemaTree tree = treePanel.getTree();
+            if (tree != null) {
+                if (treeModelListener != null)
+                    tree.getModel().removeTreeModelListener(treeModelListener);
+            }
+        }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+        if (e.isControlDown()) {
+
+            isCtrlPressed = true;
+            SwingWorker worker = new SwingWorker("query editor cursor changer") {
+                @Override
+                public Object construct() {
+
+                    while (isCtrlPressed) {
+                        if (isHyperlinkHovered())
+                            GUIUtilities.showHandCursor(getEditorTextComponent());
+                        else
+                            GUIUtilities.showTextCursor(getEditorTextComponent());
+                    }
+
+                    GUIUtilities.showTextCursor(getEditorTextComponent());
+                    return null;
+                }
+            };
+            worker.start();
+
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_CONTROL)
+            isCtrlPressed = false;
     }
 
     class CommentAction extends RecordableTextAction {
@@ -795,4 +957,136 @@ public class SQLTextArea extends RSyntaxTextArea implements TextEditor {
 
         }
     }
+
+    public boolean isAutocompleteOnlyHotKey() {
+        return autocompleteOnlyHotKey;
+    }
+
+    public void setAutocompleteOnlyHotKey(boolean autocompleteOnlyHotKey) {
+        this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
+    }
+
+    @Override
+    protected RTextAreaBase.RTAMouseListener createMouseListener() {
+        return new CustomMouseListener(this);
+    }
+
+    public boolean isHyperlinkHovered() {
+
+        Point mousePosition = getMousePosition();
+        if (mousePosition == null)
+            return false;
+
+        return getTokenForPosition(viewToModel(mousePosition)).getType() == Token.PREPROCESSOR;
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        lineBorder.resetExecutingLine();
+        updateLineBorder();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        insertUpdate(e);
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        insertUpdate(e);
+    }
+
+    public String getTriggerTable() {
+        return triggerTable;
+    }
+
+    public void setTriggerTable(String triggerTable) {
+        this.triggerTable = triggerTable;
+    }
+
+    public void deleteAll() {
+        updateFromSetText = true;
+        try {
+
+            RSyntaxDocument document = (RSyntaxDocument) getDocument();
+            document.replace(0, document.getLength(), "", null);
+
+        } catch (BadLocationException badLoc) {
+        }
+
+    }
+
+    public void setText(String text) {
+        updateFromSetText = true;
+        super.setText(text);
+    }
+
+    protected static class SQLTextUndoManager extends RUndoManager {
+
+        /**
+         * Constructor.
+         *
+         * @param textArea The parent text area.
+         */
+        public SQLTextUndoManager(RTextArea textArea) {
+            super(textArea);
+        }
+
+        @Override
+        public void updateActions() {
+            SwingWorker sw = new SwingWorker("updateActionsUndoManger") {
+                @Override
+                public Object construct() {
+                    superUpdateActions();
+                    return null;
+                }
+            };
+            sw.start();
+        }
+
+        private void superUpdateActions() {
+            super.updateActions();
+        }
+
+    } // class SQLTextUndoManager
+
+    private class CustomMouseListener extends RTextArea.RTextAreaMutableCaretEvent {
+
+        protected CustomMouseListener(RTextArea textArea) {
+            super(textArea);
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+
+            if ((e.isControlDown() || e.getClickCount() > 1) && isHyperlinkHovered()) {
+
+                String lexeme = getTokenForPosition(getCaretPosition()).getLexeme();
+                if (lexeme == null)
+                    return;
+
+                ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+                if (connectionsTreePanel == null)
+                    return;
+
+                lexeme = lexeme.replace("$", "\\$");
+                if (lexeme.startsWith("\"") && lexeme.endsWith("\""))
+                    lexeme = lexeme.substring(1, lexeme.length() - 1);
+
+                TreeFindAction action = new TreeFindAction();
+                action.install(connectionsTreePanel.getTree());
+                action.findString(connectionsTreePanel.getTree(), lexeme, connectionsTreePanel.getHostNode(databaseConnection));
+
+                JList<?> jList = action.getResultsList();
+                if (jList.getModel().getSize() == 1) {
+                    jList.setSelectedIndex(0);
+                    action.listValueSelected((TreePath) jList.getSelectedValue());
+                }
+
+                isCtrlPressed = false;
+            }
+        }
+
+    } // class CustomMouseListener
+
 }

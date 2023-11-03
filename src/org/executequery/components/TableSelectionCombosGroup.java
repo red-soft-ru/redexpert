@@ -60,7 +60,7 @@ public class TableSelectionCombosGroup implements ItemListener {
 
     public TableSelectionCombosGroup() {
 
-        this(WidgetFactory.createComboBox(), WidgetFactory.createComboBox(), WidgetFactory.createComboBox(), null);
+        this(WidgetFactory.createComboBox("connectionsCombo"), WidgetFactory.createComboBox("schemaCombo"), WidgetFactory.createComboBox("tableCombo"), null);
     }
 
     public TableSelectionCombosGroup(JComboBox connectionsCombo) {

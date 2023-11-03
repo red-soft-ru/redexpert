@@ -125,7 +125,7 @@ public class ErdNewRelationshipDialog extends ErdPrintableDialog {
 
         sqlText.setPreferredSize(new Dimension(420, 120));
 
-        nameField = WidgetFactory.createTextField();
+        nameField = WidgetFactory.createTextField("nameField");
         nameField.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent e) {
                 setSQLText();
@@ -133,11 +133,11 @@ public class ErdNewRelationshipDialog extends ErdPrintableDialog {
         });
 
         ErdTable[] tables = parent.getAllComponentsArray();
-        referencingTableCombo = WidgetFactory.createComboBox(tables);
-        referencedTableCombo = WidgetFactory.createComboBox(tables);
+        referencingTableCombo = WidgetFactory.createComboBox("referencingTableCombo", tables);
+        referencedTableCombo = WidgetFactory.createComboBox("referencedTableCombo", tables);
 
-        referencingColumnCombo = WidgetFactory.createComboBox();
-        referencedColumnCombo = WidgetFactory.createComboBox();
+        referencingColumnCombo = WidgetFactory.createComboBox("referencingColumnCombo");
+        referencedColumnCombo = WidgetFactory.createComboBox("referencedColumnCombo");
 
         referencingTableCombo.addActionListener(btnListener);
         referencedTableCombo.addActionListener(btnListener);

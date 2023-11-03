@@ -32,9 +32,12 @@ public enum AutoCompleteListItemType {
     DATABASE_DATA_TYPE,
     DATABASE_FUNCTION,
     DATABASE_PROCEDURE,
+    DATABASE_PACKAGE,
     SYSTEM_FUNCTION,
     NOTHING_PROPOSED,
-    GENERATING_LIST;
+    GENERATING_LIST,
+    VARIABLE,
+    PARAMETER;
 
     public boolean isKeyword() {
 

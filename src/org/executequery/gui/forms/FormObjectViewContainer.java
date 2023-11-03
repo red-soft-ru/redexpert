@@ -154,5 +154,13 @@ public class FormObjectViewContainer extends JPanel {
         return Bundles.get(getClass(), key);
     }
 
+    public void cleanup() {
+        if (currentView instanceof Component)
+            cardLayout.removeLayoutComponent((Component) currentView);
+        cardLayout = null;
+        panels = null;
+        currentView = null;
+    }
+
 }
 

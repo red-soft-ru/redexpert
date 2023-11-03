@@ -21,6 +21,7 @@
 package org.executequery.sql;
 
 import biz.redsoft.IFBCreateDatabase;
+import biz.redsoft.IFBDatabasePerformance;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -28,8 +29,11 @@ import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultDatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultDatabaseDriver;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.SimpleDataSource;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.resource.ResourceException;
@@ -104,7 +108,7 @@ public class SqlScriptRunner {
 
 
             //executionController.message("Found " + executableQueries.size() + " executable queries");
-            executionController.message("Executing...");
+            executionController.message(Bundles.getCommon("executing"));
 
             /*if (connection == null)
                 throw new SQLException("There is no connection. Select a connection from the available connections " +
@@ -165,12 +169,15 @@ public class SqlScriptRunner {
                     statement = querySender.getPreparedStatement(derivedQuery);
                     start = System.currentTimeMillis();
                     sqlStatementResult = querySender.execute(query.getQueryType(), statement);
-                    if (sqlStatementResult.isException())
+                    if (sqlStatementResult.isException()) {
                         if (sqlStatementResult.getSqlException() != null)
                             throw sqlStatementResult.getSqlException();
+                        if (sqlStatementResult.getOtherException() != null)
+                            throw sqlStatementResult.getOtherException();
+                    }
                     result += sqlStatementResult.getUpdateCount();
 
-                } catch (SQLException e) {
+                } catch (Throwable e) {
 
                     executionController.errorMessage("Error executing statement:");
                     executionController.actionMessage(derivedQuery);
@@ -213,7 +220,7 @@ public class SqlScriptRunner {
 
             sqlStatementResult.setOtherException(e);
 
-        } catch (org.underworldlabs.util.InterruptedException e) {
+        } catch (Throwable e) {
 
             sqlStatementResult.setOtherException(e);
 
@@ -308,18 +315,9 @@ public class SqlScriptRunner {
             if (idx > 0)
                 charSet = charSet.substring(0, idx);
         }
-
-        URL[] urlDriver = new URL[0];
-        Class clazzDriver = null;
-        URL[] urls = new URL[0];
-        Class clazzdb = null;
-        Object odb = null;
+        DatabaseConnection temp = new DefaultDatabaseConnection();
         try {
-            urlDriver = MiscUtils.loadURLs("./lib/jaybird-3.jar"); // TODO Must use DriverLoader
-            ClassLoader clD = new URLClassLoader(urlDriver);
-            clazzDriver = clD.loadClass("org.firebirdsql.jdbc.FBDriver");
-            Object o = clazzDriver.newInstance();
-            Driver driver = (Driver) o;
+            Driver driver = DefaultDriverLoader.getDefaultDriver();
 
             Log.info("Database creation via jaybird");
             Log.info("Driver version: " + driver.getMajorVersion() + "." + driver.getMinorVersion());
@@ -330,67 +328,50 @@ public class SqlScriptRunner {
                 throw new SQLException(sb.toString());
             }
 
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, o.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBCreateDatabaseImpl");
-            odb = clazzdb.newInstance();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+            IFBCreateDatabase db = (IFBCreateDatabase) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), connection, "FBCreateDatabaseImpl");
+            db.setServer(server);
+            db.setPort(Integer.valueOf(port));
+            db.setUser(user);
+            db.setPassword(password);
+            db.setDatabaseName(database);
+            db.setEncoding(charSet);
+            if (StringUtils.isNotEmpty(pageSize))
+                db.setPageSize(Integer.valueOf(pageSize));
 
-        IFBCreateDatabase db = (IFBCreateDatabase) odb;
-        db.setServer(server);
-        db.setPort(Integer.valueOf(port));
-        db.setUser(user);
-        db.setPassword(password);
-        db.setDatabaseName(database);
-        db.setEncoding(charSet);
-        if (StringUtils.isNotEmpty(pageSize))
-            db.setPageSize(Integer.valueOf(pageSize));
+            try {
+                db.exec();
 
-        try {
-            db.exec();
-
-        } catch (UnsatisfiedLinkError linkError) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Cannot create database, because fbclient library not found in environment path variable. \n");
-            sb.append("Please, add fbclient library to environment path variable.\n");
-            sb.append("Example for Windows system: setx path \"%path%;C:\\Program Files (x86)\\RedDatabase\\bin\\\"\n\n");
-            sb.append("Example for Linux system: export PATH=$PATH:/opt/RedDatabase/lib\n\n");
-            sb.append(linkError.getMessage());
-            throw new SQLException(sb.toString());
+            } catch (UnsatisfiedLinkError linkError) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Cannot create database, because fbclient library not found in environment path variable. \n");
+                sb.append("Please, add fbclient library to environment path variable.\n");
+                sb.append("Example for Windows system: setx path \"%path%;C:\\Program Files (x86)\\RedDatabase\\bin\\\"\n\n");
+                sb.append("Example for Linux system: export PATH=$PATH:/opt/RedDatabase/lib\n\n");
+                sb.append(linkError.getMessage());
+                throw new SQLException(sb.toString());
+            } catch (Exception e) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("The connection to the database could not be established.");
+                sb.append("\nPlease ensure all required fields have been entered ");
+                sb.append("correctly and try again.\n\nThe system returned:\n");
+                sb.append(e.getMessage());
+                throw new SQLException(sb.toString());
+            }
+            temp.setHost(server);
+            temp.setPort(port);
+            temp.setSourceName(database);
+            temp.setUserName(user);
+            temp.setPassword(password);
+            temp.setCharset(charSet);
+            Properties properties = new Properties();
+            properties.setProperty("sqlDialect", sqlDialect);
+            if (StringUtils.isNotEmpty(charSet))
+                properties.setProperty("lc_ctype", charSet);
+            temp.setJdbcProperties(properties);
+            temp.setJDBCDriver(DefaultDriverLoader.getDefaultDatabaseDriver());
         } catch (Exception e) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("The connection to the database could not be established.");
-            sb.append("\nPlease ensure all required fields have been entered ");
-            sb.append("correctly and try again.\n\nThe system returned:\n");
-            sb.append(e.getMessage());
-            throw new SQLException(sb.toString());
+            e.printStackTrace();
         }
-
-        DatabaseConnection temp = new DefaultDatabaseConnection();
-        temp.setHost(server);
-        temp.setPort(port);
-        temp.setSourceName(database);
-        temp.setUserName(user);
-        temp.setPassword(password);
-        temp.setCharset(charSet);
-        Properties properties = new Properties();
-        properties.setProperty("sqlDialect", sqlDialect);
-        if (StringUtils.isNotEmpty(charSet))
-            properties.setProperty("lc_ctype", charSet);
-        temp.setJdbcProperties(properties);
-        DatabaseDriver driver = new DefaultDatabaseDriver();
-        driver.setPath("./lib/jaybird-3.jar"); // TODO Must use DriverLoader
-        driver.setClassName("org.firebirdsql.jdbc.FBDriver");
-        driver.setURL("jdbc:firebirdsql://[host]:[port]/[source]");
-        temp.setJDBCDriver(driver);
 
         return new SimpleDataSource(temp);
     }

@@ -8,6 +8,7 @@ stages:
   - sources
   - build_docs
   - build
+  - test
   - repackage
   - deploy
 
@@ -25,6 +26,7 @@ prepare:
   tags:
     - docker
     - builder
+    - x86_64
   stage: prepare
   image: registry.red-soft.biz:5000/utils/red-release-manager/client:master
   script:
@@ -69,6 +71,7 @@ sources:
   tags:
     - docker
     - builder
+    - x86_64
   stage: sources
   image: maven:3-jdk-8-alpine
   before_script:
@@ -93,6 +96,7 @@ build_docs:
   tags:
     - docker
     - builder
+    - x86_64
   image: registry.red-soft.biz:5000/docker-images/texlive-alpine/texlive2018-alpine:20190305
   before_script:
     - tar xf dist-src/RedExpert-$VERSION-src.tar.gz
@@ -114,17 +118,20 @@ build:linux:
   tags:
     - docker
     - builder
+    - x86_64
   variables:
-    M2_HOME: /opt/apache-maven-3.5.4/
+    MAVEN_VERSION: 3.9.3
+    M2_HOME: /opt/apache-maven-${MAVEN_VERSION}/
     QMAKE: qmake-qt4
     DIST: ${CI_PROJECT_DIR}/dist/linux-${ARCH}
   before_script:
     - yum -y update
     - yum install -y java-1.8.0-openjdk-devel qt-devel gtk3-devel wget libcurl-devel
     - yum group install -y "Development Tools"
+    - yum install -y ca-certificates
     - cd /opt
-    - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
-    - tar xzf apache-maven-3.5.4-bin.tar.gz
+    - wget https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
+    - tar xzf apache-maven-${MAVEN_VERSION}-bin.tar.gz
     - export PATH=${M2_HOME}/bin:${PATH}
     - export JAVA_HOME=`java -XshowSettings:properties -version 2>&1|grep "java.home"|cut -d "=" -f 2|tr -d " "|rev | cut -c 4- | rev`
   script:
@@ -149,7 +156,7 @@ build:linux:
     - ./ci/build_installer.sh
   parallel:
     matrix:
-      - BUILD_IMAGE: amd64/centos:7
+      - BUILD_IMAGE: oraclelinux:7
         ARCH: x86_64
       - BUILD_IMAGE: i386/centos:7
         ARCH: x86
@@ -202,10 +209,55 @@ build:windows:
       - ARCH: x86
         QMAKE: c:\Qt\Qt5.6.3_x86\5.6.3\msvc2013\bin\qmake.exe
 
+.test_template:
+  stage: test
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - test-results/
+  except:
+    variables:
+      - $SKIP_TESTS == "1"
+
+test:windows:
+  extends: .test_template
+  tags:
+    - windows
+    - proxmox
+    - tester
+  variables:
+    PROXMOX_TEMPLATE: template-testing-re-windows-7
+    JAVA_HOME: c:\Program Files\Java\jdk8
+    ErrorActionPreference: STOP
+    DIST: ${CI_PROJECT_DIR}\dist\windows-${ARCH}
+    PYTHON: c:\Python38\python.exe
+    WORKSPACE: ${CI_PROJECT_DIR}
+    DISTRO: red-expert-tests
+  parallel:
+    matrix:
+      - TEST_TYPE: core
+        ARCH: ["x86_64", "x86"]
+        DBMS: ["Firebird-3.0", "Firebird-5.0", "rdb30", "rdb50"]
+  before_script:
+   - $TEST_DIR = New-TempDirectory -Prefix 'test_re_'
+   - cd $TEST_DIR
+   - unzip -q ${CI_PROJECT_DIR}\dist-src\RedExpert-$env:VERSION-src.zip
+   - cd $TEST_DIR\RedExpert-$env:VERSION\ci
+   - start-process "${PYTHON}" "-m pip install beautifulsoup4" -wait -nonewwindow
+   - start-process "${PYTHON}" ".\download_dbms.py ${DBMS} ${ARCH}" -wait -nonewwindow
+   - powershell -ExecutionPolicy ByPass -file install_dbms.ps1
+  script:
+   - cd $TEST_DIR\RedExpert-$env:VERSION\ci
+   - powershell -ExecutionPolicy ByPass -file test.ps1
+  dependencies: ["prepare", "sources", "build:windows"]
+  needs: ["prepare", "sources", "build:windows"]
+  
+
 repackage:
   tags:
     - docker
     - builder
+    - x86_64
   stage: repackage
   image: alpine:3.8
   before_script:
@@ -216,14 +268,26 @@ repackage:
     expire_in: 1 day
     paths:
       - dist/unified/
+  dependencies: [ "prepare", "sources", "build:windows", "build:linux" ]
+  needs: [ "prepare", "sources", "build:windows", "build:linux" ]
 
 deploy:
   tags:
     - docker
     - builder
+    - x86_64
   stage: deploy
   image: registry.red-soft.biz:5000/utils/red-release-manager/client:master
   script:
+    - test -d test-results && for f in $(find test-results -name \*.xml); do printf "testpack $(basename ${f/.xml})\nfile $f\nend\n"; done >> .ci/artifacts || true
+    - |
+      for d in $(find test-results/* -maxdepth 1 -type d | sed 's/test-results\///'); do
+        printf "testpack $d\n";
+        for t in $(find test-results/$d -name \*.xml); do
+          printf "file $t\n";
+        done;
+        printf "end\n";
+      done >> .ci/artifacts || true
     - relmanager_client deploy ${RELEASE_HUB_PROJECT} ${VERSION} --artifacts .ci/artifacts --ci_url ${CI_URL} --context ${CONTEXT} --branch ${BRANCH} --commit ${CI_COMMIT_SHA} --stage ${STAGE}
   only:
     variables:

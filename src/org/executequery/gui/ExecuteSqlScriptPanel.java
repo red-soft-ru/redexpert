@@ -126,10 +126,10 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
     private void init() throws Exception {
 
-        fileNameField = WidgetFactory.createTextField();
+        fileNameField = WidgetFactory.createTextField("fileNameField");
         fileNameField.setActionCommand("fileNameChanged");
         fileNameField.addActionListener(this);
-        connectionsCombo = WidgetFactory.createComboBox();
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo");
         combosGroup = new TableSelectionCombosGroup(connectionsCombo);
         connectionsCombo.setEnabled(false);
 
@@ -137,7 +137,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         sqlText.setBorder(null);
         sqlText.setScrollPaneBorder(BorderFactory.createMatteBorder(1, 1, 0, 1, UIUtils.getDefaultBorderColour()));
 
-        actionOnErrorCombo = WidgetFactory.createComboBox();
+        actionOnErrorCombo = WidgetFactory.createComboBox("actionOnErrorCombo");
 
         ActionOnError[] actionsOnError = {
                 ActionOnError.HALT,
@@ -359,7 +359,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
     @Override
     public void cleanup() {
-
+        sqlText.cleanup();
         combosGroup.close();
 
         if (statusBar != null) {
@@ -428,7 +428,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
                 enableButtons(false, true, false, false);
 
-                swingWorker = new ThreadWorker() {
+                swingWorker = new ThreadWorker("ExecuteSQLScript") {
                     public Object construct() {
 
                         executing = true;
@@ -547,7 +547,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
         try {
 
-            statusBar.setStatusText("Executing...");
+            statusBar.setStatusText(Bundles.getCommon("executing"));
             statusBar.startProgressBar();
 
             if (useConnection.isSelected()) {

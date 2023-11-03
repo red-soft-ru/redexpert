@@ -30,6 +30,8 @@ import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
+import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.event.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -41,7 +43,6 @@ import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.executequery.util.ThreadUtils;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.plaf.UIUtils;
@@ -53,21 +54,19 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.List;
 import java.util.Timer;
 import java.util.*;
@@ -93,6 +92,8 @@ public class TableDataTab extends JPanel
     private DisabledField rowCountField;
     private JPanel rowCountPanel;
     private List<TableDataChange> tableDataChanges;
+    private List<Integer> deleterRowIndexes;
+    boolean markedForReload;
 
     private JPanel canEditTableNotePanel;
 
@@ -112,7 +113,6 @@ public class TableDataTab extends JPanel
 
     private List<org.executequery.databaseobjects.impl.ColumnConstraint> foreigns;
     private Timer timer;
-    public DefaultTableModel myTableModel;
 
     public ResultSet resultSet;
 
@@ -223,21 +223,19 @@ public class TableDataTab extends JPanel
 
         addInProgressPanel();
 
-        if (timer != null) {
-
+        if (timer != null)
             timer.cancel();
-        }
 
         timer = new Timer();
         timer.schedule(new TimerTask() {
 
             @Override
             public void run() {
-
                 load(databaseObject);
             }
         }, 600);
 
+        markedForReload = false;
     }
 
     private boolean loaded = false;
@@ -261,7 +259,7 @@ public class TableDataTab extends JPanel
                 worker.interrupt();
             }
 
-            worker = new SwingWorker() {
+            worker = new SwingWorker("buildResultSetTable") {
 
                 public Object construct() {
                     try {
@@ -292,18 +290,18 @@ public class TableDataTab extends JPanel
 
     private void addInProgressPanel() {
 
-        ThreadUtils.invokeLater(new Runnable() {
-
+        SwingWorker sw = new SwingWorker("loadingDataForTable") {
             @Override
-            public void run() {
-
+            public Object construct() {
                 removeAll();
                 add(cancelPanel, scrollerConstraints);
 
                 repaint();
                 cancelPanel.start();
+                return null;
             }
-        });
+        };
+        sw.start();
 
     }
 
@@ -332,21 +330,66 @@ public class TableDataTab extends JPanel
         tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
     }
 
-    Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String query = "SELECT " + key.getReferencedColumn() + " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
-        Vector items = new Vector();
+    Vector<Object> itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+
+        String query = "SELECT " + key.getReferencedColumn() +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable(), querySender.getDatabaseConnection());
+
+        Vector<Object> items = new Vector<>();
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
+            while (rs.next())
                 items.add(rs.getObject(1));
-            }
+
         } catch (Exception e) {
             Log.error("Error get Foreign keys:" + e.getMessage());
+
         } finally {
             querySender.releaseResources();
         }
-        items.add(null);
+
         return items;
+    }
+
+    Vector<Vector<Object>> allItemsForeign(ColumnConstraint key) {
+
+        String query = "SELECT " + listToString(key.getReferenceColumnDisplayList()) +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable(), querySender.getDatabaseConnection());
+
+        Vector<Vector<Object>> items = new Vector<>();
+        for (int i = 0; i < key.getReferenceColumnDisplayList().size(); i++)
+            items.add(new Vector<>());
+
+        try {
+            ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
+            while (rs.next())
+                for (int i = 0; i < items.size(); i++)
+                    items.get(i).add(rs.getObject(i + 1));
+
+        } catch (Exception e) {
+            Log.error("Error get Foreign keys:" + e.getMessage());
+
+        } finally {
+            querySender.releaseResources();
+        }
+
+        return items;
+    }
+
+    private Vector<String> namesForeign(ColumnConstraint key) {
+        return new Vector<>(key.getReferenceColumnDisplayList());
+    }
+
+    private String listToString(List<String> list) {
+
+        if (list == null || list.isEmpty())
+            return "";
+
+        String result = "";
+        for (String value : list)
+            result += value + ", ";
+
+        return result.substring(0, result.length() - 2);
     }
 
     private Object setTableResultsPanel(DatabaseObject databaseObject) {
@@ -413,13 +456,24 @@ public class TableDataTab extends JPanel
             } catch (DataSourceException e) {
                 if ((e.getCause() instanceof SQLException)) {
                     SQLException sqlException = (SQLException) e.getCause();
+
                     if (sqlException.getSQLState().contentEquals("28000"))
                         GUIUtilities.displayExceptionErrorDialog("Data access error", e);
-                    else rebuildDataFromMetadata(columnDataList);
-                } else rebuildDataFromMetadata(columnDataList);
+                    else {
+                        GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                        rebuildDataFromMetadata(columnDataList);
+                    }
+
+                } else {
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    rebuildDataFromMetadata(columnDataList);
+                }
+
             } catch (Exception e) {
+                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
                 rebuildDataFromMetadata(columnDataList);
             }
+
             createResultSetTable();
             List<String> nonEditableCols = new ArrayList<>();
             //nonEditableCols.addAll(primaryKeyColumns);
@@ -436,11 +490,11 @@ public class TableDataTab extends JPanel
             sorter.addSortingListener(new SortingListener() {
                 @Override
                 public void presorting(SortingEvent e) {
-                            tableModel.setFetchAll(true);
-                            tableModel.fetchMoreData();
-                            if (displayRowCount) {
-                                rowCountField.setText(String.valueOf(tableModel.getRowCount()));
-                            }
+                    tableModel.setFetchAll(true);
+                    tableModel.fetchMoreData();
+                    if (displayRowCount) {
+                        rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+                    }
                 }
 
                 @Override
@@ -520,15 +574,22 @@ public class TableDataTab extends JPanel
             }
 
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            if (foreigns != null)
-                if (foreigns.size() > 0)
-                    for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
-                        Vector items = itemsForeign(key);
-                        DefaultTableModel defaultTableModel = tableForeign(key);
-                        //table.setComboboxColumn(tableModel.getColumnIndex(key.getColumnName()), items);
-                        table.setComboboxTable(tableModel.getColumnIndex(key.getColumnName()), defaultTableModel, items);
-                    }
+            if (foreigns != null && foreigns.size() > 0) {
+                SwingWorker sw = new SwingWorker("fillForeignsFor_" + databaseObject.getName()) {
+                    @Override
+                    public Object construct() {
+                        for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
 
+                            int columnIndex = tableModel.getColumnIndex(key.getColumnName());
+                            if (columnIndex > -1)
+                                table.setForeignKeyTable(columnIndex, tableForeign(key), allItemsForeign(key), namesForeign(key), tableForeignChildren(key));
+                        }
+                        return null;
+                    }
+                };
+                sw.start();
+
+            }
 
             scroller.getViewport().add(table);
             if (scroller.getVerticalScrollBar().getAdjustmentListeners().length < 1)
@@ -540,11 +601,7 @@ public class TableDataTab extends JPanel
                             int extent = scrollBar.getModel().getExtent();
                             int maximum = scrollBar.getModel().getMaximum();
                             if (extent + e.getValue() == maximum) {
-                                if (!tableModel.isResultSetClose()) {
-                                    tableModel.fetchMoreData();
-                                    if (displayRowCount)
-                                        rowCountField.setText(String.valueOf(tableModel.getRowCount()));
-                                }
+                                fetchMoreData();
                             }
                         }
                     }
@@ -559,6 +616,18 @@ public class TableDataTab extends JPanel
                 add(rowCountPanel, rowCountPanelConstraints);
                 rowCountField.setText(String.valueOf(sorter.getRowCount()));
             }
+            table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    if (table.getSelectedRow() >= table.getRowCount() - 1) {
+                        int row = table.getSelectedRow();
+                        int col = table.getSelectedColumn();
+                        fetchMoreData();
+                        table.setRowSelectionInterval(row, row);
+                        table.setColumnSelectionInterval(col, col);
+                    }
+                }
+            });
 
         } catch (DataSourceException e) {
 
@@ -581,6 +650,14 @@ public class TableDataTab extends JPanel
         repaint();
 
         return "done";
+    }
+
+    private void fetchMoreData() {
+        if (!tableModel.isResultSetClose()) {
+            tableModel.fetchMoreData();
+            if (displayRowCount)
+                rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+        }
     }
 
     public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
@@ -918,39 +995,49 @@ public class TableDataTab extends JPanel
         }
     }
 
-    public DefaultTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
-        String checked_column = "select R.RDB$FIELD_NAME from RDB$FIELDS F, RDB$RELATION_FIELDS R where (F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE) and (R.RDB$SYSTEM_FLAG = 0) and (R.RDB$RELATION_NAME = " + "'" + key.getReferencedTable() + "'" + ") and (NOT F.RDB$FIELD_NAME IN (select RDB$FIELD_NAME from RDB$FIELD_DIMENSIONS))";
-        ArrayList<String> checked_column_list = new ArrayList<String>();
-        try {
-            ResultSet checked_column_rs = querySender.execute(QueryTypes.SELECT, checked_column).getResultSet();
-            while (checked_column_rs.next()) {
-                checked_column_list.add(checked_column_rs.getObject(1).toString());
-            }
-        } catch (Exception e) {
-            Log.error("Error get Foreign keys:" + e.getMessage());
-        } finally {
-            querySender.releaseResources();
-        }
+    public ResultSetTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+        AbstractDatabaseObject refTable = (AbstractDatabaseObject) ConnectionsTreePanel.getTableOrViewFromHost(databaseObject.getHost().getDatabaseConnection(), MiscUtils.trimEnd(key.getReferencedTable()));
+        if (refTable == null)
+            return null;
+        List<DatabaseColumn> checked_column_list = refTable.getColumns();
 
         String checkedColumns = "";
         for (int i = 0; i < checked_column_list.size(); i++) {
-            checkedColumns += MiscUtils.getFormattedObject(checked_column_list.get(i));
-            if (i < checked_column_list.size() - 1) {
+            if (checked_column_list.get(i).getDimensions() == null)
+                checkedColumns += MiscUtils.getFormattedObject(checked_column_list.get(i).getName(), databaseObject.getHost().getDatabaseConnection());
+            else
+                checkedColumns += "'SQL type not supported' as " + MiscUtils.getFormattedObject(checked_column_list.get(i).getName(), databaseObject.getHost().getDatabaseConnection());
+            if (i < checked_column_list.size() - 1)
                 checkedColumns += " , ";
-            }
         }
 
-        String query = "SELECT " + checkedColumns + " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable());
-        DefaultTableModel defaultTableModel = new DefaultTableModel();
+        String query = "SELECT " + checkedColumns +
+                " FROM " + MiscUtils.getFormattedObject(key.getReferencedTable(), databaseObject.getHost().getDatabaseConnection());
+
+        ResultSetTableModel defaultTableModel = null;
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
-            defaultTableModel = buildTableModel(rs);
+            defaultTableModel = new ResultSetTableModel(rs, -1, false);
+
         } catch (Exception e) {
             Log.error("Error get Foreign keys:" + e.getMessage());
+
         } finally {
             querySender.releaseResources();
         }
+
         return defaultTableModel;
+    }
+
+    private int[] tableForeignChildren(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+
+        List<Integer> indexes = new ArrayList<>();
+
+        for (int i = 0; i < tableModel.getColumnCount(); i++)
+            if (key.getColumnDisplayList().contains(tableModel.getColumnName(i)))
+                indexes.add(i);
+
+        return indexes.stream().mapToInt(Integer::intValue).toArray();
     }
 
     private void createButtonsEditingPanel() {
@@ -978,18 +1065,28 @@ public class TableDataTab extends JPanel
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+
+                if (deleterRowIndexes == null)
+                    deleterRowIndexes = new ArrayList<>();
+
                 boolean useForm = SystemProperties.getBooleanProperty(
                         Constants.USER_PROPERTIES_KEY, "results.table.use.form.adding.deleting");
-                if (useForm)
+                if (useForm) {
                     delete_record();
-                else {
-                    int[] rows = table.getSelectedRows();
-                    for (int row : rows) {
-                        if (row >= 0)
-                            tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
-                    }
+
+                } else {
+
+                    Arrays.stream(table.getSelectedRows())
+                            .filter(row -> row >= 0)
+                            .forEach(row ->  {
+                                tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
+                                deleterRowIndexes.add(row);
+                            });
+
                     table.clearSelection();
                 }
+
+                markedForReload = true;
             }
         });
         bar.add(deleteRolloverButton);
@@ -1047,7 +1144,7 @@ public class TableDataTab extends JPanel
                             cancel();
                             worker.interrupt();
                         }
-                        worker = new SwingWorker() {
+                        worker = new SwingWorker("fetchMoreData") {
 
                             public Object construct() {
                                 try {
@@ -1095,6 +1192,19 @@ public class TableDataTab extends JPanel
             }
         });
         bar.add(refreshButton);
+
+        RolloverButton switchAutoresizeModeButton = new RolloverButton();
+        switchAutoresizeModeButton.setIcon(GUIUtilities.loadIcon("Zoom16.png"));
+        switchAutoresizeModeButton.setToolTipText(bundleString("SwitchTableAutoresizeMode"));
+        switchAutoresizeModeButton.setMnemonic(KeyEvent.VK_ADD);
+        switchAutoresizeModeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                table.switchAutoResizeMode();
+            }
+        });
+        bar.add(switchAutoresizeModeButton);
+
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingPanel.add(bar, gbc3);
@@ -1145,7 +1255,7 @@ public class TableDataTab extends JPanel
             worker.interrupt();
         }
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("cancelStatement") {
             @Override
             public Object construct() {
 
@@ -1167,6 +1277,7 @@ public class TableDataTab extends JPanel
         }
 
         table.applyUserPreferences();
+        table.setTableColumnWidthFromContents();
         table.setCellSelectionEnabled(false);
 
         tableModel.setMaxRecords(SystemProperties.getIntProperty("user", "browser.max.records"));
@@ -1175,6 +1286,14 @@ public class TableDataTab extends JPanel
     public JTable getTable() {
 
         return table;
+    }
+
+    public List<Integer> getDeleterRowIndexes() {
+        return deleterRowIndexes;
+    }
+
+    public List<RecordDataItem> getRowDataForRow(int row) {
+        return tableModel.getRowDataForRow(row);
     }
 
     public boolean isTransposeAvailable() {
@@ -1195,34 +1314,37 @@ public class TableDataTab extends JPanel
             if (e.getType() == TableModelEvent.DELETE) {
                 List<RecordDataItem> rowDataForRow = ((ResultSetTableModel) e.getSource()).getDeletedRow();
                 asDatabaseTableObject().removeTableDataChange(rowDataForRow);
+
             } else if (row >= 0) {
+                if (tableModel.getRowCount() > 0) {
 
-                List<RecordDataItem> rowDataForRow = tableModel.getRowDataForRow(row);
-                for (RecordDataItem recordDataItem : rowDataForRow) {
+                    List<RecordDataItem> rowDataForRow = tableModel.getRowDataForRow(row);
+                    for (RecordDataItem recordDataItem : rowDataForRow) {
 
-                    if (recordDataItem.isDeleted()) {
-                        Log.debug("Deleting detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+                        if (recordDataItem.isDeleted()) {
+                            Log.debug("Deleting detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
 
-                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
-                        return;
+                            asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
+                            return;
+                        }
+
+                        if (recordDataItem.isNew()) {
+
+                            Log.debug("Adding detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+
+                            asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
+                            return;
+                        }
+
+                        if (recordDataItem.isChanged()) {
+
+                            Log.debug("Change detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+
+                            asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
+                            return;
+                        }
+
                     }
-
-                    if (recordDataItem.isNew()) {
-
-                        Log.debug("Adding detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
-
-                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
-                        return;
-                    }
-
-                    if (recordDataItem.isChanged()) {
-
-                        Log.debug("Change detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
-
-                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
-                        return;
-                    }
-
                 }
             }
         }
@@ -1276,6 +1398,10 @@ public class TableDataTab extends JPanel
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void cleanup() {
+        EventMediator.deregisterListener(this);
     }
 
     private String bundleString(String key) {

@@ -2,6 +2,7 @@ package org.executequery.gui.procedure;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.Parameter;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -24,7 +25,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -354,14 +354,14 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                 GridBagConstraints.VERTICAL,
                 new Insets(2, 2, 2, 2), 0, 0));
 
-        definitionPanel.add(table.getTableHeader(), new GridBagConstraints(
+        /*definitionPanel.add(table.getTableHeader(), new GridBagConstraints(
                 1, 0, 0, 1, 1.0, 0.0,
                 GridBagConstraints.NORTHEAST,
                 GridBagConstraints.BOTH,
                 new Insets(2, 2, 0, 2), 0, 0)
-        );
+        );*/
 
-        definitionPanel.add(table, new GridBagConstraints(
+        definitionPanel.add(new JScrollPane(table), new GridBagConstraints(
                 1, 1, 0, 1, 1.0, 1.0,
                 GridBagConstraints.NORTHEAST,
                 GridBagConstraints.BOTH,
@@ -432,6 +432,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
             }
             java.util.Collections.sort(charsets);
             charsets.add(0, CreateTableSQLSyntax.NONE);
+            charsets.add(0, "");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -440,7 +441,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
         dc = databaseConnection;
-        tableEditorModel.setElements(new ColumnData(dc).getTables());
+        tableEditorModel.setElements(new ColumnData(dc).getTableNames());
         for (ColumnData cd : tableVector) {
             cd.setDatabaseConnection(dc);
         }
@@ -804,7 +805,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         protected String[] header = Bundles.get(TableDefinitionPanel.class,
                 new String[]
                         {"Name", "Datatype", "TypeOf", "Domain", "Table", "Column",
-                                "Size", "Scale", "Subtype", "Description", "DefaultValue", "Encoding", "Required"});
+                                "SizePrecision", "Scale", "Subtype", "Description", "DefaultValue", "Encoding", "Required"});
 
         public ProcedureParameterModel(int parameterType) {
             tableVector = new Vector<>();
@@ -901,7 +902,9 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     return cd.getDescription();
 
                 case DEFAULT_COLUMN:
-                    return cd.getDefaultValue();
+                    if (cd.getDefaultValue() != null)
+                        return cd.getDefaultValue().getValue();
+                    else return null;
 
                 case ENCODING_COLUMN:
                     return cd.getCharset();
@@ -1035,7 +1038,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     cd.setCharset((String) value);
                     break;
                 case REQUIRED_COLUMN:
-                    cd.setColumnRequired((Boolean) value ? 0 : 1);
+                    cd.setNotNull((Boolean) value);
                     break;
             }
 

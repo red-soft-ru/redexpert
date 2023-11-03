@@ -22,178 +22,186 @@ package org.executequery.gui.editor;
 
 import org.executequery.GUIUtilities;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.resultset.ResultSetColumnHeader;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.LinkButton;
-import org.underworldlabs.swing.actions.ReflectiveAction;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.TableSorter;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class VisibleResultSetColumnsDialog extends BaseDialog {
 
-    private ResultSetTable table;
-    private List<ResultSetColumn> columns = new ArrayList<VisibleResultSetColumnsDialog.ResultSetColumn>();
+    public static final String TITLE = bundleString("title");
+
+    private final ResultSetTable table;
+    private final List<ResultSetColumn> columns;
+    private final JList fullList;
 
     public VisibleResultSetColumnsDialog(ResultSetTable table) {
 
-        super("Visible Result Set Columns", true);
+        super(TITLE, true);
         this.table = table;
-        this.columns = createColumns(tableModel());
-        init();
+        this.columns = getColumns(getTableModel());
+        this.fullList = new ResultSetColumnList(columns);
 
+        init();
         pack();
+
         this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
         setVisible(true);
     }
 
     private void init() {
 
-        final JList list = new ResultSetColumnList(columns);
-        Action selectAllAction = new AbstractAction("Select All") {
-            public void actionPerformed(ActionEvent e) {
-                for (ResultSetColumn column : columns) {
-                    column.visible = true;
-                }
-                list.repaint();
+        GridBagHelper gridBagHelper;
+
+        // --- swing components ---
+
+        JButton okButton = new JButton(Bundles.get("common.ok.button"));
+        okButton.addActionListener(e -> updateResultSet());
+
+        JButton cancelButton = new JButton(Bundles.get("common.cancel.button"));
+        cancelButton.addActionListener(e -> dispose());
+
+        JButton selectAllCheck = new JButton(bundleString("selectAll"));
+        selectAllCheck.addActionListener(e -> selectAll(fullList));
+
+        JTextField searchField = new JTextField();
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                filter(searchField.getText());
             }
-        };
-        Action selectNoneAction = new AbstractAction("Select None") {
-            public void actionPerformed(ActionEvent e) {
-                for (ResultSetColumn column : columns) {
-                    column.visible = false;
-                }
-                list.repaint();
-            }
-        };
+        });
 
-        LinkButton selectAllCheck = new LinkButton(selectAllAction);
-        LinkButton selectNoneCheck = new LinkButton(selectNoneAction);
+        // --- checkBoxPanel ---
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEtchedBorder());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.gridy++;
-        gbc.gridx++;
-        gbc.insets.top = 10;
-        gbc.insets.left = 7;
-        gbc.insets.right = 5;
-        gbc.insets.bottom = 5;
-        panel.add(selectAllCheck, gbc);
-        gbc.gridx++;
-        gbc.weightx = 1.0;
-        gbc.insets.left = 20;
-        panel.add(selectNoneCheck, gbc);
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.insets.left = 5;
-        gbc.insets.top = 5;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.BOTH;
-        panel.add(new JScrollPane(list), gbc);
+        JPanel checkBoxPanel = new JPanel(new GridBagLayout());
+        checkBoxPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        ReflectiveAction action = new ReflectiveAction(this);
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(7, 10, 5, 5).anchorNorthWest();
 
-        JPanel base = new JPanel(new BorderLayout());
-        base.setPreferredSize(new Dimension(400, 350));
+        gridBagHelper.addLabelFieldPair(checkBoxPanel, bundleString("searchLabel"), searchField, null, false, false);
+        checkBoxPanel.add(selectAllCheck, gridBagHelper.nextCol().setMinWeightX().get());
+        checkBoxPanel.add(new JScrollPane(fullList), gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
-        base.add(panel, BorderLayout.CENTER);
-        base.add(buttonPanel(action), BorderLayout.SOUTH);
-
-        Container c = getContentPane();
-        c.setLayout(new GridBagLayout());
-        c.add(base, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST, GridBagConstraints.BOTH,
-                new Insets(5, 5, 5, 5), 0, 0));
-
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-    }
-
-    private JPanel buttonPanel(ReflectiveAction action) {
-
-        JButton okButton = new DefaultPanelButton(action, Bundles.get("common.ok.button"), "update");
-        JButton cancelButton = new DefaultPanelButton(action, Bundles.get("common.cancel.button"), "cancel");
+        // --- buttonPanel ---
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.insets.top = 5;
-        gbc.weightx = 1.0;
-        buttonPanel.add(okButton, gbc);
-        gbc.weightx = 0;
-        gbc.gridx = 1;
-        gbc.insets.left = 5;
-        buttonPanel.add(cancelButton, gbc);
 
-        return buttonPanel;
+        gridBagHelper = new GridBagHelper();
+        gridBagHelper.setInsets(3, 5, 0, 5).anchorEast();
+
+        buttonPanel.add(okButton, gridBagHelper.get());
+        buttonPanel.add(cancelButton, gridBagHelper.nextCol().get());
+
+        // --- mainPanel ---
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setPreferredSize(new Dimension(400, 350));
+
+        mainPanel.add(checkBoxPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // --- base ---
+
+        setLayout(new GridBagLayout());
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setResizable(false);
+        add(mainPanel);
+
+        // ---
+
     }
 
-    private ResultSetTableModel tableModel() {
-
-        return (ResultSetTableModel) ((TableSorter) table.getModel()).getTableModel();
-    }
-
-    public void update(ActionEvent e) {
+    public void updateResultSet() {
 
         int visibleCount = 0;
         for (ResultSetColumn column : columns) {
-
-            for (ResultSetColumnHeader resultSetColumnHeader : tableModel().getColumnHeaders()) {
+            for (ResultSetColumnHeader resultSetColumnHeader : getTableModel().getColumnHeaders()) {
 
                 if (column.id.equals(resultSetColumnHeader.getId())) {
 
-                    if (column.visible) {
-
+                    if (column.visible)
                         visibleCount++;
-                    }
+
                     resultSetColumnHeader.setVisible(column.visible);
                     break;
                 }
+            }
+        }
 
+        if (visibleCount != 0) {
+            table.columnVisibilityChanged();
+            dispose();
+        } else
+            GUIUtilities.displayErrorMessage("At least one column from this result set must be visible");
+    }
+
+    private void selectAll(JList list) {
+
+        boolean curFlag = true;
+        for (ResultSetColumn column : columns)
+            curFlag = curFlag && column.visible;
+
+        for (ResultSetColumn column : columns)
+            column.visible = !curFlag;
+
+        list.repaint();
+    }
+
+    private void filter(String searchText) {
+
+        try {
+
+            if (searchText == null || searchText.isEmpty()) {
+                fullList.setModel(new ResultSetColumnList(columns).getModel());
+                return;
             }
 
+            List<VisibleResultSetColumnsDialog.ResultSetColumn> filteredList = new ArrayList<>();
+            for (ResultSetColumn column : columns)
+                if (column.toString().toLowerCase().contains(searchText.toLowerCase()))
+                    filteredList.add(column);
+
+            fullList.setModel(new ResultSetColumnList(filteredList).getModel());
+
+        } finally {
+            repaint();
         }
-
-        if (visibleCount == 0) {
-
-            GUIUtilities.displayErrorMessage("At least one column from this result set must be visible");
-            return;
-        }
-
-        table.columnVisibilityChanged();
-        dispose();
     }
 
-    public void cancel(ActionEvent e) {
-
-        dispose();
+    private ResultSetTableModel getTableModel() {
+        return (ResultSetTableModel) ((TableSorter) table.getModel()).getTableModel();
     }
 
-    private List<ResultSetColumn> createColumns(ResultSetTableModel tableModel) {
+    private List<ResultSetColumn> getColumns(ResultSetTableModel tableModel) {
 
-        List<ResultSetColumn> list = new ArrayList<VisibleResultSetColumnsDialog.ResultSetColumn>();
-        for (ResultSetColumnHeader resultSetColumnHeader : tableModel.getColumnHeaders()) {
-
+        List<ResultSetColumn> list = new ArrayList<>();
+        for (ResultSetColumnHeader resultSetColumnHeader : tableModel.getColumnHeaders())
             list.add(new ResultSetColumn(resultSetColumnHeader.getId(), resultSetColumnHeader.getLabel(), resultSetColumnHeader.isVisible()));
-        }
 
         return list;
     }
 
-    class ResultSetColumnList extends JList {
+    private static String bundleString(String key) {
+        return Bundles.get(VisibleResultSetColumnsDialog.class, key);
+    }
+
+    static class ResultSetColumnList extends JList {
 
         public ResultSetColumnList(List<ResultSetColumn> columns) {
 
@@ -201,48 +209,41 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
             setCellRenderer(new CheckboxListRenderer());
 
             addKeyListener(new KeyAdapter() {
+                @Override
                 public void keyPressed(KeyEvent e) {
-
-                    if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-
-                        int index = getSelectedIndex();
-                        if (index != -1) {
-
-                            ResultSetColumn checkbox = (ResultSetColumn) getModel().getElementAt(index);
-                            checkbox.setVisible(!checkbox.visible);
-                            repaint();
-                        }
-                    }
+                    if (e.getKeyCode() == KeyEvent.VK_SPACE)
+                        setCheckBoxesVisible(getSelectedIndex());
                 }
             });
 
             setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
             addMouseListener(new MouseAdapter() {
-
+                @Override
                 public void mousePressed(MouseEvent e) {
-
-                    int index = locationToIndex(e.getPoint());
-                    if (index != -1) {
-
-                        ResultSetColumn checkbox = (ResultSetColumn) getModel().getElementAt(index);
-                        checkbox.setVisible(!checkbox.visible);
-                        repaint();
-                    }
+                    setCheckBoxesVisible(locationToIndex(e.getPoint()));
                 }
             });
 
         }
 
-    }
+        private void setCheckBoxesVisible(int index) {
+            if (index != -1) {
+                ResultSetColumn checkbox = (ResultSetColumn) getModel().getElementAt(index);
+                checkbox.setVisible(!checkbox.visible);
+                repaint();
+            }
+        }
 
+    } // class ResultSetColumnList
 
-    class CheckboxListRenderer extends JCheckBox implements ListCellRenderer {
+    static class CheckboxListRenderer extends JCheckBox implements ListCellRenderer {
 
-        private Border noFocusBorder = new EmptyBorder(3, 5, 3, 3);
+        private final Border noFocusBorder = new EmptyBorder(3, 5, 3, 3);
 
-        public Component getListCellRendererComponent(JList list, Object value,
-                                                      int index, boolean isSelected, boolean cellHasFocus) {
+        @Override
+        public Component getListCellRendererComponent(
+                JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
             ResultSetColumn resultSetColumn = (ResultSetColumn) value;
 
@@ -253,47 +254,42 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
             setFont(list.getFont());
             setFocusPainted(false);
 
-            setBackground(list.getBackground());
+            setBackground(resultSetColumn.highlight ? Color.YELLOW : list.getBackground());
             setBorderPainted(true);
-//            setBorder(isSelected ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
             setBorder(noFocusBorder);
 
             return this;
         }
 
-    }
+    } // class CheckboxListRenderer
 
+    static class ResultSetColumn {
 
-    class ResultSetColumn {
-
-        private String id;
-        private String name;
+        private final String id;
+        private final String name;
         private boolean visible;
+        private boolean highlight;
 
         public ResultSetColumn(String id, String name, boolean visible) {
-
             this.id = id;
             this.name = name;
             this.visible = visible;
+            this.highlight = false;
         }
 
         public String getId() {
-
             return id;
         }
 
         public void setVisible(boolean visible) {
-
             this.visible = visible;
         }
 
         @Override
         public String toString() {
-
             return name;
         }
-    }
+
+    } // class ResultSetColumn
 
 }
-
-

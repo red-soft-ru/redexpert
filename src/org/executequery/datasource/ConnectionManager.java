@@ -20,10 +20,12 @@
 
 package org.executequery.datasource;
 
+import biz.redsoft.ITPB;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionBuilder;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
@@ -42,6 +44,7 @@ import javax.sql.DataSource;
 import javax.swing.tree.TreeNode;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -92,22 +95,28 @@ public final class ConnectionManager {
         databaseConnection.setConnected(true);
         DatabaseObjectNode hostNode = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection);
         ((DefaultDatabaseHost) hostNode.getDatabaseObject()).resetCountFinishedMetaTags();
+        long startTime = System.currentTimeMillis();
         loadTree(hostNode, connectionBuilder);
-        DatabaseHost host = (DatabaseHost) hostNode.getDatabaseObject();
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(databaseConnection);
         try {
-            while (host.countFinishedMetaTags() < hostNode.getChildCount()) {
-
-                Thread.sleep(100);
+            ResultSet rs = querySender.getResultSet("select rdb$character_set_name from rdb$database").getResultSet();
+            if (rs.next()) {
+                if (rs.getString(1) != null) {
+                    databaseConnection.setDBCharset(rs.getString(1).trim());
+                }
             }
 
-        } catch (InterruptedException e) {
-            if (Log.isDebugEnabled())
-                e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            querySender.releaseResources();
         }
         if (connectionBuilder != null && connectionBuilder.isCancelled())
             databaseConnection.setConnected(false);
-        if (databaseConnection.isConnected())
+        if (databaseConnection.isConnected()) {
+            Log.info("Connection time = "+(System.currentTimeMillis()-startTime)+"ms");
             Log.info("Data source " + databaseConnection.getName() + " initialized.");
+        }
     }
 
 
@@ -118,21 +127,9 @@ public final class ConnectionManager {
             while (nodes.hasMoreElements()) {
                 DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
                 if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
-                    SwingWorker sw = new SwingWorker() {
-                        @Override
-                        public Object construct() {
-                            loadTree(node, connectionBuilder);
-                            return null;
-                        }
-
-                        @Override
-                        public void finished() {
-                            if (node.getType() == NamedObject.META_TAG) {
-                                ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getHost().incCountFinishedMetaTags();
-                            }
-                        }
-                    };
-                    sw.start();
+                    loadTree(node, connectionBuilder);
+                    if (node.getType() == NamedObject.META_TAG)
+                        ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getHost().incCountFinishedMetaTags();
                 }
             }
         } catch (Exception e) {
@@ -171,6 +168,10 @@ public final class ConnectionManager {
     }
 
     public static Connection getTemporaryConnection(DatabaseConnection databaseConnection) {
+        return getTemporaryConnection(databaseConnection, null);
+    }
+
+    public static Connection getTemporaryConnection(DatabaseConnection databaseConnection, ITPB tpb) {
 
         if (databaseConnection == null) {
 
@@ -186,14 +187,53 @@ public final class ConnectionManager {
 
             ConnectionPool pool = connectionPools.get(databaseConnection);
             DataSource dataSource = getDataSource(databaseConnection);
+            Connection con;
             try {
-                return new PooledConnection(dataSource.getConnection(), databaseConnection);
+                if (dataSource instanceof SimpleDataSource)
+                    con = ((SimpleDataSource) dataSource).getConnection(tpb);
+                else con = dataSource.getConnection();
+
+                return new PooledConnection(con, databaseConnection);
             } catch (SQLException e) {
                 Log.error("Error get connection", e);
                 return pool.getConnection();
             }
         }
 
+    }
+
+    public static void setTPBtoConnection(DatabaseConnection databaseConnection, Connection connection, ITPB tpb) {
+        DataSource dataSource = getDataSource(databaseConnection);
+        if (dataSource instanceof SimpleDataSource) {
+            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+            try {
+                simpleDataSource.setTPBtoConnection(connection, tpb);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static long getIDTransaction(DatabaseConnection databaseConnection, Connection connection) {
+        DataSource dataSource = getDataSource(databaseConnection);
+        if (dataSource instanceof SimpleDataSource) {
+            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+            try {
+                return simpleDataSource.getIDTransaction(connection);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
+    }
+
+    public static ClassLoader getClassLoaderForDatabaseConnection(DatabaseConnection databaseConnection) {
+        DataSource dataSource = getDataSource(databaseConnection);
+        if (dataSource instanceof SimpleDataSource) {
+            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+            return simpleDataSource.getClassLoaderFromPlugin();
+        }
+        return null;
     }
 
     public static String getURL(DatabaseConnection databaseConnection) {

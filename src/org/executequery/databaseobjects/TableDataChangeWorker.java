@@ -28,7 +28,6 @@ import org.underworldlabs.jdbc.DataSourceException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,7 +99,7 @@ public class TableDataChangeWorker {
 
         try {
 
-            connection = ConnectionManager.getConnection(table.getHost().getDatabaseConnection());
+            connection = ConnectionManager.getTemporaryConnection(table.getHost().getDatabaseConnection());
             connection.setAutoCommit(false);
 
         } catch (SQLException e) {

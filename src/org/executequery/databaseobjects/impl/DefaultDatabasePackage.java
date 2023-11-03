@@ -1,12 +1,18 @@
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by vasiliy on 04.05.17.
@@ -19,19 +25,19 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     private boolean validBodyFlag;
     private String securityClass;
     private String ownerName;
-    private boolean sqlSecurity;
-    private String description;
+    private boolean markedReloadProcedures = true;
+    private boolean markedReloadFunctions = true;
 
-    public DefaultDatabasePackage() {
-    }
+    private List<AbstractDatabaseObject> procedures;
+    private List<DefaultDatabaseFunction> functions;
+
+    private List<NamedObject> childs;
+
+    private DefaultDatabaseMetaTag procedureMetatag;
+    private DefaultDatabaseMetaTag functionMetatag;
 
     public DefaultDatabasePackage(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
-    }
-
-    public DefaultDatabasePackage(String schema, String name) {
-        setName(name);
-        setSchemaName(schema);
     }
 
     public int getType() {
@@ -47,19 +53,12 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getHeaderSource() {
-        if (isMarkedForReload()) {
-            getObjectInfo();
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append("create or alter package");
-        sb.append(" ");
-        sb.append(getName());
-        sb.append("\n");
-        sb.append("as");
-        sb.append("\n");
-        sb.append(this.headerSource);
 
-        return sb.toString();
+        if (isMarkedForReload())
+            getObjectInfo();
+
+        return "CREATE OR ALTER PACKAGE  " + getName() +
+                "\nAS\n" + this.headerSource;
     }
 
     public void setHeaderSource(String headerSource) {
@@ -67,16 +66,9 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getBodySource() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("recreate package body");
-        sb.append(" ");
-        sb.append(getName());
-        sb.append("\n");
-        sb.append("as");
-        sb.append("\n");
-        sb.append(this.bodySource);
 
-        return sb.toString();
+        return "RECREATE PACKAGE BODY " + getName() +
+                "\nAS\n" + this.bodySource;
     }
 
     public void setBodySource(String bodySource) {
@@ -107,99 +99,163 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         this.ownerName = ownerName;
     }
 
-    public boolean isSqlSecurity() {
-        return sqlSecurity;
-    }
-
-    public void setSqlSecurity(boolean sqlSecurity) {
-        this.sqlSecurity = sqlSecurity;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public String getDescription() {
-        return this.description;
-    }
-
     @Override
     public String getCreateSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("set term ^ ;");
-        sb.append("\n");
-        sb.append("\n");
-        sb.append(getHeaderSource());
-        sb.append("^");
-        sb.append("\n");
-        sb.append("\n");
-        sb.append(getBodySource());
-        sb.append("^");
-        sb.append("\n");
-        sb.append("\n");
-        sb.append("set term ; ^");
-        sb.append("\n");
-        sb.append("\n");
-        if (this.description != null && !this.description.isEmpty()) {
-            sb.append("comment on package");
-            sb.append(" ");
-            sb.append(getName());
-            sb.append(" ");
-            sb.append("is");
-            sb.append("\n");
-            sb.append("'");
-            sb.append(getDescription());
-            sb.append("';");
-        }
-
-        return sb.toString();
-    }
-
-    protected String queryForInfo() {
-        String sql_security = "null";
-        if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
-            sql_security = "p.rdb$sql_security\n";
-        return "select 0,\n" +
-                "p.rdb$package_header_source,\n" +
-                "p.rdb$package_body_source,\n" +
-                "p.rdb$valid_body_flag,\n" +
-                "p.rdb$security_class,\n" +
-                "p.rdb$owner_name,\n" +
-                "p.rdb$system_flag,\n" +
-                "p.rdb$description,\n" +
-                sql_security +
-                "\n" +
-                "from rdb$packages p\n" +
-                "where p.rdb$package_name='" + getName().trim() + "'";
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        if (rs.next()) {
-            setHeaderSource(rs.getString(2));
-            setBodySource(rs.getString(3));
-            setValidBodyFlag(rs.getBoolean(4));
-            setSecurityClass(rs.getString(5));
-            setOwnerName(rs.getString(6));
-            setSystemFlag(rs.getBoolean(7));
-            setDescription(rs.getString(8));
-            setSqlSecurity(rs.getBoolean(9));
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("PACKAGE", getName(), getHost().getDatabaseConnection());
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), comment, getHost().getDatabaseConnection());
+    }
+
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+        return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
+                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
+    }
+    protected final static String PACKAGE_HEADER_SOURCE = "PACKAGE_HEADER_SOURCE";
+    protected final static String PACKAGE_BODY_SOURCE = "PACKAGE_BODY_SOURCE";
+    protected final static String VALID_BODY_FLAG = "VALID_BODY_FLAG";
+    protected final static String SECURITY_CLASS = "SECURITY_CLASS";
+    protected final static String OWNER_NAME = "OWNER_NAME";
+    protected final static String SYSTEM_FLAG = "SYSTEM_FLAG";
+
+    @Override
+    protected String getFieldName() {
+        return "PACKAGE_NAME";
+    }
+
+    @Override
+    protected Table getMainTable() {
+        return Table.createTable("RDB$PACKAGES", "P");
+    }
+
+    @Override
+    protected SelectBuilder builderCommonQuery() {
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
+        Table packages = getMainTable();
+        sb.appendFields(packages, getFieldName(), PACKAGE_HEADER_SOURCE, PACKAGE_BODY_SOURCE, VALID_BODY_FLAG,
+                SECURITY_CLASS, OWNER_NAME, SYSTEM_FLAG, DESCRIPTION);
+        sb.appendField(buildSqlSecurityField(packages));
+        sb.appendTable(packages);
+        sb.setOrdering(getObjectField().getFieldTable());
+        return sb;
+    }
+
+    @Override
+    public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+        setHeaderSource(getFromResultSet(rs, PACKAGE_HEADER_SOURCE));
+        setBodySource(getFromResultSet(rs, PACKAGE_BODY_SOURCE));
+        setValidBodyFlag(rs.getBoolean(VALID_BODY_FLAG));
+        /*setSecurityClass(getFromResultSet(rs,SECURITY_CLASS));
+        setOwnerName(getFromResultSet(rs,OWNER_NAME));
+        setSystemFlag(rs.getBoolean(SYSTEM_FLAG))*/
+        setRemarks(getFromResultSet(rs, DESCRIPTION));
+        setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+        return null;
+    }
+
+    public void prepareLoadChildren(String metatag) {
+        if (childs == null)
+            childs = new ArrayList<>();
+        if (metatag.contentEquals(NamedObject.META_TYPES[NamedObject.PROCEDURE])) {
+            procedures = new ArrayList<>();
+            procedureMetatag = new DefaultDatabaseMetaTag(getHost(), null, null, metatag);
+        } else if (metatag.contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION])) {
+            functions = new ArrayList<>();
+            functionMetatag = new DefaultDatabaseMetaTag(getHost(), null, null, metatag);
         }
     }
 
-    protected void getObjectInfo() {
-        super.getObjectInfo();
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        try {
-            String query = queryForInfo();
-            ResultSet rs = querySender.getResultSet(query).getResultSet();
-            setInfoFromResultSet(rs);
-        } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
-        } finally {
-            querySender.releaseResources();
-            setMarkedForReload(false);
+    public void addChildFromResultSet(ResultSet rs, String metatag) throws SQLException {
+        if (metatag.contentEquals(NamedObject.META_TYPES[NamedObject.PROCEDURE])) {
+            DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(procedureMetatag, rs.getString(1));
+            procedure.setParent(this);
+            procedure.setSystemFlag(isSystem());
+            procedures.add(procedure);
+            childs.add(procedure);
+        } else if (metatag.contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION])) {
+            DefaultDatabaseFunction function = new DefaultDatabaseFunction(functionMetatag, rs.getString(1));
+            function.setParent(this);
+            function.setSystemFlag(isSystem());
+            functions.add(function);
+            childs.add(function);
         }
+    }
+
+
+    @Override
+    public void prepareLoadingInfo() {
+
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+
+    }
+
+    @Override
+    public boolean isAnyRowsResultSet() {
+        return false;
+    }
+
+    public boolean isMarkedReloadProcedures() {
+        return markedReloadProcedures;
+    }
+
+    public void setMarkedReloadProcedures(boolean markedReloadProcedures) {
+        this.markedReloadProcedures = markedReloadProcedures;
+    }
+
+    public boolean isMarkedReloadChildren(String metatag) {
+        if (metatag.contentEquals(NamedObject.META_TYPES[PROCEDURE]))
+            return markedReloadProcedures;
+        else return markedReloadFunctions;
+    }
+
+    public void setMarkedReloadChildren(boolean markedReloadChildren, String metatag) {
+        if (metatag.contentEquals(NamedObject.META_TYPES[PROCEDURE]))
+            this.markedReloadProcedures = markedReloadChildren;
+        else this.markedReloadFunctions = markedReloadChildren;
+    }
+
+
+    public boolean allowsChildren() {
+        return true;
+    }
+
+    @Override
+    protected String prefixLabel() {
+        return null;
+    }
+
+    @Override
+    protected String mechanismLabel() {
+        return null;
+    }
+
+    @Override
+    protected String positionLabel() {
+        return null;
+    }
+
+    public List<NamedObject> getObjects() throws DataSourceException {
+        return childs;
+    }
+
+    public void reset() {
+        super.reset();
+        markedReloadProcedures = true;
+        markedReloadFunctions = true;
+        childs = null;
+        procedures = null;
+        functions = null;
     }
 }

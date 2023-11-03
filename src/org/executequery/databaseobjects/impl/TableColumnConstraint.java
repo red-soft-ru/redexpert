@@ -26,6 +26,8 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
 import java.sql.DatabaseMetaData;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,8 +43,8 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
      */
     private DatabaseTableColumn column;
 
-    private String columnsDisplayList;
-    private String referenceColumnsDisplayList;
+    private List<String> columnsDisplayList;
+    private List<String> referenceColumnsDisplayList;
 
     /**
      * The referenced catalog of this constraint
@@ -287,10 +289,13 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         return null;
     }
 
-    public String getColumnDisplayList() {
+    @Override
+    public List<String> getColumnDisplayList() {
         return columnsDisplayList;
     }
-    public String getReferenceColumnDisplayList() {
+
+    @Override
+    public List<String> getReferenceColumnDisplayList() {
         return referenceColumnsDisplayList;
     }
 
@@ -309,17 +314,24 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
      *
      * @param column parent column
      */
+    @Override
     public void setColumn(DatabaseTableColumn column) {
         this.column = column;
+        columnsDisplayList = new ArrayList<>();
         if (column != null)
-            columnsDisplayList = column.getName();
+            columnsDisplayList.add(column.getName().trim());
     }
 
+    @Override
     public void addColumnToDisplayList(DatabaseTableColumn column) {
-        columnsDisplayList += ", " + column.getName();
+        if (!columnsDisplayList.contains(column.getName()))
+            columnsDisplayList.add(column.getName());
     }
+
+    @Override
     public void addReferenceColumnToDisplayList(DatabaseTableColumn column) {
-        referenceColumnsDisplayList += ", " + column.getName();
+        if (!referenceColumnsDisplayList.contains(column.getName()))
+            referenceColumnsDisplayList.add(column.getName().trim());
     }
 
     /**
@@ -360,8 +372,9 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
     public void setReferencedColumn(String referencedColumn) {
         this.referencedColumn = referencedColumn;
+        referenceColumnsDisplayList = new ArrayList<>();
         if (referencedColumn != null)
-            referenceColumnsDisplayList = referencedColumn;
+            referenceColumnsDisplayList.add(referencedColumn.trim());
     }
 
     public String getReferencedSchema() {

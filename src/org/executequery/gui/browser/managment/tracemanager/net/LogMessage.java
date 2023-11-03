@@ -75,6 +75,13 @@ public class LogMessage {
     private String nextTransaction;
     private boolean failed;
     private boolean highlight;
+    private long totalCacheMemory;
+    private long ramCacheMemory;
+    private long diskCacheMemory;
+
+    public LogMessage() {
+    }
+
     public LogMessage(String body) {
         init(body);
     }
@@ -386,8 +393,17 @@ public class LogMessage {
             setGlobalCounters(ctx.global_counters());
             setTableCounters(textFromRuleContext(ctx.table_counters()));
             setStatementText(textFromRuleContext(ctx.query()));
+            if (ctx.memory_size_rule() != null) {
+                RedTraceParser.Memory_size_ruleContext context = ctx.memory_size_rule();
+                if (context.sum_cache() != null)
+                    setTotalCacheMemory(getLongFromString(textFromRuleContext(context.sum_cache().cache().size_cache())));
+                if (context.ram_cache() != null)
+                    setRamCacheMemory(getLongFromString(textFromRuleContext(context.ram_cache().cache().size_cache())));
+                if (context.disk_cache() != null)
+                    setDiskCacheMemory(getLongFromString(textFromRuleContext(context.disk_cache().cache().size_cache())));
+            }
         }
-        if (ctx != null && ctx.global_counters() == null) {
+        if (ctx != null && (ctx.global_counters() == null && ctx.plan() == null && ctx.params() == null && ctx.table_counters() == null)) {
             String query = textFromRuleContext(ctx);
             if (query != null) {
                 if (isFindOfRegex("param0 = .+\n", query)) {
@@ -950,6 +966,30 @@ public class LogMessage {
 
     private String addField(String body, String regex, String excludedRegex, String colName) {
         return addField(body, regex, new String[]{excludedRegex}, colName);
+    }
+
+    public long getTotalCacheMemory() {
+        return totalCacheMemory;
+    }
+
+    public void setTotalCacheMemory(long totalCacheMemory) {
+        this.totalCacheMemory = totalCacheMemory;
+    }
+
+    public long getRamCacheMemory() {
+        return ramCacheMemory;
+    }
+
+    public void setRamCacheMemory(long ramCacheMemory) {
+        this.ramCacheMemory = ramCacheMemory;
+    }
+
+    public long getDiskCacheMemory() {
+        return diskCacheMemory;
+    }
+
+    public void setDiskCacheMemory(long diskCacheMemory) {
+        this.diskCacheMemory = diskCacheMemory;
     }
 
     private String addField(String body, String regex, String[] excludedRegex, String colName) {

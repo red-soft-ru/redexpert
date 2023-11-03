@@ -184,6 +184,9 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
     }
 
     public void cleanup() {
+        super.cleanup();
+        sqlPane.cleanup();
+        textPane.cleanup();
     }
 
     public JTable getTable() {
@@ -230,7 +233,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
                 //tableNameCombo.setVisible(false);
             }
             triggerPositionField.setText(String.valueOf(trigger.getTriggerSequence()));
-            descriptionPane.setText(trigger.getTriggerDescription());
+            descriptionPane.setText(trigger.getRemarks());
             sqlPane.setText(trigger.getCreateSQLText());
             triggerInfoLabel.setText(triggerInfoLabel.getText() + "       " + triggerBeforeAfterField.getText() + "       " + triggerPositionLabel.getText() + triggerPositionField.getText());
         } catch (DataSourceException e) {

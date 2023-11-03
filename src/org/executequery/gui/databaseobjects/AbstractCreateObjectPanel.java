@@ -4,9 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
@@ -18,6 +16,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.DependenciesPanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
@@ -33,7 +32,6 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.Printable;
-import java.sql.SQLException;
 import java.util.Vector;
 
 public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPanel {
@@ -53,13 +51,19 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     protected boolean edited = false;
     protected String firstQuery;
 
+    protected SimpleCommentPanel simpleCommentPanel;
+
+    protected GridBagHelper topGbh;
+
     public static AbstractCreateObjectPanel getEditPanelFromType(int type, DatabaseConnection dc, Object databaseObject, Object[] params) {
         switch (type) {
             case NamedObject.DOMAIN:
+            case NamedObject.SYSTEM_DOMAIN:
                 return new CreateDomainPanel(dc, null, ((DatabaseObject) databaseObject).getName());
             case NamedObject.PROCEDURE:
                 return new CreateProcedurePanel(dc, null, ((DatabaseObject) databaseObject).getName());
             case NamedObject.FUNCTION:
+            case NamedObject.SYSTEM_FUNCTION:
                 DefaultDatabaseFunction function = (DefaultDatabaseFunction) databaseObject;
                 return new CreateFunctionPanel(dc, null, function.getName(), function);
             case NamedObject.TRIGGER:
@@ -77,8 +81,15 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                 return new CreateUDFPanel(dc, null, databaseObject);
             case NamedObject.USER:
                 return new CreateUserPanel(dc, null, (DefaultDatabaseUser) databaseObject);
+            case NamedObject.ROLE:
+            case NamedObject.SYSTEM_ROLE:
+                return new CreateRolePanel(dc, null, databaseObject);
             case NamedObject.TABLESPACE:
                 return new CreateTablespacePanel(dc, null, databaseObject);
+            case NamedObject.JOB:
+                return new CreateJobPanel(dc, null, databaseObject);
+            case NamedObject.TABLE_COLUMN:
+                return new InsertColumnPanel((DatabaseTable) ((DatabaseColumn) databaseObject).getParent(), null, (DatabaseColumn) databaseObject);
             default:
                 return null;
         }
@@ -106,24 +117,6 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
             }
         }
         treePanel = ConnectionsTreePanel.getPanelFromBrowser();
-        DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(connection);
-
-        for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-            if (metaTagNode.getMetaDataKey().equals(getTypeObject())) {
-                if (editing) {
-                    for (DatabaseObjectNode node : metaTagNode.getChildObjects()) {
-                        if (node.getDatabaseObject() == databaseObject) {
-                            currentPath = node.getTreePath();
-                            break;
-                        }
-                    }
-                } else {
-                    currentPath = metaTagNode.getTreePath();
-                }
-                break;
-            }
-        }
-
         ActionListener escListener = new ActionListener() {
 
             @Override
@@ -141,16 +134,18 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
     private void initComponents() {
         nameField = new JFormattedTextField();
-        nameField.setText(SQLUtils.generateNameForDBObject(getTypeObject(), connection));
-        if (connection.isNamesToUpperCase() && !editing) {
-            PlainDocument doc = (PlainDocument) nameField.getDocument();
-            doc.setDocumentFilter(new UpperFilter());
+        if (connection != null) {
+            nameField.setText(SQLUtils.generateNameForDBObject(getTypeObject(), connection));
+            if (connection.isNamesToUpperCase() && !editing) {
+                PlainDocument doc = (PlainDocument) nameField.getDocument();
+                doc.setDocumentFilter(new UpperFilter());
+            }
         }
         tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(700, 400));
         Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
         connectionsModel = new DynamicComboBoxModel(connections);
-        connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", connectionsModel);
         sender = new DefaultStatementExecutor(connection, true);
         connectionsCombo.addItemListener(event -> {
             if (event.getStateChange() == ItemEvent.DESELECTED) {
@@ -164,10 +159,10 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         } else connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
         this.setLayout(new BorderLayout());
         topPanel = new JPanel(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic().defaults();
-        gbh.addLabelFieldPair(topPanel, Bundles.getCommon("connection"), connectionsCombo, null);
-        gbh.addLabelFieldPair(topPanel, Bundles.getCommon("name"), nameField, null);
+        topGbh = new GridBagHelper();
+        topGbh.setDefaultsStatic().defaults();
+        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("connection"), connectionsCombo, null, true, false);
+        topGbh.addLabelFieldPair(topPanel, Bundles.getCommon("name"), nameField, null, false);
         centralPanel = new JPanel();
 
         BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(parent != null && parent.isDialog());
@@ -192,6 +187,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         JPanel panel = new JPanel(new GridBagLayout());
         if (parent != null)
             panel.setBorder(BorderFactory.createEtchedBorder());
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic();
         gbh.fullDefaults();
         panel.add(topPanel, gbh.setMaxWeightX().fillHorizontally().get());
         panel.add(centralPanel, gbh.nextRowFirstCol().get());
@@ -254,7 +251,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     protected abstract String generateQuery();
 
     public String getFormattedName() {
-        return MiscUtils.getFormattedObject(nameField.getText());
+        return MiscUtils.getFormattedObject(nameField.getText(), getDatabaseConnection());
     }
 
     public String bundleString(String key) {
@@ -286,6 +283,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                 }
                 if (parent != null)
                     parent.finished();
+                else firstQuery = generateQuery();
             }
         } else if (parent != null) parent.finished();
     }
@@ -298,7 +296,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         DatabaseHost host = new DefaultDatabaseHost(connection);
         try {
             return host.getDatabaseMetaData().getDatabaseMajorVersion();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return 0;
         }
@@ -343,13 +341,15 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     }
 
     protected void addCommentTab(DatabaseObject databaseObject) {
-        SimpleCommentPanel commentPanel = new SimpleCommentPanel(databaseObject);
-        tabbedPane.add(Bundles.getCommon("comment-field-label"), commentPanel.getCommentPanel());
+        simpleCommentPanel = new SimpleCommentPanel(databaseObject);
+        tabbedPane.add(Bundles.getCommon("comment-field-label"), simpleCommentPanel.getCommentPanel());
     }
 
     @Override
     public void cleanup() {
-
+        super.cleanup();
+        currentPath = null;
+        cleanupForSqlTextArea(this);
     }
 
     @Override
@@ -362,6 +362,11 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         return getEditTitle();
     }
 
+    protected void addLabelFieldPairToToolBar(JToolBar toolBar, String label, Component component) {
+        toolBar.add(new JLabel(label));
+        toolBar.addSeparator();
+        toolBar.add(component);
+    }
 
 
 }

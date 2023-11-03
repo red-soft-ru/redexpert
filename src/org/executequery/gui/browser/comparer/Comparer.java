@@ -1,886 +1,1030 @@
 package org.executequery.gui.browser.comparer;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.*;
+import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ComparerDBPanel;
+import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.executequery.databaseobjects.NamedObject.*;
 
 public class Comparer {
 
-    public Comparer(DatabaseConnection fc, DatabaseConnection sc) {
-        firstConnection = new DefaultStatementExecutor(fc, true);
-        secondConnection = new DefaultStatementExecutor(sc, true);
-        procedure = new Procedure(this);
-        domain = new Domain(this);
-        dependencies = new Dependencies(this);
-        constraint = new Constraint(this);
-        index = new Index(this);
-        view = new View(this);
-        table = new Table(this);
-        trigger = new Trigger(this);
-        exception = new Exception(this);
-        generator = new Generator(this);
-        udf = new Udf(this);
-        role = new Role();
-        init();
+    /**
+     * [0] - PK; [1] - FK; [2] - UK; [3] - CK
+     */
+    private static boolean[] TABLE_CONSTRAINTS_NEED;
+    private static boolean COMMENTS_NEED;
+    private static boolean COMPUTED_FIELDS_NEED;
+    private static boolean FIELDS_POSITIONS_NEED;
+
+
+    protected ComparerDBPanel panel;
+    protected DefaultStatementExecutor compareConnection;
+    protected DefaultStatementExecutor masterConnection;
+
+    private final int[] counter;
+    private String constraintsList;
+    private String computedFieldsList;
+
+    private final ArrayList<String> script;
+    private final List<org.executequery.gui.browser.ColumnConstraint> constraintsToCreate;
+    private final List<org.executequery.gui.browser.ColumnConstraint> constraintsToDrop;
+    private final List<ColumnData> computedFields;
+
+    protected ArrayList<String> createdObjects = new ArrayList<>();
+    protected ArrayList<String> alteredObjects = new ArrayList<>();
+    protected ArrayList<String> droppedObjects = new ArrayList<>();
+
+    public Comparer(
+            ComparerDBPanel panel, DatabaseConnection dbSlave, DatabaseConnection dbMaster,
+            boolean[] constraintsNeed, boolean commentsNeed, boolean computedNeed, boolean fieldsPositions) {
+
+        script = new ArrayList<>();
+        constraintsToCreate = new ArrayList<>();
+        constraintsToDrop = new ArrayList<>();
+        computedFields = new ArrayList<>();
+
+        counter = new int[] {0, 0, 0};
+
+        this.panel = panel;
+        compareConnection = new DefaultStatementExecutor(dbSlave, true);
+        masterConnection = new DefaultStatementExecutor(dbMaster, true);
+
+        Comparer.TABLE_CONSTRAINTS_NEED = constraintsNeed;
+        Comparer.COMMENTS_NEED = commentsNeed;
+        Comparer.COMPUTED_FIELDS_NEED = computedNeed;
+        Comparer.FIELDS_POSITIONS_NEED = fieldsPositions;
 
     }
 
-    void init() {
-        procedure.init();
-        domain.init();
-        dependencies.init();
-        constraint.init();
-        index.init();
-        view.init();
-        table.init();
-        trigger.init();
-        exception.init();
-        generator.init();
-        udf.init();
+    public void createObjects(int type) {
+
+        List<NamedObject> createObjects = sortObjectsByDependency(createListObjects(type));
+
+        if (createObjects == null || createObjects.isEmpty())
+            return;
+
+        String header = MessageFormat.format(
+                "\n/* ----- Creating {0} ----- */\n",
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+        script.add(header);
+
+        int headerIndex = script.size() - 1;
+        boolean isHeaderNeeded = false;
+
+        LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(createObjects.size());
+
+        panel.recreateProgressBar(
+                "GenerateCreateScript", NamedObject.META_TYPES[type],
+                createObjects.size()
+        );
+
+        for (NamedObject obj : createObjects) {
+
+            if (panel.isCanceled())
+                break;
+
+            AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) obj;
+
+            loadingObjectsHelper.preparingLoadForObjectAndCols(databaseObject);
+
+            String sqlScript = databaseObject.getCompareCreateSQL();
+            loadingObjectsHelper.postProcessingLoadForObjectAndCols(databaseObject);
+
+            if (!sqlScript.contains("Will be created with constraint defining")) {
+                script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.CREATE, type, obj.getName());
+                panel.getComparedObjectList().add(new ComparedObject(type, obj.getName(), sqlScript, null));
+                panel.addToLog("\t" + obj.getName());
+                isHeaderNeeded = true;
+                counter[0]++;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+        loadingObjectsHelper.releaseResources();
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
     }
 
-    public Role role;
-    public Udf udf;
-    public Generator generator;
-    public Exception exception;
-    public Trigger trigger;
-    public Table table;
-    public View view;
-    public Index index;
-    public Constraint constraint;
-    public Domain domain;
-    public Procedure procedure;
-    public Dependencies dependencies;
-    public StatementExecutor firstConnection;
-    public StatementExecutor secondConnection;
+    public void dropObjects(int type) {
 
-    public ArrayList<String> script = new ArrayList<String>();
-    public String lists;
+        List<NamedObject> dropObjects = sortObjectsByDependency(dropListObjects(type));
 
-    public ArrayList<String> createdObjects = new ArrayList<String>();
-    public ArrayList<String> alteredObjects = new ArrayList<String>();
-    public ArrayList<String> droppedObjects = new ArrayList<String>();
+        if (dropObjects == null || dropObjects.isEmpty())
+            return;
 
+        String header = MessageFormat.format(
+                "\n/* ----- Dropping {0} ----- */\n",
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+        script.add(header);
 
-    private ArrayList<String> createList(String query) {
-        ArrayList<String> second = new ArrayList<String>();
-        ArrayList<String> create = new ArrayList<String>();
+        int headerIndex = script.size() - 1;
+        boolean isHeaderNeeded = false;
+
+        panel.recreateProgressBar(
+                "GenerateDropScript", NamedObject.META_TYPES[type],
+                dropObjects.size()
+        );
+
+        for (NamedObject obj : dropObjects) {
+
+            if (panel.isCanceled())
+                break;
+
+            String sqlScript = ((type != INDEX) ?
+                    ((AbstractDatabaseObject) obj).getDropSQL() :
+                    ((DefaultDatabaseIndex) obj).getComparedDropSQL());
+
+            if (!sqlScript.contains("Remove with table constraint")) {
+                script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.DROP, type, obj.getName());
+                panel.getComparedObjectList().add(new ComparedObject(type, obj.getName(), null, ((AbstractDatabaseObject) obj).getCreateSQLText()));
+                panel.addToLog("\t" + obj.getName());
+                isHeaderNeeded = true;
+                counter[1] ++;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+    }
+
+    public void alterObjects(int type) {
+
+        Map<NamedObject, NamedObject> alterObjects = alterListObjects(type);
+
+        if (alterObjects.isEmpty())
+            return;
+
+        if (Objects.equals(Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), "ROLE"))
+            return;
+
+        String header = MessageFormat.format(
+                "\n/* ----- Altering {0} ----- */\n",
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+        script.add(header);
+
+        int headerIndex = script.size() - 1;
+        boolean isHeaderNeeded = false;
+
+        LoadingObjectsHelper loadingObjectsHelperMaster = new LoadingObjectsHelper(alterObjects.size());
+        LoadingObjectsHelper loadingObjectsHelperCompare = new LoadingObjectsHelper(alterObjects.size());
+
+        panel.recreateProgressBar(
+                "GenerateAlterScript", NamedObject.META_TYPES[type],
+                alterObjects.keySet().size()
+        );
+
+        for (NamedObject obj : alterObjects.keySet()) {
+
+            if (panel.isCanceled())
+                break;
+
+            AbstractDatabaseObject masterObject = (AbstractDatabaseObject) obj;
+
+            AbstractDatabaseObject compareObject = (AbstractDatabaseObject) alterObjects.get(obj);
+
+            loadingObjectsHelperMaster.preparingLoadForObjectAndCols(masterObject);
+            loadingObjectsHelperCompare.preparingLoadForObjectAndCols(compareObject);
+
+            String sqlScript = masterObject.getCompareAlterSQL(compareObject);
+            loadingObjectsHelperMaster.postProcessingLoadForObjectAndCols(masterObject);
+            loadingObjectsHelperCompare.postProcessingLoadForObjectAndCols(compareObject);
+
+            if (!sqlScript.contains("there are no changes")) {
+                script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, type, obj.getName());
+                panel.getComparedObjectList().add(new ComparedObject(type, obj.getName(), compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
+                panel.addToLog("\t" + obj.getName());
+                isHeaderNeeded = true;
+                counter[2]++;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+        loadingObjectsHelperMaster.releaseResources();
+        loadingObjectsHelperCompare.releaseResources();
+
+        if (alterObjects.size() > 0) {
+            AbstractDatabaseObject masterObject = (AbstractDatabaseObject) alterObjects.keySet().toArray()[0];
+            masterObject.getHost().setPauseLoadingTreeForSearch(false);
+            ((AbstractDatabaseObject) alterObjects.get(masterObject)).getHost().setPauseLoadingTreeForSearch(false);
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+    }
+
+    public void createConstraints() {
+
+        if (constraintsToCreate.isEmpty())
+            return;
+
+        panel.recreateProgressBar(
+                "GenerateCreateConstraintScript", null,
+                constraintsToCreate.size() * 4
+        );
+
+        script.add("\n/* ----- PRIMARY KEYs defining ----- */\n");
+        int headerIndex = script.size() - 1;
+        boolean isHeaderNeeded = false;
+
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (obj.getType() == NamedObject.PRIMARY_KEY) {
+                addConstraintToScript(obj);
+                isHeaderNeeded = true;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+
+        script.add("\n/* ----- UNIQUE KEYs defining ----- */\n");
+        headerIndex = script.size() - 1;
+        isHeaderNeeded = false;
+
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (obj.getType() == NamedObject.UNIQUE_KEY) {
+                addConstraintToScript(obj);
+                isHeaderNeeded = true;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+
+        script.add("\n/* ----- FOREIGN KEYs defining ----- */\n");
+        headerIndex = script.size() - 1;
+        isHeaderNeeded = false;
+
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (obj.getType() == NamedObject.FOREIGN_KEY) {
+                addConstraintToScript(obj);
+                isHeaderNeeded = true;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+
+        script.add("\n/* ----- CHECK KEYs defining ----- */\n");
+        headerIndex = script.size() - 1;
+        isHeaderNeeded = false;
+
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToCreate) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (obj.getType() == NamedObject.CHECK_KEY) {
+                addConstraintToScript(obj);
+                isHeaderNeeded = true;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+
+    }
+
+    public void dropConstraints(boolean table, boolean globalTemporary, boolean isDrop, boolean isAlter) {
+
+        constraintsToDrop.clear();
+
+        if (isDrop) {
+            if (table) dropListConstraints(TABLE);
+            if (globalTemporary) dropListConstraints(GLOBAL_TEMPORARY);
+        }
+        if (isAlter) {
+            if (table) alterListConstraints(TABLE);
+            if (globalTemporary) alterListConstraints(GLOBAL_TEMPORARY);
+        }
+
+        if (constraintsToDrop.isEmpty() || panel.isCanceled())
+            return;
+
+        panel.recreateProgressBar(
+                "GenerateDropConstraintScript", null,
+                constraintsToDrop.size() * 4
+        );
+
+        script.add("\n/* ----- CHECK KEYs removing ----- */\n");
+        int headerIndex = script.size() - 1;
+        boolean isHeaderNeeded = false;
+
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToDrop) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (obj.getType() == CHECK_KEY) {
+                dropConstraintToScript(obj);
+                isHeaderNeeded = true;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+
+        script.add("\n/* ----- FOREIGN KEYs removing ----- */\n");
+        headerIndex = script.size() - 1;
+        isHeaderNeeded = false;
+
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToDrop) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (obj.getType() == FOREIGN_KEY) {
+                dropConstraintToScript(obj);
+                isHeaderNeeded = true;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+
+        script.add("\n/* ----- UNIQUE KEYs removing ----- */\n");
+        headerIndex = script.size() - 1;
+        isHeaderNeeded = false;
+
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToDrop) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (obj.getType() == UNIQUE_KEY) {
+                dropConstraintToScript(obj);
+                isHeaderNeeded = true;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+
+        script.add("\n/* ----- PRIMARY KEYs removing ----- */\n");
+        headerIndex = script.size() - 1;
+        isHeaderNeeded = false;
+
+        for (org.executequery.gui.browser.ColumnConstraint obj : constraintsToDrop) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (obj.getType() == PRIMARY_KEY) {
+                dropConstraintToScript(obj);
+                isHeaderNeeded = true;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+
+    }
+
+    public void createComputedFields() {
+
+        if (computedFields.isEmpty())
+            return;
+
+        if (COMPUTED_FIELDS_NEED) {
+
+            panel.recreateProgressBar(
+                    "GenerateCreateComputedScript", null,
+                    computedFields.size()
+            );
+
+            script.add("\n/* ----- COMPUTED FIELDs defining ----- */\n");
+            for (ColumnData cd : computedFields) {
+
+                if (panel.isCanceled())
+                    break;
+
+                script.add("\n/* " + cd.getTableName() + "." + cd.getColumnName() + " */");
+                script.add("\nALTER TABLE " + cd.getTableName());
+                script.add("\n\tDROP " + cd.getFormattedColumnName() + ",");
+                script.add("\n\tADD " + SQLUtils.generateDefinitionColumn(
+                        cd, true, false, false) + ";\n");
+
+                panel.incrementProgressBarValue();
+            }
+        }
+    }
+
+    public void createStubs(
+            boolean functions, boolean procedures, boolean triggers, boolean ddlTriggers, boolean dbTriggers, boolean jobs) {
+
+        if (functions)
+            addStubsToScript(FUNCTION, createListObjects(FUNCTION));
+        if (procedures)
+            addStubsToScript(PROCEDURE, createListObjects(PROCEDURE));
+        if (triggers)
+            addStubsToScript(TRIGGER, createListObjects(TRIGGER));
+        if (ddlTriggers)
+            addStubsToScript(DDL_TRIGGER, createListObjects(DDL_TRIGGER));
+        if (dbTriggers)
+            addStubsToScript(DATABASE_TRIGGER, createListObjects(DATABASE_TRIGGER));
+        if (jobs)
+            addStubsToScript(JOB, createListObjects(JOB));
+
+    }
+
+    private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
+        script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
+        script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
+                SQLUtils.generateDefinitionColumnConstraint(obj, true, false, compareConnection.getDatabaseConnection()) + ";\n");
+    }
+
+    private void dropConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
+        script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
+        script.add("\nALTER TABLE " + obj.getTable() + "\n\tDROP CONSTRAINT " + obj.getName() + ";\n");
+    }
+
+    private List<NamedObject> createListObjects(int type) {
+
+        List<NamedObject> compareConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+
+        List<NamedObject> createObjects = new ArrayList<>();
+        LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(compareConnectionObjectsList.size());
+
+        panel.recreateProgressBar(
+                "ExtractingForCreate", NamedObject.META_TYPES[type],
+                compareConnectionObjectsList.size()
+        );
+
+        for (NamedObject databaseObject : compareConnectionObjectsList) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (ConnectionsTreePanel.getNamedObjectFromHost(
+                    masterConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
+
+                createObjects.add(databaseObject);
+
+                if (databaseObject.getType() == NamedObject.TABLE || databaseObject.getType() == NamedObject.GLOBAL_TEMPORARY) {
+                    AbstractDatabaseObject abstractDatabaseObject = (AbstractDatabaseObject) databaseObject;
+
+                    loadingObjectsHelper.preparingLoadForObjectAndCols(abstractDatabaseObject);
+
+                    if (!Arrays.equals(TABLE_CONSTRAINTS_NEED, new boolean[]{false, false, false, false}))
+                        createListConstraints(databaseObject);
+                    if (COMPUTED_FIELDS_NEED)
+                        createListComputedFields(databaseObject);
+
+                    loadingObjectsHelper.postProcessingLoadForObjectAndCols(abstractDatabaseObject);
+
+                }
+            }
+
+            panel.incrementProgressBarValue();
+        }
+        loadingObjectsHelper.releaseResources();
+
+        return createObjects;
+    }
+
+    private List<NamedObject> dropListObjects(int type) {
+
+        List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+
+        List<NamedObject> dropObjects = new ArrayList<>();
+
+        panel.recreateProgressBar(
+                "ExtractingForDrop", NamedObject.META_TYPES[type],
+                masterConnectionObjectsList.size()
+        );
+
+        for (NamedObject databaseObject : masterConnectionObjectsList) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (ConnectionsTreePanel.getNamedObjectFromHost(
+                    compareConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
+
+                dropObjects.add(databaseObject);
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        return dropObjects;
+    }
+
+    private Map<NamedObject, NamedObject> alterListObjects(int type) {
+
+        List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+        List<NamedObject> compareConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+
+        Map<NamedObject, NamedObject> alterObjects = new HashMap<>();
+
+        panel.recreateProgressBar(
+                "ExtractingForAlter", NamedObject.META_TYPES[type],
+                masterConnectionObjectsList.size() * compareConnectionObjectsList.size()
+        );
+
+        for (NamedObject compareObject : compareConnectionObjectsList) {
+
+            if (panel.isCanceled())
+                break;
+
+            for (NamedObject masterObject : masterConnectionObjectsList) {
+
+                if (panel.isCanceled())
+                    break;
+
+                if (Objects.equals(masterObject.getName(), compareObject.getName())) {
+                    alterObjects.put(masterObject, compareObject);
+                    break;
+                }
+
+                panel.incrementProgressBarValue();
+            }
+        }
+
+        return alterObjects;
+    }
+
+    private void createListConstraints(NamedObject databaseObject) {
+
+        if (constraintsList == null)
+            constraintsList = "";
+
+        for (ColumnConstraint cc : ((DefaultDatabaseTable) databaseObject).getConstraints()) {
+
+            if ((cc.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
+                    (cc.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
+                    (cc.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
+                    (cc.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
+                continue;
+
+            constraintsList += "\t" + databaseObject.getName() + "." + cc.getName() + "\n";
+            constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+        }
+    }
+
+    private void dropListConstraints(int type) {
+
+        if ((type != TABLE && type != GLOBAL_TEMPORARY) || panel.isCanceled())
+            return;
+
+        List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+
+        panel.recreateProgressBar(
+                "ExtractingConstraintsForDrop", null,
+                masterConnectionObjectsList.size()
+        );
+
+        for (NamedObject databaseObject : masterConnectionObjectsList) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (ConnectionsTreePanel.getNamedObjectFromHost(
+                    compareConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
+
+                for (ColumnConstraint cc : ((DefaultDatabaseTable) databaseObject).getConstraints()) {
+
+                    if (panel.isCanceled())
+                        break;
+
+                    constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
+                }
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+    }
+
+    private void alterListConstraints(int type) {
+
+        if ((type != TABLE && type != GLOBAL_TEMPORARY) || panel.isCanceled())
+            return;
+
+        List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+        List<NamedObject> compareConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+
+        List<ColumnConstraint> droppedConstraints = new ArrayList<>();
+
+        panel.recreateProgressBar(
+                "ExtractingConstraintsForAlter", null,
+                masterConnectionObjectsList.size() * masterConnectionObjectsList.size()
+        );
+        LoadingObjectsHelper loadingObjectsHelperMaster = new LoadingObjectsHelper(masterConnectionObjectsList.size());
+        LoadingObjectsHelper loadingObjectsHelperCompare = new LoadingObjectsHelper(compareConnectionObjectsList.size());
+        for (NamedObject compareObject : compareConnectionObjectsList) {
+
+            if (panel.isCanceled())
+                break;
+            AbstractDatabaseObject compareAbstractObject = (AbstractDatabaseObject) compareObject;
+            loadingObjectsHelperCompare.preparingLoadForObjectCols(compareAbstractObject);
+            for (NamedObject masterObject : masterConnectionObjectsList) {
+
+                if (panel.isCanceled())
+                    break;
+                AbstractDatabaseObject masterAbstractObject = (AbstractDatabaseObject) masterObject;
+                loadingObjectsHelperMaster.preparingLoadForObjectCols(masterAbstractObject);
+                if (Objects.equals(masterObject.getName(), compareObject.getName()))
+                    if (!((AbstractDatabaseObject) masterObject).getCompareAlterSQL((AbstractDatabaseObject) compareObject).contains("there are no changes"))
+                        checkConstraintsPair(masterObject, compareObject, droppedConstraints);
+                loadingObjectsHelperMaster.postProcessingLoadForObjectForCols(masterAbstractObject);
+
+                panel.incrementProgressBarValue();
+            }
+            loadingObjectsHelperCompare.postProcessingLoadForObjectForCols(compareAbstractObject);
+        }
+        loadingObjectsHelperMaster.releaseResources();
+        loadingObjectsHelperCompare.releaseResources();
+
+        // --- check for temporary DROP dependent CONSTRAINT ---
+
+        if (droppedConstraints.isEmpty() || panel.isCanceled())
+            return;
+
+        List<String> droppedConstraintsColumns = new ArrayList<>();
+        for (ColumnConstraint cc : droppedConstraints) {
+
+            if (panel.isCanceled())
+                break;
+
+            if ((cc.isPrimaryKey() || cc.isUniqueKey()) && cc.getColumnDisplayList() != null)
+                droppedConstraintsColumns.addAll(cc.getColumnDisplayList().stream()
+                        .map(i -> cc.getTableName().concat("." + i))
+                        .collect(Collectors.toList()));
+        }
+
+        LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(masterConnectionObjectsList.size());
+
+        for (NamedObject masterObject : masterConnectionObjectsList) {
+
+            if (panel.isCanceled())
+                break;
+            loadingObjectsHelper.preparingLoadForObjectAndCols((AbstractDatabaseObject) masterObject);
+            for (ColumnConstraint masterCC : ((DefaultDatabaseTable) masterObject).getConstraints()) {
+
+                if (panel.isCanceled())
+                    break;
+
+                if (droppedConstraints.contains(masterCC) || !masterCC.isForeignKey())
+                    continue;
+
+                if (masterCC.getReferenceColumnDisplayList().stream()
+                        .map(i -> masterCC.getTableName().concat("." + i))
+                        .anyMatch(droppedConstraintsColumns::contains)) {
+
+                    constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                    constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                    droppedConstraints.add(masterCC);
+                }
+            }
+            loadingObjectsHelper.postProcessingLoadForObjectAndCols((AbstractDatabaseObject) masterObject);
+        }
+        loadingObjectsHelper.releaseResources();
+    }
+
+    private void checkConstraintsPair(NamedObject masterObject, NamedObject compareObject, List<ColumnConstraint> droppedConstraints) {
+
+        List<ColumnConstraint> masterConstraints = ((DefaultDatabaseTable) masterObject).getConstraints();
+        List<ColumnConstraint> compareConstraints = ((DefaultDatabaseTable) compareObject).getConstraints();
+
+        //check for DROP excess CONSTRAINT
+        for (ColumnConstraint masterCC : masterConstraints) {
+
+            if (panel.isCanceled())
+                break;
+
+            if ((masterCC.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
+                    (masterCC.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
+                    (masterCC.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
+                    (masterCC.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
+                continue;
+
+            long dropCheck = compareConstraints.stream()
+                    .filter(comparingCC -> !Objects.equals(masterCC.getName(), comparingCC.getName())).count();
+
+            if (dropCheck == compareConstraints.size()) {
+                constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                droppedConstraints.add(masterCC);
+            }
+        }
+
+        //check for temporary DROP CONSTRAINT
+        for (ColumnConstraint masterCC : masterConstraints) {
+
+            if (panel.isCanceled())
+                break;
+
+            if (droppedConstraints.contains(masterCC))
+                continue;
+
+            // --- if constraint will be changed ---
+
+            for (ColumnConstraint comparingCC : compareConstraints) {
+
+                if (panel.isCanceled())
+                    break;
+
+                if (Objects.equals(masterCC.getName(), comparingCC.getName())) {
+                    if (!Objects.equals(masterCC.getColumnDisplayList(), comparingCC.getColumnDisplayList())) {
+
+                        constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                        constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, comparingCC));
+                        droppedConstraints.add(masterCC);
+                    }
+                }
+            }
+
+            // ---
+
+            if (droppedConstraints.contains(masterCC))
+                continue;
+
+            // --- if constraint column will be changed or removed ---
+
+            List<String> masterConstraintColumns = new ArrayList<>();
+            if (masterCC.getColumnDisplayList() != null)
+                masterConstraintColumns.addAll(masterCC.getColumnDisplayList());
+
+            List<DatabaseColumn> masterColumns = ((DefaultDatabaseTable) masterObject).getColumns();
+            List<DatabaseColumn> compareColumns = ((DefaultDatabaseTable) compareObject).getColumns();
+
+            for (DatabaseColumn masterC : masterColumns) {
+
+                if (panel.isCanceled())
+                    break;
+
+                if (!masterConstraintColumns.contains(masterC.getName()))
+                    continue;
+
+                int dropCheck = 0;
+
+                for (DatabaseColumn comparingC : compareColumns) {
+
+                    if (panel.isCanceled())
+                        break;
+
+                    if (Objects.equals(masterC.getName(), comparingC.getName())) {
+
+                        if (!SQLUtils.generateAlterDefinitionColumn(
+                                new ColumnData(((DefaultDatabaseTable) masterObject).getHost().getDatabaseConnection(), masterC, false),
+                                new ColumnData(((DefaultDatabaseTable) compareObject).getHost().getDatabaseConnection(), comparingC, false),
+                                isComputedFieldsNeed(),
+                                isFieldsPositionsNeed()).isEmpty()) {
+
+                            constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                            constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                            droppedConstraints.add(masterCC);
+                        }
+                        break;
+
+                    } else dropCheck++;
+                }
+
+                if (dropCheck == compareColumns.size()) {
+                    constraintsToDrop.add(new org.executequery.gui.browser.ColumnConstraint(false, masterCC));
+                    droppedConstraints.add(masterCC);
+                }
+            }
+        }
+
+        //check for ADD new CONSTRAINT
+        for (ColumnConstraint comparingCC : compareConstraints) {
+
+            if (panel.isCanceled())
+                break;
+
+            if ((comparingCC.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
+                    (comparingCC.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
+                    (comparingCC.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
+                    (comparingCC.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
+                continue;
+
+            long addCheck = masterConstraints.stream()
+                    .filter(masterCC -> !Objects.equals(masterCC.getName(), comparingCC.getName())).count();
+
+            if (addCheck == masterConstraints.size())
+                constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, comparingCC));
+        }
+
+    }
+
+    private void createListComputedFields(NamedObject databaseObject) {
+
+        if (computedFieldsList == null)
+            computedFieldsList = "";
+
+        List<ColumnData> listCD = new ArrayList<>();
+        DefaultDatabaseTable tempTable = (DefaultDatabaseTable) databaseObject;
+
+        for (int i = 0; i < tempTable.getColumnCount(); i++)
+            listCD.add(new ColumnData(tempTable.getHost().getDatabaseConnection(), tempTable.getColumns().get(i), false));
+
+        for (ColumnData cd : listCD) {
+            if (!MiscUtils.isNull(cd.getComputedBy())) {
+                computedFieldsList += "\t" + tempTable.getName() + "." + cd.getColumnName() + "\n";
+                computedFields.add(cd);
+            }
+        }
+    }
+
+    private List<NamedObject> sortObjectsByDependency(List<NamedObject> objectsList) {
+
+        if (objectsList.size() < 1)
+            return null;
+
+        String templateQuery = "SELECT DISTINCT D.RDB$DEPENDENT_NAME FROM RDB$DEPENDENCIES D " +
+                "WHERE D.RDB$DEPENDENT_TYPE = D.RDB$DEPENDED_ON_TYPE AND D.RDB$DEPENDED_ON_NAME = ?";
+
+        DefaultStatementExecutor executor =
+                new DefaultStatementExecutor(compareConnection.getDatabaseConnection(), true);
+
+        Map<String, NamedObject> objectMap = new HashMap<>();
+        objectsList.forEach(obj -> objectMap.put(obj.getName(), obj));
 
         try {
-            ResultSet rs = secondConnection.execute(query, true).getResultSet();
-            while (rs.next()) {
-                second.add(rs.getString(1).trim());
-            }
 
-            rs.close();
-            secondConnection.releaseResources();
-        } catch (java.sql.SQLException e) {
-            Log.error("Comparer 42: " + e);
-        }
+            PreparedStatement selectDependenciesStatement = executor.getPreparedStatement(templateQuery);
 
-        try {
-            ResultSet rs = firstConnection.execute(query, true).getResultSet();
-            while (rs.next()) {
-                String obj = rs.getString(1).trim();
-                if (!second.contains(obj)) {
-                    create.add(obj);
+            panel.recreateProgressBar(
+                    "SearchingForDependencies", null,
+                    objectMap.keySet().size()
+            );
+
+            for (String objectName : objectMap.keySet()) {
+                NamedObject tempObject = objectMap.get(objectName);
+
+                selectDependenciesStatement.setString(1, objectName);
+                selectDependenciesStatement.executeQuery();
+
+                ResultSet resultSet = selectDependenciesStatement.executeQuery();
+
+                if (resultSet == null)
+                    continue;
+
+                while (resultSet.next()) {
+                    String dependentObjectName = resultSet.getString(1).trim();
+
+                    if (objectMap.containsKey(dependentObjectName)) {
+                        NamedObject dependentObject = objectMap.get(dependentObjectName);
+
+                        if (objectsList.indexOf(tempObject) > objectsList.indexOf(dependentObject)) {
+                            objectsList.remove(tempObject);
+                            objectsList.add(objectsList.indexOf(dependentObject), tempObject);
+                        }
+                    }
                 }
-            }
-            rs.close();
-            firstConnection.releaseResources();
 
-        } catch (java.sql.SQLException e) {
-            System.out.println("Comparer 57: " + e);
+                panel.incrementProgressBarValue();
+            }
+
+            executor.closeConnection();
+            selectDependenciesStatement.close();
+            executor.releaseResources();
+
+        } catch (java.lang.Exception e) {
+            GUIUtilities.displayExceptionErrorDialog(
+                    "Error while comparing objects dependencies:\n" + e.getMessage(), e);
+            Log.error(e);
         }
 
-        return create;
+        return objectsList;
     }
 
-    // создать список удаляемых объектов
-    private ArrayList<String> dropList(String query) {
-        ArrayList<String> first = new ArrayList<String>();
-        ArrayList<String> drop = new ArrayList<String>();
-        try {
-            ResultSet rs = firstConnection.execute(query, true).getResultSet();
-            while (rs.next()) {
-                first.add(rs.getString(1).trim());
-            }
+    private void addStubsToScript(int type, List<NamedObject> stubsList) {
 
-            rs.close();
-            firstConnection.releaseResources();
-        } catch (java.sql.SQLException e) {
-            Log.error("Comparer 78: " + e);
-        }
-        try {
-            ResultSet rs = secondConnection.execute(query, true).getResultSet();
-            while (rs.next()) {
-                String obj = rs.getString(1).trim();
-                if (!first.contains(obj)) {
-                    drop.add(obj);
-                }
-            }
-            rs.close();
-            secondConnection.releaseResources();
+        if (stubsList.size() < 1)
+            return;
 
-        } catch (java.sql.SQLException e) {
-            System.out.println("Comparer 93: " + e);
+        String header = MessageFormat.format(
+                "\n/* ----- Creating {0} stubs ----- */\n",
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+        script.add(header);
+
+        panel.recreateProgressBar(
+                "CreatingStubs", NamedObject.META_TYPES[type],
+                stubsList.size()
+        );
+
+        for (NamedObject obj : stubsList) {
+            script.add("\n/* " + obj.getName() + " (STUB) */");
+            script.add("\n" + SQLUtils.generateCreateDefaultStub(obj));
+            panel.incrementProgressBarValue();
         }
 
-        return drop;
     }
 
-    // создать список изменяемых объектов
-    private ArrayList<String> alterList(String query) {
-        ArrayList<String> second = new ArrayList<String>();
-        ArrayList<String> alter = new ArrayList<String>();
-        try {
-            ResultSet rs = secondConnection.execute(query, true).getResultSet();
-            while (rs.next()) {
-                second.add(rs.getString(1).trim());
-            }
+    // ---
 
-            rs.close();
-            secondConnection.releaseResources();
-        } catch (java.sql.SQLException e) {
-            Log.error("Comparer 114: " + e);
-        }
-        try {
-            ResultSet rs = firstConnection.execute(query, true).getResultSet();
-            while (rs.next()) {
-                String obj = rs.getString(1).trim();
-                if (second.contains(obj)) {
-                    alter.add(obj);
-                }
-            }
-            rs.close();
-            firstConnection.releaseResources();
-
-        } catch (java.sql.SQLException e) {
-            System.out.println("Comparer 129: " + e);
-        }
-
-        return alter;
+    public String getConstraintsList() {
+        return constraintsList;
     }
 
-    public void createDomains(boolean permission) {
-        if (permission) {
-            ArrayList<String> cDomains = new ArrayList<String>();
-            cDomains = createList(domain.collect);
-
-            script.add("/* Creating Domains */\n\n");
-            for (String d : cDomains) {
-
-                script.add(domain.create(d));
-                lists = lists + "   " + d + "\n";
-            }
-        }
+    public String getComputedFieldsList() {
+        return computedFieldsList;
     }
 
-    public void alterDomains(boolean permission) {
-        if (permission) {
-            ArrayList<String> aDomains = new ArrayList<String>();
-            aDomains = alterList(domain.collect);
-
-            script.add("/* Altering Domains */\n\n");
-            for (String d : aDomains) {
-
-
-                String line = domain.alter(d);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + d + "\n";
-            }
-        }
+    public ArrayList<String> getScript() {
+        return script;
     }
 
-    public void dropDomains(boolean permission) {
-        if (permission) {
-            ArrayList<String> dDomains = new ArrayList<String>();
-            dDomains = dropList(domain.collect);
-
-            script.add("/* Dropping Domains */\n\n");
-            for (String d : dDomains) {
-
-                script.add(domain.drop(d));
-                lists = lists + "   " + d + "\n";
-            }
-        }
+    public String getScript(int elemIndex) {
+        return script.get(elemIndex);
     }
 
-    public void createExceptions(boolean permission) {
-        if (permission) {
-            ArrayList<String> cExc = new ArrayList<String>();
-            cExc = createList(exception.collect);
-
-            script.add("/* Creating Exceptions */\n\n");
-            for (String e : cExc) {
-
-                script.add(exception.create(e));
-                lists = lists + "   " + e + "\n";
-            }
-        }
+    public int[] getCounter() {
+        return counter;
     }
 
-    public void alterExceptions(boolean permission) {
-        if (permission) {
-            ArrayList<String> aExc = new ArrayList<String>();
-            aExc = alterList(exception.collect);
-
-            script.add("/* Altering Exceptions */\n\n");
-            for (String e : aExc) {
-
-                String line = exception.alter(e);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + e + "\n";
-            }
-        }
+    public void addToScript(String addedScript) {
+        script.add(addedScript);
     }
 
-    public void dropExceptions(boolean permission) {
-        if (permission) {
-            ArrayList<String> dExc = new ArrayList<String>();
-            dExc = dropList(exception.collect);
-
-            script.add("/* Dropping Exceptions */\n\n");
-            for (String e : dExc) {
-
-                script.add(exception.drop(e));
-                lists = lists + "   " + e + "\n";
-            }
-        }
+    public StatementExecutor getMasterConnection() {
+        return masterConnection;
     }
 
-    public void createUDFs(boolean permission) {
-        if (permission) {
-            ArrayList<String> cUDFs = new ArrayList<String>();
-            cUDFs = createList(udf.collect);
-
-            script.add("/* Creating UDFs */\n\n");
-            for (String u : cUDFs) {
-
-                script.add(udf.create(u));
-                lists = lists + "   " + u + "\n";
-            }
-        }
+    public static boolean isCommentsNeed() {
+        return COMMENTS_NEED;
     }
 
-    public void alterUDFs(boolean permission) {
-        if (permission) {
-            ArrayList<String> aUDFs = new ArrayList<String>();
-            aUDFs = alterList(udf.collect);
-
-            script.add("/* Altering UDFs */\n\n");
-            for (String u : aUDFs) {
-
-                String line = udf.alter(u);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + u + "\n";
-            }
-        }
+    public static boolean isComputedFieldsNeed() {
+        return COMPUTED_FIELDS_NEED;
     }
 
-    public void dropUDFs(boolean permission) {
-        if (permission) {
-            ArrayList<String> dUDFs = new ArrayList<String>();
-            dUDFs = dropList(udf.collect);
-
-            script.add("/* Dropping UDFs */\n\n");
-            for (String u : dUDFs) {
-
-                script.add(udf.drop(u));
-                lists = lists + "   " + u + "\n";
-            }
-        }
+    public static boolean isFieldsPositionsNeed() {
+        return FIELDS_POSITIONS_NEED;
     }
 
-    public void createGenerators(boolean permission) {
-        if (permission) {
-            ArrayList<String> cGen = new ArrayList<String>();
-            cGen = createList(generator.collect);
-
-            script.add("/* Creating Generators */\n\n");
-            for (String g : cGen) {
-
-                script.add(generator.create(g));
-                lists = lists + "   " + g + "\n";
-            }
-        }
+    public void clearLists() {
+        createdObjects.clear();
+        alteredObjects.clear();
+        droppedObjects.clear();
+        script.clear();
     }
 
-    public void alterGenerators(boolean permission) {
-        if (permission) {
-            ArrayList<String> aGen = new ArrayList<String>();
-            aGen = alterList(generator.collect);
-
-            script.add("/* Altering Generators */\n\n");
-            for (String g : aGen) {
-
-                String line = generator.alter(g);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + g + "\n";
-            }
-        }
-    }
-
-    public void dropGenerators(boolean permission) {
-        if (permission) {
-            ArrayList<String> dGen = new ArrayList<String>();
-            dGen = dropList(generator.collect);
-
-            script.add("/* Dropping Generators */\n\n");
-            for (String g : dGen) {
-
-                script.add(generator.drop(g));
-                lists = lists + "   " + g + "\n";
-            }
-        }
-    }
-
-    public void createRoles(boolean permission) {
-        if (permission) {
-            ArrayList<String> cRoles = new ArrayList<String>();
-            cRoles = createList(role.collect);
-
-            script.add("/* Creating Roles */\n\n");
-            for (String r : cRoles) {
-
-                script.add(role.create(r));
-                lists = lists + "   " + r + "\n";
-            }
-        }
-    }
-
-    public void dropRoles(boolean permission) {
-        if (permission) {
-            ArrayList<String> dRoles = new ArrayList<String>();
-            dRoles = dropList(role.collect);
-
-            script.add("/* Dropping Roles */\n\n");
-            for (String r : dRoles) {
-
-                script.add(role.drop(r));
-                lists = lists + "   " + r + "\n";
-            }
-        }
-    }
-
-    public void createTriggers(boolean permission) {
-        if (permission) {
-            ArrayList<String> cTriggers = new ArrayList<String>();
-            cTriggers = createList(trigger.collect);
-
-            script.add("/* Creating Triggers */\n\n");
-            for (String t : cTriggers) {
-
-                script.add(trigger.create(t));
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    public void alterTriggers(boolean permission) {
-        if (permission) {
-            ArrayList<String> aTriggers = new ArrayList<String>();
-            aTriggers = alterList(trigger.collect);
-
-            script.add("/* Altering Triggers */\n\n");
-            for (String t : aTriggers) {
-
-                String line = trigger.alter(t);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    public void dropTriggers(boolean permission) {
-        if (permission) {
-            ArrayList<String> dTrigger = new ArrayList<String>();
-            dTrigger = dropList(trigger.collect);
-
-            script.add("/* Dropping Triggers */\n\n");
-            for (String t : dTrigger) {
-
-                script.add(trigger.drop(t));
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    public void createTables(boolean permission) {
-        if (permission) {
-            ArrayList<String> cTables = new ArrayList<String>();
-            cTables = createList(table.collect);
-
-            script.add("/* Creating Tables */\n\n");
-            for (String t : cTables) {
-
-                script.add(table.create(t));
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    public void alterTables(boolean permission) {
-        if (permission) {
-            ArrayList<String> aTables = new ArrayList<String>();
-            aTables = alterList(table.collect);
-
-            script.add("/* Alter Tables */\n\n");
-            for (String t : aTables) {
-
-                String line = table.alter(t);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    public void dropTables(boolean permission) {
-        if (permission) {
-            ArrayList<String> dTables = new ArrayList<String>();
-            dTables = dropList(table.collect);
-
-            script.add("/* Dropping Tables */\n\n");
-            for (String t : dTables) {
-
-                script.add(table.drop(t));
-                lists = lists + "   " + t + "\n";
-            }
-        }
-    }
-
-    public void createProcedures(boolean permission) {
-        if (permission) {
-            ArrayList<String> cProcedures = new ArrayList<String>();
-            cProcedures = createList(procedure.collect);
-
-            script.add("/* Creating Procedures */\n\n");
-            for (String p : cProcedures) {
-
-                script.add(procedure.create(p));
-                lists = lists + "   " + p + "\n";
-            }
-        }
-    }
-
-    public void alterProcedures(boolean permission) {
-        if (permission) {
-            ArrayList<String> aProcedures = new ArrayList<String>();
-            ArrayList<String> fProcedures = new ArrayList<String>();
-
-            aProcedures = alterList(procedure.collect);
-
-            script.add("/* Altering Procedures */\n\n");
-            for (String p : aProcedures) {
-
-                String line = procedure.alter(p);
-                if (!line.equals("")) {
-                    script.add(line);
-                    fProcedures.add(p);
-                }
-                lists = lists + "   " + p + "\n";
-            }
-
-            for (String p : fProcedures) {
-
-                script.add(procedure.fill(p));
-            }
-        }
-    }
-
-    public void dropProcedures(boolean permission) {
-        if (permission) {
-            ArrayList<String> dProcedures = new ArrayList<String>();
-            dProcedures = dropList(procedure.collect);
-
-            script.add("/* Dropping Procedures */\n\n");
-            for (String p : dProcedures) {
-
-                script.add(procedure.empty(p));
-            }
-
-            for (String p : dProcedures) {
-
-                script.add(procedure.drop(p));
-                lists = lists + "   " + p + "\n";
-            }
-        }
-    }
-
-    public void createViews(boolean permission) {
-        if (permission) {
-            ArrayList<String> cViews = new ArrayList<String>();
-            cViews = createList(view.collect);
-
-            script.add("/* Creating Views */\n\n");
-            for (String v : cViews) {
-
-                script.add(view.create(v));
-                lists = lists + "   " + v + "\n";
-            }
-        }
-    }
-
-    public void alterViews(boolean permission) {
-        if (permission) {
-            ArrayList<String> aViews = new ArrayList<String>();
-            aViews = alterList(view.collect);
-
-            script.add("/* Altering Views */\n\n");
-            for (String v : aViews) {
-
-                String line = view.alter(v);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + v + "\n";
-            }
-        }
-    }
-
-    public void dropViews(boolean permission) {
-        if (permission) {
-            ArrayList<String> dViews = new ArrayList<String>();
-            dViews = dropList(view.collect);
-
-            script.add("/* Dropping Views */\n\n");
-            for (String v : dViews) {
-
-                script.add(view.drop(v));
-                lists = lists + "   " + v + "\n";
-            }
-        }
-    }
-
-    public void createIndices(boolean permission) {
-        if (permission) {
-            ArrayList<String> cIndices = new ArrayList<String>();
-            cIndices = createList(index.collect);
-
-            script.add("/* Creating Indices */\n\n");
-            for (String i : cIndices) {
-
-                script.add(index.create(i));
-                lists = lists + "   " + i + "\n";
-            }
-        }
-    }
-
-    public void alterIndices(boolean permission) {
-        if (permission) {
-            ArrayList<String> aIndices = new ArrayList<String>();
-            aIndices = alterList(index.collect);
-
-            script.add("/* Altering Indices */\n\n");
-            for (String i : aIndices) {
-
-                String line = index.alter(i);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + i + "\n";
-            }
-        }
-    }
-
-    public void dropIndices(boolean permission) {
-        if (permission) {
-            ArrayList<String> dIndices = new ArrayList<String>();
-            dIndices = dropList(index.collect);
-
-            script.add("/* Dropping Indices */\n\n");
-            for (String i : dIndices) {
-
-                script.add(index.drop(i));
-                lists = lists + "   " + i + "\n";
-            }
-        }
-    }
-
-    public void createChecks(boolean permission) {
-        if (permission) {
-            ArrayList<String> cChecks = new ArrayList<String>();
-            cChecks = createList(constraint.collect_check);
-
-            script.add("/* Creating Checks */\n\n");
-            for (String c : cChecks) {
-
-                script.add(constraint.createCheck(c));
-                lists = lists + "   " + c + "\n";
-            }
-        }
-    }
-
-    public void alterChecks(boolean permission) {
-        if (permission) {
-            ArrayList<String> aChecks = new ArrayList<String>();
-            aChecks = alterList(constraint.collect_check);
-
-            script.add("/* Altering Checks */\n\n");
-            for (String c : aChecks) {
-
-                String line = constraint.alterCheck(c);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + c + "\n";
-            }
-        }
-    }
-
-    public void dropChecks(boolean permission) {
-        if (permission) {
-            ArrayList<String> dChecks = new ArrayList<String>();
-            dChecks = dropList(constraint.collect_check);
-
-            script.add("/* Dropping Checks */\n\n");
-            for (String c : dChecks) {
-
-                script.add(constraint.dropCheck(c));
-                lists = lists + "   " + c + "\n";
-            }
-        }
-    }
-
-    public void createUniques(boolean permission) {
-        if (permission) {
-            ArrayList<String> cUniques = new ArrayList<String>();
-            cUniques = createList(constraint.collect_unique);
-
-            script.add("/* Creating Uniques */\n\n");
-            for (String u : cUniques) {
-
-                script.add(constraint.createUnique(u));
-                lists = lists + "   " + u + "\n";
-            }
-        }
-    }
-
-    public void alterUniques(boolean permission) {
-        if (permission) {
-            ArrayList<String> aUniques = new ArrayList<String>();
-            aUniques = alterList(constraint.collect_unique);
-
-            script.add("/* Altering Uniques */\n\n");
-            for (String u : aUniques) {
-
-                String line = constraint.alterUnique(u);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + u + "\n";
-            }
-        }
-    }
-
-    public void dropUniques(boolean permission) {
-        if (permission) {
-            ArrayList<String> dUniques = new ArrayList<String>();
-            dUniques = dropList(constraint.collect_unique);
-
-            script.add("/* Dropping Uniques */\n\n");
-            for (String u : dUniques) {
-
-                script.add(constraint.dropUnique(u));
-                lists = lists + "   " + u + "\n";
-            }
-        }
-    }
-
-    public void createFKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> cFKs = new ArrayList<String>();
-            cFKs = createList(constraint.collect_fk);
-
-            script.add("/* Creating Foreign keys */\n\n");
-            for (String f : cFKs) {
-
-                script.add(constraint.createFK(f));
-                lists = lists + "   " + f + "\n";
-            }
-        }
-    }
-
-    public void alterFKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> aFKs = new ArrayList<String>();
-            aFKs = alterList(constraint.collect_fk);
-
-            script.add("/* Altering Foreign keys */\n\n");
-            for (String f : aFKs) {
-
-                String line = constraint.alterFK(f);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + f + "\n";
-            }
-        }
-    }
-
-    public void dropFKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> dFKs = new ArrayList<String>();
-            dFKs = dropList(constraint.collect_fk);
-
-            script.add("/* Dropping Foreign keys */\n\n");
-            for (String f : dFKs) {
-
-                script.add(constraint.dropFK(f));
-                lists = lists + "   " + f + "\n";
-            }
-        }
-    }
-
-    public void createPKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> cPKs = new ArrayList<String>();
-            cPKs = createList(constraint.collect_pk);
-
-            script.add("/* Creating Primary keys */\n\n");
-            for (String p : cPKs) {
-
-                script.add(constraint.createPK(p));
-                lists = lists + "   " + p + "\n";
-            }
-        }
-    }
-
-    public void alterPKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> aPKs = new ArrayList<String>();
-            aPKs = alterList(constraint.collect_pk);
-
-            script.add("/* Altering Primary keys */\n\n");
-            for (String p : aPKs) {
-
-                String line = constraint.alterPK(p);
-                if (!line.equals("")) {
-                    script.add(line);
-                }
-                lists = lists + "   " + p + "\n";
-            }
-        }
-    }
-
-    public void dropPKs(boolean permission) {
-        if (permission) {
-            ArrayList<String> dPKs = new ArrayList<String>();
-            dPKs = dropList(constraint.collect_pk);
-
-            script.add("/* Dropping Primary keys */\n\n");
-            for (String p : dPKs) {
-
-                script.add(constraint.dropPK(p));
-                lists = lists + "   " + p + "\n";
-            }
-        }
-    }
-
-    public void computedField(boolean permission) {
-        if (permission) {
-            script.add("/* Filling computed fields */\n\n");
-
-            for (ArrayList<String> cf : table.cf_fill) {
-                script.add(table.fillTables(cf.get(0), cf.get(1)));
-            }
-
-            table.cf_fill.clear();
-        }
-    }
-
-    public void fillProcedures(boolean permission) {
-        if (permission) {
-            script.add("/* Filling procedures code */\n\n");
-
-            for (String p : procedure.procToFill) {
-
-                script.add(procedure.fill(p));
-            }
-
-            procedure.procToFill.clear();
-        }
-    }
-
-    public void fillViews(boolean permission) {
-        if (permission) {
-            script.add("/* Filling views code */\n\n");
-
-            for (String v : view.v_fill) {
-
-                script.add(view.fill(v));
-            }
-
-            view.v_fill.clear();
-        }
-    }
-
-    public void retViews(boolean permission) {
-        if (permission) {
-            script.add("/* Creating views */\n\n");
-
-            for (String v : view.v_create) {
-
-                script.add(view.create(v));
-            }
-
-            view.v_create.clear();
-        }
-    }
-
-    public void fillTriggers(boolean permission) {
-        if (permission) {
-            script.add("/* Altering triggers */\n\n");
-
-            for (String t : trigger.triggerToFill) {
-
-                script.add(trigger.create(t));
-            }
-
-            trigger.triggerToFill.clear();
-        }
-    }
-
-    public void fillIndices(boolean permission) {
-        if (permission) {
-            script.add("/* Altering indices */\n\n");
-
-            for (String i : index.indicesToFill) {
-
-                script.add(index.create(i));
-            }
-
-            index.indicesToFill.clear();
-        }
-    }
-
-    public void recreateChecks(boolean permission) {
-        if (permission) {
-            script.add("/* Recreating Checks */\n\n");
-
-            for (String c : constraint.checkstoRecreate) {
-
-                script.add(constraint.createCheck(c));
-            }
-
-            constraint.checkstoRecreate.clear();
-        }
-    }
 }
 

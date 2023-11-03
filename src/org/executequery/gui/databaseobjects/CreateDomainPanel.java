@@ -3,38 +3,36 @@ package org.executequery.gui.databaseobjects;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.text.SQLTextArea;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
-public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyListener {
+public class CreateDomainPanel extends AbstractCreateObjectPanel implements DocumentListener {
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.DOMAIN);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.DOMAIN);
     private ColumnData columnData;
     private String domain;
     private JScrollPane scrollDefaultValue;
     private JScrollPane scrollCheck;
-    private JScrollPane scrollDescription;
     private JScrollPane scrollSQL;
     private SQLTextArea defaultValueTextPane;
     private SQLTextArea checkTextPane;
     private SQLTextArea sqlTextPane;
-    private JTextPane descriptionTextPane;
     private JPanel defaultValuePanel;
     private JPanel checkPanel;
-    private JPanel descriptionPanel;
     private JPanel sqlPanel;
     private SelectTypePanel selectTypePanel;
     private JCheckBox notNullBox;
+    DefaultDatabaseDomain databaseDomain;
 
     public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent, String domain) {
         super(connection, parent, domain);
@@ -47,24 +45,19 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     protected void init() {
         defaultValuePanel = new JPanel();
         checkPanel = new JPanel();
-        descriptionPanel = new JPanel();
         sqlPanel = new JPanel();
         selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(), connection.getIntDataTypesArray(), columnData, false);
         notNullBox = new JCheckBox("Not Null");
         scrollDefaultValue = new JScrollPane();
         scrollCheck = new JScrollPane();
-        scrollDescription = new JScrollPane();
         scrollSQL = new JScrollPane();
         defaultValueTextPane = new SQLTextArea();
         checkTextPane = new SQLTextArea();
         sqlTextPane = new SQLTextArea();
-        descriptionTextPane = new JTextPane();
 
         scrollDefaultValue.setViewportView(defaultValueTextPane);
 
         scrollCheck.setViewportView(checkTextPane);
-
-        scrollDescription.setViewportView(descriptionTextPane);
 
         scrollSQL.setViewportView(sqlTextPane);
 
@@ -76,46 +69,47 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
                 generateSQL();
             }
         });
-        defaultValueTextPane.addKeyListener(this);
-        checkTextPane.addKeyListener(this);
-        descriptionTextPane.addKeyListener(this);
-
-        centralPanel.setLayout(new GridBagLayout());
-
-        centralPanel.add(notNullBox, new GridBagConstraints(0, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        defaultValueTextPane.getDocument().addDocumentListener(this);
+        checkTextPane.getDocument().addDocumentListener(this);
+        topPanel.add(notNullBox, topGbh.nextRowFirstCol().setLabelDefault().get());
         defaultValuePanel.setLayout(new GridBagLayout());
         checkPanel.setLayout(new GridBagLayout());
-        descriptionPanel.setLayout(new GridBagLayout());
         sqlPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbcFull = new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
         defaultValuePanel.add(scrollDefaultValue, gbcFull);
         checkPanel.add(scrollCheck, gbcFull);
-        descriptionPanel.add(scrollDescription, gbcFull);
         sqlPanel.add(scrollSQL, gbcFull);
         tabbedPane.add(bundleStaticString("type"), selectTypePanel);
         tabbedPane.add(bundleStaticString("default-value"), defaultValuePanel);
         tabbedPane.add(bundleStaticString("check"), checkPanel);
-        tabbedPane.add(bundleStaticString("description"), descriptionPanel);
+        addCommentTab(null);
+        simpleCommentPanel.getCommentField().getTextAreaComponent().getDocument().addDocumentListener(this);
         tabbedPane.add(bundleStaticString("SQL"), sqlPanel);
+        centralPanel.setVisible(false);
     }
 
     protected void initEdited() {
         reset();
-        addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain));
-        addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain));
+        if (parent == null) {
+            int type = NamedObject.DOMAIN;
+            if (databaseDomain != null && databaseDomain.isSystem())
+                type = NamedObject.SYSTEM_DOMAIN;
+            addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, type, domain));
+            addCreateSqlTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, type, domain));
+        }
     }
 
     protected void reset() {
+        databaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain);
+        if (databaseDomain == null)
+            databaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.SYSTEM_DOMAIN, domain);
         columnData.setColumnName(domain);
         columnData.setDomain(domain);
         columnData.setDescription(columnData.getDomainDescription());
         columnData.setCheck(columnData.getDomainCheck());
         columnData.setNotNull(columnData.isDomainNotNull());
         columnData.setDefaultValue(columnData.getDomainDefault());
-        descriptionTextPane.setText(columnData.getDescription());
+        simpleCommentPanel.setDatabaseObject((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), domain));
         checkTextPane.setText(columnData.getCheck());
         defaultValueTextPane.setText(columnData.getDefaultValue().getValue());
         nameField.setText(columnData.getColumnName());
@@ -159,90 +153,42 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
 
     }
 
-    @Override
-    public void keyTyped(KeyEvent keyEvent) {
-
-    }
-
-    @Override
-    public void keyPressed(KeyEvent keyEvent) {
-
-    }
-
-    @Override
-    public void keyReleased(KeyEvent keyEvent) {
-
-        if (keyEvent.getSource() == defaultValueTextPane) {
-            columnData.setDefaultValue(defaultValueTextPane.getText());
-        } else if (keyEvent.getSource() == checkTextPane) {
-            columnData.setCheck(checkTextPane.getText());
-        } else if (keyEvent.getSource() == descriptionTextPane) {
-            columnData.setDescription(descriptionTextPane.getText());
-        } else if (keyEvent.getSource() == nameField) {
-            columnData.setColumnName(nameField.getText());
-        }
-
-    }
-
     private void generateSQL() {
-
         sqlTextPane.setText(generateQuery());
-
     }
 
     protected String generateQuery() {
-        StringBuilder sb = new StringBuilder();
         columnData.setColumnName(nameField.getText());
-        sb.setLength(0);
-        if (editing) {
-            if (columnData.isChanged()) {
-                sb.append("ALTER DOMAIN ").append(MiscUtils.getFormattedObject(domain)).append("\n");
-                if (columnData.isNameChanged()) {
-                    sb.append("TO ").append(columnData.getFormattedColumnName()).append("\n");
-                }
-                if (columnData.isDefaultChanged()) {
-                    if (MiscUtils.isNull(columnData.getDefaultValue().getValue()))
-                        sb.append("DROP DEFAULT\n");
-                    else {
-                        sb.append("SET DEFAULT ");
-                        sb.append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
-                        sb.append("\n");
+        if (editing)
+            return SQLUtils.generateAlterDomain(columnData, domain);
+        else
+            return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false, true);
+    }
 
-                    }
-                }
-                if (columnData.isRequiredChanged()) {
-                    if (columnData.isRequired()) {
-                        sb.append("SET ");
-                    } else {
-                        sb.append("DROP ");
-                    }
-                    sb.append("NOT NULL\n");
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        changed(e);
+    }
 
-                }
-                if (columnData.isCheckChanged()) {
-                    sb.append("DROP CONSTRAINT\n");
-                    if (!MiscUtils.isNull(columnData.getCheck())) {
-                        sb.append("ADD CHECK (").append(columnData.getCheck()).append(")\n");
-                    }
-                }
-                if (columnData.isTypeChanged()) {
-                    sb.append("TYPE ").append(columnData.getFormattedDataType());
-                }
-                sb.append(";");
-                if (columnData.isDescriptionChanged()) {
-                    sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS ");
-                    if (!MiscUtils.isNull(columnData.getDescription())) {
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        changed(e);
+    }
 
-                        sb.append("'").append(columnData.getDescription()).append("'");
-                    } else {
-                        sb.append("NULL");
-                    }
-                    sb.append(";");
-                }
-            }
-            return sb.toString();
-        } else {
-            return SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName(), false);
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        changed(e);
+    }
+
+    private void changed(DocumentEvent e) {
+        if (e.getDocument() == defaultValueTextPane.getDocument()) {
+            columnData.setDefaultValue(defaultValueTextPane.getText());
+        } else if (e.getDocument() == checkTextPane.getDocument()) {
+            columnData.setCheck(checkTextPane.getText());
+        } else if (e.getDocument() == simpleCommentPanel.getCommentField().getTextAreaComponent().getDocument()) {
+            columnData.setDescription(simpleCommentPanel.getComment());
+        } else if (e.getDocument() == nameField.getDocument()) {
+            columnData.setColumnName(nameField.getText());
         }
     }
 }

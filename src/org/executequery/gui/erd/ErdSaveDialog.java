@@ -189,7 +189,7 @@ public class ErdSaveDialog extends AbstractBaseDialog
         qualityTextField.setValue(8);
         qualityTextField.addKeyListener(this);
 
-        qualityCombo = WidgetFactory.createComboBox(new String[]{"Low", "Medium", "High", "Maximum"});
+        qualityCombo = WidgetFactory.createComboBox("qualityCombo", new String[]{"Low", "Medium", "High", "Maximum"});
         qualityCombo.setSelectedIndex(2);
 
         Dimension fieldDim = new Dimension(50, 20);
@@ -229,7 +229,7 @@ public class ErdSaveDialog extends AbstractBaseDialog
         qualityPanel.setBorder(BorderFactory.createTitledBorder("JPEG Options"));
 
         backgroundLabel = new JLabel("Background:");
-        backgroundCombo = WidgetFactory.createComboBox(new String[]{"Transparent", "White"});
+        backgroundCombo = WidgetFactory.createComboBox("backgroundCombo", new String[]{"Transparent", "White"});
         backgroundCombo.setPreferredSize(comboDim);
         backgroundCombo.setSelectedIndex(0);
 
@@ -244,11 +244,11 @@ public class ErdSaveDialog extends AbstractBaseDialog
         svgPanel.add(svgFontCheckbox);
         svgPanel.setBorder(BorderFactory.createTitledBorder("SVG Options"));
 
-        imageTypeCombo = WidgetFactory.createComboBox(new String[]{
+        imageTypeCombo = WidgetFactory.createComboBox("imageTypeCombo", new String[]{
                 "Red Expert ERD", "JPEG", "GIF", "PNG", "SVG"});
         imageTypeCombo.setPreferredSize(comboDim);
 
-        pathField = WidgetFactory.createTextField();
+        pathField = WidgetFactory.createTextField("pathField");
         pathField.setPreferredSize(fieldDim);
 
         JButton browseButton = new JButton("Browse");
@@ -731,7 +731,7 @@ public class ErdSaveDialog extends AbstractBaseDialog
     }
 
     private void doSave(final String path, final int fileFormat) {
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker("saveERD") {
             public Object construct() {
                 try {
                     setVisible(false);

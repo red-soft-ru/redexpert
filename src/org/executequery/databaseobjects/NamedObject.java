@@ -49,7 +49,9 @@ public interface NamedObject extends Named, java.io.Serializable {
     int ROLE = USER + 1;
     int INDEX = ROLE + 1;
     int TABLESPACE = INDEX + 1;
-    int SYSTEM_DOMAIN = TABLESPACE + 1;
+    int JOB = TABLESPACE +1;
+    int COLLATION = JOB + 1;
+    int SYSTEM_DOMAIN = COLLATION + 1;
     int SYSTEM_TABLE = SYSTEM_DOMAIN + 1;
     int SYSTEM_VIEW = SYSTEM_TABLE + 1;
     int SYSTEM_FUNCTION = SYSTEM_VIEW + 1;
@@ -115,6 +117,8 @@ public interface NamedObject extends Named, java.io.Serializable {
             "ROLE",
             "INDEX",
             "TABLESPACE",
+            "JOB",
+            "COLLATION",
             "SYSTEM DOMAIN",
             "SYSTEM TABLE",
             "SYSTEM VIEW",
@@ -149,6 +153,8 @@ public interface NamedObject extends Named, java.io.Serializable {
             "ROLE",
             "INDEX",
             "TABLESPACE",
+            "JOB",
+            "COLLATION",
             "SYSTEM_DOMAIN",
             "SYSTEM_TABLE",
             "SYSTEM_VIEW",
@@ -238,6 +244,33 @@ public interface NamedObject extends Named, java.io.Serializable {
     void setSystemFlag(boolean flag);
 
     boolean allowsChildren();
+
+    int getRDBType();
+
+    static int getSystemTypeFromType(int type) {
+        switch (type) {
+            case DOMAIN:
+                return SYSTEM_DOMAIN;
+            case TABLE:
+                return SYSTEM_TABLE;
+            case VIEW:
+                return SYSTEM_VIEW;
+            case FUNCTION:
+                return SYSTEM_FUNCTION;
+            case TRIGGER:
+                return SYSTEM_TRIGGER;
+            case SEQUENCE:
+                return SYSTEM_SEQUENCE;
+            case ROLE:
+                return SYSTEM_ROLE;
+            case INDEX:
+                return SYSTEM_INDEX;
+            case PACKAGE:
+                return SYSTEM_PACKAGE;
+            default:
+                return -1;
+        }
+    }
 
 }
 

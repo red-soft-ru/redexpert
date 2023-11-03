@@ -22,6 +22,7 @@ package org.executequery.gui.importexport;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -36,7 +37,6 @@ import java.io.CharArrayWriter;
 import java.io.File;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -152,7 +152,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
         setIndeterminateProgress(true);
         reset();
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("ImportXML") {
             public Object construct() {
                 return doWork();
             }

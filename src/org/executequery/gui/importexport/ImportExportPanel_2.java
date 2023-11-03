@@ -112,11 +112,11 @@ public class ImportExportPanel_2 extends JPanel
         }
 
         schemaSelectionModel = new DynamicComboBoxModel(schemas);
-        schemaCombo = WidgetFactory.createComboBox(schemaSelectionModel);
+        schemaCombo = WidgetFactory.createComboBox("schemaCombo", schemaSelectionModel);
         schemaCombo.addItemListener(this);
 
         tableSelectionModel = new DynamicComboBoxModel();
-        tableCombo = WidgetFactory.createComboBox(tableSelectionModel);
+        tableCombo = WidgetFactory.createComboBox("tableCombo", tableSelectionModel);
         tableCombo.addItemListener(this);
 
         tableLabel = new JLabel("Table:");

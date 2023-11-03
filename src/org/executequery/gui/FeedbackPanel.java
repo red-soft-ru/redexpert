@@ -121,14 +121,14 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         commentsField.setLineWrap(true);
         commentsField.setWrapStyleWord(true);
 
-        nameField = WidgetFactory.createTextField();
-        emailField = WidgetFactory.createTextField();
+        nameField = WidgetFactory.createTextField("nameField");
+        emailField = WidgetFactory.createTextField("emailField");
         initFieldValues();
 
         JPanel basePanel = new JPanel(new GridBagLayout());
 
         GridBagHelper gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5,5,5,5).anchorNorthWest();
+        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest();
 
         basePanel.add(new JLabel(labelText),
                 gridBagHelper.fillHorizontally().spanX().get());
@@ -144,9 +144,9 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         basePanel.add(new JScrollPane(commentsField),
                 gridBagHelper.nextRowFirstCol().spanX().spanY().fillBoth().get());
 
-        JButton cancelButton = WidgetFactory.createButton(Bundles.get("common.cancel.button"));
+        JButton cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"));
         cancelButton.setActionCommand("cancel");
-        JButton sendButton = WidgetFactory.createButton(Bundles.get("common.send.button"));
+        JButton sendButton = WidgetFactory.createButton("sendButton", Bundles.get("common.send.button"));
         sendButton.setActionCommand("Send");
 
         sendButton.addActionListener(this);
@@ -266,7 +266,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
             return;
         }
 
-        worker = new SwingWorker() {
+        worker = new SwingWorker("sendFeedback") {
 
             public Object construct() {
 

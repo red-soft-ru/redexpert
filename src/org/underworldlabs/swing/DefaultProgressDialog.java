@@ -19,9 +19,10 @@ public class DefaultProgressDialog extends JDialog
         implements Runnable,
         ActionListener {
 
-    private ProgressBar progressBar;    //progressBar widget
-    private final String description;    //description label text
-    private boolean isCancel = false;   //flag that displays if the cancelButton was clicked
+    protected ProgressBar progressBar;
+    protected final String description;
+    protected boolean isCancel = false;
+    protected JPanel buttonPanel;
 
     public boolean isCancel() {
         return isCancel;
@@ -39,12 +40,14 @@ public class DefaultProgressDialog extends JDialog
     private void init() {
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
+        buttonPanel = new JPanel(new GridBagLayout());
 
         progressBar = ProgressBarFactory.create(true, true);
         ((JComponent) progressBar).setPreferredSize(new Dimension(280, 20));
 
-        JButton cancelButton = new CancelButton();
+        JButton cancelButton = new ProgressDialogButton();
         cancelButton.addActionListener(this);
+        cancelButton.setToolTipText(bundledString("CancelButtonToolTipText"));
 
         // ---------------------------------------------
         // Components arranging
@@ -54,14 +57,17 @@ public class DefaultProgressDialog extends JDialog
         gridBagHelper.setInsets(5, 5, 5, 5);
         gridBagHelper.anchorCenter();
 
+        buttonPanel.add(cancelButton, gridBagHelper.get());
+
         mainPanel.add(new JLabel(description), gridBagHelper.setLabelDefault().get());
         mainPanel.add((JComponent) progressBar, gridBagHelper.nextRowFirstCol().fillHorizontally().get());
-        mainPanel.add(cancelButton, gridBagHelper.nextRowFirstCol().setLabelDefault().get());
+        mainPanel.add(buttonPanel, gridBagHelper.nextRowFirstCol().setLabelDefault().get());
 
         add(mainPanel, BorderLayout.CENTER);
 
         setResizable(false);
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setUndecorated(true);
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
         pack();
         setLocation(GUIUtilities.getLocationForDialog(getSize()));
@@ -74,6 +80,7 @@ public class DefaultProgressDialog extends JDialog
         setVisible(true);
     }
 
+    @Override
     public void dispose() {
 
         if (progressBar != null) {
@@ -82,14 +89,14 @@ public class DefaultProgressDialog extends JDialog
             progressBar.cleanup();
         }
 
-        isCancel = true;
-
         super.dispose();
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
 
         Log.info("Action canceled");
+        isCancel = true;
         dispose();
     }
 
@@ -97,25 +104,32 @@ public class DefaultProgressDialog extends JDialog
     // Cancel button class
     // ---------------------------------------------
 
-    private static class CancelButton extends JButton {
+    protected static class ProgressDialogButton extends JButton {
 
         private final int DEFAULT_WIDTH = 75;
         private final int DEFAULT_HEIGHT = 30;
 
-        public CancelButton() {
-
+        public ProgressDialogButton() {
             super(Bundles.get("common.cancel.button"));
             setMargin(Constants.EMPTY_INSETS);
         }
 
+        public ProgressDialogButton(String text) {
+            super(text);
+            setMargin(Constants.EMPTY_INSETS);
+        }
+
+        @Override
         public int getWidth() {
             return Math.max(super.getWidth(), DEFAULT_WIDTH);
         }
 
+        @Override
         public int getHeight() {
             return Math.max(super.getHeight(), DEFAULT_HEIGHT);
         }
 
+        @Override
         public Dimension getPreferredSize() {
             return new Dimension(getWidth(), getHeight());
         }

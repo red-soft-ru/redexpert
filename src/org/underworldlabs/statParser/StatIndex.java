@@ -5,20 +5,20 @@ public class StatIndex {
     public String name;
     public int indexId;
     public int depth;
-    public int leafBuckets;
+    public int leaf_buckets;
     public int nodes;
-    public int avgDataLength;
-    public int totalDup;
-    public int maxDup;
+    public float avg_data_length;
+    public int total_dup;
+    public int max_dup;
     public FillDistribution distribution;
 
     public int root_page;
-    public int avg_node_length;
-    public int avg_key_length;
-    public int compression_ratio;
-    public int avg_prefix_length;
-    public int clustering_factor;
-    public int ratio;
+    public float avg_node_length;
+    public float avg_key_length;
+    public float compression_ratio;
+    public float avg_prefix_length;
+    public float clustering_factor;
+    public float ratio;
 
     public StatIndex(StatTable table) {
         this.table = table;
@@ -58,12 +58,12 @@ public class StatIndex {
         this.depth = depth;
     }
 
-    public int getLeafBuckets() {
-        return leafBuckets;
+    public int getLeaf_buckets() {
+        return leaf_buckets;
     }
 
-    public void setLeafBuckets(int leafBuckets) {
-        this.leafBuckets = leafBuckets;
+    public void setLeaf_buckets(int leaf_buckets) {
+        this.leaf_buckets = leaf_buckets;
     }
 
     public int getNodes() {
@@ -74,28 +74,20 @@ public class StatIndex {
         this.nodes = nodes;
     }
 
-    public int getAvgDataLength() {
-        return avgDataLength;
+    public int getTotal_dup() {
+        return total_dup;
     }
 
-    public void setAvgDataLength(int avgDataLength) {
-        this.avgDataLength = avgDataLength;
+    public void setTotal_dup(int total_dup) {
+        this.total_dup = total_dup;
     }
 
-    public int getTotalDup() {
-        return totalDup;
+    public int getMax_dup() {
+        return max_dup;
     }
 
-    public void setTotalDup(int totalDup) {
-        this.totalDup = totalDup;
-    }
-
-    public int getMaxDup() {
-        return maxDup;
-    }
-
-    public void setMaxDup(int maxDup) {
-        this.maxDup = maxDup;
+    public void setMax_dup(int max_dup) {
+        this.max_dup = max_dup;
     }
 
     public FillDistribution getDistribution() {
@@ -114,51 +106,51 @@ public class StatIndex {
         this.root_page = root_page;
     }
 
-    public int getAvg_node_length() {
+    public float getAvg_node_length() {
         return avg_node_length;
     }
 
-    public void setAvg_node_length(int avg_node_length) {
+    public void setAvg_node_length(float avg_node_length) {
         this.avg_node_length = avg_node_length;
     }
 
-    public int getAvg_key_length() {
+    public float getAvg_key_length() {
         return avg_key_length;
     }
 
-    public void setAvg_key_length(int avg_key_length) {
+    public void setAvg_key_length(float avg_key_length) {
         this.avg_key_length = avg_key_length;
     }
 
-    public int getCompression_ratio() {
+    public float getCompression_ratio() {
         return compression_ratio;
     }
 
-    public void setCompression_ratio(int compression_ratio) {
+    public void setCompression_ratio(float compression_ratio) {
         this.compression_ratio = compression_ratio;
     }
 
-    public int getAvg_prefix_length() {
+    public float getAvg_prefix_length() {
         return avg_prefix_length;
     }
 
-    public void setAvg_prefix_length(int avg_prefix_length) {
+    public void setAvg_prefix_length(float avg_prefix_length) {
         this.avg_prefix_length = avg_prefix_length;
     }
 
-    public int getClustering_factor() {
+    public float getClustering_factor() {
         return clustering_factor;
     }
 
-    public void setClustering_factor(int clustering_factor) {
+    public void setClustering_factor(float clustering_factor) {
         this.clustering_factor = clustering_factor;
     }
 
-    public int getRatio() {
+    public float getRatio() {
         return ratio;
     }
 
-    public void setRatio(int ratio) {
+    public void setRatio(float ratio) {
         this.ratio = ratio;
     }
 }

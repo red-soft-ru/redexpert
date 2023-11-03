@@ -80,7 +80,7 @@ public class StatParser {
                         parse_hdr(line, db, line_no);
                     }
                 } else if (step == 2) {
-                    if (MiscUtils.isNull(line)) {
+                    if (MiscUtils.isNull(line) || line.contains("*END*")) {
                         step = 0;
                     } else {
                         parse_var(line, db, line_no);
@@ -219,7 +219,18 @@ public class StatParser {
     }
 
     public static void parse_var(String line, StatDatabase db, int line_no) throws ParseError, NoSuchFieldException, IllegalAccessException {
-        String[][] items_var = {
+        String[] parts = line.split(":");
+        StatDatabase.Variable var = new StatDatabase.Variable();
+        if (parts.length > 1) {
+            var.name = parts[0].trim();
+        } else throw new ParseError("Unknown information (line " + line_no + ")");
+        var.value = "";
+        for (int i = 1; i < parts.length; i++)
+            var.value += parts[i];
+        var.value = var.value.trim();
+        db.variables.add(var);
+
+        /*String[][] items_var = {
                 {"Sweep interval:", "i", null},
                 {"Continuation file:", "s", null},
                 {"Last logical page:", "i", null},
@@ -253,7 +264,7 @@ public class StatParser {
             }
         }
 
-        throw new ParseError("Unknown information (line " + line_no + ")");
+        throw new ParseError("Unknown information (line " + line_no + ")");*/
     }
 
     public static void parse_fseq(String line, StatDatabase db, int line_no) throws ParseError {
@@ -336,6 +347,10 @@ public class StatParser {
                             String key = item_tbl[0];
                             String valtype = item_tbl[1];
                             String name = item_tbl[2];
+                            if (name == null) {
+                                name = key.substring(0, 1).toLowerCase() + key.substring(1, key.length() - 1);
+                                name = name.replace(" ", "_");
+                            }
 
                             if (item.startsWith(key)) {
                                 String value = item.substring(key.length()).trim();
@@ -434,7 +449,7 @@ public class StatParser {
                             String valtype = item_idx2[1];
                             String name = item_idx2[2];
                             if (name == null) {
-                                name = key.substring(0, 1).toLowerCase() + key.substring(1);
+                                name = key.substring(0, 1).toLowerCase() + key.substring(1, key.length() - 1);
                                 name = name.replace(" ", "_");
                             }
 

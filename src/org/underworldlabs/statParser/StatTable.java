@@ -14,7 +14,7 @@ public class StatTable {
     public int max_versions;
     public int data_pages;
     public int data_page_slots;
-    public Double avg_fill;
+    public int avg_fill;
     public FillDistribution distribution;
     public List<StatIndex> indices;
     public int pointer_pages;
@@ -128,11 +128,11 @@ public class StatTable {
         this.data_page_slots = data_page_slots;
     }
 
-    public Double getAvg_fill() {
+    public int getAvg_fill() {
         return avg_fill;
     }
 
-    public void setAvg_fill(Double avg_fill) {
+    public void setAvg_fill(int avg_fill) {
         this.avg_fill = avg_fill;
     }
 

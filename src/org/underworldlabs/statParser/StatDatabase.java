@@ -81,6 +81,8 @@ public class StatDatabase {
     public int sequence_number;
     public int next_attachment_ID;
 
+    List<Variable> variables;
+
     public StatDatabase() {
         this.gstat_version = 0;
         this.system_change_number = 0;
@@ -118,6 +120,7 @@ public class StatDatabase {
         this.continuation_files = new ArrayList<>();
         this.tables = new ArrayList<>();
         this.indices = new ArrayList<>();
+        variables = new ArrayList<>();
     }
   /*
 
@@ -525,5 +528,13 @@ public class StatDatabase {
 
     public void setAutosweep_gap(int autosweep_gap) {
         this.autosweep_gap = autosweep_gap;
+    }
+
+    public static class Variable {
+        public String name;
+        public String value;
+
+        public Variable() {
+        }
     }
 }

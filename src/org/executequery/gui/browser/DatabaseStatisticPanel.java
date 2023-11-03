@@ -12,7 +12,10 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.AbstractServiceManagerPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.util.UserProperties;
+import org.underworldlabs.statParser.StatDatabase;
+import org.underworldlabs.statParser.StatParser;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
@@ -26,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implements TabView {
     public static final String TITLE = Bundles.get(DatabaseStatisticPanel.class, "title");
@@ -169,7 +173,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                             connectionPanel.getComponents()[i].setEnabled(false);
                         }
                         logToFileBox.setEnabled(false);*/
-                    SwingWorker sw = new SwingWorker("TraceSession") {
+                    SwingWorker sw = new SwingWorker("readDBStat") {
                         @Override
                         public Object construct() {
                             try {
@@ -178,6 +182,16 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                                 e.printStackTrace();
                             }
                             return null;
+                        }
+
+                        @Override
+                        public void finished() {
+                            try {
+                                StatDatabase db = StatParser.parse(Arrays.asList(textPanel.getTextAreaComponent().getText().split("\n")));
+                                Log.info(db.getServer());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     };
                     sw.start();

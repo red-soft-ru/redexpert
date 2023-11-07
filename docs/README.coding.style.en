@@ -1,0 +1,55 @@
+--------------------------------------------------
+--- Red Expert - Coding Style Recommendations ---
+--------------------------------------------------
+
+- The recommended indentation is 1 tab, which is equivalent to 4 spaces.
+- Spaces are necessary after keywords (if/for/while/switch/...), write "if (" not "if(".
+- No spaces are allowed between function name and function parameters, write "foo()", not "foo ()".
+- Minified code not allowed, write "c = a + b;", not "c=a+b;".
+- When writing code, try to immediately eliminate warnings that the IDE highlights.
+- Write complete and clear comments to your commits.
+- Before pushing a commit, run the full application build cycle and make sure that it runs without errors.
+- If you work in the Intellij Idea IDE, use the "Ctrl+Alt+L" key combination for quick code formatting.
+
+- When creating new graphical elements of the application, use helper classes:
+  org.executequery.gui.WidgetFactory                    - to create graphical components
+  org.underworldlabs.swing.swing.layouts.GridBagHelper  - to arrange graphical components
+
+- When creating new graphical elements of the application, it is strongly recommended to use the following template:
+
+    class ExampleClassPanel extends AbstractPanel {
+
+            // --- constants ---
+            ...
+
+            // --- fields ---
+            ...
+
+            // --- constructors ---
+            ...
+
+            protected void initComponents() {
+                // initializing fields
+            }
+
+            protected void arrangeComponents() {
+                // arranging UI components
+            }
+
+            protected void postInitActions() {
+                // other actions
+            }
+
+            // --- button handlers ---
+            ...
+
+            // --- other methods ---
+            ...
+
+            // --- interfaces implementation ---
+            ...
+
+            // --- inner classes ---
+            ...
+
+        }

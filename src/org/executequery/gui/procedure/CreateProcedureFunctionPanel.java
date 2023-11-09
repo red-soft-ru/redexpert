@@ -390,17 +390,23 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         super.checkExternal();
 
         if (useExternalBox.isSelected()) {
+
             parametersTabs.remove(sqlBodyText);
             parseVariablesBox.setVisible(false);
+
             if (parametersTabs.indexOfComponent(variablesPanel) > 0) {
                 parametersTabs.remove(variablesPanel);
                 parametersTabs.remove(cursorsPanel);
             }
 
+            sqlBodyText.setSQLText(null);
+
         } else {
             parametersTabs.insertTab(bundleString("Body", bundleString(getTypeObject())), null, sqlBodyText, null, 0);
             parametersTabs.setSelectedComponent(sqlBodyText);
             parseVariablesBox.setVisible(true);
+
+            sqlBodyText.appendSQLText(getEmptySqlBody());
             fillSqlBody();
         }
     }

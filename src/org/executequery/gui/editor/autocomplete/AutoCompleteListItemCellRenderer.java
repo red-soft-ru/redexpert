@@ -48,7 +48,7 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
     private static final ImageIcon databaseTableView;
 
     static {
-        sql92Keyword = GUIUtilities.loadIcon("Sql92.png", true);
+        sql92Keyword = GUIUtilities.loadIcon("Sql92.svg", true);
         animatedSpinner = GUIUtilities.loadIcon("AnimatedSpinner16.gif", true);
         userDefinedKeyword = GUIUtilities.loadIcon("User16.svg", true);
         databaseSpecificKeyword = GUIUtilities.loadIcon("DatabaseKeyword16.svg", true);

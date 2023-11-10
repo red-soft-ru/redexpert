@@ -20,6 +20,8 @@
 
 package org.executequery.util;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.ApplicationException;
 import org.executequery.plaf.ExecuteQueryTheme;
@@ -199,7 +201,7 @@ public final class LookAndFeelLoader {
 
         try {
 
-            LookAndFeel laf = new org.underworldlabs.swing.plaf.UnderworldLabsFlatLookAndFeel();
+            LookAndFeel laf = new FlatIntelliJLaf();
             UIManager.setLookAndFeel(laf);
 
 /*
@@ -243,7 +245,7 @@ public final class LookAndFeelLoader {
 
         try {
 
-            LookAndFeel laf = new org.underworldlabs.swing.plaf.UnderworldLabsDarkFlatLookAndFeel();
+            LookAndFeel laf = new FlatDarculaLaf();
             UIManager.setLookAndFeel(laf);
 
         } catch (UnsupportedLookAndFeelException e) {

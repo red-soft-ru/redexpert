@@ -326,8 +326,8 @@
             name="Execute"
             accel-key="control shift ENTER"
             accel-editable="true"
-            small-icon="/org/executequery/icons/Executings16.png"
-            large-icon="/org/executequery/icons/Execute24.png"
+            small-icon="/org/executequery/icons/Executings16.svg"
+            large-icon="/org/executequery/icons/Execute24z.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteInAnyConnectionsCommand"/>
 
     <action id="execute-as-block-command"
@@ -402,7 +402,7 @@
     <action id="execute-in-profiler-command"
             name="Execute Script In Profiler"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ExecuteInProfiler16.png"
+            small-icon="/org/executequery/icons/ExecuteInProfiler16.svg"
             execute-class="org.executequery.actions.queryeditor.ExecuteInProfilerCommand"/>
 
     <action id="print-plan-command"
@@ -660,7 +660,7 @@
             name="Manage Query Shortcuts"
             accel-key=""
             accel-editable="false"
-            small-icon="/org/executequery/icons/Shortcut16.png"
+            small-icon="/org/executequery/icons/Shortcut16.svg"
             execute-class="org.executequery.actions.queryeditor.ManageShortcutsCommand"/>
 
     <!--

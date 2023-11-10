@@ -25,73 +25,18 @@ package org.underworldlabs.swing.treetable;
  * questions.
  */
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
-import javax.accessibility.AccessibleContext;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.DefaultListSelectionModel;
-import javax.swing.Icon;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JViewport;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.RowFilter;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.RowSorterEvent;
-import javax.swing.event.RowSorterListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-import javax.swing.table.TableStringConverter;
-
 import org.executequery.GUIUtilities;
+
+import javax.accessibility.AccessibleContext;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.table.*;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.*;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.*;
 
 
 /**
@@ -776,7 +721,7 @@ public class ProfilerTable extends JTable {
             HeaderComponent corner = !hideable ? new HeaderComponent(chooser) :
                     new HeaderComponent(chooser) {
                         private final int offsetX = UIUtils.isWindowsClassicLookAndFeel() ? 0 : -1;
-                        private final Icon icon = GUIUtilities.loadIcon("org/executequery/icons/Up16.png");
+                        private final Icon icon = GUIUtilities.loadIcon("org/executequery/icons/Up16.svg");
                         protected void paintComponent(Graphics g) {
                             super.paintComponent(g);
                             int x = (getWidth() - icon.getIconWidth()) / 2 + offsetX;
@@ -800,7 +745,7 @@ public class ProfilerTable extends JTable {
     private JScrollPane getEnclosingScrollPane() {
         Container parent = SwingUtilities.getUnwrappedParent(this);
         if (!(parent instanceof JViewport)) return null;
-        Container scroll = ((JViewport)parent).getParent();
+        Container scroll = parent.getParent();
         return scroll instanceof JScrollPane ? (JScrollPane)scroll : null;
     }
 
@@ -1109,7 +1054,7 @@ public class ProfilerTable extends JTable {
                     !sel.isSelectedIndex(row)) selectRow(row, true);
             final MouseEvent me = e;
             SwingUtilities.invokeLater(new Runnable() {
-                public void run() { showPopupMenu(me); };
+                public void run() { showPopupMenu(me); }
             });
         }
 
@@ -1204,9 +1149,9 @@ public class ProfilerTable extends JTable {
     }
 
 
-    public static interface Tweaker {
+    public interface Tweaker {
 
-        public void tweak(ProfilerTable table);
+        void tweak(ProfilerTable table);
 
     }
 

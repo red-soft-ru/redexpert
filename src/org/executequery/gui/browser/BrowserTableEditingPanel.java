@@ -1380,7 +1380,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         });
         bar.add(deleteRolloverButton);
         RolloverButton moveUpButton = new RolloverButton();
-        moveUpButton.setIcon(GUIUtilities.loadIcon("Up16.png"));
+        moveUpButton.setIcon(GUIUtilities.loadIcon("Up16.svg"));
         moveUpButton.setToolTipText("Move up");
         moveUpButton.addActionListener(new ActionListener() {
             @Override
@@ -1390,7 +1390,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         });
         bar.add(moveUpButton);
         RolloverButton moveDownButton = new RolloverButton();
-        moveDownButton.setIcon(GUIUtilities.loadIcon("Down16.png"));
+        moveDownButton.setIcon(GUIUtilities.loadIcon("Down16.svg"));
         moveDownButton.setToolTipText("Move down");
         moveDownButton.addActionListener(new ActionListener() {
             @Override

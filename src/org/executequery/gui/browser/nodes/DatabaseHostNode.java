@@ -74,7 +74,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
 
     @Override
     public boolean isNameEditable() {
-        return true;
+        return false;
     }
 
     public void setParentFolder(ConnectionsFolderNode parentFolder) {
@@ -366,6 +366,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
         }
         return new ArrayList<>();
     }
+
 
 }
 

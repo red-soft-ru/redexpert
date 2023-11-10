@@ -134,6 +134,12 @@ public final class WidgetFactory {
         return tabbedPane;
     }
 
+    public static JTable createTable(String name) {
+        JTable table = new JTable();
+        table.setName(name);
+        return table;
+    }
+
     public static JPanel createPanel(String name) {
         JPanel panel = new JPanel();
         panel.setName(name);

@@ -2,7 +2,56 @@ package org.underworldlabs.statParser;
 
 import java.util.List;
 
-public class StatTable {
+public class StatTable extends TableModelObject {
+    public static final String[][] ITEMS_TBL = {
+            {"Table name:", "s", "name"},
+            {"Primary pointer page:", "i", null},
+            {"Index root page:", "i", null},
+            {"Pointer pages:", "i", "pointer_pages"},
+            {"Average record length:", "f", "avg_record_length"},
+            {"total records:", "i", null},
+            {"Average version length:", "f", "avg_version_length"},
+            {"total versions:", "i", null},
+            {"max versions:", "i", null},
+            {"Data pages:", "i", null},
+            {"data page slots:", "i", null},
+            {"average fill:", "p", "avg_fill"},
+            {"Primary pages:", "i", null},
+            {"secondary pages:", "i", null},
+            {"swept pages:", "i", null},
+            {"Empty pages:", "i", null},
+            {"full pages:", "i", null},
+            {"Primary pointer page:", "i", null},
+            {"Index root page:", "i", null},
+            {"Total formats:", "i", null},
+            {"used formats:", "i", null},
+            {"Average record length:", "f", "avg_record_length"},
+            {"total records:", "i", null},
+            {"Average version length:", "f", "avg_version_length"},
+            {"total versions:", "i", null},
+            {"max versions:", "i", null},
+            {"Average fragment length:", "f", "avg_fragment_length"},
+            {"total fragments:", "i", null},
+            {"max fragments:", "i", null},
+            {"Average unpacked length:", "f", "avg_unpacked_length"},
+            {"compression ratio:", "f", null},
+            {"Pointer pages:", "i", "pointer_pages"},
+            {"data page slots:", "i", null},
+            {"Data pages:", "i", null},
+            {"average fill:", "p", "avg_fill"},
+            {"Primary pages:", "i", null},
+            {"secondary pages:", "i", null},
+            {"swept pages:", "i", null},
+            {"Empty pages:", "i", null},
+            {"full pages:", "i", null},
+            {"Big record pages:", "i", null},
+            {"Blobs:", "i", null},
+            {"total length:", "i+", "blobs_total_length"},
+            {"blob pages:", "i", null},
+            {"Level 0:", "i", null},
+            {"Level 1:", "i", null},
+            {"Level 2:", "i", null}
+    };
     public String name;
     public int table_id;
     public int primary_pointer_page;
@@ -20,19 +69,20 @@ public class StatTable {
     public int pointer_pages;
     public int total_formats;
     public int used_formats;
-    public Double avg_fragment_length;
+    public float avg_fragment_length;
     public int total_fragments;
     public int max_fragments;
-    public Double avg_unpacked_length;
-    public Double compression_ratio;
+    public float avg_unpacked_length;
+    public float compression_ratio;
     public int primary_pages;
     public int secondary_pages;
     public int swept_pages;
     public int empty_pages;
     public int full_pages;
     public int blobs;
-    public int blobs_total_length;
+    public long blobs_total_length;
     public int blob_pages;
+    public int big_record_pages;
     public int level_0;
     public int level_1;
     public int level_2;
@@ -176,11 +226,11 @@ public class StatTable {
         this.used_formats = used_formats;
     }
 
-    public Double getAvg_fragment_length() {
+    public float getAvg_fragment_length() {
         return avg_fragment_length;
     }
 
-    public void setAvg_fragment_length(Double avg_fragment_length) {
+    public void setAvg_fragment_length(float avg_fragment_length) {
         this.avg_fragment_length = avg_fragment_length;
     }
 
@@ -200,19 +250,19 @@ public class StatTable {
         this.max_fragments = max_fragments;
     }
 
-    public Double getAvg_unpacked_length() {
+    public float getAvg_unpacked_length() {
         return avg_unpacked_length;
     }
 
-    public void setAvg_unpacked_length(Double avg_unpacked_length) {
+    public void setAvg_unpacked_length(float avg_unpacked_length) {
         this.avg_unpacked_length = avg_unpacked_length;
     }
 
-    public Double getCompression_ratio() {
+    public float getCompression_ratio() {
         return compression_ratio;
     }
 
-    public void setCompression_ratio(Double compression_ratio) {
+    public void setCompression_ratio(float compression_ratio) {
         this.compression_ratio = compression_ratio;
     }
 
@@ -264,11 +314,11 @@ public class StatTable {
         this.blobs = blobs;
     }
 
-    public int getBlobs_total_length() {
+    public long getBlobs_total_length() {
         return blobs_total_length;
     }
 
-    public void setBlobs_total_length(int blobs_total_length) {
+    public void setBlobs_total_length(long blobs_total_length) {
         this.blobs_total_length = blobs_total_length;
     }
 
@@ -302,5 +352,10 @@ public class StatTable {
 
     public void setLevel_2(int level_2) {
         this.level_2 = level_2;
+    }
+
+    @Override
+    protected String[][] getItems() {
+        return ITEMS_TBL;
     }
 }

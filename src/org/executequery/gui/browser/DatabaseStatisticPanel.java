@@ -10,9 +10,9 @@ import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.AbstractServiceManagerPanel;
+import org.executequery.gui.browser.managment.dbstatistic.StatisticTablePanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.statParser.StatDatabase;
 import org.underworldlabs.statParser.StatParser;
@@ -29,7 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Driver;
 import java.sql.SQLException;
-import java.util.Arrays;
 
 public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implements TabView {
     public static final String TITLE = Bundles.get(DatabaseStatisticPanel.class, "title");
@@ -38,6 +37,8 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
     protected JTextField fileStatField;
     SimpleTextArea textPanel;
     private JButton getStatButton;
+    StatisticTablePanel tablesPanel;
+    StatisticTablePanel indexesPanel;
 
     @Override
     public boolean tabViewClosing() {
@@ -183,16 +184,6 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                             }
                             return null;
                         }
-
-                        @Override
-                        public void finished() {
-                            try {
-                                StatDatabase db = StatParser.parse(Arrays.asList(textPanel.getTextAreaComponent().getText().split("\n")));
-                                Log.info(db.getServer());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
                     };
                     sw.start();
                     tabPane.setSelectedComponent(textPanel);
@@ -208,6 +199,11 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 }
             }
         });
+        tablesPanel = new StatisticTablePanel();
+        tablesPanel.initModel(StatisticTablePanel.TABLE);
+        indexesPanel = new StatisticTablePanel();
+        indexesPanel.initModel(StatisticTablePanel.INDEX);
+
     }
 
     @Override
@@ -239,6 +235,8 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         gbh.fullDefaults();
         tabPane.add(bundleString("Connection"), connectionPanel);
         tabPane.add(bundleString("Text"), textPanel);
+        tabPane.add("tables", tablesPanel);
+        tabPane.add("indices", indexesPanel);
         connectionPanel.setLayout(new GridBagLayout());
         gbh.fullDefaults();
         gbh.addLabelFieldPair(connectionPanel, bundleString("Connections"), databaseBox, null, true, true);
@@ -277,15 +275,20 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
     private void readFromBufferedReader(BufferedReader reader, boolean fromFile) {
         String line;
+        StatParser.ParserParameters parserParameters = new StatParser.ParserParameters();
+        parserParameters.db = new StatDatabase();
         while (true) {
             try {
                 if ((line = reader.readLine()) == null)
                     break;
+                else parserParameters = StatParser.parse(parserParameters, line);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             textPanel.getTextAreaComponent().append(line + "\n");
         }
+        tablesPanel.setRows(parserParameters.db.tables);
+        indexesPanel.setRows(parserParameters.db.indices);
     }
 
     void clearAll() {

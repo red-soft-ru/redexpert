@@ -4,8 +4,33 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StatDatabase {
+public class StatDatabase extends TableModelObject {
 
+    public static final String[][] ITEMS_HDR = {
+            {"Flags", "i", null},
+            {"Checksum", "i", null},
+            {"Generation", "i", null},
+            {"System Change Number", "i", "system_change_number"},
+            {"Page size", "i", null},
+            {"Server", "s", null},
+            {"ODS version", "s", "ods_version"},
+            {"Oldest transaction", "i", "oit"},
+            {"Oldest active", "i", "oat"},
+            {"Oldest snapshot", "i", "ost"},
+            {"Next transaction", "i", null},
+            {"Bumped transaction", "i", null},
+            {"Autosweep gap", "i", null},
+            {"Sequence number", "i", null},
+            {"Next attachment ID", "i", null},
+            {"Implementation ID", "i", null},
+            {"Implementation", "s", null},
+            {"Shadow count", "i", null},
+            {"Page buffers", "i", null},
+            {"Next header page", "i", null},
+            {"Database dialect", "i", null},
+            {"Creation date", "d", null},
+            {"Attributes", "l", null}
+    };
     public int gstat_version;
 
     public int system_change_number;
@@ -536,5 +561,10 @@ public class StatDatabase {
 
         public Variable() {
         }
+    }
+
+    @Override
+    protected String[][] getItems() {
+        return ITEMS_HDR;
     }
 }

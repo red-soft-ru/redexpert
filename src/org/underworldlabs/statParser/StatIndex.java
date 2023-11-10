@@ -1,6 +1,28 @@
 package org.underworldlabs.statParser;
 
-public class StatIndex {
+public class StatIndex extends TableModelObject {
+    public static final String[][] ITEMS_IDX = {
+            {"Index name:", "s", "name"},
+            {"Depth:", "i", null},
+            {"leaf buckets:", "i", null},
+            {"nodes:", "i", null},
+            {"Average data length:", "f", "avg_data_length"},
+            {"total dup:", "i", null},
+            {"max dup:", "i", null},
+            {"Root page:", "i", null},
+            {"depth:", "i", null},
+            {"leaf buckets:", "i", null},
+            {"nodes:", "i", null},
+            {"Average node length:", "f", "avg_node_length"},
+            {"total dup:", "i", null},
+            {"max dup:", "i", null},
+            {"Average key length:", "f", "avg_key_length"},
+            {"compression ratio:", "f", null},
+            {"Average prefix length:", "f", "avg_prefix_length"},
+            {"average data length:", "f", "avg_data_length"},
+            {"Clustering factor:", "f", null},
+            {"ratio:", "f", null}
+    };
     public StatTable table;
     public String name;
     public int indexId;
@@ -152,5 +174,10 @@ public class StatIndex {
 
     public void setRatio(float ratio) {
         this.ratio = ratio;
+    }
+
+    @Override
+    protected String[][] getItems() {
+        return ITEMS_IDX;
     }
 }

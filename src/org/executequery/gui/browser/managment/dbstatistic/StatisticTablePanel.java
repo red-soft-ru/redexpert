@@ -1,6 +1,7 @@
 package org.executequery.gui.browser.managment.dbstatistic;
 
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.managment.tracemanager.AnalisePanel;
 import org.underworldlabs.statParser.StatDatabase;
 import org.underworldlabs.statParser.StatIndex;
 import org.underworldlabs.statParser.StatTable;
@@ -53,6 +54,8 @@ public class StatisticTablePanel extends AbstractPanel {
         }
         model = new StatisticTableModel(tableModelObject);
         table.setModel(model);
+        AnalisePanel.AnaliseSorter sorter = new AnalisePanel.AnaliseSorter<>(model);
+        table.setRowSorter(sorter);
         int colWidth = 120;
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {

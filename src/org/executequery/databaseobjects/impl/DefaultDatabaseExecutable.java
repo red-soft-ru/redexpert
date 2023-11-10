@@ -20,20 +20,13 @@
 
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.databaseobjects.DatabaseExecutable;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.*;
+import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -277,6 +270,67 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
     public void setAuthid(String authid) {
         this.authid = authid;
     }
+
+    protected Parameter fillParameter(Parameter pp, ResultSet rs) throws SQLException {
+        pp.setSubType(rs.getInt(FIELD_SUB_TYPE));
+        pp.setDataType(DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(FIELD_TYPE), pp.getSubType()));
+        pp.setSize(rs.getInt(FIELD_LENGTH));
+        pp.setPosition(rs.getInt(prefixLabel() + positionLabel()));
+        final short fieldScale = rs.getShort(FIELD_SCALE);
+        pp.setScale(fieldScale);
+        pp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(FIELD_TYPE), pp.getSubType(), pp.getScale()));
+        switch (pp.getDataType()) {
+            case Types.DECIMAL:
+            case Types.NUMERIC:
+                // TODO column precision
+                pp.setScale(fieldScale * (-1));
+                break;
+            default:
+                break;
+        }
+        if (rs.getInt(FIELD_PRECISION) != 0)
+            pp.setSize(rs.getInt(FIELD_PRECISION));
+        if (rs.getInt(CHARACTER_LENGTH) != 0)
+            pp.setSize(rs.getInt(CHARACTER_LENGTH));
+        if (pp.getDataType() == Types.LONGVARBINARY ||
+                pp.getDataType() == Types.LONGVARCHAR ||
+                pp.getDataType() == Types.BLOB) {
+            pp.setSubType(rs.getInt(FIELD_SUB_TYPE));
+            pp.setSize(rs.getInt(SEGMENT_LENGTH));
+        }
+        String domain = rs.getString(FIELD_NAME);
+        if (domain != null && !domain.startsWith("RDB$"))
+            pp.setDomain(domain.trim());
+        else if (domain != null && domain.startsWith("RDB$"))
+            pp.setSystemDomain(domain);
+        pp.setTypeOf(rs.getInt(prefixLabel() + mechanismLabel()) == 1);
+        String relationName = rs.getString(prefixLabel() + RELATION_NAME);
+        if (relationName != null)
+            pp.setRelationName(relationName.trim());
+        String fieldName = rs.getString(prefixLabel() + FIELD_NAME);
+        if (fieldName != null)
+            pp.setFieldName(fieldName.trim());
+        pp.setNullable(rs.getInt(prefixLabel() + NULL_FLAG) == 1 ? 0 : 1);
+        pp.setDescription(rs.getString(prefixLabel() + DESCRIPTION));
+        if (pp.getRelationName() != null && pp.getFieldName() != null)
+            pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+        String characterSet = rs.getString(CHARACTER_SET_NAME);
+        if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
+            pp.setEncoding(characterSet.trim());
+        pp.setDefaultValue(rs.getString(prefixLabel() + DEFAULT_SOURCE));
+        if (pp.getDefaultValue() == null) {
+            pp.setDefaultValue(rs.getString(DEFAULT_SOURCE));
+            if (pp.getDomain() != null)
+                pp.setDefaultValueFromDomain(true);
+        }
+        return pp;
+    }
+
+    protected abstract String prefixLabel();
+
+    protected abstract String mechanismLabel();
+
+    protected abstract String positionLabel();
 }
 
 

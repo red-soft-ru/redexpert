@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing.toolbar;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.util.IconUtilities;
 
@@ -101,11 +102,7 @@ public class ToolBarButton implements Serializable, Cloneable {
     }
 
     public String getName() {
-        if (id == SEPARATOR_ID) {
-            return "- Separator -";
-        } else {
-            return (String) action.getValue(Action.NAME);
-        }
+        return (id == SEPARATOR_ID) ? bundleString("separator") : (String) action.getValue(Action.NAME);
     }
 
     public void setId(int id) {
@@ -129,6 +126,9 @@ public class ToolBarButton implements Serializable, Cloneable {
         }
     }
 
+    public static String bundleString(String key) {
+        return Bundles.get(ToolBarButton.class, key);
+    }
 
 }
 

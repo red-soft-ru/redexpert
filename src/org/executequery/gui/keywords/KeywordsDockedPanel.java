@@ -47,8 +47,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Docked keywords panel.
@@ -134,7 +134,7 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
         PanelToolBar tools = new PanelToolBar();
 
         tools.addLabel("Find: ");
-        searchField = WidgetFactory.createTextField();
+        searchField = WidgetFactory.createTextField("searchField");
         searchField.addActionListener(this);
         searchField.setActionCommand("search");
         tools.addTextField(searchField);
@@ -155,7 +155,7 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
     }
 
     private void loadKeywords() {
-        List<String> sql92 = keywords().getSQL92();
+        List<String> sql92 = keywords().getServerKeywords(0, 0, "");
         List<String> user = keywords().getUserDefinedSQL();
 
         int sql92Size = sql92.size();

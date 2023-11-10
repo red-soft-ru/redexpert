@@ -7,7 +7,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.sqlbuilder.Field;
-import org.executequery.sql.sqlbuilder.LeftJoin;
+import org.executequery.sql.sqlbuilder.Join;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -217,12 +217,12 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     public String getCreateSQLText() {
         return SQLUtils.generateCreateIndex(
                 getName(), getType(), isUnique(), getTableName(), null, getCondition(),
-                getIndexColumns(), getTablespace(), isActive(), getRemarks());
+                getIndexColumns(), getTablespace(), isActive(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("INDEX", getName());
+        return SQLUtils.generateDefaultDropQuery("INDEX", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -286,7 +286,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table indicies = getMainTable();
         Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
         Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT");
@@ -305,8 +305,8 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         sb.appendField(Field.createField(indexSegments, FIELD_NAME));
         sb.appendField(Field.createField(indexSegments, FIELD_POSITION));
         Field indexName = Field.createField(indicies, "INDEX_NAME");
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(indexName, Field.createField(constraints, indexName.getAlias())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(indexName, Field.createField(indexSegments, indexName.getAlias())));
+        sb.appendJoin(Join.createLeftJoin().appendFields(indexName, Field.createField(constraints, indexName.getAlias())));
+        sb.appendJoin(Join.createLeftJoin().appendFields(indexName, Field.createField(indexSegments, indexName.getAlias())));
         sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(indexSegments, FIELD_POSITION).getFieldTable());
         return sb;
     }
@@ -378,7 +378,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
         boolean res = true;
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        String query = "SET STATISTICS INDEX " + MiscUtils.getFormattedObject(getName());
+        String query = "SET STATISTICS INDEX " + MiscUtils.getFormattedObject(getName(), getHost().getDatabaseConnection());
 
         try {
 

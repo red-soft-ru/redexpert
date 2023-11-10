@@ -21,6 +21,7 @@
 package org.executequery.gui.resultset;
 
 import org.executequery.Constants;
+import org.executequery.databaseobjects.Types;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -28,7 +29,6 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -108,6 +108,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         switch (sqlType) {
 
             case Types.TINYINT:
+            case Types.INT128:
             case Types.BIGINT:
             case Types.NUMERIC:
             case Types.DECIMAL:
@@ -187,6 +188,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                     break;
 
                 case Types.TINYINT:
+                case Types.INT128:
                 case Types.BIGINT:
                 case Types.NUMERIC:
                 case Types.DECIMAL:

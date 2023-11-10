@@ -3,17 +3,23 @@ package org.executequery.sql.sqlbuilder;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LeftJoin {
+public class Join {
     Table leftTable;
 
     Table rightTable;
     Map<Field, Field> mapField;
 
-    public static LeftJoin createLeftJoin() {
-        return new LeftJoin();
+    String typeJoin;
+
+    public static Join createLeftJoin() {
+        return new Join().setTypeJoin("LEFT");
     }
 
-    public LeftJoin appendFields(Field leftField, Field rightField) {
+    public static Join createInnerJoin() {
+        return new Join().setTypeJoin("");
+    }
+
+    public Join appendFields(Field leftField, Field rightField) {
         if (mapField == null) {
             mapField = new HashMap<>();
             leftTable = leftField.getTable();
@@ -29,7 +35,7 @@ public class LeftJoin {
         return condition;
     }
 
-    public LeftJoin setCondition(Condition condition) {
+    public Join setCondition(Condition condition) {
         this.condition = condition;
         return this;
     }
@@ -44,5 +50,14 @@ public class LeftJoin {
 
     public Map<Field, Field> getMapField() {
         return mapField;
+    }
+
+    public String getTypeJoin() {
+        return typeJoin;
+    }
+
+    public Join setTypeJoin(String typeJoin) {
+        this.typeJoin = typeJoin;
+        return this;
     }
 }

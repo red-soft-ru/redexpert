@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseColumn;
 import org.executequery.gui.browser.DatabaseObjectChangeProvider;
+import org.executequery.gui.browser.tree.RETreePath;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 
@@ -47,6 +48,7 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      * indicates that children have been retrieved
      */
     private boolean childrenRetrieved;
+    List<DatabaseObjectNode> childrenList;
 
     /**
      * Creates a new instance of DefaultDatabaseObjectNode
@@ -193,24 +195,25 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      * @return a list of children for this node
      */
     public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
+        if (childrenList == null) {
+            NamedObject _namedObject = getDatabaseObject();
+            if (_namedObject != null) {
 
-        NamedObject _namedObject = getDatabaseObject();
-        if (_namedObject != null) {
+                List<NamedObject> values = _namedObject.getObjects();
+                if (values != null) {
 
-            List<NamedObject> values = _namedObject.getObjects();
-            if (values != null) {
-
-                List<DatabaseObjectNode> nodes = new ArrayList<DatabaseObjectNode>();
-                for (int i = 0, n = values.size(); i < n; i++) {
-
-                    nodes.add(new DatabaseObjectNode(values.get(i)));
+                    childrenList = new ArrayList<DatabaseObjectNode>();
+                    for (int i = 0, n = values.size(); i < n; i++) {
+                        /*if(values.get(i) instanceof AbstractTableObject&&!(values.get(i)instanceof DefaultDatabaseView))
+                            childrenList.add(new DatabaseTableNode(values.get(i)));
+                        else*/
+                        childrenList.add(new DatabaseObjectNode(values.get(i)));
+                    }
                 }
-
-                return nodes;
             }
         }
 
-        return null;
+        return childrenList;
     }
 
     /**
@@ -265,6 +268,7 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         databaseObject.reset();
         removeAllChildren();
         childrenRetrieved = false;
+        childrenList = null;
     }
 
     /**
@@ -336,7 +340,10 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
     }
 
     public TreePath getTreePath() {
-        return new TreePath(this);
+        if (getParent() != null && getParent() instanceof DatabaseObjectNode) {
+            TreePath treePath = ((DatabaseObjectNode) getParent()).getTreePath();
+            return new RETreePath(treePath, this);
+        } else return new TreePath(this);
     }
 
 }

@@ -24,6 +24,7 @@ import org.executequery.Constants;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
+import org.executequery.gui.editor.QueryEditorSettings;
 import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
 
 import javax.swing.*;
@@ -76,14 +77,22 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     private final boolean autocompleteOnlyHotKey;
 
     public SimpleSqlTextPanel() {
-        this(false, true);
+        this(false, false, "SQL");
+    }
+
+    public SimpleSqlTextPanel(String title) {
+        this(false, false, title);
     }
 
     public SimpleSqlTextPanel(boolean appending, boolean autocompleteOnlyHotKey) {
+        this(appending, autocompleteOnlyHotKey, "SQL");
+    }
+
+    public SimpleSqlTextPanel(boolean appending, boolean autocompleteOnlyHotKey, String title) {
         super(new BorderLayout());
         this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
         try {
-            init();
+            init(title);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -92,12 +101,12 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
         this.appending = appending;
     }
 
-    private void init() throws Exception {
+    private void init(String title) throws Exception {
 
-        setBorder(BorderFactory.createTitledBorder("SQL"));
+        setBorder(BorderFactory.createTitledBorder(title));
 
         textPane = new SQLTextArea(autocompleteOnlyHotKey);
-        textPane.setFont(new Font("monospaced", Font.PLAIN, 12));
+        textPane.setFont(QueryEditorSettings.getEditorFont());
 //        textPane.setBackground(null);
         textPane.setDragEnabled(true);
         textComponent = textPane;

@@ -57,10 +57,10 @@ public class ImportExportXMLPanel_6 extends JPanel {
 
     private void init() throws Exception {
 
-        typeField = WidgetFactory.createTextField();
-        pathField = WidgetFactory.createTextField();
-        formatField = WidgetFactory.createTextField();
-        tableField = WidgetFactory.createTextField();
+        typeField = WidgetFactory.createTextField("typeField");
+        pathField = WidgetFactory.createTextField("pathField");
+        formatField = WidgetFactory.createTextField("formatField");
+        tableField = WidgetFactory.createTextField("tableField");
 
         setFieldProperties(typeField);
         setFieldProperties(pathField);

@@ -65,6 +65,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     int act;
     String[] iconNamesForFields = {"no_grant_vertical", "no_grant_gorisont", "grant_vertical", "grant_gorisont", "admin_option_vertical", "admin_option_gorisont"};
     String[] iconNames = {"no_grant_vertical", "no_grant_gorisont", "no_grant_all", "grant_vertical", "grant_gorisont", "grant_all", "admin_option_vertical", "admin_option_gorisont", "admin_option_all"};
+    String[] toolTips = bundleStrings(new String[]{"no_grant_vertical", "no_grant_gorisont", "no_grant_all", "grant_vertical", "grant_gorisont", "grant_all", "admin_option_vertical", "admin_option_gorisont", "admin_option_all"});
     int firstGrantColumn = 1;
     int col_execute = 6;
     int col_usage = 7;
@@ -73,7 +74,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     boolean inited = false;
     long startTime;
     boolean visibleProgress = false;
-    private int typeTable;
+    private final int typeTable;
     private NamedObject user;
     private NamedObject relation;
     private RolloverButton[] grantFieldButtons;
@@ -91,7 +92,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     private EQCheckCombox objectTypeBox;
     private DefaultStatementExecutor querySender;
     //private EQCheckCombox userBox;
-    private int buttonSize = 20;
+    private final int buttonSize = 20;
     private GrantManagerPanel grantManagerPanel;
 
     public PrivilegesTablePanel(int typeTable, GrantManagerPanel grantManagerPanel) {
@@ -122,7 +123,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
                 e.printStackTrace();
             }
             if (supported)
-                if (databaseConnection.getServerVersion() < 3) {
+                if (databaseConnection.getMajorServerVersion() < 3) {
                     if (metattype == NamedObject.SEQUENCE || metattype == NamedObject.EXCEPTION)
                         return false;
                 }
@@ -199,6 +200,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             grantFieldButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/" + iconNamesForFields[i] + ".svg", buttonSize));
             grantFieldButtons[i].setMouseEnteredContentAreaFill(false);
             grantFieldButtons[i].setActionCommand("field_" + i);
+            grantFieldButtons[i].setToolTipText(bundleString(iconNamesForFields[i]));
             grantFieldButtons[i].addActionListener(this);
         }
         tablePrivileges = new JTable();
@@ -214,6 +216,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/" + iconNames[i] + ".svg", buttonSize));
             grantButtons[i].setActionCommand(iconNames[i]);
             grantButtons[i].setMouseEnteredContentAreaFill(false);
+            grantButtons[i].setToolTipText(toolTips[i]);
             grantToolBar.add(grantButtons[i]);
             grantButtons[i].addActionListener(this);
         }
@@ -295,13 +298,14 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             }
         });
 
-        refreshButton = new RolloverButton(/*bundleString("Refresh")*/);
+        refreshButton = new RolloverButton();
+        refreshButton.setToolTipText(bundleString("Refresh"));
         refreshButton.setIcon(IconUtilities.loadIcon("/org/executequery/icons/Refresh16.svg", buttonSize));
         refreshButton.setMouseEnteredContentAreaFill(false);
         refreshButton.addActionListener(this);
 
         cancelButton = new RolloverButton();
-        //cancelButton.setText(bundleString("CancelFill"));
+        cancelButton.setToolTipText(bundleString("CancelFill"));
         cancelButton.setIcon(IconUtilities.loadIcon("/org/executequery/icons/Stop16.svg", buttonSize));
         cancelButton.setMouseEnteredContentAreaFill(false);
         cancelButton.addActionListener(this);
@@ -536,7 +540,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     }
 
     private String getGrantQuery(NamedObject grantor, int typeGrant, String grant, NamedObject relation, String... fields) {
-        GrantBuilder gb = new GrantBuilder();
+        GrantBuilder gb = new GrantBuilder(querySender.getDatabaseConnection());
         gb.setGrantor(grantor.getName()).setRelation(relation.getName()).setGrantType(grant);
         switch (typeGrant) {
             case 0:
@@ -563,7 +567,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     void execute_thread() {
         if (enableElements) {
             setEnableElements(false);
-            org.underworldlabs.swing.util.SwingWorker sw = new SwingWorker("executeThreadForGrants") {
+            SwingWorker sw = new SwingWorker("executeThreadForGrants") {
                 @Override
                 public Object construct() {
                     runToThread();
@@ -666,18 +670,18 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     }
 
     String buildQueryForPrivileges(int rdbTypeUser, int rdbTypeObject) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(querySender.getDatabaseConnection());
         Table userPrivileges = Table.createTable("RDB$USER_PRIVILEGES", "UP");
         sb.appendTable(userPrivileges);
         sb.appendFields(userPrivileges, "RELATION_NAME", "PRIVILEGE", "GRANT_OPTION", "FIELD_NAME");
         sb.appendField(Field.createField(userPrivileges, "USER").setAlias("USER_NAME"));
-        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER_TYPE"), "=", rdbTypeUser + ""));
+        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER_TYPE"), "=", String.valueOf(rdbTypeUser)));
         String aliasCondition = "USER";
         if (typeTable == OBJECT_USERS)
             aliasCondition = "RELATION_NAME";
         sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, aliasCondition), "=", "?"));
         Condition rfbTypeCondition = Condition.createCondition()
-                .appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", rdbTypeObject + ""));
+                .appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", String.valueOf(rdbTypeObject)));
         if (rdbTypeObject == 1) {
             rfbTypeCondition.setLogicOperator("OR");
             rfbTypeCondition.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", 0 + ""));
@@ -720,7 +724,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
 
     List<NamedObject> getUsers() {
         List<NamedObject> users = new ArrayList<>();
-        if (databaseConnection.getServerVersion() >= 3)
+        if (databaseConnection.getMajorServerVersion() >= 3)
             users.addAll(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.USER]));
         else {
             Connection connection = null;
@@ -917,14 +921,14 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     }
 
     String buildQueryForPrivilegesByField(int rdbTypeUser, int rdbTypeObject) {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(querySender.getDatabaseConnection());
         Table userPrivileges = Table.createTable("RDB$USER_PRIVILEGES", "UP");
         sb.appendTable(userPrivileges);
         sb.appendFields(userPrivileges, "RELATION_NAME", "PRIVILEGE", "GRANT_OPTION", "FIELD_NAME");
-        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER_TYPE"), "=", rdbTypeUser + ""));
+        sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER_TYPE"), "=", String.valueOf(rdbTypeUser)));
         sb.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "USER"), "=", "?"));
         Condition rfbTypeCondition = Condition.createCondition()
-                .appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", rdbTypeObject + ""));
+                .appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", String.valueOf(rdbTypeObject)));
         if (rdbTypeObject == 1) {
             rfbTypeCondition.setLogicOperator("OR");
             rfbTypeCondition.appendCondition(Condition.createCondition(Field.createField(userPrivileges, "OBJECT_TYPE"), "=", 0 + ""));
@@ -1107,6 +1111,23 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
                         act = CREATE_TABLE;
             execute_thread();
         }
+    }
+
+    public void cleanup() {
+
+        if (grantToolBar != null) {
+            for (Component comp : grantToolBar.getComponents()) {
+                if (comp instanceof RolloverButton) {
+                    ((RolloverButton) comp).removeActionListener(this);
+                }
+            }
+        }
+        if (grantFieldsToolbar != null)
+            for (Component comp : grantFieldsToolbar.getComponents()) {
+                if (comp instanceof RolloverButton) {
+                    ((RolloverButton) comp).removeActionListener(this);
+                }
+            }
     }
 
     class TypeObject {

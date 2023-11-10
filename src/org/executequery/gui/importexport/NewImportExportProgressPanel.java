@@ -72,7 +72,7 @@ public class NewImportExportProgressPanel extends AbstractImportExportPanel
         output.setBackground(getBackground());
 
         progressBar = new JProgressBar(0, 100);
-        stopButton = WidgetFactory.createButton("Stop");
+        stopButton = WidgetFactory.createButton("stopButton", "Stop");
         stopButton.addActionListener(this);
 
         GridBagConstraints gbc = new GridBagConstraints();

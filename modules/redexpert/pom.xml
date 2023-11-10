@@ -14,7 +14,7 @@
         <groupId>org.executequery</groupId>
         <artifactId>RedExpert-parent</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>2023.05</version>
+        <version>2023.10.1</version>
     </parent>
 
     <dependencies>
@@ -195,6 +195,19 @@
             <version>2.0.3</version>
         </dependency>
 
+        <!-- https://github.com/java-diff-utils/java-diff-utils -->
+        <dependency>
+            <groupId>io.github.java-diff-utils</groupId>
+            <artifactId>java-diff-utils</artifactId>
+            <version>4.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -255,6 +268,11 @@
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.2</version>
+                <configuration>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>ico</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
                 <executions>
                     <execution>
                         <id>copy-resources</id>

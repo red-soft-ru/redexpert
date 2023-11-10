@@ -22,6 +22,7 @@ package org.executequery.gui.editor;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.log.Log;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.SqlCommandHistoryRepository;
 import org.executequery.sql.QueryDelegate;
@@ -91,6 +92,10 @@ public class QueryEditorDelegate implements QueryDelegate {
         return dispatcher.getCommitMode();
     }
 
+    public long getIDTransaction() {
+        return dispatcher.getIDTransaction();
+    }
+
     public void preferencesChanged() {
 
         dispatcher.preferencesChanged();
@@ -112,14 +117,14 @@ public class QueryEditorDelegate implements QueryDelegate {
         dispatcher.closeConnection();
     }
 
-    public void commit() {
+    public void commit(boolean anyConnections) {
 
-        executeQuery("commit");
+        executeQuery("commit", anyConnections, false);
     }
 
-    public void rollback() {
+    public void rollback(boolean anyConnections) {
 
-        executeQuery("rollback");
+        executeQuery("rollback", anyConnections, false);
     }
 
     public void commitModeChanged(boolean autoCommit) {
@@ -127,30 +132,30 @@ public class QueryEditorDelegate implements QueryDelegate {
         queryEditor.commitModeChanged(autoCommit);
     }
 
-    public void executeQuery(String query) {
+    public void executeQuery(String query, boolean anyConnections, boolean inBackground) {
 
-        executeQuery(queryEditor.getSelectedConnection(), query, false);
+        executeQuery(queryEditor.getSelectedConnection(), query, false, anyConnections, inBackground);
     }
 
-    public void executeQuery(String query, boolean executeAsBlock) {
+    public void executeQuery(String query, boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
 
         queryEditor.preExecute();
 
-        executeQuery(queryEditor.getSelectedConnection(), query, executeAsBlock);
+        executeQuery(queryEditor.getSelectedConnection(), query, executeAsBlock, anyConnections, inBackground);
     }
 
     @Override
-    public int getTransactionIsolation() {
-        return dispatcher.getTransactionIsolation();
+    public void setTPP(TransactionParametersPanel tpp) {
+        dispatcher.setTpp(tpp);
     }
 
     @Override
-    public void setTransactionIsolation(int transactionLevel) {
-        dispatcher.setTransactionIsolation(transactionLevel);
+    public TransactionParametersPanel getTPP() {
+        return dispatcher.getTpp();
     }
 
     public void executeQuery(DatabaseConnection selectedConnection,
-                             String query, boolean executeAsBlock) {
+                             String query, boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
 
         if (dispatcher.isExecuting()) {
 
@@ -167,13 +172,32 @@ public class QueryEditorDelegate implements QueryDelegate {
             currentStatementHistoryIndex = -1;
             queryEditor.setHasPreviousStatement(true);
             queryEditor.setHasNextStatement(false);
-            dispatcher.executeSQLQuery(selectedConnection, query, executeAsBlock);
+            dispatcher.executeSQLQuery(selectedConnection, query, executeAsBlock, anyConnections, inBackground);
+        }
+
+    }
+
+    public void executeQueryInProfiler(
+            DatabaseConnection selectedConnection, String query, boolean executeAsBlock) {
+
+        if (dispatcher.isExecuting())
+            return;
+
+        if (query == null)
+            query = queryEditor.getEditorText();
+
+        if (StringUtils.isNotBlank(query)) {
+
+            currentStatementHistoryIndex = -1;
+            queryEditor.setHasPreviousStatement(true);
+            queryEditor.setHasNextStatement(false);
+            dispatcher.executeSQLQueryInProfiler(selectedConnection, query, executeAsBlock);
         }
 
     }
 
     public void executeScript(DatabaseConnection selectedConnection,
-                              String script) {
+                              String script, boolean anyConnections) {
 
         if (dispatcher.isExecuting()) {
 
@@ -190,7 +214,7 @@ public class QueryEditorDelegate implements QueryDelegate {
             currentStatementHistoryIndex = -1;
             queryEditor.setHasPreviousStatement(true);
             queryEditor.setHasNextStatement(false);
-            dispatcher.executeSQLScript(selectedConnection, script);
+            dispatcher.executeSQLScript(selectedConnection, script, anyConnections);
         }
 
     }
@@ -210,7 +234,7 @@ public class QueryEditorDelegate implements QueryDelegate {
 
         if (StringUtils.isNotBlank(query)) {
             query = new SqlParser(query, "").getProcessedSql();
-            dispatcher.printExecutedPlan(selectedConnection, query, explained);
+            dispatcher.printExecutedPlan(selectedConnection, query, explained, false);
         }
 
     }
@@ -230,32 +254,29 @@ public class QueryEditorDelegate implements QueryDelegate {
         dispatcher.interruptStatement();
     }
 
+    @Override
     public boolean isLogEnabled() {
-
-        return OutputLogger.isLogEnabled();
+        return true;
     }
 
+    @Override
     public void log(String message) {
-
-        if (isLogEnabled()) {
-
-            OutputLogger.info(message);
-        }
+        Log.info(message);
     }
 
-    public void setOutputMessage(int type, String text) {
+    public void setOutputMessage(DatabaseConnection dc, int type, String text) {
 
-        queryEditor.setOutputMessage(type, text);
+        queryEditor.setOutputMessage(dc, type, text);
     }
 
-    public void setOutputMessage(int type, String text, boolean selectTab) {
+    public void setOutputMessage(DatabaseConnection dc, int type, String text, boolean selectTab) {
 
-        queryEditor.setOutputMessage(type, text, selectTab);
+        queryEditor.setOutputMessage(dc, type, text, selectTab);
     }
 
-    public void setResult(int result, int type, String metaName) {
+    public void setResult(DatabaseConnection dc, int result, int type, String metaName) {
 
-        queryEditor.setResultText(result, type, metaName);
+        queryEditor.setResultText(dc, result, type, metaName);
     }
 
     public void setResultSet(ResultSet rs, String query) throws SQLException {

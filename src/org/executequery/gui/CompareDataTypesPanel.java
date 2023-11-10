@@ -185,14 +185,14 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
         Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
         connectionsModel_1 = new DynamicComboBoxModel(connections);
 
-        connectionsCombo = WidgetFactory.createComboBox(connectionsModel_1);
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", connectionsModel_1);
         connectionsCombo.addActionListener(this);
         connectionsCombo.setActionCommand("firstConnectionChanged");
 
         connectionsModel_2 = new DynamicComboBoxModel(
                 (Vector<DatabaseConnection>) connections);
 
-        connectionsCombo2 = WidgetFactory.createComboBox(connectionsModel_2);
+        connectionsCombo2 = WidgetFactory.createComboBox("connectionsCombo2", connectionsModel_2);
         connectionsCombo2.addActionListener(this);
         connectionsCombo2.setActionCommand("secondConnectionChanged");
 

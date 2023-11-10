@@ -33,6 +33,7 @@ import java.net.URL;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,32 +66,20 @@ public class DefaultDriverLoader implements DriverLoader {
 
             Log.info("Loading JDBC driver class: " + driverName);
 
-            if (!databaseDriver.isDefaultSunOdbc()) {
+            String path = databaseDriver.getPath();
+            Log.trace("Loading driver from: " + path);
 
-                String path = databaseDriver.getPath();
-                Log.trace("Loading driver from: " + path);
+            if (!MiscUtils.isNull(path)) {
 
-                if (!MiscUtils.isNull(path)) {
+                URL[] urls = MiscUtils.loadURLs(path);
+                Log.debug("paths for searching of driver:");
+                Arrays.stream(urls).forEach(url -> Log.debug(url.getPath()));
 
-                    URL[] urls = MiscUtils.loadURLs(path);
-                    if (urls != null) {
-                        Log.debug("paths for searching of driver:");
-                        for (int i = 0; i < urls.length; i++) {
-                            Log.debug(urls[i].getPath());
-                        }
-                    }
-                    DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
-                    clazz = loader.loadLibrary(driverName);
+                DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
+                clazz = loader.loadLibrary(driverName);
 
-                } else {
-
-                    clazz = loadUsingSystemLoader(driverName);
-                }
-
-            } else {
-
+            } else
                 clazz = loadUsingSystemLoader(driverName);
-            }
 
             Object object = clazz.newInstance();
             driver = (Driver) object;
@@ -162,9 +151,13 @@ public class DefaultDriverLoader implements DriverLoader {
         if (DEFAULT_DATABASE_DRIVER == null) {
             List<DatabaseDriver> dds = driverRepository().findAll();
             for (DatabaseDriver d : dds) {
-                if (d.getClassName().contains("FBDriver") && d.getMajorVersion() == 4) {
-                    DEFAULT_DATABASE_DRIVER = d;
-                    break;
+                try {
+                    if (d.getClassName().contains("FBDriver") && d.getMajorVersion() == 4) {
+                        DEFAULT_DATABASE_DRIVER = d;
+                        break;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
             if (DEFAULT_DATABASE_DRIVER == null) {

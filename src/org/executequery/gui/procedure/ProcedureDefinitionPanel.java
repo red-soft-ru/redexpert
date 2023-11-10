@@ -2,6 +2,7 @@ package org.executequery.gui.procedure;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.Parameter;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -24,7 +25,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -805,7 +805,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         protected String[] header = Bundles.get(TableDefinitionPanel.class,
                 new String[]
                         {"Name", "Datatype", "TypeOf", "Domain", "Table", "Column",
-                                "Size", "Scale", "Subtype", "Description", "DefaultValue", "Encoding", "Required"});
+                                "SizePrecision", "Scale", "Subtype", "Description", "DefaultValue", "Encoding", "Required"});
 
         public ProcedureParameterModel(int parameterType) {
             tableVector = new Vector<>();

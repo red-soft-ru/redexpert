@@ -43,7 +43,7 @@ public abstract class AbstractImportExportPanelOne extends AbstractImportExportP
         if (connectionsCombo == null) {
             Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
             ComboBoxModel connectionsModel = new DynamicComboBoxModel(connections);
-            connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
+            connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", connectionsModel);
         }
 
         return connectionsCombo;

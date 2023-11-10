@@ -1261,14 +1261,20 @@ BIND_PARAMETER
 
  PART_OBJECT:
  IDENTIFIER '.' IDENTIFIER
+ |QUOTE_IDENTIFIER '.' IDENTIFIER
+ |QUOTE_IDENTIFIER '.' QUOTE_IDENTIFIER
+ |IDENTIFIER '.' QUOTE_IDENTIFIER
  ;
 
 
  IDENTIFIER
-  : '"' (~'"' | '""')* '"'
-  | '`' (~'`' | '``')* '`'
+  : '`' (~'`' | '``')* '`'
   | '[' ~']'* ']'
   | [a-zA-Z_] [a-zA-Z_$0-9]* // TODO check: needs more chars in set
+  ;
+
+ QUOTE_IDENTIFIER
+  : '"' (~'"' | '""')* ('"'|EOF)
   ;
 
 STRING_LITERAL

@@ -100,13 +100,13 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
                 action,
                 bundledString("AddSeparator"),
                 "addSeparator");
-        addSeparatorButton.setToolTipText("Adds a separator above the selection");
+        addSeparatorButton.setToolTipText(bundleString("AddSeparatorToolTip"));
 
         removeSeparatorButton = ActionUtilities.createButton(
                 action,
                 bundledString("RemoveSeparator"),
                 "removeSeparator");
-        removeSeparatorButton.setToolTipText("Removes the selected separator");
+        removeSeparatorButton.setToolTipText(bundleString("RemoveSeparatorToolTip"));
 
         ToolBarWrapper _toolBar = ToolBarProperties.getToolBar(toolBarName);
         toolBar = (ToolBarWrapper) _toolBar.clone();
@@ -133,7 +133,7 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel(toolBarName + " - Buttons"), gbc);
+        panel.add(new JLabel(bundleString(toolBarName.replace(" ", ""))), gbc);
         gbc.gridy++;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;

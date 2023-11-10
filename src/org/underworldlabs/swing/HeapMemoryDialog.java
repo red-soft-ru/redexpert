@@ -20,6 +20,8 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.localization.Bundles;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -34,12 +36,12 @@ public class HeapMemoryDialog extends JDialog
     private HeapMemoryPanel heapPanel;
 
     public HeapMemoryDialog(Frame owner) {
-        super(owner, "Java Heap Memory", false);
+        super(owner, Bundles.get("HeapMemoryDialog.title"), false);
         init();
     }
 
     public HeapMemoryDialog(Dialog owner) {
-        super(owner, "Java Heap Memory", false);
+        super(owner, Bundles.get("HeapMemoryDialog.title"), false);
         init();
     }
 
@@ -47,7 +49,7 @@ public class HeapMemoryDialog extends JDialog
 
         heapPanel = new HeapMemoryPanel();
 
-        JButton closeButton = new JButton("Close");
+        JButton closeButton = new JButton(Bundles.get("common.close.button"));
         closeButton.addActionListener(this);
 
         Container c = this.getContentPane();

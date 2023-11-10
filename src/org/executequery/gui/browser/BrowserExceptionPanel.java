@@ -176,6 +176,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
 
     @Override
     public void cleanup() {
+        super.cleanup();
         sqlPane.cleanup();
     }
 

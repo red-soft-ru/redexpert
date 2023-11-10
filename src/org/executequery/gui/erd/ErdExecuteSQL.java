@@ -21,7 +21,9 @@
 package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
+import org.executequery.gui.editor.TransactionParametersPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.QueryDelegate;
 import org.executequery.sql.QueryDispatcher;
@@ -118,7 +120,7 @@ public class ErdExecuteSQL extends ErdPrintableDialog
         splitPane.setDividerSize(5);
 
         closeButton = new JButton(Bundles.get("common.close.button"));
-        cancelButton = new JButton("Execute");
+        cancelButton = new JButton(Bundles.getCommon("execute"));
 
         Dimension btnDim = new Dimension(80, 30);
         cancelButton.setPreferredSize(btnDim);
@@ -162,18 +164,18 @@ public class ErdExecuteSQL extends ErdPrintableDialog
     }
 
     private void execute() {
-        resultsArea.append("Executing...");
-        queryAnalyser.executeSQLQuery(sqlText.getSQLText(), false);
+        resultsArea.append(Bundles.getCommon("executing"));
+        queryAnalyser.executeSQLQuery(sqlText.getSQLText(), false, false);
     }
 
     public void setStopButtonEnabled(boolean enable) {
         if (enable) {
-            cancelButton.setText("Stop");
+            cancelButton.setText(Bundles.getCommon("stop"));
         }
         cancelButton.setEnabled(enable);
     }
 
-    public void setOutputMessage(int type, String text) {
+    public void setOutputMessage(DatabaseConnection dc, int type, String text) {
         resultsArea.append("\n\n" + text);
     }
 
@@ -183,11 +185,11 @@ public class ErdExecuteSQL extends ErdPrintableDialog
      *
      * @param type and other the error message to display
      */
-    public void setOutputMessage(int type, String text, boolean selectTab) {
-        setOutputMessage(type, text);
+    public void setOutputMessage(DatabaseConnection dc, int type, String text, boolean selectTab) {
+        setOutputMessage(dc, type, text);
     }
 
-    public void setResult(int result, int type, String metaName) {
+    public void setResult(DatabaseConnection dc, int result, int type, String metaName) {
         String text = null;
 
         switch (type) {
@@ -219,10 +221,10 @@ public class ErdExecuteSQL extends ErdPrintableDialog
 
             String btnText = cancelButton.getText();
 
-            if (btnText.equals("Execute"))
+            if (btnText.equals(Bundles.getCommon("execute")))
                 execute();
 
-            else if (btnText.equals("Stop")) {
+            else if (btnText.equals(Bundles.getCommon("stop"))) {
                 queryAnalyser.interruptStatement();
                 resultsArea.append("\nProcess cancelled");
             }
@@ -251,10 +253,10 @@ public class ErdExecuteSQL extends ErdPrintableDialog
     public void executing() {
     }
 
-    public void rollback() {
+    public void rollback(boolean anyConnections) {
     }
 
-    public void commit() {
+    public void commit(boolean anyConnections) {
     }
 
     public void interrupt() {
@@ -263,20 +265,20 @@ public class ErdExecuteSQL extends ErdPrintableDialog
     public void log(String message) {
     }
 
-    public void executeQuery(String query) {
+    public void executeQuery(String query, boolean anyConnections, boolean inBackground) {
     }
 
-    public void executeQuery(String query, boolean executeAsBlock) {
-    }
-
-    @Override
-    public int getTransactionIsolation() {
-        return queryAnalyser.getTransactionIsolation();
+    public void executeQuery(String query, boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
     }
 
     @Override
-    public void setTransactionIsolation(int transactionLevel) {
-        queryAnalyser.setTransactionIsolation(transactionLevel);
+    public void setTPP(TransactionParametersPanel tpp) {
+
+    }
+
+    @Override
+    public TransactionParametersPanel getTPP() {
+        return null;
     }
 
     public void setResultSet(ResultSet rs, String query) throws SQLException {

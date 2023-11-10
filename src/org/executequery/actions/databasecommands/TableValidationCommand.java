@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * @author Alexey Kozlov
@@ -49,7 +50,16 @@ public class TableValidationCommand extends OpenFrameCommand
 
         try {
 
-            Driver driver = DefaultDriverLoader.getDefaultDriver();
+            Driver driver = null;
+            Map<String, Driver> drivers = DefaultDriverLoader.getLoadedDrivers();
+            for (String driverName : drivers.keySet()) {
+                if (driverName.startsWith(String.valueOf(dc.getDriverId()))) {
+                    driver = drivers.get(driverName);
+                    break;
+                }
+            }
+            if (driver == null)
+                driver = DefaultDriverLoader.getDefaultDriver();
 
             IFBMaintenanceManager maintenanceManager = (IFBMaintenanceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(
                     driver.getMajorVersion(), driver, "FBMaintenanceManagerImpl");
@@ -73,7 +83,7 @@ public class TableValidationCommand extends OpenFrameCommand
     private void showPanel(TableValidationPanel tableValidationPanel) {
 
         if (isActionableDialogOpen()) {
-            GUIUtilities.acionableDialogToFront();
+            GUIUtilities.actionableDialogToFront();
             return;
         }
 

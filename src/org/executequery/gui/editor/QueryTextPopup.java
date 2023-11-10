@@ -378,23 +378,23 @@ class QueryTextPopup extends JPanel
         public QueryTextPopupToolbar() {
             super(new GridBagLayout());
 
-            linkButton = new LinkButton("Hide");
+            linkButton = new LinkButton(bundleString("hidePopup"));
             linkButton.setActionCommand("hidePopup");
             linkButton.setAlignmentX(LinkButton.RIGHT);
             linkButton.addActionListener(this);
             linkButton.addMouseListener(QueryTextPopup.this);
 
             previousButton = createButton("PreviousResultSetQuery16.svg",
-                    "previous", "Previous executed result set");
+                    "previous", bundleString("PreviousExecutedResultSet"));
 
             nextButton = createButton("NextResultSetQuery16.svg",
-                    "next", "Next executed result set");
+                    "next", bundleString("NextExecutedResultSet"));
 
             copyButton = createButton("Copy16.svg",
-                    "copy", "Copy this query to the system clipboard");
+                    "copy", bundleString("Copy"));
 
             goToButton = createButton("GoToResultSetQuery16.svg",
-                    "goToQuery", "Go to this query in the editor");
+                    "goToQuery", bundleString("GoTo"));
 
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.anchor = GridBagConstraints.WEST;

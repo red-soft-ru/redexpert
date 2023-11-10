@@ -105,22 +105,22 @@ public class PropertiesLookPlugins extends JPanel
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.addListSelectionListener(this);
 
-        nameField = WidgetFactory.createTextField();
-        libPathField = WidgetFactory.createTextField();
-        classField = WidgetFactory.createTextField();
-        themeField = WidgetFactory.createTextField();
+        nameField = WidgetFactory.createTextField("nameField");
+        libPathField = WidgetFactory.createTextField("libPathField");
+        classField = WidgetFactory.createTextField("classField");
+        themeField = WidgetFactory.createTextField("themeField");
 
-        findClassButton = new JButton("Find");
-        libBrowseButton = new JButton("Browse");
-        themeBrowseButton = new JButton("Browse");
+        findClassButton = new JButton(bundleString("Find"));
+        libBrowseButton = new JButton(bundleString("Browse"));
+        themeBrowseButton = new JButton(bundleString("Browse"));
 
         Insets btnInsets = new Insets(2, 2, 2, 2);
         libBrowseButton.setMargin(btnInsets);
         themeBrowseButton.setMargin(btnInsets);
         findClassButton.setMargin(btnInsets);
 
-        skinCheck = new JCheckBox("Skin Look and Feel");
-        installedCheck = new JCheckBox("Install");
+        skinCheck = new JCheckBox(bundleString("SkinLookFeel"));
+        installedCheck = new JCheckBox(bundleString("Install"));
 
         newButton = new JButton(Bundles.getCommon("add.button"));
         deleteButton = new JButton(Bundles.getCommon("delete.button"));
@@ -145,10 +145,10 @@ public class PropertiesLookPlugins extends JPanel
         classField.addKeyListener(this);
         themeField.addKeyListener(this);
 
-        themeLabel = new JLabel("Theme Pack:");
-        nameLabel = new JLabel("Name:");
-        classLabel = new JLabel("Class Name:");
-        libLabel = new JLabel("Library Path:");
+        themeLabel = new JLabel(bundleString("ThemePack"));
+        nameLabel = new JLabel(bundleString("Name"));
+        classLabel = new JLabel(bundleString("ClassName"));
+        libLabel = new JLabel(bundleString("LibraryPath"));
 
         JPanel buttons = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -169,7 +169,7 @@ public class PropertiesLookPlugins extends JPanel
         gbc.insets.bottom = 10;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel("Look and Feel Plugins"), gbc);
+        panel.add(new JLabel(bundleString("LookFeelPlugins")), gbc);
         gbc.gridy++;
         gbc.weighty = 1.0;
         gbc.weightx = 1.0;
@@ -251,7 +251,7 @@ public class PropertiesLookPlugins extends JPanel
         gbc.gridx = 0;
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
-        panel.add(new JLabel("Note: Activate this feature from the 'Display' node."), gbc);
+        panel.add(new JLabel(bundleString("Note")), gbc);
 
         add(panel, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
                 GridBagConstraints.NORTHWEST,
@@ -269,6 +269,7 @@ public class PropertiesLookPlugins extends JPanel
 
     @Override
     public void preferenceChange(PreferenceChangeEvent e) {
+        PropertiesPanel.checkAndSetRestartNeed(e.getKey());
     }
 
     @Override
@@ -295,8 +296,7 @@ public class PropertiesLookPlugins extends JPanel
         String paths = libPathField.getText();
 
         if (MiscUtils.isNull(paths)) {
-            GUIUtilities.displayErrorMessage(
-                    "A valid path to the look and feel library is required");
+            GUIUtilities.displayErrorMessage(bundleString("LookFeelLibraryIsRequired"));
             return;
         }
 
@@ -307,15 +307,14 @@ public class PropertiesLookPlugins extends JPanel
                     "javax.swing.LookAndFeel", paths, false);
         } catch (MalformedURLException urlExc) {
             GUIUtilities.showNormalCursor();
-            GUIUtilities.displayErrorMessage(
-                    "A valid path to the library is required");
+            GUIUtilities.displayErrorMessage(bundleString("LibraryIsRequired"));
             return;
         } catch (IOException ioExc) {
             GUIUtilities.showNormalCursor();
             StringBuffer sb = new StringBuffer();
-            sb.append("An error occured accessing the specified file.").
-                    append("\n\nThe system returned:\n").
-                    append(ioExc.getMessage());
+            sb.append(bundleString("AccessingFileOccurredError"))
+                    .append(bundleString("SystemReturned"))
+                    .append(ioExc.getMessage());
             GUIUtilities.displayExceptionErrorDialog(sb.toString(), ioExc);
             return;
         } finally {
@@ -323,9 +322,7 @@ public class PropertiesLookPlugins extends JPanel
         }
 
         if (looks == null || looks.length == 0) {
-            GUIUtilities.displayWarningMessage(
-                    "No valid classes of type javax.swing.LookAndFeel\n" +
-                            "were found in the specified resource");
+            GUIUtilities.displayWarningMessage(bundleString("NoValidClasses"));
             return;
         }
 
@@ -333,15 +330,14 @@ public class PropertiesLookPlugins extends JPanel
         String value = null;
         while (true) {
             SimpleValueSelectionDialog dialog =
-                    new SimpleValueSelectionDialog("Select Look and Feel", looks);
+                    new SimpleValueSelectionDialog(bundleString("SelectLookFeel"), looks);
             result = dialog.showDialog();
 
             if (result == JOptionPane.OK_OPTION) {
                 value = dialog.getValue();
 
                 if (value == null) {
-                    GUIUtilities.displayErrorMessage(
-                            "You must select a look and feel from the list");
+                    GUIUtilities.displayErrorMessage(bundleString("SelectLookFeelFromList"));
                 } else {
                     classField.setText(value);
                     break;
@@ -386,7 +382,7 @@ public class PropertiesLookPlugins extends JPanel
         enableAllFields(true);
         list.removeListSelectionListener(this);
 
-        LookAndFeelDefinition lfd = new LookAndFeelDefinition("New Look and Feel Plugin");
+        LookAndFeelDefinition lfd = new LookAndFeelDefinition(bundleString("NewLookFeelPlugin"));
         lfdv.add(lfd);
         list.setListData(lfdv);
         list.setSelectedValue(lfd, true);
@@ -448,8 +444,7 @@ public class PropertiesLookPlugins extends JPanel
             return;
         }
 
-        int yesNo = GUIUtilities.displayConfirmCancelDialog(
-                "Are you sure you want to delete the selected look and feel plugin?");
+        int yesNo = GUIUtilities.displayConfirmCancelDialog(bundleString("WannaDeleteLookFeel"));
 
         if (yesNo != JOptionPane.YES_OPTION) {
             return;
@@ -592,11 +587,11 @@ public class PropertiesLookPlugins extends JPanel
         boolean isTheme = false;
 
         if (obj == themeBrowseButton) {
-            fs = new FileSelector(new String[]{"zip"}, "ZIP Archive Files");
+            fs = new FileSelector(new String[]{"zip"}, bundleString("ZIPArchiveFiles"));
             field = themeField;
             isTheme = true;
         } else {
-            fs = new FileSelector(new String[]{"jar"}, "Java Archive Files");
+            fs = new FileSelector(new String[]{"jar"}, bundleString("JavaArchiveFiles"));
             field = libPathField;
         }
 
@@ -605,10 +600,10 @@ public class PropertiesLookPlugins extends JPanel
         fileChooser.setMultiSelectionEnabled(true);
         fileChooser.setFileFilter(fs);
 
-        fileChooser.setDialogTitle("Select Look & Feel Plugin Library...");
+        fileChooser.setDialogTitle(bundleString("SelectLookFeelPluginLibrary"));
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
 
-        int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), "Select");
+        int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), Bundles.getCommon("select"));
 
         if (result == JFileChooser.CANCEL_OPTION)
             return;
@@ -654,6 +649,10 @@ public class PropertiesLookPlugins extends JPanel
     }
 
     public void restoreDefaults() {
+    }
+
+    private static String bundleString(String key) {
+        return Bundles.get(PropertiesLookPlugins.class, key);
     }
 
 }

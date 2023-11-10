@@ -2,6 +2,7 @@ package org.executequery.gui.procedure;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -21,7 +22,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.FocusListener;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -231,7 +231,6 @@ public class UDFDefinitionPanel extends JPanel
     public void tableChanged(TableModelEvent e) {
         int row = table.getEditingRow();
         if (row == -1 || tableVector.size() == row) {
-            return;
         }
     }
 
@@ -554,7 +553,7 @@ public class UDFDefinitionPanel extends JPanel
 
         protected String[] header = Bundles.get(TableDefinitionPanel.class,
                 new String[]
-                        {"Datatype", "Size", "Scale", "Subtype", "Encoding", "ByDescriptor", "NULL", "CSTRING"});
+                        {"Datatype", "SizePrecision", "Scale", "Subtype", "Encoding", "ByDescriptor", "NULL", "CSTRING"});
 
         public UDFParameterModel() {
             tableVector = new Vector<>();
@@ -641,7 +640,7 @@ public class UDFDefinitionPanel extends JPanel
                     return cd.isRequired();
 
                 case CSTRING_COLUMN:
-                    return cd.isCstring();
+                    return cd.isCString();
 
                 default:
                     return null;
@@ -699,8 +698,8 @@ public class UDFDefinitionPanel extends JPanel
                     cd.setNotNull((Boolean) value);
                     break;
                 case CSTRING_COLUMN:
-                    cd.setCstring((Boolean) value);
-                    if (cd.isCstring())
+                    cd.setCString((Boolean) value);
+                    if (cd.isCString())
                         _model.setValueAt(false, row, MECHANISM_COLUMN);
                     break;
             }
@@ -728,12 +727,12 @@ public class UDFDefinitionPanel extends JPanel
                     || cd.getSQLType() == Types.LONGVARBINARY
                     || cd.getColumnType().equalsIgnoreCase("VARCHAR")
                     || cd.getColumnType().equalsIgnoreCase("CHAR"))
-                    || cd.isCstring();
+                    || cd.isCString();
         }
 
         boolean isEditMechanism(int row) {
             ColumnData cd = tableVector.elementAt(row);
-            return !cd.isCstring();
+            return !cd.isCString();
         }
 
         boolean isEditScale(int row) {

@@ -104,8 +104,8 @@ public interface Constants {
             {"TRANSACTION_NONE",
                     "TRANSACTION_READ_UNCOMMITTED",
                     "TRANSACTION_READ_COMMITTED",
-                    "TRANSACTION_REPEATABLE_READ",
-                    "TRANSACTION_SERIALIZABLE"};
+                    "TRANSACTION_SNAPSHOT",
+                    "TRANSACTION_SNAPSHOT_TABLE_STABILITY"};
 
     // tool tip html tags
     String TABLE_TAG_START =

@@ -70,6 +70,13 @@ public abstract class AbstractXMLResourceReaderWriter<T> {
             } catch (FileNotFoundException e) {
 
                 handleException(e);
+            } catch (RepositoryException e) {
+                try {
+                    file.delete();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                throw e;
             }
 
         }

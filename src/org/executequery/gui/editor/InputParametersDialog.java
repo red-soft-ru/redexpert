@@ -2,6 +2,7 @@ package org.executequery.gui.editor;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.components.BottomButtonPanel;
+import org.executequery.databaseobjects.Types;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.localization.Bundles;
@@ -12,7 +13,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.sql.Types;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -168,6 +168,7 @@ public class InputParametersDialog extends BaseDialog {
             case Types.BIGINT:
             case Types.INTEGER:
             case Types.SMALLINT:
+            case Types.INT128:
                 component = new ValueOrNullParameterField(new NumberTextField());
                 break;
             default:

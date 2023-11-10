@@ -74,7 +74,7 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
 
     public ErdFontStyleDialog(ErdViewerPanel parent) {
 
-        super(GUIUtilities.getParentFrame(), "Font Style", true);
+        super(GUIUtilities.getParentFrame(), bundleString("title"), true);
 
         this.parent = parent;
 
@@ -145,9 +145,12 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
         fontScroll.setHorizontalScrollBarPolicy(
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        String[] fontStyles = {"Plain", "Italic", "Bold", "Bold/Italic"};
-        tableNameCombo = WidgetFactory.createComboBox(fontStyles);
-        columnNameCombo = WidgetFactory.createComboBox(fontStyles);
+        String[] fontStyles = {
+                bundleString("Plain"), bundleString("Italic"),
+                bundleString("Bold"), bundleString("Bold-Italic")
+        };
+        tableNameCombo = WidgetFactory.createComboBox("tableNameCombo", fontStyles);
+        columnNameCombo = WidgetFactory.createComboBox("columnNameCombo", fontStyles);
 
         Dimension comboDim = new Dimension(90, 20);
         tableNameCombo.setPreferredSize(comboDim);
@@ -163,7 +166,7 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 0, 5, 10);
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        stylesPanel.add(new JLabel("Table Name Style:"), gbc);
+        stylesPanel.add(new JLabel(bundleString("TableNameStyleLabel")), gbc);
         gbc.gridx = 1;
         gbc.insets.right = 0;
         gbc.weightx = 1.0;
@@ -175,7 +178,7 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
         gbc.insets.right = 10;
         gbc.gridx = 0;
         gbc.weightx = 0;
-        stylesPanel.add(new JLabel("Column Name Style:"), gbc);
+        stylesPanel.add(new JLabel("ColumnNameStyleLabel"), gbc);
 
         JPanel panel = new JPanel(new GridBagLayout());
         gbc.insets.top = 5;
@@ -185,10 +188,10 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
-        panel.add(new JLabel("Font Name:"), gbc);
+        panel.add(new JLabel(bundleString("FontNameLabel")), gbc);
         gbc.insets.left = 5;
         gbc.gridx = 1;
-        panel.add(new JLabel("Font Size:"), gbc);
+        panel.add(new JLabel(bundleString("FontSizeLabel")), gbc);
         gbc.insets.left = 10;
         gbc.insets.bottom = 0;
         gbc.insets.top = 0;
@@ -214,10 +217,10 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
         panel.add(stylesPanel, gbc);
 
         // setup the sample panel
-        normalSample = new JLabel("  SAMPLE NORMAL TEXT");
-        italicSample = new JLabel("  SAMPLE ITALIC TEXT");
-        boldSample = new JLabel("  SAMPLE BOLD TEXT");
-        italicBoldSample = new JLabel("  SAMPLE BOLD AND ITALIC TEXT");
+        normalSample = new JLabel(bundleString("ExampleTextNormal"));
+        italicSample = new JLabel(bundleString("ExampleTextItalic"));
+        boldSample = new JLabel(bundleString("ExampleTextBold"));
+        italicBoldSample = new JLabel(bundleString("ExampleTextBoldItalic"));
 
         JPanel samplePanel = new JPanel();
         samplePanel.setLayout(new BoxLayout(samplePanel, BoxLayout.Y_AXIS));
@@ -320,10 +323,8 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
 
     }
 
+    private static String bundleString(String key) {
+        return Bundles.get(ErdFontStyleDialog.class, key);
+    }
 
 }
-
-
-
-
-

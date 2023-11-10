@@ -1,8 +1,9 @@
+desktop.background.default.colour=-6710836
+desktop.background.custom.colour=-6710836
 editor.caret.colour=-4473925
 editor.display.linehighlight.colour=-13947600
 editor.linenumber.background=-14803166
 editor.linenumber.foreground=-8882056
-editor.margin.colour=-4144960
 editor.results.background.colour=-12828863
 editor.text.background.alternate.color=-1314561
 editor.text.background.colour=-14803167

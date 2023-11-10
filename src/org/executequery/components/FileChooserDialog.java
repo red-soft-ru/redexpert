@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;

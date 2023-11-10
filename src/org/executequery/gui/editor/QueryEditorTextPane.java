@@ -23,7 +23,6 @@ package org.executequery.gui.editor;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
-import org.executequery.components.LineNumber;
 import org.executequery.gui.UndoableComponent;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.repository.EditorSQLShortcut;
@@ -38,7 +37,6 @@ import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -70,9 +68,6 @@ public class QueryEditorTextPane extends SQLTextArea
      * The editor panel containing this text component
      */
     private final QueryEditorTextPanel editorPanel;
-
-
-
     private Map<String, EditorSQLShortcut> editorShortcuts;
 
     public QueryEditorTextPane(QueryEditorTextPanel editorPanel) {
@@ -597,6 +592,7 @@ public class QueryEditorTextPane extends SQLTextArea
             fireTextUpdateFinished();
 //            undoManager.reinstate();
             setCaretPosition(0);
+            updateLineBorder();
         }
 
     }
@@ -617,7 +613,6 @@ public class QueryEditorTextPane extends SQLTextArea
      */
     public void setText(String text) {
         super.setText(text);
-        //updateLineBorder();
     }
 
     /**
@@ -1054,14 +1049,12 @@ public class QueryEditorTextPane extends SQLTextArea
                 }
 
             } else if (keyCode == KeyEvent.VK_SPACE) {
-
                 checkForShortcutText();
             }
 
         }
 
         super.processKeyEvent(e);
-        //updateLineBorder();
     }
 
     private void checkForShortcutText() {

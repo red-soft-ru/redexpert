@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.Types;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.log.Log;
 import org.executequery.util.Base64;
@@ -381,6 +382,7 @@ public class ExportAsSQLWorker extends BaseImportExportWorker {
 
             case Types.BIT:
             case Types.TINYINT:
+            case Types.INT128:
             case Types.BIGINT:
             case Types.NUMERIC:
             case Types.DECIMAL:

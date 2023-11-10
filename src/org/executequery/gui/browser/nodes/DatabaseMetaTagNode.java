@@ -21,10 +21,8 @@
 package org.executequery.gui.browser.nodes;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,22 +39,6 @@ public class DatabaseMetaTagNode extends DatabaseObjectNode {
 
     @Override
     public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
-
-        if (((DatabaseMetaTag) getDatabaseObject()).getSubType() == NamedObject.TABLE) {
-
-            List<NamedObject> values = getDatabaseObject().getObjects();
-            if (values != null) {
-
-                List<DatabaseObjectNode> nodes = new ArrayList<DatabaseObjectNode>();
-                for (NamedObject namedObject : values) {
-
-                    nodes.add(new DatabaseTableNode(namedObject));
-                }
-
-                return nodes;
-            }
-
-        }
 
         return super.getChildObjects();
     }

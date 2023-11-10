@@ -140,11 +140,6 @@ public class DefaultDatabaseDriver implements DatabaseDriver {
         this.id = id;
     }
 
-    public boolean isDefaultSunOdbc() {
-
-        return (getId() == SUN_ODBC_ID);
-    }
-
     public boolean isIdValid() {
 
         return (getId() != 0);

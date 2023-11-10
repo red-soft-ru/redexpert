@@ -144,7 +144,7 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table table = getMainTable();
         sb.appendFields(table, getFieldName(), DESCRIPTION);
         sb.appendTable(table);

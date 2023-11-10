@@ -158,6 +158,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
     @Override
     public void cleanup() {
+        super.cleanup();
         sqlPane.cleanup();
     }
 

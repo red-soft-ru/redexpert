@@ -24,6 +24,7 @@ import biz.redsoft.IFBBlob;
 import biz.redsoft.IFBClob;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.Types;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -43,13 +44,10 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.math.BigInteger;
 import java.sql.*;
 import java.text.ParseException;
 import java.time.*;
@@ -210,7 +208,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 rsmd.getColumnLabel(i),
                                 rsmd.getColumnName(i),
                                 rsmd.getColumnType(i),
-                                rsmd.getColumnTypeName(i)));
+                                rsmd.getColumnTypeName(i),
+                                rsmd.getColumnDisplaySize(i)));
             }
             interrupted = false;
 
@@ -385,7 +384,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 resultSet.getString(4),
                                 resultSet.getString(4),
                                 resultSet.getInt(5),
-                                resultSet.getString(6)
+                                resultSet.getString(6),
+                                resultSet.getInt(7)
                         ));
                 tableName = resultSet.getString(3);
                 g++;
@@ -562,6 +562,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
                         case Types.CHAR:
                         case Types.VARCHAR:
+                            value.setValue(resultSet.getString(i));
+                            break;
                         case Types.TIME_WITH_TIMEZONE:
                             value.setValue(resultSet.getObject(i, OffsetTime.class));
                             break;
@@ -626,6 +628,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                         case Types.TINYINT:
                         case Types.SMALLINT:
                         case Types.INTEGER:
+                        case Types.INT128:
                         case Types.BIGINT:
                         case Types.FLOAT:
                         case Types.REAL:
@@ -1050,7 +1053,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     public String getColumnNameHint(int column) {
 
-        return visibleColumnHeaders.get(column).getNameHint();
+        return visibleColumnHeaders.get(column).getNameHint() + " " + visibleColumnHeaders.get(column).getDataTypeName() + (visibleColumnHeaders.get(column).getDisplaySize() != 0 ? " (" + visibleColumnHeaders.get(column).getDisplaySize() + ")" : "");
     }
 
     @Override
@@ -1078,6 +1081,9 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
             case Types.TINYINT:
                 return Byte.class;
+
+            case Types.INT128:
+                return BigInteger.class;
 
             case Types.BIGINT:
                 return Long.class;

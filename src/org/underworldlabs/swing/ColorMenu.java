@@ -20,6 +20,9 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.localization.Bundles;
+import org.executequery.localization.LocaleManager;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -119,8 +122,11 @@ class ColorMenu extends JMenu implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         MenuSelectionManager.defaultManager().clearSelectedPath();
-        Color c = JColorChooser.showDialog(menuOwner,
-                "Select Background", bgColor);
+        Color c = JColorChooser.showDialog(
+                menuOwner,
+                Bundles.get("LocaleManager.ColorChooser.title"),
+                bgColor
+        );
 
         if (c == null) {
             return;

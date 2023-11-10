@@ -37,6 +37,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
 import org.executequery.gui.editor.TransactionIsolationCombobox;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -258,7 +259,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         passwordField.setPreferredSize(hostField.getPreferredSize());
 
         certificateFileField = createMatchedWidthTextField();
-        containerPasswordField = createPasswordField();
+        containerPasswordField = createPasswordField("containerPasswordField");
         saveContPwdCheck = ActionUtilities.createCheckBox(bundleString("Store-container-password"), "setStoreContainerPassword");
         saveContPwdCheck.addActionListener(this);
         verifyServerCertCheck = ActionUtilities.createCheckBox(bundleString("Verify-server-certificate"), "setVerifyServerCertCheck");
@@ -283,7 +284,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // retrieve the available charsets
         loadCharsets();
-        charsetsCombo = WidgetFactory.createComboBox(charsets.toArray());
+        charsetsCombo = WidgetFactory.createComboBox("charsetsCombo", charsets.toArray());
 
         // ---------------------------------
         // add the basic connection fields
@@ -486,7 +487,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         advPropsPanel.add(scroller, gbh.get());
 
         // transaction isolation
-        txApplyButton = WidgetFactory.createButton(Bundles.get("common.apply.button"));
+        txApplyButton = WidgetFactory.createButton("txApplyButton", Bundles.get("common.apply.button"));
         txApplyButton.setActionCommand("transactionLevelChanged");
         txApplyButton.setToolTipText(bundleString("txApplyButton.tool-tip"));
         txApplyButton.setEnabled(false);
@@ -636,7 +637,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         } catch (Exception e) {
             e.printStackTrace();
-            return;
         }
     }
 
@@ -651,17 +651,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     }
 
-    private NumberTextField createNumberTextField() {
+    private JPasswordField createPasswordField(String name) {
 
-        NumberTextField textField = WidgetFactory.createNumberTextField();
-        formatTextField(textField);
-
-        return textField;
-    }
-
-    private JPasswordField createPasswordField() {
-
-        JPasswordField field = WidgetFactory.createPasswordField();
+        JPasswordField field = WidgetFactory.createPasswordField(name);
         formatTextField(field);
 
         return field;
@@ -675,14 +667,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
             }
 
         };
-        formatTextField(textField);
-
-        return textField;
-    }
-
-    private JTextField createTextField() {
-
-        JTextField textField = WidgetFactory.createTextField();
         formatTextField(textField);
 
         return textField;
@@ -746,7 +730,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             DynamicComboBoxModel comboModel = new DynamicComboBoxModel();
             comboModel.setElements(driverNames);
-            driverCombo = WidgetFactory.createComboBox(comboModel);
+            driverCombo = WidgetFactory.createComboBox("driverCombo", comboModel);
             driverCombo.setBorder(redBorder);
             driverCombo.addItemListener(new ItemListener() {
                 @Override
@@ -913,10 +897,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private void connectionError(DataSourceException e) {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(Bundles.getCommon("error.connection"));
-        sb.append(e.getExtendedMessage());
-        GUIUtilities.displayExceptionErrorDialog(sb.toString(), e);
+        String sb = Bundles.getCommon("error.connection") +
+                e.getExtendedMessage();
+        GUIUtilities.displayExceptionErrorDialog(sb, e);
     }
 
     private boolean valid() {
@@ -1147,13 +1130,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
             } else {
                 // Convert from the DER to BASE64
                 base64cert = Base64.encodeBytes(bytes);
-                StringBuilder sb = new StringBuilder();
-                sb.append("-----BEGIN CERTIFICATE-----");
-                sb.append("\n");
-                sb.append(base64cert);
-                sb.append("\n");
-                sb.append("-----END CERTIFICATE-----");
-                base64cert = sb.toString();
+                String sb = "-----BEGIN CERTIFICATE-----" +
+                        "\n" +
+                        base64cert +
+                        "\n" +
+                        "-----END CERTIFICATE-----";
+                base64cert = sb;
                 properties.setProperty("isc_dpb_certificate_base64", base64cert);
             }
         } catch (IOException e) {
@@ -1300,16 +1282,23 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     public void setNewAPI() {
 
-        boolean useAPI = useNewAPI.isSelected();
-        int majorVersion = new DefaultDriverLoader().load(jdbcDrivers.get(driverCombo.getSelectedIndex())).getMajorVersion();
-        if (majorVersion < 4 && useAPI) {
-            GUIUtilities.displayWarningMessage(bundleString("warning.useNewAPI"));
-            useNewAPI.setSelected(false);
-            databaseConnection.setUseNewAPI(false);
-        } else {
-            if (databaseConnection != null)
-                databaseConnection.setUseNewAPI(useAPI);
+        try {
+
+            boolean useAPI = useNewAPI.isSelected();
+            int majorVersion = new DefaultDriverLoader().load(jdbcDrivers.get(driverCombo.getSelectedIndex())).getMajorVersion();
+            if (majorVersion < 4 && useAPI) {
+                GUIUtilities.displayWarningMessage(bundleString("warning.useNewAPI"));
+                useNewAPI.setSelected(false);
+                databaseConnection.setUseNewAPI(false);
+            } else {
+                if (databaseConnection != null)
+                    databaseConnection.setUseNewAPI(useAPI);
+            }
+
+        } catch (DataSourceException e) {
+            Log.error(e.getExtendedMessage(), e);
         }
+
     }
 
     /**

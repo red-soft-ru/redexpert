@@ -26,7 +26,6 @@ import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.browser.tree.TreePanel;
-import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.sql.TokenizingFormatter;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -590,7 +589,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         List<ColumnConstraint> _constraints = getConstraints();
         boolean first = true;
 
-        sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(getName()));
+        sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(getName(), getHost().getDatabaseConnection()));
         if (_constraints != null) {
             for (ColumnConstraint constraint : _constraints) {
                 if (constraint instanceof TableColumnConstraint) {
@@ -600,7 +599,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                         if (!first)
                             sb.append(",");
                         first = false;
-                        sb.append("\nDROP CONSTRAINT ").append(MiscUtils.getFormattedObject(dtc.getName()));
+                        sb.append("\nDROP CONSTRAINT ").append(MiscUtils.getFormattedObject(dtc.getName(), getHost().getDatabaseConnection()));
                     }
                 }
             }
@@ -616,6 +615,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                             sb.append(",");
                         first = false;
                         sb.append("\nDROP ").append(dtc.getNameEscaped());
+                    } else if (dtc.isPositionChanged()) {
+                        if (!first)
+                            sb.append(",");
+                        first = false;
+                        sb.append("\nALTER COLUMN ").append(dtc.getNameEscaped()).append(" POSITION ").append(dtc.getPosition());
                     }
                 }
             }
@@ -637,7 +641,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("TABLE", getName());
+        return SQLUtils.generateDefaultDropQuery("TABLE", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -658,7 +662,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultDatabaseTable comparingTable = (DefaultDatabaseTable) databaseObject;
         return SQLUtils.generateAlterTable(this, comparingTable, false,
-                new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed());
+                new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed(), Comparer.isFieldsPositionsNeed());
     }
 
     public String getDropSQLText(boolean cascadeConstraints) {
@@ -883,7 +887,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values));
+        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values, getHost().getDatabaseConnection()));
     }
 
     @Override
@@ -909,7 +913,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings));
+        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings, getHost().getDatabaseConnection()));
     }
 
     @Override
@@ -935,7 +939,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             e.printStackTrace();
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields));
+        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields, getHost().getDatabaseConnection()));
     }
 
     protected TokenizingFormatter getFormatter() {
@@ -970,117 +974,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return true;
     }
 
-    @Override
-    public String prepareStatement(List<String> columns, List<RecordDataItem> changes) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
-        for (String column : columns)
-            sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
-
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append(" WHERE ");
-
-        boolean applied = false;
-        List<DatabaseColumn> cols = getColumns();
-        for (int i = 0; i < cols.size(); i++) {
-
-            DatabaseColumn column = cols.get(i);
-            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
-            RecordDataItem rdi = changes.get(i);
-
-            if (column.isGenerated()) {
-                rdi.setGenerated(true);
-
-            } else {
-
-                if (applied)
-                    sb.append(" AND ");
-                sb.append(col).append(rdi.isValueNull() ? " is NULL " : " = ? ");
-                applied = true;
-            }
-        }
-
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append("\nORDER BY ").append(cols.get(0)).append(" \n");
-        sb.append("ROWS 1");
-
-        return sb.toString();
-    }
-
-    @Override
-    public String prepareStatementDeleting(List<RecordDataItem> changes) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("DELETE FROM ").append(getNameWithPrefixForQuery());
-        sb.append(" WHERE ");
-
-        boolean applied = false;
-        List<DatabaseColumn> cols = getColumns();
-        for (int i = 0; i < cols.size(); i++) {
-
-            DatabaseColumn column = cols.get(i);
-            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
-            RecordDataItem rdi = changes.get(i);
-
-            if (column.isGenerated()) {
-                rdi.setGenerated(true);
-
-            } else {
-
-                if (applied)
-                    sb.append(" AND ");
-                sb.append(col).append(rdi.isValueNull() ? " is NULL " : " = ? ");
-                applied = true;
-            }
-        }
-
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append("\nORDER BY ").append(cols.get(0)).append(" \n");
-        sb.append("ROWS 1");
-
-        return sb.toString();
-    }
-
-    @Override
-    public String prepareStatementAdding(List<String> columns, List<RecordDataItem> changes) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO ").append(getNameWithPrefixForQuery());
-        StringBuilder columnsForQuery = new StringBuilder(" (");
-        StringBuilder values = new StringBuilder(" VALUES (");
-
-        boolean applied = false;
-        List<DatabaseColumn> cols = getColumns();
-        for (int i = 0; i < cols.size(); i++) {
-
-            DatabaseColumn column = cols.get(i);
-            String col = MiscUtils.getFormattedObject(cols.get(i).getName());
-            RecordDataItem rdi = changes.get(i);
-
-            if (column.isGenerated() || column.isIdentity()
-                    && rdi.isNewValueNull() || column.getDefaultValue() != null && rdi.isNewValueNull()
-                    || column.getDomainDefaultValue() != null && rdi.isNewValueNull()) {
-                rdi.setGenerated(true);
-
-            } else {
-
-                if (applied) {
-                    columnsForQuery.append(" , ");
-                    values.append(" , ");
-                }
-                columnsForQuery.append(col);
-                values.append("?");
-                applied = true;
-            }
-        }
-
-        columnsForQuery.append(") ");
-        values.append(") ");
-        sb.append(columnsForQuery).append(values);
-
-        return sb.toString();
-    }
 
     @Override
     public String prepareStatementWithPK(List<String> columns) {
@@ -1088,7 +981,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
         for (String column : columns)
-            sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
+            sb.append(MiscUtils.getFormattedObject(column, getHost().getDatabaseConnection())).append(" = ?,");
         sb.deleteCharAt(sb.length() - 1);
         sb.append(" WHERE ");
 
@@ -1097,7 +990,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
             if (applied)
                 sb.append(" AND ");
-            sb.append(MiscUtils.getFormattedObject(primaryKey)).append(" = ? ");
+            sb.append(MiscUtils.getFormattedObject(primaryKey, getHost().getDatabaseConnection())).append(" = ? ");
             applied = true;
         }
         sb.deleteCharAt(sb.length() - 1);
@@ -1117,7 +1010,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
             if (applied)
                 sb.append(" AND ");
-            sb.append(MiscUtils.getFormattedObject(primaryKey)).append(" = ? ");
+            sb.append(MiscUtils.getFormattedObject(primaryKey, getHost().getDatabaseConnection())).append(" = ? ");
             applied = true;
         }
         sb.deleteCharAt(sb.length() - 1);
@@ -1201,7 +1094,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     protected SelectBuilder builderCommonQuery() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         sb.setDistinct(true);
         Table rels = Table.createTable("RDB$RELATIONS", "R");
         Table relCons = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
@@ -1225,9 +1118,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         sb.appendField(Field.createField(rels, TABLESPACE + "_NAME").setAlias(TABLESPACE).
                 setNull(!tablespaceCheck()));
         sb.appendField(Field.createField(rels, DESCRIPTION));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(getObjectField(), Field.createField(relCons, getObjectField().getAlias())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
+        sb.appendJoin(Join.createLeftJoin().appendFields(getObjectField(), Field.createField(relCons, getObjectField().getAlias())));
+        sb.appendJoin(Join.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
                 Field.createField(triggers, "TRIGGER_NAME")));
 
         sb.appendCondition(Condition.createCondition()

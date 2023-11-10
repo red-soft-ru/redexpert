@@ -30,6 +30,7 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.DefaultActionButtonsPanel;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.text.SQLTextArea;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.EditorSQLShortcut;
 import org.executequery.repository.EditorSQLShortcuts;
 import org.executequery.repository.RepositoryException;
@@ -54,7 +55,7 @@ import java.util.List;
 public class ManageShortcutsPanel extends DefaultActionButtonsPanel
         implements ListSelectionListener {
 
-    public static final String TITLE = "Manage Editor SQL Shortcuts";
+    public static final String TITLE = Bundles.get("ManageShortcutsPanel.title");
     public static final String FRAME_ICON = "Shortcut16.svg";
 
     private static final String SAVE_COMMAND_NAME = "save";
@@ -415,13 +416,13 @@ public class ManageShortcutsPanel extends DefaultActionButtonsPanel
                 this,
                 "addShortcut",
                 GUIUtilities.loadIcon("ShortcutAdd16.svg"),
-                "Add shortcut");
+                bundleString("addShortcut"));
 
         JButton deleteButton = ActionUtilities.createToolbarButton(
                 this,
                 "deleteShortcut",
                 GUIUtilities.loadIcon("ShortcutDelete16.svg"),
-                "Delete shortcut");
+                bundleString("deleteShortcut"));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;
@@ -453,10 +454,3 @@ public class ManageShortcutsPanel extends DefaultActionButtonsPanel
     }
 
 }
-
-
-
-
-
-
-

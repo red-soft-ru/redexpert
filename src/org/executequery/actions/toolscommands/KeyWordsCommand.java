@@ -38,7 +38,7 @@ public class KeyWordsCommand extends OpenFrameCommand
 
     public void execute(ActionEvent e) {
         if (isActionableDialogOpen()) {
-            GUIUtilities.acionableDialogToFront();
+            GUIUtilities.actionableDialogToFront();
             return;
         }
 

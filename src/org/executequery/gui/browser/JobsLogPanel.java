@@ -14,7 +14,6 @@ import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.swing.EQDateTimePicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.swing.util.IconUtilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,8 +34,8 @@ public class JobsLogPanel extends JPanel implements TabView {
     private EQDateTimePicker endDatePicker;
     private JButton refreshButton;
     private DefaultStatementExecutor querySender;
-    private DatabaseConnection connection;
-    private DefaultDatabaseJob job;
+    private final DatabaseConnection connection;
+    private final DefaultDatabaseJob job;
 
     public JobsLogPanel(DefaultDatabaseJob job) {
         this.job = job;
@@ -91,7 +90,7 @@ public class JobsLogPanel extends JPanel implements TabView {
     }
 
     private void refreshTable() {
-        SelectBuilder sb = new SelectBuilder();
+        SelectBuilder sb = new SelectBuilder(connection);
         Table jl = Table.createTable("RDB$JOBS_LOG", "JL");
         sb.appendTable(jl);
         sb.appendField(Field.createField(jl, "TIMESTAMP").setAlias("EVENT_TIMESTAMP"));

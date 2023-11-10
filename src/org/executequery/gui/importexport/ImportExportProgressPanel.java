@@ -92,7 +92,7 @@ public class ImportExportProgressPanel extends JPanel
         progressBar = new JProgressBar(0, 100);
         progressBar.setBorder(BorderFactory.createLineBorder(GUIUtilities.getDefaultBorderColour()));
 
-        stopButton = WidgetFactory.createButton("Stop");
+        stopButton = WidgetFactory.createButton("stopButton", "Stop");
         stopButton.addActionListener(this);
 
         GridBagConstraints gbc = new GridBagConstraints();

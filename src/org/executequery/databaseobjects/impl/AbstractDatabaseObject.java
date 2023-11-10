@@ -24,11 +24,13 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.Types;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledStatement;
+import org.executequery.log.Log;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.Log;
+import org.underworldlabs.util.MiscUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -115,6 +117,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     protected static final String ENTRYPOINT = "ENTRYPOINT";
     protected static final String SQL_SECURITY = "SQL_SECURITY";
     protected static final String DIMENSIONS = "DIMENSIONS";
+    protected static final String DIMENSION = "DIMENSION";
+    protected static final String LOWER_BOUND = "LOWER_BOUND";
+    protected static final String UPPER_BOUND = "UPPER_BOUND";
     protected static final String DEFAULT_COLLATE_NAME = "DEFAULT_COLLATE_NAME";
     protected boolean fullLoadCols = false;
 
@@ -682,20 +687,82 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         finishLoadingInfo();
     }
 
-    public SelectBuilder getBuilderLoadColsCommon() {
-        SelectBuilder sb = new SelectBuilder();
-        sb.setDistinct(true);
+    public SelectBuilder getBuilderForCons(boolean allTables) {
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table relations = getMainTable();
-        Table relationFields = Table.createTable("RDB$RELATION_FIELDS", "RF");
-        Table fields = Table.createTable("RDB$FIELDS", "F");
-        Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CH");
-        Table collations = Table.createTable("RDB$COLLATIONS", "CO");
         Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
         Table constraints1 = Table.createTable("RDB$RELATION_CONSTRAINTS", "RCO");
         Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT");
         Table refTable = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC_REF");
         Table refColumn = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT_REF");
         Table refCons = Table.createTable("RDB$REF_CONSTRAINTS", "REF_CONS");
+        Table relationFields = Table.createTable("RDB$RELATION_FIELDS", "RF");
+        Field relName = Field.createField(constraints1, RELATION_NAME);
+        sb.appendField(relName);
+        Field fieldName = Field.createField(indexSegments, FIELD_NAME);
+        sb.appendField(fieldName);
+        sb.appendField(Field.createField().setNull(true).setAlias(FIELD_TYPE));
+        sb.appendField(Field.createField().setNull(true).setAlias(FIELD_SUB_TYPE));
+        sb.appendField(Field.createField().setNull(true).setAlias(SEGMENT_LENGTH));
+        sb.appendField(Field.createField().setNull(true).setAlias(FIELD_PRECISION));
+        sb.appendField(Field.createField().setNull(true).setAlias(FIELD_SCALE));
+        sb.appendField(Field.createField().setNull(true).setAlias(FIELD_LENGTH));
+        sb.appendField(Field.createField().setNull(true).setAlias(CHARACTER_LENGTH));
+        sb.appendField(Field.createField().setNull(true).setAlias(DEFAULT_SOURCE).setAlias(DOMAIN_DEFAULT_SOURCE));
+        sb.appendField(Field.createField().setNull(true).setAlias(NULL_FLAG).setAlias(DOMAIN_NULL_FLAG));
+        sb.appendField(Field.createField().setNull(true).setAlias(COMPUTED_BLR));
+        sb.appendField(Field.createField().setNull(true).setAlias(CHARACTER_SET_ID));
+        sb.appendField(Field.createField().setNull(true).setAlias(COMPUTED_SOURCE));
+        sb.appendField(Field.createField().setNull(true).setAlias(CHARACTER_SET_NAME));
+        sb.appendField(Field.createField().setNull(true).setAlias(COLLATION_NAME));
+        sb.appendField(Field.createField().setNull(true).setAlias(DEFAULT_SOURCE));
+        sb.appendField(Field.createField().setNull(true).setAlias(NULL_FLAG));
+        sb.appendField(Field.createField().setNull(true).setAlias(FIELD_SOURCE));
+        sb.appendField(Field.createField().setNull(true).setAlias(DESCRIPTION));
+        sb.appendField(Field.createField().setNull(true).setAlias(IDENTITY_TYPE));
+        sb.appendField(Field.createField().setNull(true).setAlias(DIMENSION));
+        sb.appendField(Field.createField().setNull(true).setAlias(LOWER_BOUND));
+        sb.appendField(Field.createField().setNull(true).setAlias(UPPER_BOUND));
+        Field fieldPosition = Field.createField(relationFields, FIELD_POSITION);
+        fieldPosition.setStatement(fieldPosition.getFieldTable() + " + 1");
+        sb.appendField(fieldPosition);
+        sb.appendField(Field.createField(constraints, CONSTRAINT_NAME));
+        sb.appendField(Field.createField(constraints, CONSTRAINT_TYPE));
+        Field keyPosition = Field.createField(indexSegments, FIELD_POSITION).setAlias(KEY_SEQ);
+        keyPosition.setStatement(keyPosition.getFieldTable() + " + 1");
+        sb.appendField(keyPosition);
+        sb.appendField(Field.createField(refTable, relName.getAlias()).setAlias(REF_TABLE));
+        sb.appendField(Field.createField(refColumn, fieldName.getAlias()).setAlias(REF_COLUMN));
+        sb.appendField(Field.createField(refCons, UPDATE_RULE));
+        sb.appendField(Field.createField(refCons, DELETE_RULE));
+        sb.appendJoin(Join.createInnerJoin().appendFields(relName, Field.createField(relations, relName.getAlias())));
+        sb.appendJoin(Join.createInnerJoin()
+                .appendFields(Field.createField(constraints1, "INDEX_NAME"), Field.createField(indexSegments, "INDEX_NAME"))
+                .appendFields(fieldName, Field.createField(indexSegments, fieldName.getAlias())));
+        sb.appendJoin(Join.createInnerJoin().appendFields(relName, Field.createField(relationFields, RELATION_NAME))
+                .appendFields(fieldName, Field.createField(relationFields, FIELD_NAME)));
+        sb.appendJoin(Join.createInnerJoin().appendFields(Field.createField(indexSegments, "INDEX_NAME"),
+                Field.createField(constraints, "INDEX_NAME")));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(constraints, CONSTRAINT_NAME),
+                Field.createField(refCons, CONSTRAINT_NAME)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(refCons, "CONST_NAME_UQ"),
+                Field.createField(refTable, CONSTRAINT_NAME)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(refTable, "INDEX_NAME"),
+                        Field.createField(refColumn, "INDEX_NAME"))
+                .appendFields(Field.createField(indexSegments, "FIELD_POSITION"), Field.createField(refColumn, "FIELD_POSITION")));
+        if (allTables)
+            sb = builderForInfoAllObjects(sb);
+        return sb;
+    }
+
+    public SelectBuilder getBuilderForCols(boolean allTables) {
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
+        Table relations = getMainTable();
+        Table relationFields = Table.createTable("RDB$RELATION_FIELDS", "RF");
+        Table fields = Table.createTable("RDB$FIELDS", "F");
+        Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CH");
+        Table collations = Table.createTable("RDB$COLLATIONS", "CO");
+        Table dimensions = Table.createTable("RDB$FIELD_DIMENSIONS", "FD");
         Field relName = Field.createField(relationFields, RELATION_NAME);
         sb.appendField(relName);
         Field fieldName = Field.createField(relationFields, FIELD_NAME);
@@ -720,46 +787,45 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         sb.appendField(fieldSource);
         sb.appendField(Field.createField(relationFields, DESCRIPTION));
         sb.appendField(Field.createField(relationFields, IDENTITY_TYPE).setNull(getDatabaseMajorVersion() < 3));
+        sb.appendField(Field.createField(dimensions, DIMENSION));
+        sb.appendField(Field.createField(dimensions, LOWER_BOUND));
+        sb.appendField(Field.createField(dimensions, UPPER_BOUND));
         Field fieldPosition = Field.createField(relationFields, FIELD_POSITION);
         fieldPosition.setStatement(fieldPosition.getFieldTable() + " + 1");
         sb.appendField(fieldPosition);
-        sb.appendField(Field.createField(constraints, CONSTRAINT_NAME));
-        sb.appendField(Field.createField(constraints, CONSTRAINT_TYPE));
-        Field keyPosition = Field.createField(indexSegments, FIELD_POSITION).setAlias(KEY_SEQ);
-        keyPosition.setStatement(keyPosition.getFieldTable() + " + 1");
-        sb.appendField(keyPosition);
-        sb.appendField(Field.createField(refTable, relName.getAlias()).setAlias(REF_TABLE));
-        sb.appendField(Field.createField(refColumn, fieldName.getAlias()).setAlias(REF_COLUMN));
-        sb.appendField(Field.createField(refCons, UPDATE_RULE));
-        sb.appendField(Field.createField(refCons, DELETE_RULE));
-
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(getObjectField(), relName));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(relName, Field.createField(constraints1, relName.getAlias())));
-        sb.appendJoin(LeftJoin.createLeftJoin()
-                .appendFields(Field.createField(constraints1, "INDEX_NAME"), Field.createField(indexSegments, "INDEX_NAME"))
-                .appendFields(fieldName, Field.createField(indexSegments, fieldName.getAlias())));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(indexSegments, "INDEX_NAME"),
-                Field.createField(constraints, "INDEX_NAME")));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(constraints, CONSTRAINT_NAME),
-                Field.createField(refCons, CONSTRAINT_NAME)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(refCons, "CONST_NAME_UQ"),
-                Field.createField(refTable, CONSTRAINT_NAME)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(refTable, "INDEX_NAME"),
-                Field.createField(refColumn, "INDEX_NAME")));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID),
+        sb.appendField(Field.createField().setNull(true).setAlias(CONSTRAINT_NAME));
+        sb.appendField(Field.createField().setNull(true).setAlias(CONSTRAINT_TYPE));
+        sb.appendField(Field.createField().setNull(true).setAlias(KEY_SEQ));
+        sb.appendField(Field.createField().setNull(true).setAlias(REF_TABLE));
+        sb.appendField(Field.createField().setNull(true).setAlias(REF_COLUMN));
+        sb.appendField(Field.createField().setNull(true).setAlias(UPDATE_RULE));
+        sb.appendField(Field.createField().setNull(true).setAlias(DELETE_RULE));
+        sb.appendJoin(Join.createInnerJoin().appendFields(getObjectField(), relName));
+        sb.appendJoin(Join.createInnerJoin().appendFields(fieldSource, Field.createField(fields, FIELD_NAME)));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID),
                 Field.createField(charsets, CHARACTER_SET_ID)));
-        sb.appendJoin(LeftJoin.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID),
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID),
                         Field.createField(collations, CHARACTER_SET_ID))
                 .appendFields(Field.createField(fields, "COLLATION_ID"),
                         Field.createField(collations, "COLLATION_ID")));
-        sb.appendCondition(Condition.createCondition(fieldSource, "=", Field.createField(fields, FIELD_NAME).getFieldTable()));
-        sb.setOrdering(relName.getFieldTable() + ", " + fieldPosition.getFieldTable());
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, FIELD_NAME),
+                Field.createField(dimensions, FIELD_NAME)));
+        if (allTables)
+            sb = builderForInfoAllObjects(sb);
+        return sb;
+    }
+
+    public SelectBuilder getBuilderLoadColsCommon(boolean allTables) {
+        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
+        sb.appendTable(Table.createTable().setStatement(new SelectBuilder(getHost().getDatabaseConnection()).appendSelectBuilder(getBuilderForCols(allTables)).appendSelectBuilder(getBuilderForCons(allTables)).getSQLQuery()));
+        sb.setOrdering(RELATION_NAME + ", " + FIELD_POSITION + ", " + FIELD_TYPE + " NULLS LAST");
         return sb;
     }
 
     public SelectBuilder getBuilderLoadColsForSingleTable() {
-        SelectBuilder sb = getBuilderLoadColsCommon();
-        sb.appendCondition(buildNameCondition(getObjectField()));
+        SelectBuilder sb = getBuilderLoadColsCommon(false);
+        sb.appendCondition(Condition.createCondition().setStatement(RELATION_NAME + " = ?"));
+        //sb.appendCondition(buildNameCondition(getObjectField()));
         return sb;
     }
 
@@ -775,8 +841,10 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 someExecuteForColumns ? querySenderForColumns : new DefaultStatementExecutor(getHost().getDatabaseConnection());
         try {
 
-            if (statementForLoadInfoForColumns == null || statementForLoadInfoForColumns.isClosed())
-                statementForLoadInfoForColumns = (PooledStatement) executor.getPreparedStatement(getBuilderLoadColsForSingleTable().getSQLQuery());
+            if (statementForLoadInfoForColumns == null || statementForLoadInfoForColumns.isClosed()) {
+                String query = getBuilderLoadColsForSingleTable().getSQLQuery();
+                statementForLoadInfoForColumns = (PooledStatement) executor.getPreparedStatement(query);
+            }
             statementForLoadInfoForColumns.setString(1, getName());
             ResultSet rs = executor.getResultSet(-1, statementForLoadInfoForColumns).getResultSet();
             setColumnsFromResultSet(rs);
@@ -796,7 +864,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     public SelectBuilder getBuilderLoadColsForAllTables() {
-        return builderForInfoAllObjects(getBuilderLoadColsCommon());
+        return getBuilderLoadColsCommon(true);
     }
 
     public String queryForInfoAllObjects() {
@@ -851,9 +919,10 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     protected DefaultStatementExecutor querySender;
 
+
     public void addColumnFromResultSet(ResultSet rs) throws SQLException {
-        String colName = rs.getString(FIELD_NAME).trim();
-        if (previousColumn == null || !colName.equalsIgnoreCase(previousColumn.getName())) {
+        String colName = MiscUtils.trimEnd(rs.getString(FIELD_NAME));
+        if (previousColumn == null || !colName.contentEquals(previousColumn.getName())) {
             DefaultDatabaseColumn column = new DefaultDatabaseColumn();
             previousColumn = column;
             final short fieldType = rs.getShort(FIELD_TYPE);
@@ -861,7 +930,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             final short fieldScale = rs.getShort(FIELD_SCALE);
             final int characterSetId = rs.getInt(CHARACTER_SET_ID);
             final int dataType = DefaultDatabaseHost.getDataType(fieldType, fieldSubType, fieldScale, characterSetId);
-
+            column.setPosition(rs.getInt(FIELD_POSITION));
             column.setTypeInt(dataType);
             column.setColumnSubtype(fieldSubType);
             column.setColumnScale(fieldScale);
@@ -887,6 +956,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 case Types.DOUBLE:
                     // TODO column precision
 //                    valueBuilder.at(6).set(DOUBLE_PRECISION);
+                    break;
+                case Types.INT128:
+                    // TODO column precision
                     break;
                 case Types.BIGINT:
                     // TODO column precision
@@ -980,6 +1052,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 column.setColumnSize(rs.getInt(SEGMENT_LENGTH));
             }
             preColumns.add(column);
+        }
+        if (rs.getObject(DIMENSION) != null) {
+            previousColumn.appendDimension(rs.getInt(DIMENSION), rs.getInt(LOWER_BOUND), rs.getInt(UPPER_BOUND));
         }
         String conType = rs.getString(CONSTRAINT_TYPE);
         if (conType != null) {

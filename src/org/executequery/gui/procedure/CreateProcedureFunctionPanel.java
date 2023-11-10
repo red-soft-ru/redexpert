@@ -20,7 +20,6 @@ import org.executequery.gui.FocusComponentPanel;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.databaseobjects.AbstractCreateExternalObjectPanel;
-import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
@@ -34,11 +33,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.sql.DatabaseMetaData;
@@ -57,330 +52,85 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         ItemListener,
         TextEditorContainer {
 
-    protected String procedure;
+    protected String procedureName;
+    private Object oldSelectedTab = null;
 
-    /**
-     * The input parameters for procedure
-     */
+    protected JTabbedPane parametersTabs;
     protected NewProcedurePanel inputParametersPanel;
-
-    /**
-     * The output parameters for procedure
-     */
     protected NewProcedurePanel outputParametersPanel;
-
-    /**
-     * The output parameters for procedure
-     */
     protected NewProcedurePanel variablesPanel;
 
-    protected CursorsPanel cursorsPanel;
-
-    /**
-     * The body of procedure
-     */
     protected SimpleSqlTextPanel sqlBodyText;
-
-    /**
-     * The text pane showing SQL generated
-     */
     protected SimpleSqlTextPanel outSqlText;
-
-    /**
-     * The tabbed pane containing parameters
-     */
-    protected JTabbedPane parametersTabs;
-
-    /**
-     * The buffer off all SQL generated
-     */
-    private StringBuffer sqlBuffer;
-
-    //    private CreateTableToolBar tools;
-
-
-
-    /**
-     * The base panel
-     */
-    private JPanel containerPanel;
-
-    private JPanel ddlPanel;
     protected SimpleSqlTextPanel ddlTextPanel;
 
-    /**
-     * The base panel
-     */
-    protected JPanel mainPanel;
+    private JPanel ddlPanel;
+    protected CursorsPanel cursorsPanel;
+    protected JCheckBox parseVariablesBox;
 
-    protected JLabel sqlSecurityLabel;
-
-
-
-
-
-    /**
-     * <p> Constructs a new instance.
-     */
-
-    public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedure) {
-        this(dc, dialog, procedure, null);
-    }
-
-    public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedure, Object[] params) {
-        super(dc, dialog, procedure, params);
-    }
-
-    protected void initEditing() {
-        initEditedExternal();
-        JButton executeButton = new JButton(Bundles.getCommon("execute"));
-        executeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                BaseDialog dialog = new BaseDialog(Bundles.getCommon("execute"), true, new ExecuteProcedurePanel(getTypeObject().contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION]) ? 1 : 0, procedure));
-                dialog.display();
-            }
-        });
-        DefaultDatabaseExecutable executable = (DefaultDatabaseExecutable) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure);
-        if (!MiscUtils.isNull(executable.getEntryPoint())) {
-            useExternalBox.setSelected(true);
-            engineField.setText(executable.getEngine());
-            externalField.setText(executable.getEntryPoint());
-
-        }
-        if (!MiscUtils.isNull(executable.getAuthid())) {
-            authidCombo.setSelectedItem(executable.getAuthid());
-        }
-        if (!MiscUtils.isNull(executable.getSqlSecurity())) {
-            sqlSecurityCombo.setSelectedItem(executable.getSqlSecurity());
-        }
-        topPanel.add(executeButton, topGbh.setLabelDefault().get());
-        addPrivilegesTab(tabbedPane, (AbstractDatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
-        addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
-        simpleCommentPanel.setDatabaseObject((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedure));
-        generateScript();
-        reset();
-        fillCustomKeyWords();
-    }
-
-    private void loadVariables() {
-        // remove first empty row
-        variablesPanel.clearRows();
-        String fullProcedureBody = getFullSourceBody();
-        if (fullProcedureBody != null && !fullProcedureBody.isEmpty()) {
-            fullProcedureBody = fullProcedureBody.trim();
-            ProcedureParserLexer lexer = new ProcedureParserLexer(CharStreams.fromString(fullProcedureBody));
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            ProcedureParserParser sqlparser = new ProcedureParserParser(tokens);
-            List<? extends ANTLRErrorListener> listeners = sqlparser.getErrorListeners();
-            for (int i = 0; i < listeners.size(); i++) {
-                if (listeners.get(i) instanceof ConsoleErrorListener)
-                    sqlparser.removeErrorListener(listeners.get(i));
-            }
-            ParseTree tree = sqlparser.declare_block_without_params();
-            ParseTreeWalker walker = new ParseTreeWalker();
-            walker.walk(new ProcedureParserBaseListener() {
-                @Override
-                public void enterDeclare_block_without_params(ProcedureParserParser.Declare_block_without_paramsContext ctx) {
-                    ProcedureParserParser.Full_bodyContext bodyContext = ctx.full_body();
-                    sqlBodyText.setSQLText(bodyContext.getText());
-                    List<ProcedureParserParser.Local_variableContext> vars = ctx.local_variable();
-                    if (!vars.isEmpty()) {
-                        boolean first_var = true, first_cursor = true;
-                        for (int i = 0; i < vars.size(); i++) {
-                            ProcedureParserParser.Local_variableContext var = vars.get(i);
-                            if (var.cursor() == null) {
-                                ProcedureParameter variable = new ProcedureParameter("", DatabaseMetaData.procedureColumnUnknown,
-                                        0, "", 0, 0);
-                                variable.setName(var.variable_name().getText());
-                                ProcedureParserParser.DatatypeContext type = var.datatype();
-                                if (type != null && !type.isEmpty()) {
-                                    if (type.domain_name() != null && !type.domain_name().isEmpty()) {
-                                        String domain = type.domain_name().getText();
-                                        if (!domain.startsWith("\""))
-                                            domain = domain.toUpperCase();
-                                        variable.setDomain(domain);
-                                    }
-                                    if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
-                                        List<ParseTree> children = type.datatypeSQL().children;
-                                        variable.setSqlType(children.get(0).getText());
-                                        if (type.datatypeSQL().type_size() != null && !type.datatypeSQL().type_size().isEmpty()) {
-                                            variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText()));
-                                        }
-                                        if (type.datatypeSQL().scale() != null && !type.datatypeSQL().scale().isEmpty()) {
-                                            variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText()));
-                                        }
-                                        if (type.datatypeSQL().subtype() != null && !type.datatypeSQL().subtype().isEmpty()) {
-                                            if (type.datatypeSQL().subtype().any_name() != null && !type.datatypeSQL().subtype().any_name().isEmpty()) {
-                                                variable.setSubType(1);
-                                            }
-                                            if (type.datatypeSQL().subtype().int_number() != null && !type.datatypeSQL().subtype().int_number().isEmpty()) {
-                                                variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText()));
-                                            }
-                                        }
-                                        if (type.datatypeSQL().charset_name() != null && !type.datatypeSQL().charset_name().isEmpty()) {
-                                            variable.setEncoding(type.datatypeSQL().charset_name().getText());
-                                        }
-                                    }
-                                    if (type.type_of() != null && !type.type_of().isEmpty()) {
-                                        if (type.type_of().domain_name() != null && !type.type_of().domain_name().isEmpty()) {
-                                            variable.setDomain(type.type_of().domain_name().getText());
-                                            variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
-                                        }
-                                        if (type.type_of().column_name() != null && !type.type_of().column_name().isEmpty()) {
-                                            variable.setRelationName(type.type_of().table_name().getText());
-                                            variable.setFieldName(type.type_of().column_name().getText());
-                                            variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
-                                        }
-                                    }
-                                }
-                                if (var.notnull() != null && !var.notnull().isEmpty()) {
-                                    variable.setNullable(0);
-                                } else variable.setNullable(1);
-                                if (var.default_value() != null)
-                                    variable.setDefaultValue(var.default_value().getText());
-                                if (var.comment() != null) {
-                                    String description = var.comment().getText();
-                                    if (description.startsWith("--")) {
-                                        description = description.substring(2);
-                                        variable.setDescriptionAsSingleComment(true);
-                                    } else if (description.startsWith("/*"))
-                                        description = description.substring(2, description.length() - 2);
-                                    variable.setDescription(description);
-                                }
-                                if (first_var)
-                                    variablesPanel.deleteEmptyRow();
-                                first_var = false;
-                                variablesPanel.addRow(variable);
-                            } else {
-                                ColumnData cursor = new ColumnData(connection);
-                                cursor.setCursor(true);
-                                if (var.variable_name() != null) {
-                                    cursor.setColumnName(var.variable_name().getText());
-                                }
-                                if (var.cursor().scroll() != null)
-                                    cursor.setScroll(var.cursor().scroll().getText().contentEquals("SCROLL"));
-                                else cursor.setScroll(false);
-                                if (var.cursor().operator_select() != null) {
-                                    cursor.setSelectOperator(var.cursor().operator_select().operator_select_in().getText());
-                                }
-                                if (var.comment() != null) {
-                                    String description = var.comment().getText();
-                                    if (description.startsWith("--")) {
-                                        description = description.substring(2);
-                                        cursor.setDescriptionAsSingleComment(true);
-                                    } else if (description.startsWith("/*"))
-                                        description = description.substring(2, description.length() - 2);
-                                    cursor.setDescription(description);
-                                }
-                                if (first_cursor)
-                                    cursorsPanel.deleteEmptyRow();
-                                first_cursor = false;
-                                cursorsPanel.addRow(cursor);
-
-                            }
-                        }
-                    }
-                }
-            }, tree);
-
-        }
-    }
+    protected abstract String getEmptySqlBody();
 
     protected abstract String getFullSourceBody();
 
     protected abstract void loadParameters();
 
-    GridBagHelper centralGbh;
+    public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedureName) {
+        this(dc, dialog, procedureName, null);
+    }
 
+    public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedureName, Object[] params) {
+        super(dc, dialog, procedureName, params);
+    }
+
+    @Override
     protected void init() {
+
         initExternal();
-        parametersTabs = new JTabbedPane();
-        // create the column definition panel
-        // and add this to the tabbed pane
+
+        parseVariablesBox = new JCheckBox(bundleString("parseVariables"));
+        parseVariablesBox.addItemListener(e -> fillSqlBody());
+
         inputParametersPanel = new NewProcedurePanel(ColumnData.INPUT_PARAMETER);
-        parametersTabs.add(bundleString("InputParameters"), inputParametersPanel);
-
         outputParametersPanel = new NewProcedurePanel(ColumnData.OUTPUT_PARAMETER);
-        parametersTabs.add(bundleString("OutputParameters"), outputParametersPanel);
-
         variablesPanel = new NewProcedurePanel(ColumnData.VARIABLE);
-        parametersTabs.add(bundleString("Variables"), variablesPanel);
-
         cursorsPanel = new CursorsPanel();
-        parametersTabs.add(bundleString("Cursors"), cursorsPanel);
+        ddlPanel = new JPanel(new GridBagLayout());
 
         sqlBodyText = new SimpleSqlTextPanel();
         sqlBodyText.appendSQLText(getEmptySqlBody());
-        //sqlBodyText.setBorder(BorderFactory.createTitledBorder());
         sqlBodyText.getTextPane().setDatabaseConnection(connection);
-        parametersTabs.insertTab(bundleString("Body", bundleString(getTypeObject())),null,sqlBodyText,null,0);
-        parametersTabs.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                fillCustomKeyWords();
-            }
-        });
 
+        parametersTabs = new JTabbedPane();
+        parametersTabs.add(bundleString("InputParameters"), inputParametersPanel);
+        parametersTabs.add(bundleString("OutputParameters"), outputParametersPanel);
+        parametersTabs.add(bundleString("Variables"), variablesPanel);
+        parametersTabs.add(bundleString("Cursors"), cursorsPanel);
+        parametersTabs.insertTab(bundleString("Body", bundleString(getTypeObject())), null, sqlBodyText, null, 0);
+        parametersTabs.addChangeListener(e -> fillCustomKeyWords());
 
         outSqlText = new SimpleSqlTextPanel();
         outSqlText.getTextPane().setDatabaseConnection(connection);
 
-        mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBorder(BorderFactory.createEtchedBorder());
-
-        containerPanel = new JPanel(new GridBagLayout());
-        ddlPanel = new JPanel(new GridBagLayout());
-
-
-        centralPanel.setLayout(new GridBagLayout());
-        centralGbh = new GridBagHelper();
-        centralGbh.setDefaultsStatic();
-        centralGbh.defaults();
-
-        topPanel.add(ddlPanel, topGbh.nextRowFirstCol().setLabelDefault().get());
-
-        //centralGbh.previousRow().previousRow().addLabelFieldPair(topPanel, sqlSecurityLabel, authidCombo, null);
-
-        containerPanel.add(parametersTabs,
-                new GridBagConstraints(0, 0,
-                        1, 1, 1, 1,
-                        GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                        0, 0));
-
-
-
-
-
-        tabbedPane.insertTab(bundleString("Edit"), null, containerPanel, null, 0);
-
-        addCommentTab(null);
-
         ddlTextPanel = new SimpleSqlTextPanel();
         ddlTextPanel.getTextPane().setDatabaseConnection(connection);
 
-        GridBagConstraints gbc2 = new GridBagConstraints();
-        gbc2.gridx = 0;
-        gbc2.gridy = 0;
-        gbc2.weightx = 1;
-        gbc2.weighty = 1;
-        gbc2.fill = GridBagConstraints.BOTH;
-        gbc2.insets.right = 5;
-        gbc2.insets.left = 5;
-        gbc2.insets.top = 5;
-        gbc2.insets.bottom = 5;
+        topPanel.add(ddlPanel, topGbh.nextRowFirstCol().setLabelDefault().get());
 
-        ddlPanel.add(ddlTextPanel, gbc2);
+        GridBagHelper gridBagHelper = new GridBagHelper();
+        gridBagHelper.anchorNorthWest().fillHorizontally().setInsets(5, 5, 5, 5);
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.add(parseVariablesBox, gridBagHelper.get());
+        mainPanel.add(parametersTabs, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        tabbedPane.insertTab(bundleString("Edit"), null, mainPanel, null, 0);
+
+        addCommentTab(null);
+
+        ddlPanel.add(ddlTextPanel, gridBagHelper.get());
         tabbedPane.insertTab(bundleString("DDL"), null, ddlPanel, null, 2);
+        tabbedPane.addChangeListener(e -> generateScript());
 
-        tabbedPane.addChangeListener(changeEvent -> generateScript());
-
-        setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-
-
-        sqlBuffer = new StringBuffer(CreateTableSQLSyntax.CREATE_TABLE);
-
-        // check initial values for possible value inits
+        // check initial values for possible value init
         inputParametersPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         inputParametersPanel.setDomains(getDomains());
         inputParametersPanel.setDatabaseConnection(connection);
@@ -392,61 +142,293 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         variablesPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         variablesPanel.setDomains(getDomains());
         variablesPanel.setDatabaseConnection(connection);
+
         //metaData
         topGbh.nextRowFirstCol();
         checkExternal();
+        fillSqlBody();
+
+        centralPanel.setLayout(new GridBagLayout());
+        setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
     }
 
-    protected void fillCustomKeyWords()
-    {
+    protected void initEditing() {
+
+        initEditedExternal();
+
+        JButton executeButton = new JButton(Bundles.getCommon("execute"));
+        executeButton.addActionListener(e -> displayExecuteDialog());
+
+        DefaultDatabaseExecutable executable = (DefaultDatabaseExecutable) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName);
+
+        if (!MiscUtils.isNull(executable.getEntryPoint())) {
+            useExternalBox.setSelected(true);
+            engineField.setText(executable.getEngine());
+            externalField.setText(executable.getEntryPoint());
+        }
+
+        if (!MiscUtils.isNull(executable.getAuthid()))
+            authidCombo.setSelectedItem(executable.getAuthid());
+
+        if (!MiscUtils.isNull(executable.getSqlSecurity()))
+            sqlSecurityCombo.setSelectedItem(executable.getSqlSecurity());
+
+        topPanel.add(executeButton, topGbh.setLabelDefault().get());
+        addPrivilegesTab(tabbedPane, (AbstractDatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName));
+        addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName));
+
+        simpleCommentPanel.setDatabaseObject((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName));
+        generateScript();
+        reset();
+        fillCustomKeyWords();
+    }
+
+    private void loadVariables() {
+
+        // remove first empty row
+        variablesPanel.clearRows();
+
+        String fullProcedureBody = getFullSourceBody();
+        if (fullProcedureBody != null && !fullProcedureBody.isEmpty()) {
+
+            fullProcedureBody = fullProcedureBody.trim();
+            ProcedureParserLexer lexer = new ProcedureParserLexer(CharStreams.fromString(fullProcedureBody));
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            ProcedureParserParser sqlParser = new ProcedureParserParser(tokens);
+
+            List<? extends ANTLRErrorListener> listeners = sqlParser.getErrorListeners();
+            for (ANTLRErrorListener listener : listeners) {
+                if (listener instanceof ConsoleErrorListener)
+                    sqlParser.removeErrorListener(listener);
+            }
+
+            ParseTree tree = sqlParser.declare_block_without_params();
+            ParseTreeWalker walker = new ParseTreeWalker();
+            walker.walk(new ProcedureParserBaseListener() {
+                @Override
+                public void enterDeclare_block_without_params(ProcedureParserParser.Declare_block_without_paramsContext ctx) {
+
+                    ProcedureParserParser.Full_bodyContext bodyContext = ctx.full_body();
+                    sqlBodyText.setSQLText(bodyContext.getText());
+
+                    List<ProcedureParserParser.Local_variableContext> vars = ctx.local_variable();
+                    if (!vars.isEmpty()) {
+
+                        boolean firstVar = true;
+                        boolean firstCursor = true;
+
+                        for (ProcedureParserParser.Local_variableContext var : vars) {
+                            if (var.cursor() == null) {
+
+                                ProcedureParameter variable = new ProcedureParameter(
+                                        var.variable_name().getText(), DatabaseMetaData.procedureColumnUnknown,
+                                        0, "", 0, 0);
+
+                                ProcedureParserParser.DatatypeContext type = var.datatype();
+                                if (type != null && !type.isEmpty()) {
+
+                                    if (type.domain_name() != null && !type.domain_name().isEmpty()) {
+
+                                        String domain = type.domain_name().getText();
+                                        if (!domain.startsWith("\""))
+                                            domain = domain.toUpperCase();
+
+                                        variable.setDomain(domain);
+                                    }
+
+                                    if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
+
+                                        List<ParseTree> children = type.datatypeSQL().children;
+                                        variable.setSqlType(children.get(0).getText());
+
+                                        if (type.datatypeSQL().type_size() != null && !type.datatypeSQL().type_size().isEmpty())
+                                            variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText().trim()));
+
+                                        if (type.datatypeSQL().scale() != null && !type.datatypeSQL().scale().isEmpty())
+                                            variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText().trim()));
+
+                                        if (type.datatypeSQL().subtype() != null && !type.datatypeSQL().subtype().isEmpty()) {
+
+                                            if (type.datatypeSQL().subtype().any_name() != null && !type.datatypeSQL().subtype().any_name().isEmpty())
+                                                variable.setSubType(1);
+
+                                            if (type.datatypeSQL().subtype().int_number() != null && !type.datatypeSQL().subtype().int_number().isEmpty())
+                                                variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText().trim()));
+                                        }
+
+                                        if (type.datatypeSQL().charset_name() != null && !type.datatypeSQL().charset_name().isEmpty())
+                                            variable.setEncoding(type.datatypeSQL().charset_name().getText());
+                                    }
+
+                                    if (type.type_of() != null && !type.type_of().isEmpty()) {
+
+                                        if (type.type_of().domain_name() != null && !type.type_of().domain_name().isEmpty()) {
+                                            variable.setDomain(type.type_of().domain_name().getText());
+                                            variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
+                                        }
+
+                                        if (type.type_of().column_name() != null && !type.type_of().column_name().isEmpty()) {
+                                            variable.setRelationName(type.type_of().table_name().getText());
+                                            variable.setFieldName(type.type_of().column_name().getText());
+                                            variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                                        }
+                                    }
+                                }
+
+                                if (var.notnull() != null && !var.notnull().isEmpty())
+                                    variable.setNullable(0);
+                                else
+                                    variable.setNullable(1);
+
+                                if (var.default_statement() != null)
+                                    variable.setDefaultValue(var.default_statement().getText());
+
+                                if (var.comment() != null) {
+
+                                    String description = var.comment().getText();
+                                    if (description.startsWith("--")) {
+                                        description = description.substring(2);
+                                        variable.setDescriptionAsSingleComment(true);
+                                    } else if (description.startsWith("/*"))
+                                        description = description.substring(2, description.length() - 2);
+
+                                    variable.setDescription(description);
+                                }
+
+                                if (firstVar)
+                                    variablesPanel.deleteEmptyRow();
+
+                                firstVar = false;
+                                variablesPanel.addRow(variable);
+
+                            } else {
+
+                                ColumnData cursor = new ColumnData(connection);
+                                cursor.setCursor(true);
+
+                                if (var.variable_name() != null)
+                                    cursor.setColumnName(var.variable_name().getText());
+
+                                if (var.cursor().scroll() != null)
+                                    cursor.setScroll(var.cursor().scroll().getText().contentEquals("SCROLL"));
+                                else
+                                    cursor.setScroll(false);
+
+                                if (var.cursor().operator_select() != null)
+                                    cursor.setSelectOperator(var.cursor().operator_select().operator_select_in().getText());
+
+                                if (var.comment() != null) {
+
+                                    String description = var.comment().getText();
+                                    if (description.startsWith("--")) {
+                                        description = description.substring(2);
+                                        cursor.setDescriptionAsSingleComment(true);
+                                    } else if (description.startsWith("/*"))
+                                        description = description.substring(2, description.length() - 2);
+
+                                    cursor.setDescription(description);
+                                }
+
+                                if (firstCursor)
+                                    cursorsPanel.deleteEmptyRow();
+
+                                firstCursor = false;
+                                cursorsPanel.addRow(cursor);
+                            }
+                        }
+                    }
+                }
+            }, tree);
+        }
+    }
+
+    protected void fillCustomKeyWords() {
+
         TreeSet<String> vars = new TreeSet<>();
-        vars = fillTreeSetFromTableVector(vars,variablesPanel.tableVector);
-        vars = fillTreeSetFromTableVector(vars,cursorsPanel.tableVector);
+        vars = fillTreeSetFromTableVector(vars, variablesPanel.tableVector);
+        vars = fillTreeSetFromTableVector(vars, cursorsPanel.tableVector);
+
         sqlBodyText.getTextPane().setVariables(vars);
         ddlTextPanel.getTextPane().setVariables(vars);
+
         TreeSet<String> pars = new TreeSet<>();
-        pars = fillTreeSetFromTableVector(pars,inputParametersPanel.tableVector);
-        pars = fillTreeSetFromTableVector(pars,outputParametersPanel.tableVector);
+        pars = fillTreeSetFromTableVector(pars, inputParametersPanel.tableVector);
+        pars = fillTreeSetFromTableVector(pars, outputParametersPanel.tableVector);
+
         sqlBodyText.getTextPane().setParameters(pars);
         ddlTextPanel.getTextPane().setParameters(pars);
     }
 
-    TreeSet<String> fillTreeSetFromTableVector(TreeSet<String> treeSet,List<ColumnData> tableVector)
-    {
-        for(ColumnData cd:tableVector)
-        {
-            if(!MiscUtils.isNull(cd.getColumnName()))
+    private TreeSet<String> fillTreeSetFromTableVector(TreeSet<String> treeSet, List<ColumnData> tableVector) {
+
+        for (ColumnData cd : tableVector)
+            if (!MiscUtils.isNull(cd.getColumnName()))
                 treeSet.add(cd.getColumnName().toUpperCase());
-        }
+
         return treeSet;
     }
 
+    protected void generateScript() {
 
+        if (tabbedPane.getSelectedComponent() != ddlPanel && oldSelectedTab == ddlPanel) {
+
+            String ddlText = ddlTextPanel.getSQLText();
+            if (GUIUtilities.displayConfirmDialog(bundleString("confirmTabChange")) != JOptionPane.YES_OPTION) {
+                tabbedPane.setSelectedComponent(ddlPanel);
+                ddlTextPanel.setSQLText(ddlText);
+            }
+
+        } else
+            ddlTextPanel.setSQLText(generateQuery());
+
+        oldSelectedTab = tabbedPane.getSelectedComponent();
+    }
+
+    @Override
     protected void checkExternal() {
+
         super.checkExternal();
-        boolean selected = useExternalBox.isSelected();
-        if(selected)
+
+        if (useExternalBox.isSelected()) {
             parametersTabs.remove(sqlBodyText);
-       else {
+            parseVariablesBox.setVisible(false);
+            if (parametersTabs.indexOfComponent(variablesPanel) > 0) {
+                parametersTabs.remove(variablesPanel);
+                parametersTabs.remove(cursorsPanel);
+            }
+
+        } else {
             parametersTabs.insertTab(bundleString("Body", bundleString(getTypeObject())), null, sqlBodyText, null, 0);
             parametersTabs.setSelectedComponent(sqlBodyText);
-       }
+            parseVariablesBox.setVisible(true);
+            fillSqlBody();
+        }
     }
 
-    protected abstract String getEmptySqlBody();
+    private String[] getDomains() {
 
+        List<String> domains = ConnectionsTreePanel.getPanelFromBrowser()
+                .getDefaultDatabaseHostFromConnection(connection)
+                .getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.DOMAIN]);
 
-    protected abstract void generateScript();
-
-    String[] getDomains() {
-        java.util.List<String> domains = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.DOMAIN]);
-        return domains.toArray(new String[domains.size()]);
+        return domains.toArray(new String[0]);
     }
 
+    private void displayExecuteDialog() {
+
+        ExecuteProcedurePanel procedurePanel = new ExecuteProcedurePanel(
+                getTypeObject().contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION]) ? 1 : 0,
+                procedureName
+        );
+
+        BaseDialog dialog = new BaseDialog(Bundles.getCommon("execute"), true, procedurePanel);
+        dialog.display();
+    }
 
     /**
      * Returns the procedure name field.
      */
+    @Override
     public Component getDefaultFocusComponent() {
         return nameField;
     }
@@ -456,19 +438,19 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
      * The code written for this method performs the operations
      * that need to occur when an item is selected (or deselected).
      */
+    @Override
     public void itemStateChanged(ItemEvent event) {
+
         // interested in selections only
-        if (event.getStateChange() == ItemEvent.DESELECTED) {
+        if (event.getStateChange() == ItemEvent.DESELECTED)
             return;
-        }
 
         final Object source = event.getSource();
         GUIUtils.startWorker(() -> {
             try {
                 setInProcess(true);
-                if (source == connectionsCombo) {
+                if (source == connectionsCombo)
                     connectionChanged();
-                }
             } finally {
                 setInProcess(false);
             }
@@ -476,26 +458,21 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     }
 
     private void columnChangeConnection(DatabaseConnection dc) {
-        Vector<ColumnData> cd = inputParametersPanel.getTableColumnDataVector();
-        for (ColumnData c : cd) {
-            c.setDatabaseConnection(dc);
-        }
 
-        cd = outputParametersPanel.getTableColumnDataVector();
-        for (ColumnData c : cd) {
-            c.setDatabaseConnection(dc);
-        }
+        Vector<ColumnData> columnDataVector = inputParametersPanel.getTableColumnDataVector();
+        columnDataVector.forEach(c -> c.setDatabaseConnection(dc));
 
-        cd = variablesPanel.getTableColumnDataVector();
-        for (ColumnData c : cd) {
-            c.setDatabaseConnection(dc);
-        }
+        columnDataVector = outputParametersPanel.getTableColumnDataVector();
+        columnDataVector.forEach(c -> c.setDatabaseConnection(dc));
+
+        columnDataVector = variablesPanel.getTableColumnDataVector();
+        columnDataVector.forEach(c -> c.setDatabaseConnection(dc));
+
     }
 
     private void connectionChanged() {
-        // retrieve connection selection
-        DatabaseConnection connection =
-                (DatabaseConnection) connectionsCombo.getSelectedItem();
+
+        DatabaseConnection connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
 
         // reset meta data
         inputParametersPanel.setDatabaseConnection(connection);
@@ -505,19 +482,23 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         // reset data types
         try {
-            populateDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
+
+            if (connection != null)
+                populateDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
+            else
+                populateDataTypes(new String[0], new int[0]);
+
         } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the data types for the " +
-                            "selected connection.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorRetrievingDataTypes") + e.getExtendedMessage(), e);
             populateDataTypes(new String[0], new int[0]);
         }
 
     }
 
     private void populateDataTypes(final String[] dataTypes, final int[] intDataTypes) {
+
         GUIUtils.invokeAndWait(() -> {
+
             inputParametersPanel.setDataTypes(dataTypes, intDataTypes);
             inputParametersPanel.setDomains(getDomains());
 
@@ -544,22 +525,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         variablesPanel.fireEditingStopped();
     }
 
-
-    /**
-     * Indicates that a [long-running] process has begun or ended
-     * as specified. This may trigger the glass pane on or off
-     * or set the cursor appropriately.
-     *
-     * @param inProcess - true | false
-     */
-    public void setInProcess(boolean inProcess) {
-    }
-
-    // -----------------------------------------------
-    // --- TableConstraintFunction implementations ---
-    // -----------------------------------------------
-
-
     public String getSQLText() {
         if (tabbedPane.getSelectedComponent() != ddlPanel)
             generateScript();
@@ -570,73 +535,73 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         return nameField.getText();
     }
 
-
-    public void stateChanged(ChangeEvent e) {
-
-    }
-
-
-
-
-
-
-    // -----------------------------------------------
-
     public String getDisplayName() {
         return "";
     }
 
-    // ------------------------------------------------
-    // ----- TextEditorContainer implementations ------
-    // ------------------------------------------------
+    protected void releaseResources(ResultSet rs) {
+
+        try {
+            if (rs != null) {
+                Statement statement = rs.getStatement();
+                if (statement != null && !statement.isClosed())
+                    statement.close();
+            }
+
+        } catch (SQLException ignored) {
+        }
+    }
+
+    protected void fillSqlBody() {
+
+        if (parseVariablesBox.isSelected()) {
+
+            if (parametersTabs.indexOfComponent(variablesPanel) < 0) {
+                parametersTabs.add(bundleString("Variables"), variablesPanel);
+                parametersTabs.add(bundleString("Cursors"), cursorsPanel);
+            }
+            loadVariables();
+
+        } else {
+
+            if (parametersTabs.indexOfComponent(variablesPanel) > 0) {
+                parametersTabs.remove(variablesPanel);
+                parametersTabs.remove(cursorsPanel);
+            }
+            if (procedureName != null)
+                sqlBodyText.setSQLText(getFullSourceBody());
+        }
+    }
+
+    /**
+     * Indicates that a [long-running] process has begun or ended
+     * as specified. This may trigger the glass pane on or off
+     * or set the cursor appropriately.
+     *
+     * @param inProcess <code>true|false</code>
+     */
+    public void setInProcess(boolean inProcess) {
+    }
 
     /**
      * Returns the SQL text pane as the TextEditor component
      * that this container holds.
      */
+    @Override
     public TextEditor getTextEditor() {
         return outSqlText;
     }
 
-    public class JSplitPane3 extends JSplitPane {
-        private boolean hasProportionalLocation = false;
-        private double proportionalLocation = 0.5;
-        private boolean isPainted = false;
-
-        public void setDividerLocation(double proportionalLocation) {
-            if (!isPainted) {
-                hasProportionalLocation = true;
-                this.proportionalLocation = proportionalLocation;
-            } else {
-                super.setDividerLocation(proportionalLocation);
-            }
-        }
-
-        public void paint(Graphics g) {
-            super.paint(g);
-            if (!isPainted) {
-                if (hasProportionalLocation) {
-                    super.setDividerLocation(proportionalLocation);
-                }
-                isPainted = true;
-            }
-        }
-
+    @Override
+    protected void reset() {
+        nameField.setText(this.procedureName);
+        nameField.setEditable(false);
+        loadParameters();
+        fillSqlBody();
+        simpleCommentPanel.resetComment();
     }
 
-    protected void releaseResources(ResultSet rs) {
-        try {
-            if (rs == null)
-                return;
-            Statement st = rs.getStatement();
-            if (st != null) {
-                if (!st.isClosed())
-                    st.close();
-            }
-        } catch (SQLException sqlExc) {
-        }
-    }
-
+    @Override
     public String bundleString(String key) {
         return Bundles.get(CreateProcedureFunctionPanel.class, key);
     }
@@ -645,11 +610,4 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         return Bundles.get(CreateProcedureFunctionPanel.class, key, args);
     }
 
-    protected void reset() {
-        nameField.setText(this.procedure);
-        nameField.setEditable(false);
-        loadParameters();
-        loadVariables();
-        simpleCommentPanel.resetComment();
-    }
 }

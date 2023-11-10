@@ -156,8 +156,7 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
         } else if (command.equals(bundleString("Relationship"))) {
 
             if (parent.getAllComponentsVector().size() <= 1) {
-                GUIUtilities.displayErrorMessage(
-                        "You need at least 2 tables to create a relationship");
+                GUIUtilities.displayErrorMessage(bundleString("needMoreTablesError"));
                 return;
             }
 

@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
+import org.executequery.databaseobjects.Types;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.localization.Bundles;
@@ -274,7 +275,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
         for (int i = 0, n = columnCount - 1; i < columnCount; i++) {
 
             String columnName = columns.get(i).toString();
-            columnName = MiscUtils.getFormattedObject(columnName);
+            columnName = MiscUtils.getFormattedObject(columnName, parent.getDatabaseConnection());
 
             sb.append(columnName);
             if (i != n) {
@@ -468,6 +469,10 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
 
                     boolean _boolean = Boolean.valueOf(booleanValue).booleanValue();
                     prepStmnt.setBoolean(index, _boolean);
+                    break;
+
+                case Types.INT128:
+                    prepStmnt.setObject(index, new BigDecimal(value));
                     break;
 
                 case Types.NUMERIC:

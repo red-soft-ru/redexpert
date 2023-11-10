@@ -21,6 +21,7 @@
 package org.executequery.sql;
 
 import com.github.vertical_blank.sqlformatter.SqlFormatter;
+import com.github.vertical_blank.sqlformatter.core.FormatConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +62,8 @@ public class TokenizingFormatter {
 
             String formattedQuery = SqlFormatter
                     .extend(cfg -> cfg.plusSpecialWordChars("$"))
-                    .format(query.getOriginalQuery());
+                    .format(query.getOriginalQuery(), FormatConfig.builder()
+                            .indent("\t").build());
 
             if (!formattedQuery.endsWith(query.getEndDelimiter()))
                 formattedQuery += query.getEndDelimiter();

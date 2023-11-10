@@ -138,7 +138,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         colTools = new CreateTableToolBar(this);
         conTools = new CreateTableToolBar(this);
         tablespaceComboModel = new DynamicComboBoxModel(new Vector<>());
-        tablespacesCombo = WidgetFactory.createComboBox(tablespaceComboModel);
+        tablespacesCombo = WidgetFactory.createComboBox("tablespaceCombo", tablespaceComboModel);
         tablespacesCombo.addItemListener(this);
         JPanel columnsPanel = new JPanel(new GridBagLayout());
         tablePanel = new NewTablePanel(this);
@@ -183,7 +183,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         isExternalTable = new JCheckBox(bundledString("IsExternalTableText"));
         isExternalTable.addActionListener(e -> externalTablePropsChanged());
 
-        externalTableFilePathField = WidgetFactory.createTextField();
+        externalTableFilePathField = WidgetFactory.createTextField("externalTableFilePathField");
         externalTableFilePathField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override

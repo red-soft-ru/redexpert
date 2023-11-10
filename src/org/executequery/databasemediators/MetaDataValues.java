@@ -23,7 +23,6 @@ package org.executequery.databasemediators;
 import org.executequery.EventMediator;
 import org.executequery.databaseobjects.T;
 import org.executequery.databaseobjects.TablePrivilege;
-import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DatabaseDataSource;
 import org.executequery.datasource.PooledConnection;
@@ -498,8 +497,6 @@ public class MetaDataValues implements ConnectionListener {
             return dmd.getColumns(catalog, schema, name, null);
         } catch (SQLException e) {
             throw new DataSourceException(e);
-        } finally {
-            // TODO: release ????
         }
     }
 
@@ -748,64 +745,8 @@ public class MetaDataValues implements ConnectionListener {
 
     }
 
-    /**
-     * Retrieves the database product version from
-     * the connection's meta data.
-     *
-     * @return the database product version
-     */
-    public String getDatabaseProductNameVersion() throws DataSourceException {
-        try {
-            ensureConnection();
-            DatabaseMetaData dmd = connection.getMetaData();
-            return dmd.getDatabaseProductName() + " " +
-                    dmd.getDatabaseProductVersion();
-        } catch (SQLException e) {
-            throw new DataSourceException(e);
-        } finally {
-            releaseResources();
-        }
 
-    }
 
-    public DefaultDatabaseProcedure[] getProcedures(String schema,
-                                                    String[] names) throws DataSourceException {
-        return getProcedures(null, schema, names);
-    }
-
-    public DefaultDatabaseProcedure[] getProcedures(String catalog,
-                                                    String schema,
-                                                    String[] names) throws DataSourceException {
-        ResultSet rs = null;
-        try {
-            ensureConnection();
-            DatabaseMetaData dmd = connection.getMetaData();
-
-            List<DefaultDatabaseProcedure> list = new ArrayList<DefaultDatabaseProcedure>(names.length);
-            for (int i = 0; i < names.length; i++) {
-                rs = dmd.getProcedureColumns(catalog, schema, names[i], null);
-
-                DefaultDatabaseProcedure proc = new DefaultDatabaseProcedure(schema, names[i]);
-                while (rs.next()) {
-                    proc.addParameter(rs.getString(4),
-                            rs.getInt(5),
-                            rs.getInt(6),
-                            rs.getString(7),
-                            rs.getInt(8),
-                            rs.getInt(12));
-                }
-                list.add(proc);
-                rs.close();
-            }
-
-            return list.toArray(new DefaultDatabaseProcedure[names.length]);
-        } catch (SQLException e) {
-            throw new DataSourceException(e);
-        } finally {
-            releaseResources(rs);
-        }
-
-    }
 
     /**
      * Retrieves the data in its entirety from the specified table
@@ -861,74 +802,7 @@ public class MetaDataValues implements ConnectionListener {
         }
     }
 
-    public DefaultDatabaseProcedure[] getStoredObjects(String schema, String[] types)
-            throws DataSourceException {
-        return getStoredObjects(null, schema, types);
-    }
 
-    public DefaultDatabaseProcedure[] getStoredObjects(
-            String catalog, String schema, String[] types) throws DataSourceException {
-
-        ResultSet rs = null;
-
-        if (schema == null) {
-            schema = getSchemaName();
-        }
-
-        try {
-            ensureConnection();
-            DatabaseMetaData dmd = connection.getMetaData();
-            rs = dmd.getTables(catalog, schema, null, types);
-
-            ArrayList list = new ArrayList();
-
-            while (rs.next()) {
-                list.add(rs.getString(3));
-            }
-
-            releaseResources(rs);
-
-            String[] procedures = (String[]) list.toArray(new String[list.size()]);
-            list.clear();
-
-            for (int i = 0; i < procedures.length; i++) {
-
-                rs = dmd.getProcedures(null, schema, procedures[i]);
-
-                while (rs.next()) {
-                    String name = rs.getString(3);
-                    DefaultDatabaseProcedure dbproc = new DefaultDatabaseProcedure(
-                            rs.getString(2),
-                            name);
-
-                    ResultSet _rs = dmd.getProcedureColumns(null, schema, name, null);
-                    while (_rs.next()) {
-                        dbproc.addParameter(_rs.getString(4),
-                                _rs.getInt(5),
-                                _rs.getInt(6),
-                                _rs.getString(7),
-                                _rs.getInt(8),
-                                rs.getInt(12));
-                    }
-
-                    _rs.close();
-                    list.add(dbproc);
-                }
-                releaseResources(rs);
-
-            }
-
-            DefaultDatabaseProcedure[] procs =
-                    (DefaultDatabaseProcedure[]) list.toArray(new DefaultDatabaseProcedure[list.size()]);
-            return procs;
-
-        } catch (SQLException e) {
-            throw new DataSourceException(e);
-        } finally {
-            releaseResources(rs);
-        }
-
-    }
 
     /**
      * Recycles the specified connection object.
@@ -1239,7 +1113,7 @@ public class MetaDataValues implements ConnectionListener {
             while (rs.next()) {
                 String stype = rs.getString(1);
                 int type = rs.getInt(2);
-                if (!stype.startsWith(underscore)) {
+                if (!stype.startsWith(underscore) && !stype.equalsIgnoreCase(T.ARRAY)) {
                     _dataTypes.add(type);
                 }
             }

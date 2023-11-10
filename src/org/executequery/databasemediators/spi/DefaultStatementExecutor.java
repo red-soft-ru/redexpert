@@ -20,6 +20,7 @@
 
 package org.executequery.databasemediators.spi;
 
+import biz.redsoft.ITPB;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.GUIUtilities;
@@ -30,6 +31,7 @@ import org.executequery.databaseobjects.DatabaseExecutable;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.Types;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.editor.autocomplete.Parameter;
@@ -42,6 +44,7 @@ import org.underworldlabs.util.MiscUtils;
 import java.io.Serializable;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -117,6 +120,8 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
      * the isolation level for transaction
      */
     private int transactionIsolation;
+
+    private ITPB tpb;
 
     boolean useDatabaseConnection;
 
@@ -326,15 +331,20 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             statementResult.setMessage("Connection closed.");
             return false;
         }
-        connectionIsolationLevel = conn.getTransactionIsolation();
-        if (transactionIsolation != -1) {
+        if (tpb != null)
             try {
-                conn.setTransactionIsolation(transactionIsolation);
+                long idTra = ConnectionManager.getIDTransaction(databaseConnection, conn);
+                if (idTra == -1)
+                    ConnectionManager.setTPBtoConnection(databaseConnection, conn, tpb);
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog("Error transaction isolation", e);
+                GUIUtilities.displayExceptionErrorDialog("Error transaction parameters", e);
             }
-        }
+
         return true;
+    }
+
+    public long getIDTransaction() {
+        return ConnectionManager.getIDTransaction(databaseConnection, conn);
     }
 
     /**
@@ -686,6 +696,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
                                 cstmnt.setFloat(index, _float);
                                 break;
 
+                            case Types.INT128:
+                                cstmnt.setObject(index, new BigInteger(value));
+                                break;
+
                             case Types.NUMERIC:
                             case Types.DECIMAL:
                                 cstmnt.setBigDecimal(index, new BigDecimal(value));
@@ -790,6 +804,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
                             case Types.REAL:
                                 returnValue = Float.toString(cstmnt.getFloat(index));
+                                break;
+
+                            case Types.INT128:
+                                returnValue = cstmnt.getObject(index).toString();
                                 break;
 
                             case Types.NUMERIC:
@@ -1464,8 +1482,6 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             useCount++;
         } catch (SQLException e) {
             statementResult.setSqlException(e);
-        } finally {
-            //finished();
         }
 
         return statementResult;
@@ -1936,6 +1952,14 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
     public String bundleString(String key) {
         return Bundles.get(getClass(), key);
+    }
+
+    public ITPB getTpb() {
+        return tpb;
+    }
+
+    public void setTpb(ITPB tpb) {
+        this.tpb = tpb;
     }
 }
 

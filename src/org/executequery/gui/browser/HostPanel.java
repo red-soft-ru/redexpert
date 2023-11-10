@@ -125,7 +125,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         tabPane.addTab(bundleString("DatabaseProperties"), databasePropertiesPanel);
         tabPane.addTab(bundleString("SQLKeywords"), keyWordsPanel);
         tabPane.addTab(bundleString("DataTypes"), dataTypesPanel);
-        tabPane.addTab("java.sql.Types", javaSqlTypesPanel);
+        tabPane.addTab("org.executequery.databaseobjects.Types", javaSqlTypesPanel);
         enableConnectionTabs(false);*/
 
         setHeaderText(bundleString("DatabaseConnection"));

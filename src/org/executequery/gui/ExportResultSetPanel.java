@@ -38,6 +38,7 @@ import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.SqlStatementResult;
@@ -68,7 +69,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         ConnectionListener,
         TextEditorContainer {
 
-    public static final String TITLE = "Export Result Set ";
+    public static final String TITLE = bundledString("title");
     public static final String FRAME_ICON = "ExportDelimited16.svg";
 
     private JComboBox connectionsCombo;
@@ -100,17 +101,17 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
 
     private void init() {
 
-        fileNameField = WidgetFactory.createTextField();
-        connectionsCombo = WidgetFactory.createComboBox();
+        fileNameField = WidgetFactory.createTextField("fileNameField");
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo");
 
         String[] delims = {"|", ",", ";", "#"};
-        delimiterCombo = WidgetFactory.createComboBox(delims);
+        delimiterCombo = WidgetFactory.createComboBox("delimiterCombo", delims);
         delimiterCombo.setEditable(true);
 
         combosGroup = new TableSelectionCombosGroup(connectionsCombo);
 
-        includeColumNamesCheck = new JCheckBox("Include column names as first row");
-        applyQuotesCheck = new JCheckBox("Use double quotes for char/varchar/longvarchar columns", true);
+        includeColumNamesCheck = new JCheckBox(bundledString("IncludeColumnNames"));
+        applyQuotesCheck = new JCheckBox(bundledString("UseDoubleQuotes"), true);
 
         sqlText = new SimpleSqlTextPanel();
 //        sqlText.getTextPane().setBackground(Color.WHITE);
@@ -130,7 +131,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         splitPane.setDividerLocation(0.8);
         splitPane.setDividerSize(5);
 
-        JButton button = WidgetFactory.createInlineFieldButton("Browse");
+        JButton button = WidgetFactory.createInlineFieldButton(bundledString("Browse"));
         button.setActionCommand("browse");
         button.addActionListener(this);
         button.setMnemonic('r');
@@ -146,7 +147,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         gbc.insets.right = 5;
         gbc.insets.left = 5;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        mainPanel.add(new JLabel("Connection:"), gbc);
+        mainPanel.add(new JLabel(bundledString("Connection")), gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -158,7 +159,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         gbc.weightx = 0;
         gbc.gridwidth = 1;
         gbc.insets.top = 0;
-        mainPanel.add(new JLabel("Data Delimiter:"), gbc);
+        mainPanel.add(new JLabel(bundledString("DataDelimiter")), gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -169,7 +170,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         gbc.weightx = 0;
         gbc.gridwidth = 1;
         gbc.insets.top = 2;
-        mainPanel.add(new JLabel("Output File:"), gbc);
+        mainPanel.add(new JLabel(bundledString("OutputFile")), gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -208,8 +209,8 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
 
         int minimumButtonWidth = 85;
-        executeButton = new MinimumWidthActionButton(minimumButtonWidth, this, "Execute", "executeAndExport");
-        stopButton = new MinimumWidthActionButton(minimumButtonWidth, this, "Stop", "stop");
+        executeButton = new MinimumWidthActionButton(minimumButtonWidth, this, Bundles.getCommon("execute"), "executeAndExport");
+        stopButton = new MinimumWidthActionButton(minimumButtonWidth, this, Bundles.getCommon("stop"), "stop");
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 5));
         buttonPanel.add(executeButton);
         buttonPanel.add(stopButton);
@@ -243,10 +244,10 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
 
-        fileChooser.setDialogTitle("Select Export File Path");
+        fileChooser.setDialogTitle(bundledString("FileChooserTitle"));
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
 
-        int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), "Select");
+        int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), Bundles.getCommon("select"));
         if (result == JFileChooser.CANCEL_OPTION) {
 
             return;
@@ -255,7 +256,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         File file = fileChooser.getSelectedFile();
         if (file.exists()) {
 
-            result = GUIUtilities.displayConfirmCancelDialog("The selected file exists.\nOverwrite existing file?");
+            result = GUIUtilities.displayConfirmCancelDialog(bundledString("FileExists"));
 
             if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.NO_OPTION) {
 
@@ -272,19 +273,19 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
 
         if (StringUtils.isBlank(delimiterCombo.getSelectedItem().toString())) {
 
-            GUIUtilities.displayErrorMessage("Please select or enter an appropriate delimiter");
+            GUIUtilities.displayErrorMessage(bundledString("SelectDelimiter"));
             return false;
         }
 
         if (StringUtils.isBlank(fileNameField.getText())) {
 
-            GUIUtilities.displayErrorMessage("Please select an output file");
+            GUIUtilities.displayErrorMessage(bundledString("SelectFile"));
             return false;
         }
 
         if (StringUtils.isBlank(sqlText.getEditorText())) {
 
-            GUIUtilities.displayErrorMessage("Please enter a valid SQL query");
+            GUIUtilities.displayErrorMessage(bundledString("EnterQuery"));
             return false;
         }
 
@@ -384,11 +385,11 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
                             Integer recordCount = (Integer) get();
                             if (recordCount != -1) {
 
-                                outputPanel.append("Records transferred: " + recordCount);
+                                outputPanel.append(bundledString("RecordsTransferred") + recordCount);
 
                                 File file = outputFile();
                                 StringBuilder sb = new StringBuilder();
-                                sb.append("Output file: ");
+                                sb.append(bundledString("OutputFile"));
                                 sb.append(file.getName());
                                 sb.append(" (");
                                 sb.append(new DecimalFormat("###,###.##").format(MiscUtils.bytesToMegaBytes(file.length())));
@@ -430,10 +431,10 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
 
             String query = sqlText.getEditorText();
 
-            statusBar.setStatusText("Executing...");
+            statusBar.setStatusText(Bundles.getCommon("executing"));
             statusBar.startProgressBar();
 
-            outputPanel.appendAction("Executing:");
+            outputPanel.appendAction(bundledString("Executing"));
             outputPanel.appendActionFixedWidth(query);
 
             DerivedQuery derivedQuery = new DerivedQuery(query);
@@ -450,7 +451,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
 
             } else {
 
-                outputPanel.appendWarning("The executed query did not return a valid result set");
+                outputPanel.appendWarning(bundledString("NoValidResultSet"));
             }
 
         } catch (SQLException e) {
@@ -461,25 +462,25 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
 
             } else {
 
-                outputPanel.appendError("Execution error:\n" + e.getMessage());
+                outputPanel.appendError(bundledString("ExecutionError") + e.getMessage());
             }
 
         } catch (ImportExportDataException e) {
 
-            outputPanel.appendError("Execution error:\n" + e.getMessage());
+            outputPanel.appendError(bundledString("ExecutionError") + e.getMessage());
 
         } catch (InterruptedException e) {
 
-            outputPanel.appendWarning("Operation cancelled by user action");
+            outputPanel.appendWarning(bundledString("OperationCancelled"));
 
         } finally {
 
             long endTime = System.currentTimeMillis();
 
-            statusBar.setStatusText("Done");
+            statusBar.setStatusText(Bundles.getCommon("done"));
             statusBar.stopProgressBar();
 
-            outputPanel.append("Duration: " + MiscUtils.formatDuration(endTime - startTime));
+            outputPanel.append(bundledString("Duration") + MiscUtils.formatDuration(endTime - startTime));
 
             try {
 
@@ -634,8 +635,9 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
 
         try {
 
-            return FileUtils.loadResource(
-                    "org/executequery/gui/resource/exportResultSetInstruction.html");
+            return FileUtils.loadResource(Bundles.getCommon("locale").equals("en") ?
+                    "org/executequery/gui/resource/exportResultSetInstruction.html" :
+                    "org/executequery/gui/resource/exportResultSetInstruction_ru.html");
 
         } catch (IOException e) {
 
@@ -646,7 +648,11 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
 
         }
 
-        return "Enter the SQL SELECT query below";
+        return bundledString("EnterSQL");
+    }
+
+    public static String bundledString(String key) {
+        return Bundles.get(ExportResultSetPanel.class, key);
     }
 
 }

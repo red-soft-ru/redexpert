@@ -33,18 +33,22 @@ import java.awt.event.ActionEvent;
  */
 public class FileSelectionTableCell extends BrowsingCellEditor {
 
+    private final int selectionMode;
+
     /**
      * Creates a new instance of ComboBoxCellRenderer
      */
-    public FileSelectionTableCell() {
+    public FileSelectionTableCell(int selectionMode) {
+        this.selectionMode = selectionMode;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
+
         FileChooserDialog dialog = new FileChooserDialog();
-        dialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        dialog.setFileSelectionMode(selectionMode);
 
         int result = dialog.showOpenDialog(GUIUtilities.getInFocusDialogOrWindow());
-
         if (result == JFileChooser.CANCEL_OPTION) {
             fireEditingStopped();
             return;
@@ -55,13 +59,6 @@ public class FileSelectionTableCell extends BrowsingCellEditor {
             setDelegateValue(path);
             fireEditingStopped();
         }
-
     }
 
 }
-
-
-
-
-
-

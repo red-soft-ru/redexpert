@@ -60,54 +60,72 @@ public final class WidgetFactory {
         return button;
     }
 
-    public static JButton createButton(String text) {
-
-        return new JButton(text);
+    public static JButton createButton(String name, String text) {
+        JButton button = new JButton(text);
+        button.setName(name);
+        return button;
     }
 
-    public static JButton createButton(ActionListener actionListener, String text) {
+    public static JButton createButton(String name, ActionListener actionListener, String text) {
 
-        return new DefaultButton(actionListener, text, null);
+        DefaultButton button = new DefaultButton(actionListener, text, null);
+        button.setName(name);
+        return button;
     }
 
-    public static JComboBox createComboBox(Vector<?> items) {
-
-        return new JComboBox(items);
+    public static JComboBox createComboBox(String name, Vector<?> items) {
+        JComboBox comboBox = new JComboBox(items);
+        comboBox.setName(name);
+        return comboBox;
     }
 
-    public static JComboBox createComboBox(ComboBoxModel model) {
-
-        return new JComboBox(model);
+    public static JComboBox createComboBox(String name, ComboBoxModel model) {
+        JComboBox comboBox = new JComboBox(model);
+        comboBox.setName(name);
+        return comboBox;
     }
 
-    public static JComboBox createComboBox(Object[] items) {
+    public static JComboBox createComboBox(String name, Object[] items) {
 
-        return new JComboBox(items);
+        JComboBox comboBox = new JComboBox(items);
+        comboBox.setName(name);
+        return comboBox;
     }
 
-    public static JComboBox createComboBox() {
+    public static JComboBox createComboBox(String name) {
 
-        return new JComboBox();
+        JComboBox comboBox = new JComboBox();
+        comboBox.setName(name);
+        return comboBox;
     }
 
-    public static NumberTextField createNumberTextField() {
-
-        return new NumberTextField();
+    public static NumberTextField createNumberTextField(String name) {
+        NumberTextField numberTextField = new NumberTextField();
+        numberTextField.setName(name);
+        return numberTextField;
     }
 
-    public static JTextField createTextField() {
-
-        return new JTextField();
+    public static JTextField createTextField(String name) {
+        return createTextField(name, "");
     }
 
-    public static JTextField createTextField(String text) {
-
-        return new JTextField(text);
+    public static JTextField createTextField(String name, String text) {
+        JTextField textField = new JTextField();
+        textField.setText(text);
+        textField.setName(name);
+        return textField;
     }
 
-    public static JPasswordField createPasswordField() {
+    public static JPasswordField createPasswordField(String name) {
+        JPasswordField passwordField = new JPasswordField();
+        passwordField.setName(name);
+        return passwordField;
+    }
 
-        return new JPasswordField();
+    public static JCheckBox createCheckBox(String name, String text) {
+        JCheckBox checkBox = new JCheckBox(text);
+        checkBox.setName(name);
+        return checkBox;
     }
 
     public static void addLabelFieldPair(JPanel panel, String label,
@@ -116,6 +134,7 @@ public final class WidgetFactory {
         addLabelFieldPair(panel, label, field, null, gbc);
     }
 
+    @Deprecated /*use GridBagHelper.addLabelFieldPair instead this method*/
     public static void addLabelFieldPair(JPanel panel, String label,
                                          JComponent field, String toolTip, GridBagConstraints gbc) {
 

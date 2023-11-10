@@ -120,7 +120,7 @@ build:linux:
     - builder
     - x86_64
   variables:
-    MAVEN_VERSION: 3.9.2
+    MAVEN_VERSION: 3.9.3
     M2_HOME: /opt/apache-maven-${MAVEN_VERSION}/
     QMAKE: qmake-qt4
     DIST: ${CI_PROJECT_DIR}/dist/linux-${ARCH}
@@ -130,7 +130,7 @@ build:linux:
     - yum group install -y "Development Tools"
     - yum install -y ca-certificates
     - cd /opt
-    - wget http://www.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
+    - wget https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
     - tar xzf apache-maven-${MAVEN_VERSION}-bin.tar.gz
     - export PATH=${M2_HOME}/bin:${PATH}
     - export JAVA_HOME=`java -XshowSettings:properties -version 2>&1|grep "java.home"|cut -d "=" -f 2|tr -d " "|rev | cut -c 4- | rev`
@@ -156,7 +156,7 @@ build:linux:
     - ./ci/build_installer.sh
   parallel:
     matrix:
-      - BUILD_IMAGE: amd64/centos:7
+      - BUILD_IMAGE: oraclelinux:7
         ARCH: x86_64
       - BUILD_IMAGE: i386/centos:7
         ARCH: x86
@@ -235,12 +235,17 @@ test:windows:
     DISTRO: red-expert-tests
   parallel:
     matrix:
-      - ARCH: x86_64
-      - ARCH: x86
+      - TEST_TYPE: core
+        ARCH: ["x86_64", "x86"]
+        DBMS: ["Firebird-3.0", "Firebird-5.0", "rdb30", "rdb50"]
   before_script:
    - $TEST_DIR = New-TempDirectory -Prefix 'test_re_'
    - cd $TEST_DIR
    - unzip -q ${CI_PROJECT_DIR}\dist-src\RedExpert-$env:VERSION-src.zip
+   - cd $TEST_DIR\RedExpert-$env:VERSION\ci
+   - start-process "${PYTHON}" "-m pip install beautifulsoup4" -wait -nonewwindow
+   - start-process "${PYTHON}" ".\download_dbms.py ${DBMS} ${ARCH}" -wait -nonewwindow
+   - powershell -ExecutionPolicy ByPass -file install_dbms.ps1
    - cd $DIST\bin
    - |
       if ($env:ARCH -eq "x86_64")
@@ -273,6 +278,8 @@ repackage:
     expire_in: 1 day
     paths:
       - dist/unified/
+  dependencies: [ "prepare", "sources", "build:windows", "build:linux" ]
+  needs: [ "prepare", "sources", "build:windows", "build:linux" ]
 
 deploy:
   tags:

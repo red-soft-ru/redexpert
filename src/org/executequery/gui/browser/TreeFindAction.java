@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -48,7 +49,7 @@ import java.util.regex.Pattern;
  * @author Santhosh Kumar, Takis Diakoumis
  */
 public class TreeFindAction extends FindAction<TreePath> {
-    private boolean searchInCols;
+    private final boolean searchInCols;
     public TreeFindAction() {
 
         super();
@@ -57,27 +58,23 @@ public class TreeFindAction extends FindAction<TreePath> {
         searchInCols = SystemProperties.getBooleanProperty("user", "browser.search.in.columns");
     }
 
+    @Override
     protected boolean changed(JComponent comp, String searchString, Position.Bias bias) {
 
-        if (StringUtils.isBlank(searchString)) {
-
+        if (StringUtils.isBlank(searchString))
             return false;
-        }
 
         JTree tree = (JTree) comp;
         String prefix = searchString;
 
-        if (ignoreCase()) {
-
+        if (ignoreCase())
             prefix = prefix.toUpperCase();
-        }
 
-        prefix = prefix.replaceAll("\\*", ".*");
+        prefix = prefix.replaceAll("\\*", ".*")
+                .replace("$", "\\$");
 
-        Matcher matcher = Pattern.compile(prefix).matcher("");
-        List<TreePath> matchedPaths = new ArrayList<TreePath>();
-        findOnTree(tree.getPathForRow(0), matchedPaths, matcher);
-
+        List<TreePath> matchedPaths = new ArrayList<>();
+        findOnTree(tree.getPathForRow(0), matchedPaths, Pattern.compile(prefix).matcher(""));
         foundValues(matchedPaths);
 
         return !(matchedPaths.isEmpty());
@@ -124,7 +121,7 @@ public class TreeFindAction extends FindAction<TreePath> {
         Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-            String text = node.getName().trim();
+            String text = MiscUtils.trimEnd(node.getName());
             if (ignoreCase()) {
 
                 text = text.toUpperCase();

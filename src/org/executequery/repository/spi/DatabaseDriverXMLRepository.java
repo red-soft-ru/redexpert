@@ -127,7 +127,7 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
 
         ensureFileExists();
 
-        return (List<DatabaseDriver>) read(filePath(), new DatabaseDriverHandler());
+        return read(filePath(), new DatabaseDriverHandler());
     }
 
     private boolean namesValid() {
@@ -174,14 +174,6 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
         int count = 0;
 
         for (DatabaseDriver driver : drivers) {
-
-            // check the default id is set against the ODBC driver
-            if (!driver.isDefaultSunOdbc() &&
-                    DatabaseDriver.SUN_ODBC_DRIVER.equals(driver.getClassName())) {
-
-                driver.setId(DatabaseDriver.SUN_ODBC_ID);
-                doSave = true;
-            }
 
             // check we have a valid id
             if (!driver.isIdValid()) {

@@ -61,7 +61,6 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         mainPanel = new JPanel();
         sqlTextPanel = new SimpleSqlTextPanel();
         passTextField = new JPasswordField();
-        passTextField.setTransferHandler(null);
         passTextField.addKeyListener(new KeyListener() {
 
             @Override

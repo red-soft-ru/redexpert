@@ -97,12 +97,12 @@ public abstract class AbstractDriverPanel extends JPanel
 
         jarPathListModel = new DefaultListModel();
 
-        nameField = textFieldWithKey("AbstractDriverPanel.driverNameToolTip");
-        descField = textFieldWithKey("AbstractDriverPanel.descriptionToolTip");
+        nameField = textFieldWithKey("nameField", "AbstractDriverPanel.driverNameToolTip");
+        descField = textFieldWithKey("descField", "AbstractDriverPanel.descriptionToolTip");
 //        classField = textFieldWithKey("AbstractDriverPanel.classNameToolTip");
 
         classComboModel = new DynamicComboBoxModel();
-        classField = WidgetFactory.createComboBox(classComboModel);
+        classField = WidgetFactory.createComboBox("classField", classComboModel);
         classField.setToolTipText(getString("AbstractDriverPanel.classNameToolTip"));
         classField.setEditable(true);
 
@@ -131,12 +131,12 @@ public abstract class AbstractDriverPanel extends JPanel
 
         nameField.addFocusListener(new DriverNameFieldListener(this));
 
-        databaseNameCombo = WidgetFactory.createComboBox(createDatabaseComboValues());
+        databaseNameCombo = WidgetFactory.createComboBox("databaseNameCombo", createDatabaseComboValues());
         databaseNameCombo.setToolTipText(getString("AbstractDriverPanel.databaseToolTip"));
         databaseNameCombo.addItemListener(this);
 
         urlComboModel = new DynamicComboBoxModel();
-        driverUrlCombo = WidgetFactory.createComboBox(urlComboModel);
+        driverUrlCombo = WidgetFactory.createComboBox("driverUrlCombo", urlComboModel);
         driverUrlCombo.setToolTipText(getString("AbstractDriverPanel.jdbcUrlToolTip"));
         driverUrlCombo.setEditable(true);
 
@@ -212,9 +212,9 @@ public abstract class AbstractDriverPanel extends JPanel
         return new DefaultFieldLabel(getString(key));
     }
 
-    private JTextField textFieldWithKey(String key) {
+    private JTextField textFieldWithKey(String name, String key) {
 
-        JTextField field = WidgetFactory.createTextField();
+        JTextField field = WidgetFactory.createTextField(name);
         field.setToolTipText(getString(key));
 
         return field;
@@ -294,11 +294,6 @@ public abstract class AbstractDriverPanel extends JPanel
     }
 
     public void findDriverClass(ActionEvent e) {
-
-        if (databaseDriver.isDefaultSunOdbc()) {
-
-            return;
-        }
 
         if (jarPathListModel.isEmpty()) {
 
@@ -403,11 +398,6 @@ public abstract class AbstractDriverPanel extends JPanel
 
     public void browseDrivers(ActionEvent e) {
 
-        if (databaseDriver.isDefaultSunOdbc()) {
-
-            return;
-        }
-
         FileSelector jarFiles = new FileSelector(
                 new String[]{"jar"}, getString("AbstractDriverPanel.javaArchiveFiles"));
 
@@ -472,12 +462,6 @@ public abstract class AbstractDriverPanel extends JPanel
     protected final void populateDriverObject() {
 
         if (databaseDriver == null) {
-
-            return;
-        }
-
-        // ODBC driver can not be changed
-        if (databaseDriver.isDefaultSunOdbc()) {
 
             return;
         }

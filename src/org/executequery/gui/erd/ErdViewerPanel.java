@@ -28,6 +28,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.SaveFunction;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.localization.Bundles;
 import org.executequery.print.PrintFunction;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.plaf.UIUtils;
@@ -59,7 +60,7 @@ public class ErdViewerPanel extends DefaultTabView
     /**
      * The panel's title
      */
-    public static final String TITLE = "Entity Relationship Diagram";
+    public static final String TITLE = bundleString("title");
 
     /**
      * The panel's icon
@@ -950,7 +951,7 @@ public class ErdViewerPanel extends DefaultTabView
     public void setSavedErd(ErdSaveFileFormat _savedErd, String absolutePath) {
 
         if (tables != null && tables.size() > 0) {
-            int confirm = GUIUtilities.displayConfirmDialog("Do you want to save your changes?");
+            int confirm = GUIUtilities.displayConfirmDialog(bundleString("setSavedErd"));
 
             if (confirm == JOptionPane.YES_OPTION) {
 
@@ -1119,8 +1120,7 @@ public class ErdViewerPanel extends DefaultTabView
 
         } catch (Exception e) {
             e.printStackTrace();
-            GUIUtilities.displayErrorMessage("An error occured saving to file:\n" +
-                    e.getMessage());
+            GUIUtilities.displayErrorMessage(bundleString("errorFileSaving") + e.getMessage());
             return SaveFunction.SAVE_FAILED;
         }
 
@@ -1305,19 +1305,8 @@ public class ErdViewerPanel extends DefaultTabView
 
     // --------------------------------------------
 
+    private static String bundleString(String key) {
+        return Bundles.get(ErdViewerPanel.class, key);
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

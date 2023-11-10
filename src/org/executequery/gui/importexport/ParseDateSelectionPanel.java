@@ -83,7 +83,7 @@ public class ParseDateSelectionPanel extends ComponentTitledPanel
 
         this.importExportProcess = importExportProcess;
 
-        dateFormats = WidgetFactory.createComboBox(loadDatePatterns());
+        dateFormats = WidgetFactory.createComboBox("dateFormats", loadDatePatterns());
         dateFormats.setEditable(true);
 
         JPanel panel = getContentPane();

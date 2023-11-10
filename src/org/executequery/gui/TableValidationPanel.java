@@ -15,6 +15,7 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Alexey Kozlov
@@ -64,7 +66,10 @@ public class TableValidationPanel extends JPanel implements TabView {
         formattedOutputText = "";
 
         databaseConnections = ((DatabaseConnectionRepository)
-                Objects.requireNonNull(RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
+                Objects.requireNonNull(RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)))
+                .findAll().stream()
+                .sorted((o1, o2) -> Boolean.compare(o1.isConnected(), o2.isConnected()) * -1)
+                .collect(Collectors.toList());
 
         connectionsComboBox = new JComboBox<>();
         databaseConnections.forEach(item -> connectionsComboBox.addItem(item.getName()));
@@ -150,11 +155,11 @@ public class TableValidationPanel extends JPanel implements TabView {
             return;
         }
 
-        selectedTableValues.forEach(item -> preparedTableParameter.append(((NamedObject) item).getName().trim()).append("|"));
+        selectedTableValues.forEach(item -> preparedTableParameter.append(MiscUtils.trimEnd(((NamedObject) item).getName())).append("|"));
         preparedTableParameter.deleteCharAt(preparedTableParameter.lastIndexOf("|"));
 
         if (!selectedIndexValues.isEmpty()) {
-            selectedIndexValues.forEach(item -> preparedIndexParameter.append(((NamedObject) item).getName().trim()).append("|"));
+            selectedIndexValues.forEach(item -> preparedIndexParameter.append(MiscUtils.trimEnd(((NamedObject) item).getName())).append("|"));
             preparedIndexParameter.deleteCharAt(preparedIndexParameter.lastIndexOf("|"));
         }
 

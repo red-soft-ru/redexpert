@@ -63,7 +63,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
     private static final char NEW_LINE_CHAR = '\n';
 
     public ErdNewTableDialog(ErdViewerPanel parent) {
-        super("New Table", false);
+        super(bundleString("title"), false);
         this.erdViewerPanel = parent;
 
         try {
@@ -79,7 +79,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
 
     public ErdNewTableDialog(ErdViewerPanel parent, ErdTable erdTable) {
         this(parent);
-        this.setTitle("Table: " + erdTable.getTableName());
+        this.setTitle(bundleString("editableTitle") + erdTable.getTableName());
         this.erdTable = erdTable;
 
         createPanel.setTableName(erdTable.getTableName());
@@ -151,7 +151,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
             dispose();
         } else if (command.equals("Create")) {
             if (MiscUtils.isNull(createPanel.getTableName())) {
-                GUIUtilities.displayErrorMessage("Table name can not be empty");
+                GUIUtilities.displayErrorMessage(bundleString("TableNameEmptyError"));
             } else {
                 createTable();
                 //dispose();
@@ -177,7 +177,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
             table.setNewTable(true);
             table.setEditable(true);
             if (!erdViewerPanel.addNewTable(table)) {
-                GUIUtilities.displayErrorMessage("This table name already exists");
+                GUIUtilities.displayErrorMessage(bundleString("TableExistsError"));
                 return;
             }
         } else {
@@ -295,20 +295,8 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
 
     }
 
+    private static String bundleString(String key) {
+        return Bundles.get(ErdNewTableDialog.class, key);
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -78,14 +78,14 @@ public class ImportExportExcelPanel_5 extends JPanel {
         JLabel rollbackLabel = new JLabel("Rollback Segment Size:");
         JLabel dateFormatLabel = new JLabel("Date Format:");
 
-        dateFormatField = WidgetFactory.createTextField();
+        dateFormatField = WidgetFactory.createTextField("dateFormatField");
 
         String[] errors = {"Log and Continue", "Stop Transfer"};
-        errorCombo = WidgetFactory.createComboBox(errors);
+        errorCombo = WidgetFactory.createComboBox("errorCombo", errors);
 
         String[] rolls = {"50", "100", "500", "1000", "5000",
                 "10000", "50000", "End of File"};
-        rollbackCombo = WidgetFactory.createComboBox(rolls);
+        rollbackCombo = WidgetFactory.createComboBox("rollbackCombo", rolls);
         rollbackCombo.setSelectedIndex(2);
 
         batchCheck = new JCheckBox("Run as a batch process");

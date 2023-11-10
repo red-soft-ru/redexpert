@@ -173,7 +173,7 @@ public class NewTablePanel extends TableDefinitionPanel
                         .append(cd.getAutoincrement().getStartValue()).append(")");
             } else {
                 if (!MiscUtils.isNull(cd.getDefaultValue().getValue())) {
-                    line.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType()));
+                    line.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType(), cd.getDatabaseConnection()));
                 }
                 line.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
                 if (!MiscUtils.isNull(cd.getCheck())) {

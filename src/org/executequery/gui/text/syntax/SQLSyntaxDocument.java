@@ -387,7 +387,8 @@ public class SQLSyntaxDocument extends RSyntaxDocument
         this.insertMode = insertMode;
     }
 
-}
+
+         }
 
 
 

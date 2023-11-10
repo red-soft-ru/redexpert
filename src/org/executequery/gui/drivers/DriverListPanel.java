@@ -95,7 +95,7 @@ public class DriverListPanel extends AbstractFormObjectViewPanel
         tcm.getColumn(2).setPreferredWidth(70);
 
         // new connection button
-        JButton button = WidgetFactory.createButton("New Driver");
+        JButton button = WidgetFactory.createButton("newDriverButton", "New Driver");
         button.addActionListener(this);
 
         JPanel tablePanel = new JPanel(new GridBagLayout());

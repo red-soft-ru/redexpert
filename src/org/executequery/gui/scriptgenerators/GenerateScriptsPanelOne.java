@@ -75,7 +75,7 @@ public class GenerateScriptsPanelOne extends JPanel implements GenerateScriptsPa
         bg.add(createTableButton);
         bg.add(dropTableButton);
 
-        connectionsCombo = WidgetFactory.createComboBox();
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo");
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;

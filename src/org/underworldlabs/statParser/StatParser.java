@@ -191,8 +191,11 @@ public class StatParser {
             table.setName(parts[0]);
             table.setTable_id(Integer.parseInt(parts[1].replace("(", "").replace(")", "")));
         } else {
-            if (line.contains(",")) {
-                String[] items = line.split(",");
+            if (line.contains(",") || !line.contains("=")) {
+                String[] items = new String[]{line};
+                if (line.contains(",")) {
+                    items = line.split(",");
+                }
                 for (String item : items) {
                     item = item.trim();
                     boolean found = false;
@@ -227,6 +230,8 @@ public class StatParser {
                                 break;
                             }
                         }
+                    } else {
+                        found = true;
                     }
 
                     if (!found) {

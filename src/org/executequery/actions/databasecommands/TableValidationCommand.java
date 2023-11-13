@@ -26,7 +26,8 @@ public class TableValidationCommand extends OpenFrameCommand
         showPanel(new TableValidationPanel(dc, preparedParameter));
     }
 
-    public OutputStream onlineTableValidation(DatabaseConnection dc, String preparedTableParameter, String preparedIndexParameter) {
+    public OutputStream onlineTableValidation(
+            DatabaseConnection dc, String tableIncl, String indexIncl, String tableExcl, String indexExcl) {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         IFBMaintenanceManager maintenanceManager = getMaintenanceManager(dc);
@@ -35,10 +36,10 @@ public class TableValidationCommand extends OpenFrameCommand
             try {
 
                 maintenanceManager.setLogger(outputStream);
-                maintenanceManager.validateTable(preparedTableParameter, preparedIndexParameter);
+                maintenanceManager.validateTable(tableIncl, indexIncl, tableExcl, indexExcl);
 
             } catch (SQLException e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
                 GUIUtilities.displayExceptionErrorDialog("Unable run database validation", e);
             }
         }

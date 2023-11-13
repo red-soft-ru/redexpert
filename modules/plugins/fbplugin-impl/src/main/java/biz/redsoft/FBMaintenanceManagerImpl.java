@@ -81,15 +81,22 @@ public class FBMaintenanceManagerImpl extends FBServiceManager implements IFBMai
     }
 
     @Override
-    public void validateTable(String var1, String var2) throws SQLException {
+    public void validateTable(String var1, String var2, String var3, String var4) throws SQLException {
         try (FbService service = fbMaintenanceManager.attachServiceManager()) {
 
             ServiceRequestBuffer srb = service.createServiceRequestBuffer();
             srb.addArgument(isc_action_svc_validate);
+
             if (getDatabase() != null)
                 srb.addArgument(isc_spb_dbname, getDatabase());
-            srb.addArgument(isc_spb_val_tab_incl, var1);
-            srb.addArgument(isc_spb_val_idx_incl, var2);
+            if (var1 != null)
+                srb.addArgument(isc_spb_val_tab_incl, var1);
+            if (var2 != null)
+                srb.addArgument(isc_spb_val_idx_incl, var2);
+            if (var3 != null)
+                srb.addArgument(isc_spb_val_tab_excl, var3);
+            if (var4 != null)
+                srb.addArgument(isc_spb_val_idx_excl, var4);
 
             executeServicesOperation(service, srb);
         }

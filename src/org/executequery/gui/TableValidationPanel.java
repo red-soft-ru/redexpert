@@ -144,56 +144,80 @@ public class TableValidationPanel extends JPanel implements TabView {
 
     private void prepareAndValidate() {
 
-        Vector<?> selectedTableValues = tableSelectionPanel.getSelectedValues();
-        Vector<?> selectedIndexValues = indexSelectionPanel.getSelectedValues();
+        Vector<NamedObject> tableInclVector = tableSelectionPanel.getSelectedValues();
+        Vector<NamedObject> indexInclVector = indexSelectionPanel.getSelectedValues();
+        Vector<NamedObject> tableExclVector = tableSelectionPanel.getAvailableValues();
+        Vector<NamedObject> indexExclVector = indexSelectionPanel.getAvailableValues();
 
-        StringBuilder preparedTableParameter = new StringBuilder();
-        StringBuilder preparedIndexParameter = new StringBuilder();
+        tableExclVector.removeAll(tableInclVector);
+        indexExclVector.removeAll(indexInclVector);
 
-        if (selectedTableValues.isEmpty()) {
+        StringBuilder tableIncl = new StringBuilder();
+        StringBuilder indexIncl = new StringBuilder();
+        StringBuilder tableExcl = new StringBuilder();
+        StringBuilder indexExcl = new StringBuilder();
+
+        if (tableInclVector.isEmpty()) {
             GUIUtilities.displayWarningMessage(bundledString("NoTableSelected"));
             return;
         }
 
-        selectedTableValues.forEach(item -> preparedTableParameter.append(MiscUtils.trimEnd(((NamedObject) item).getName())).append("|"));
-        preparedTableParameter.deleteCharAt(preparedTableParameter.lastIndexOf("|"));
-
-        if (!selectedIndexValues.isEmpty()) {
-            selectedIndexValues.forEach(item -> preparedIndexParameter.append(MiscUtils.trimEnd(((NamedObject) item).getName())).append("|"));
-            preparedIndexParameter.deleteCharAt(preparedIndexParameter.lastIndexOf("|"));
+        if (tableExclVector.isEmpty()) {
+            tableIncl.append("%");
+        } else if (tableInclVector.size() < tableExclVector.size()) {
+            tableInclVector.forEach(item -> tableIncl.append(MiscUtils.trimEnd(item.getName())).append("|"));
+            tableIncl.deleteCharAt(tableIncl.lastIndexOf("|"));
+        } else {
+            tableExclVector.forEach(item -> tableExcl.append(MiscUtils.trimEnd(item.getName())).append("|"));
+            tableExcl.deleteCharAt(tableExcl.lastIndexOf("|"));
         }
 
-        validate(preparedTableParameter.toString(), preparedIndexParameter.toString());
+        if (indexExclVector.isEmpty()) {
+            indexIncl.append("%");
+        } else if (indexInclVector.size() < indexExclVector.size()) {
+            indexInclVector.forEach(item -> indexIncl.append(MiscUtils.trimEnd(item.getName())).append("|"));
+            indexIncl.deleteCharAt(indexIncl.lastIndexOf("|"));
+        } else {
+            indexExclVector.forEach(item -> indexExcl.append(MiscUtils.trimEnd(item.getName())).append("|"));
+            indexExcl.deleteCharAt(indexExcl.lastIndexOf("|"));
+        }
+
+        validate(
+                tableIncl.length() > 0 ? tableIncl.toString() : null,
+                indexIncl.length() > 0 ? indexIncl.toString() : null,
+                tableExcl.length() > 0 ? tableExcl.toString() : null,
+                indexExcl.length() > 0 ? indexExcl.toString() : null
+        );
     }
 
-    private void prepareAndValidate(DatabaseConnection selectedConnection, String preparedParameter) {
+    private void prepareAndValidate(DatabaseConnection selectedConnection, String tableIncl) {
 
         // set selected connection
         this.selectedConnection = selectedConnection;
         connectionsComboBox.setSelectedIndex(getConnectionIndex(selectedConnection));
 
-        // set selected objects
-        List<String> selectedTables = Arrays.asList(preparedParameter.split("\\|"));
+        // set selected objects to display
+        List<String> selectedTables = Arrays.asList(tableIncl.split("\\|"));
         for (int i = 0; i < tableSelectionPanel.getAvailableValues().size(); i++) {
             NamedObject namedObject = (NamedObject) tableSelectionPanel.getAvailableValues().get(i);
             if (selectedTables.contains(namedObject.getName()))
                 tableSelectionPanel.selectOneAction(i);
         }
 
-        validate(preparedParameter, "%");
+        validate(tableIncl, "%", null, null);
     }
 
-    private void validate(String preparedTableParameter, String preparedIndexParameter) {
+    private void validate(String tableIncl, String indexIncl, String tableExcl, String indexExcl) {
 
         try (OutputStream outputStream = new TableValidationCommand()
-                .onlineTableValidation(selectedConnection, preparedTableParameter, preparedIndexParameter)) {
+                .onlineTableValidation(selectedConnection, tableIncl, indexIncl, tableExcl, indexExcl)) {
 
             originalOutputText = outputStream.toString();
             formattedOutputText = originalOutputText.replaceAll("[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{2} ", "");
             setOutputText();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
     }
 

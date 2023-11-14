@@ -450,12 +450,12 @@ public class ComparerDBPanel extends JPanel implements TabView {
         settingScriptProps.append("SET NAMES ").append(getMasterDBCharset()).append(";\n");
         settingScriptProps.append("SET SQL DIALECT ").append(getMasterDBDialect()).append(";\n");
         settingScriptProps.append("CONNECT '").append(SimpleDataSource.generateUrl(
-                        comparer.getMasterConnection().getDatabaseConnection(),
-                        SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection().getDatabaseConnection()))
+                        comparer.getMasterConnection(),
+                        SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection()))
                 .replace("jdbc:firebirdsql://", "")
         );
-        settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getDatabaseConnection().getUserName());
-        settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword());
+        settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getUserName());
+        settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getUnencryptedPassword());
         settingScriptProps.append("';\nSET AUTODDL ON;\n");
 
         comparer.addToScript(settingScriptProps.toString());
@@ -743,7 +743,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         }
 
         QueryEditor queryEditor = new QueryEditor(sqlTextPanel.getSQLText().replace(settingScriptProps.toString(), ""));
-        queryEditor.setSelectedConnection(comparer.getMasterConnection().getDatabaseConnection());
+        queryEditor.setSelectedConnection(comparer.getMasterConnection());
         GUIUtilities.addCentralPane(
                 QueryEditor.TITLE, QueryEditor.FRAME_ICON,
                 queryEditor, null, true);
@@ -800,7 +800,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         String charset = "";
         String query = "select rdb$database.rdb$character_set_name from rdb$database";
 
-        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
+        try (ResultSet rs = comparer.getMasterExecutor().execute(query, true).getResultSet()) {
             while (rs.next())
                 charset = rs.getString(1).trim();
 
@@ -808,7 +808,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             e.printStackTrace();
 
         } finally {
-            comparer.getMasterConnection().releaseResources();
+            comparer.getMasterExecutor().releaseResources();
         }
 
         return charset;
@@ -819,7 +819,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         String dialect = "";
         String query = "select mon$database.mon$sql_dialect from mon$database";
 
-        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
+        try (ResultSet rs = comparer.getMasterExecutor().execute(query, true).getResultSet()) {
             while (rs.next())
                 dialect = rs.getString(1).trim();
 
@@ -827,7 +827,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             e.printStackTrace();
 
         } finally {
-            comparer.getMasterConnection().releaseResources();
+            comparer.getMasterExecutor().releaseResources();
         }
 
         return dialect;

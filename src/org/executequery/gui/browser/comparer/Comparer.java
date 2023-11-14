@@ -12,6 +12,7 @@ import org.executequery.gui.browser.ComparerDBPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.Named;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -35,8 +36,9 @@ public class Comparer {
 
 
     protected ComparerDBPanel panel;
-    protected DefaultStatementExecutor compareConnection;
-    protected DefaultStatementExecutor masterConnection;
+    protected StatementExecutor masterExecutor;
+    protected DatabaseConnection masterConnection;
+    protected DatabaseConnection compareConnection;
 
     private final int[] counter;
     private String constraintsList;
@@ -47,12 +49,8 @@ public class Comparer {
     private final List<org.executequery.gui.browser.ColumnConstraint> constraintsToDrop;
     private final List<ColumnData> computedFields;
 
-    protected ArrayList<String> createdObjects = new ArrayList<>();
-    protected ArrayList<String> alteredObjects = new ArrayList<>();
-    protected ArrayList<String> droppedObjects = new ArrayList<>();
-
     public Comparer(
-            ComparerDBPanel panel, DatabaseConnection dbSlave, DatabaseConnection dbMaster,
+            ComparerDBPanel panel, DatabaseConnection compareConnection, DatabaseConnection masterConnection,
             boolean[] constraintsNeed, boolean commentsNeed, boolean computedNeed, boolean fieldsPositions) {
 
         script = new ArrayList<>();
@@ -60,11 +58,12 @@ public class Comparer {
         constraintsToDrop = new ArrayList<>();
         computedFields = new ArrayList<>();
 
-        counter = new int[] {0, 0, 0};
+        counter = new int[]{0, 0, 0};
 
         this.panel = panel;
-        compareConnection = new DefaultStatementExecutor(dbSlave, true);
-        masterConnection = new DefaultStatementExecutor(dbMaster, true);
+        this.masterConnection = masterConnection;
+        this.compareConnection = compareConnection;
+        masterExecutor = new DefaultStatementExecutor(masterConnection, true);
 
         Comparer.TABLE_CONSTRAINTS_NEED = constraintsNeed;
         Comparer.COMMENTS_NEED = commentsNeed;
@@ -75,7 +74,8 @@ public class Comparer {
 
     public void createObjects(int type) {
 
-        List<NamedObject> createObjects = sortObjectsByDependency(createListObjects(type));
+        List<NamedObject> createObjects = sortObjectsByDependency(
+                createListObjects(getObjects(masterConnection, type), getObjects(compareConnection, type), type));
 
         if (createObjects == null || createObjects.isEmpty())
             return;
@@ -126,7 +126,8 @@ public class Comparer {
 
     public void dropObjects(int type) {
 
-        List<NamedObject> dropObjects = sortObjectsByDependency(dropListObjects(type));
+        List<NamedObject> dropObjects = sortObjectsByDependency(
+                dropListObjects(getObjects(masterConnection, type), getObjects(compareConnection, type), type));
 
         if (dropObjects == null || dropObjects.isEmpty())
             return;
@@ -159,7 +160,7 @@ public class Comparer {
                 panel.getComparedObjectList().add(new ComparedObject(type, obj.getName(), null, ((AbstractDatabaseObject) obj).getCreateSQLText()));
                 panel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
-                counter[1] ++;
+                counter[1]++;
             }
 
             panel.incrementProgressBarValue();
@@ -171,7 +172,8 @@ public class Comparer {
 
     public void alterObjects(int type) {
 
-        Map<NamedObject, NamedObject> alterObjects = alterListObjects(type);
+        Map<NamedObject, NamedObject> alterObjects = alterListObjects(
+                getObjects(masterConnection, type), getObjects(compareConnection, type), type);
 
         if (alterObjects.isEmpty())
             return;
@@ -225,7 +227,7 @@ public class Comparer {
         loadingObjectsHelperMaster.releaseResources();
         loadingObjectsHelperCompare.releaseResources();
 
-        if (alterObjects.size() > 0) {
+        if (!alterObjects.isEmpty()) {
             AbstractDatabaseObject masterObject = (AbstractDatabaseObject) alterObjects.keySet().toArray()[0];
             masterObject.getHost().setPauseLoadingTreeForSearch(false);
             ((AbstractDatabaseObject) alterObjects.get(masterObject)).getHost().setPauseLoadingTreeForSearch(false);
@@ -460,27 +462,28 @@ public class Comparer {
     }
 
     public void createStubs(
-            boolean functions, boolean procedures, boolean triggers, boolean ddlTriggers, boolean dbTriggers, boolean jobs) {
+            boolean functions, boolean procedures, boolean triggers,
+            boolean ddlTriggers, boolean dbTriggers, boolean jobs) {
 
         if (functions)
-            addStubsToScript(FUNCTION, createListObjects(FUNCTION));
+            addStubsToScript(FUNCTION);
         if (procedures)
-            addStubsToScript(PROCEDURE, createListObjects(PROCEDURE));
+            addStubsToScript(PROCEDURE);
         if (triggers)
-            addStubsToScript(TRIGGER, createListObjects(TRIGGER));
+            addStubsToScript(TRIGGER);
         if (ddlTriggers)
-            addStubsToScript(DDL_TRIGGER, createListObjects(DDL_TRIGGER));
+            addStubsToScript(DDL_TRIGGER);
         if (dbTriggers)
-            addStubsToScript(DATABASE_TRIGGER, createListObjects(DATABASE_TRIGGER));
+            addStubsToScript(DATABASE_TRIGGER);
         if (jobs)
-            addStubsToScript(JOB, createListObjects(JOB));
+            addStubsToScript(JOB);
 
     }
 
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
         script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
         script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
-                SQLUtils.generateDefinitionColumnConstraint(obj, true, false, compareConnection.getDatabaseConnection()) + ";\n");
+                SQLUtils.generateDefinitionColumnConstraint(obj, true, false, compareConnection) + ";\n");
     }
 
     private void dropConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
@@ -488,27 +491,24 @@ public class Comparer {
         script.add("\nALTER TABLE " + obj.getTable() + "\n\tDROP CONSTRAINT " + obj.getName() + ";\n");
     }
 
-    private List<NamedObject> createListObjects(int type) {
-
-        List<NamedObject> compareConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
-                getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
-                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+    private List<NamedObject> createListObjects(
+            List<NamedObject> masterObjects, List<NamedObject> compareObjects, int type) {
 
         List<NamedObject> createObjects = new ArrayList<>();
-        LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(compareConnectionObjectsList.size());
+        List<String> masterObjectsNames = masterObjects.stream().map(Named::getName).collect(Collectors.toList());
+        LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(compareObjects.size());
 
         panel.recreateProgressBar(
                 "ExtractingForCreate", NamedObject.META_TYPES[type],
-                compareConnectionObjectsList.size()
+                compareObjects.size()
         );
 
-        for (NamedObject databaseObject : compareConnectionObjectsList) {
+        for (NamedObject databaseObject : compareObjects) {
 
             if (panel.isCanceled())
                 break;
 
-            if (ConnectionsTreePanel.getNamedObjectFromHost(
-                    masterConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
+            if (!masterObjectsNames.contains(databaseObject.getName())) {
 
                 createObjects.add(databaseObject);
 
@@ -534,29 +534,24 @@ public class Comparer {
         return createObjects;
     }
 
-    private List<NamedObject> dropListObjects(int type) {
-
-        List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
-                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
-                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+    private List<NamedObject> dropListObjects(
+            List<NamedObject> masterObjects, List<NamedObject> compareObjects, int type) {
 
         List<NamedObject> dropObjects = new ArrayList<>();
+        List<String> compareObjectsNames = compareObjects.stream().map(Named::getName).collect(Collectors.toList());
 
         panel.recreateProgressBar(
                 "ExtractingForDrop", NamedObject.META_TYPES[type],
-                masterConnectionObjectsList.size()
+                masterObjects.size()
         );
 
-        for (NamedObject databaseObject : masterConnectionObjectsList) {
+        for (NamedObject databaseObject : masterObjects) {
 
             if (panel.isCanceled())
                 break;
 
-            if (ConnectionsTreePanel.getNamedObjectFromHost(
-                    compareConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
-
+            if (!compareObjectsNames.contains(databaseObject.getName()))
                 dropObjects.add(databaseObject);
-            }
 
             panel.incrementProgressBarValue();
         }
@@ -564,28 +559,22 @@ public class Comparer {
         return dropObjects;
     }
 
-    private Map<NamedObject, NamedObject> alterListObjects(int type) {
-
-        List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
-                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
-                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
-        List<NamedObject> compareConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
-                getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
-                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
+    private Map<NamedObject, NamedObject> alterListObjects(
+            List<NamedObject> masterObjects, List<NamedObject> compareObjects, int type) {
 
         Map<NamedObject, NamedObject> alterObjects = new HashMap<>();
 
         panel.recreateProgressBar(
                 "ExtractingForAlter", NamedObject.META_TYPES[type],
-                masterConnectionObjectsList.size() * compareConnectionObjectsList.size()
+                masterObjects.size() * compareObjects.size()
         );
 
-        for (NamedObject compareObject : compareConnectionObjectsList) {
+        for (NamedObject compareObject : compareObjects) {
 
             if (panel.isCanceled())
                 break;
 
-            for (NamedObject masterObject : masterConnectionObjectsList) {
+            for (NamedObject masterObject : masterObjects) {
 
                 if (panel.isCanceled())
                     break;
@@ -615,7 +604,7 @@ public class Comparer {
                     (cc.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
                 continue;
 
-            constraintsList += "\t" + databaseObject.getName() + "." + cc.getName() + "\n";
+            constraintsList = constraintsList.concat("\t" + databaseObject.getName() + "." + cc.getName() + "\n");
             constraintsToCreate.add(new org.executequery.gui.browser.ColumnConstraint(false, cc));
         }
     }
@@ -626,7 +615,7 @@ public class Comparer {
             return;
 
         List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
-                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
+                getDefaultDatabaseHostFromConnection(masterConnection).
                 getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
 
         panel.recreateProgressBar(
@@ -640,7 +629,7 @@ public class Comparer {
                 break;
 
             if (ConnectionsTreePanel.getNamedObjectFromHost(
-                    compareConnection.getDatabaseConnection(), type, databaseObject.getName()) == null) {
+                    compareConnection, type, databaseObject.getName()) == null) {
 
                 for (ColumnConstraint cc : ((DefaultDatabaseTable) databaseObject).getConstraints()) {
 
@@ -662,10 +651,10 @@ public class Comparer {
             return;
 
         List<NamedObject> masterConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
-                getDefaultDatabaseHostFromConnection(masterConnection.getDatabaseConnection()).
+                getDefaultDatabaseHostFromConnection(masterConnection).
                 getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
         List<NamedObject> compareConnectionObjectsList = ConnectionsTreePanel.getPanelFromBrowser().
-                getDefaultDatabaseHostFromConnection(compareConnection.getDatabaseConnection()).
+                getDefaultDatabaseHostFromConnection(compareConnection).
                 getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
 
         List<ColumnConstraint> droppedConstraints = new ArrayList<>();
@@ -885,7 +874,7 @@ public class Comparer {
 
         for (ColumnData cd : listCD) {
             if (!MiscUtils.isNull(cd.getComputedBy())) {
-                computedFieldsList += "\t" + tempTable.getName() + "." + cd.getColumnName() + "\n";
+                computedFieldsList = computedFieldsList.concat("\t" + tempTable.getName() + "." + cd.getColumnName() + "\n");
                 computedFields.add(cd);
             }
         }
@@ -893,14 +882,14 @@ public class Comparer {
 
     private List<NamedObject> sortObjectsByDependency(List<NamedObject> objectsList) {
 
-        if (objectsList.size() < 1)
+        if (objectsList.isEmpty())
             return null;
 
         String templateQuery = "SELECT DISTINCT D.RDB$DEPENDENT_NAME FROM RDB$DEPENDENCIES D " +
                 "WHERE D.RDB$DEPENDENT_TYPE = D.RDB$DEPENDED_ON_TYPE AND D.RDB$DEPENDED_ON_NAME = ?";
 
         DefaultStatementExecutor executor =
-                new DefaultStatementExecutor(compareConnection.getDatabaseConnection(), true);
+                new DefaultStatementExecutor(compareConnection, true);
 
         Map<String, NamedObject> objectMap = new HashMap<>();
         objectsList.forEach(obj -> objectMap.put(obj.getName(), obj));
@@ -954,9 +943,15 @@ public class Comparer {
         return objectsList;
     }
 
-    private void addStubsToScript(int type, List<NamedObject> stubsList) {
+    private void addStubsToScript(int type) {
 
-        if (stubsList.size() < 1)
+        List<NamedObject> stubsList = createListObjects(
+                getObjects(masterConnection, type),
+                getObjects(compareConnection, type),
+                type
+        );
+
+        if (stubsList.isEmpty())
             return;
 
         String header = MessageFormat.format(
@@ -975,6 +970,12 @@ public class Comparer {
             panel.incrementProgressBarValue();
         }
 
+    }
+
+    private List<NamedObject> getObjects(DatabaseConnection connection, int type) {
+        return ConnectionsTreePanel.getPanelFromBrowser().
+                getDefaultDatabaseHostFromConnection(connection).
+                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[type]);
     }
 
     // ---
@@ -1003,8 +1004,12 @@ public class Comparer {
         script.add(addedScript);
     }
 
-    public StatementExecutor getMasterConnection() {
+    public DatabaseConnection getMasterConnection() {
         return masterConnection;
+    }
+
+    public StatementExecutor getMasterExecutor() {
+        return masterExecutor;
     }
 
     public static boolean isCommentsNeed() {
@@ -1020,9 +1025,6 @@ public class Comparer {
     }
 
     public void clearLists() {
-        createdObjects.clear();
-        alteredObjects.clear();
-        droppedObjects.clear();
         script.clear();
     }
 

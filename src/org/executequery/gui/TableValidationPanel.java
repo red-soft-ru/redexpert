@@ -13,8 +13,10 @@ import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.BackgroundProgressDialog;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -83,7 +85,6 @@ public class TableValidationPanel extends JPanel implements TabView {
         hideTimestampsCheckBox.addActionListener(e -> setOutputText());
 
         tableSelectionPanel = new ListSelectionPanel(bundledString("AvailableTablesLabel"), bundledString("SelectedTablesLabel"));
-        tableSelectionPanel.addListSelectionPanelListener(e -> refreshIndexes());
 
         indexSelectionPanel = new ListSelectionPanel(bundledString("AvailableIndexLabel"), bundledString("SelectedIndexLabel"));
         loggingOutputPanel = new LoggingOutputPanel();
@@ -110,6 +111,10 @@ public class TableValidationPanel extends JPanel implements TabView {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add(bundledString("Tables"), tableSelectionPanel);
         tabbedPane.add(bundledString("Indexes"), indexSelectionPanel);
+        tabbedPane.addChangeListener(e -> {
+            if (tabbedPane.getSelectedIndex() == 1)
+                refreshIndexes();
+        });
 
         // --- output panel ---
 
@@ -150,7 +155,8 @@ public class TableValidationPanel extends JPanel implements TabView {
         Vector<NamedObject> indexExclVector = indexSelectionPanel.getAvailableValues();
 
         tableExclVector.removeAll(tableInclVector);
-        indexExclVector.removeAll(indexInclVector);
+        if (indexInclVector != null && indexExclVector != null)
+            indexExclVector.removeAll(indexInclVector);
 
         StringBuilder tableIncl = new StringBuilder();
         StringBuilder indexIncl = new StringBuilder();
@@ -172,7 +178,7 @@ public class TableValidationPanel extends JPanel implements TabView {
             tableExcl.deleteCharAt(tableExcl.lastIndexOf("|"));
         }
 
-        if (indexExclVector.isEmpty()) {
+        if (indexExclVector == null || indexInclVector == null || indexExclVector.isEmpty()) {
             indexIncl.append("%");
         } else if (indexInclVector.size() < indexExclVector.size()) {
             indexInclVector.forEach(item -> indexIncl.append(MiscUtils.trimEnd(item.getName())).append("|"));

@@ -592,6 +592,7 @@ public class QueryEditorTextPane extends SQLTextArea
             fireTextUpdateFinished();
 //            undoManager.reinstate();
             setCaretPosition(0);
+            updateLineBorder();
         }
 
     }
@@ -612,7 +613,6 @@ public class QueryEditorTextPane extends SQLTextArea
      */
     public void setText(String text) {
         super.setText(text);
-        //updateLineBorder();
     }
 
     /**

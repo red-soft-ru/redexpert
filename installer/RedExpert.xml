@@ -255,124 +255,6 @@
 
         </associateWindowsFileExtension>
 
-        <!-- single user linux shortcut -->
-        <createShortcuts>
-            <destination>${user_home_directory}/.local/share/applications</destination>
-            <shortcutList>
-                <shortcut>
-                    <comment>Launches ${project.fullName}</comment>
-                    <name>${project.shortName}</name>
-                    <platforms>linux</platforms>
-                    <exec>${installdir}/bin/${execute_file}</exec>
-                    <path>${installdir}/bin</path>
-                    <icon>${installdir}/red_expert.png</icon>
-                    <runAsAdmin>0</runAsAdmin>
-                </shortcut>
-            </shortcutList>
-        </createShortcuts>
-        <iniFileSet>
-            <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
-            <section>Desktop Entry</section>
-            <key>Categories</key>
-            <value>Development;IDE;</value>
-            <ruleList>
-                <fileExists>
-                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
-                </fileExists>
-            </ruleList>
-        </iniFileSet>
-        <iniFileSet>
-            <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
-            <section>Desktop Entry</section>
-            <key>Encoding</key>
-            <value>UTF-8</value>
-            <ruleList>
-                <fileExists>
-                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
-                </fileExists>
-            </ruleList>
-        </iniFileSet>
-        <iniFileSet>
-            <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
-            <section>Desktop Entry</section>
-            <key>GenericName</key>
-            <value>${project.shortName}</value>
-            <ruleList>
-                <fileExists>
-                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
-                </fileExists>
-            </ruleList>
-        </iniFileSet>
-
-        <!-- root linux shortcut -->
-        <createShortcuts>
-            <destination>/usr/share/applications</destination>
-            <shortcutList>
-                <shortcut>
-                    <comment>Launches ${project.fullName}</comment>
-                    <name>${project.shortName}</name>
-                    <platforms>linux</platforms>
-                    <exec>${installdir}/bin/${execute_file}</exec>
-                    <path>${installdir}/bin</path>
-                    <icon>${installdir}/red_expert.png</icon>
-                    <runAsAdmin>0</runAsAdmin>
-                </shortcut>
-            </shortcutList>
-        </createShortcuts>
-        <iniFileSet>
-            <file>/usr/share/applications/${project.shortName}.desktop</file>
-            <section>Desktop Entry</section>
-            <key>Categories</key>
-            <value>Development;IDE;</value>
-            <ruleList>
-                <fileExists>
-                    <path>/usr/share/applications/${project.shortName}.desktop</path>
-                </fileExists>
-            </ruleList>
-        </iniFileSet>
-        <iniFileSet>
-            <file>/usr/share/applications/${project.shortName}.desktop</file>
-            <section>Desktop Entry</section>
-            <key>Encoding</key>
-            <value>UTF-8</value>
-            <ruleList>
-                <fileExists>
-                    <path>/usr/share/applications/${project.shortName}.desktop</path>
-                </fileExists>
-            </ruleList>
-        </iniFileSet>
-        <iniFileSet>
-            <file>/usr/share/applications/${project.shortName}.desktop</file>
-            <section>Desktop Entry</section>
-            <key>GenericName</key>
-            <value>${project.shortName}</value>
-            <ruleList>
-                <fileExists>
-                    <path>/usr/share/applications/${project.shortName}.desktop</path>
-                </fileExists>
-            </ruleList>
-        </iniFileSet>
-
-        <!-- desktop shortcut -->
-        <createShortcuts>
-            <destination>${user_home_directory}/Desktop</destination>
-            <shortcutList>
-                <shortcut>
-                    <comment>Launch ${project.shortName}</comment>
-                    <name>${project.shortName}</name>
-                    <platforms>all</platforms>
-                    <exec>${installdir}/bin/${execute_file}</exec>
-                    <path>${installdir}/bin</path>
-                    <icon>${installdir}/red_expert.png</icon>
-                    <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
-                    <windowsPath>${installdir}/bin/</windowsPath>
-                    <windowsExecArgs/>
-                    <windowsIcon>${installdir}/bin/${execute_file}.exe</windowsIcon>
-                    <runAsAdmin>0</runAsAdmin>
-                </shortcut>
-            </shortcutList>
-        </createShortcuts>
-
         <actionGroup>
             <actionList>
 
@@ -397,29 +279,6 @@
                     <programArguments>install ${installdir}/firebird-x-fdb.xml</programArguments>
                 </runProgram>
 
-                <iniFileSet>
-                    <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
-                    <section>Desktop Entry</section>
-                    <key>MimeType</key>
-                    <value>application/firebird-x-fdb</value>
-                    <ruleList>
-                        <fileExists>
-                            <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
-                        </fileExists>
-                    </ruleList>
-                </iniFileSet>
-                <iniFileSet>
-                    <file>/usr/share/applications/${project.shortName}.desktop</file>
-                    <section>Desktop Entry</section>
-                    <key>MimeType</key>
-                    <value>application/firebird-x-fdb</value>
-                    <ruleList>
-                        <fileExists>
-                            <path>/usr/share/applications/${project.shortName}.desktop</path>
-                        </fileExists>
-                    </ruleList>
-                </iniFileSet>
-
                 <runProgram>
                     <program>xdg-mime</program>
                     <programArguments>default ${project.shortName}.desktop application/firebird-x-fdb</programArguments>
@@ -427,8 +286,7 @@
 
                 <runProgram>
                     <program>xdg-icon-resource</program>
-                    <programArguments>install --context mimetypes --size 64 ${installdir}/red_expert.png application-firebird-x-fdb
-                    </programArguments>
+                    <programArguments>install --context mimetypes --size 64 ${installdir}/red_expert.png application-firebird-x-fdb</programArguments>
                 </runProgram>
 
             </actionList>
@@ -441,6 +299,117 @@
             </ruleList>
 
         </actionGroup>
+
+        <!-- create desktop shortcut -->
+        <createShortcuts>
+            <destination>${user_home_directory}/Desktop</destination>
+            <shortcutList>
+                <shortcut>
+                    <comment>Launch ${project.shortName}</comment>
+                    <name>${project.shortName}</name>
+                    <platforms>all</platforms>
+                    <exec>${installdir}/bin/${execute_file}</exec>
+                    <path>${installdir}/bin</path>
+                    <icon>${installdir}/red_expert.png</icon>
+                    <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
+                    <windowsPath>${installdir}/bin/</windowsPath>
+                    <windowsExecArgs/>
+                    <windowsIcon>${installdir}/bin/${execute_file}.exe</windowsIcon>
+                    <runAsAdmin>0</runAsAdmin>
+                </shortcut>
+            </shortcutList>
+        </createShortcuts>
+
+        <!-- create linux shortcut for applications menu -->
+        <createShortcuts>
+            <destination>${installdir}</destination>
+            <shortcutList>
+                <shortcut>
+                    <comment>Launches ${project.fullName}</comment>
+                    <name>${project.shortName}</name>
+                    <platforms>linux</platforms>
+                    <exec>${installdir}/bin/${execute_file}</exec>
+                    <path>${installdir}/bin</path>
+                    <icon>${installdir}/red_expert.png</icon>
+                    <runAsAdmin>0</runAsAdmin>
+                </shortcut>
+            </shortcutList>
+        </createShortcuts>
+
+        <!-- add additional properties to shortcut -->
+        <actionGroup>
+
+            <actionList>
+                <iniFileSet>
+                    <file>${installdir}/${project.shortName}.desktop</file>
+                    <section>Desktop Entry</section>
+                    <key>Categories</key>
+                    <value>Development;IDE;</value>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>${installdir}/${project.shortName}.desktop</file>
+                    <section>Desktop Entry</section>
+                    <key>Encoding</key>
+                    <value>UTF-8</value>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>${installdir}/${project.shortName}.desktop</file>
+                    <section>Desktop Entry</section>
+                    <key>GenericName</key>
+                    <value>${project.shortName}</value>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>${installdir}/${project.shortName}.desktop</file>
+                    <section>Desktop Entry</section>
+                    <key>MimeType</key>
+                    <value>application/firebird-x-fdb</value>
+                </iniFileSet>
+            </actionList>
+
+            <ruleList>
+                <fileExists>
+                    <path>${installdir}/${project.shortName}.desktop</path>
+                </fileExists>
+            </ruleList>
+        </actionGroup>
+
+        <!-- create user applications shortcut folder if not exists-->
+        <createDirectory>
+            <path>${user_home_directory}/.local/share/applications</path>
+            <ruleList>
+                <platformTest type="unix"/>
+                <fileTest>
+                    <condition>exists</condition>
+                    <path>${user_home_directory}/.local/share</path>
+                </fileTest>
+            </ruleList>
+        </createDirectory>
+
+        <!-- copy RedExpert.desktop for single user -->
+        <copyFile>
+            <origin>${installdir}/${project.shortName}.desktop</origin>
+            <destination>${user_home_directory}/.local/share/applications</destination>
+            <ruleList>
+                <platformTest type="unix"/>
+                <fileTest>
+                    <condition>exists</condition>
+                    <path>${user_home_directory}/.local/share/applications</path>
+                </fileTest>
+            </ruleList>
+        </copyFile>
+
+        <!-- copy RedExpert.desktop for root user -->
+        <copyFile>
+            <origin>${installdir}/${project.shortName}.desktop</origin>
+            <destination>/usr/share/applications</destination>
+            <ruleList>
+                <platformTest type="unix"/>
+                <fileTest>
+                    <condition>writable</condition>
+                    <path>/usr/share/applications</path>
+                </fileTest>
+            </ruleList>
+        </copyFile>
 
     </postInstallationActionList>
 

@@ -25,12 +25,7 @@ public abstract class AbstractCreateExternalObjectPanel extends AbstractSQLSecur
     protected void initExternal() {
         initSQLSecurity(false);
         useExternalBox = new JCheckBox(bundleStaticString("useExternal"));
-        useExternalBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                checkExternal();
-            }
-        });
+        useExternalBox.addItemListener(e -> checkExternal());
         externalField = new JTextField(30);
         engineField = new JTextField(30);
 
@@ -45,12 +40,19 @@ public abstract class AbstractCreateExternalObjectPanel extends AbstractSQLSecur
 
 
     protected void checkExternal() {
+
         boolean selected = useExternalBox.isSelected();
         int ind = topPanel.getComponentZOrder(externalField) - 1;
+
         externalField.setVisible(selected);
         topPanel.getComponent(ind).setVisible(selected);
         ind = topPanel.getComponentZOrder(engineField) - 1;
         engineField.setVisible(selected);
         topPanel.getComponent(ind).setVisible(selected);
+
+        if (!selected) {
+            externalField.setText(null);
+            engineField.setText(null);
+        }
     }
 }

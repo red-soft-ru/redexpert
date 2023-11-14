@@ -33,7 +33,6 @@ import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.util.ThreadUtils;
-import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.tree.DynamicTree;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -79,7 +78,7 @@ public class SchemaTree extends DynamicTree
         DefaultTreeCellRenderer renderer = new BrowserTreeCellRenderer();
         setCellRenderer(renderer);
 
-        setEditable(!UserProperties.getInstance().getBooleanProperty("browser.double-click.to.connect"));
+        setEditable(true);
         setCellEditor(new ConnectionTreeCellEditor(this, renderer));
 
         setShowsRootHandles(true);

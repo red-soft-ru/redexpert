@@ -146,6 +146,8 @@ public final class WidgetFactory {
         return panel;
     }
 
+
+
     @Deprecated /*use GridBagHelper.addLabelFieldPair instead this method*/
     public static void addLabelFieldPair(JPanel panel, String label,
                                          JComponent field, GridBagConstraints gbc) {

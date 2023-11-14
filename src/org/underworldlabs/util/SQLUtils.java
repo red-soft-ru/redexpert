@@ -250,11 +250,23 @@ public final class SQLUtils {
                 sqlSecurity, authid, fullProcedureBody, comment, setTerm, setComment, dc);
     }
 
+    /**
+     * Generate {@code CREATE PROCEDURE} statement
+     * by the several template:
+     * <pre>{@code
+     * CREATE PROCEDURE <name> [(<input parameter> [,<input parameter>, ..])]
+     * [ RETURNS (<output parameter> [,<output parameter>, ..]) ]
+     * { EXTERNAL NAME '<external module>' ENGINE <engine name> [AS <procedure body>] } |
+     * { [SQL SECURITY {DEFINER | INVOKER}]
+     *      { AS '<BLR code>'} |
+     *      { AS [<parameter> [,<parameter>, ..]] BEGIN <procedure body> END }
+     * }
+     * }</pre>
+     */
     public static String generateCreateProcedure(
             String name, String entryPoint, String engine, Vector<ColumnData> inputParameters,
             Vector<ColumnData> outputParameters, String sqlSecurity, String authid,
             String fullProcedureBody, String comment, boolean setTerm, boolean setComment, DatabaseConnection dc) {
-
 
         StringBuilder sb = new StringBuilder();
 
@@ -262,34 +274,31 @@ public final class SQLUtils {
             sb.append("SET TERM ^;\n");
 
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE], authid, dc));
-        String output = formattedParameters(outputParameters, false);
-        if (!MiscUtils.isNull(output.trim())) {
-            sb.append("\nRETURNS (\n");
-            sb.append(output);
-            sb.append(")");
-        }
 
-        if (!MiscUtils.isNull(sqlSecurity))
-            sb.append("\n" + SQL_SECURITY).append(sqlSecurity);
+        String output = formattedParameters(outputParameters, false);
+        if (!MiscUtils.isNull(output.trim()))
+            sb.append("\nRETURNS (\n").append(output).append(")");
 
         if (!MiscUtils.isNull(entryPoint)) {
-
-            sb.append("\nEXTERNAL NAME '");
-            sb.append(entryPoint).append("'");
+            sb.append("\nEXTERNAL NAME '").append(entryPoint).append("'");
             sb.append(" ENGINE ").append(engine);
 
-        } else
-            sb.append(generateSQLBody(fullProcedureBody));
+        } else if (!MiscUtils.isNull(sqlSecurity))
+            sb.append("\n" + SQL_SECURITY).append(sqlSecurity);
 
-        if (setTerm)
-            sb.append("^\nSET TERM ;^");
-        sb.append("\n");
+        if (fullProcedureBody != null && !fullProcedureBody.isEmpty())
+            sb.append("\nAS\n").append(fullProcedureBody);
+
+        sb.append("^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false, dc));
             sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
             sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
         }
+
+        if (setTerm)
+            sb.append("^\nSET TERM ;^");
 
         return sb.toString();
     }
@@ -361,10 +370,6 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateSQLBody(String sqlBody) {
-        return "\nAS\n" + sqlBody + "^\n";
-    }
-
     public static String generateCreateFunction(
             String name, Vector<ColumnData> argumentList, Vector<ColumnData> variables, ColumnData returnType,
             String functionBody, String entryPoint, String engine, String sqlSecurity, String comment,
@@ -397,6 +402,19 @@ public final class SQLUtils {
                 sqlSecurity, comment, setTerm, setComment, deterministic, dc);
     }
 
+    /**
+     * Generate {@code CREATE FUNCTION} statement
+     * by the several template:
+     * <pre>{@code
+     * CREATE FUNCTION <name> [ (<input parameter> [,<input parameter>, ..]) ]
+     * RETURNS <type> [COLLATE <collate>] [DETERMINISTIC]
+     * { EXTERNAL NAME '<external module>' ENGINE <engine name> [AS <function body>] } |
+     * { [SQL SECURITY {DEFINER | INVOKER} ]
+     *      { AS '<BLR code>' } |
+     *      { AS [<parameter> [,<parameter>, ..]] BEGIN <function body> END }
+     * }
+     * }</pre>
+     */
     public static String generateCreateFunction(
             String name, Vector<ColumnData> inputArguments, ColumnData returnType,
             String fullFunctionBody, String entryPoint, String engine, String sqlSecurity,
@@ -408,23 +426,22 @@ public final class SQLUtils {
             sb.append("SET TERM ^;\n");
 
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION], null, dc));
-        sb.append("\nRETURNS ");
-
-        if (returnType != null)
-            sb.append(returnType.getFormattedDataType());
+        sb.append("\nRETURNS ").append(returnType.getFormattedDataType());
 
         if (deterministic)
             sb.append(" DETERMINISTIC");
 
-        if (!MiscUtils.isNull(sqlSecurity))
+        if (!MiscUtils.isNull(entryPoint)) {
+            sb.append("\nEXTERNAL NAME '").append(entryPoint).append("'");
+            sb.append(" ENGINE ").append(engine);
+
+        } else if (!MiscUtils.isNull(sqlSecurity))
             sb.append("\n" + SQL_SECURITY).append(sqlSecurity);
 
-        if (!MiscUtils.isNull(entryPoint)) {
-            sb.append("\nEXTERNAL NAME '");
-            sb.append(entryPoint).append("'");
-            sb.append(" ENGINE ").append(engine);
-        } else
-            sb.append(generateSQLBody(fullFunctionBody));
+        if (fullFunctionBody != null && !fullFunctionBody.isEmpty())
+            sb.append("\nAS\n").append(fullFunctionBody);
+
+        sb.append("^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false, dc));

@@ -47,7 +47,8 @@ import java.util.stream.Collectors;
 
 public class ComparerDBPanel extends JPanel implements TabView {
 
-    public static final String TITLE = bundleString("ComparerDB");
+    public static final String TITLE = bundleString("title");
+    public static final String TITLE_EXPORT = bundleString("title-export");
     public static final String FRAME_ICON = "ComparerDB_16.png";
 
     private static final int CHECK_CREATE = 0;
@@ -101,32 +102,19 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     public ComparerDBPanel() {
 
+        isExtractMetadata = false;
         init();
-
-        List<DatabaseConnection> connections =
-                ((DatabaseConnectionRepository) Objects.requireNonNull(
-                        RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
-
-        for (DatabaseConnection dc : connections) {
-            databaseConnectionList.add(dc);
-            dbTargetComboBox.addItem(dc.getName());
-            dbMasterComboBox.addItem(dc.getName());
-        }
-
     }
 
     public ComparerDBPanel(DatabaseConnection dc) {
-        this();
 
         isExtractMetadata = true;
+        init();
+
         dbTargetComboBox.setSelectedItem(dc.getName());
         dbMasterComboBox.setSelectedItem(dc.getName());
 
         attributesCheckBoxMap.values().forEach(checkBox -> checkBox.setSelected(true));
-        propertiesCheckBoxMap.get(CHECK_ALTER).setSelected(false);
-        propertiesCheckBoxMap.get(CHECK_DROP).setSelected(false);
-
-        compareDatabase();
     }
 
     private void init() {
@@ -136,7 +124,6 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         isComparing = false;
         isReverseOrder = false;
-        isExtractMetadata = false;
 
         // --- script generation order defining ---
 
@@ -146,7 +133,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         // --- buttons defining ---
 
         compareButton = new JButton();
-        compareButton.setText(bundleString("CompareButton"));
+        compareButton.setText(bundleString(isExtractMetadata ? "CompareExportButton" : "CompareButton"));
         compareButton.addActionListener(e -> compareDatabase());
 
         saveScriptButton = new JButton();
@@ -168,6 +155,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         switchTargetSourceButton = new JButton();
         switchTargetSourceButton.setText("<html><p style=\"font-size:20pt\">&#x21C5;</p>"); // Unicode Character '⇅' (U+21C5)
         switchTargetSourceButton.addActionListener(e -> switchTargetSource());
+        switchTargetSourceButton.setVisible(!isExtractMetadata);
 
         // --- attributes checkBox defining ---
 
@@ -196,13 +184,21 @@ public class ComparerDBPanel extends JPanel implements TabView {
         propertiesCheckBoxMap.put(IGNORE_CK, new JCheckBox(bundleString("IgnoreCK")));
 
         propertiesCheckBoxMap.get(CHECK_CREATE).setSelected(true);
-        propertiesCheckBoxMap.get(CHECK_ALTER).setSelected(true);
-        propertiesCheckBoxMap.get(CHECK_DROP).setSelected(true);
+
+        if (isExtractMetadata) {
+            propertiesCheckBoxMap.get(CHECK_CREATE).setEnabled(false);
+            propertiesCheckBoxMap.get(CHECK_ALTER).setVisible(false);
+            propertiesCheckBoxMap.get(CHECK_DROP).setVisible(false);
+        } else {
+            propertiesCheckBoxMap.get(CHECK_ALTER).setSelected(true);
+            propertiesCheckBoxMap.get(CHECK_DROP).setSelected(true);
+        }
 
         // --- comboBoxes defining ---
 
         dbTargetComboBox = new JComboBox<>();
         dbMasterComboBox = new JComboBox<>();
+        dbMasterComboBox.setVisible(!isExtractMetadata);
 
         // --- db components tree view ---
 
@@ -243,6 +239,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         // ---
 
         arrangeComponents();
+        getConnections();
     }
 
     private void arrangeComponents() {
@@ -258,8 +255,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
                 bundleString("CompareDatabaseLabel"), dbTargetComboBox, null);
-        gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
-                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
+        if (!isExtractMetadata)
+            gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
+                    bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
 
         // --- connections panel ---
 
@@ -369,6 +367,19 @@ public class ComparerDBPanel extends JPanel implements TabView {
         setLayout(new BorderLayout());
         add(mainPanel, BorderLayout.CENTER);
 
+    }
+
+    private void getConnections() {
+
+        List<DatabaseConnection> connections =
+                ((DatabaseConnectionRepository) Objects.requireNonNull(
+                        RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
+
+        for (DatabaseConnection dc : connections) {
+            databaseConnectionList.add(dc);
+            dbTargetComboBox.addItem(dc.getName());
+            dbMasterComboBox.addItem(dc.getName());
+        }
     }
 
     private boolean prepareComparer() {
@@ -679,7 +690,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         isComparing = false;
         compareButton.setEnabled(true);
-        compareButton.setText(bundleString("CompareButton"));
+        compareButton.setText(bundleString(isExtractMetadata ? "CompareExportButton" : "CompareButton"));
         progressBar.setValue(progressBar.getMaximum());
         progressBar.setString(bundleString("ProgressBarFinish"));
 

@@ -80,6 +80,13 @@ public class StatParser {
                 if (MiscUtils.isNull(line)) {
                     parserParameters.step = 0;
                 } else {
+                    if (!line.startsWith("File") && line.contains("(") && line.contains(")")) {
+                        parserParameters.step = 4;
+                        parserParameters.table = new StatTable();
+                        db.getTables().add(parserParameters.table);
+                        parserParameters.in_table = true;
+                        parse_table(line, parserParameters.table, db, parserParameters.line_no);
+                    }
                     parse_fseq(line, db, parserParameters.line_no);
                 }
             } else if (parserParameters.step == 4) {

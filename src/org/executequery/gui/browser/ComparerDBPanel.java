@@ -69,6 +69,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     private boolean isComparing;
     private boolean isReverseOrder;
+    private boolean isExtractMetadata;
 
     // --- panel components ---
 
@@ -114,6 +115,20 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     }
 
+    public ComparerDBPanel(DatabaseConnection dc) {
+        this();
+
+        isExtractMetadata = true;
+        dbTargetComboBox.setSelectedItem(dc.getName());
+        dbMasterComboBox.setSelectedItem(dc.getName());
+
+        attributesCheckBoxMap.values().forEach(checkBox -> checkBox.setSelected(true));
+        propertiesCheckBoxMap.get(CHECK_ALTER).setSelected(false);
+        propertiesCheckBoxMap.get(CHECK_DROP).setSelected(false);
+
+        compareDatabase();
+    }
+
     private void init() {
 
         databaseConnectionList = new ArrayList<>();
@@ -121,6 +136,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         isComparing = false;
         isReverseOrder = false;
+        isExtractMetadata = false;
 
         // --- script generation order defining ---
 
@@ -372,18 +388,20 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return false;
         }
 
-        comparer = new Comparer(
-                this, targetConnection, masterConnection,
-                new boolean[]{
-                        !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
-                },
-                !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
-                !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
-                !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
-        );
+        comparer = !isExtractMetadata ?
+                new Comparer(
+                        this, targetConnection, masterConnection,
+                        new boolean[]{
+                                !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
+                        },
+                        !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
+                ) :
+                new Comparer(this, masterConnection);
 
         loggingOutputPanel.clear();
         sqlTextPanel.setSQLText("");
@@ -578,26 +596,29 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return;
         }
 
-        if (databaseConnectionList.size() < 2 ||
-                dbTargetComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
-            GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
-            return;
-        }
+        if (!isExtractMetadata) {
 
-        for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++) {
-            if (attributesCheckBoxMap.get(i).isSelected())
-                break;
-            if (i == NamedObject.SYSTEM_DOMAIN - 1) {
-                GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoAttributes"));
+            if (databaseConnectionList.size() < 2 ||
+                    dbTargetComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
+                GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
                 return;
             }
-        }
 
-        if (!propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() &&
-                !propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() &&
-                !propertiesCheckBoxMap.get(CHECK_DROP).isSelected()) {
-            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoProperties"));
-            return;
+            for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++) {
+                if (attributesCheckBoxMap.get(i).isSelected())
+                    break;
+                if (i == NamedObject.SYSTEM_DOMAIN - 1) {
+                    GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoAttributes"));
+                    return;
+                }
+            }
+
+            if (!propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() &&
+                    !propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() &&
+                    !propertiesCheckBoxMap.get(CHECK_DROP).isSelected()) {
+                GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoProperties"));
+                return;
+            }
         }
 
         progressDialog = new BackgroundProgressDialog(bundleString("Executing"));
@@ -880,6 +901,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     public boolean isCanceled() {
         return progressDialog.isCancel() || !isComparing;
+    }
+
+    public boolean isExtractMetadata() {
+        return isExtractMetadata;
     }
 
     public void addToLog(String text) {

@@ -49,6 +49,10 @@ public class Comparer {
     private final List<org.executequery.gui.browser.ColumnConstraint> constraintsToDrop;
     private final List<ColumnData> computedFields;
 
+    public Comparer(ComparerDBPanel panel, DatabaseConnection connection) {
+        this(panel, connection, connection, new boolean[]{true, true, true, true}, true, true, true);
+    }
+
     public Comparer(
             ComparerDBPanel panel, DatabaseConnection compareConnection, DatabaseConnection masterConnection,
             boolean[] constraintsNeed, boolean commentsNeed, boolean computedNeed, boolean fieldsPositions) {
@@ -75,7 +79,12 @@ public class Comparer {
     public void createObjects(int type) {
 
         List<NamedObject> createObjects = sortObjectsByDependency(
-                createListObjects(getObjects(masterConnection, type), getObjects(compareConnection, type), type));
+                createListObjects(
+                        panel.isExtractMetadata() ? new ArrayList<>() : getObjects(masterConnection, type),
+                        getObjects(compareConnection, type),
+                        type
+                )
+        );
 
         if (createObjects == null || createObjects.isEmpty())
             return;

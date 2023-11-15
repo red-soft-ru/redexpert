@@ -22,6 +22,7 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.actions.databasecommands.TableValidationCommand;
+import org.executequery.actions.toolscommands.ComparerDBCommands;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -58,7 +59,7 @@ import java.util.Objects;
  * @author Takis Diakoumis
  */
 
-
+@SuppressWarnings("unused")
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     private StatementExecutor querySender;
@@ -638,6 +639,13 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     public void addNewConnection(ActionEvent e) {
         treePanel.newConnection();
+    }
+
+    public void getMetadata(ActionEvent e) {
+        if (currentPath != null) {
+            DatabaseHostNode node = (DatabaseHostNode) currentPath.getLastPathComponent();
+            new ComparerDBCommands().exportMetadata(node.getDatabaseConnection());
+        }
     }
 
     public void switchDefaultCatalogAndSchemaDisplay(ActionEvent e) {

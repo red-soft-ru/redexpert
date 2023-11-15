@@ -42,6 +42,7 @@ import java.awt.event.ActionListener;
 public class BrowserTreePopupMenu extends JPopupMenu {
 
     private final JMenuItem addNewConnection;
+    private final JMenuItem getMetadata;
     private final JMenuItem connect;
     private final JMenuItem disconnect;
     private final JMenuItem reload;
@@ -108,6 +109,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
         addNewConnection = createMenuItem(bundleString("addNewConnection"), "addNewConnection", listener);
         add(addNewConnection);
+        getMetadata = createMenuItem(bundleString("getMetadata"), "getMetadata", listener);
+        add(getMetadata);
         duplicate = createMenuItem(bundleString("duplicate"), "duplicate", listener);
         add(duplicate);
         duplicateWithSource = createMenuItem(bundleString("duplicateWithSource"), "duplicateWithSource", listener);
@@ -173,6 +176,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
         connect.setVisible(canConnect);
         disconnect.setVisible(!canConnect);
+        getMetadata.setVisible(!canConnect);
         delete.setVisible(canConnect);
         reload.setVisible(!canConnect);
 

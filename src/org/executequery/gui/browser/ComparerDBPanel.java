@@ -62,18 +62,18 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private static final int IGNORE_CK = IGNORE_UK + 1;
     private static final int STUBS = -100;
 
-    private static boolean isComparing = false;
-
     private Comparer comparer;
     private List<DatabaseConnection> databaseConnectionList;
     private List<Integer> scriptGenerationOrder;
     private List<ComparedObject> comparedObjectList;
-    private boolean isScriptGeneratorOrderReversed;
+
+    private boolean isComparing;
+    private boolean isReverseOrder;
 
     // --- panel components ---
 
-    private JComboBox dbMasterComboBox;
-    private JComboBox dbTargetComboBox;
+    private JComboBox<String> dbMasterComboBox;
+    private JComboBox<String> dbTargetComboBox;
     private JButton compareButton;
     private JButton saveScriptButton;
     private JButton executeScriptButton;
@@ -119,9 +119,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
         databaseConnectionList = new ArrayList<>();
         comparedObjectList = new ArrayList<>();
 
-        // --- script generation order defining ---
+        isComparing = false;
+        isReverseOrder = false;
 
-        isScriptGeneratorOrderReversed = false;
+        // --- script generation order defining ---
 
         scriptGenerationOrder = Arrays.stream(NamedObject.META_TYPES_FOR_COMPARE).collect(Collectors.toList());
         scriptGenerationOrder.add(scriptGenerationOrder.indexOf(NamedObject.FUNCTION), STUBS);
@@ -184,11 +185,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- comboBoxes defining ---
 
-        dbTargetComboBox = new JComboBox<DatabaseConnection>();
-        dbTargetComboBox.removeAllItems();
-
-        dbMasterComboBox = new JComboBox<DatabaseConnection>();
-        dbMasterComboBox.removeAllItems();
+        dbTargetComboBox = new JComboBox<>();
+        dbMasterComboBox = new JComboBox<>();
 
         // --- db components tree view ---
 
@@ -459,8 +457,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
             rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.CREATE, bundleString("CreateObjects")));
 
-            if (isScriptGeneratorOrderReversed) {
-                isScriptGeneratorOrderReversed = false;
+            if (isReverseOrder) {
+                isReverseOrder = false;
                 Collections.reverse(scriptGenerationOrder);
             }
 
@@ -497,8 +495,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
             rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.ALTER, bundleString("AlterObjects")));
 
-            if (isScriptGeneratorOrderReversed) {
-                isScriptGeneratorOrderReversed = false;
+            if (isReverseOrder) {
+                isReverseOrder = false;
                 Collections.reverse(scriptGenerationOrder);
             }
 
@@ -527,8 +525,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
             rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.DROP, bundleString("DropObjects")));
 
-            if (!isScriptGeneratorOrderReversed) {
-                isScriptGeneratorOrderReversed = true;
+            if (!isReverseOrder) {
+                isReverseOrder = true;
                 Collections.reverse(scriptGenerationOrder);
             }
 
@@ -712,7 +710,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 loggingOutputPanel.append(bundleString("SavedTo") + fileSavePath);
 
             } catch (IOException e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
         }
     }
@@ -787,7 +785,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 charset = rs.getString(1).trim();
 
         } catch (java.sql.SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
 
         } finally {
             comparer.getMasterExecutor().releaseResources();
@@ -806,7 +804,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 dialect = rs.getString(1).trim();
 
         } catch (java.sql.SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
 
         } finally {
             comparer.getMasterExecutor().releaseResources();
@@ -902,6 +900,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             this.description = description;
         }
 
+        @Override
         public boolean accept(File file) {
             if (file.isDirectory())
                 return true;
@@ -909,6 +908,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return file.getName().endsWith(extension);
         }
 
+        @Override
         public String getDescription() {
             return description + String.format(" (*%s)", extension);
         }

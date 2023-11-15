@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ComparerDBPanel extends JPanel implements TabView {
 
@@ -120,29 +121,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- script generation order defining ---
 
-        scriptGenerationOrder = new LinkedList<>();
         isScriptGeneratorOrderReversed = false;
 
-        scriptGenerationOrder.add(NamedObject.COLLATION);
-        scriptGenerationOrder.add(NamedObject.DOMAIN);
-        scriptGenerationOrder.add(NamedObject.TABLESPACE);
-        scriptGenerationOrder.add(NamedObject.TABLE);
-        scriptGenerationOrder.add(NamedObject.GLOBAL_TEMPORARY);
-        scriptGenerationOrder.add(NamedObject.VIEW);
-        scriptGenerationOrder.add(NamedObject.INDEX);
-        scriptGenerationOrder.add(NamedObject.SEQUENCE);
-        scriptGenerationOrder.add(NamedObject.EXCEPTION);
-        scriptGenerationOrder.add(NamedObject.ROLE);
-        scriptGenerationOrder.add(NamedObject.USER);
-        scriptGenerationOrder.add(STUBS);
-        scriptGenerationOrder.add(NamedObject.FUNCTION);
-        scriptGenerationOrder.add(NamedObject.PROCEDURE);
-        scriptGenerationOrder.add(NamedObject.JOB);
-        scriptGenerationOrder.add(NamedObject.UDF);
-        scriptGenerationOrder.add(NamedObject.TRIGGER);
-        scriptGenerationOrder.add(NamedObject.DDL_TRIGGER);
-        scriptGenerationOrder.add(NamedObject.DATABASE_TRIGGER);
-        scriptGenerationOrder.add(NamedObject.PACKAGE);
+        scriptGenerationOrder = Arrays.stream(NamedObject.META_TYPES_FOR_COMPARE).collect(Collectors.toList());
+        scriptGenerationOrder.add(scriptGenerationOrder.indexOf(NamedObject.FUNCTION), STUBS);
 
         // --- buttons defining ---
 

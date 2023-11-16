@@ -1417,7 +1417,7 @@ public final class SQLUtils {
     }
 
     public static String generateCreateIndex(
-            String name, int type, boolean isUnique, String tableName, String expression, String condition,
+            String name, boolean isDescending, boolean isUnique, String tableName, String expression, String condition,
             List indexColumns, String tablespace, boolean isActive, String comment, DatabaseConnection dc) {
 
         StringBuilder sb = new StringBuilder();
@@ -1425,7 +1425,7 @@ public final class SQLUtils {
 
         if (isUnique)
             sb.append("UNIQUE ");
-        if (type == 1)
+        if (isDescending)
             sb.append("DESCENDING ");
 
         sb.append("INDEX ").append(format(name, dc));

@@ -356,7 +356,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             if (editing)
                 query = SQLUtils.generateDefaultDropQuery("INDEX", nameField.getText(), getDatabaseConnection());
 
-            query += SQLUtils.generateCreateIndex(nameField.getText(), sortingBox.getSelectedIndex(), uniqueBox.isSelected(),
+            query += SQLUtils.generateCreateIndex(nameField.getText(), sortingBox.getSelectedIndex() == 1, uniqueBox.isSelected(),
                     tableName.getSelectedItem() != null ? tableName.getSelectedItem().toString() : "",
                     computedPanel.getSQLText(), null, fieldsPanel.getSelectedValues(),
                     tablespace != null ? tablespace.getName() : null, activeBox.isSelected(), simpleCommentPanel.getComment(), getDatabaseConnection());

@@ -955,7 +955,7 @@ public class Comparer {
     private void addStubsToScript(int type) {
 
         List<NamedObject> stubsList = createListObjects(
-                getObjects(masterConnection, type),
+                panel.isExtractMetadata() ? new ArrayList<>() : getObjects(masterConnection, type),
                 getObjects(compareConnection, type),
                 type
         );

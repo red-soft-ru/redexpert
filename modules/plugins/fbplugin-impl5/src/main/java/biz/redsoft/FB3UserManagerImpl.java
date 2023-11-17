@@ -12,65 +12,33 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class FB3UserManagerImpl implements IFBUserManager {
+public class FB3UserManagerImpl extends AbstractServiceManager implements IFBUserManager {
 
     Connection con;
     String user;
     FBUserManager fbUserManager;
 
     public FB3UserManagerImpl(Connection connection) {
+        super();
         con = connection;
-        fbUserManager = new FBUserManager();
     }
 
     @Override
-    public String getUser() {
-        return user;
+    protected void initServiceManager() {
+        fbUserManager = new FBUserManager();
+        fbServiceManager = fbUserManager;
     }
+
 
     @Override
     public void setUser(String user) {
         this.user = user;
     }
 
-    @Override
-    public String getPassword() {
-        return fbUserManager.getPassword();
-    }
 
     @Override
-    public void setPassword(String password) {
-        fbUserManager.setPassword(password);
-    }
-
-    @Override
-    public String getDatabase() {
-        return fbUserManager.getDatabase();
-    }
-
-    @Override
-    public void setDatabase(String database) {
-        fbUserManager.setDatabase(database);
-    }
-
-    @Override
-    public String getHost() {
-        return fbUserManager.getHost();
-    }
-
-    @Override
-    public void setHost(String host) {
-        fbUserManager.setHost(host);
-    }
-
-    @Override
-    public int getPort() {
-        return fbUserManager.getPort();
-    }
-
-    @Override
-    public void setPort(int port) {
-        fbUserManager.setPort(port);
+    public String getUser() {
+        return user;
     }
 
     @Override

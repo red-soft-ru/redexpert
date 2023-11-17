@@ -1,10 +1,9 @@
 package biz.redsoft;
 
-import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.List;
 
-public interface IFBMaintenanceManager {
+public interface IFBMaintenanceManager extends IFBServiceManager {
 
     int ACCESS_MODE_READ_WRITE = 40;
     int ACCESS_MODE_READ_ONLY = 39;
@@ -73,33 +72,5 @@ public interface IFBMaintenanceManager {
     void commitTransaction(long var1) throws SQLException;
 
     void rollbackTransaction(long var1) throws SQLException;
-
-    String getCharSet();
-
-    void setCharSet(String var1);
-
-    String getUser();
-
-    void setUser(String var1);
-
-    String getPassword();
-
-    void setPassword(String var1);
-
-    String getDatabase();
-
-    void setDatabase(String var1);
-
-    String getHost();
-
-    void setHost(String var1);
-
-    int getPort();
-
-    void setPort(int var1);
-
-    OutputStream getLogger();
-
-    void setLogger(OutputStream var1);
 
 }

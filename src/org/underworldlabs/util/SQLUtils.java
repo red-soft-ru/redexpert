@@ -78,7 +78,7 @@ public final class SQLUtils {
 
         if (constraints)
             for (ColumnConstraint columnConstraint : columnConstraintList)
-                sb.append(generateDefinitionColumnConstraint(columnConstraint, existTable, true, dc)
+                sb.append(generateDefinitionColumnConstraint(columnConstraint, existTable, true, dc, true)
                         .replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name, dc)));
 
         sb.append(CreateTableSQLSyntax.B_CLOSE);
@@ -144,7 +144,7 @@ public final class SQLUtils {
     }
 
     public static String generateDefinitionColumnConstraint(
-            ColumnConstraint cc, boolean editing, boolean startWithNewLine, DatabaseConnection dc) {
+            ColumnConstraint cc, boolean editing, boolean startWithNewLine, DatabaseConnection dc, boolean useName) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -160,8 +160,11 @@ public final class SQLUtils {
 
             if (startWithNewLine)
                 sb.append(COMMA).append(NEW_LINE_2);
-            sb.append(CreateTableSQLSyntax.CONSTRAINT);
-            sb.append(format(nameConstraint, dc)).append(SPACE);
+
+            if (useName) {
+                sb.append(CreateTableSQLSyntax.CONSTRAINT);
+                sb.append(format(nameConstraint, dc)).append(SPACE);
+            }
 
             if (cc.getType() != -1) {
 
@@ -1046,8 +1049,9 @@ public final class SQLUtils {
 
                 if (addCheck == thisConstraints.size())
                     sb.append("\n\tADD ").append(generateDefinitionColumnConstraint(
-                                    new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint), true, false, thisTable.getHost().getDatabaseConnection()))
-                            .append(COMMA);
+                                    new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint),
+                                    true, false, thisTable.getHost().getDatabaseConnection(), true)
+                            ).append(COMMA);
             }
 
         }

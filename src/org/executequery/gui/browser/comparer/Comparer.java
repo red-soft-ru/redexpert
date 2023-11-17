@@ -492,7 +492,7 @@ public class Comparer {
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
         script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
         script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
-                SQLUtils.generateDefinitionColumnConstraint(obj, true, false, compareConnection) + ";\n");
+                SQLUtils.generateDefinitionColumnConstraint(obj, true, false, compareConnection, false) + ";\n");
     }
 
     private void dropConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {

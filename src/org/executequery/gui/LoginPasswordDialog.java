@@ -142,6 +142,17 @@ public class LoginPasswordDialog extends BaseDialog {
                 }
             }
         });
+        ActionListener escListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setClosedDialog(true);
+                finished();
+            }
+        };
+        mainPanel.registerKeyboardAction(escListener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         GridBagHelper gbh = new GridBagHelper();
         gbh.setDefaultsStatic();

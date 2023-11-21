@@ -11,7 +11,10 @@ import org.executequery.gui.table.TableDefinitionPanel;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import javax.swing.table.TableModel;
 import java.sql.DatabaseMetaData;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -100,6 +103,40 @@ public final class SQLUtils {
             if (!MiscUtils.isNull(comment) && !comment.equals(""))
                 sb.append(generateComment(name, "TABLE", comment, delimiter, false, dc));
         }
+
+        return sb.toString();
+    }
+
+    public static String generateCreateTable(String name, TableModel tableModel) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CREATE TABLE ").append(format(name, null)).append(" (");
+
+        int columnCount = tableModel.getColumnCount();
+        for (int i = 0; i < columnCount; i++) {
+
+            String type = "BLOB SUB_TYPE TEXT";
+            if (tableModel.getColumnClass(i) == Integer.class)
+                type = "INTEGER";
+            else if (tableModel.getColumnClass(i) == Long.class)
+                type = "BIGINT";
+            else if (tableModel.getColumnClass(i) == Double.class)
+                type = "DOUBLE PRECISION";
+            else if (tableModel.getColumnClass(i) == Timestamp.class)
+                type = "TIMESTAMP";
+            else if (tableModel.getColumnClass(i) == Date.class)
+                type = "DATE";
+            else if (tableModel.getColumnClass(i) == Time.class)
+                type = "TIME";
+            else if (tableModel.getColumnClass(i) == Boolean.class)
+                type = "BOOLEAN";
+
+            sb.append("\n\t").append(tableModel.getColumnName(i).trim()).append(SPACE).append(type);
+            if (i < columnCount - 1)
+                sb.append(",");
+        }
+        sb.append("\n);");
 
         return sb.toString();
     }
@@ -1049,9 +1086,9 @@ public final class SQLUtils {
 
                 if (addCheck == thisConstraints.size())
                     sb.append("\n\tADD ").append(generateDefinitionColumnConstraint(
-                                    new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint),
-                                    true, false, thisTable.getHost().getDatabaseConnection(), true)
-                            ).append(COMMA);
+                            new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint),
+                            true, false, thisTable.getHost().getDatabaseConnection(), true)
+                    ).append(COMMA);
             }
 
         }

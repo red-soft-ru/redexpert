@@ -17,4 +17,10 @@ public class FBDatabaseMetadataImpl implements IFBDatabaseMetadata {
 
         return procedureSourceCode;
     }
+
+    @Override
+    public String getOdsVersion(DatabaseMetaData metaData) throws SQLException {
+        FBDatabaseMetaData fbMetaData = (FBDatabaseMetaData) metaData;
+        return fbMetaData.getOdsMajorVersion() + "." + fbMetaData.getOdsMinorVersion();
+    }
 }

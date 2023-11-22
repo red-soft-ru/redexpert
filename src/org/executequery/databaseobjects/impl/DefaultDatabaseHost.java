@@ -20,19 +20,25 @@
 
 package org.executequery.databaseobjects.impl;
 
+import biz.redsoft.IFBDatabaseMetadata;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.Types;
+import org.executequery.databaseobjects.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
+import org.executequery.datasource.PooledDatabaseMetaData;
 import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.log.Log;
+import org.executequery.sql.sqlbuilder.Field;
+import org.executequery.sql.sqlbuilder.SelectBuilder;
+import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -979,19 +985,36 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      *
      * @return the database properties as key/value pairs
      */
-    public Map<Object, Object> getDatabaseProperties() throws DataSourceException {
+    public Map<Object, Object> getMetaProperties() throws DataSourceException {
 
-        DatabaseMetaData dmd = getDatabaseMetaData();
+        PooledDatabaseMetaData dmd = (PooledDatabaseMetaData) getDatabaseMetaData();
+        IFBDatabaseMetadata db;
+        try {
+            db = (IFBDatabaseMetadata) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), dmd.getInner(), "FBDatabaseMetadataImpl");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
         Object[] defaultArg = new Object[]{};
+        Class<?> metaClass = dmd.getClass();
+        Method[] metaMethods = metaClass.getMethods();
 
         Map<Object, Object> properties = new HashMap<Object, Object>();
 
         String STRING = "String";
         String GET = "get";
 
-        Class<?> metaClass = dmd.getClass();
-        Method[] metaMethods = metaClass.getMethods();
+
+        try {
+            properties.put("Sever version", dmd.getDatabaseProductName());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            properties.put("ODS version", db.getOdsVersion(dmd.getInner()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         for (int i = 0; i < metaMethods.length; i++) {
 
@@ -1042,6 +1065,52 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return properties;
     }
 
+    public Map<Object, Object> getDatabaseProperties() throws DataSourceException {
+
+        PooledDatabaseMetaData dmd = (PooledDatabaseMetaData) getDatabaseMetaData();
+        IFBDatabaseMetadata db;
+        try {
+            db = (IFBDatabaseMetadata) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), dmd.getInner(), "FBDatabaseMetadataImpl");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        Map<Object, Object> properties = new HashMap<Object, Object>();
+
+
+        try {
+            properties.put("Server version", dmd.getDatabaseProductName());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        SelectBuilder sb = new SelectBuilder(getDatabaseConnection());
+        Table table = Table.createTable("MON$DATABASE", "DB", false);
+        sb.appendField(Field.createField(table, "MON$DATABASE_NAME", "DATABASE"));
+        sb.appendField(Field.createField(table, "MON$PAGE_SIZE", "PAGE_SIZE"));
+        sb.appendField(Field.createField(table, "MON$ODS_MAJOR", "ODS_MAJOR"));
+        sb.appendField(Field.createField(table, "MON$ODS_MINOR", "ODS_MINOR"));
+        sb.appendField(Field.createField(table, "MON$SQL_DIALECT", "DIALECT"));
+        sb.appendField(Field.createField(table, "MON$PAGES", "PAGES"));
+        sb.appendTable(table);
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getDatabaseConnection());
+        try {
+            ResultSet rs = querySender.getResultSet(sb.getSQLQuery()).getResultSet();
+            if (rs.next()) {
+                properties.put("ODS version", rs.getInt("ODS_MAJOR") + "." + rs.getInt("ODS_MINOR"));
+                properties.put("Database", rs.getString("DATABASE"));
+                properties.put("Page size", rs.getString("PAGE_SIZE"));
+                properties.put("SQL Dialect", rs.getString("DIALECT"));
+                properties.put("Pages", rs.getString("Pages"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        properties.put("Driver", getMetaProperties().get("DriverName") + " " + getMetaProperties().get("DriverVersion"));
+
+
+        return properties;
+    }
+
     public boolean supportsCatalogsInTableDefinitions() {
 
         try {
@@ -1081,7 +1150,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         if (isConnected()) {
 
-            return (String) getDatabaseProperties().get("DatabaseProductName");
+            return (String) getMetaProperties().get("DatabaseProductName");
         }
 
         return getDatabaseConnection().getDatabaseType();
@@ -1094,7 +1163,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         if (isConnected()) {
 
-            return (String) getDatabaseProperties().get("DatabaseProductVersion");
+            return (String) getMetaProperties().get("DatabaseProductVersion");
         }
 
         return getDatabaseConnection().getDatabaseType();

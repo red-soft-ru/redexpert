@@ -534,6 +534,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         checkVisibleComponents();
     }
 
+    public void addTab(String title, Component component) {
+        tabPane.addTab(title, component);
+    }
+
     private void fillMultifactorPanel(JPanel multifactorPanel, List<Component> orderList) {
         multifactorPanel.setBorder(BorderFactory.createEtchedBorder());
         JLabel contLabel = new JLabel(bundleString("contLabel"));

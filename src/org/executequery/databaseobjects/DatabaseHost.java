@@ -126,6 +126,8 @@ public interface DatabaseHost extends NamedObject {
     /**
      * Retrieves key/value pair database properties.
      */
+    Map<Object, Object> getMetaProperties() throws DataSourceException;
+
     Map<Object, Object> getDatabaseProperties() throws DataSourceException;
 
     /**

@@ -8,6 +8,8 @@ import java.sql.SQLException;
  */
 public interface IFBDatabaseMetadata {
 
-    public String getProcedureSourceCode(DatabaseMetaData metaData, String procedureName) throws SQLException;
+    String getProcedureSourceCode(DatabaseMetaData metaData, String procedureName) throws SQLException;
+
+    String getOdsVersion(DatabaseMetaData metaData) throws SQLException;
 
 }

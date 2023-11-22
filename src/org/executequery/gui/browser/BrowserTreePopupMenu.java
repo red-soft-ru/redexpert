@@ -82,8 +82,6 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         add(connect);
         disconnect = createMenuItem(bundleString("disconnect"), "disconnect", listener);
         add(disconnect);
-        dataBaseInformation = createMenuItem("dataBaseInformation", "dataBaseInformation", listener);
-        add(dataBaseInformation);
         reload = createMenuItem(bundleString("reload"), "reload", listener);
         add(reload);
         recycleConnection = createMenuItem(bundleString("recycle"), "recycle", listener);
@@ -141,6 +139,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         createImportMenu(listener);
         moveToFolder = createMenuItem(bundleString("moveToFolder"), "moveToFolder", listener);
         add(moveToFolder);
+        dataBaseInformation = createMenuItem("dataBaseInformation", "dataBaseInformation", listener);
+        add(dataBaseInformation);
         //add(createMenuItem(bundleString("properties"), "properties", listener));
     }
 

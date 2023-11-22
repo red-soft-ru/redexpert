@@ -99,7 +99,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     public HostPanel(BrowserController controller) {
         super();
@@ -131,6 +131,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         setHeaderText(bundleString("DatabaseConnection"));
         setHeaderIcon(GUIUtilities.loadIcon("Database24.png"));
         setContentPanel(connectionPanel);
+        connectionPanel.addTab(bundleString("DatabaseProperties"), databasePropertiesPanel);
 
         // register with the event listener
         EventMediator.registerListener(this);
@@ -347,7 +348,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     private class HostModel extends AbstractTableModel {
 
         private Vector values = new Vector(0);
-        private String header = "Catalog Name";
+        private final String header = "Catalog Name";
 
         public void setValues(Vector values) {
             this.values = values;

@@ -27,6 +27,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.IconManager;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
@@ -218,7 +219,13 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
         sb.append("</td></tr><td>").append(bundleString("User")).append("</td><td></td><td>");
         sb.append(connection.getUserName());
         sb.append("</td></tr><td>").append(bundleString("Driver")).append("</td><td></td><td>");
-        sb.append(connection.getDriverName());
+        sb.append(connection.isConnected() ? ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseProperties().get("Driver") : connection.getDriverName());
+        if (connection.isConnected()) {
+            sb.append("</td></tr><td>").append(bundleString("ServerVersion")).append("</td><td></td><td>");
+            sb.append(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseProperties().get("Server version"));
+            sb.append("</td></tr><td>").append(bundleString("ODSVersion")).append("</td><td></td><td>");
+            sb.append(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseProperties().get("ODS version"));
+        }
         sb.append("</td></tr>");
         sb.append(Constants.TABLE_TAG_END);
         sb.append("</html>");

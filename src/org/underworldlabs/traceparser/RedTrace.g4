@@ -305,6 +305,7 @@ next_transaction
 
 procedure_info
 :procedure_name ':' end_line
+(CARETS end_line plan end_line*)?
 (params end_line+)?
 ('returns:' (SPACE|end_line) return_value end_line+)?
 (records_fetched end_line+)?
@@ -375,7 +376,7 @@ PRIVILEGE
 plan
 :'Select Expression' end_line
  ( '->' (~('\n'))+ end_line)+
- |(PLAN (~('\n'))+ end_line)+
+ |(('-- line' (~('\n'))+ end_line)? PLAN (~('\n'))+ end_line ('-- line' (~('\n'))+ end_line)?)+
 ;
 
 params

@@ -163,7 +163,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 statisticManager.setPassword(new String(passwordField.getPassword()));
                 statisticManager.setLogger(outputStream);
                 if (charsetCombo.getSelectedIndex() == 0)
-                    statisticManager.setCharSet(null);
+                    statisticManager.setCharSet("UTF8");
                 else
                     statisticManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem()));
                 statisticManager.setDatabase(fileDatabaseField.getText());

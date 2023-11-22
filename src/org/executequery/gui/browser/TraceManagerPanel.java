@@ -301,7 +301,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                     traceManager.setPassword(new String(passwordField.getPassword()));
                     traceManager.setLogger(outputStream);
                     if (charsetCombo.getSelectedIndex() == 0)
-                        traceManager.setCharSet(null);
+                        traceManager.setCharSet("UTF8");
                     else
                         traceManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem()));
                     traceManager.setDatabase(fileDatabaseField.getText());

@@ -183,6 +183,7 @@ public class AutoCompleteSelectionsFactory {
 
     private void databaseExecutablesForHost(DatabaseHost databaseHost) {
         databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.FUNCTION], DATABASE_FUNCTION_DESCRIPTION, AutoCompleteListItemType.DATABASE_FUNCTION);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.UDF], DATABASE_FUNCTION_DESCRIPTION, AutoCompleteListItemType.DATABASE_FUNCTION);
         databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.PROCEDURE], DATABASE_PROCEDURE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PROCEDURE);
         databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.PACKAGE], DATABASE_PACKAGE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PACKAGE);
         databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.SYSTEM_PACKAGE], DATABASE_PACKAGE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PACKAGE);

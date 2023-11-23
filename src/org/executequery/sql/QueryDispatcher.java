@@ -1047,11 +1047,13 @@ public class QueryDispatcher {
 
                     }
 
+//                    PreparedStatement statement;
+//                    if (query.getQueryType() == QueryTypes.SET_AUTODDL_ON || query.getQueryType() == QueryTypes.SET_AUTODDL_OFF)
+//                        statement = null;
+//                    else
+//                        statement = querySender.getPreparedStatement(queryToExecute);
+                    PreparedStatement statement = prepareStatementWithParameters(queryToExecute, "");
 
-                    PreparedStatement statement;
-                    if (query.getQueryType() == QueryTypes.SET_AUTODDL_ON || query.getQueryType() == QueryTypes.SET_AUTODDL_OFF)
-                        statement = null;
-                    else statement = querySender.getPreparedStatement(queryToExecute);
                     SqlStatementResult result = querySender.execute(type, statement);
 
                     if (statementCancelled || Thread.interrupted()) {
@@ -1279,46 +1281,64 @@ public class QueryDispatcher {
     }
 
     PreparedStatement prepareStatementWithParameters(String sql, String variables) throws SQLException {
+
         SqlParser parser = new SqlParser(sql, variables);
-        String queryToExecute = parser.getProcessedSql();
-        PreparedStatement statement = querySender.getPreparedStatement(queryToExecute);
-        statement.setEscapeProcessing(true);
-        ParameterMetaData pmd = statement.getParameterMetaData();
         List<Parameter> params = parser.getParameters();
         List<Parameter> displayParams = parser.getDisplayParameters();
+
+        PreparedStatement statement = querySender.getPreparedStatement(parser.getProcessedSql());
+        statement.setEscapeProcessing(true);
+
+        ParameterMetaData parameterMetaData = statement.getParameterMetaData();
         for (int i = 0; i < params.size(); i++) {
-            params.get(i).setType(pmd.getParameterType(i + 1));
-            params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
+            params.get(i).setType(parameterMetaData.getParameterType(i + 1));
+            params.get(i).setTypeName(parameterMetaData.getParameterTypeName(i + 1));
         }
+
+        // restore old params if needed
         if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
             List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
-            for (int i = 0; i < displayParams.size(); i++) {
-                Parameter dp = displayParams.get(i);
-                for (int g = 0; g < oldParams.size(); g++) {
-                    Parameter p = oldParams.get(g);
-                    if (p.getType() == dp.getType() && p.getName().contentEquals(dp.getName())) {
-                        dp.setValue(p.getValue());
-                        oldParams.remove(p);
+
+            for (Parameter displayParam : displayParams) {
+                for (Parameter oldParam : oldParams) {
+
+                    if (displayParam.getValue() == null
+                            && oldParam.getType() == displayParam.getType()
+                            && oldParam.getName().contentEquals(displayParam.getName())) {
+
+                        displayParam.setValue(oldParam.getValue());
+                        oldParams.remove(oldParam);
                         break;
                     }
                 }
             }
         }
+
+        // check for input params
         if (!displayParams.isEmpty()) {
-            InputParametersDialog spd = new InputParametersDialog(displayParams);
-            spd.display();
-            if (spd.isCanceled()) {
-                statementCancelled = true;
-                throw new DataSourceException("Canceled");
+            if (displayParams.stream().anyMatch(param -> param.getValue() == null)) {
+
+                InputParametersDialog dialog = new InputParametersDialog(displayParams);
+                dialog.display();
+
+                if (dialog.isCanceled()) {
+                    statementCancelled = true;
+                    throw new DataSourceException("Canceled");
+                }
             }
         }
+
+        // remember inputted params
+        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+
+        // add params to the statement
         for (int i = 0; i < params.size(); i++) {
             if (params.get(i).isNull())
                 statement.setNull(i + 1, params.get(i).getType());
             else
                 statement.setObject(i + 1, params.get(i).getPreparedValue());
         }
-        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+
         return statement;
     }
 

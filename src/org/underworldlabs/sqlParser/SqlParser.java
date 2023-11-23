@@ -3,8 +3,11 @@ package org.underworldlabs.sqlParser;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.editor.autocomplete.Parameter;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SqlParser {
     private static final int DEFAULT_STATE = 0;
@@ -17,6 +20,7 @@ public class SqlParser {
     private static final int BLOCK = 8;
     private static final int DECLARE = 9;
     private static final int VARIABLE = 10;
+    private static final int BLOB_PARAMETER_STATE = 11;
 
     private final List<Parameter> parameters;
     private final List<Parameter> displayParameters;
@@ -37,12 +41,14 @@ public class SqlParser {
         StringBuilder processed = new StringBuilder();
         displayParameters = new ArrayList<>();
         StringBuilder parameter = new StringBuilder();
+        StringBuilder blobParameter = new StringBuilder();
         parameters = new ArrayList<>();
         int state = DEFAULT_STATE;
         int len = sql.length();
         int cur_exec = 1;
         boolean first = true;
         boolean second = false;
+        boolean blobStart = false;
         Character openChar = null;
         for (int i = 0; i < len; i++) {
             char curChar = sb.charAt(i);
@@ -79,6 +85,10 @@ public class SqlParser {
                                 second = false;
                                 break;
                             case '?':
+                                if (nextChar == '\'') {
+                                    state = BLOB_PARAMETER_STATE;
+                                    blobStart = true;
+                                }
                                 Parameter p = new Parameter("№" + (displayParameters.size() + 1));
                                 parameters.add(p);
                                 displayParameters.add(p);
@@ -163,6 +173,17 @@ public class SqlParser {
                             createParameter(parameter, processed);
                             i--;
                         }
+                        break;
+                    case BLOB_PARAMETER_STATE:
+                        if (curChar == '\'' && !blobStart) {
+                            state = DEFAULT_STATE;
+                            parameters.get(parameters.size() - 1).setValue(new File(blobParameter.toString()));
+                            displayParameters.get(displayParameters.size() - 1).setValue(new File(blobParameter.toString()));
+                            blobParameter.setLength(0);
+                        }
+                        blobStart = false;
+                        if (curChar != '\'')
+                            blobParameter.append(curChar);
                         break;
                     case EXECUTE:
                         processed.append(curChar);

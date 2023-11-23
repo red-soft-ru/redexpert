@@ -299,7 +299,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         addColumnHeadersCheck.setSelected(false);
         addQuotesCheck.setSelected(false);
-        useAbsoluteBlobPathCheck.setSelected(false);
+        useAbsoluteBlobPathCheck.setSelected(true);
 
         addColumnHeadersCheck.setEnabled(false);
         addQuotesCheck.setEnabled(false);
@@ -673,7 +673,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             }
 
             if (useAbsoluteBlobPathCheck.isSelected())
-                stringValue = "\"" + outputFile.getAbsolutePath() + "\"";
+                stringValue = outputFile.getAbsolutePath();
         }
 
         return stringValue;
@@ -686,7 +686,6 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         int rowCount = exportTableModel.getRowCount();
         int columnCount = exportTableModel.getColumnCount();
 
-        String blobsFolderName = new File(folderPathField.getText().trim()).getName();
         String tableName = !exportTableNameField.getText().isEmpty() ?
                 exportTableNameField.getText() :
                 tableNameForExport;
@@ -700,17 +699,6 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                             ((AbstractDatabaseObject) databaseColumns.get(0).getParent()).getCreateSQLText() :
                             SQLUtils.generateCreateTable(tableName, exportTableModel)) +
                     "*/\n";
-
-            if (isContainsBlob)
-                createTableTemplate = "/*\nTo make importing BLOB data work, you need to\n" +
-                        "add new property to the directories.conf file\n" +
-                        "according to this example:\n\n" +
-                        "database {\n" +
-                        "\t" + blobsFolderName + " = " + folderPathField.getText() + "\n" +
-                        "\t...\n" +
-                        "}\n*/\n\n" +
-                        createTableTemplate;
-
 
             result.append(createTableTemplate);
 
@@ -749,8 +737,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                     String stringValue = getFormattedValue(value, null);
 
                     if (isBlobType(value)) {
-                        values.append("read_file('").append(blobsFolderName).append(System.getProperty("file.separator"))
-                                .append(writeBlobToFile((AbstractLobRecordDataItem) value, col, row)).append("')");
+                        values.append("?'").append(writeBlobToFile((AbstractLobRecordDataItem) value, col, row)).append("'");
 
                     } else if (!stringValue.isEmpty()) {
 

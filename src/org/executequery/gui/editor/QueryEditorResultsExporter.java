@@ -237,6 +237,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setEnabled(true);
         addQuotesCheck.setEnabled(true);
         openQueryEditorCheck.setEnabled(false);
+        useAbsoluteBlobPathCheck.setEnabled(true);
 
         delimiterLabel.setVisible(true);
         columnDelimiterCombo.setVisible(true);
@@ -254,6 +255,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setEnabled(true);
         addQuotesCheck.setEnabled(false);
         openQueryEditorCheck.setEnabled(false);
+        useAbsoluteBlobPathCheck.setEnabled(true);
 
         delimiterLabel.setVisible(false);
         columnDelimiterCombo.setVisible(false);
@@ -272,6 +274,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setEnabled(false);
         addQuotesCheck.setEnabled(false);
         openQueryEditorCheck.setEnabled(false);
+        useAbsoluteBlobPathCheck.setEnabled(true);
 
         delimiterLabel.setVisible(false);
         columnDelimiterCombo.setVisible(false);
@@ -285,10 +288,12 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         addColumnHeadersCheck.setSelected(false);
         addQuotesCheck.setSelected(false);
+        useAbsoluteBlobPathCheck.setSelected(false);
 
         addColumnHeadersCheck.setEnabled(false);
         addQuotesCheck.setEnabled(false);
         openQueryEditorCheck.setEnabled(true);
+        useAbsoluteBlobPathCheck.setEnabled(false);
 
         delimiterLabel.setVisible(false);
         columnDelimiterCombo.setVisible(false);
@@ -651,7 +656,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
             stringValue = exportTableModel.getColumnName(col) + "_" + row + "." + lobType;
 
-            File outputFile = new File(folderPathField.getText(), stringValue);
+            File outputFile = new File(folderPathField.getText().trim(), stringValue);
             try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
                 outputStream.write(lobData);
             }
@@ -670,6 +675,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         int rowCount = exportTableModel.getRowCount();
         int columnCount = exportTableModel.getColumnCount();
 
+        String blobsFolderName = new File(folderPathField.getText().trim()).getName();
         String tableName = !exportTableNameField.getText().isEmpty() ?
                 exportTableNameField.getText() :
                 tableNameForExport;
@@ -678,11 +684,22 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
             // --- add simple 'create table' statement ---
 
-            String createTableTemplate = "/*\n--Uncomment this block if the table doesn't exist\n" +
+            String createTableTemplate = "/* Uncomment this block if the table doesn't exist\n\n" +
                     (databaseColumns != null && !databaseColumns.isEmpty() ?
                             ((AbstractDatabaseObject) databaseColumns.get(0).getParent()).getCreateSQLText() :
                             SQLUtils.generateCreateTable(tableName, exportTableModel)) +
                     "*/\n";
+
+            if (isContainsBlob)
+                createTableTemplate = "/*\nTo make importing BLOB data work, you need to\n" +
+                        "add new property to the directories.conf file\n" +
+                        "according to this example:\n\n" +
+                        "database {\n" +
+                        "\t" + blobsFolderName + " = " + folderPathField.getText() + "\n" +
+                        "\t...\n" +
+                        "}\n*/\n\n" +
+                        createTableTemplate;
+
 
             result.append(createTableTemplate);
 
@@ -720,7 +737,11 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                     Object value = exportTableModel.getValueAt(row, col);
                     String stringValue = getFormattedValue(value, null);
 
-                    if (!stringValue.isEmpty()) {
+                    if (isBlobType(value)) {
+                        values.append("read_file('").append(blobsFolderName).append(System.getProperty("file.separator"))
+                                .append(writeBlobToFile((AbstractLobRecordDataItem) value, col, row)).append("')");
+
+                    } else if (!stringValue.isEmpty()) {
 
                         if (value instanceof RecordDataItem) {
 

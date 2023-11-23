@@ -545,7 +545,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             new XmlWriter().write(filePathField.getText());
             return true;
 
-        } catch (ParserConfigurationException | TransformerException e) {
+        } catch (Exception e) {
             return displayErrorMessage(e);
         }
     }
@@ -805,7 +805,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
     private class XmlWriter {
 
-        void write(String outputPath) throws ParserConfigurationException, TransformerException {
+        void write(String outputPath) throws ParserConfigurationException, TransformerException, IOException {
 
             Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 
@@ -843,7 +843,10 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                         RecordDataItem value = (RecordDataItem) exportTableModel.getValueAt(row, col);
                         if (!value.isValueNull()) {
 
-                            valueElement.appendChild(document.createTextNode(value.toString()));
+                            valueElement.appendChild(isBlobType(value) ?
+                                    document.createTextNode(writeBlobToFile((AbstractLobRecordDataItem) value, col, row)) :
+                                    document.createTextNode(value.toString())
+                            );
 
                             String name = value.getName();
                             if (isCharType(value) && !exportData.contains(name))

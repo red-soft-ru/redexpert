@@ -30,7 +30,9 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.importexport.DefaultExcelWorkbookBuilder;
 import org.executequery.gui.importexport.ExcelWorkbookBuilder;
 import org.executequery.gui.importexport.ImportExportDataProcess;
-import org.executequery.gui.resultset.*;
+import org.executequery.gui.resultset.AbstractLobRecordDataItem;
+import org.executequery.gui.resultset.RecordDataItem;
+import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -38,11 +40,20 @@ import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
 import java.io.*;
 import java.sql.Timestamp;
@@ -531,7 +542,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private boolean exportXML() {
 
         try {
-            new ResultSetTableModelToXMLWriter(exportTableModel, filePathField.getText()).write();
+            new XmlWriter().write(filePathField.getText());
             return true;
 
         } catch (ParserConfigurationException | TransformerException e) {
@@ -791,6 +802,85 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         exportTableModel = null;
         super.dispose();
     }
+
+    private class XmlWriter {
+
+        void write(String outputPath) throws ParserConfigurationException, TransformerException {
+
+            Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+
+            int rowCount = exportTableModel.getRowCount();
+            int columnCount = exportTableModel.getColumnCount();
+
+            Element rootElement = getCreateElement(document, "result-set");
+            document.appendChild(rootElement);
+
+            if (exportTableModel instanceof ResultSetTableModel) {
+                Element queryElement = getCreateElement(document, "query");
+                queryElement.appendChild(document.createTextNode("\n" + ((ResultSetTableModel) exportTableModel).getQuery() + "\n"));
+                rootElement.appendChild(queryElement);
+            }
+
+            List<String> exportData = new ArrayList<>();
+            Element dataElement = getCreateElement(document, "data");
+
+            for (int row = 0; row < rowCount; row++) {
+
+                Element rowElement = getCreateElement(document, "row");
+                dataElement.appendChild(rowElement);
+
+                Attr attribute = document.createAttribute("number");
+                attribute.setValue(String.valueOf(row + 1));
+                rowElement.setAttributeNode(attribute);
+
+                dataElement.appendChild(rowElement);
+
+                for (int col = 0; col < columnCount; col++) {
+
+                    Element valueElement = getCreateElement(document, exportTableModel.getColumnName(col));
+                    if (exportTableModel instanceof ResultSetTableModel) {
+
+                        RecordDataItem value = (RecordDataItem) exportTableModel.getValueAt(row, col);
+                        if (!value.isValueNull()) {
+
+                            valueElement.appendChild(document.createTextNode(value.toString()));
+
+                            String name = value.getName();
+                            if (isCharType(value) && !exportData.contains(name))
+                                exportData.add(name);
+
+                        } else
+                            valueElement.appendChild(document.createTextNode("NULL"));
+
+                    } else {
+
+                        Object value = exportTableModel.getValueAt(row, col);
+                        valueElement.appendChild(value != null ?
+                                document.createTextNode(value.toString()) :
+                                document.createTextNode("NULL")
+                        );
+                    }
+
+                    rowElement.appendChild(valueElement);
+                }
+            }
+            rootElement.appendChild(dataElement);
+
+            StringBuilder query = new StringBuilder("query");
+            exportData.forEach(val -> query.append(" ").append(val));
+
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, query.toString());
+            transformer.transform(new DOMSource(document), new StreamResult(new File(outputPath)));
+        }
+
+        private Element getCreateElement(Document document, String name) {
+            return document.createElement(name);
+        }
+
+    } // class XmlWriter
 
     private static class ResultsProgressDialog extends JDialog {
 

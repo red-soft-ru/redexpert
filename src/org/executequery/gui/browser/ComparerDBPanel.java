@@ -412,7 +412,17 @@ public class ComparerDBPanel extends JPanel implements TabView {
                         !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
                         !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
                 ) :
-                new Comparer(this, masterConnection);
+                new Comparer(this, masterConnection,
+                        new boolean[]{
+                                !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
+                        },
+                        !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
+                );
 
         loggingOutputPanel.clear();
         sqlTextPanel.setSQLText("");

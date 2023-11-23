@@ -49,8 +49,9 @@ public class Comparer {
     private final List<org.executequery.gui.browser.ColumnConstraint> constraintsToDrop;
     private final List<ColumnData> computedFields;
 
-    public Comparer(ComparerDBPanel panel, DatabaseConnection connection) {
-        this(panel, connection, connection, new boolean[]{true, true, true, true}, true, true, true);
+    public Comparer(ComparerDBPanel panel, DatabaseConnection connection,
+                    boolean[] constraintsNeed, boolean commentsNeed, boolean computedNeed, boolean fieldsPositions) {
+        this(panel, connection, connection, constraintsNeed, commentsNeed, computedNeed, fieldsPositions);
     }
 
     public Comparer(

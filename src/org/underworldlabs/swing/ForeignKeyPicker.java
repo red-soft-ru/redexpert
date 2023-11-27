@@ -184,7 +184,7 @@ public class ForeignKeyPicker extends JPanel
     }
 
     public String getValueAt(int col) {
-        return (selectedValue != null && selectedIndex > -1) ? foreignKeysItems.get(col).get(selectedIndex).toString() : null;
+        return (selectedValue != null && selectedIndex > -1) ? foreignKeysItems.get(col).get(selectedIndex).toString() : textField.getText();
     }
 
     @Override

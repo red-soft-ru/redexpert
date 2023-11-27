@@ -263,7 +263,7 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
         UDFParameter udfParameter = new UDFParameter(rs.getInt(FA + PARAMETER_MECHANISM), rs.getInt(FIELD_TYPE));
         udfParameter = (UDFParameter) fillParameter(udfParameter, rs);
         int nullFlag = rs.getInt(prefixLabel() + NULL_FLAG);
-        if (rs.getInt(7) != BY_REFERENCE_WITH_NULL) // already setup
+        if (rs.getInt(FA + PARAMETER_MECHANISM) != BY_REFERENCE_WITH_NULL) // already setup
             udfParameter.setNotNull(nullFlag != 0);
         parameters.add(udfParameter);
         if (first) {

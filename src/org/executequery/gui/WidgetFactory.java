@@ -128,6 +128,29 @@ public final class WidgetFactory {
         return checkBox;
     }
 
+    public static JSpinner createSpinner(String name) {
+        JSpinner spinner = new JSpinner();
+        spinner.setName(name);
+        return spinner;
+    }
+
+    public static JSpinner createSpinner(String name, SpinnerModel model) {
+        JSpinner spinner = createSpinner(name);
+        spinner.setModel(model);
+        return spinner;
+    }
+
+    public static JSpinner createSpinner(String name, int val, int minVal, int maxVal, int stepSize) {
+
+        SpinnerNumberModel spinnerModel = new SpinnerNumberModel();
+        spinnerModel.setMinimum(minVal);
+        spinnerModel.setMaximum(maxVal);
+        spinnerModel.setStepSize(stepSize);
+        spinnerModel.setValue(val);
+
+        return createSpinner(name, spinnerModel);
+    }
+
     public static void addLabelFieldPair(JPanel panel, String label,
                                          JComponent field, GridBagConstraints gbc) {
 

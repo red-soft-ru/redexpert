@@ -2,8 +2,7 @@ package org.executequery.actions.databasecommands;
 
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
-import org.executequery.gui.ImportDataFromFilePanel;
-import org.executequery.gui.browser.ComparerDBPanel;
+import org.executequery.gui.importFromFile.ImportDataFromFilePanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
 import java.awt.event.ActionEvent;

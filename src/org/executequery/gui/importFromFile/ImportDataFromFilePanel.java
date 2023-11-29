@@ -1,4 +1,4 @@
-package org.executequery.gui;
+package org.executequery.gui.importFromFile;
 
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -11,14 +11,14 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.NamedView;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.DefaultProgressDialog;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -33,17 +33,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Vector;
 
 /**
  * @author Alexey Kozlov
@@ -88,7 +81,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     // ---
 
     private DefaultDatabaseHost dbHost;
-    private ArrayList<String> sourceHeadersArray;
+    private ImportHelper importHelper;
     private String pathToFile;
     private String fileName;
     private String fileType;
@@ -104,12 +97,12 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         String[] delimiters = {";", "|", ",", "#"};
         delimiterCombo = WidgetFactory.createComboBox("delimiterCombo", delimiters);
-        delimiterCombo.addActionListener(e -> sourcePropertiesChanged());
+        delimiterCombo.addActionListener(e -> openSourceFile(false));
         delimiterCombo.setEditable(true);
         delimiterCombo.setVisible(false);
 
         tableCombo = WidgetFactory.createComboBox("tableCombo");
-        tableCombo.addActionListener(e -> tableComboChanged());
+        tableCombo.addActionListener(e -> updateMappingTable());
         tableCombo.setEnabled(false);
 
         connectionsCombo = WidgetFactory.createComboBox("connectionsCombo");
@@ -120,21 +113,21 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // --- checkBoxes ---
 
-        firstRowIsNamesCheck = new JCheckBox(bundleString("IsFirstColumnNamesText"));
-        firstRowIsNamesCheck.addActionListener(e -> sourcePropertiesChanged());
+        firstRowIsNamesCheck = WidgetFactory.createCheckBox("firstRowIsNamesCheck", bundleString("IsFirstColumnNamesText"));
+        firstRowIsNamesCheck.addActionListener(e -> openSourceFile(false));
 
-        eraseTableCheck = new JCheckBox(bundleString("IsEraseDatabaseText"));
+        eraseTableCheck = WidgetFactory.createCheckBox("eraseTableCheck", bundleString("IsEraseDatabaseText"));
 
         // --- numeric selectors ---
 
-        firstImportedRowSelector = new JSpinner(new SpinnerNumberModel(0, 0, 999999999, 1));
-        lastImportedRowSelector = new JSpinner(new SpinnerNumberModel(999999999, 0, 999999999, 1));
-        commitStepSelector = new JSpinner(new SpinnerNumberModel(100, 100, 1000000, 100));
+        firstImportedRowSelector = WidgetFactory.createSpinner("firstImportedRowSelector", 0, 0, Integer.MAX_VALUE, 1);
+        lastImportedRowSelector = WidgetFactory.createSpinner("lastImportedRowSelector", 999999999, 0, Integer.MAX_VALUE, 1);
+        commitStepSelector = WidgetFactory.createSpinner("commitStepSelector", 100, 100, 1000000, 100);
 
         // --- data preview table ---
 
         dataPreviewTableModel = new DefaultTableModel();
-        dataPreviewTable = new JTable(dataPreviewTableModel);
+        dataPreviewTable = WidgetFactory.createTable("dataPreviewTable", dataPreviewTableModel);
 
         // --- column mapping table ---
 
@@ -144,7 +137,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         columnMappingTableModel.addColumn(bundleString("ColumnMappingTableSource"));
         columnMappingTableModel.addColumn(bundleString("ColumnMappingTableProps"));
 
-        columnMappingTable = new JTable(columnMappingTableModel);
+        columnMappingTable = WidgetFactory.createTable("columnMappingTable", columnMappingTableModel);
         columnMappingTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         columnMappingTable.getColumn(bundleString("ColumnMappingTableProps")).setCellRenderer(new MappingCellRenderer());
         columnMappingTable.addMouseListener(new MouseAdapter() {
@@ -171,7 +164,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         browseButton.addActionListener(e -> browseFile());
 
         readFileButton = WidgetFactory.createButton("readFileButton", bundleString("ReadFileButtonText"));
-        readFileButton.addActionListener(e -> openSourceFile());
+        readFileButton.addActionListener(e -> openSourceFile(true));
 
         refreshMappingTableButton = WidgetFactory.createButton("refreshMappingTableButton", bundleString("RefreshButtonText"));
         refreshMappingTableButton.addActionListener(e -> updateMappingTable());
@@ -188,7 +181,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // ---
 
-        connectionComboChanged();
         arrange();
     }
 
@@ -257,7 +249,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
     }
 
-    public void browseFile() {
+    // --- buttons handlers ---
+
+    private void browseFile() {
 
         FileChooserDialog fileChooser = new FileChooserDialog();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -278,13 +272,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         }
 
         fileNameField.setText(file.getAbsolutePath());
-        openSourceFile();
+        openSourceFile(true);
     }
 
-    public void openSourceFile() {
+    private void openSourceFile(boolean displayWarnings) {
 
         if (fileNameField.getText().isEmpty()) {
-            GUIUtilities.displayWarningMessage(bundleString("NoFileSelectedMessage"));
+            if (displayWarnings)
+                GUIUtilities.displayWarningMessage(bundleString("NoFileSelectedMessage"));
             return;
         }
 
@@ -293,33 +288,65 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         fileName = FilenameUtils.getBaseName(sourceFile.getName());
         fileType = FileNameUtils.getExtension(sourceFile.getName());
 
-        switch (fileType) {
-
-            case ("csv"): {
-                previewCSV();
-                break;
-            }
-            case ("xml"):
-            case ("xlsx"):
-            default: {
+        if (!fileType.equalsIgnoreCase("csv")
+//                && !fileType.equalsIgnoreCase("xml")
+//                && !fileType.equalsIgnoreCase("xlsx")
+        ) {
+            if (displayWarnings)
                 GUIUtilities.displayWarningMessage(bundleString("FileTypeNotSupported"));
+            return;
+        }
+
+        importHelper = getImportHelper(fileType);
+        if (importHelper == null)
+            return;
+
+        dataPreviewTableModel.setColumnCount(0);
+        dataPreviewTableModel.setRowCount(0);
+
+        try {
+            List<String> readData = importHelper.getPreviewData();
+
+            for (String header : importHelper.getHeaders()) {
+                dataPreviewTableModel.addColumn(header);
+                dataPreviewTable.getColumn(header).setMinWidth(MIN_COLUMN_WIDTH);
             }
+
+            dataPreviewTable.setAutoResizeMode(importHelper.getColumnsCount() < 7 ?
+                    JTable.AUTO_RESIZE_ALL_COLUMNS :
+                    JTable.AUTO_RESIZE_OFF
+            );
+
+            for (int i = 0; i < PREVIEW_ROWS_COUNT && i < readData.size(); i++)
+                if (readData.get(i) != null)
+                    dataPreviewTableModel.addRow(readData.get(i).split(
+                            (String) Objects.requireNonNull(delimiterCombo.getSelectedItem())));
+
+        } catch (FileNotFoundException e) {
+            if (displayWarnings)
+                GUIUtilities.displayWarningMessage(bundleString("FileDoesNotExistMessage") + "\n" + pathToFile);
+
+        } catch (Exception e) {
+            if (displayWarnings)
+                GUIUtilities.displayWarningMessage(bundleString("FileReadingErrorMessage") + "\n" + e.getMessage());
         }
 
         delimiterLabel.setVisible(fileType.equalsIgnoreCase("csv"));
         delimiterCombo.setVisible(fileType.equalsIgnoreCase("csv"));
+
+        updateMappingTable();
     }
 
-    public void updateMappingTable() {
+    private void updateMappingTable() {
 
         columnMappingTableModel.setRowCount(0);
 
-        if (!updateMappingTableAllowed(true))
+        if (targetNotSelected(false) || importHelper == null)
             return;
 
         JComboBox sourceComboBox = new JComboBox();
         sourceComboBox.addItem(NOTHING_HEADER);
-        sourceHeadersArray.forEach(sourceComboBox::addItem);
+        importHelper.getHeaders().forEach(sourceComboBox::addItem);
 
         TableColumn thirdColumn = columnMappingTable.getColumnModel().getColumn(2);
         thirdColumn.setCellEditor(new DefaultCellEditor(sourceComboBox));
@@ -364,24 +391,25 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         }
     }
 
-    public void importData() {
+    // --- import data methods ---
 
-        if (!startImportAllowed())
+    private void importData() {
+
+        if (targetNotSelected(true))
             return;
-
-        Log.info("ImportDataFromFilePanel: importing data...");
 
         DefaultStatementExecutor executor = new DefaultStatementExecutor();
         executor.setCommitMode(false);
         executor.setKeepAlive(true);
         executor.setDatabaseConnection((DatabaseConnection) connectionsCombo.getSelectedItem());
 
+        // -- generate  mapped columns lists
+
         StringBuilder targetColumnList = new StringBuilder();
         StringBuilder sourceColumnList = new StringBuilder();
 
-        Vector<Vector> dataFromTableVector = columnMappingTableModel.getDataVector();
-
         int valuesCount = 0;
+        Vector<Vector> dataFromTableVector = columnMappingTableModel.getDataVector();
         boolean[] valuesIndexes = new boolean[dataFromTableVector.size()];
 
         for (int i = 0; i < dataFromTableVector.size(); i++) {
@@ -396,20 +424,22 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
                 valuesCount++;
                 valuesIndexes[i] = true;
+
             } else
                 valuesIndexes[i] = false;
         }
 
         if (valuesCount == 0) {
             GUIUtilities.displayWarningMessage(bundleString("NoDataForImportMessage"));
-            Log.info("ImportDataFromFilePanel: import process stopped (no data for import selected)");
             return;
         }
 
         targetColumnList.deleteCharAt(targetColumnList.length() - 1);
         sourceColumnList.deleteCharAt(sourceColumnList.length() - 1);
 
-        StringBuilder insertPattern = new StringBuilder()
+        // -- generate insert query
+
+        StringBuilder insertQuery = new StringBuilder()
                 .append("INSERT INTO ")
                 .append(MiscUtils.getFormattedObject(Objects.requireNonNull(tableCombo.getSelectedItem()).toString(), executor.getDatabaseConnection()))
                 .append(" (")
@@ -417,135 +447,88 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 .append(") VALUES (");
 
         while (valuesCount > 1) {
-            insertPattern.append("?,");
+            insertQuery.append("?,");
             valuesCount--;
         }
-        insertPattern.append("?);");
+        insertQuery.append("?);");
+
+        // -- generate insert statement
 
         PreparedStatement insertStatement;
         try {
-            insertStatement = executor.getPreparedStatement(insertPattern.toString());
+            insertStatement = executor.getPreparedStatement(insertQuery.toString());
             insertStatement.setEscapeProcessing(true);
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
-            Log.error("ImportDataFromFilePanel: import process stopped due to an error", e);
             return;
         }
 
-        Log.info("ImportDataFromFilePanel: SQL-INSERT pattern created");
-        switch (fileType) {
+        // -- start import
 
-            case ("csv"): {
+        progressDialog = new DefaultProgressDialog(bundleString("ExecutingProgressDialog"));
 
-                progressDialog = new DefaultProgressDialog(bundleString("ExecutingProgressDialog"));
+        SwingWorker worker = new SwingWorker("ImportCSV") {
+            @Override
+            public Object construct() {
 
-                SwingWorker worker = new SwingWorker("ImportCSV") {
-                    @Override
-                    public Object construct() {
-                        importCSV(sourceColumnList, valuesIndexes, insertStatement, executor);
-                        return null;
-                    }
+                if (eraseTableCheck.isSelected())
+                    eraseTable(Objects.requireNonNull(tableCombo.getSelectedItem()).toString());
+                getImportHelper(fileType).importData(sourceColumnList, valuesIndexes, insertStatement, executor);
 
-                    @Override
-                    public void finished() {
-                        if (progressDialog != null)
-                            progressDialog.dispose();
-                    }
-                };
-
-                worker.start();
-                progressDialog.run();
-
-                break;
+                return null;
             }
-            case ("xml"):
-            case ("xlsx"):
-            default:
-                Log.info("ImportDataFromFilePanel: import process stopped (no source file type selected)");
-        }
+
+            @Override
+            public void finished() {
+                if (progressDialog != null)
+                    progressDialog.dispose();
+            }
+        };
+
+        worker.start();
+        progressDialog.run();
     }
 
-    private void importCSV(StringBuilder sourceColumnList, boolean[] valuesIndexes,
-                           PreparedStatement insertStatement, DefaultStatementExecutor executor) {
+    // --- helper methods ---
+
+    private ImportHelper getImportHelper(String fileType) {
+
+        ImportHelper importHelper = null;
+        switch (fileType) {
+
+            case ("csv"):
+                importHelper = new ImportHelperCSV(
+                        this,
+                        pathToFile,
+                        PREVIEW_ROWS_COUNT,
+                        firstRowIsNamesCheck.isSelected()
+                );
+                break;
+
+            case ("xml"):
+            case ("xlsx"):
+        }
+
+        return importHelper;
+    }
+
+    private void eraseTable(String tableName) {
 
         try {
 
-            Statement sourceFileStatement = getStatementCSV();
+            DefaultStatementExecutor executor = new DefaultStatementExecutor();
+            executor.setCommitMode(false);
+            executor.setKeepAlive(true);
+            executor.setDatabaseConnection((DatabaseConnection) connectionsCombo.getSelectedItem());
 
-            if (sourceFileStatement == null)
-                return;
-
-            String sourceSelectQuery = "SELECT " + sourceColumnList.toString() + " FROM " + MiscUtils.getFormattedObject(fileName, executor.getDatabaseConnection());
-            ResultSet sourceFileData = sourceFileStatement.executeQuery(sourceSelectQuery);
-
-            int executorIndex = 0;
-            int linesCount = 0;
-
-            String[] sourceFields = sourceColumnList.toString().split(",");
-            while (sourceFileData.next()) {
-
-                if (progressDialog.isCancel())
-                    break;
-
-                if (linesCount >= (int) lastImportedRowSelector.getValue())
-                    break;
-
-                if (linesCount >= (int) firstImportedRowSelector.getValue()) {
-
-                    int fieldIndex = 0;
-                    int mappedIndex = 0;
-                    for (boolean valueIndex : valuesIndexes) {
-
-                        if (valueIndex) {
-
-                            Object insertParameter = sourceFileData.getString(sourceFields[fieldIndex]);
-                            String columnType = insertStatement.getParameterMetaData().getParameterTypeName(fieldIndex + 1);
-                            String columnProperty = columnMappingTable.getValueAt(mappedIndex, 3).toString();
-
-                            if (isTimeType(columnType)) {
-                                insertParameter = LocalDateTime.parse(insertParameter.toString(), DateTimeFormatter.ofPattern(columnProperty));
-
-                            } else if (isBlobType(columnType) && columnProperty.equals("true")) {
-                                insertParameter = Files.newInputStream(new File(insertParameter.toString()).toPath());
-                            }
-
-                            insertStatement.setObject(fieldIndex + 1, insertParameter);
-                            fieldIndex++;
-                        }
-                        mappedIndex++;
-                    }
-
-                    insertStatement.addBatch();
-
-                    int batchStep = (int) commitStepSelector.getValue();
-                    if (executorIndex % batchStep == 0 && executorIndex != 0) {
-
-                        insertStatement.executeBatch();
-                        executor.getConnection().commit();
-
-                        Log.info("ImportDataFromFilePanel: " + batchStep + " records was added");
-                    }
-                    executorIndex++;
-                }
-                linesCount++;
-            }
-
-            insertStatement.executeBatch();
+            String query = "DELETE FROM " + tableName + ";";
+            executor.execute(QueryTypes.DELETE, query);
             executor.getConnection().commit();
-
-            Log.info("ImportDataFromFilePanel: import process has been completed, " + executorIndex + " records was added");
-
-        } catch (DateTimeParseException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("DateTimeFormatErrorMessage") + "\n" + e.getMessage(), e);
-            Log.error("ImportDataFromFilePanel: import process was stopped (date/time format incorrect)");
+            executor.releaseResources();
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
-            Log.error("ImportDataFromFilePanel: import process was stopped due to an error", e);
-
-        } finally {
-            executor.releaseResources();
+            GUIUtilities.displayExceptionErrorDialog(bundleString("EraseDatabaseErrorMessage") + "\n" + e.getMessage(), e);
         }
     }
 
@@ -574,198 +557,64 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         dbHost.close();
     }
 
-    private void tableComboChanged() {
-        if (updateMappingTableAllowed(false))
-            updateMappingTable();
-    }
-
-    private void sourcePropertiesChanged() {
-
-        if (pathToFile != null)
-            openSourceFile();
-
-        if (updateMappingTableAllowed(false))
-            updateMappingTable();
-    }
-
-    private void previewCSV() {
-
-        try {
-            String[] readData = getHeadersCSV();
-
-            dataPreviewTableModel.setColumnCount(0);
-            dataPreviewTableModel.setRowCount(0);
-
-            for (String tempHeader : sourceHeadersArray)
-                dataPreviewTableModel.addColumn(tempHeader);
-            for (String tempHeader : sourceHeadersArray)
-                dataPreviewTable.getColumn(tempHeader).setMinWidth(MIN_COLUMN_WIDTH);
-
-            if (sourceHeadersArray.size() < 7)
-                dataPreviewTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-            else
-                dataPreviewTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-            for (int i = 0; i < PREVIEW_ROWS_COUNT; i++) {
-
-                if (readData[i] == null)
-                    continue;
-
-                dataPreviewTableModel.addRow(readData[i].split(
-                        Objects.requireNonNull(delimiterCombo.getSelectedItem()).toString()));
-            }
-
-        } catch (Exception e) {
-            GUIUtilities.displayWarningMessage(bundleString("FileReadingErrorMessage") + "\n" + e.getMessage());
-        }
-    }
-
-    private String[] getHeadersCSV() {
-
-        if (sourceHeadersArray == null)
-            sourceHeadersArray = new ArrayList<>();
-        else
-            sourceHeadersArray.clear();
-
-        String[] readData = new String[PREVIEW_ROWS_COUNT];
-        try {
-
-            FileReader reader = new FileReader(pathToFile);
-            Scanner scanner = new Scanner(reader);
-
-            String firstRowFromSource = "";
-            for (int i = 0; i < PREVIEW_ROWS_COUNT; i++) {
-
-                if (scanner.hasNextLine()) {
-                    String tempRow = scanner.nextLine();
-
-                    if (i == 0) {
-                        firstRowFromSource = tempRow;
-                        if (firstRowIsNamesCheck.isSelected())
-                            tempRow = scanner.hasNextLine() ? scanner.nextLine() : "";
-                    }
-                    readData[i] = tempRow;
-
-                } else
-                    break;
-            }
-            reader.close();
-
-            String[] firstRowFromSourceArray = firstRowFromSource.split(
-                    Objects.requireNonNull(delimiterCombo.getSelectedItem()).toString());
-
-            if (firstRowIsNamesCheck.isSelected()) {
-                sourceHeadersArray.addAll(Arrays.asList(firstRowFromSourceArray));
-            } else {
-                for (int i = 0; i < firstRowFromSourceArray.length; i++)
-                    sourceHeadersArray.add("COLUMN" + (i + 1));
-            }
-
-        } catch (FileNotFoundException e) {
-            GUIUtilities.displayWarningMessage(bundleString("FileDoesNotExistMessage") + "\n" + fileNameField.getText());
-
-        } catch (Exception e) {
-            GUIUtilities.displayWarningMessage(bundleString("FileReadingErrorMessage") + "\n" + e.getMessage());
-        }
-
-        return readData;
-    }
-
-    private Statement getStatementCSV() {
-
-        Statement statement = null;
-        try {
-
-            Properties properties = new Properties();
-            properties.setProperty("separator", Objects.requireNonNull(delimiterCombo.getSelectedItem()).toString());
-            if (!firstRowIsNamesCheck.isSelected()) {
-                properties.setProperty("suppressHeaders", "true");
-                properties.setProperty("defectiveHeaders", "true");
-            }
-
-            String connectionUrl = "jdbc:relique:csv:" + Paths.get(pathToFile).getParent().toString();
-            if (UIUtils.isWindows())
-                connectionUrl = connectionUrl.replace("\\", "/");
-
-            statement = DriverManager.getConnection(connectionUrl, properties).createStatement();
-
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
-            Log.error("ImportDataFromFilePanel: reading CSV file was stopped due to an error", e);
-        }
-
-        return statement;
-    }
-
-    public boolean updateMappingTableAllowed(boolean displayWarnings) {
-
-        if (sourceHeadersArray == null) {
-            if (displayWarnings)
-                GUIUtilities.displayWarningMessage(bundleString("ReadFileMessage"));
-            return false;
-        }
+    public boolean targetNotSelected(boolean displayWarnings) {
 
         if (connectionsCombo.getSelectedIndex() == 0) {
             if (displayWarnings)
                 GUIUtilities.displayWarningMessage(bundleString("SelectDBMessage"));
-            return false;
+            return true;
         }
 
         if (tableCombo.getSelectedIndex() == 0) {
             if (displayWarnings)
                 GUIUtilities.displayWarningMessage(bundleString("SelectTableMessage"));
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
-    private boolean startImportAllowed() {
-
-        if (!updateMappingTableAllowed(true))
-            return false;
-
-        if (eraseTableCheck.isSelected())
-            eraseTable(Objects.requireNonNull(tableCombo.getSelectedItem()).toString());
-
-        return true;
-    }
-
-    private void eraseTable(String tableName) {
-
-        DefaultStatementExecutor executor = new DefaultStatementExecutor();
-
-        try {
-            executor.setCommitMode(false);
-            executor.setKeepAlive(true);
-            executor.setDatabaseConnection((DatabaseConnection) connectionsCombo.getSelectedItem());
-
-            Log.info("ImportDataFromFilePanel: erasing target table...");
-
-            String query = "DELETE FROM " + tableName + ";";
-            executor.execute(QueryTypes.DELETE, query);
-            executor.getConnection().commit();
-
-            Log.info("ImportDataFromFilePanel: erasing target table finished");
-
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("EraseDatabaseErrorMessage") + "\n" + e.getMessage(), e);
-            Log.error("ImportDataFromFilePanel: erasing target table was stopped due to an error", e);
-
-        } finally {
-            executor.releaseResources();
-        }
-    }
-
-    private boolean isTimeType(String type) {
+    public boolean isTimeType(String type) {
         return Objects.equals(type, "DATE") ||
                 Objects.equals(type, "TIME") ||
                 Objects.equals(type, "TIMESTAMP");
     }
 
-    private boolean isBlobType(String type) {
+    public boolean isBlobType(String type) {
         return type.toUpperCase().contains("BLOB");
     }
+
+    // --- getters ---
+
+    public String getDelimiter() {
+        return (String) delimiterCombo.getSelectedItem();
+    }
+
+    public int getFirstRowIndex() {
+        return (int) firstImportedRowSelector.getValue();
+    }
+
+    public int getLastRowIndex() {
+        return (int) lastImportedRowSelector.getValue();
+    }
+
+    public int getBathStep() {
+        return (int) commitStepSelector.getValue();
+    }
+
+    public JTable getMappingTable() {
+        return columnMappingTable;
+    }
+
+    public DefaultProgressDialog getProgressDialog() {
+        return progressDialog;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    // ---
 
     @Override
     public String getDisplayName() {

@@ -26,6 +26,7 @@ import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.Vector;
@@ -149,6 +150,18 @@ public final class WidgetFactory {
         spinnerModel.setValue(val);
 
         return createSpinner(name, spinnerModel);
+    }
+
+    public static JTable createTable(String name) {
+        JTable table = new JTable();
+        table.setName(name);
+        return table;
+    }
+
+    public static JTable createTable(String name, TableModel model) {
+        JTable table = new JTable(model);
+        table.setName(name);
+        return table;
     }
 
     public static void addLabelFieldPair(JPanel panel, String label,

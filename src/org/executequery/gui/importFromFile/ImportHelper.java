@@ -17,9 +17,24 @@ interface ImportHelper {
             DefaultStatementExecutor executor
     );
 
+    void startImport(
+            StringBuilder sourceColumnList,
+            boolean[] valuesIndexes,
+            PreparedStatement insertStatement,
+            DefaultStatementExecutor executor,
+            int firstRow,
+            int lastRow,
+            int batchStep,
+            JTable mappingTable,
+            DefaultProgressDialog progressDialog
+    ) throws Exception;
+
     List<String> getPreviewData() throws IOException;
 
     List<String> getHeaders();
 
     int getColumnsCount();
+
+    String getDelimiter();
+
 }

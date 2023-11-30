@@ -1,33 +1,29 @@
 package org.executequery.gui.importFromFile;
 
-import org.executequery.GUIUtilities;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.DefaultProgressDialog;
-import org.underworldlabs.swing.plaf.UIUtils;
-import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-class ImportHelperCSV extends AbstractImportHelper {
+public class ImportHelperXLSX extends AbstractImportHelper {
 
-    private final String delimiter;
+    private static final String DELIMITER = ";;;";
 
-    public ImportHelperCSV(ImportDataFromFilePanel parent, String pathToFile, int previewRowCount, boolean isFirstRowHeaders) {
+    public ImportHelperXLSX(ImportDataFromFilePanel parent, String pathToFile, int previewRowCount, boolean isFirstRowHeaders) {
         super(parent, pathToFile, previewRowCount, isFirstRowHeaders);
-        delimiter = parent.getDelimiter();
     }
 
     @Override
@@ -42,17 +38,13 @@ class ImportHelperCSV extends AbstractImportHelper {
             JTable mappingTable,
             DefaultProgressDialog progressDialog) throws Exception {
 
-        Statement sourceFileStatement = getCreateStatement();
-        if (sourceFileStatement == null)
-            return;
+        XSSFWorkbook workbook = new XSSFWorkbook(Files.newInputStream(Paths.get(pathToFile)));
+        XSSFSheet sheet = workbook.getSheetAt(parent.getSheetNumber() - 1);
 
-        String[] sourceFields = sourceColumnList.toString().split(",");
         int executorIndex = 0;
         int linesCount = 0;
 
-        String sourceSelectQuery = "SELECT " + sourceColumnList + " FROM " + MiscUtils.getFormattedObject(parent.getFileName(), executor.getDatabaseConnection());
-        ResultSet sourceFileData = sourceFileStatement.executeQuery(sourceSelectQuery);
-        while (sourceFileData.next()) {
+        for (int rowIndex = 0; rowIndex < sheet.getLastRowNum(); rowIndex++) {
 
             if (progressDialog.isCancel() || linesCount >= lastRow)
                 break;
@@ -62,22 +54,34 @@ class ImportHelperCSV extends AbstractImportHelper {
                 continue;
             }
 
+            XSSFRow row = sheet.getRow(rowIndex);
+            if (row == null) {
+                linesCount++;
+                continue;
+            }
+
             int fieldIndex = 0;
             int mappedIndex = 0;
+            String[] sourceColumns = sourceColumnList.toString().split(",");
+
             for (boolean valueIndex : valuesIndexes) {
                 if (valueIndex) {
 
                     int columnType = insertStatement.getParameterMetaData().getParameterType(fieldIndex + 1);
                     String columnTypeName = insertStatement.getParameterMetaData().getParameterTypeName(fieldIndex + 1);
                     String columnProperty = mappingTable.getValueAt(mappedIndex, 3).toString();
+                    int sourceColumnIndex = parent.getSourceColumnIndex(sourceColumns[fieldIndex]);
 
-                    Object insertParameter = sourceFileData.getString(sourceFields[fieldIndex]);
+                    Object insertParameter = row.getCell(sourceColumnIndex);
                     if (insertParameter == null || insertParameter.toString().isEmpty()) {
                         insertStatement.setNull(fieldIndex + 1, columnType);
 
                     } else {
 
-                        if (parent.isTimeType(columnTypeName)) {
+                        if (parent.isIntegerType(columnTypeName)) {
+                            insertParameter = insertParameter.toString().split("\\.")[0].trim();
+
+                        } else if (parent.isTimeType(columnTypeName)) {
                             insertParameter = LocalDateTime.parse(insertParameter.toString(), DateTimeFormatter.ofPattern(columnProperty));
 
                         } else if (parent.isBlobType(columnTypeName) && columnProperty.equals("true")) {
@@ -109,57 +113,47 @@ class ImportHelperCSV extends AbstractImportHelper {
     @Override
     public List<String> getPreviewData() throws IOException {
 
+        XSSFWorkbook workbook = new XSSFWorkbook(Files.newInputStream(Paths.get(pathToFile)));
+
+        JSpinner sheetNumberSpinner = parent.getSheetNumberSpinner();
+        ((SpinnerNumberModel) sheetNumberSpinner.getModel()).setMaximum(workbook.getNumberOfSheets());
+
         List<String> readData = new LinkedList<>();
-        try (
-                FileReader reader = new FileReader(pathToFile);
-                Scanner scanner = new Scanner(reader)
-        ) {
+        XSSFSheet sheet = workbook.getSheetAt(parent.getSheetNumber() - 1);
 
-            for (int rowIndex = 0; rowIndex < previewRowCount && scanner.hasNextLine(); rowIndex++) {
+        for (int rowIndex = 0; rowIndex < previewRowCount && rowIndex < sheet.getLastRowNum(); rowIndex++) {
 
-                if (rowIndex == 0 && isFirstRowHeaders) {
-                    createHeaders(Arrays.asList(scanner.nextLine().split(delimiter)));
-                    continue;
-                }
-
-                readData.add(scanner.nextLine());
+            String stringRow = String.join(DELIMITER, getRowData(sheet.getRow(rowIndex)));
+            if (rowIndex == 0 && isFirstRowHeaders) {
+                createHeaders(Arrays.asList(stringRow.split(DELIMITER)));
+                continue;
             }
+
+            readData.add(stringRow);
         }
 
         if (!isFirstRowHeaders)
-            createHeaders(readData.get(0).split(delimiter).length);
+            createHeaders(readData.get(0).split(DELIMITER).length);
 
         return readData;
     }
 
     @Override
     public String getDelimiter() {
-        return delimiter;
+        return DELIMITER;
     }
 
-    private Statement getCreateStatement() {
+    private List<String> getRowData(XSSFRow row) {
 
-        Statement statement = null;
-        try {
-
-            Properties properties = new Properties();
-            properties.setProperty("separator", delimiter);
-            if (!isFirstRowHeaders) {
-                properties.setProperty("suppressHeaders", "true");
-                properties.setProperty("defectiveHeaders", "true");
+        List<String> rowData = new LinkedList<>();
+        if (row != null) {
+            for (int colIndex = 0; colIndex < row.getLastCellNum(); colIndex++) {
+                XSSFCell sheetCell = row.getCell(colIndex);
+                rowData.add(sheetCell != null ? sheetCell.toString() : "");
             }
-
-            String connectionUrl = "jdbc:relique:csv:" + Paths.get(pathToFile).getParent().toString();
-            if (UIUtils.isWindows())
-                connectionUrl = connectionUrl.replace("\\", "/");
-
-            statement = DriverManager.getConnection(connectionUrl, properties).createStatement();
-
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
         }
 
-        return statement;
+        return rowData;
     }
 
 }

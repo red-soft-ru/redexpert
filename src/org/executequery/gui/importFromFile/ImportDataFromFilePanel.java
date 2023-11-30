@@ -34,6 +34,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.PreparedStatement;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
@@ -58,7 +59,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private JComboBox tableCombo;
     private JTextField fileNameField;
     private JComboBox delimiterCombo;
-    private JLabel delimiterLabel;
+    private JSpinner sheetNumberSpinner;
+    private JLabel propertyLabel;
     private JCheckBox firstRowIsNamesCheck;
     private JCheckBox eraseTableCheck;
     private JSpinner firstImportedRowSelector;
@@ -82,6 +84,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private DefaultDatabaseHost dbHost;
     private ImportHelper importHelper;
+    private List<String> sourceHeaders;
     private String pathToFile;
     private String fileName;
     private String fileType;
@@ -123,6 +126,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         firstImportedRowSelector = WidgetFactory.createSpinner("firstImportedRowSelector", 0, 0, Integer.MAX_VALUE, 1);
         lastImportedRowSelector = WidgetFactory.createSpinner("lastImportedRowSelector", 999999999, 0, Integer.MAX_VALUE, 1);
         commitStepSelector = WidgetFactory.createSpinner("commitStepSelector", 100, 100, 1000000, 100);
+
+        sheetNumberSpinner = WidgetFactory.createSpinner("sheetNumberSpinner", 1, 1, 1, 1);
+        sheetNumberSpinner.addChangeListener(e -> openSourceFile(false));
+        sheetNumberSpinner.setVisible(false);
 
         // --- data preview table ---
 
@@ -176,8 +183,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         fileNameField = WidgetFactory.createTextField("fileNameField");
 
-        delimiterLabel = new JLabel(bundleString("DelimiterLabel"));
-        delimiterLabel.setVisible(false);
+        propertyLabel = new JLabel();
+        propertyLabel.setVisible(false);
 
         // ---
 
@@ -209,8 +216,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         previewPanel.add(readFileButton, gridBagHelper.nextCol().get());
         previewPanel.add(dataPreviewScrollPane, gridBagHelper.nextRowFirstCol().fillBoth().setMaxWeightY().spanX().get());
         previewPanel.add(firstRowIsNamesCheck, gridBagHelper.nextRowFirstCol().setMinWeightY().setWidth(2).get());
-        previewPanel.add(delimiterLabel, gridBagHelper.nextCol().get());
+        previewPanel.add(propertyLabel, gridBagHelper.nextCol().get());
         previewPanel.add(delimiterCombo, gridBagHelper.nextCol().get());
+        previewPanel.add(sheetNumberSpinner, gridBagHelper.get());
 
         // --- mapping panel ---
 
@@ -275,7 +283,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         openSourceFile(true);
     }
 
-    private void openSourceFile(boolean displayWarnings) {
+    private synchronized void openSourceFile(boolean displayWarnings) {
 
         if (fileNameField.getText().isEmpty()) {
             if (displayWarnings)
@@ -284,16 +292,18 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         }
 
         File sourceFile = new File(fileNameField.getText());
+        String oldPathToFile = pathToFile;
         pathToFile = sourceFile.getAbsolutePath();
         fileName = FilenameUtils.getBaseName(sourceFile.getName());
         fileType = FileNameUtils.getExtension(sourceFile.getName());
 
         if (!fileType.equalsIgnoreCase("csv")
+                && !fileType.equalsIgnoreCase("xlsx")
 //                && !fileType.equalsIgnoreCase("xml")
-//                && !fileType.equalsIgnoreCase("xlsx")
         ) {
             if (displayWarnings)
                 GUIUtilities.displayWarningMessage(bundleString("FileTypeNotSupported"));
+            fileNameField.setText(oldPathToFile != null ? oldPathToFile : "");
             return;
         }
 
@@ -301,13 +311,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         if (importHelper == null)
             return;
 
-        dataPreviewTableModel.setColumnCount(0);
-        dataPreviewTableModel.setRowCount(0);
-
         try {
             List<String> readData = importHelper.getPreviewData();
 
-            for (String header : importHelper.getHeaders()) {
+            dataPreviewTableModel.setColumnCount(0);
+            dataPreviewTableModel.setRowCount(0);
+
+            sourceHeaders = new LinkedList<>(importHelper.getHeaders());
+            for (String header : sourceHeaders) {
                 dataPreviewTableModel.addColumn(header);
                 dataPreviewTable.getColumn(header).setMinWidth(MIN_COLUMN_WIDTH);
             }
@@ -319,8 +330,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
             for (int i = 0; i < PREVIEW_ROWS_COUNT && i < readData.size(); i++)
                 if (readData.get(i) != null)
-                    dataPreviewTableModel.addRow(readData.get(i).split(
-                            (String) Objects.requireNonNull(delimiterCombo.getSelectedItem())));
+                    dataPreviewTableModel.addRow(readData.get(i).split(importHelper.getDelimiter()));
 
         } catch (FileNotFoundException e) {
             if (displayWarnings)
@@ -331,8 +341,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 GUIUtilities.displayWarningMessage(bundleString("FileReadingErrorMessage") + "\n" + e.getMessage());
         }
 
-        delimiterLabel.setVisible(fileType.equalsIgnoreCase("csv"));
+        propertyLabel.setVisible(fileType.equalsIgnoreCase("csv") || fileType.equalsIgnoreCase("xlsx"));
+        propertyLabel.setText(fileType.equalsIgnoreCase("csv") ?
+                bundleString("DelimiterLabel") :
+                bundleString("SheetNumberLabel")
+        );
+
         delimiterCombo.setVisible(fileType.equalsIgnoreCase("csv"));
+        sheetNumberSpinner.setVisible(fileType.equalsIgnoreCase("xlsx"));
 
         updateMappingTable();
     }
@@ -506,8 +522,16 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 );
                 break;
 
-            case ("xml"):
             case ("xlsx"):
+                importHelper = new ImportHelperXLSX(
+                        this,
+                        pathToFile,
+                        PREVIEW_ROWS_COUNT,
+                        firstRowIsNamesCheck.isSelected()
+                );
+                break;
+
+            case ("xml"):
         }
 
         return importHelper;
@@ -574,6 +598,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         return false;
     }
 
+    public boolean isIntegerType(String type) {
+        return type.toUpperCase().contains("INT");
+    }
+
     public boolean isTimeType(String type) {
         return Objects.equals(type, "DATE") ||
                 Objects.equals(type, "TIME") ||
@@ -602,8 +630,25 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         return (int) commitStepSelector.getValue();
     }
 
+    public int getSheetNumber() {
+        return (int) sheetNumberSpinner.getValue();
+    }
+
+    public int getSourceColumnIndex(String header) {
+
+        for (int i = 0; i < sourceHeaders.size(); i++)
+            if (sourceHeaders.get(i).equals(header))
+                return i;
+
+        return -1;
+    }
+
     public JTable getMappingTable() {
         return columnMappingTable;
+    }
+
+    public JSpinner getSheetNumberSpinner() {
+        return sheetNumberSpinner;
     }
 
     public DefaultProgressDialog getProgressDialog() {

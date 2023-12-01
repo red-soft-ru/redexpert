@@ -29,7 +29,7 @@ interface ImportHelper {
             DefaultProgressDialog progressDialog
     ) throws Exception;
 
-    List<String> getPreviewData() throws IOException;
+    List<String> getPreviewData() throws Exception;
 
     List<String> getHeaders();
 

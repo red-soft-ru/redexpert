@@ -299,7 +299,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         if (!fileType.equalsIgnoreCase("csv")
                 && !fileType.equalsIgnoreCase("xlsx")
-//                && !fileType.equalsIgnoreCase("xml")
+                && !fileType.equalsIgnoreCase("xml")
         ) {
             if (displayWarnings)
                 GUIUtilities.displayWarningMessage(bundleString("FileTypeNotSupported"));
@@ -341,7 +341,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 GUIUtilities.displayWarningMessage(bundleString("FileReadingErrorMessage") + "\n" + e.getMessage());
         }
 
-        propertyLabel.setVisible(fileType.equalsIgnoreCase("csv") || fileType.equalsIgnoreCase("xlsx"));
+        propertyLabel.setVisible(!fileType.equalsIgnoreCase("xml"));
         propertyLabel.setText(fileType.equalsIgnoreCase("csv") ?
                 bundleString("DelimiterLabel") :
                 bundleString("SheetNumberLabel")
@@ -349,6 +349,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         delimiterCombo.setVisible(fileType.equalsIgnoreCase("csv"));
         sheetNumberSpinner.setVisible(fileType.equalsIgnoreCase("xlsx"));
+        firstRowIsNamesCheck.setVisible(!fileType.equalsIgnoreCase("xml"));
 
         updateMappingTable();
     }
@@ -532,6 +533,13 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 break;
 
             case ("xml"):
+                importHelper = new ImportHelperXML(
+                        this,
+                        pathToFile,
+                        PREVIEW_ROWS_COUNT,
+                        firstRowIsNamesCheck.isSelected()
+                );
+                break;
         }
 
         return importHelper;

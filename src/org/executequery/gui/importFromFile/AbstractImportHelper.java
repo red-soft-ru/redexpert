@@ -17,6 +17,7 @@ abstract class AbstractImportHelper implements ImportHelper {
     protected final boolean isFirstRowHeaders;
     protected final int previewRowCount;
     protected final String pathToFile;
+    protected String delimiter = ";;;";
 
     protected AbstractImportHelper(ImportDataFromFilePanel parent, String pathToFile, int previewRowCount, boolean isFirstRowHeaders) {
         this.headers = new LinkedList<>();
@@ -80,6 +81,11 @@ abstract class AbstractImportHelper implements ImportHelper {
     @Override
     public final int getColumnsCount() {
         return headers.size();
+    }
+
+    @Override
+    public String getDelimiter() {
+        return delimiter;
     }
 
 }

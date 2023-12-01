@@ -20,8 +20,6 @@ import java.util.*;
 
 public class ImportHelperXLSX extends AbstractImportHelper {
 
-    private static final String DELIMITER = ";;;";
-
     public ImportHelperXLSX(ImportDataFromFilePanel parent, String pathToFile, int previewRowCount, boolean isFirstRowHeaders) {
         super(parent, pathToFile, previewRowCount, isFirstRowHeaders);
     }
@@ -123,9 +121,9 @@ public class ImportHelperXLSX extends AbstractImportHelper {
 
         for (int rowIndex = 0; rowIndex < previewRowCount && rowIndex < sheet.getLastRowNum(); rowIndex++) {
 
-            String stringRow = String.join(DELIMITER, getRowData(sheet.getRow(rowIndex)));
+            String stringRow = String.join(delimiter, getRowData(sheet.getRow(rowIndex)));
             if (rowIndex == 0 && isFirstRowHeaders) {
-                createHeaders(Arrays.asList(stringRow.split(DELIMITER)));
+                createHeaders(Arrays.asList(stringRow.split(delimiter)));
                 continue;
             }
 
@@ -133,14 +131,9 @@ public class ImportHelperXLSX extends AbstractImportHelper {
         }
 
         if (!isFirstRowHeaders)
-            createHeaders(readData.get(0).split(DELIMITER).length);
+            createHeaders(readData.get(0).split(delimiter).length);
 
         return readData;
-    }
-
-    @Override
-    public String getDelimiter() {
-        return DELIMITER;
     }
 
     private List<String> getRowData(XSSFRow row) {

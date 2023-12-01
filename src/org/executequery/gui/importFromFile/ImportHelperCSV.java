@@ -23,8 +23,6 @@ import java.util.*;
 
 class ImportHelperCSV extends AbstractImportHelper {
 
-    private final String delimiter;
-
     public ImportHelperCSV(ImportDataFromFilePanel parent, String pathToFile, int previewRowCount, boolean isFirstRowHeaders) {
         super(parent, pathToFile, previewRowCount, isFirstRowHeaders);
         delimiter = parent.getDelimiter();
@@ -130,11 +128,6 @@ class ImportHelperCSV extends AbstractImportHelper {
             createHeaders(readData.get(0).split(delimiter).length);
 
         return readData;
-    }
-
-    @Override
-    public String getDelimiter() {
-        return delimiter;
     }
 
     private Statement getCreateStatement() {

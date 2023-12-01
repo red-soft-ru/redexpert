@@ -310,7 +310,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 tablesField.setText(sb.toString());
             }
         };
-        diffTextPanel = new DifferenceTextPanel("old", "new");
+        diffTextPanel = new DifferenceTextPanel("new", "old");
         compareTablesPanel = new CompareStatisticTablePanel();
         compareTablesPanel.initModel(StatisticTablePanel.TABLE);
         compareIndexesPanel = new CompareStatisticTablePanel();
@@ -475,7 +475,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 indexesPanel.setRows(parserParameters.db.indices);
             }
             for (int i = 0; i < 3; i++)
-                tabPane.remove(1);
+                tabPane.removeTabAt(1);
             tabPane.add(bundleString("tabText"), textPanel);
             tabPane.add(bundleString("tables"), tablesPanel);
             tabPane.add(bundleString("indices"), indexesPanel);
@@ -486,7 +486,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
             compareTablesPanel.setRows(resultStatDB.tables);
             compareIndexesPanel.setRows(resultStatDB.indices);
             for (int i = 0; i < 3; i++)
-                tabPane.remove(1);
+                tabPane.removeTabAt(1);
             tabPane.add(bundleString("tabText"), diffTextPanel);
             tabPane.add(bundleString("tables"), compareTablesPanel);
             tabPane.add(bundleString("indices"), compareIndexesPanel);

@@ -47,6 +47,8 @@ public abstract class TableModelObject {
                 return Float.class;
             case "l":
                 return List.class;
+            case "f+":
+                return Double.class;
             default:
                 return Object.class;
         }

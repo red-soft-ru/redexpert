@@ -5,6 +5,7 @@ public class StatIndex extends StatTableIndex {
     public static final String[][] ITEMS_IDX = {
             {"Index name:", "s", "name"},
             {"Table name:", "s", "table_name"},
+            {"Real selectivity:", "f+", "real_selectivity"},
             {"Average data length:", "f", "avg_data_length"},
             {"total dup:", "i", null},
             {"max dup:", "i", null},
@@ -26,6 +27,7 @@ public class StatIndex extends StatTableIndex {
     public StatTable table;
     public String name;
     public String table_name;
+    public double real_selectivity;
     public int indexId;
     public int depth;
     public int leaf_buckets;
@@ -184,6 +186,8 @@ public class StatIndex extends StatTableIndex {
         table_name = table.name;
         full_size = (long) (leaf_buckets * Math.pow(1 + (avg_node_length / page_size), depth - 1));
         full_size *= page_size;
+        int temp = nodes - total_dup;
+        real_selectivity = (1 / (double) temp);
     }
 
     @Override

@@ -576,4 +576,8 @@ public class StatDatabase extends TableModelObject {
 
     }
 
+    public String toString() {
+        return getExecuted() + " " + getFilename();
+    }
+
 }

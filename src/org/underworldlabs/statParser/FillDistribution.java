@@ -1,11 +1,11 @@
 package org.underworldlabs.statParser;
 
 public class FillDistribution {
-    int range_0_19;
-    int range_20_39;
-    int range_40_59;
-    int range_60_79;
-    int range_80_99;
+    public int range_0_19;
+    public int range_20_39;
+    public int range_40_59;
+    public int range_60_79;
+    public int range_80_99;
 
     public FillDistribution() {
     }

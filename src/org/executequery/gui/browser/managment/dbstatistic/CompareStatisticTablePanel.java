@@ -22,6 +22,7 @@ public class CompareStatisticTablePanel extends StatisticTablePanel {
         table.setDefaultRenderer(Long.class, renderer);
         table.setDefaultRenderer(Float.class, renderer);
         table.setDefaultRenderer(String.class, renderer);
+        table.setDefaultRenderer(Double.class, renderer);
     }
 
     class CompareTableCellRenderer extends DefaultTableCellRenderer {

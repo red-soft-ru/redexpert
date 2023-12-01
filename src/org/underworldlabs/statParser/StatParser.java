@@ -92,6 +92,10 @@ public class StatParser {
             } else if (parserParameters.step == 4) {
                 if (MiscUtils.isNull(line)) {
                     parserParameters.new_block = true;
+                    if (parserParameters.index != null) {
+                        parserParameters.index.page_size = db.page_size;
+                        parserParameters.index.calculateValues();
+                    }
                 } else {
                     if (parserParameters.new_block) {
                         parserParameters.new_block = false;

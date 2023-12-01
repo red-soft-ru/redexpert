@@ -4,7 +4,6 @@ import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.browser.TraceManagerPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -54,7 +53,7 @@ public abstract class AbstractServiceManagerPanel extends AbstractPanel {
     }
 
     public static String bundleString(String key) {
-        return Bundles.get(TraceManagerPanel.class, key);
+        return Bundles.get(AbstractServiceManagerPanel.class, key);
     }
 
     protected void initComponents() {
@@ -187,6 +186,12 @@ public abstract class AbstractServiceManagerPanel extends AbstractPanel {
     }
 
     public class ServiceOutputStream extends PipedOutputStream {
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            fileLog.write(b, off, len);
+            super.write(b, off, len);
+        }
+
         @Override
         public void write(int b) throws IOException {
             fileLog.write(b);

@@ -14,12 +14,13 @@ import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.AbstractServiceManagerPanel;
+import org.executequery.gui.browser.managment.dbstatistic.CompareStatisticTablePanel;
 import org.executequery.gui.browser.managment.dbstatistic.StatisticTablePanel;
+import org.executequery.gui.text.DifferenceTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.util.UserProperties;
-import org.underworldlabs.statParser.StatDatabase;
-import org.underworldlabs.statParser.StatParser;
+import org.underworldlabs.statParser.*;
 import org.underworldlabs.swing.AbstractPanel;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -33,10 +34,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implements TabView {
     public static final String TITLE = Bundles.get(DatabaseStatisticPanel.class, "title");
@@ -46,7 +51,9 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
     SimpleTextArea textPanel;
     private JButton getStatButton;
     StatisticTablePanel tablesPanel;
+    protected JButton fileStatButton2;
     StatisticTablePanel indexesPanel;
+    protected JTextField fileStatField2;
     protected JCheckBox defaultStatCheckBox;
     protected JCheckBox tableStatBox;
     protected JCheckBox indexStatBox;
@@ -58,7 +65,12 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
     ListSelectionPanel tablesStatPanel;
     ItemListener itemListener;
     ActionListener okListener;
-
+    protected StatDatabase mainStatDb;
+    protected StatDatabase compareStatDb;
+    protected StatDatabase resultStatDB;
+    CompareStatisticTablePanel compareTablesPanel;
+    CompareStatisticTablePanel compareIndexesPanel;
+    DifferenceTextPanel diffTextPanel;
 
     @Override
     public boolean tabViewClosing() {
@@ -80,51 +92,23 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         initStatManager(null);
         fileStatButton = WidgetFactory.createButton("fileStatButton", "...");
         fileStatField = WidgetFactory.createTextField("fileStatField");
+        fileStatButton2 = WidgetFactory.createButton("fileStatButton2", "...");
+        fileStatField2 = WidgetFactory.createTextField("fileStatField2");
         textPanel = new SimpleTextArea();
         fileStatButton.addActionListener(new ActionListener() {
             final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChooser.showOpenDialog(fileStatButton);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    SwingWorker sw = new SwingWorker("loadStatisticFromFile") {
-                        @Override
-                        public Object construct() {
-                            fileStatField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-                            clearAll();
-                            BufferedReader reader = null;
-                            try {
-                                reader = new BufferedReader(
-                                        new InputStreamReader(
-                                                Files.newInputStream(Paths.get(fileStatField.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
-                                readFromBufferedReader(reader, true);
-                            } catch (Exception e1) {
-                                GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
-                            } finally {
-                                if (reader != null) {
-                                    try {
-                                        reader.close();
-                                    } catch (IOException e1) {
-                                    }
-                                }
-                            }
-                            return null;
-                        }
+                loadFromFile(fileChooser, fileStatButton, fileStatField, false);
+            }
+        });
+        fileStatButton2.addActionListener(new ActionListener() {
+            final FileChooserDialog fileChooser = new FileChooserDialog();
 
-                        @Override
-                        public void finished() {
-                            GUIUtilities.showNormalCursor();
-                            tabPane.setEnabled(true);
-
-                        }
-                    };
-                    GUIUtilities.showWaitCursor();
-                    tabPane.setEnabled(false);
-                    sw.start();
-
-                }
-                tabPane.setSelectedComponent(textPanel);
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                loadFromFile(fileChooser, fileStatButton2, fileStatField2, true);
             }
         });
         getStatButton = WidgetFactory.createButton("getStatButton", bundleString("Start"));
@@ -287,20 +271,20 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 }
             }
         };
-        defaultStatCheckBox = WidgetFactory.createCheckBox("defaultStatCheckBox", "default");
+        defaultStatCheckBox = WidgetFactory.createCheckBox("defaultStatCheckBox", bundleString("default"));
         defaultStatCheckBox.setSelected(true);
         defaultStatCheckBox.addItemListener(itemListener);
-        tableStatBox = WidgetFactory.createCheckBox("tableStatBox", "tables");
+        tableStatBox = WidgetFactory.createCheckBox("tableStatBox", bundleString("tables"));
         tableStatBox.addItemListener(itemListener);
-        indexStatBox = WidgetFactory.createCheckBox("indexStatBox", "indexes");
+        indexStatBox = WidgetFactory.createCheckBox("indexStatBox", bundleString("indices"));
         indexStatBox.addItemListener(itemListener);
-        systemTableStatBox = WidgetFactory.createCheckBox("systemTableStatBox", "systemTables");
+        systemTableStatBox = WidgetFactory.createCheckBox("systemTableStatBox", bundleString("systemTables"));
         systemTableStatBox.addItemListener(itemListener);
-        recordVersionsStatBox = WidgetFactory.createCheckBox("recordVersionsStatBox", "recordVersions");
+        recordVersionsStatBox = WidgetFactory.createCheckBox("recordVersionsStatBox", bundleString("recordVersions"));
         recordVersionsStatBox.addItemListener(itemListener);
-        headerPageStatBox = WidgetFactory.createCheckBox("headerPageStatBox", "headerPage");
+        headerPageStatBox = WidgetFactory.createCheckBox("headerPageStatBox", bundleString("headerPage"));
         headerPageStatBox.addItemListener(itemListener);
-        onlySelectTablesBox = WidgetFactory.createCheckBox("onlySelectTablesBox", "onlySelectedTables");
+        onlySelectTablesBox = WidgetFactory.createCheckBox("onlySelectTablesBox", bundleString("onlySelectedTables"));
         onlySelectTablesBox.addItemListener(itemListener);
         onlySelectTablesBox.setEnabled(false);
         tablesStatPanel = new ListSelectionPanel();
@@ -326,7 +310,56 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 tablesField.setText(sb.toString());
             }
         };
+        diffTextPanel = new DifferenceTextPanel("old", "new");
+        compareTablesPanel = new CompareStatisticTablePanel();
+        compareTablesPanel.initModel(StatisticTablePanel.TABLE);
+        compareIndexesPanel = new CompareStatisticTablePanel();
+        compareIndexesPanel.initModel(StatisticTablePanel.INDEX);
 
+    }
+
+    protected void loadFromFile(FileChooserDialog fileChooser, JButton fileStatButton, JTextField fileStatFieldX, boolean compare) {
+        int returnVal = fileChooser.showOpenDialog(fileStatButton);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            SwingWorker sw = new SwingWorker("loadStatisticFromFile") {
+                @Override
+                public Object construct() {
+                    fileStatFieldX.setText(fileChooser.getSelectedFile().getAbsolutePath());
+                    clearAll();
+                    BufferedReader reader = null;
+                    try {
+                        reader = new BufferedReader(
+                                new InputStreamReader(
+                                        Files.newInputStream(Paths.get(fileStatFieldX.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
+                        readFromBufferedReader(reader, compare);
+                    } catch (Exception e1) {
+                        GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
+                    } finally {
+                        if (reader != null) {
+                            try {
+                                reader.close();
+                            } catch (IOException e1) {
+                            }
+                        }
+                    }
+                    return null;
+                }
+
+                @Override
+                public void finished() {
+                    GUIUtilities.showNormalCursor();
+                    tabPane.setEnabled(true);
+                    if (compare)
+                        tabPane.setSelectedComponent(diffTextPanel);
+                    else tabPane.setSelectedComponent(textPanel);
+
+                }
+            };
+            GUIUtilities.showWaitCursor();
+            tabPane.setEnabled(false);
+            sw.start();
+
+        }
     }
 
     @Override
@@ -359,16 +392,25 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
     @Override
     protected void arrangeComponents() {
+        gbh.insertEmptyRow(this, 5);
+        gbh.nextRowFirstCol();
         JLabel label = new JLabel(bundleString("OpenFileLog"));
         add(label, gbh.setLabelDefault().get());
         gbh.nextCol();
         gbh.addLabelFieldPair(this, fileStatButton, fileStatField, null, false, false);
+        label = new JLabel(bundleString("compareWith"));
+        add(label, gbh.nextCol().setLabelDefault().get());
+        gbh.nextCol();
+        gbh.addLabelFieldPair(this, fileStatButton2, fileStatField2, null, false, false);
         add(tabPane, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
         gbh.fullDefaults();
         tabPane.add(bundleString("Connection"), connectionPanel);
-        tabPane.add(bundleString("Text"), textPanel);
-        tabPane.add("tables", tablesPanel);
-        tabPane.add("indices", indexesPanel);
+        tabPane.add(bundleString("tabText"), textPanel);
+        tabPane.add(bundleString("tables"), tablesPanel);
+        tabPane.add(bundleString("indices"), indexesPanel);
+        /*tabPane.add("compareText",diffTextPanel);
+        tabPane.add("compareTables",compareTablesPanel);
+        tabPane.add("compareIndices",compareIndexesPanel);*/
         connectionPanel.setLayout(new GridBagLayout());
         gbh.fullDefaults();
         gbh.addLabelFieldPair(connectionPanel, bundleString("Connections"), databaseBox, null, true, true);
@@ -406,22 +448,154 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         }
     }
 
-    private void readFromBufferedReader(BufferedReader reader, boolean fromFile) {
-        String line;
+    private void readFromBufferedReader(BufferedReader reader, boolean compare) {
+        String line = null;
         StatParser.ParserParameters parserParameters = new StatParser.ParserParameters();
         parserParameters.db = new StatDatabase();
         while (true) {
             try {
                 if ((line = reader.readLine()) == null)
                     break;
-                else parserParameters = StatParser.parse(parserParameters, line);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                else {
+                    if (parseBox.isSelected()) {
+                        parserParameters.db.sb.append(line).append("\n");
+                        parserParameters = StatParser.parse(parserParameters, line);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            textPanel.getTextAreaComponent().append(line + "\n");
+            if (!compare)
+                textPanel.getTextAreaComponent().append(line + "\n");
         }
-        tablesPanel.setRows(parserParameters.db.tables);
-        indexesPanel.setRows(parserParameters.db.indices);
+        if (!compare) {
+            if (parseBox.isSelected()) {
+                mainStatDb = parserParameters.db;
+                tablesPanel.setRows(parserParameters.db.tables);
+                indexesPanel.setRows(parserParameters.db.indices);
+            }
+            for (int i = 0; i < 3; i++)
+                tabPane.remove(1);
+            tabPane.add(bundleString("tabText"), textPanel);
+            tabPane.add(bundleString("tables"), tablesPanel);
+            tabPane.add(bundleString("indices"), indexesPanel);
+        } else {
+            compareStatDb = parserParameters.db;
+            diffTextPanel.setTexts(compareStatDb.sb.toString(), mainStatDb.sb.toString());
+            resultStatDB = compareDBS(mainStatDb, compareStatDb);
+            compareTablesPanel.setRows(resultStatDB.tables);
+            compareIndexesPanel.setRows(resultStatDB.indices);
+            for (int i = 0; i < 3; i++)
+                tabPane.remove(1);
+            tabPane.add(bundleString("tabText"), diffTextPanel);
+            tabPane.add(bundleString("tables"), compareTablesPanel);
+            tabPane.add(bundleString("indices"), compareIndexesPanel);
+        }
+    }
+
+    protected StatDatabase compareDBS(StatDatabase mainDb, StatDatabase compareDb) {
+        StatDatabase db = new StatDatabase();
+        db = (StatDatabase) compareObjects(mainDb, compareDb, db);
+        /*db.indices=new ArrayList<>();
+        db.tables=new ArrayList<>();*/
+        List<StatTable> firstList = new ArrayList<>();
+        firstList.addAll(mainDb.tables);
+        List<StatTable> secondList = new ArrayList<>();
+        secondList.addAll(compareDb.tables);
+        for (StatTable table : firstList) {
+            boolean finded = false;
+            for (StatTable table2 : secondList) {
+                if (table.getName().contentEquals(table2.getName())) {
+                    finded = true;
+                    StatTable res = new StatTable();
+                    res.name = table.name;
+                    res = (StatTable) compareObjects(table, table2, res);
+                    res.setCompared(TableModelObject.NOT_CHANGED);
+                    res.indices = new ArrayList<>();
+                    if (table2.indices != null)
+                        res.indices.addAll(table2.indices);
+                    db.tables.add(res);
+                    secondList.remove(table2);
+                    break;
+                }
+
+
+            }
+            if (!finded) {
+                table.setCompared(TableModelObject.DELETED);
+                db.tables.add(table);
+            }
+
+        }
+        for (StatTable table : secondList) {
+
+            table.setCompared(TableModelObject.ADDED);
+            db.tables.add(table);
+        }
+        List<StatIndex> firstListInd = new ArrayList<>();
+        firstListInd.addAll(mainDb.indices);
+        List<StatIndex> secondListInd = new ArrayList<>();
+        secondListInd.addAll(compareDb.indices);
+        for (StatIndex index : firstListInd) {
+            boolean finded = false;
+            for (StatIndex index1 : secondListInd) {
+                if (index.getName().contentEquals(index1.getName())) {
+                    finded = true;
+                    StatIndex res = new StatIndex(index1.table);
+                    res.name = index.name;
+                    res = (StatIndex) compareObjects(index, index1, res);
+                    res.setCompared(TableModelObject.NOT_CHANGED);
+                    db.indices.add(res);
+                    secondListInd.remove(index1);
+                    break;
+                }
+
+
+            }
+            if (!finded) {
+                index.setCompared(TableModelObject.DELETED);
+                db.indices.add(index);
+            }
+
+        }
+        for (StatIndex index : secondListInd) {
+
+            index.setCompared(TableModelObject.ADDED);
+            db.indices.add(index);
+        }
+        return db;
+    }
+
+    protected TableModelObject compareObjects(TableModelObject first, TableModelObject second, TableModelObject result) {
+        Class clazz = result.getClass();
+        Field[] fields = clazz.getFields();
+        for (Field field : fields) {
+            if ((field.getModifiers() & Modifier.FINAL) == Modifier.FINAL)
+                continue;
+            String typeName = field.getGenericType().getTypeName();
+            if (typeName.contentEquals("int")) {
+                try {
+                    field.setInt(result, field.getInt(second) - field.getInt(first));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (typeName.contentEquals("long")) {
+                try {
+                    field.setLong(result, field.getLong(second) - field.getLong(first));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (typeName.contentEquals("float")) {
+                try {
+                    field.setFloat(result, field.getFloat(second) - field.getFloat(first));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return result;
     }
 
     void clearAll() {

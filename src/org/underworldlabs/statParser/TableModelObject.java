@@ -6,6 +6,11 @@ import java.util.List;
 
 public abstract class TableModelObject {
 
+    public static final int ADDED = 1;
+    public static final int DELETED = -1;
+    public static final int NOT_CHANGED = 0;
+    protected int compared;
+
     protected List<String> columns;
 
     protected abstract String[][] getItems();
@@ -22,7 +27,7 @@ public abstract class TableModelObject {
 
 
     public String getColumnName(int column) {
-        return getColumns().get(column);
+        return getColumns().get(column).toLowerCase();
     }
 
 
@@ -68,4 +73,14 @@ public abstract class TableModelObject {
         }
         return null;
     }
+
+    public int getCompared() {
+        return compared;
+    }
+
+    public void setCompared(int compared) {
+        this.compared = compared;
+    }
+
+    public abstract void calculateValues();
 }

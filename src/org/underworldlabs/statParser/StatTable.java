@@ -2,7 +2,7 @@ package org.underworldlabs.statParser;
 
 import java.util.List;
 
-public class StatTable extends TableModelObject {
+public class StatTable extends StatTableIndex {
     public static final String[][] ITEMS_TBL = {
             {"Table name:", "s", "name"},
             {"Primary pointer page:", "i", null},
@@ -64,7 +64,7 @@ public class StatTable extends TableModelObject {
     public int data_pages;
     public int data_page_slots;
     public int avg_fill;
-    public FillDistribution distribution;
+
     public List<StatIndex> indices;
     public int pointer_pages;
     public int total_formats;
@@ -184,14 +184,6 @@ public class StatTable extends TableModelObject {
 
     public void setAvg_fill(int avg_fill) {
         this.avg_fill = avg_fill;
-    }
-
-    public FillDistribution getDistribution() {
-        return distribution;
-    }
-
-    public void setDistribution(FillDistribution distribution) {
-        this.distribution = distribution;
     }
 
     public List<StatIndex> getIndices() {
@@ -352,6 +344,11 @@ public class StatTable extends TableModelObject {
 
     public void setLevel_2(int level_2) {
         this.level_2 = level_2;
+    }
+
+    @Override
+    public void calculateValues() {
+
     }
 
     @Override

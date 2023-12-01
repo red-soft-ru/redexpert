@@ -18,18 +18,22 @@ public class StatisticTablePanel extends AbstractPanel {
     public static final int TABLE = 1;
     public static final int INDEX = 2;
     JTable table;
-    StatisticTableModel model;
-    List rows;
+    protected StatisticTableModel model;
+    protected List rows;
+    JScrollPane scrollPane;
 
     @Override
     protected void initComponents() {
         table = WidgetFactory.createTable("StatisticTable");
         rows = new Vector();
+        scrollPane = new JScrollPane(table);
+
     }
 
     @Override
     protected void arrangeComponents() {
-        add(new JScrollPane(table), gbh.spanX().spanY().fillBoth().get());
+
+        add(scrollPane, gbh.spanX().spanY().fillBoth().get());
     }
 
     @Override

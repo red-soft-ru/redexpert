@@ -6,6 +6,7 @@ import java.util.List;
 
 public class StatDatabase extends TableModelObject {
 
+
     public static final String[][] ITEMS_HDR = {
             {"Flags", "i", null},
             {"Checksum", "i", null},
@@ -555,6 +556,8 @@ public class StatDatabase extends TableModelObject {
         this.autosweep_gap = autosweep_gap;
     }
 
+    public StringBuilder sb = new StringBuilder();
+
     public static class Variable {
         public String name;
         public String value;
@@ -567,4 +570,10 @@ public class StatDatabase extends TableModelObject {
     protected String[][] getItems() {
         return ITEMS_HDR;
     }
+
+    @Override
+    public void calculateValues() {
+
+    }
+
 }

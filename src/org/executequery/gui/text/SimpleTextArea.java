@@ -36,6 +36,12 @@ public class SimpleTextArea extends JPanel {
     private RSyntaxTextArea textArea;
     protected LineNumber lineBorder;
 
+
+    public SimpleTextArea(String label) {
+        this();
+        setBorder(BorderFactory.createTitledBorder(label));
+    }
+
     public SimpleTextArea() {
 
         super(new BorderLayout());
@@ -57,7 +63,7 @@ public class SimpleTextArea extends JPanel {
         this.add(scrollPane, BorderLayout.CENTER);
     }
 
-    public JTextArea getTextAreaComponent() {
+    public RSyntaxTextArea getTextAreaComponent() {
         return textArea;
     }
 

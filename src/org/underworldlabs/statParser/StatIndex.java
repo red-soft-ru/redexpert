@@ -1,11 +1,10 @@
 package org.underworldlabs.statParser;
 
-public class StatIndex extends TableModelObject {
+
+public class StatIndex extends StatTableIndex {
     public static final String[][] ITEMS_IDX = {
             {"Index name:", "s", "name"},
-            {"Depth:", "i", null},
-            {"leaf buckets:", "i", null},
-            {"nodes:", "i", null},
+            {"Table name:", "s", "table_name"},
             {"Average data length:", "f", "avg_data_length"},
             {"total dup:", "i", null},
             {"max dup:", "i", null},
@@ -21,10 +20,12 @@ public class StatIndex extends TableModelObject {
             {"Average prefix length:", "f", "avg_prefix_length"},
             {"average data length:", "f", "avg_data_length"},
             {"Clustering factor:", "f", null},
-            {"ratio:", "f", null}
+            {"ratio:", "f", null},
+            {"full size:", "i+", null}
     };
     public StatTable table;
     public String name;
+    public String table_name;
     public int indexId;
     public int depth;
     public int leaf_buckets;
@@ -32,7 +33,6 @@ public class StatIndex extends TableModelObject {
     public float avg_data_length;
     public int total_dup;
     public int max_dup;
-    public FillDistribution distribution;
 
     public int root_page;
     public float avg_node_length;
@@ -41,6 +41,8 @@ public class StatIndex extends TableModelObject {
     public float avg_prefix_length;
     public float clustering_factor;
     public float ratio;
+    public long page_size;
+    public long full_size;
 
     public StatIndex(StatTable table) {
         this.table = table;
@@ -174,6 +176,14 @@ public class StatIndex extends TableModelObject {
 
     public void setRatio(float ratio) {
         this.ratio = ratio;
+    }
+
+
+    @Override
+    public void calculateValues() {
+        table_name = table.name;
+        full_size = (long) (leaf_buckets * Math.pow(1 + (avg_node_length / page_size), depth - 1));
+        full_size *= page_size;
     }
 
     @Override

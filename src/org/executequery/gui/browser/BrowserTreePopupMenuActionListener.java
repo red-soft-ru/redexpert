@@ -1113,7 +1113,27 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             if (GUIUtilities.displayConfirmDialog(bundledString("recompile-message",
                     Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType()])))
                     == JOptionPane.YES_OPTION) {
-                AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode);
+                AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode, false);
+                ard.display();
+                if (ard.success) {
+                    ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb.toString(), dc, true, "^", true, false);
+                    eqd.display();
+                }
+            }
+        }
+    }
+
+    public void recompileInvalid(ActionEvent e) {
+        DatabaseConnection dc = currentSelection;
+        DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        if (databaseObjectNode != null)
+            if (databaseObjectNode.getType() != NamedObject.META_TAG)
+                databaseObjectNode = (DatabaseObjectNode) databaseObjectNode.getParent();
+        if (databaseObjectNode != null) {
+            if (GUIUtilities.displayConfirmDialog(bundledString("recompile-invalid-message",
+                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType()])))
+                    == JOptionPane.YES_OPTION) {
+                AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode, true);
                 ard.display();
                 if (ard.success) {
                     ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb.toString(), dc, true, "^", true, false);

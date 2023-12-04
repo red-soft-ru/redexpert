@@ -56,6 +56,7 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
     protected String engine;
     protected String sqlSecurity;
     protected String authid;
+    protected boolean valid = true;
 
 
     public DefaultDatabaseExecutable() {
@@ -331,6 +332,14 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
     protected abstract String mechanismLabel();
 
     protected abstract String positionLabel();
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
 }
 
 

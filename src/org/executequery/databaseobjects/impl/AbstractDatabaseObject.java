@@ -23,8 +23,8 @@ package org.executequery.databaseobjects.impl;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.Types;
+import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledStatement;
 import org.executequery.log.Log;
@@ -121,6 +121,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     protected static final String LOWER_BOUND = "LOWER_BOUND";
     protected static final String UPPER_BOUND = "UPPER_BOUND";
     protected static final String DEFAULT_COLLATE_NAME = "DEFAULT_COLLATE_NAME";
+    protected static final String VALID_BLR = "VALID_BLR";
     protected boolean fullLoadCols = false;
 
 

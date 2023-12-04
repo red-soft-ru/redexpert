@@ -181,7 +181,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CR");
         Table collations1 = Table.createTable("RDB$COLLATIONS", "CO1");
         Table collations2 = Table.createTable("RDB$COLLATIONS", "CO2");
-        sb.appendFields(functions, getFieldName(), PROCEDURE_SOURCE, DESCRIPTION, DETERMINISTIC_FLAG, RETURN_ARGUMENT);
+        sb.appendFields(functions, getFieldName(), PROCEDURE_SOURCE, DESCRIPTION, DETERMINISTIC_FLAG, RETURN_ARGUMENT, VALID_BLR);
         sb.appendFields(functions, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
         sb.appendField(buildSqlSecurityField(functions));
         sb.appendFields(FA, arguments, PARAMETER_NAME, PARAMETER_NUMBER, FIELD_SOURCE, DESCRIPTION, PARAMETER_MECHANISM, DEFAULT_SOURCE, RELATION_NAME, FIELD_NAME, NULL_FLAG);
@@ -224,6 +224,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
             setRemarks(getFromResultSet(rs, DESCRIPTION));
             setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
             setDeterministic(rs.getInt(DETERMINISTIC_FLAG) == 1);
+            setValid(rs.getInt(VALID_BLR) == 1);
         }
         return null;
     }

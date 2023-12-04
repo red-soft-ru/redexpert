@@ -336,6 +336,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         Table mainTable = Table.createTable("RDB$" + metatag + "S", metatag + "S");
         sb.appendTable(mainTable);
         sb.appendField(Field.createField(mainTable, metatag + "_NAME"));
+        sb.appendField(Field.createField(mainTable, "VALID_BLR"));
         sb.appendField(Field.createField(mainTable, "PACKAGE_NAME"));
         sb.appendCondition(Condition.createCondition(Field.createField(mainTable, "PACKAGE_NAME"), "IS", "NOT NULL"));
         sb.appendCondition(checkSystemCondition(getSubType() == NamedObject.SYSTEM_PACKAGE, mainTable));

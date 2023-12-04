@@ -2,6 +2,7 @@ package org.executequery.gui;
 
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseExecutable;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.databaseobjects.impl.LoadingObjectsHelper;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
@@ -17,21 +18,25 @@ import java.util.List;
 
 public class AnaliseRecompileDialog extends BaseDialog {
     public StringBuilder sb;
+    public StringBuilder invalidSb;
     JProgressBar progressBar;
     JPanel panel;
 
     DatabaseObjectNode databaseObjectNode;
 
     LoggingOutputPanel logPane;
+    boolean onlyInvalid;
 
-    public AnaliseRecompileDialog(String name, boolean modal, DatabaseObjectNode databaseObjectNode) {
+    public AnaliseRecompileDialog(String name, boolean modal, DatabaseObjectNode databaseObjectNode, boolean onlyInvalid) {
         super(name, modal);
         this.databaseObjectNode = databaseObjectNode;
+        this.onlyInvalid = onlyInvalid;
         init();
     }
 
     private void init() {
         sb = new StringBuilder();
+        invalidSb = new StringBuilder();
         panel = new JPanel();
         progressBar = new JProgressBar();
         logPane = new LoggingOutputPanel();
@@ -78,8 +83,6 @@ public class AnaliseRecompileDialog extends BaseDialog {
             long start = System.currentTimeMillis();
             if (childs != null) {
                 progressBar.setMaximum(childs.size());
-                if (metaTag.getSubType() == NamedObject.PACKAGE)
-                    sb.append("set term ; ^");
                 LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(childs.size());
                 for (int i = 0; i < childs.size(); i++) {
                     progressBar.setValue(i);
@@ -88,10 +91,18 @@ public class AnaliseRecompileDialog extends BaseDialog {
                     loadingObjectsHelper.preparingLoadForObject(databaseObject);
                     String s = databaseObject.getCreateSQLText();
                     loadingObjectsHelper.postProcessingLoadForObject(databaseObject);
-                    sb.append(s);
-                    if (!sb.toString().trim().endsWith("^"))
-                        sb.append("^");
+                    StringBuilder stringBuilder = sb;
+                    if (databaseObject instanceof DefaultDatabaseExecutable && !((DefaultDatabaseExecutable) databaseObject).isValid())
+                        stringBuilder = invalidSb;
+                    else if (onlyInvalid)
+                        continue;
+                    stringBuilder.append(s);
+                    if (!stringBuilder.toString().trim().endsWith("^"))
+                        stringBuilder.append("^");
                 }
+                sb.insert(0, invalidSb);
+                if (metaTag.getSubType() == NamedObject.PACKAGE)
+                    sb.insert(0, "set term ; ^");
                 loadingObjectsHelper.releaseResources();
 
             }

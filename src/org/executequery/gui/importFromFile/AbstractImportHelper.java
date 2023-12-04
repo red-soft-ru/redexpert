@@ -5,6 +5,8 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.localization.Bundles;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.time.format.DateTimeParseException;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +38,18 @@ abstract class AbstractImportHelper implements ImportHelper {
     protected final void createHeaders(List<String> newHeaders) {
         headers.clear();
         headers.addAll(newHeaders);
+    }
+
+    protected final void createHeaders(ResultSetMetaData metaData) {
+
+        try {
+            int columnCount = metaData.getColumnCount();
+            for (int i = 1; i <= columnCount; i++)
+                headers.add(metaData.getColumnName(i));
+
+        } catch (SQLException e) {
+            e.printStackTrace(System.out);
+        }
     }
 
     protected final String bundleString(String key) {

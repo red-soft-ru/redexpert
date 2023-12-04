@@ -6,6 +6,8 @@ import java.util.List;
 
 public class StatDatabase extends TableModelObject {
 
+    public String name;
+    public String fullPath;
 
     public static final String[][] ITEMS_HDR = {
             {"Flags", "i", null},
@@ -577,7 +579,7 @@ public class StatDatabase extends TableModelObject {
     }
 
     public String toString() {
-        return getExecuted() + " " + getFilename();
+        return name;
     }
 
 }

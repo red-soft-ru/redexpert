@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,7 +121,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                                 compareDB = compareDBS(db1, db2);
                                 CompareStatPanel compareStatPanel = new CompareStatPanel(compareDB, db1, db2);
                                 tabPane.addTab(null, compareStatPanel);
-                                tabPane.setTabComponentAt(tabPane.indexOfComponent(compareStatPanel), new ClosableTabTitle(bundleString("compare"), null, compareStatPanel));
+                                tabPane.setTabComponentAt(tabPane.indexOfComponent(compareStatPanel), new ClosableTabTitle(bundleString("compare"), db1 + " vs " + db2, null, compareStatPanel));
                                 tabPane.setSelectedComponent(compareStatPanel);
                                 return null;
                             }
@@ -159,14 +160,6 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
             }
         });
-        /*fileStatButton2.addActionListener(new ActionListener() {
-            final FileChooserDialog fileChooser = new FileChooserDialog();
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                loadFromFile(fileChooser, fileStatButton2, fileStatField2, true);
-            }
-        });*/
         getStatButton = WidgetFactory.createButton("getStatButton", bundleString("Start"));
         getStatButton.addActionListener(new ActionListener() {
             @Override
@@ -251,16 +244,11 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                         }
                     };
                     getStat.start();
-
-                        /*for (int i = 0; i < connectionPanel.getComponents().length; i++) {
-                            connectionPanel.getComponents()[i].setEnabled(false);
-                        }
-                        logToFileBox.setEnabled(false);*/
                     SwingWorker sw = new SwingWorker("readDBStat") {
                         @Override
                         public Object construct() {
                             try {
-                                readFromBufferedReader(bufferedReader);
+                                readFromBufferedReader(bufferedReader, ((DatabaseConnection) databaseBox.getSelectedItem()).getName() + " " + LocalDateTime.now(), null);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -268,11 +256,6 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                         }
                     };
                     sw.start();
-                    //tabPane.setSelectedComponent(textPanel);
-                    DatabaseConnection dc = (DatabaseConnection) databaseBox.getSelectedItem();
-                    if (dc != null) {
-                        //dc.setPathToTraceConfig(fileConfField.getText());
-                    }
                     EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this,
                             ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) databaseBox.getSelectedItem()
                     ));
@@ -379,7 +362,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                         reader = new BufferedReader(
                                 new InputStreamReader(
                                         Files.newInputStream(Paths.get(fullPath)), UserProperties.getInstance().getStringProperty("system.file.encoding")));
-                        readFromBufferedReader(reader);
+                        readFromBufferedReader(reader, fileChooser.getSelectedFile().getName(), fullPath);
                     } catch (Exception e1) {
                         GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
                     } finally {
@@ -479,10 +462,12 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         }
     }
 
-    private void readFromBufferedReader(BufferedReader reader) {
+    private void readFromBufferedReader(BufferedReader reader, String nameDb, String fullPath) {
         String line = null;
         StatParser.ParserParameters parserParameters = new StatParser.ParserParameters();
         parserParameters.db = new StatDatabase();
+        parserParameters.db.name = nameDb;
+        parserParameters.db.fullPath = fullPath;
         while (true) {
             try {
                 if ((line = reader.readLine()) == null)
@@ -498,7 +483,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         statDatabaseList.add(parserParameters.db);
         DbStatPanel dbStatPanel = new DbStatPanel(parserParameters.db);
         tabPane.addTab(null, dbStatPanel);
-        tabPane.setTabComponentAt(tabPane.indexOfComponent(dbStatPanel), new ClosableTabTitle(parserParameters.db.toString(), parserParameters.db, dbStatPanel));
+        tabPane.setTabComponentAt(tabPane.indexOfComponent(dbStatPanel), new ClosableTabTitle(parserParameters.db.toString(), parserParameters.db.fullPath, parserParameters.db, dbStatPanel));
         tabPane.setSelectedComponent(dbStatPanel);
     }
 
@@ -673,10 +658,11 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
     class ClosableTabTitle extends JPanel {
 
-        public ClosableTabTitle(final String title, StatDatabase db, JPanel panel) {
+        public ClosableTabTitle(final String title, String tooltip, StatDatabase db, JPanel panel) {
             super(new BorderLayout(5, 5));
             setOpaque(false);
             JLabel lbl = new JLabel(title);
+            lbl.setToolTipText(tooltip);
             JLabel icon = new JLabel(GUIUtilities.loadIcon("CloseDockable.png"));
 
             icon.addMouseListener(new MouseAdapter() {

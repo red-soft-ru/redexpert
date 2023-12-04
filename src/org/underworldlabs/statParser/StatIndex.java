@@ -10,7 +10,7 @@ public class StatIndex extends StatTableIndex {
             {"total dup:", "i", null},
             {"max dup:", "i", null},
             {"Root page:", "i", null},
-            {"depth:", "i", null},
+            {"Depth:", "i", null},
             {"leaf buckets:", "i", null},
             {"nodes:", "i", null},
             {"Average node length:", "f", "avg_node_length"},

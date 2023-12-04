@@ -370,7 +370,7 @@ public class StatParser {
                                 name = name.replace(" ", "_");
                             }
 
-                            if (item.startsWith(key)) {
+                            if (item.toLowerCase().startsWith(key.toLowerCase())) {
                                 String value = item.substring(key.length()).trim();
 
                                 if (valtype.equals("i")) {

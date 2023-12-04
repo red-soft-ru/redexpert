@@ -120,8 +120,8 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                                 StatDatabase db2 = (StatDatabase) comboBox2.getSelectedItem();
                                 compareDB = compareDBS(db1, db2);
                                 CompareStatPanel compareStatPanel = new CompareStatPanel(compareDB, db1, db2);
-                                tabPane.addTab(null, compareStatPanel);
-                                tabPane.setTabComponentAt(tabPane.indexOfComponent(compareStatPanel), new ClosableTabTitle(bundleString("compare"), db1 + " vs " + db2, null, compareStatPanel));
+                                tabPane.addTab(null, null, compareStatPanel, db1 + " vs " + db2);
+                                tabPane.setTabComponentAt(tabPane.indexOfComponent(compareStatPanel), new ClosableTabTitle(bundleString("compare"), null, compareStatPanel));
                                 tabPane.setSelectedComponent(compareStatPanel);
                                 return null;
                             }
@@ -482,8 +482,8 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         }
         statDatabaseList.add(parserParameters.db);
         DbStatPanel dbStatPanel = new DbStatPanel(parserParameters.db);
-        tabPane.addTab(null, dbStatPanel);
-        tabPane.setTabComponentAt(tabPane.indexOfComponent(dbStatPanel), new ClosableTabTitle(parserParameters.db.toString(), parserParameters.db.fullPath, parserParameters.db, dbStatPanel));
+        tabPane.addTab(null, null, dbStatPanel, parserParameters.db.fullPath);
+        tabPane.setTabComponentAt(tabPane.indexOfComponent(dbStatPanel), new ClosableTabTitle(parserParameters.db.toString(), parserParameters.db, dbStatPanel));
         tabPane.setSelectedComponent(dbStatPanel);
     }
 
@@ -658,11 +658,11 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
     class ClosableTabTitle extends JPanel {
 
-        public ClosableTabTitle(final String title, String tooltip, StatDatabase db, JPanel panel) {
+        public ClosableTabTitle(final String title, StatDatabase db, JPanel panel) {
             super(new BorderLayout(5, 5));
             setOpaque(false);
             JLabel lbl = new JLabel(title);
-            lbl.setToolTipText(tooltip);
+            //lbl.setToolTipText(tooltip);
             JLabel icon = new JLabel(GUIUtilities.loadIcon("CloseDockable.png"));
 
             icon.addMouseListener(new MouseAdapter() {

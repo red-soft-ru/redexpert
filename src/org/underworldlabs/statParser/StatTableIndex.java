@@ -27,13 +27,13 @@ public abstract class StatTableIndex extends TableModelObject {
     }
 
     public Class<?> getColumnClass(int columnIndex) {
-        if (columnIndex < getItems().length)
+        if (columnIndex < getItems().length - 1)
             return super.getColumnClass(columnIndex);
         else return Integer.class;
     }
 
     public Object getValueAt(int columnIndex) {
-        if (columnIndex < getItems().length)
+        if (columnIndex < getItems().length - 1)
             return super.getValueAt(columnIndex);
         else switch (getColumnName(columnIndex)) {
             case "range 0-19":

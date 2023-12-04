@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StatDatabase extends TableModelObject {
-
-    public String name;
     public String fullPath;
 
     public static final String[][] ITEMS_HDR = {
@@ -34,9 +32,9 @@ public class StatDatabase extends TableModelObject {
             {"Creation date", "d", null},
             {"Attributes", "l", null}
     };
-    public int gstat_version;
+    public long gstat_version;
 
-    public int system_change_number;
+    public long system_change_number;
 
     public LocalDateTime executed;
 
@@ -44,47 +42,47 @@ public class StatDatabase extends TableModelObject {
 
     public String filename;
 
-    public int flags;
+    public long flags;
 
-    public int checksum;
+    public long checksum;
 
-    public int generation;
+    public long generation;
 
-    public int page_size;
+    public long page_size;
 
-    public int oit;
+    public long oit;
 
-    public int oat;
+    public long oat;
 
-    public int ost;
+    public long ost;
 
-    public int next_transaction;
+    public long next_transaction;
 
-    public int bumped_transaction;
-    public int autosweep_gap;
-    public int next_attachment_id;
+    public long bumped_transaction;
+    public long autosweep_gap;
+    public long next_attachment_id;
 
-    public int implementation_id;
+    public long implementation_id;
 
     public String implementation;
 
-    public int shadow_count;
+    public long shadow_count;
 
-    public int page_buffers;
+    public long page_buffers;
 
-    public int next_header_page;
+    public long next_header_page;
 
-    public int database_dialect;
+    public long database_dialect;
 
     public LocalDateTime creation_date;
 
     public List<String> attributes;
 
-    public int sweep_interval;
+    public long sweep_interval;
 
     public String continuation_file;
 
-    public int last_logical_page;
+    public long last_logical_page;
 
     public String backup_guid;
 
@@ -106,8 +104,8 @@ public class StatDatabase extends TableModelObject {
     public List<StatTable> tables;
     public String server;
     public String ods_version;
-    public int sequence_number;
-    public int next_attachment_ID;
+    public long sequence_number;
+    public long next_attachment_ID;
 
     List<Variable> variables;
 
@@ -150,96 +148,17 @@ public class StatDatabase extends TableModelObject {
         this.indices = new ArrayList<>();
         variables = new ArrayList<>();
     }
-  /*
-
-    public class StatDatabase {
-
-        private Integer gstat_version;
-        private Integer system_change_number;
-        private Boolean executed;
-        private Boolean completed;
-        private String filename;
-        private Integer flags;
-        private Integer checksum;
-        private Integer generation;
-        private Integer page_size;
-        private Integer oit;
-        private Integer oat;
-        private Integer ost;
-        private Integer next_transaction;
-        private Integer bumped_transaction;
-        private Integer next_attachment_id;
-        private Integer implementation_id;
-        private String implementation;
-        private Integer shadow_count;
-        private Integer page_buffers;
-        private Integer next_header_page;
-        private Integer database_dialect;
-        private String creation_date;
-        private List<String> attributes;
-        private Integer sweep_interval;
-        private String continuation_file;
-        private String last_logical_page;
-        private String backup_guid;
-        private String root_filename;
-        private String replay_logging_file;
-        private String backup_diff_file;
-        private Boolean encrypted_data_pages;
-        private Boolean encrypted_index_pages;
-        private Boolean encrypted_blob_pages;
-        private List<String> continuation_files;
-        private Object tables;
-        private Object indices;
-
-        public StatDatabase() {
-            this.gstat_version = null;
-            this.system_change_number = null;
-            this.executed = null;
-            this.completed = null;
-            this.filename = null;
-            this.flags = 0;
-            this.checksum = 12345;
-            this.generation = 0;
-            this.page_size = 0;
-            this.oit = 0;
-            this.oat = 0;
-            this.ost = 0;
-            this.next_transaction = 0;
-            this.bumped_transaction = null;
-            this.next_attachment_id = 0;
-            this.implementation_id = 0;
-            this.implementation = null;
-            this.shadow_count = 0;
-            this.page_buffers = 0;
-            this.next_header_page = 0;
-            this.database_dialect = 0;
-            this.creation_date = null;
-            this.attributes = new ArrayList<>();
-            this.sweep_interval = null;
-            this.continuation_file = null;
-            this.last_logical_page = null;
-            this.backup_guid = null;
-            this.root_filename = null;
-            this.replay_logging_file = null;
-            this.backup_diff_file = null;
-            this.encrypted_data_pages = null;
-            this.encrypted_index_pages = null;
-            this.encrypted_blob_pages = null;
-            this.continuation_files = new ArrayList<>();
-            this.tables = null;
-            this.indices = null;
-        }*/
 
     public boolean has_table_stats() {
-        return this.tables != null && tables.size() > 0 && tables.get(0).getPrimary_pointer_page() != 0;
+        return this.tables != null && tables.size() > 0 && tables.get(0).primary_pointer_page != 0;
     }
 
     public boolean has_row_stats() {
-        return this.has_table_stats() && tables.get(0).getAvg_version_length() != 0;
+        return this.has_table_stats() && tables.get(0).avg_version_length != 0;
     }
 
     public boolean has_index_stats() {
-        return this.indices != null && this.indices.size() > 0 && indices.get(0).getDepth() != 0;
+        return this.indices != null && this.indices.size() > 0 && indices.get(0).depth != 0;
     }
 
     public boolean has_encryption_stats() {
@@ -254,19 +173,19 @@ public class StatDatabase extends TableModelObject {
         return false;
     }
 
-    public int getGstat_version() {
+    public long getGstat_version() {
         return gstat_version;
     }
 
-    public void setGstat_version(int gstat_version) {
+    public void setGstat_version(long gstat_version) {
         this.gstat_version = gstat_version;
     }
 
-    public int getSystem_change_number() {
+    public long getSystem_change_number() {
         return system_change_number;
     }
 
-    public void setSystem_change_number(int system_change_number) {
+    public void setSystem_change_number(long system_change_number) {
         this.system_change_number = system_change_number;
     }
 
@@ -294,91 +213,91 @@ public class StatDatabase extends TableModelObject {
         this.filename = filename;
     }
 
-    public int getFlags() {
+    public long getFlags() {
         return flags;
     }
 
-    public void setFlags(int flags) {
+    public void setFlags(long flags) {
         this.flags = flags;
     }
 
-    public int getChecksum() {
+    public long getChecksum() {
         return checksum;
     }
 
-    public void setChecksum(int checksum) {
+    public void setChecksum(long checksum) {
         this.checksum = checksum;
     }
 
-    public int getGeneration() {
+    public long getGeneration() {
         return generation;
     }
 
-    public void setGeneration(int generation) {
+    public void setGeneration(long generation) {
         this.generation = generation;
     }
 
-    public int getPage_size() {
+    public long getPage_size() {
         return page_size;
     }
 
-    public void setPage_size(int page_size) {
+    public void setPage_size(long page_size) {
         this.page_size = page_size;
     }
 
-    public int getOit() {
+    public long getOit() {
         return oit;
     }
 
-    public void setOit(int oit) {
+    public void setOit(long oit) {
         this.oit = oit;
     }
 
-    public int getOat() {
+    public long getOat() {
         return oat;
     }
 
-    public void setOat(int oat) {
+    public void setOat(long oat) {
         this.oat = oat;
     }
 
-    public int getOst() {
+    public long getOst() {
         return ost;
     }
 
-    public void setOst(int ost) {
+    public void setOst(long ost) {
         this.ost = ost;
     }
 
-    public int getNext_transaction() {
+    public long getNext_transaction() {
         return next_transaction;
     }
 
-    public void setNext_transaction(int next_transaction) {
+    public void setNext_transaction(long next_transaction) {
         this.next_transaction = next_transaction;
     }
 
-    public int getBumped_transaction() {
+    public long getBumped_transaction() {
         return bumped_transaction;
     }
 
-    public void setBumped_transaction(int bumped_transaction) {
+    public void setBumped_transaction(long bumped_transaction) {
         this.bumped_transaction = bumped_transaction;
     }
 
-    public int getNext_attachment_id() {
+    public long getNext_attachment_id() {
         return next_attachment_id;
     }
 
-    public void setNext_attachment_id(int next_attachment_id) {
+    public void setNext_attachment_id(long next_attachment_id) {
         this.next_attachment_id = next_attachment_id;
     }
 
-    public int getImplementation_id() {
+    public long getImplementation_id() {
         return implementation_id;
     }
 
-    public void setImplementation_id(int implementation_id) {
+    public void setImplementation_id(long implementation_id) {
         this.implementation_id = implementation_id;
     }
 
@@ -390,35 +309,35 @@ public class StatDatabase extends TableModelObject {
         this.implementation = implementation;
     }
 
-    public int getShadow_count() {
+    public long getShadow_count() {
         return shadow_count;
     }
 
-    public void setShadow_count(int shadow_count) {
+    public void setShadow_count(long shadow_count) {
         this.shadow_count = shadow_count;
     }
 
-    public int getPage_buffers() {
+    public long getPage_buffers() {
         return page_buffers;
     }
 
-    public void setPage_buffers(int page_buffers) {
+    public void setPage_buffers(long page_buffers) {
         this.page_buffers = page_buffers;
     }
 
-    public int getNext_header_page() {
+    public long getNext_header_page() {
         return next_header_page;
     }
 
-    public void setNext_header_page(int next_header_page) {
+    public void setNext_header_page(long next_header_page) {
         this.next_header_page = next_header_page;
     }
 
-    public int getDatabase_dialect() {
+    public long getDatabase_dialect() {
         return database_dialect;
     }
 
-    public void setDatabase_dialect(int database_dialect) {
+    public void setDatabase_dialect(long database_dialect) {
         this.database_dialect = database_dialect;
     }
 
@@ -438,11 +357,11 @@ public class StatDatabase extends TableModelObject {
         this.attributes = attributes;
     }
 
-    public int getSweep_interval() {
+    public long getSweep_interval() {
         return sweep_interval;
     }
 
-    public void setSweep_interval(int sweep_interval) {
+    public void setSweep_interval(long sweep_interval) {
         this.sweep_interval = sweep_interval;
     }
 
@@ -454,7 +373,7 @@ public class StatDatabase extends TableModelObject {
         this.continuation_file = continuation_file;
     }
 
-    public int getLast_logical_page() {
+    public long getLast_logical_page() {
         return last_logical_page;
     }
 
@@ -550,11 +469,11 @@ public class StatDatabase extends TableModelObject {
         this.server = server;
     }
 
-    public int getAutosweep_gap() {
+    public long getAutosweep_gap() {
         return autosweep_gap;
     }
 
-    public void setAutosweep_gap(int autosweep_gap) {
+    public void setAutosweep_gap(long autosweep_gap) {
         this.autosweep_gap = autosweep_gap;
     }
 
@@ -576,10 +495,6 @@ public class StatDatabase extends TableModelObject {
     @Override
     public void calculateValues() {
 
-    }
-
-    public String toString() {
-        return name;
     }
 
 }

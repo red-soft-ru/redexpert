@@ -123,24 +123,6 @@ public class StatParser {
             Log.info("error parse " + parserParameters.line_no + " line:" + e.getMessage());
                 //e.printStackTrace();
             }
-
-        /*if (db.has_table_stats()) {
-            for (StatTable t : db.getTables()) {
-                t.setDistribution(new FillDistribution());
-            }
-        }
-
-        if (db.has_index_stats()) {
-            for (StatIndex i : db.getIndices()) {
-                i.setDistribution(new FillDistribution());
-            }
-        }
-
-        //db.tables.freeze();TODO check freeze
-        //db.indices.freeze();
-
-
-        return db;*/
         return parserParameters;
     }
 
@@ -200,7 +182,7 @@ public class StatParser {
         if (table.getName() == null) {
             String[] parts = line.split(" \\(");
             table.setName(parts[0]);
-            table.setTable_id(Integer.parseInt(parts[1].replace("(", "").replace(")", "")));
+            table.table_id = (Long.parseLong(parts[1].replace("(", "").replace(")", "")));
         } else {
             if (line.contains(",") || !line.contains("=")) {
                 String[] items = new String[]{line};
@@ -226,7 +208,7 @@ public class StatParser {
                                 String value = item.substring(key.length()).trim();
 
                                 if (valtype.equals("i")) {
-                                    table.getClass().getField(name).setInt(table, Integer.parseInt(value));
+                                    table.getClass().getField(name).setLong(table, Long.parseLong(value));
                                 } else if (valtype.equals("i+")) {
                                     table.getClass().getField(name).setLong(table, Long.parseLong(value));
                                 } else if (valtype.equals("f")) {
@@ -295,42 +277,6 @@ public class StatParser {
             var.value += parts[i];
         var.value = var.value.trim();
         db.variables.add(var);
-
-        /*String[][] items_var = {
-                {"Sweep interval:", "i", null},
-                {"Continuation file:", "s", null},
-                {"Last logical page:", "i", null},
-                {"Database backup GUID:", "s", "backup_guid"},
-                {"Root file name:", "s", "root_filename"},
-                {"Replay logging file:", "s", null},
-                {"Backup difference file:", "s", "backup_diff_file"}
-        };
-
-        for (String[] item : items_var) {
-            String key = item[0];
-            String valtype = item[1];
-            String name = item[2];
-            if (name == null) {
-                name = key.substring(0, 1).toLowerCase() + key.substring(1);
-                name = name.replace(" ", "_");
-            }
-
-            if (line.startsWith(key)) {
-                String value = line.substring(key.length()).trim();
-
-                if (valtype.equals("i")) {
-                    db.getClass().getField(name).setInt(db, Integer.parseInt(value));
-                } else if (valtype.equals("s")) {
-                    db.getClass().getField(name).set(db, value);
-                } else {
-                    throw new ParseError("Unknown value type " + valtype);
-                }
-
-                return;
-            }
-        }
-
-        throw new ParseError("Unknown information (line " + line_no + ")");*/
     }
 
     public static void parse_fseq(String line, StatDatabase db, int line_no) throws ParseError {
@@ -353,7 +299,7 @@ public class StatParser {
         if (index.getName() == null) {
             String[] parts = line.substring(6).split(" \\(");
             index.setName(parts[0]);
-            index.setIndexId(Integer.parseInt(parts[1].replace("(", "").replace(")", "")));
+            index.indexId = (Long.parseLong(parts[1].replace("(", "").replace(")", "")));
         } else {
             if (line.contains(",")) {
                 String[] items = line.split(",");
@@ -374,7 +320,7 @@ public class StatParser {
                                 String value = item.substring(key.length()).trim();
 
                                 if (valtype.equals("i")) {
-                                    index.getClass().getField(name).setInt(index, Integer.parseInt(value));
+                                    index.getClass().getField(name).setLong(index, Long.parseLong(value));
                                 } else if (valtype.equals("f")) {
                                     index.getClass().getField(name).setFloat(index, Float.parseFloat(value));
                                 } else {

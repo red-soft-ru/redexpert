@@ -191,6 +191,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                     String charset = null;
                     if (charsetCombo.getSelectedIndex() > 0)
                         charset = MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem());
+                    else charset = "UTF8";
                     bufferedReader = new BufferedReader(new InputStreamReader(inputStream, charset));
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);

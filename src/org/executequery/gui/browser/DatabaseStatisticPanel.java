@@ -22,6 +22,7 @@ import org.underworldlabs.statParser.*;
 import org.underworldlabs.swing.AbstractPanel;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.ListSelectionPanel;
+import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
@@ -42,9 +43,9 @@ import java.util.List;
 public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implements TabView {
     public static final String TITLE = Bundles.get(DatabaseStatisticPanel.class, "title");
     private IFBStatisticManager statisticManager;
-    protected JButton fileStatButton;
-    protected JButton compareButton;
-    protected JTextField fileStatField;
+    protected RolloverButton fileStatButton;
+    protected RolloverButton compareButton;
+    protected JToolBar toolBar;
 
     private JButton getStatButton;
 
@@ -80,15 +81,18 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
     protected void initOtherComponents() {
         initStatManager(null);
         statDatabaseList = new ArrayList<>();
-        fileStatButton = WidgetFactory.createButton("fileStatButton", "...");
-        fileStatField = WidgetFactory.createTextField("fileStatField");
-        compareButton = WidgetFactory.createButton("compareButton", bundleString("compare"));
+        toolBar = WidgetFactory.createToolBar("toolBar");
+        toolBar.setFloatable(false);
+        fileStatButton = WidgetFactory.createRolloverButton("fileStatButton", bundleString("OpenFileLog"), "Open16.png");
+        toolBar.add(fileStatButton);
+        compareButton = WidgetFactory.createRolloverButton("compareButton", bundleString("compare"), "ComparerDB_16.png");
+        toolBar.add(compareButton);
         fileStatButton.addActionListener(new ActionListener() {
             final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                loadFromFile(fileChooser, fileStatButton, fileStatField);
+                loadFromFile(fileChooser, fileStatButton);
             }
         });
         compareButton.addActionListener(new ActionListener() {
@@ -362,19 +366,19 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
     }
 
-    protected void loadFromFile(FileChooserDialog fileChooser, JButton fileStatButton, JTextField fileStatFieldX) {
+    protected void loadFromFile(FileChooserDialog fileChooser, JButton fileStatButton) {
         int returnVal = fileChooser.showOpenDialog(fileStatButton);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             SwingWorker sw = new SwingWorker("loadStatisticFromFile") {
                 @Override
                 public Object construct() {
-                    fileStatFieldX.setText(fileChooser.getSelectedFile().getAbsolutePath());
+                    String fullPath = fileChooser.getSelectedFile().getAbsolutePath();
                     clearAll();
                     BufferedReader reader = null;
                     try {
                         reader = new BufferedReader(
                                 new InputStreamReader(
-                                        Files.newInputStream(Paths.get(fileStatFieldX.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
+                                        Files.newInputStream(Paths.get(fullPath)), UserProperties.getInstance().getStringProperty("system.file.encoding")));
                         readFromBufferedReader(reader);
                     } catch (Exception e1) {
                         GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
@@ -435,11 +439,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
     protected void arrangeComponents() {
         gbh.insertEmptyRow(this, 5);
         gbh.nextRowFirstCol();
-        JLabel label = new JLabel(bundleString("OpenFileLog"));
-        add(label, gbh.setLabelDefault().get());
-        gbh.nextCol();
-        gbh.addLabelFieldPair(this, fileStatButton, fileStatField, null, false, false);
-        add(compareButton, gbh.nextRowFirstCol().setLabelDefault().get());
+        add(toolBar, gbh.fillHorizontally().spanX().get());
         add(tabPane, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
         gbh.fullDefaults();
         tabPane.add(bundleString("Connection"), connectionPanel);
@@ -447,7 +447,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         gbh.fullDefaults();
         gbh.addLabelFieldPair(connectionPanel, bundleString("Connections"), databaseBox, null, true, true);
         gbh.nextRowFirstCol();
-        label = new JLabel(bundleString("Database"));
+        JLabel label = new JLabel(bundleString("Database"));
         connectionPanel.add(label, gbh.setLabelDefault().get());
         gbh.addLabelFieldPair(connectionPanel, fileDatabaseButton, fileDatabaseField, null, false, false);
         gbh.addLabelFieldPair(connectionPanel, bundleString("Host"), hostField, null, false, false);

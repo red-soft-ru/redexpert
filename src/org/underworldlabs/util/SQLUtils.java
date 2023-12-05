@@ -329,7 +329,7 @@ public final class SQLUtils {
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty())
             sb.append("\nAS\n").append(fullProcedureBody);
 
-        sb.append("^\n");
+        sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false, dc));
@@ -338,7 +338,7 @@ public final class SQLUtils {
         }
 
         if (setTerm)
-            sb.append("^\nSET TERM ;^");
+            sb.append("\n^\nSET TERM ;^");
 
         return sb.toString();
     }
@@ -481,7 +481,7 @@ public final class SQLUtils {
         if (fullFunctionBody != null && !fullFunctionBody.isEmpty())
             sb.append("\nAS\n").append(fullFunctionBody);
 
-        sb.append("^\n");
+        sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false, dc));
@@ -681,7 +681,7 @@ public final class SQLUtils {
                     sb.append(cd.getFormattedDomain());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
-            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue().getValue()) && !cd.getDefaultValue().isDomain()) {
+            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && cd.getDefaultValue().getValue() != null && cd.getDefaultValue().getValue().length() != 0 && !cd.getDefaultValue().isDomain()) {
                 sb.append(format(cd.getDefaultValue(), cd.getSQLType(), cd.getDatabaseConnection()));
             }
             if (!MiscUtils.isNull(cd.getCheck())) {

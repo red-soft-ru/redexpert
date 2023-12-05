@@ -99,6 +99,13 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return SQLUtils.generateCreateProcedure(
+                getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(),
+                getSourceCode(), getRemarks(), getHost().getDatabaseConnection(), false, false);
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName(), getHost().getDatabaseConnection());
     }

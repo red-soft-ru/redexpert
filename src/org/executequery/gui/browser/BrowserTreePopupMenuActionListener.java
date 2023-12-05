@@ -1116,7 +1116,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode, false);
                 ard.display();
                 if (ard.success) {
-                    ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb.toString(), dc, true, "^", true, false);
+                    ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb, dc, true, "^", true, false);
                     eqd.display();
                 }
             }
@@ -1136,7 +1136,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode, true);
                 ard.display();
                 if (ard.success) {
-                    ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb.toString(), dc, true, "^", true, false);
+                    ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb, dc, true, "^", true, false);
                     eqd.display();
                 }
             }

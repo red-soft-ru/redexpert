@@ -1,6 +1,5 @@
 package org.executequery.gui;
 
-import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseExecutable;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
@@ -14,11 +13,12 @@ import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AnaliseRecompileDialog extends BaseDialog {
-    public StringBuilder sb;
-    public StringBuilder invalidSb;
+    public List<String> sb;
+    public List<String> invalidSb;
     JProgressBar progressBar;
     JPanel panel;
 
@@ -35,8 +35,8 @@ public class AnaliseRecompileDialog extends BaseDialog {
     }
 
     private void init() {
-        sb = new StringBuilder();
-        invalidSb = new StringBuilder();
+        sb = new ArrayList<>();
+        invalidSb = new ArrayList<>();
         panel = new JPanel();
         progressBar = new JProgressBar();
         logPane = new LoggingOutputPanel();
@@ -89,20 +89,17 @@ public class AnaliseRecompileDialog extends BaseDialog {
                     AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) childs.get(i).getDatabaseObject();
                     addOutputMessage(SqlMessages.PLAIN_MESSAGE, bundleString("generateScript", databaseObject.getName()));
                     loadingObjectsHelper.preparingLoadForObject(databaseObject);
-                    String s = databaseObject.getCreateSQLText();
+                    String s = databaseObject.getCreateSQLTextWithoutComment();
                     loadingObjectsHelper.postProcessingLoadForObject(databaseObject);
-                    StringBuilder stringBuilder = sb;
+                    List<String> stringBuilder = sb;
                     if (databaseObject instanceof DefaultDatabaseExecutable && !((DefaultDatabaseExecutable) databaseObject).isValid())
                         stringBuilder = invalidSb;
                     else if (onlyInvalid)
                         continue;
-                    stringBuilder.append(s);
-                    if (!stringBuilder.toString().trim().endsWith("^"))
-                        stringBuilder.append("^");
+                    stringBuilder.add(s);
                 }
-                sb.insert(0, invalidSb);
-                if (metaTag.getSubType() == NamedObject.PACKAGE)
-                    sb.insert(0, "set term ; ^");
+                for (String s : invalidSb)
+                    sb.add(0, s);
                 loadingObjectsHelper.releaseResources();
 
             }

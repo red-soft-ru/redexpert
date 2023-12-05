@@ -204,6 +204,11 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() {
+        return getCreateSQLText();
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("COLLATION", getName(), getHost().getDatabaseConnection());
     }

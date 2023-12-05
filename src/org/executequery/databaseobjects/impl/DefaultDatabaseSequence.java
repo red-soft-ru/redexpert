@@ -65,13 +65,18 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
+        return getCreateSQLText(true);
+    }
+
+
+    public String getCreateSQLText(boolean addComment) {
 
         String query = "";
         try {
 
             long firstValue = (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue();
             query = SQLUtils.generateCreateSequence(getName(), firstValue,
-                    getIncrement(), getRemarks(), getVersion(), false, getHost().getDatabaseConnection());
+                    getIncrement(), addComment ? getRemarks() : null, getVersion(), false, getHost().getDatabaseConnection());
 
         } catch (SQLException e) {
             GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
@@ -80,6 +85,12 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
 
         return query;
     }
+
+    @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return getCreateSQLText(false);
+    }
+
 
     @Override
     public String getDropSQL() throws DataSourceException {

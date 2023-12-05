@@ -136,6 +136,11 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return null;
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return null;
     }

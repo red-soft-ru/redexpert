@@ -606,6 +606,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     @Override
     public abstract String getCreateSQLText() throws DataSourceException;
 
+    public abstract String getCreateSQLTextWithoutComment() throws DataSourceException;
+
     public abstract String getDropSQL() throws DataSourceException;
 
     public abstract String getCompareCreateSQL() throws DataSourceException;

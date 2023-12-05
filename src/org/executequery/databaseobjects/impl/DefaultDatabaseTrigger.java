@@ -366,6 +366,13 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), null, false, getHost().getDatabaseConnection());
+    }
+
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("TRIGGER", getName(), getHost().getDatabaseConnection());
     }

@@ -113,6 +113,12 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return SQLUtils.generateCreateJob(getName(), getCronSchedule(), isActive(),
+                getStartDate(), getEndDate(), getJobType(), getSource(), null, true, getHost().getDatabaseConnection());
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("JOB", getName(), getHost().getDatabaseConnection());
     }

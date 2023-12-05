@@ -105,6 +105,12 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), null, getHost().getDatabaseConnection());
+    }
+
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("PACKAGE", getName(), getHost().getDatabaseConnection());
     }

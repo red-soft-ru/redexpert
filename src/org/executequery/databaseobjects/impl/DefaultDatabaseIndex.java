@@ -221,6 +221,13 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() {
+        return SQLUtils.generateCreateIndex(
+                getName(), getIndexType() == 1, isUnique(), getTableName(), null, getCondition(),
+                getIndexColumns(), getTablespace(), isActive(), null, getHost().getDatabaseConnection());
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("INDEX", getName(), getHost().getDatabaseConnection());
     }

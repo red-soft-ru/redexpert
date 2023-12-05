@@ -44,7 +44,9 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     /** the metadata key name for this object */
     private String metaDataKey;
 
-    /** Creates a new instance of DefaultDatabaseObject */
+    /**
+     * Creates a new instance of DefaultDatabaseObject
+     */
     public DefaultDatabaseObject(DatabaseHost host) {
         super(host);
     }
@@ -53,6 +55,12 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     public String getCreateSQLText() throws DataSourceException {
         return null;
     }
+
+    @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return null;
+    }
+
 
     @Override
     public String getDropSQL() throws DataSourceException {

@@ -127,6 +127,13 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 false, true, isDeterministic(), getHost().getDatabaseConnection());
     }
 
+    public String getCreateSQLTextWithoutComment() {
+        return SQLUtils.generateCreateFunction(
+                getName(), getFunctionArguments(), getSourceCode(),
+                getEntryPoint(), getEngine(), getSqlSecurity(), getRemarks(),
+                false, false, isDeterministic(), getHost().getDatabaseConnection());
+    }
+
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("FUNCTION", getName(), getHost().getDatabaseConnection());

@@ -36,6 +36,11 @@ public class CompareStatisticTablePanel extends StatisticTablePanel {
             } else if (((TableModelObject) rows.get(x)).getCompared() == TableModelObject.DELETED) {
                 comp.setBackground(Color.RED);
             } else comp.setBackground(Color.WHITE);
+            if (value instanceof Double) {
+                double v = (double) value;
+                String str = String.format("%.5f", v);
+                setValue(str);
+            }
             return comp;
         }
     }

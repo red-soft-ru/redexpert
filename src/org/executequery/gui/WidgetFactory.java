@@ -28,6 +28,7 @@ import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.RolloverButton;
 
 import javax.swing.*;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.Vector;
@@ -139,16 +140,45 @@ public final class WidgetFactory {
         return checkBox;
     }
 
-    public static JTabbedPane createTabbedPane(String name) {
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.setName(name);
-        return tabbedPane;
+    public static JSpinner createSpinner(String name) {
+        JSpinner spinner = new JSpinner();
+        spinner.setName(name);
+        return spinner;
+    }
+
+    public static JSpinner createSpinner(String name, SpinnerModel model) {
+        JSpinner spinner = createSpinner(name);
+        spinner.setModel(model);
+        return spinner;
+    }
+
+    public static JSpinner createSpinner(String name, int val, int minVal, int maxVal, int stepSize) {
+
+        SpinnerNumberModel spinnerModel = new SpinnerNumberModel();
+        spinnerModel.setMinimum(minVal);
+        spinnerModel.setMaximum(maxVal);
+        spinnerModel.setStepSize(stepSize);
+        spinnerModel.setValue(val);
+
+        return createSpinner(name, spinnerModel);
     }
 
     public static JTable createTable(String name) {
         JTable table = new JTable();
         table.setName(name);
         return table;
+    }
+
+    public static JTable createTable(String name, TableModel model) {
+        JTable table = new JTable(model);
+        table.setName(name);
+        return table;
+    }
+
+    public static JTabbedPane createTabbedPane(String name) {
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.setName(name);
+        return tabbedPane;
     }
 
     public static JPanel createPanel(String name) {

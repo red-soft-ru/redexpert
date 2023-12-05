@@ -180,6 +180,12 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return getCreateSQLText();
+    }
+
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("TABLESPACE", getName(), getHost().getDatabaseConnection());
     }

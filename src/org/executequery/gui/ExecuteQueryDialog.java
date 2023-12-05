@@ -26,14 +26,17 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
+import java.util.List;
 import java.util.Vector;
 
 
 public class ExecuteQueryDialog extends BaseDialog {
 
     String query;
+    List<String> queries;
 
     Boolean commitResult = false;
+    boolean stop = false;
 
     StatementExecutor querySender;
 
@@ -52,6 +55,8 @@ public class ExecuteQueryDialog extends BaseDialog {
     JButton commitButton;
 
     JButton rollbackButton;
+
+    JButton stopButton;
 
     QueryTokenizer queryTokenizer;
 
@@ -114,6 +119,28 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     }
 
+    public ExecuteQueryDialog(String name, List<String> queries, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter, boolean autocommit, boolean stopOnError) {
+        super(name, true, true);
+        this.queries = queries;
+        this.delimiter = delimiter;
+        this.dc = databaseConnection;
+        this.stopOnError = stopOnError;
+        queryTokenizer = new QueryTokenizer();
+        querySender = new DefaultStatementExecutor(dc, keepAlive);
+        this.autocommit = autocommit;
+        querySender.setCommitMode(autocommit);
+        init();
+        SwingWorker sw = new SwingWorker("ExecuteQueriesInDialog") {
+            @Override
+            public Object construct() {
+                executeList();
+                return null;
+            }
+        };
+        sw.start();
+
+    }
+
 
     void init() {
         mainPanel = new JPanel();
@@ -126,7 +153,9 @@ public class ExecuteQueryDialog extends BaseDialog {
         copyErrorButton = new JButton();
         commitButton = new JButton();
         rollbackButton = new JButton();
+        stopButton = new JButton();
         queryPane = new SQLTextArea();
+        queryPane.setEnableUndoManager(false);
         errorPane = new LoggingOutputPanel();
         logPane = new LoggingOutputPanel();
         tabbedPane = new JTabbedPane();
@@ -216,9 +245,14 @@ public class ExecuteQueryDialog extends BaseDialog {
             }
         });
 
-        queryScroll.setViewportView(queryPane);
+        stopButton.setText(bundleString("stop"));
+        stopButton.addActionListener(new ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stop = true;
+            }
+        });
 
-        //queryPane.setText(query);
+        queryScroll.setViewportView(queryPane);
         queryPane.setEditable(false);
 
         tabbedPane.addTab(bundleString("Single"), errorPane);
@@ -241,6 +275,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         mainPanel.add(copyQueryButton, gbh.nextRowFirstCol().setLabelDefault().anchorSouthWest().get());
         mainPanel.add(copyErrorButton, gbh.nextCol().setLabelDefault().anchorSouthWest().get());
         mainPanel.add(commitButton, gbh.nextCol().setLabelDefault().anchorSouthEast().get());
+        mainPanel.add(stopButton, gbh.nextCol().setLabelDefault().anchorSouthEast().get());
         if (!autocommit)
             mainPanel.add(rollbackButton, gbh.nextCol().setLabelDefault().anchorSouthEast().get());
         addDisplayComponent(mainPanel);
@@ -344,6 +379,38 @@ public class ExecuteQueryDialog extends BaseDialog {
         }
     }
 
+    void executeList() {
+        boolean commit = true;
+        int success = 0;
+        int failed = 0;
+        if (!stopOnError)
+            tabbedPane.setSelectedComponent(logPane);
+        for (String query : queries)
+            if (!((commit || !stopOnError) && !stop))
+                break;
+            else {
+                query = query.trim();
+                if (query.endsWith(delimiter)) {
+                    query = query.substring(0, query.length() - 1);
+                }
+                RowAction action = new RowAction(query);
+                commit = execute_query(action);
+                if (commit)
+                    model.addRow(action);
+                else model.insertRow(action, 0);
+                setMessages(action);
+                addMessages(action);
+                if (action.executed)
+                    success++;
+                else failed++;
+            }
+        stopButton.setVisible(false);
+        if (success > 0)
+            addOutputMessage(SqlMessages.PLAIN_MESSAGE, success + " queries successfully completed");
+        if (failed > 0)
+            addOutputMessage(SqlMessages.ERROR_MESSAGE, failed + " queries failed");
+    }
+
     void execute() {
         String queries = query;
         if (queries.endsWith(delimiter)) {
@@ -359,7 +426,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         int failed = 0;
         if (!stopOnError)
             tabbedPane.setSelectedComponent(logPane);
-        while (queries.trim().length() > 0 && (commit || !stopOnError)) {
+        while (queries.trim().length() > 0 && (commit || !stopOnError) && !stop) {
             QueryTokenizer.QueryTokenized fquery = queryTokenizer.tokenizeFirstQuery(queries, lowQuery, startIndex, delimiter);
             queries = fquery.script;
             delimiter = fquery.delimiter;
@@ -383,6 +450,7 @@ public class ExecuteQueryDialog extends BaseDialog {
                 success++;
             else failed++;
         }
+        stopButton.setVisible(false);
         if (success > 0)
             addOutputMessage(SqlMessages.PLAIN_MESSAGE, success + " queries successfully completed");
         if (failed > 0)

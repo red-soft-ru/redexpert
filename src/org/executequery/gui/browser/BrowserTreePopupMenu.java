@@ -42,6 +42,7 @@ import java.awt.event.ActionListener;
 public class BrowserTreePopupMenu extends JPopupMenu {
 
     private final JMenuItem addNewConnection;
+    private final JMenuItem getMetadata;
     private final JMenuItem connect;
     private final JMenuItem disconnect;
     private final JMenuItem reload;
@@ -58,6 +59,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private final JMenuItem selectAllChildren;
 
     private final JMenuItem recompileAll;
+    private final JMenuItem recompileInvalid;
     private final JMenuItem reselectivityAllIndicies;
     private final JMenuItem reselectivityIndex;
     private final JMenuItem onlineTableValidation;
@@ -106,6 +108,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
         addNewConnection = createMenuItem(bundleString("addNewConnection"), "addNewConnection", listener);
         add(addNewConnection);
+        getMetadata = createMenuItem(bundleString("getMetadata"), "getMetadata", listener);
+        add(getMetadata);
         duplicate = createMenuItem(bundleString("duplicate"), "duplicate", listener);
         add(duplicate);
         duplicateWithSource = createMenuItem(bundleString("duplicateWithSource"), "duplicateWithSource", listener);
@@ -124,6 +128,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         recompileAll = createMenuItem(bundleString("recompileAll"), "recompileAll", listener);
         recompileAll.setVisible(false);
         add(recompileAll);
+        recompileInvalid = createMenuItem(bundleString("recompileInvalid"), "recompileInvalid", listener);
+        recompileInvalid.setVisible(false);
+        add(recompileInvalid);
         reselectivityAllIndicies = createMenuItem(bundleString("reselectivityAll"), "reselectivityAll", listener);
         reselectivityAllIndicies.setVisible(false);
         add(reselectivityAllIndicies);
@@ -173,6 +180,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
         connect.setVisible(canConnect);
         disconnect.setVisible(!canConnect);
+        getMetadata.setVisible(!canConnect);
         delete.setVisible(canConnect);
         reload.setVisible(!canConnect);
 
@@ -290,10 +298,11 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                             || node.getType() >= NamedObject.TRIGGER && node.getType() <= NamedObject.DATABASE_TRIGGER
                             || recompileEnabled;
                     recompileAll.setVisible(recompileEnabled);
-                    if (recompileEnabled)
+                    recompileInvalid.setVisible(recompileEnabled && (node.getType() != NamedObject.VIEW && node.getType() != NamedObject.META_TAG || (node.getType() == NamedObject.META_TAG && ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getSubType() != NamedObject.VIEW)));
+                    if (recompileEnabled) {
                         recompileAll.setText(bundleString("recompileAll", Bundles.get(NamedObject.class, getMetaTagFromNode(node))));
-
-
+                        recompileInvalid.setText(bundleString("recompileInvalid", Bundles.get(NamedObject.class, getMetaTagFromNode(node))));
+                    }
                 }
             }
         }

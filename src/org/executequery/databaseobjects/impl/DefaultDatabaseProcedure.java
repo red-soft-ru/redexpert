@@ -99,6 +99,13 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return SQLUtils.generateCreateProcedure(
+                getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(),
+                getSourceCode(), getRemarks(), getHost().getDatabaseConnection(), false, false);
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName(), getHost().getDatabaseConnection());
     }
@@ -144,7 +151,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CR");
         Table collations1 = Table.createTable("RDB$COLLATIONS", "CO1");
         Table collations2 = Table.createTable("RDB$COLLATIONS", "CO2");
-        sb.appendFields(procedures, getFieldName(), PROCEDURE_SOURCE, DESCRIPTION);
+        sb.appendFields(procedures, getFieldName(), PROCEDURE_SOURCE, DESCRIPTION, VALID_BLR);
         sb.appendFields(procedures, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
         sb.appendField(buildSqlSecurityField(procedures));
         Field authid = Field.createField(procedures, PROCEDURE_CONTEXT);
@@ -197,6 +204,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
             setRemarks(getFromResultSet(rs, DESCRIPTION));
             setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
             setAuthid(getFromResultSet(rs, AUTHID));
+            setValid(rs.getInt(VALID_BLR) == 1);
         }
         return null;
     }

@@ -49,7 +49,7 @@ public interface NamedObject extends Named, java.io.Serializable {
     int ROLE = USER + 1;
     int INDEX = ROLE + 1;
     int TABLESPACE = INDEX + 1;
-    int JOB = TABLESPACE +1;
+    int JOB = TABLESPACE + 1;
     int COLLATION = JOB + 1;
     int SYSTEM_DOMAIN = COLLATION + 1;
     int SYSTEM_TABLE = SYSTEM_DOMAIN + 1;
@@ -170,6 +170,28 @@ public interface NamedObject extends Named, java.io.Serializable {
             "TABLE_COLUMN",
             "CONSTRAINT",
             "SYNONYM"
+    };
+
+    Integer[] META_TYPES_FOR_COMPARE = {
+            COLLATION,
+            DOMAIN,
+            TABLESPACE,
+            TABLE,
+            GLOBAL_TEMPORARY,
+            VIEW,
+            INDEX,
+            SEQUENCE,
+            EXCEPTION,
+            ROLE,
+            USER,
+            FUNCTION,
+            PROCEDURE,
+            JOB,
+            UDF,
+            TRIGGER,
+            DDL_TRIGGER,
+            DATABASE_TRIGGER,
+            PACKAGE
     };
 
     /**

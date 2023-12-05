@@ -22,6 +22,7 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.actions.databasecommands.TableValidationCommand;
+import org.executequery.actions.toolscommands.ComparerDBCommands;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -58,7 +59,7 @@ import java.util.Objects;
  * @author Takis Diakoumis
  */
 
-
+@SuppressWarnings("unused")
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     private StatementExecutor querySender;
@@ -640,6 +641,13 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         treePanel.newConnection();
     }
 
+    public void getMetadata(ActionEvent e) {
+        if (currentPath != null) {
+            DatabaseHostNode node = (DatabaseHostNode) currentPath.getLastPathComponent();
+            new ComparerDBCommands().exportMetadata(node.getDatabaseConnection());
+        }
+    }
+
     public void switchDefaultCatalogAndSchemaDisplay(ActionEvent e) {
 
         JCheckBoxMenuItem check = (JCheckBoxMenuItem) e.getSource();
@@ -1105,10 +1113,30 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             if (GUIUtilities.displayConfirmDialog(bundledString("recompile-message",
                     Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType()])))
                     == JOptionPane.YES_OPTION) {
-                AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode);
+                AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode, false);
                 ard.display();
                 if (ard.success) {
-                    ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb.toString(), dc, true, "^", true, false);
+                    ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb, dc, true, "^", true, false);
+                    eqd.display();
+                }
+            }
+        }
+    }
+
+    public void recompileInvalid(ActionEvent e) {
+        DatabaseConnection dc = currentSelection;
+        DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        if (databaseObjectNode != null)
+            if (databaseObjectNode.getType() != NamedObject.META_TAG)
+                databaseObjectNode = (DatabaseObjectNode) databaseObjectNode.getParent();
+        if (databaseObjectNode != null) {
+            if (GUIUtilities.displayConfirmDialog(bundledString("recompile-invalid-message",
+                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType()])))
+                    == JOptionPane.YES_OPTION) {
+                AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode, true);
+                ard.display();
+                if (ard.success) {
+                    ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb, dc, true, "^", true, false);
                     eqd.display();
                 }
             }

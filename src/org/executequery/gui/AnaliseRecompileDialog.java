@@ -1,7 +1,7 @@
 package org.executequery.gui;
 
-import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseExecutable;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.databaseobjects.impl.LoadingObjectsHelper;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
@@ -13,25 +13,30 @@ import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AnaliseRecompileDialog extends BaseDialog {
-    public StringBuilder sb;
+    public List<String> sb;
+    public List<String> invalidSb;
     JProgressBar progressBar;
     JPanel panel;
 
     DatabaseObjectNode databaseObjectNode;
 
     LoggingOutputPanel logPane;
+    boolean onlyInvalid;
 
-    public AnaliseRecompileDialog(String name, boolean modal, DatabaseObjectNode databaseObjectNode) {
+    public AnaliseRecompileDialog(String name, boolean modal, DatabaseObjectNode databaseObjectNode, boolean onlyInvalid) {
         super(name, modal);
         this.databaseObjectNode = databaseObjectNode;
+        this.onlyInvalid = onlyInvalid;
         init();
     }
 
     private void init() {
-        sb = new StringBuilder();
+        sb = new ArrayList<>();
+        invalidSb = new ArrayList<>();
         panel = new JPanel();
         progressBar = new JProgressBar();
         logPane = new LoggingOutputPanel();
@@ -78,20 +83,23 @@ public class AnaliseRecompileDialog extends BaseDialog {
             long start = System.currentTimeMillis();
             if (childs != null) {
                 progressBar.setMaximum(childs.size());
-                if (metaTag.getSubType() == NamedObject.PACKAGE)
-                    sb.append("set term ; ^");
                 LoadingObjectsHelper loadingObjectsHelper = new LoadingObjectsHelper(childs.size());
                 for (int i = 0; i < childs.size(); i++) {
                     progressBar.setValue(i);
                     AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) childs.get(i).getDatabaseObject();
                     addOutputMessage(SqlMessages.PLAIN_MESSAGE, bundleString("generateScript", databaseObject.getName()));
                     loadingObjectsHelper.preparingLoadForObject(databaseObject);
-                    String s = databaseObject.getCreateSQLText();
+                    String s = databaseObject.getCreateSQLTextWithoutComment();
                     loadingObjectsHelper.postProcessingLoadForObject(databaseObject);
-                    sb.append(s);
-                    if (!sb.toString().trim().endsWith("^"))
-                        sb.append("^");
+                    List<String> stringBuilder = sb;
+                    if (databaseObject instanceof DefaultDatabaseExecutable && !((DefaultDatabaseExecutable) databaseObject).isValid())
+                        stringBuilder = invalidSb;
+                    else if (onlyInvalid)
+                        continue;
+                    stringBuilder.add(s);
                 }
+                for (String s : invalidSb)
+                    sb.add(0, s);
                 loadingObjectsHelper.releaseResources();
 
             }

@@ -366,6 +366,13 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
+                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), null, false, getHost().getDatabaseConnection());
+    }
+
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("TRIGGER", getName(), getHost().getDatabaseConnection());
     }
@@ -426,7 +433,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
         SelectBuilder sb = SelectBuilder.createSelectBuilder(getHost().getDatabaseConnection());
         Table triggers = getMainTable();
         sb.appendTable(triggers);
-        sb.appendFields(triggers, getFieldName(), TRIGGER_SOURCE, RELATION_NAME, TRIGGER_SEQUENCE, TRIGGER_TYPE, TRIGGER_INACTIVE, DESCRIPTION);
+        sb.appendFields(triggers, getFieldName(), TRIGGER_SOURCE, RELATION_NAME, TRIGGER_SEQUENCE, TRIGGER_TYPE, TRIGGER_INACTIVE, DESCRIPTION, VALID_BLR);
         sb.appendFields(triggers, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
         sb.appendField(buildSqlSecurityField(triggers));
         sb.setOrdering(getObjectField().getFieldTable());
@@ -444,6 +451,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
         setEngine(getFromResultSet(rs, ENGINE_NAME));
         setEntryPoint(getFromResultSet(rs, ENTRYPOINT));
         setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
+        setValid(rs.getInt(VALID_BLR) == 1);
         return null;
     }
 

@@ -216,8 +216,15 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateIndex(
-                getName(), getType(), isUnique(), getTableName(), null, getCondition(),
+                getName(), getIndexType() == 1, isUnique(), getTableName(), null, getCondition(),
                 getIndexColumns(), getTablespace(), isActive(), getRemarks(), getHost().getDatabaseConnection());
+    }
+
+    @Override
+    public String getCreateSQLTextWithoutComment() {
+        return SQLUtils.generateCreateIndex(
+                getName(), getIndexType() == 1, isUnique(), getTableName(), null, getCondition(),
+                getIndexColumns(), getTablespace(), isActive(), null, getHost().getDatabaseConnection());
     }
 
     @Override

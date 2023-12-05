@@ -48,7 +48,7 @@ public interface IFBMaintenanceManager extends IFBServiceManager {
 
     void validateDatabase(int var1) throws SQLException;
 
-    void validateTable(String var1, String var2) throws SQLException;
+    void validateTable(String var1, String var2, String var3, String var4) throws SQLException;
 
     void setParallelWorkers(int var1);
 

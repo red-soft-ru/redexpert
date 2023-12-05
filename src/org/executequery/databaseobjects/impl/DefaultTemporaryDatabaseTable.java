@@ -46,6 +46,16 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        updateListCD();
+        updateListCC();
+
+        return SQLUtils.generateCreateTable(
+                getName(), listCD, listCC, true, true, true, true, false,
+                getTypeTemporary(), getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("TABLE", getName(), getHost().getDatabaseConnection());
     }

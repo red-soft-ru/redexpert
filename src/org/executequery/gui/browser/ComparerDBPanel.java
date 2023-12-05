@@ -43,10 +43,12 @@ import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ComparerDBPanel extends JPanel implements TabView {
 
-    public static final String TITLE = bundleString("ComparerDB");
+    public static final String TITLE = bundleString("title");
+    public static final String TITLE_EXPORT = bundleString("title-export");
     public static final String FRAME_ICON = "ComparerDB_16.png";
 
     private static final int CHECK_CREATE = 0;
@@ -61,18 +63,19 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private static final int IGNORE_CK = IGNORE_UK + 1;
     private static final int STUBS = -100;
 
-    private static boolean isComparing = false;
-
     private Comparer comparer;
     private List<DatabaseConnection> databaseConnectionList;
     private List<Integer> scriptGenerationOrder;
     private List<ComparedObject> comparedObjectList;
-    private boolean isScriptGeneratorOrderReversed;
+
+    private boolean isComparing;
+    private boolean isReverseOrder;
+    private boolean isExtractMetadata;
 
     // --- panel components ---
 
-    private JComboBox dbMasterComboBox;
-    private JComboBox dbTargetComboBox;
+    private JComboBox<String> dbMasterComboBox;
+    private JComboBox<String> dbTargetComboBox;
     private JButton compareButton;
     private JButton saveScriptButton;
     private JButton executeScriptButton;
@@ -99,18 +102,19 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     public ComparerDBPanel() {
 
+        isExtractMetadata = false;
+        init();
+    }
+
+    public ComparerDBPanel(DatabaseConnection dc) {
+
+        isExtractMetadata = true;
         init();
 
-        List<DatabaseConnection> connections =
-                ((DatabaseConnectionRepository) Objects.requireNonNull(
-                        RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
+        dbTargetComboBox.setSelectedItem(dc.getName());
+        dbMasterComboBox.setSelectedItem(dc.getName());
 
-        for (DatabaseConnection dc : connections) {
-            databaseConnectionList.add(dc);
-            dbTargetComboBox.addItem(dc.getName());
-            dbMasterComboBox.addItem(dc.getName());
-        }
-
+        attributesCheckBoxMap.values().forEach(checkBox -> checkBox.setSelected(true));
     }
 
     private void init() {
@@ -118,36 +122,18 @@ public class ComparerDBPanel extends JPanel implements TabView {
         databaseConnectionList = new ArrayList<>();
         comparedObjectList = new ArrayList<>();
 
+        isComparing = false;
+        isReverseOrder = false;
+
         // --- script generation order defining ---
 
-        scriptGenerationOrder = new LinkedList<>();
-        isScriptGeneratorOrderReversed = false;
-
-        scriptGenerationOrder.add(NamedObject.COLLATION);
-        scriptGenerationOrder.add(NamedObject.DOMAIN);
-        scriptGenerationOrder.add(NamedObject.TABLESPACE);
-        scriptGenerationOrder.add(NamedObject.TABLE);
-        scriptGenerationOrder.add(NamedObject.GLOBAL_TEMPORARY);
-        scriptGenerationOrder.add(NamedObject.VIEW);
-        scriptGenerationOrder.add(NamedObject.INDEX);
-        scriptGenerationOrder.add(NamedObject.SEQUENCE);
-        scriptGenerationOrder.add(NamedObject.EXCEPTION);
-        scriptGenerationOrder.add(NamedObject.ROLE);
-        scriptGenerationOrder.add(NamedObject.USER);
-        scriptGenerationOrder.add(STUBS);
-        scriptGenerationOrder.add(NamedObject.FUNCTION);
-        scriptGenerationOrder.add(NamedObject.PROCEDURE);
-        scriptGenerationOrder.add(NamedObject.JOB);
-        scriptGenerationOrder.add(NamedObject.UDF);
-        scriptGenerationOrder.add(NamedObject.TRIGGER);
-        scriptGenerationOrder.add(NamedObject.DDL_TRIGGER);
-        scriptGenerationOrder.add(NamedObject.DATABASE_TRIGGER);
-        scriptGenerationOrder.add(NamedObject.PACKAGE);
+        scriptGenerationOrder = Arrays.stream(NamedObject.META_TYPES_FOR_COMPARE).collect(Collectors.toList());
+        scriptGenerationOrder.add(scriptGenerationOrder.indexOf(NamedObject.FUNCTION), STUBS);
 
         // --- buttons defining ---
 
         compareButton = new JButton();
-        compareButton.setText(bundleString("CompareButton"));
+        compareButton.setText(bundleString(isExtractMetadata ? "CompareExportButton" : "CompareButton"));
         compareButton.addActionListener(e -> compareDatabase());
 
         saveScriptButton = new JButton();
@@ -169,6 +155,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         switchTargetSourceButton = new JButton();
         switchTargetSourceButton.setText("<html><p style=\"font-size:20pt\">&#x21C5;</p>"); // Unicode Character '⇅' (U+21C5)
         switchTargetSourceButton.addActionListener(e -> switchTargetSource());
+        switchTargetSourceButton.setVisible(!isExtractMetadata);
 
         // --- attributes checkBox defining ---
 
@@ -197,16 +184,21 @@ public class ComparerDBPanel extends JPanel implements TabView {
         propertiesCheckBoxMap.put(IGNORE_CK, new JCheckBox(bundleString("IgnoreCK")));
 
         propertiesCheckBoxMap.get(CHECK_CREATE).setSelected(true);
-        propertiesCheckBoxMap.get(CHECK_ALTER).setSelected(true);
-        propertiesCheckBoxMap.get(CHECK_DROP).setSelected(true);
+
+        if (isExtractMetadata) {
+            propertiesCheckBoxMap.get(CHECK_CREATE).setEnabled(false);
+            propertiesCheckBoxMap.get(CHECK_ALTER).setVisible(false);
+            propertiesCheckBoxMap.get(CHECK_DROP).setVisible(false);
+        } else {
+            propertiesCheckBoxMap.get(CHECK_ALTER).setSelected(true);
+            propertiesCheckBoxMap.get(CHECK_DROP).setSelected(true);
+        }
 
         // --- comboBoxes defining ---
 
-        dbTargetComboBox = new JComboBox<DatabaseConnection>();
-        dbTargetComboBox.removeAllItems();
-
-        dbMasterComboBox = new JComboBox<DatabaseConnection>();
-        dbMasterComboBox.removeAllItems();
+        dbTargetComboBox = new JComboBox<>();
+        dbMasterComboBox = new JComboBox<>();
+        dbMasterComboBox.setVisible(!isExtractMetadata);
 
         // --- db components tree view ---
 
@@ -247,6 +239,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         // ---
 
         arrangeComponents();
+        getConnections();
     }
 
     private void arrangeComponents() {
@@ -262,8 +255,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
                 bundleString("CompareDatabaseLabel"), dbTargetComboBox, null);
-        gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
-                bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
+        if (!isExtractMetadata)
+            gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
+                    bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
 
         // --- connections panel ---
 
@@ -375,6 +369,19 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     }
 
+    private void getConnections() {
+
+        List<DatabaseConnection> connections =
+                ((DatabaseConnectionRepository) Objects.requireNonNull(
+                        RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
+
+        for (DatabaseConnection dc : connections) {
+            databaseConnectionList.add(dc);
+            dbTargetComboBox.addItem(dc.getName());
+            dbMasterComboBox.addItem(dc.getName());
+        }
+    }
+
     private boolean prepareComparer() {
 
         DatabaseConnection masterConnection = databaseConnectionList.get(dbMasterComboBox.getSelectedIndex());
@@ -392,18 +399,30 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return false;
         }
 
-        comparer = new Comparer(
-                this, targetConnection, masterConnection,
-                new boolean[]{
-                        !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
-                },
-                !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
-                !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
-                !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
-        );
+        comparer = !isExtractMetadata ?
+                new Comparer(
+                        this, targetConnection, masterConnection,
+                        new boolean[]{
+                                !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
+                        },
+                        !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
+                ) :
+                new Comparer(this, masterConnection,
+                        new boolean[]{
+                                !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
+                                !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
+                        },
+                        !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
+                        !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
+                );
 
         loggingOutputPanel.clear();
         sqlTextPanel.setSQLText("");
@@ -450,12 +469,12 @@ public class ComparerDBPanel extends JPanel implements TabView {
         settingScriptProps.append("SET NAMES ").append(getMasterDBCharset()).append(";\n");
         settingScriptProps.append("SET SQL DIALECT ").append(getMasterDBDialect()).append(";\n");
         settingScriptProps.append("CONNECT '").append(SimpleDataSource.generateUrl(
-                        comparer.getMasterConnection().getDatabaseConnection(),
-                        SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection().getDatabaseConnection()))
+                        comparer.getMasterConnection(),
+                        SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection()))
                 .replace("jdbc:firebirdsql://", "")
         );
-        settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getDatabaseConnection().getUserName());
-        settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getDatabaseConnection().getUnencryptedPassword());
+        settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getUserName());
+        settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getUnencryptedPassword());
         settingScriptProps.append("';\nSET AUTODDL ON;\n");
 
         comparer.addToScript(settingScriptProps.toString());
@@ -477,8 +496,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
             rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.CREATE, bundleString("CreateObjects")));
 
-            if (isScriptGeneratorOrderReversed) {
-                isScriptGeneratorOrderReversed = false;
+            if (isReverseOrder) {
+                isReverseOrder = false;
                 Collections.reverse(scriptGenerationOrder);
             }
 
@@ -515,8 +534,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
             rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.ALTER, bundleString("AlterObjects")));
 
-            if (isScriptGeneratorOrderReversed) {
-                isScriptGeneratorOrderReversed = false;
+            if (isReverseOrder) {
+                isReverseOrder = false;
                 Collections.reverse(scriptGenerationOrder);
             }
 
@@ -545,8 +564,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
             rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.DROP, bundleString("DropObjects")));
 
-            if (!isScriptGeneratorOrderReversed) {
-                isScriptGeneratorOrderReversed = true;
+            if (!isReverseOrder) {
+                isReverseOrder = true;
                 Collections.reverse(scriptGenerationOrder);
             }
 
@@ -598,26 +617,29 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return;
         }
 
-        if (databaseConnectionList.size() < 2 ||
-                dbTargetComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
-            GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
-            return;
-        }
+        if (!isExtractMetadata) {
 
-        for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++) {
-            if (attributesCheckBoxMap.get(i).isSelected())
-                break;
-            if (i == NamedObject.SYSTEM_DOMAIN - 1) {
-                GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoAttributes"));
+            if (databaseConnectionList.size() < 2 ||
+                    dbTargetComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
+                GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
                 return;
             }
-        }
 
-        if (!propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() &&
-                !propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() &&
-                !propertiesCheckBoxMap.get(CHECK_DROP).isSelected()) {
-            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoProperties"));
-            return;
+            for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++) {
+                if (attributesCheckBoxMap.get(i).isSelected())
+                    break;
+                if (i == NamedObject.SYSTEM_DOMAIN - 1) {
+                    GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoAttributes"));
+                    return;
+                }
+            }
+
+            if (!propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() &&
+                    !propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() &&
+                    !propertiesCheckBoxMap.get(CHECK_DROP).isSelected()) {
+                GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoProperties"));
+                return;
+            }
         }
 
         progressDialog = new BackgroundProgressDialog(bundleString("Executing"));
@@ -678,7 +700,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         isComparing = false;
         compareButton.setEnabled(true);
-        compareButton.setText(bundleString("CompareButton"));
+        compareButton.setText(bundleString(isExtractMetadata ? "CompareExportButton" : "CompareButton"));
         progressBar.setValue(progressBar.getMaximum());
         progressBar.setString(bundleString("ProgressBarFinish"));
 
@@ -730,7 +752,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 loggingOutputPanel.append(bundleString("SavedTo") + fileSavePath);
 
             } catch (IOException e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
         }
     }
@@ -743,7 +765,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         }
 
         QueryEditor queryEditor = new QueryEditor(sqlTextPanel.getSQLText().replace(settingScriptProps.toString(), ""));
-        queryEditor.setSelectedConnection(comparer.getMasterConnection().getDatabaseConnection());
+        queryEditor.setSelectedConnection(comparer.getMasterConnection());
         GUIUtilities.addCentralPane(
                 QueryEditor.TITLE, QueryEditor.FRAME_ICON,
                 queryEditor, null, true);
@@ -800,15 +822,15 @@ public class ComparerDBPanel extends JPanel implements TabView {
         String charset = "";
         String query = "select rdb$database.rdb$character_set_name from rdb$database";
 
-        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
+        try (ResultSet rs = comparer.getMasterExecutor().execute(query, true).getResultSet()) {
             while (rs.next())
                 charset = rs.getString(1).trim();
 
         } catch (java.sql.SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
 
         } finally {
-            comparer.getMasterConnection().releaseResources();
+            comparer.getMasterExecutor().releaseResources();
         }
 
         return charset;
@@ -819,15 +841,15 @@ public class ComparerDBPanel extends JPanel implements TabView {
         String dialect = "";
         String query = "select mon$database.mon$sql_dialect from mon$database";
 
-        try (ResultSet rs = comparer.getMasterConnection().execute(query, true).getResultSet()) {
+        try (ResultSet rs = comparer.getMasterExecutor().execute(query, true).getResultSet()) {
             while (rs.next())
                 dialect = rs.getString(1).trim();
 
         } catch (java.sql.SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
 
         } finally {
-            comparer.getMasterConnection().releaseResources();
+            comparer.getMasterExecutor().releaseResources();
         }
 
         return dialect;
@@ -902,6 +924,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
         return progressDialog.isCancel() || !isComparing;
     }
 
+    public boolean isExtractMetadata() {
+        return isExtractMetadata;
+    }
+
     public void addToLog(String text) {
         loggingOutputPanel.append(text);
     }
@@ -920,6 +946,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             this.description = description;
         }
 
+        @Override
         public boolean accept(File file) {
             if (file.isDirectory())
                 return true;
@@ -927,6 +954,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return file.getName().endsWith(extension);
         }
 
+        @Override
         public String getDescription() {
             return description + String.format(" (*%s)", extension);
         }

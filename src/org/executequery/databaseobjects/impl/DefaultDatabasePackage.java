@@ -105,6 +105,12 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), null, getHost().getDatabaseConnection());
+    }
+
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("PACKAGE", getName(), getHost().getDatabaseConnection());
     }
@@ -179,12 +185,18 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
             DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(procedureMetatag, rs.getString(1));
             procedure.setParent(this);
             procedure.setSystemFlag(isSystem());
+            procedure.setValid(rs.getInt("VALID_BLR") == 1);
+            if (!procedure.isValid())
+                setValid(false);
             procedures.add(procedure);
             childs.add(procedure);
         } else if (metatag.contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION])) {
             DefaultDatabaseFunction function = new DefaultDatabaseFunction(functionMetatag, rs.getString(1));
             function.setParent(this);
             function.setSystemFlag(isSystem());
+            function.setValid(rs.getInt("VALID_BLR") == 1);
+            if (!function.isValid())
+                setValid(false);
             functions.add(function);
             childs.add(function);
         }

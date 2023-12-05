@@ -107,15 +107,18 @@ public class AnaliseRow {
 
     void addMessage(LogMessage msg, int type) {
         Long currentValue = getValueFromType(msg, type);
-        if (currentValue != null) {
-            if (logMessage == null)
-                logMessage = msg;
-            rows[type].add(msg);
-            count[type]++;
-            total[type].longValue += currentValue;
-            if (currentValue > max[type].longValue)
-                max[type].longValue = currentValue;
-        } else Log.debug("calculate error for type '" + TYPES[type] + "': trace id = " + msg.getId());
+        if (currentValue == null) {
+            currentValue = 0L;
+            Log.debug("calculate error for type '" + TYPES[type] + "': trace id = " + msg.getId());
+        }
+        if (logMessage == null)
+            logMessage = msg;
+        rows[type].add(msg);
+        count[type]++;
+        total[type].longValue += currentValue;
+        if (currentValue > max[type].longValue)
+            max[type].longValue = currentValue;
+
     }
 
     public void calculateValues() {
@@ -131,7 +134,9 @@ public class AnaliseRow {
             long dispersion = 0;
             if (count[type] > 1) {
                 for (LogMessage row : rows[type]) {
-                    long value = getValueFromType(row, type);
+                    Long value = getValueFromType(row, type);
+                    if (value == null)
+                        value = 0L;
                     dispersion += (value - average[type].longValue) * (value - average[type].longValue);
                 }
                 dispersion = dispersion / count[type] - 1;

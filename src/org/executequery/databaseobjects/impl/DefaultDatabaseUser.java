@@ -261,6 +261,11 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        return SQLUtils.generateCreateUser(this, false);
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("USER", getName(), getHost().getDatabaseConnection());
     }

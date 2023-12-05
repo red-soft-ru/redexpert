@@ -65,6 +65,11 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() {
+        return getCreateSQLText();
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("EXCEPTION", getName(), getHost().getDatabaseConnection());
     }

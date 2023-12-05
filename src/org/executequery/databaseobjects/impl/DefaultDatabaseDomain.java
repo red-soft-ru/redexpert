@@ -90,6 +90,11 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() {
+        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true, false);
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("DOMAIN", getName(), getHost().getDatabaseConnection());
     }

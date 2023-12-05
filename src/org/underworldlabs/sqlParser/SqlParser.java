@@ -2,8 +2,14 @@ package org.underworldlabs.sqlParser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.gui.editor.autocomplete.Parameter;
+import org.executequery.log.Log;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SqlParser {
@@ -17,6 +23,7 @@ public class SqlParser {
     private static final int BLOCK = 8;
     private static final int DECLARE = 9;
     private static final int VARIABLE = 10;
+    private static final int BLOB_PARAMETER_STATE = 11;
 
     private final List<Parameter> parameters;
     private final List<Parameter> displayParameters;
@@ -37,12 +44,14 @@ public class SqlParser {
         StringBuilder processed = new StringBuilder();
         displayParameters = new ArrayList<>();
         StringBuilder parameter = new StringBuilder();
+        StringBuilder blobParameter = new StringBuilder();
         parameters = new ArrayList<>();
         int state = DEFAULT_STATE;
         int len = sql.length();
         int cur_exec = 1;
         boolean first = true;
         boolean second = false;
+        boolean blobStart = false;
         Character openChar = null;
         for (int i = 0; i < len; i++) {
             char curChar = sb.charAt(i);
@@ -79,6 +88,10 @@ public class SqlParser {
                                 second = false;
                                 break;
                             case '?':
+                                if (nextChar == '\'') {
+                                    state = BLOB_PARAMETER_STATE;
+                                    blobStart = true;
+                                }
                                 Parameter p = new Parameter("№" + (displayParameters.size() + 1));
                                 parameters.add(p);
                                 displayParameters.add(p);
@@ -164,6 +177,17 @@ public class SqlParser {
                             i--;
                         }
                         break;
+                    case BLOB_PARAMETER_STATE:
+                        if (curChar == '\'' && !blobStart) {
+                            state = DEFAULT_STATE;
+                            parameters.get(parameters.size() - 1).setValue(new File(blobParameter.toString()));
+                            displayParameters.get(displayParameters.size() - 1).setValue(new File(blobParameter.toString()));
+                            blobParameter.setLength(0);
+                        }
+                        blobStart = false;
+                        if (curChar != '\'')
+                            blobParameter.append(curChar);
+                        break;
                     case EXECUTE:
                         processed.append(curChar);
                         if (Character.toLowerCase(curChar) == execute.charAt(cur_exec)) {
@@ -212,9 +236,30 @@ public class SqlParser {
     }
 
     private void createParameter(StringBuilder parameter, StringBuilder processed) {
+
         String name = parameter.toString();
         if (variables.toLowerCase().contains("<" + name.toLowerCase() + ">")) {
             processed.replace(processed.length() - 1, processed.length(), ":" + name);
+
+        } else if (variables.contains("blobfile=")) {
+            try {
+
+                int startIndex = Integer.parseInt(name.substring(1).split("_")[0], 16);
+                int endIndex = startIndex + Integer.parseInt(name.split("_")[1], 16);
+
+                byte[] fileData = Files.readAllBytes(Paths.get(variables.substring(9)));
+                byte[] parameterData = Arrays.copyOfRange(fileData, startIndex, endIndex);
+
+                Parameter newParameter = new Parameter(name);
+                newParameter.setValue(parameterData);
+
+                parameters.add(newParameter);
+                displayParameters.add(newParameter);
+
+            } catch (IOException e) {
+                Log.error(String.format("Error reading .lob file (%s)", variables.substring(9)), e);
+            }
+
         } else {
             boolean contains = false;
             Parameter old = null;

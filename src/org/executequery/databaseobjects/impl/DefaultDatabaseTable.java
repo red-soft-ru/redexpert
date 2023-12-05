@@ -640,6 +640,16 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
+    public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        updateListCD();
+        updateListCC();
+
+        return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, true,
+                true, false, null, getExternalFile(),
+                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("TABLE", getName(), getHost().getDatabaseConnection());
     }

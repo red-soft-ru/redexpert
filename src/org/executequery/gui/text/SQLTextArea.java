@@ -33,8 +33,10 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.Printable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -970,6 +972,14 @@ public class SQLTextArea extends RSyntaxTextArea
         this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
     }
 
+    public boolean isEnableUndoManager() {
+        return ((SQLTextUndoManager) undoManager).isEnabled();
+    }
+
+    public void setEnableUndoManager(boolean enableUndoManager) {
+        ((SQLTextUndoManager) undoManager).setEnabled(enableUndoManager);
+    }
+
     @Override
     protected RTextAreaBase.RTAMouseListener createMouseListener() {
         return new CustomMouseListener(this);
@@ -1026,6 +1036,7 @@ public class SQLTextArea extends RSyntaxTextArea
     }
 
     protected static class SQLTextUndoManager extends RUndoManager {
+        protected boolean enabled = true;
 
         /**
          * Constructor.
@@ -1036,22 +1047,36 @@ public class SQLTextArea extends RSyntaxTextArea
             super(textArea);
         }
 
+        public void undoableEditHappened(UndoableEditEvent e) {
+            if (enabled)
+                super.undoableEditHappened(e);
+        }
+
         @Override
         public void updateActions() {
-            SwingWorker sw = new SwingWorker("updateActionsUndoManger") {
-                @Override
-                public Object construct() {
-                    superUpdateActions();
-                    return null;
-                }
-            };
-            sw.start();
+            if (enabled) {
+                SwingWorker sw = new SwingWorker("updateActionsUndoManger") {
+                    @Override
+                    public Object construct() {
+                        superUpdateActions();
+                        return null;
+                    }
+                };
+                sw.start();
+            }
         }
 
         private void superUpdateActions() {
             super.updateActions();
         }
 
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
     } // class SQLTextUndoManager
 
     private class CustomMouseListener extends RTextArea.RTextAreaMutableCaretEvent {

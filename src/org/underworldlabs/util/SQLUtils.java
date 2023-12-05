@@ -11,7 +11,10 @@ import org.executequery.gui.table.TableDefinitionPanel;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import javax.swing.table.TableModel;
 import java.sql.DatabaseMetaData;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -78,7 +81,7 @@ public final class SQLUtils {
 
         if (constraints)
             for (ColumnConstraint columnConstraint : columnConstraintList)
-                sb.append(generateDefinitionColumnConstraint(columnConstraint, existTable, true, dc)
+                sb.append(generateDefinitionColumnConstraint(columnConstraint, existTable, true, dc, true)
                         .replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, format(name, dc)));
 
         sb.append(CreateTableSQLSyntax.B_CLOSE);
@@ -100,6 +103,40 @@ public final class SQLUtils {
             if (!MiscUtils.isNull(comment) && !comment.equals(""))
                 sb.append(generateComment(name, "TABLE", comment, delimiter, false, dc));
         }
+
+        return sb.toString();
+    }
+
+    public static String generateCreateTable(String name, TableModel tableModel) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CREATE TABLE ").append(format(name, null)).append(" (");
+
+        int columnCount = tableModel.getColumnCount();
+        for (int i = 0; i < columnCount; i++) {
+
+            String type = "BLOB SUB_TYPE TEXT";
+            if (tableModel.getColumnClass(i) == Integer.class)
+                type = "INTEGER";
+            else if (tableModel.getColumnClass(i) == Long.class)
+                type = "BIGINT";
+            else if (tableModel.getColumnClass(i) == Double.class)
+                type = "DOUBLE PRECISION";
+            else if (tableModel.getColumnClass(i) == Timestamp.class)
+                type = "TIMESTAMP";
+            else if (tableModel.getColumnClass(i) == Date.class)
+                type = "DATE";
+            else if (tableModel.getColumnClass(i) == Time.class)
+                type = "TIME";
+            else if (tableModel.getColumnClass(i) == Boolean.class)
+                type = "BOOLEAN";
+
+            sb.append("\n\t").append(tableModel.getColumnName(i).trim()).append(SPACE).append(type);
+            if (i < columnCount - 1)
+                sb.append(",");
+        }
+        sb.append("\n);");
 
         return sb.toString();
     }
@@ -144,7 +181,7 @@ public final class SQLUtils {
     }
 
     public static String generateDefinitionColumnConstraint(
-            ColumnConstraint cc, boolean editing, boolean startWithNewLine, DatabaseConnection dc) {
+            ColumnConstraint cc, boolean editing, boolean startWithNewLine, DatabaseConnection dc, boolean useName) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -160,8 +197,11 @@ public final class SQLUtils {
 
             if (startWithNewLine)
                 sb.append(COMMA).append(NEW_LINE_2);
-            sb.append(CreateTableSQLSyntax.CONSTRAINT);
-            sb.append(format(nameConstraint, dc)).append(SPACE);
+
+            if (useName) {
+                sb.append(CreateTableSQLSyntax.CONSTRAINT);
+                sb.append(format(nameConstraint, dc)).append(SPACE);
+            }
 
             if (cc.getType() != -1) {
 
@@ -289,7 +329,7 @@ public final class SQLUtils {
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty())
             sb.append("\nAS\n").append(fullProcedureBody);
 
-        sb.append("^\n");
+        sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false, dc));
@@ -298,7 +338,7 @@ public final class SQLUtils {
         }
 
         if (setTerm)
-            sb.append("^\nSET TERM ;^");
+            sb.append("\n^\nSET TERM ;^");
 
         return sb.toString();
     }
@@ -441,7 +481,7 @@ public final class SQLUtils {
         if (fullFunctionBody != null && !fullFunctionBody.isEmpty())
             sb.append("\nAS\n").append(fullFunctionBody);
 
-        sb.append("^\n");
+        sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false, dc));
@@ -641,7 +681,7 @@ public final class SQLUtils {
                     sb.append(cd.getFormattedDomain());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
-            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue().getValue()) && !cd.getDefaultValue().isDomain()) {
+            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && cd.getDefaultValue().getValue() != null && cd.getDefaultValue().getValue().length() != 0 && !cd.getDefaultValue().isDomain()) {
                 sb.append(format(cd.getDefaultValue(), cd.getSQLType(), cd.getDatabaseConnection()));
             }
             if (!MiscUtils.isNull(cd.getCheck())) {
@@ -1046,8 +1086,9 @@ public final class SQLUtils {
 
                 if (addCheck == thisConstraints.size())
                     sb.append("\n\tADD ").append(generateDefinitionColumnConstraint(
-                                    new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint), true, false, thisTable.getHost().getDatabaseConnection()))
-                            .append(COMMA);
+                            new org.executequery.gui.browser.ColumnConstraint(false, comparingConstraint),
+                            true, false, thisTable.getHost().getDatabaseConnection(), true)
+                    ).append(COMMA);
             }
 
         }
@@ -1417,7 +1458,7 @@ public final class SQLUtils {
     }
 
     public static String generateCreateIndex(
-            String name, int type, boolean isUnique, String tableName, String expression, String condition,
+            String name, boolean isDescending, boolean isUnique, String tableName, String expression, String condition,
             List indexColumns, String tablespace, boolean isActive, String comment, DatabaseConnection dc) {
 
         StringBuilder sb = new StringBuilder();
@@ -1425,7 +1466,7 @@ public final class SQLUtils {
 
         if (isUnique)
             sb.append("UNIQUE ");
-        if (type == 1)
+        if (isDescending)
             sb.append("DESCENDING ");
 
         sb.append("INDEX ").append(format(name, dc));

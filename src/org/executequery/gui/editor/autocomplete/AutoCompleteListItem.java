@@ -142,8 +142,9 @@ public class AutoCompleteListItem {
             }
 
             if (!type.isTable()) { // keyword
-
-                return getUpperCaseValue().startsWith(prefix, 0);
+                //if(prefix.length()>2)
+                return getUpperCaseValue().contains(prefix);
+                //return getUpperCaseValue().startsWith(prefix, 0);
             }
         }
 
@@ -153,13 +154,17 @@ public class AutoCompleteListItem {
 
                 String name = table.getCompareName();
                 if (parentName.regionMatches(true, 0, name, 0, name.length())) {
-                    return getInsertionValue().regionMatches(true, 0, prefix, 0, prefix.length());
+                    //if(prefix.length()>2)
+                    return getInsertionValue().toUpperCase().contains(prefix);
+                    //return getInsertionValue().regionMatches(true, 0, prefix, 0, prefix.length());
                 }
 
             }
         }
         //if (!hasTables) { // ??? hhhmmmmmm
-        return getInsertionValue().regionMatches(true, 0, prefix, 0, prefix.length());
+        //if(prefix.length()>2)
+        return getInsertionValue().toUpperCase().contains(prefix);
+        //return getInsertionValue().regionMatches(true, 0, prefix, 0, prefix.length());
         // }
 
         //return false;

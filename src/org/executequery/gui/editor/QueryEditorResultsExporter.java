@@ -56,6 +56,10 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,10 +77,10 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
     private JCheckBox addColumnHeadersCheck;
     private JCheckBox addQuotesCheck;
-    private JCheckBox useAbsoluteBlobPathCheck;
+    private JCheckBox saveBlobsIndividually;
     private JComboBox<?> typeCombo;
     private JTextField filePathField;
-    private JTextField folderPathField;
+    private JTextField blobPathField;
     private JButton browseFileButton;
     private JButton browseFolderButton;
     private JButton exportButton;
@@ -132,7 +136,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         browseFileButton.addActionListener(e -> browseFile(filePathField));
 
         browseFolderButton = WidgetFactory.createButton("browseFolderButton", Bundles.get("common.browse.button"));
-        browseFolderButton.addActionListener(e -> browseFile(folderPathField));
+        browseFolderButton.addActionListener(e -> browseFile(blobPathField));
 
         exportButton = WidgetFactory.createButton("exportButton", Bundles.get("common.export.button"));
         exportButton.addActionListener(e -> export());
@@ -143,7 +147,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck = WidgetFactory.createCheckBox("addColumnHeadersCheck", bundleString("IncludeColumnNamesAsFirstRow"));
         addQuotesCheck = WidgetFactory.createCheckBox("addQuotesCheck", bundleString("addQuotesCheck"));
         openQueryEditorCheck = WidgetFactory.createCheckBox("openQueryEditorCheck", bundleString("openQueryEditorCheck"));
-        useAbsoluteBlobPathCheck = WidgetFactory.createCheckBox("useAbsoluteBlobPathCheck", bundleString("useAbsoluteBlobPathCheck"));
+        saveBlobsIndividually = WidgetFactory.createCheckBox("saveBlobsIndividually", bundleString("saveBlobsIndividually"));
 
         replaceEndlCheck = WidgetFactory.createCheckBox("replaceEndlLabel", bundleString("replaceEndlLabel"));
         replaceEndlCheck.addActionListener(e -> {
@@ -155,7 +159,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         replaceEndlField.setEditable(false);
 
         exportTableNameField = WidgetFactory.createTextField("exportTableNameField");
-        folderPathField = WidgetFactory.createTextField("folderPathField");
+        blobPathField = WidgetFactory.createTextField("folderPathField");
         filePathField = WidgetFactory.createTextField("filePathField");
 
         delimiterLabel = new JLabel(bundleString("delimiterLabel"));
@@ -188,7 +192,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         basePanel.add(addQuotesCheck, gridBagHelper.nextRowFirstCol().get());
         basePanel.add(openQueryEditorCheck, gridBagHelper.nextRowFirstCol().get());
         if (isContainsBlob)
-            basePanel.add(useAbsoluteBlobPathCheck, gridBagHelper.nextRowFirstCol().get());
+            basePanel.add(saveBlobsIndividually, gridBagHelper.nextRowFirstCol().get());
         gridBagHelper.addLabelFieldPair(basePanel, bundleString("FileFormat"), typeCombo, null, true, true);
 
         // for delimiter file
@@ -202,7 +206,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         // for all files
         if (isContainsBlob) {
             basePanel.add(new JLabel(bundleString("FolderPath")), gridBagHelper.setWidth(1).setMinWeightX().nextRowFirstCol().get());
-            basePanel.add(folderPathField, gridBagHelper.nextCol().setMaxWeightX().get());
+            basePanel.add(blobPathField, gridBagHelper.nextCol().setMaxWeightX().get());
             basePanel.add(browseFolderButton, gridBagHelper.nextCol().setMinWeightX().get());
         }
         basePanel.add(new JLabel(bundleString("FilePath")), gridBagHelper.setWidth(1).setMinWeightX().nextRowFirstCol().get());
@@ -248,7 +252,6 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setEnabled(true);
         addQuotesCheck.setEnabled(true);
         openQueryEditorCheck.setEnabled(false);
-        useAbsoluteBlobPathCheck.setEnabled(true);
 
         delimiterLabel.setVisible(true);
         columnDelimiterCombo.setVisible(true);
@@ -266,7 +269,6 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setEnabled(true);
         addQuotesCheck.setEnabled(false);
         openQueryEditorCheck.setEnabled(false);
-        useAbsoluteBlobPathCheck.setEnabled(true);
 
         delimiterLabel.setVisible(false);
         columnDelimiterCombo.setVisible(false);
@@ -285,7 +287,6 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setEnabled(false);
         addQuotesCheck.setEnabled(false);
         openQueryEditorCheck.setEnabled(false);
-        useAbsoluteBlobPathCheck.setEnabled(true);
 
         delimiterLabel.setVisible(false);
         columnDelimiterCombo.setVisible(false);
@@ -299,12 +300,10 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         addColumnHeadersCheck.setSelected(false);
         addQuotesCheck.setSelected(false);
-        useAbsoluteBlobPathCheck.setSelected(true);
 
         addColumnHeadersCheck.setEnabled(false);
         addQuotesCheck.setEnabled(false);
         openQueryEditorCheck.setEnabled(true);
-        useAbsoluteBlobPathCheck.setEnabled(false);
 
         delimiterLabel.setVisible(false);
         columnDelimiterCombo.setVisible(false);
@@ -325,7 +324,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         FileChooserDialog fileChooser = new FileChooserDialog();
         fileChooser.setDialogTitle(bundleString("SelectExportFilePath"));
-        fileChooser.setFileSelectionMode(isFile ? JFileChooser.FILES_ONLY : JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.setFileSelectionMode(isFile || !saveBlobsIndividually.isSelected() ? JFileChooser.FILES_ONLY : JFileChooser.DIRECTORIES_ONLY);
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
         fileChooser.setMultiSelectionEnabled(false);
 
@@ -347,6 +346,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 default:
                     suffix = ".csv";
             }
+
+        } else if (!saveBlobsIndividually.isSelected()) {
+            suffix = ".lob";
         }
 
         String path = fileChooser.getSelectedFile().getAbsolutePath();
@@ -356,31 +358,59 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         field.setText(path);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void export() {
 
         String exportFilePath = filePathField.getText();
-        String exportFolderPath = folderPathField.getText();
+        String exportBlobPath = blobPathField.getText();
 
         if (MiscUtils.isNull(exportFilePath)) {
             GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
             return;
         }
 
-        if (isContainsBlob && MiscUtils.isNull(exportFolderPath)) {
+        if (isContainsBlob && MiscUtils.isNull(exportBlobPath)) {
             GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
             return;
         }
 
-        new File(exportFolderPath).mkdirs();
-
         if (FileUtils.fileExists(exportFilePath)) {
-            int result = GUIUtilities.displayYesNoDialog(bundleString("OverwriteFile"), Bundles.get("common.confirmation"));
+
+            int result = GUIUtilities.displayYesNoDialog(
+                    String.format(bundleString("OverwriteFile"), exportFilePath),
+                    Bundles.get("common.confirmation")
+            );
+
             if (result == JOptionPane.NO_OPTION) {
                 filePathField.selectAll();
                 filePathField.requestFocus();
                 return;
             }
         }
+
+        if (!saveBlobsIndividually.isSelected()) {
+
+            if (FileUtils.fileExists(exportBlobPath)) {
+
+                int result = GUIUtilities.displayYesNoDialog(
+                        String.format(bundleString("OverwriteFile"), exportBlobPath),
+                        Bundles.get("common.confirmation")
+                );
+
+                if (result == JOptionPane.NO_OPTION) {
+                    filePathField.selectAll();
+                    filePathField.requestFocus();
+                    return;
+                }
+            }
+
+            try {
+                Files.write(Paths.get(exportBlobPath), "".getBytes(StandardCharsets.UTF_8));
+            } catch (IOException ignored) {
+            }
+
+        } else
+            new File(exportBlobPath).mkdirs();
 
         SwingWorker worker = new SwingWorker("ExportFromResultSet") {
 
@@ -662,18 +692,28 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         byte[] lobData = lobValue.getData();
         if (lobData != null) {
 
-            String lobType = lobValue.getLobRecordItemName();
-            lobType = lobType.contains("/") ? lobType.split("/")[1] : "txt";
+            if (saveBlobsIndividually.isSelected()) {
 
-            stringValue = exportTableModel.getColumnName(col) + "_" + row + "." + lobType;
+                String lobType = lobValue.getLobRecordItemName();
+                lobType = lobType.contains("/") ? lobType.split("/")[1] : "txt";
 
-            File outputFile = new File(folderPathField.getText().trim(), stringValue);
-            try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
-                outputStream.write(lobData);
-            }
+                stringValue = exportTableModel.getColumnName(col) + "_" + row + "." + lobType;
 
-            if (useAbsoluteBlobPathCheck.isSelected())
+                File outputFile = new File(blobPathField.getText().trim(), stringValue);
+                try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+                    outputStream.write(lobData);
+                }
+
                 stringValue = outputFile.getAbsolutePath();
+
+            } else {
+
+                String startIndex = String.format("%08x", new File(blobPathField.getText().trim()).length());
+                String dataLength = String.format("%08x", lobData.length);
+                stringValue = ":h" + startIndex + "_" + dataLength;
+
+                Files.write(Paths.get(blobPathField.getText().trim()), lobData, StandardOpenOption.APPEND);
+            }
         }
 
         return stringValue;
@@ -701,6 +741,11 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                     "*/\n";
 
             result.append(createTableTemplate);
+
+            // --- setup *.lob file ---
+
+            if (!saveBlobsIndividually.isSelected())
+                result.append("\nSET BLOBFILE '").append(blobPathField.getText().trim()).append("';\n");
 
             // --- create 'insert into' template ---
 
@@ -737,7 +782,10 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                     String stringValue = getFormattedValue(value, null);
 
                     if (isBlobType(value)) {
-                        values.append("?'").append(writeBlobToFile((AbstractLobRecordDataItem) value, col, row)).append("'");
+                        if (saveBlobsIndividually.isSelected())
+                            values.append("?'").append(writeBlobToFile((AbstractLobRecordDataItem) value, col, row)).append("'");
+                        else
+                            values.append(writeBlobToFile((AbstractLobRecordDataItem) value, col, row));
 
                     } else if (!stringValue.isEmpty()) {
 

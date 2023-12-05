@@ -665,10 +665,10 @@ public class QueryDispatcher {
 
             if (!query.isExecutable()) {
 
-                    setOutputMessage(querySender.getDatabaseConnection(),
-                            SqlMessages.WARNING_MESSAGE, "Non executable query provided", anyConnections);
-                    return DONE;
-                }
+                setOutputMessage(querySender.getDatabaseConnection(),
+                        SqlMessages.WARNING_MESSAGE, "Non executable query provided", anyConnections);
+                return DONE;
+            }
 
             // reset clock
             end = 0L;
@@ -680,23 +680,23 @@ public class QueryDispatcher {
             int type = query.getQueryType();
             if (type != QueryTypes.COMMIT && type != QueryTypes.ROLLBACK) {
 
-                    logExecution(queryToExecute, anyConnections);
+                logExecution(queryToExecute, anyConnections);
 
             } else {
 
                 if (type == QueryTypes.COMMIT) {
 
-                        setOutputMessage(querySender.getDatabaseConnection(),
-                                SqlMessages.ACTION_MESSAGE,
-                                COMMITTING_LAST, anyConnections);
+                    setOutputMessage(querySender.getDatabaseConnection(),
+                            SqlMessages.ACTION_MESSAGE,
+                            COMMITTING_LAST, anyConnections);
 
                 } else if (type == QueryTypes.ROLLBACK) {
 
-                        setOutputMessage(
-                                querySender.getDatabaseConnection(),
-                                SqlMessages.ACTION_MESSAGE,
-                                ROLLING_BACK_LAST, anyConnections);
-                    }
+                    setOutputMessage(
+                            querySender.getDatabaseConnection(),
+                            SqlMessages.ACTION_MESSAGE,
+                            ROLLING_BACK_LAST, anyConnections);
+                }
 
             }
 
@@ -771,21 +771,21 @@ public class QueryDispatcher {
 
                     }
 
-                        printExecutionPlan(before, anyConnections);
-                        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE,
-                                message, true, anyConnections);
-                        setStatusMessage(ERROR_EXECUTING);
+                    printExecutionPlan(before, anyConnections);
+                    setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE,
+                            message, true, anyConnections);
+                    setStatusMessage(ERROR_EXECUTING);
 
                 } else {
 
                     // Trying to get execution plan of firebird statement
 
-                        printPlan(rset, anyConnections);
+                    printPlan(rset, anyConnections);
 
-                        setResultSet(rset, query.getOriginalQuery(), anyConnections);
+                    setResultSet(rset, query.getOriginalQuery(), anyConnections);
 
-                        printExecutionPlan(before,anyConnections);
-                    }
+                    printExecutionPlan(before, anyConnections);
+                }
 
                 end = System.currentTimeMillis();
 
@@ -799,27 +799,27 @@ public class QueryDispatcher {
                     int updateCount = result.getUpdateCount();
                     if (updateCount == -1) {
 
-                            printExecutionPlan(before, anyConnections);
-                            setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE,
-                                    result.getErrorMessage(), true, anyConnections);
-                            setStatusMessage(ERROR_EXECUTING);
+                        printExecutionPlan(before, anyConnections);
+                        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE,
+                                result.getErrorMessage(), true, anyConnections);
+                        setStatusMessage(ERROR_EXECUTING);
 
                     } else {
 
                         if (result.isException()) {
 
-                                printExecutionPlan(before, anyConnections);
-                                setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true, anyConnections);
-                            } else {
+                            printExecutionPlan(before, anyConnections);
+                            setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true, anyConnections);
+                        } else {
 
-                                type = result.getType();
-                                setResultText(querySender.getDatabaseConnection(), updateCount, query.getQueryType(), query.getMetaName(), anyConnections);
-                                if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT
-                                        || type == QueryTypes.CREATE_OR_ALTER || type == QueryTypes.RECREATE_OBJECT || type == QueryTypes.ALTER_OBJECT) {
-                                    DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
-                                    for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                                        if (metaTagNode.getMetaDataKey().equals(query.getMetaName())) {
-                                            ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+                            type = result.getType();
+                            setResultText(querySender.getDatabaseConnection(), updateCount, query.getQueryType(), query.getMetaName(), anyConnections);
+                            if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT
+                                    || type == QueryTypes.CREATE_OR_ALTER || type == QueryTypes.RECREATE_OBJECT || type == QueryTypes.ALTER_OBJECT) {
+                                DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
+                                for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
+                                    if (metaTagNode.getMetaDataKey().equals(query.getMetaName())) {
+                                        ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
 
                                     } else if ((NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(query.getMetaName()) || NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY].contentEquals(query.getMetaName())) && metaTagNode.isSystem()) {
                                         ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
@@ -834,7 +834,7 @@ public class QueryDispatcher {
                                 setStatusMessage(" " + result.getMessage());
                             }
 
-                                printExecutionPlan(before, anyConnections);
+                            printExecutionPlan(before, anyConnections);
 
                         }
                     }
@@ -846,33 +846,33 @@ public class QueryDispatcher {
 
                     if (results == null) {
 
-                            printExecutionPlan(before, anyConnections);
+                        printExecutionPlan(before, anyConnections);
 
-                            setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true, anyConnections);
-                            setStatusMessage(ERROR_EXECUTING);
+                        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true, anyConnections);
+                        setStatusMessage(ERROR_EXECUTING);
 
                     } else {
 
-                            printExecutionPlan(before,  anyConnections);
+                        printExecutionPlan(before, anyConnections);
 
-                            setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, "Call executed successfully.", anyConnections);
-                            int updateCount = result.getUpdateCount();
+                        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, "Call executed successfully.", anyConnections);
+                        int updateCount = result.getUpdateCount();
 
                         if (updateCount > 0) {
 
-                                setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE,
-                                        updateCount +
-                                                ((updateCount > 1) ?
-                                                        " rows affected." : " row affected."), anyConnections);
-                            }
+                            setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE,
+                                    updateCount +
+                                            ((updateCount > 1) ?
+                                                    " rows affected." : " row affected."), anyConnections);
+                        }
 
                         String SPACE = " = ";
                         for (Iterator<?> i = results.keySet().iterator(); i.hasNext(); ) {
 
-                                String key = i.next().toString();
-                                setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE,
-                                        key + SPACE + results.get(key), anyConnections);
-                            }
+                            String key = i.next().toString();
+                            setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE,
+                                    key + SPACE + results.get(key), anyConnections);
+                        }
 
                     }
 
@@ -886,9 +886,9 @@ public class QueryDispatcher {
                 end = System.currentTimeMillis();
             }
 
-                long timeTaken = end - start;
-                totalDuration += timeTaken;
-                logExecutionTime(timeTaken, anyConnections);
+            long timeTaken = end - start;
+            totalDuration += timeTaken;
+            logExecutionTime(timeTaken, anyConnections);
 
 
             statementExecuted(sql);
@@ -1012,6 +1012,7 @@ public class QueryDispatcher {
             start = System.currentTimeMillis();
             boolean stopOnError = SystemProperties.getBooleanProperty("user", "editor.stop.on.error");
             boolean error = false;
+            String blobFilePath = "import";
             TreeSet<String> createsMetaNames = new TreeSet<>();
             for (int i = 0; i < executableQueries.size(); i++) {
                 try {
@@ -1048,10 +1049,16 @@ public class QueryDispatcher {
                     }
 
                     PreparedStatement statement;
+
+                    if (queryToExecute.toUpperCase().contains("SET BLOBFILE ")) {
+                        blobFilePath = "blobfile=" + queryToExecute.substring(14, queryToExecute.length() - 1);
+                        continue;
+                    }
+
                     if (query.getQueryType() == QueryTypes.SET_AUTODDL_ON || query.getQueryType() == QueryTypes.SET_AUTODDL_OFF)
                         statement = null;
                     else if (query.getQueryType() == QueryTypes.INSERT)
-                        statement = prepareStatementWithParameters(queryToExecute, "");
+                        statement = prepareStatementWithParameters(queryToExecute, blobFilePath);
                     else
                         statement = querySender.getPreparedStatement(queryToExecute);
 
@@ -1178,10 +1185,10 @@ public class QueryDispatcher {
                                 if (results != null)
                                     for (Iterator<?> it = results.keySet().iterator(); it.hasNext(); ) {
 
-                                    String key = it.next().toString();
-                                    setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE,
-                                            key + SPACE + results.get(key), anyConnections);
-                                }
+                                        String key = it.next().toString();
+                                        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE,
+                                                key + SPACE + results.get(key), anyConnections);
+                                    }
 
                             }
 

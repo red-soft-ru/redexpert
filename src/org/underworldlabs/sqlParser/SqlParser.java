@@ -2,12 +2,15 @@ package org.underworldlabs.sqlParser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.gui.editor.autocomplete.Parameter;
+import org.executequery.log.Log;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class SqlParser {
     private static final int DEFAULT_STATE = 0;
@@ -233,9 +236,30 @@ public class SqlParser {
     }
 
     private void createParameter(StringBuilder parameter, StringBuilder processed) {
+
         String name = parameter.toString();
         if (variables.toLowerCase().contains("<" + name.toLowerCase() + ">")) {
             processed.replace(processed.length() - 1, processed.length(), ":" + name);
+
+        } else if (variables.contains("blobfile=")) {
+            try {
+
+                int startIndex = Integer.parseInt(name.substring(1).split("_")[0], 16);
+                int endIndex = startIndex + Integer.parseInt(name.split("_")[1], 16);
+
+                byte[] fileData = Files.readAllBytes(Paths.get(variables.substring(9)));
+                byte[] parameterData = Arrays.copyOfRange(fileData, startIndex, endIndex);
+
+                Parameter newParameter = new Parameter(name);
+                newParameter.setValue(parameterData);
+
+                parameters.add(newParameter);
+                displayParameters.add(newParameter);
+
+            } catch (IOException e) {
+                Log.error(String.format("Error reading .lob file (%s)", variables.substring(9)), e);
+            }
+
         } else {
             boolean contains = false;
             Parameter old = null;

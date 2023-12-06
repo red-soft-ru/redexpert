@@ -53,6 +53,9 @@ public class ImportHelperDB extends AbstractImportHelper {
 
         DefaultStatementExecutor sourceExecutor = getExecutor(sourceConnection);
         ResultSet sourceFileData = getSourceResultSet(sourceSelectQuery, sourceExecutor);
+        if (sourceFileData == null)
+            return;
+
         while (sourceFileData.next()) {
 
             if (progressDialog.isCancel() || linesCount > lastRow)
@@ -102,31 +105,13 @@ public class ImportHelperDB extends AbstractImportHelper {
     }
 
     @Override
-    public List<String> getPreviewData() throws SQLException {
-
-        String query = "SELECT FIRST " + previewRowCount + " * FROM " + MiscUtils.getFormattedObject(sourceTableName, sourceConnection);
-        List<String> readData = new LinkedList<>();
-
-        ResultSet rs = getSourceResultSet(query, getExecutor(sourceConnection));
-        if (rs == null)
-            return readData;
-
-        int previewIndex = 0;
-        while (rs.next() && previewIndex < previewRowCount) {
-            readData.add(String.join(delimiter, getRowData(rs)));
-            previewIndex++;
-        }
-
-        return readData;
+    public List<String> getPreviewData() {
+        return null;
     }
 
-    private List<String> getRowData(ResultSet rs) throws SQLException {
-
-        List<String> rowData = new LinkedList<>();
-        for (int i = 1; i <= getHeaders().size(); i++)
-            rowData.add(rs.getString(i));
-
-        return rowData;
+    public ResultSet getPreviewResultSet() throws SQLException {
+        String query = "SELECT FIRST " + previewRowCount + " * FROM " + MiscUtils.getFormattedObject(sourceTableName, sourceConnection);
+        return getSourceResultSet(query, getExecutor(sourceConnection));
     }
 
     private DefaultStatementExecutor getExecutor(DatabaseConnection connection) {
@@ -139,7 +124,7 @@ public class ImportHelperDB extends AbstractImportHelper {
         return executor;
     }
 
-    public synchronized ResultSet getSourceResultSet(String query, DefaultStatementExecutor executor) throws SQLException {
+    private synchronized ResultSet getSourceResultSet(String query, DefaultStatementExecutor executor) throws SQLException {
 
         ResultSet resultSet = executor.execute(QueryTypes.SELECT, query).getResultSet();
         if (resultSet != null) {

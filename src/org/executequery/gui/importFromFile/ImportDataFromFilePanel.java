@@ -13,12 +13,16 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.NamedView;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.editor.ResultSetTablePopupMenu;
+import org.executequery.gui.resultset.ResultSetTable;
+import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.DefaultProgressDialog;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -34,6 +38,8 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +61,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     // --- GUI components ---
 
+    private JPanel importFilePanel;
+    private JPanel importConnectionPanel;
+
     private JComboBox targetConnectionsCombo;
     private JComboBox targetTableCombo;
     private JComboBox sourceConnectionsCombo;
@@ -62,8 +71,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private JComboBox delimiterCombo;
 
     private JLabel propertyLabel;
-    private JLabel sourceConnectionLabel;
-    private JLabel sourceTableLabel;
 
     private JTextField fileNameField;
 
@@ -76,8 +83,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private JSpinner lastImportedRowSelector;
     private JSpinner commitStepSelector;
 
-    private DefaultTableModel dataPreviewTableModel;
-    private JTable dataPreviewTable;
+    private DefaultTableModel filePreviewTableModel;
+    private JTable filePreviewTable;
+
+    private ResultSetTableModel connectionPreviewTableModel;
+    private ResultSetTable connectionPreviewTable;
 
     private DefaultTableModel columnMappingTableModel;
     private JTable columnMappingTable;
@@ -91,7 +101,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     // ---
 
-    private DefaultDatabaseHost dbHost;
+    private DefaultDatabaseHost targetHost;
     private ImportHelper importHelper;
     private List<String> sourceHeaders;
     private String pathToFile;
@@ -111,7 +121,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         List<DatabaseConnection> connections = ((DatabaseConnectionRepository) Objects.requireNonNull(RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
 
         delimiterCombo = WidgetFactory.createComboBox("delimiterCombo", delimiters);
-        delimiterCombo.addActionListener(e -> openSourceFile(false));
+        delimiterCombo.addActionListener(e -> previewSourceFile(false));
         delimiterCombo.setEditable(true);
         delimiterCombo.setVisible(false);
 
@@ -125,24 +135,22 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         connections.forEach(dc -> targetConnectionsCombo.addItem(dc));
 
         sourceTableCombo = WidgetFactory.createComboBox("sourceTableCombo");
-        sourceTableCombo.addActionListener(e -> openSourceFile(false));
+        sourceTableCombo.addActionListener(e -> previewSourceTable());
         sourceTableCombo.setEnabled(false);
-        sourceTableCombo.setVisible(false);
 
         sourceConnectionsCombo = WidgetFactory.createComboBox("sourceConnectionsCombo");
         sourceConnectionsCombo.addActionListener(e -> sourceConnectionChanged());
         sourceConnectionsCombo.addItem(bundleString("SelectDB"));
         connections.forEach(dc -> sourceConnectionsCombo.addItem(dc));
-        sourceConnectionsCombo.setVisible(false);
 
         // --- checkBoxes ---
 
         firstRowIsNamesCheck = WidgetFactory.createCheckBox("firstRowIsNamesCheck", bundleString("IsFirstColumnNamesText"));
-        firstRowIsNamesCheck.addActionListener(e -> openSourceFile(false));
+        firstRowIsNamesCheck.addActionListener(e -> previewSourceFile(false));
         firstRowIsNamesCheck.setVisible(false);
 
         importFromConnectionCheck = WidgetFactory.createCheckBox("importFromConnectionCheck", bundleString("importFromConnectionCheck"));
-        importFromConnectionCheck.addActionListener(e -> switchSourceFields());
+        importFromConnectionCheck.addActionListener(e -> updateSourcePropertiesFields());
 
         eraseTableCheck = WidgetFactory.createCheckBox("eraseTableCheck", bundleString("IsEraseDatabaseText"));
 
@@ -153,13 +161,24 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         commitStepSelector = WidgetFactory.createSpinner("commitStepSelector", 100, 100, 1000000, 100);
 
         sheetNumberSpinner = WidgetFactory.createSpinner("sheetNumberSpinner", 1, 1, 1, 1);
-        sheetNumberSpinner.addChangeListener(e -> openSourceFile(false));
+        sheetNumberSpinner.addChangeListener(e -> previewSourceFile(false));
         sheetNumberSpinner.setVisible(false);
 
-        // --- data preview table ---
+        // --- file preview table ---
 
-        dataPreviewTableModel = new DefaultTableModel();
-        dataPreviewTable = WidgetFactory.createTable("dataPreviewTable", dataPreviewTableModel);
+        filePreviewTableModel = new DefaultTableModel();
+        filePreviewTable = WidgetFactory.createTable("filePreviewTable", filePreviewTableModel);
+
+        // --- connection preview table ---
+
+        try {
+            connectionPreviewTableModel = new ResultSetTableModel(PREVIEW_ROWS_COUNT, true);
+
+            connectionPreviewTable = new ResultSetTable();
+            connectionPreviewTable.setModel(new TableSorter(connectionPreviewTableModel));
+            connectionPreviewTable.addMouseListener(new ResultSetTablePopupMenu(connectionPreviewTable, null));
+        } catch (SQLException ignored) {
+        }
 
         // --- column mapping table ---
 
@@ -196,7 +215,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         browseButton.addActionListener(e -> browseFile());
 
         readFileButton = WidgetFactory.createButton("readFileButton", bundleString("ReadFileButtonText"));
-        readFileButton.addActionListener(e -> openSourceFile(true));
+        readFileButton.addActionListener(e -> previewSourceFile(true));
 
         refreshMappingTableButton = WidgetFactory.createButton("refreshMappingTableButton", bundleString("RefreshButtonText"));
         refreshMappingTableButton.addActionListener(e -> updateMappingTable());
@@ -206,16 +225,15 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // --- other ---
 
+        importFilePanel = new JPanel(new GridBagLayout());
+
+        importConnectionPanel = new JPanel(new GridBagLayout());
+        importConnectionPanel.setVisible(false);
+
         fileNameField = WidgetFactory.createTextField("fileNameField");
 
         propertyLabel = new JLabel();
         propertyLabel.setVisible(false);
-
-        sourceConnectionLabel = new JLabel(bundleString("sourceConnectionLabel"));
-        sourceConnectionLabel.setVisible(false);
-
-        sourceTableLabel = new JLabel(bundleString("sourceTableLabel"));
-        sourceTableLabel.setVisible(false);
 
         // ---
 
@@ -228,7 +246,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // --- scroll panes ---
 
-        JScrollPane dataPreviewScrollPane = new JScrollPane(dataPreviewTable,
+        JScrollPane filePreviewScrollPane = new JScrollPane(filePreviewTable,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        JScrollPane connectionPreviewScrollPane = new JScrollPane(connectionPreviewTable,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
@@ -236,25 +258,25 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        // --- preview panel ---
+        // --- connection preview panel ---
 
-        JPanel previewPanel = new JPanel(new GridBagLayout());
-        previewPanel.setBorder(BorderFactory.createTitledBorder(bundleString("PreviewTableLabel")));
+        gridBagHelper.fillHorizontally().addLabelFieldPair(importConnectionPanel,
+                bundleString("sourceConnectionLabel"), sourceConnectionsCombo, null, true, false, 2);
+        gridBagHelper.addLabelFieldPair(importConnectionPanel,
+                bundleString("sourceTableLabel"), sourceTableCombo, null, false, false, 1);
+        importConnectionPanel.add(connectionPreviewScrollPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
-        gridBagHelper.fillHorizontally().addLabelFieldPair(previewPanel,
-                sourceConnectionLabel, sourceConnectionsCombo, null, true, false, 2);
-        gridBagHelper.addLabelFieldPair(previewPanel,
-                sourceTableLabel, sourceTableCombo, null, false, false, 1);
+        // --- file preview panel ---
 
-        previewPanel.add(fileNameField, gridBagHelper.nextRowFirstCol().fillHorizontally().setWidth(4).setMaxWeightX().get());
-        previewPanel.add(browseButton, gridBagHelper.nextCol().setLabelDefault().get());
-        previewPanel.add(readFileButton, gridBagHelper.nextCol().get());
+        importFilePanel.add(fileNameField, gridBagHelper.nextRowFirstCol().fillHorizontally().setWidth(4).setMaxWeightX().get());
+        importFilePanel.add(browseButton, gridBagHelper.nextCol().setLabelDefault().get());
+        importFilePanel.add(readFileButton, gridBagHelper.nextCol().get());
 
-        previewPanel.add(dataPreviewScrollPane, gridBagHelper.nextRowFirstCol().fillBoth().setMaxWeightY().spanX().get());
-        previewPanel.add(firstRowIsNamesCheck, gridBagHelper.nextRowFirstCol().setMinWeightY().setWidth(2).get());
-        previewPanel.add(propertyLabel, gridBagHelper.nextCol().get());
-        previewPanel.add(delimiterCombo, gridBagHelper.nextCol().get());
-        previewPanel.add(sheetNumberSpinner, gridBagHelper.get());
+        importFilePanel.add(filePreviewScrollPane, gridBagHelper.nextRowFirstCol().fillBoth().setMaxWeightY().spanX().get());
+        importFilePanel.add(firstRowIsNamesCheck, gridBagHelper.nextRowFirstCol().setMinWeightY().setWidth(2).get());
+        importFilePanel.add(propertyLabel, gridBagHelper.nextCol().get());
+        importFilePanel.add(delimiterCombo, gridBagHelper.nextCol().get());
+        importFilePanel.add(sheetNumberSpinner, gridBagHelper.get());
 
         // --- mapping panel ---
 
@@ -269,6 +291,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         mappingPanel.add(mappingTableScrollPane, gridBagHelper.nextRowFirstCol().setMaxWeightY().fillBoth().spanX().get());
         mappingPanel.add(eraseTableCheck, gridBagHelper.nextRowFirstCol().fillHorizontally().setMinWeightY().setWidth(2).get());
         mappingPanel.add(importFromConnectionCheck, gridBagHelper.nextCol().spanX().get());
+
+        // --- preview panel ---
+
+        JPanel previewPanel = new JPanel(new GridBagLayout());
+        previewPanel.setBorder(BorderFactory.createTitledBorder(bundleString("PreviewTableLabel")));
+
+        previewPanel.add(importFilePanel, gridBagHelper.fillBoth().spanX().spanY().get());
+        previewPanel.add(importConnectionPanel, gridBagHelper.fillBoth().spanX().spanY().get());
 
         // --- split pane ---
 
@@ -317,37 +347,31 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         }
 
         fileNameField.setText(file.getAbsolutePath());
-        openSourceFile(true);
+        previewSourceFile(true);
     }
 
-    private synchronized void openSourceFile(boolean displayWarnings) {
+    private synchronized void previewSourceFile(boolean displayWarnings) {
 
-        if (!importFromConnectionCheck.isSelected() && fileNameField.getText().isEmpty()) {
+        if (fileNameField.getText().isEmpty()) {
             if (displayWarnings)
                 GUIUtilities.displayWarningMessage(bundleString("NoFileSelectedMessage"));
             return;
         }
 
-        if (!importFromConnectionCheck.isSelected()) {
+        File sourceFile = new File(fileNameField.getText());
+        String oldPathToFile = pathToFile;
+        pathToFile = sourceFile.getAbsolutePath();
+        fileName = FilenameUtils.getBaseName(sourceFile.getName());
+        fileType = FileNameUtils.getExtension(sourceFile.getName());
 
-            File sourceFile = new File(fileNameField.getText());
-            String oldPathToFile = pathToFile;
-            pathToFile = sourceFile.getAbsolutePath();
-            fileName = FilenameUtils.getBaseName(sourceFile.getName());
-            fileType = FileNameUtils.getExtension(sourceFile.getName());
-
-            if (!fileType.equalsIgnoreCase("csv")
-                    && !fileType.equalsIgnoreCase("xlsx")
-                    && !fileType.equalsIgnoreCase("xml")
-            ) {
-                if (displayWarnings)
-                    GUIUtilities.displayWarningMessage(bundleString("FileTypeNotSupported"));
-                fileNameField.setText(oldPathToFile != null ? oldPathToFile : "");
-                return;
-            }
-        } else {
-            fileType = "db";
-            fileName = (String) sourceTableCombo.getSelectedItem();
+        if (!fileType.equalsIgnoreCase("csv")
+                && !fileType.equalsIgnoreCase("xlsx")
+                && !fileType.equalsIgnoreCase("xml")
+        ) {
+            if (displayWarnings)
+                GUIUtilities.displayWarningMessage(bundleString("FileTypeNotSupported"));
+            fileNameField.setText(oldPathToFile != null ? oldPathToFile : "");
+            return;
         }
 
         importHelper = getImportHelper(fileType);
@@ -357,23 +381,23 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         try {
             List<String> readData = importHelper.getPreviewData();
 
-            dataPreviewTableModel.setColumnCount(0);
-            dataPreviewTableModel.setRowCount(0);
+            filePreviewTableModel.setColumnCount(0);
+            filePreviewTableModel.setRowCount(0);
 
             sourceHeaders = new LinkedList<>(importHelper.getHeaders());
             for (String header : sourceHeaders) {
-                dataPreviewTableModel.addColumn(header);
-                dataPreviewTable.getColumn(header).setMinWidth(MIN_COLUMN_WIDTH);
+                filePreviewTableModel.addColumn(header);
+                filePreviewTable.getColumn(header).setMinWidth(MIN_COLUMN_WIDTH);
             }
 
-            dataPreviewTable.setAutoResizeMode(importHelper.getColumnsCount() < 7 ?
+            filePreviewTable.setAutoResizeMode(importHelper.getColumnsCount() < 7 ?
                     JTable.AUTO_RESIZE_ALL_COLUMNS :
                     JTable.AUTO_RESIZE_OFF
             );
 
             for (int i = 0; i < PREVIEW_ROWS_COUNT && i < readData.size(); i++)
                 if (readData.get(i) != null)
-                    dataPreviewTableModel.addRow(readData.get(i).split(importHelper.getDelimiter()));
+                    filePreviewTableModel.addRow(readData.get(i).split(importHelper.getDelimiter()));
 
         } catch (FileNotFoundException e) {
             if (displayWarnings)
@@ -384,16 +408,48 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 GUIUtilities.displayWarningMessage(bundleString("FileReadingErrorMessage") + "\n" + e.getMessage());
         }
 
+        firstRowIsNamesCheck.setVisible(fileType.equalsIgnoreCase("csv") || fileType.equalsIgnoreCase("xlsx"));
+        propertyLabel.setVisible(fileType.equalsIgnoreCase("csv") || fileType.equalsIgnoreCase("xlsx"));
+        delimiterCombo.setVisible(fileType.equalsIgnoreCase("csv"));
+        sheetNumberSpinner.setVisible(fileType.equalsIgnoreCase("xlsx"));
+
         propertyLabel.setText(fileType.equalsIgnoreCase("csv") ?
                 bundleString("DelimiterLabel") :
                 bundleString("SheetNumberLabel")
         );
 
-        switchSourceFields();
         updateMappingTable();
     }
 
-    private void updateMappingTable() {
+    private synchronized void previewSourceTable() {
+
+        fileType = "db";
+        fileName = (String) sourceTableCombo.getSelectedItem();
+        if (fileName == null || fileName.isEmpty())
+            return;
+
+        importHelper = getImportHelper(fileType);
+        if (importHelper == null)
+            return;
+
+        try {
+
+            ResultSet resultSet = ((ImportHelperDB) importHelper).getPreviewResultSet();
+            connectionPreviewTableModel.createTable(resultSet);
+
+            connectionPreviewTable.setAutoResizeMode(importHelper.getColumnsCount() < 7 ?
+                    JTable.AUTO_RESIZE_ALL_COLUMNS :
+                    JTable.AUTO_RESIZE_OFF
+            );
+
+        } catch (SQLException e) {
+            GUIUtilities.displayWarningMessage(bundleString("FileReadingErrorMessage") + "\n" + e.getMessage());
+        }
+
+        updateMappingTable();
+    }
+
+    private synchronized void updateMappingTable() {
 
         columnMappingTableModel.setRowCount(0);
 
@@ -408,7 +464,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         thirdColumn.setCellEditor(new DefaultCellEditor(sourceComboBox));
 
         if (targetTableCombo.getSelectedItem() != null) {
-            for (DatabaseColumn column : dbHost.getColumns(targetTableCombo.getSelectedItem().toString())) {
+            for (DatabaseColumn column : targetHost.getColumns(targetTableCombo.getSelectedItem().toString())) {
 
                 String fieldProperty = "";
                 if (isTimeType(column.getTypeName())) {
@@ -624,61 +680,54 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             return;
         }
 
-        dbHost = new DefaultDatabaseHost((DatabaseConnection) targetConnectionsCombo.getSelectedItem());
-        if (!dbHost.isConnected())
-            ConnectionManager.createDataSource(dbHost.getDatabaseConnection());
+        targetHost = new DefaultDatabaseHost((DatabaseConnection) targetConnectionsCombo.getSelectedItem());
+        if (!targetHost.isConnected())
+            ConnectionManager.createDataSource(targetHost.getDatabaseConnection());
 
         targetTableCombo.setEnabled(true);
         targetTableCombo.addItem(bundleString("SelectTable"));
-        dbHost.getTables().stream()
+        targetHost.getTables().stream()
                 .filter(table -> !table.isSystem())
                 .forEach(table -> targetTableCombo.addItem(table.getName()));
 
-        dbHost.close();
+        targetHost.close();
     }
 
     private void sourceConnectionChanged() {
 
         sourceTableCombo.removeAllItems();
 
-        if (dataPreviewTable != null) {
-            dataPreviewTableModel.setRowCount(0);
-            dataPreviewTableModel.setColumnCount(0);
-        }
+        if (connectionPreviewTableModel != null)
+            for (int i = 0; i < connectionPreviewTableModel.getRowCount(); i++)
+                connectionPreviewTableModel.deleteRow(i);
 
         if (sourceConnectionsCombo.getSelectedIndex() == 0) {
             sourceTableCombo.setEnabled(false);
             return;
         }
 
-        dbHost = new DefaultDatabaseHost((DatabaseConnection) sourceConnectionsCombo.getSelectedItem());
-        if (!dbHost.isConnected())
-            ConnectionManager.createDataSource(dbHost.getDatabaseConnection());
+        DefaultDatabaseHost host = new DefaultDatabaseHost((DatabaseConnection) sourceConnectionsCombo.getSelectedItem());
+        if (!host.isConnected())
+            ConnectionManager.createDataSource(host.getDatabaseConnection());
 
         sourceTableCombo.setEnabled(true);
         sourceTableCombo.addItem(bundleString("SelectTable"));
-        dbHost.getTables().stream()
+        host.getTables().stream()
                 .filter(table -> !table.isSystem())
                 .forEach(table -> sourceTableCombo.addItem(table.getName()));
 
-        dbHost.close();
+        host.close();
     }
 
-    private void switchSourceFields() {
+    private void updateSourcePropertiesFields() {
 
-        fileNameField.setVisible(!importFromConnectionCheck.isSelected());
-        browseButton.setVisible(!importFromConnectionCheck.isSelected());
-        readFileButton.setVisible(!importFromConnectionCheck.isSelected());
+        importConnectionPanel.setVisible(importFromConnectionCheck.isSelected());
+        importFilePanel.setVisible(!importFromConnectionCheck.isSelected());
 
-        firstRowIsNamesCheck.setVisible(!importFromConnectionCheck.isSelected() && fileType != null && !fileType.equalsIgnoreCase("xml") && !fileType.equalsIgnoreCase("db"));
-        propertyLabel.setVisible(!importFromConnectionCheck.isSelected() && fileType != null && !fileType.equalsIgnoreCase("xml") && !fileType.equalsIgnoreCase("db"));
-        delimiterCombo.setVisible(!importFromConnectionCheck.isSelected() && fileType != null && fileType.equalsIgnoreCase("csv"));
-        sheetNumberSpinner.setVisible(!importFromConnectionCheck.isSelected() && fileType != null && fileType.equalsIgnoreCase("xlsx"));
-
-        sourceTableLabel.setVisible(importFromConnectionCheck.isSelected());
-        sourceTableCombo.setVisible(importFromConnectionCheck.isSelected());
-        sourceConnectionLabel.setVisible(importFromConnectionCheck.isSelected());
-        sourceConnectionsCombo.setVisible(importFromConnectionCheck.isSelected());
+        if (importFromConnectionCheck.isSelected())
+            previewSourceTable();
+        else
+            previewSourceFile(false);
     }
 
     private boolean targetNotSelected(boolean displayWarnings) {

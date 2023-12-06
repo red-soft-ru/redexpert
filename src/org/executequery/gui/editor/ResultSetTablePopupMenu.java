@@ -95,7 +95,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         JMenuItem menuItem = create(bundleString("AutoWidthForCols"), "autoWidthForCols");
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, KeyEvent.CTRL_DOWN_MASK));
         add(menuItem);
-        if (resultSetTableContainer.isTransposeAvailable()) {
+        if (resultSetTableContainer != null && resultSetTableContainer.isTransposeAvailable()) {
 
             add(create(bundleString("TransposeRow"), "transposeRow"));
         }
@@ -105,7 +105,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         add(create(bundleString("ExportSelection"), "exportSelection"));
         add(create(bundleString("ExportTable"), "exportTable"));
         addSeparator();
-        if (resultSetTableContainer.isTransposeAvailable()) {
+        if (resultSetTableContainer != null && resultSetTableContainer.isTransposeAvailable()) {
             add(createFromAction("editor-show-hide-rs-columns-command", "Show/hide result set columns"));
             addSeparator();
         }
@@ -236,7 +236,6 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     }
 
     private void showLobRecordDataItemDialog(RecordDataItem recordDataItem) {
-        int row = ((TableSorter) table.getModel()).modelIndex(table.getSelectedRow());
 
         BaseDialog dialog = new BaseDialog(bundleString("LOBRecordDataItemViewer"), true);
         dialog.addDisplayComponentWithEmptyBorder(

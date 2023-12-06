@@ -19,12 +19,15 @@ abstract class AbstractImportHelper implements ImportHelper {
     protected final boolean isFirstRowHeaders;
     protected final int previewRowCount;
     protected final String pathToFile;
+    protected final String pathToLob;
+
     protected String delimiter = ";;;";
 
-    protected AbstractImportHelper(ImportDataFromFilePanel parent, String pathToFile, int previewRowCount, boolean isFirstRowHeaders) {
+    protected AbstractImportHelper(ImportDataFromFilePanel parent, String pathToFile, String pathToLob, int previewRowCount, boolean isFirstRowHeaders) {
         this.headers = new LinkedList<>();
         this.parent = parent;
         this.pathToFile = pathToFile;
+        this.pathToLob = pathToLob;
         this.previewRowCount = previewRowCount;
         this.isFirstRowHeaders = isFirstRowHeaders;
     }

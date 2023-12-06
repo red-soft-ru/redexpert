@@ -28,7 +28,7 @@ public class ImportHelperDB extends AbstractImportHelper {
     private final DatabaseConnection sourceConnection;
 
     protected ImportHelperDB(ImportDataFromFilePanel parent, String sourceTableName, int previewRowCount, DatabaseConnection sourceConnection) {
-        super(parent, null, previewRowCount, false);
+        super(parent, null, null, previewRowCount, false);
         this.sourceTableName = sourceTableName;
         this.sourceConnection = sourceConnection;
     }

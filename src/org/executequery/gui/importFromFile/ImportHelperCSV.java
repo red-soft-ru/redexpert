@@ -23,8 +23,8 @@ import java.util.*;
 
 class ImportHelperCSV extends AbstractImportHelper {
 
-    public ImportHelperCSV(ImportDataFromFilePanel parent, String pathToFile, int previewRowCount, boolean isFirstRowHeaders) {
-        super(parent, pathToFile, previewRowCount, isFirstRowHeaders);
+    public ImportHelperCSV(ImportDataFromFilePanel parent, String pathToFile, String pathToLob, int previewRowCount, boolean isFirstRowHeaders) {
+        super(parent, pathToFile, pathToLob, previewRowCount, isFirstRowHeaders);
         delimiter = parent.getDelimiter();
     }
 
@@ -52,10 +52,10 @@ class ImportHelperCSV extends AbstractImportHelper {
         ResultSet sourceFileData = sourceFileStatement.executeQuery(sourceSelectQuery);
         while (sourceFileData.next()) {
 
-            if (progressDialog.isCancel() || linesCount >= lastRow)
+            if (progressDialog.isCancel() || linesCount > lastRow)
                 break;
 
-            if (linesCount <= firstRow) {
+            if (linesCount < firstRow) {
                 linesCount++;
                 continue;
             }
@@ -79,7 +79,17 @@ class ImportHelperCSV extends AbstractImportHelper {
                             insertParameter = LocalDateTime.parse(insertParameter.toString(), DateTimeFormatter.ofPattern(columnProperty));
 
                         } else if (parent.isBlobType(columnTypeName) && columnProperty.equals("true")) {
-                            insertParameter = Files.newInputStream(new File(insertParameter.toString()).toPath());
+
+                            if (insertParameter.toString().startsWith(":h")) {
+
+                                String parameter = insertParameter.toString();
+                                int startIndex = Integer.parseInt(parameter.substring(2).split("_")[0], 16);
+                                int endIndex = startIndex + Integer.parseInt(parameter.split("_")[1], 16);
+
+                                insertParameter = Arrays.copyOfRange(Files.readAllBytes(Paths.get(pathToLob)), startIndex, endIndex);
+
+                            } else
+                                insertParameter = Files.newInputStream(new File(insertParameter.toString()).toPath());
                         }
 
                         insertStatement.setObject(fieldIndex + 1, insertParameter);

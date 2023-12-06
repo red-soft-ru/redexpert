@@ -11,6 +11,7 @@ import javax.swing.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.PreparedStatement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,8 +19,8 @@ import java.util.*;
 
 public class ImportHelperXML extends AbstractImportHelper {
 
-    protected ImportHelperXML(ImportDataFromFilePanel parent, String pathToFile, int previewRowCount, boolean isFirstRowHeaders) {
-        super(parent, pathToFile, previewRowCount, isFirstRowHeaders);
+    protected ImportHelperXML(ImportDataFromFilePanel parent, String pathToFile, String pathToLob, int previewRowCount, boolean isFirstRowHeaders) {
+        super(parent, pathToFile, pathToLob, previewRowCount, isFirstRowHeaders);
     }
 
     @Override
@@ -80,8 +81,19 @@ public class ImportHelperXML extends AbstractImportHelper {
                             insertParameter = LocalDateTime.parse(insertParameter.toString(), DateTimeFormatter.ofPattern(columnProperty));
 
                         } else if (parent.isBlobType(columnTypeName) && columnProperty.equals("true")) {
-                            String path = insertParameter.toString().replace("\"", "").replace("'", "");
-                            insertParameter = Files.newInputStream(new File(path).toPath());
+
+                            if (insertParameter.toString().startsWith(":h")) {
+
+                                String parameter = insertParameter.toString();
+                                int startIndex = Integer.parseInt(parameter.substring(2).split("_")[0], 16);
+                                int endIndex = startIndex + Integer.parseInt(parameter.split("_")[1], 16);
+
+                                insertParameter = Arrays.copyOfRange(Files.readAllBytes(Paths.get(pathToLob)), startIndex, endIndex);
+
+                            } else {
+                                String path = insertParameter.toString().replace("\"", "").replace("'", "");
+                                insertParameter = Files.newInputStream(new File(path).toPath());
+                            }
                         }
 
                         insertStatement.setObject(fieldIndex + 1, insertParameter);

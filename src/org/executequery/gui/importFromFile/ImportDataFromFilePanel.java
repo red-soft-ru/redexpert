@@ -73,6 +73,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private JComboBox delimiterCombo;
 
     private JTextField fileNameField;
+    private JTextField lobFileField;
 
     private JCheckBox firstRowIsNamesCheck;
     private JCheckBox eraseTableCheck;
@@ -92,7 +93,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private DefaultTableModel columnMappingTableModel;
     private JTable columnMappingTable;
 
-    private JButton browseButton;
+    private JButton browseDataFileButton;
+    private JButton browseLobFileButton;
     private JButton readFileButton;
     private JButton startImportButton;
 
@@ -104,6 +106,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private ImportHelper importHelper;
     private List<String> sourceHeaders;
     private String pathToFile;
+    private String pathToLob;
     private String fileName;
     private String fileType;
 
@@ -208,8 +211,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // --- buttons ---
 
-        browseButton = WidgetFactory.createButton("browseButton", bundleString("BrowseButtonText"));
-        browseButton.addActionListener(e -> browseFile());
+        browseDataFileButton = WidgetFactory.createButton("browseDataFileButton", bundleString("BrowseButtonText"));
+        browseDataFileButton.addActionListener(e -> browseFile(fileNameField));
+
+        browseLobFileButton = WidgetFactory.createButton("browseLobFileButton", bundleString("BrowseButtonText"));
+        browseLobFileButton.addActionListener(e -> browseFile(lobFileField));
 
         readFileButton = WidgetFactory.createButton("readFileButton", bundleString("ReadFileButtonText"));
         readFileButton.addActionListener(e -> previewSourceFile(true));
@@ -233,6 +239,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         // --- other ---
 
         fileNameField = WidgetFactory.createTextField("fileNameField");
+        lobFileField = WidgetFactory.createTextField("lobFileField");
 
         // ---
 
@@ -273,10 +280,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         JPanel selectFilePanel = new JPanel(new GridBagLayout());
 
-        gridBagHelper = new GridBagHelper().setInsets(0, 0, 5, 0).anchorNorthWest();
-        selectFilePanel.add(fileNameField, gridBagHelper.nextRowFirstCol().fillHorizontally().setMaxWeightX().get());
-        selectFilePanel.add(browseButton, gridBagHelper.nextCol().setMinWeightX().get());
-        selectFilePanel.add(readFileButton, gridBagHelper.nextCol().setInsets(0, 0, 0, 0).get());
+        gridBagHelper = new GridBagHelper().setInsets(0, 0, 5, 5).anchorNorthWest();
+        selectFilePanel.add(new JLabel(bundleString("fileNameFieldLabel")), gridBagHelper.setMinWeightX().get());
+        selectFilePanel.add(fileNameField, gridBagHelper.nextCol().fillHorizontally().setMaxWeightX().get());
+        selectFilePanel.add(browseDataFileButton, gridBagHelper.nextCol().setMinWeightX().get());
+        selectFilePanel.add(readFileButton, gridBagHelper.nextCol().setInsets(0, 0, 0, 0).setHeight(2).fillVertical().spanY().get());
+        selectFilePanel.add(new JLabel(bundleString("lobFileFieldLabel")), gridBagHelper.nextRowFirstCol().setHeight(1).setInsets(0, 0, 5, 0).setMinWeightX().get());
+        selectFilePanel.add(lobFileField, gridBagHelper.nextCol().fillHorizontally().setMaxWeightX().get());
+        selectFilePanel.add(browseLobFileButton, gridBagHelper.nextCol().setMinWeightX().get());
 
         // --- file preview panel ---
 
@@ -350,15 +361,17 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     // --- buttons handlers ---
 
-    private void browseFile() {
+    private void browseFile(JTextField field) {
 
         FileChooserDialog fileChooser = new FileChooserDialog();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Data Files", "csv", "xml", "xlsx"));
         fileChooser.setMultiSelectionEnabled(false);
-
         fileChooser.setDialogTitle(bundleString("OpenFileDialogText"));
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
+        fileChooser.setFileFilter(field.equals(fileNameField) ?
+                new FileNameExtensionFilter("Data Files", "csv", "xml", "xlsx") :
+                new FileNameExtensionFilter("Lob Files", "lob")
+        );
 
         int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), bundleString("OpenFileDialogButton"));
         if (result == JFileChooser.CANCEL_OPTION)
@@ -366,11 +379,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         File file = fileChooser.getSelectedFile();
         if (!file.exists()) {
-            GUIUtilities.displayWarningMessage(bundleString("FileDoesNotExistMessage") + "\n" + fileNameField.getText());
+            GUIUtilities.displayWarningMessage(bundleString("FileDoesNotExistMessage") + "\n" + field.getText());
             return;
         }
 
-        fileNameField.setText(file.getAbsolutePath());
+        field.setText(file.getAbsolutePath());
         previewSourceFile(true);
     }
 
@@ -597,6 +610,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         // -- start import
 
         progressDialog = new DefaultProgressDialog(bundleString("ExecutingProgressDialog"));
+        pathToLob = !lobFileField.getText().trim().isEmpty() ? lobFileField.getText().trim() : null;
 
         SwingWorker worker = new SwingWorker("ImportCSV") {
             @Override
@@ -631,6 +645,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 importHelper = new ImportHelperCSV(
                         this,
                         pathToFile,
+                        pathToLob,
                         PREVIEW_ROWS_COUNT,
                         firstRowIsNamesCheck.isSelected()
                 );
@@ -640,6 +655,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 importHelper = new ImportHelperXLSX(
                         this,
                         pathToFile,
+                        pathToLob,
                         PREVIEW_ROWS_COUNT,
                         firstRowIsNamesCheck.isSelected()
                 );
@@ -649,6 +665,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 importHelper = new ImportHelperXML(
                         this,
                         pathToFile,
+                        pathToLob,
                         PREVIEW_ROWS_COUNT,
                         firstRowIsNamesCheck.isSelected()
                 );

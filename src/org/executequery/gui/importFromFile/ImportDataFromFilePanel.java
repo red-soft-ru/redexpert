@@ -63,14 +63,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private JPanel importFilePanel;
     private JPanel importConnectionPanel;
+    private JPanel csvPropsPanel;
+    private JPanel xlsxPropsPanel;
 
     private JComboBox targetConnectionsCombo;
     private JComboBox targetTableCombo;
     private JComboBox sourceConnectionsCombo;
     private JComboBox sourceTableCombo;
     private JComboBox delimiterCombo;
-
-    private JLabel propertyLabel;
 
     private JTextField fileNameField;
 
@@ -94,7 +94,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private JButton browseButton;
     private JButton readFileButton;
-    private JButton refreshMappingTableButton;
     private JButton startImportButton;
 
     private DefaultProgressDialog progressDialog;
@@ -123,7 +122,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         delimiterCombo = WidgetFactory.createComboBox("delimiterCombo", delimiters);
         delimiterCombo.addActionListener(e -> previewSourceFile(false));
         delimiterCombo.setEditable(true);
-        delimiterCombo.setVisible(false);
 
         targetTableCombo = WidgetFactory.createComboBox("targetTableCombo");
         targetTableCombo.addActionListener(e -> updateMappingTable());
@@ -162,7 +160,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         sheetNumberSpinner = WidgetFactory.createSpinner("sheetNumberSpinner", 1, 1, 1, 1);
         sheetNumberSpinner.addChangeListener(e -> previewSourceFile(false));
-        sheetNumberSpinner.setVisible(false);
 
         // --- file preview table ---
 
@@ -217,23 +214,25 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         readFileButton = WidgetFactory.createButton("readFileButton", bundleString("ReadFileButtonText"));
         readFileButton.addActionListener(e -> previewSourceFile(true));
 
-        refreshMappingTableButton = WidgetFactory.createButton("refreshMappingTableButton", bundleString("RefreshButtonText"));
-        refreshMappingTableButton.addActionListener(e -> updateMappingTable());
-
         startImportButton = WidgetFactory.createButton("startImportButton", bundleString("StartImportButtonText"));
         startImportButton.addActionListener(e -> importData());
 
-        // --- other ---
+        // --- panels ---
 
         importFilePanel = new JPanel(new GridBagLayout());
 
         importConnectionPanel = new JPanel(new GridBagLayout());
         importConnectionPanel.setVisible(false);
 
-        fileNameField = WidgetFactory.createTextField("fileNameField");
+        csvPropsPanel = new JPanel(new GridBagLayout());
+        csvPropsPanel.setVisible(false);
 
-        propertyLabel = new JLabel();
-        propertyLabel.setVisible(false);
+        xlsxPropsPanel = new JPanel(new GridBagLayout());
+        xlsxPropsPanel.setVisible(false);
+
+        // --- other ---
+
+        fileNameField = WidgetFactory.createTextField("fileNameField");
 
         // ---
 
@@ -242,7 +241,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private void arrange() {
 
-        GridBagHelper gridBagHelper = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest();
+        GridBagHelper gridBagHelper;
 
         // --- scroll panes ---
 
@@ -258,45 +257,73 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        // --- connection preview panel ---
+        // --- csv properties panel ---
 
-        gridBagHelper.fillHorizontally().addLabelFieldPair(importConnectionPanel,
-                bundleString("sourceConnectionLabel"), sourceConnectionsCombo, null, true, false, 2);
-        gridBagHelper.addLabelFieldPair(importConnectionPanel,
-                bundleString("sourceTableLabel"), sourceTableCombo, null, false, false, 1);
-        importConnectionPanel.add(connectionPreviewScrollPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        gridBagHelper = new GridBagHelper().fillNone().anchorNorthWest();
+        csvPropsPanel.add(new JLabel(bundleString("DelimiterLabel")), gridBagHelper.get());
+        csvPropsPanel.add(delimiterCombo, gridBagHelper.nextCol().setInsets(5, 0, 0, 0).get());
+
+        // --- xlsx properties panel ---
+
+        gridBagHelper = new GridBagHelper().fillNone().anchorNorthWest();
+        xlsxPropsPanel.add(new JLabel(bundleString("SheetNumberLabel")), gridBagHelper.get());
+        xlsxPropsPanel.add(sheetNumberSpinner, gridBagHelper.nextCol().setInsets(5, 0, 0, 0).get());
+
+        // --- select file panel ---
+
+        JPanel selectFilePanel = new JPanel(new GridBagLayout());
+
+        gridBagHelper = new GridBagHelper().setInsets(0, 0, 5, 0).anchorNorthWest();
+        selectFilePanel.add(fileNameField, gridBagHelper.nextRowFirstCol().fillHorizontally().setMaxWeightX().get());
+        selectFilePanel.add(browseButton, gridBagHelper.nextCol().setMinWeightX().get());
+        selectFilePanel.add(readFileButton, gridBagHelper.nextCol().setInsets(0, 0, 0, 0).get());
 
         // --- file preview panel ---
 
-        importFilePanel.add(fileNameField, gridBagHelper.nextRowFirstCol().fillHorizontally().setWidth(4).setMaxWeightX().get());
-        importFilePanel.add(browseButton, gridBagHelper.nextCol().setLabelDefault().get());
-        importFilePanel.add(readFileButton, gridBagHelper.nextCol().get());
-
+        gridBagHelper = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest();
+        importFilePanel.add(selectFilePanel, gridBagHelper.fillHorizontally().spanX().get());
         importFilePanel.add(filePreviewScrollPane, gridBagHelper.nextRowFirstCol().fillBoth().setMaxWeightY().spanX().get());
-        importFilePanel.add(firstRowIsNamesCheck, gridBagHelper.nextRowFirstCol().setMinWeightY().setWidth(2).get());
-        importFilePanel.add(propertyLabel, gridBagHelper.nextCol().get());
-        importFilePanel.add(delimiterCombo, gridBagHelper.nextCol().get());
-        importFilePanel.add(sheetNumberSpinner, gridBagHelper.get());
+        importFilePanel.add(firstRowIsNamesCheck, gridBagHelper.nextRowFirstCol().setMaxWeightX().setMinWeightY().setWidth(1).get());
+        importFilePanel.add(csvPropsPanel, gridBagHelper.nextCol().spanX().setMinWeightX().get());
+        importFilePanel.add(xlsxPropsPanel, gridBagHelper.get());
+
+        // --- connection preview panel ---
+
+        gridBagHelper = new GridBagHelper().fillHorizontally().setInsets(5, 5, 5, 5).anchorNorthWest();
+        importConnectionPanel.add(new JLabel(bundleString("sourceConnectionLabel")), gridBagHelper.setMinWeightX().get());
+        importConnectionPanel.add(sourceConnectionsCombo, gridBagHelper.nextCol().setMaxWeightX().get());
+        importConnectionPanel.add(new JLabel(bundleString("sourceTableLabel")), gridBagHelper.setMinWeightX().nextCol().get());
+        importConnectionPanel.add(sourceTableCombo, gridBagHelper.nextCol().setMaxWeightX().get());
+        importConnectionPanel.add(connectionPreviewScrollPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
+
+        // --- start import panel ---
+
+        JPanel startImportPanel = new JPanel(new GridBagLayout());
+
+        gridBagHelper = new GridBagHelper().fillBoth().anchorNorthWest();
+        startImportPanel.add(importFromConnectionCheck, gridBagHelper.nextRowFirstCol().setMaxWeightX().get());
+        startImportPanel.add(startImportButton, gridBagHelper.nextCol().anchorNorthEast().setHeight(2).spanX().spanY().setMinWeightX().get());
+        startImportPanel.add(eraseTableCheck, gridBagHelper.nextRowFirstCol().anchorNorthWest().setMaxWeightX().setWidth(1).setHeight(1).get());
 
         // --- mapping panel ---
 
         JPanel mappingPanel = new JPanel(new GridBagLayout());
         mappingPanel.setBorder(BorderFactory.createTitledBorder(bundleString("MappingTableLabel")));
 
-        gridBagHelper.fillHorizontally().addLabelFieldPair(mappingPanel,
-                bundleString("TargetConnectionLabel"), targetConnectionsCombo, null, true, false);
-        gridBagHelper.addLabelFieldPair(mappingPanel,
-                bundleString("TargetTableLabel"), targetTableCombo, null, false, false);
-        mappingPanel.add(refreshMappingTableButton, gridBagHelper.nextCol().spanX().get());
+        gridBagHelper = new GridBagHelper().fillHorizontally().setInsets(5, 5, 5, 5).anchorNorthWest();
+        mappingPanel.add(new JLabel(bundleString("TargetConnectionLabel")), gridBagHelper.setMinWeightX().get());
+        mappingPanel.add(targetConnectionsCombo, gridBagHelper.nextCol().setMaxWeightX().get());
+        mappingPanel.add(new JLabel(bundleString("TargetTableLabel")), gridBagHelper.setMinWeightX().nextCol().get());
+        mappingPanel.add(targetTableCombo, gridBagHelper.nextCol().setMaxWeightX().get());
         mappingPanel.add(mappingTableScrollPane, gridBagHelper.nextRowFirstCol().setMaxWeightY().fillBoth().spanX().get());
-        mappingPanel.add(eraseTableCheck, gridBagHelper.nextRowFirstCol().fillHorizontally().setMinWeightY().setWidth(2).get());
-        mappingPanel.add(importFromConnectionCheck, gridBagHelper.nextCol().spanX().get());
+        mappingPanel.add(startImportPanel, gridBagHelper.nextRowFirstCol().setMinWeightY().spanX().get());
 
         // --- preview panel ---
 
         JPanel previewPanel = new JPanel(new GridBagLayout());
         previewPanel.setBorder(BorderFactory.createTitledBorder(bundleString("PreviewTableLabel")));
 
+        gridBagHelper = new GridBagHelper().fillHorizontally().setInsets(5, 5, 5, 5).anchorNorthWest();
         previewPanel.add(importFilePanel, gridBagHelper.fillBoth().spanX().spanY().get());
         previewPanel.add(importConnectionPanel, gridBagHelper.fillBoth().spanX().spanY().get());
 
@@ -309,13 +336,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         JPanel bottomPanel = new JPanel(new GridBagLayout());
 
-        gridBagHelper.addLabelFieldPair(bottomPanel,
-                bundleString("FirstNumericSelectorsLabel"), firstImportedRowSelector, null, true, false);
-        gridBagHelper.addLabelFieldPair(bottomPanel,
-                bundleString("LastNumericSelectorsLabel"), lastImportedRowSelector, null, false, false);
-        gridBagHelper.addLabelFieldPair(bottomPanel,
-                bundleString("CommitSelectorLabel"), commitStepSelector, null, false, true);
-        bottomPanel.add(startImportButton, gridBagHelper.nextRow().anchorSouthEast().setLabelDefault().get());
+        gridBagHelper = new GridBagHelper().fillHorizontally().setInsets(5, 5, 5, 5).anchorNorthWest();
+        gridBagHelper.addLabelFieldPair(bottomPanel, bundleString("FirstNumericSelectorsLabel"), firstImportedRowSelector, null, false, false);
+        gridBagHelper.addLabelFieldPair(bottomPanel, bundleString("LastNumericSelectorsLabel"), lastImportedRowSelector, null, false, false);
+        gridBagHelper.addLabelFieldPair(bottomPanel, bundleString("CommitSelectorLabel"), commitStepSelector, null, false, true);
 
         // --- panels settings ---
 
@@ -409,14 +433,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         }
 
         firstRowIsNamesCheck.setVisible(fileType.equalsIgnoreCase("csv") || fileType.equalsIgnoreCase("xlsx"));
-        propertyLabel.setVisible(fileType.equalsIgnoreCase("csv") || fileType.equalsIgnoreCase("xlsx"));
-        delimiterCombo.setVisible(fileType.equalsIgnoreCase("csv"));
-        sheetNumberSpinner.setVisible(fileType.equalsIgnoreCase("xlsx"));
-
-        propertyLabel.setText(fileType.equalsIgnoreCase("csv") ?
-                bundleString("DelimiterLabel") :
-                bundleString("SheetNumberLabel")
-        );
+        csvPropsPanel.setVisible(fileType.equalsIgnoreCase("csv"));
+        xlsxPropsPanel.setVisible(fileType.equalsIgnoreCase("xlsx"));
 
         updateMappingTable();
     }

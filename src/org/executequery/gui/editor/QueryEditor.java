@@ -98,6 +98,7 @@ public class QueryEditor extends DefaultTabView
     private JCheckBox stopOnErrorCheckBox;
     private JCheckBox showTPPCheckBox;
     private JCheckBox lineWrapperCheckBox;
+    private JCheckBox executeToFileCheckBox;
 
     private JPanel resultsBasePanel;
     private JPanel toolsPanel;
@@ -218,6 +219,8 @@ public class QueryEditor extends DefaultTabView
         lineWrapperCheckBox.setToolTipText(bundleString("LineWrapper.tool-tip"));
         lineWrapperCheckBox.addChangeListener(e -> switchLineWrapping());
 
+        executeToFileCheckBox = WidgetFactory.createCheckBox("exportToFileCheckBox", bundleString("exportToFileCheckBox"));
+
         showTPPCheckBox = WidgetFactory.createCheckBox("showTPPCheckBox", bundleString("ShowTPP"));
         showTPPCheckBox.addChangeListener(e -> transactionParametersPanel.setVisible(showTPPCheckBox.isSelected()));
 
@@ -277,6 +280,7 @@ public class QueryEditor extends DefaultTabView
         gbh = new GridBagHelper().setInsets(0, 0, 5, 0).anchorNorthWest().fillHorizontally();
         checkBoxPanel.add(stopOnErrorCheckBox, gbh.get());
         checkBoxPanel.add(lineWrapperCheckBox, gbh.nextCol().get());
+        checkBoxPanel.add(executeToFileCheckBox, gbh.nextCol().get());
         checkBoxPanel.add(showTPPCheckBox, gbh.nextCol().spanX().get());
 
         // --- tools panel ---
@@ -594,8 +598,14 @@ public class QueryEditor extends DefaultTabView
      */
     public int setResultSet(ResultSet resultSet, boolean showRowNumber) throws SQLException {
 
-        int rowCount = resultsPanel.setResultSet(resultSet, showRowNumber, getMaxRecords());
-        revalidate();
+        int rowCount = -1;
+
+        if (!executeToFileCheckBox.isSelected()) {
+            rowCount = resultsPanel.setResultSet(resultSet, showRowNumber, getMaxRecords());
+            revalidate();
+
+        } else
+            new QueryEditorResultsExporter(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
 
         return rowCount;
     }
@@ -606,8 +616,13 @@ public class QueryEditor extends DefaultTabView
      * @param resultSet the executed result set
      */
     public void setResultSet(ResultSet resultSet) throws SQLException {
-        resultsPanel.setResultSet(resultSet, true, getMaxRecords());
-        revalidate();
+
+        if (!executeToFileCheckBox.isSelected()) {
+            resultsPanel.setResultSet(resultSet, true, getMaxRecords());
+            revalidate();
+
+        } else
+            new QueryEditorResultsExporter(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
     }
 
     /**
@@ -617,7 +632,11 @@ public class QueryEditor extends DefaultTabView
      * @param query     the executed query of the result set
      */
     public void setResultSet(ResultSet resultSet, String query) throws SQLException {
-        resultsPanel.setResultSet(resultSet, true, getMaxRecords(), query);
+
+        if (!executeToFileCheckBox.isSelected())
+            resultsPanel.setResultSet(resultSet, true, getMaxRecords(), query);
+        else
+            new QueryEditorResultsExporter(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
     }
 
     public void destroyTable() {

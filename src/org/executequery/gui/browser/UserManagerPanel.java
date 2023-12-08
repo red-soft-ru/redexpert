@@ -5,6 +5,8 @@
  */
 package org.executequery.gui.browser;
 
+import biz.redsoft.IFBUser;
+import biz.redsoft.IFBUserManager;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
@@ -26,14 +28,13 @@ import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.Repository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,10 +97,14 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     private Action currentAction;
     private Connection connection;
+    private ItemListener databaseComboListener;
     private List<DatabaseConnection> databaseConnectionList;
 
     private int version;
-    private List<DefaultDatabaseUser> userList;
+    private IFBUser fbUser;
+    private IFBUserManager userManager;
+
+    private List<Object> userList;
     private final Vector<String> roleNamesVector;
     private final Vector<UserRole> userNamesVector;
 
@@ -116,12 +121,13 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     private void init() {
 
+        databaseComboListener = e -> databaseChanged();
+
         // --- comboBoxes ---
 
         //noinspection unchecked
         databasesCombo = WidgetFactory.createComboBox("databasesCombo");
         databasesCombo.setEditable(true);
-        databasesCombo.addItemListener(e -> databaseChanged());
 
         // --- tables ---
 
@@ -326,12 +332,17 @@ public class UserManagerPanel extends JPanel implements Runnable {
             Log.error(e.getMessage(), e);
         }
 
+        refreshUserManager(version >= 3);
         setRefreshAction();
     }
 
     private void showCreateUserDialog() {
+
         BaseDialog dialog = new BaseDialog(CreateUserPanel.CREATE_TITLE, false);
-        CreateUserPanel panel = new CreateUserPanel(getSelectedConnection(), dialog);
+        CreateUserPanel panel = version >= 3 ?
+                new CreateUserPanel(getSelectedConnection(), dialog) :
+                new CreateUserPanel(getSelectedConnection(), dialog, fbUser, this, false);
+
         showDialog(dialog, panel);
     }
 
@@ -342,7 +353,10 @@ public class UserManagerPanel extends JPanel implements Runnable {
             return;
 
         BaseDialog dialog = new BaseDialog(CreateUserPanel.EDIT_TITLE, false);
-        CreateUserPanel panel = new CreateUserPanel(getSelectedConnection(), dialog, userList.get(selectedRow));
+        CreateUserPanel panel = version >= 3 ?
+                new CreateUserPanel(getSelectedConnection(), dialog, (DefaultDatabaseUser) userList.get(selectedRow)) :
+                new CreateUserPanel(getSelectedConnection(), dialog, fbUser, this, true);
+
         showDialog(dialog, panel);
     }
 
@@ -352,14 +366,23 @@ public class UserManagerPanel extends JPanel implements Runnable {
         if (selectedRow < 0)
             return;
 
-        ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(
-                "Dropping object",
-                userList.get(selectedRow).getDropSQL(),
-                getSelectedConnection(),
-                true
-        );
+        if (version >= 3) {
+            ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(
+                    "Dropping object",
+                    ((DefaultDatabaseUser) userList.get(selectedRow)).getDropSQL(),
+                    getSelectedConnection(),
+                    true
+            );
+            executeQueryDialog.display();
 
-        executeQueryDialog.display();
+        } else {
+            try {
+                userManager.delete((IFBUser) userList.get(selectedRow));
+            } catch (Exception e) {
+                Log.error(e.getMessage(), e);
+            }
+        }
+
         setRefreshAction();
     }
 
@@ -433,6 +456,31 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     // --- helpers ---
 
+    private void refreshUserManager(boolean dropOnly) {
+
+        fbUser = null;
+        userManager = null;
+
+        if (dropOnly || connection == null)
+            return;
+
+        try {
+            DatabaseConnection databaseConnection = getSelectedConnection();
+            int driverVersion = databaseConnection.getDriverMajorVersion();
+
+            fbUser = (IFBUser) DynamicLibraryLoader.loadingObjectFromClassLoader(driverVersion, connection.unwrap(Connection.class), "FBUserImpl");
+            userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driverVersion, connection.unwrap(Connection.class), "FBUserManagerImpl");
+            userManager.setDatabase(databaseConnection.getSourceName());
+            userManager.setHost(databaseConnection.getHost());
+            userManager.setPort(databaseConnection.getPortInt());
+            userManager.setUser(databaseConnection.getUserName());
+            userManager.setPassword(databaseConnection.getUnencryptedPassword());
+
+        } catch (Exception e) {
+            Log.error(e.getMessage(), e);
+        }
+    }
+
     private void grantWithAdminOption(int row, int col) {
 
         if (col < 0)
@@ -503,6 +551,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
         connection = null;
         enableElements = true;
         databasesCombo.removeAllItems();
+        databasesCombo.removeItemListener(databaseComboListener);
 
         Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
         if (repo == null)
@@ -527,6 +576,10 @@ public class UserManagerPanel extends JPanel implements Runnable {
             databasesCombo.setSelectedIndex(0);
             execute = true;
         }
+
+        databasesCombo.addItemListener(databaseComboListener);
+        if (connection == null)
+            databaseChanged();
     }
 
     private void showDialog(BaseDialog dialog, JPanel panel) {
@@ -551,16 +604,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     private void refreshUsers() {
 
-        List<NamedObject> namedObjects = ConnectionsTreePanel.getPanelFromBrowser()
-                .getDefaultDatabaseHostFromConnection(getSelectedConnection())
-                .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.USER]);
-
-        userList = namedObjects != null ?
-                namedObjects.stream()
-                        .map(obj -> (DefaultDatabaseUser) obj)
-                        .collect(Collectors.toList()) :
-                new ArrayList<>();
-
+        userNamesVector.clear();
         usersTable.setModel(new RoleTableModel(
                 new Object[][]{},
                 bundleStrings(new String[]{
@@ -568,18 +612,32 @@ public class UserManagerPanel extends JPanel implements Runnable {
                 })
         ));
 
-        userNamesVector.clear();
-        for (DefaultDatabaseUser user : userList) {
+        for (Object userObject : getRefreshUserList()) {
 
-            user.loadData();
-            userNamesVector.add(new UserRole(user.getShortName().trim(), true));
+            String shortName;
+            String firstName;
+            String middleName;
+            String lastName;
 
-            ((RoleTableModel) usersTable.getModel()).addRow(new Object[]{
-                    user.getShortName(),
-                    user.getFirstName(),
-                    user.getMiddleName(),
-                    user.getLastName()
-            });
+            if (version >= 3) {
+                DefaultDatabaseUser user = (DefaultDatabaseUser) userObject;
+                user.loadData();
+
+                shortName = user.getShortName().trim();
+                firstName = user.getFirstName();
+                middleName = user.getMiddleName();
+                lastName = user.getLastName();
+
+            } else {
+                IFBUser user = (IFBUser) userObject;
+
+                shortName = user.getUserName().trim();
+                firstName = user.getFirstName();
+                middleName = user.getMiddleName();
+                lastName = user.getLastName();
+            }
+
+            addUser(shortName, firstName, middleName, lastName);
         }
     }
 
@@ -740,6 +798,41 @@ public class UserManagerPanel extends JPanel implements Runnable {
         setEnableElements(true);
     }
 
+    private List<Object> getRefreshUserList() {
+
+        userList = new ArrayList<>();
+        try {
+
+            if (version >= 3) {
+                userList.addAll(
+                        ConnectionsTreePanel.getPanelFromBrowser()
+                                .getDefaultDatabaseHostFromConnection(getSelectedConnection())
+                                .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.USER])
+                );
+
+            } else {
+                if (userManager == null)
+                    refreshUserManager(false);
+                userList.addAll(userManager.getUsers().values());
+            }
+
+        } catch (Exception e) {
+            Log.error(e.getMessage(), e);
+        }
+
+        return userList;
+    }
+
+    private void addUser(String shortName, String firstName, String middleName, String lastName) {
+        userNamesVector.add(new UserRole(shortName, true));
+        ((RoleTableModel) usersTable.getModel()).addRow(new Object[]{
+                shortName,
+                firstName,
+                middleName,
+                lastName
+        });
+    }
+
     public void refreshNoConnection() {
 
         if (tabbedPane.getTabCount() > 1) {
@@ -778,12 +871,31 @@ public class UserManagerPanel extends JPanel implements Runnable {
         }
     }
 
+    public void editFbUser(IFBUser fbUser) {
+        try {
+            userManager.update(fbUser);
+        } catch (SQLException | IOException e) {
+            Log.error(e.getMessage(), e);
+        }
+
+        setRefreshAction();
+    }
+
+    public void addFbUser(IFBUser fbUser) {
+        try {
+            userManager.add(fbUser);
+        } catch (SQLException | IOException e) {
+            Log.error(e.getMessage(), e);
+        }
+
+        setRefreshAction();
+    }
+
     private void executeThread() {
         if (enableElements) {
             setEnableElements(false);
             new Thread(this).start();
         }
-
     }
 
     private void setRefreshAction() {
@@ -807,6 +919,9 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
         if (enableElements)
             return;
+
+        if (connection == null)
+            databaseChanged();
 
         switch (currentAction) {
             case REFRESH:

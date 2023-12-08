@@ -1,5 +1,6 @@
 package org.executequery.gui.databaseobjects;
 
+import biz.redsoft.IFBUser;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
@@ -9,6 +10,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ConnectionPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.UserManagerPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DefaultButton;
@@ -22,12 +24,19 @@ import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashMap;
+import java.util.Map;
 
 public class CreateUserPanel extends AbstractCreateObjectPanel {
+
     public static final String CREATE_TITLE = getCreateTitle(NamedObject.USER);
     public static final String EDIT_TITLE = getEditTitle(NamedObject.USER);
+
+    IFBUser fbUser;
+    UserManagerPanel userManagerPanel;
+
     DefaultDatabaseUser user;
     DefaultDatabaseUser beginUser;
+
     private JPanel mainPanel;
     private JTextField firstNameField;
     private JLabel tagLabel;
@@ -43,11 +52,17 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
     private JButton addTag;
     private JButton deleteTag;
     private SimpleSqlTextPanel sqlTextPanel;
-
     private JCheckBox showPassword;
 
     public CreateUserPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseUser databaseObject) {
         super(dc, dialog, databaseObject);
+    }
+
+    public CreateUserPanel(DatabaseConnection dc, ActionContainer dialog, IFBUser fbUser, UserManagerPanel userManagerPanel, boolean edited) {
+        super(dc, dialog, null);
+        this.fbUser = fbUser;
+        this.userManagerPanel = userManagerPanel;
+        super.edited = edited;
     }
 
     public CreateUserPanel(DatabaseConnection dc, ActionContainer dialog) {
@@ -227,11 +242,45 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         sqlTextPanel.setSQLText(generateQuery());
     }
 
+    private IFBUser getUpdateFbUser() {
+
+        fbUser.setUserName(nameField.getText().trim());
+        fbUser.setPassword(new String(passTextField.getPassword()));
+        fbUser.setFirstName(firstNameField.getText().trim());
+        fbUser.setMiddleName(middleNameField.getText().trim());
+        fbUser.setLastName(lastNameField.getText().trim());
+        fbUser.setPlugin((String) pluginField.getSelectedItem());
+        fbUser.setDescription(simpleCommentPanel.getComment());
+        fbUser.setActive(activeBox.isSelected());
+        fbUser.setAdministrator(adminBox.isSelected());
+
+        Map<String, String> tags = new HashMap<>();
+        for (int i = 0; i < tagTable.getRowCount(); i++) {
+
+            String tag = tagTable.getModel().getValueAt(i, 0).toString();
+            String value = tagTable.getModel().getValueAt(i, 1).toString();
+            if (tag != null && !tag.isEmpty() && value != null && !value.isEmpty())
+                tags.put(tag, value);
+        }
+        fbUser.setTags(tags);
+
+        return fbUser;
+    }
+
     @Override
     public void createObject() {
-        if (tabbedPane.getSelectedComponent() != sqlTextPanel)
-            generateSQL();
-        displayExecuteQueryDialog(sqlTextPanel.getSQLText(), ";");
+
+        if (userManagerPanel != null) {
+            if (edited)
+                userManagerPanel.editFbUser(getUpdateFbUser());
+            else
+                userManagerPanel.addFbUser(getUpdateFbUser());
+
+        } else {
+            if (tabbedPane.getSelectedComponent() != sqlTextPanel)
+                generateSQL();
+            displayExecuteQueryDialog(sqlTextPanel.getSQLText(), ";");
+        }
     }
 
     @Override

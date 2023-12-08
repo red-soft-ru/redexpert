@@ -83,6 +83,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private JComboBox<?> typeCombo;
     private JTextField filePathField;
     private JTextField blobPathField;
+    private JCheckBox replaceNullCheck;
+    private JTextField replaceNullField;
+
     private JButton browseFileButton;
     private JButton browseFolderButton;
     private JButton exportButton;
@@ -165,15 +168,20 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         components.put(saveBlobsIndividuallyCheck.getName(), saveBlobsIndividuallyCheck);
 
         replaceEndlCheck = WidgetFactory.createCheckBox("replaceEndlCheck", bundleString("replaceEndlLabel"));
-        replaceEndlCheck.addActionListener(e -> {
-            replaceEndlField.setText("");
-            replaceEndlField.setEditable(replaceEndlCheck.isSelected());
-        });
+        replaceEndlCheck.addActionListener(e -> replaceEndlField.setEditable(replaceEndlCheck.isSelected()));
         components.put(replaceEndlCheck.getName(), replaceEndlCheck);
+
+        replaceNullCheck = WidgetFactory.createCheckBox("replaceNullCheck", bundleString("replaceNullCheck"));
+        replaceNullCheck.addActionListener(e -> replaceNullField.setEditable(replaceNullCheck.isSelected()));
+        components.put(replaceNullCheck.getName(), replaceNullCheck);
 
         replaceEndlField = WidgetFactory.createTextField("replaceEndlCombo");
         replaceEndlField.setEditable(false);
         components.put(replaceEndlField.getName(), replaceEndlField);
+
+        replaceNullField = WidgetFactory.createTextField("replaceNullField");
+        replaceNullField.setEditable(false);
+        components.put(replaceNullField.getName(), replaceNullField);
 
         exportTableNameField = WidgetFactory.createTextField("exportTableNameField");
         components.put(exportTableNameField.getName(), exportTableNameField);
@@ -205,7 +213,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         // --- base panel ---
 
         JPanel basePanel = new JPanel(new GridBagLayout());
-        basePanel.setPreferredSize(new Dimension(650, isContainsBlob ? 375 : 300));
+        basePanel.setPreferredSize(new Dimension(650, isContainsBlob ? 420 : 345));
 
         // for all files
         basePanel.add(addColumnHeadersCheck, gridBagHelper.nextRowFirstCol().setWidth(3).get());
@@ -214,10 +222,11 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         if (isContainsBlob)
             basePanel.add(saveBlobsIndividuallyCheck, gridBagHelper.nextRowFirstCol().get());
         gridBagHelper.addLabelFieldPair(basePanel, bundleString("FileFormat"), typeCombo, null, true, true);
+        gridBagHelper.addLabelFieldPair(basePanel, replaceNullCheck, replaceNullField, null, true, true);
 
         // for delimiter file
-        gridBagHelper.addLabelFieldPair(basePanel, delimiterLabel, columnDelimiterCombo, null, true, true);
         gridBagHelper.addLabelFieldPair(basePanel, replaceEndlCheck, replaceEndlField, null, true, true);
+        gridBagHelper.addLabelFieldPair(basePanel, delimiterLabel, columnDelimiterCombo, null, true, true);
 
         // for sql file
         basePanel.add(exportTableNameLabel, gridBagHelper.setWidth(1).setMinWeightX().nextRowFirstCol().get());
@@ -275,11 +284,15 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setEnabled(true);
         addQuotesCheck.setEnabled(true);
         openQueryEditorCheck.setEnabled(false);
+        replaceEndlField.setEnabled(replaceEndlCheck.isSelected());
+        replaceNullField.setEnabled(replaceNullCheck.isSelected());
 
         delimiterLabel.setVisible(true);
         columnDelimiterCombo.setVisible(true);
         replaceEndlCheck.setVisible(true);
         replaceEndlField.setVisible(true);
+        replaceNullCheck.setVisible(true);
+        replaceNullField.setVisible(true);
         exportTableNameLabel.setVisible(false);
         exportTableNameField.setVisible(false);
     }
@@ -294,11 +307,15 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setEnabled(true);
         addQuotesCheck.setEnabled(false);
         openQueryEditorCheck.setEnabled(false);
+        replaceEndlField.setEnabled(replaceEndlCheck.isSelected());
+        replaceNullField.setEnabled(replaceNullCheck.isSelected());
 
         delimiterLabel.setVisible(false);
         columnDelimiterCombo.setVisible(false);
         replaceEndlCheck.setVisible(false);
         replaceEndlField.setVisible(false);
+        replaceNullCheck.setVisible(true);
+        replaceNullField.setVisible(true);
         exportTableNameLabel.setVisible(false);
         exportTableNameField.setVisible(false);
     }
@@ -314,11 +331,15 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setEnabled(false);
         addQuotesCheck.setEnabled(false);
         openQueryEditorCheck.setEnabled(false);
+        replaceEndlField.setEnabled(replaceEndlCheck.isSelected());
+        replaceNullField.setEnabled(replaceNullCheck.isSelected());
 
         delimiterLabel.setVisible(false);
         columnDelimiterCombo.setVisible(false);
         replaceEndlCheck.setVisible(false);
         replaceEndlField.setVisible(false);
+        replaceNullCheck.setVisible(true);
+        replaceNullField.setVisible(true);
         exportTableNameLabel.setVisible(false);
         exportTableNameField.setVisible(false);
     }
@@ -339,6 +360,8 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         columnDelimiterCombo.setVisible(false);
         replaceEndlCheck.setVisible(false);
         replaceEndlField.setVisible(false);
+        replaceNullCheck.setVisible(false);
+        replaceNullField.setVisible(false);
         exportTableNameLabel.setVisible(true);
         exportTableNameField.setVisible(true);
     }
@@ -487,6 +510,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
             String columnDelimiter = Objects.requireNonNull(columnDelimiterCombo.getSelectedItem()).toString();
             String endlReplacement = replaceEndlCheck.isSelected() ? replaceEndlField.getText().trim() : null;
+            String nullReplacement = replaceNullCheck.isSelected() ? replaceNullField.getText().trim() : "";
 
             int rowCount = exportTableModel.getRowCount();
             int columnCount = exportTableModel.getColumnCount();
@@ -511,17 +535,21 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
                 for (int col = 0; col < columnCount; col++) {
 
-                    Object value = exportTableModel.getValueAt(row, col);
-                    String stringValue = getFormattedValue(value, endlReplacement);
+                    String stringValue = null;
+                    RecordDataItem value = (RecordDataItem) exportTableModel.getValueAt(row, col);
 
-                    if (addQuotesCheck.isSelected() && !stringValue.isEmpty())
-                        if (isCharType(value) || exportTableModel.getColumnClass(col) == String.class)
-                            stringValue = "\"" + stringValue + "\"";
+                    if (!value.isValueNull()) {
+                        stringValue = getFormattedValue(value, endlReplacement, nullReplacement);
 
-                    if (isBlobType(value))
-                        stringValue = writeBlobToFile((AbstractLobRecordDataItem) value, col, row);
+                        if (addQuotesCheck.isSelected() && !stringValue.isEmpty())
+                            if (isCharType(value))
+                                stringValue = "\"" + stringValue + "\"";
 
-                    resultText.append(stringValue);
+                        if (isBlobType(value))
+                            stringValue = writeBlobToFile((AbstractLobRecordDataItem) value, col, row);
+                    }
+
+                    resultText.append(stringValue != null ? stringValue : nullReplacement);
                     if (col != columnCount - 1)
                         resultText.append(columnDelimiter);
                 }
@@ -546,6 +574,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         try {
 
+            String nullReplacement = replaceNullCheck.isSelected() ? replaceNullField.getText().trim() : "";
             int columnCount = exportTableModel.getColumnCount();
             int rowCount = exportTableModel.getRowCount();
 
@@ -572,13 +601,17 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 List<String> values = new ArrayList<>();
                 for (int col = 0; col < columnCount; col++) {
 
-                    Object value = exportTableModel.getValueAt(row, col);
-                    String stringValue = getFormattedValue(value, null);
+                    String stringValue = null;
+                    RecordDataItem value = (RecordDataItem) exportTableModel.getValueAt(row, col);
 
-                    if (isBlobType(value))
-                        stringValue = writeBlobToFile((AbstractLobRecordDataItem) value, col, row);
+                    if (!value.isValueNull()) {
+                        if (isCharType(value))
+                            stringValue = getFormattedValue(value, null, nullReplacement);
+                        else if (isBlobType(value))
+                            stringValue = writeBlobToFile((AbstractLobRecordDataItem) value, col, row);
+                    }
 
-                    values.add(stringValue);
+                    values.add(stringValue != null ? stringValue : nullReplacement);
                 }
 
                 builder.addRow(values);
@@ -685,9 +718,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         }
     }
 
-    private String getFormattedValue(Object value, String endlReplacement) {
+    private String getFormattedValue(Object value, String endlReplacement, String nullReplacement) {
 
-        String result = "";
+        String result = nullReplacement;
 
         if (value instanceof RecordDataItem) {
             RecordDataItem recordDataItem = (RecordDataItem) value;
@@ -807,7 +840,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                     values.append("\n\t");
 
                     Object value = exportTableModel.getValueAt(row, col);
-                    String stringValue = getFormattedValue(value, null);
+                    String stringValue = getFormattedValue(value, null, "");
 
                     if (isBlobType(value)) {
                         if (saveBlobsIndividuallyCheck.isSelected())
@@ -873,6 +906,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
             Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 
+            String nullReplacement = replaceNullCheck.isSelected() ? replaceNullField.getText().trim() : "";
             int rowCount = exportTableModel.getRowCount();
             int columnCount = exportTableModel.getColumnCount();
 
@@ -917,14 +951,14 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                                 exportData.add(name);
 
                         } else
-                            valueElement.appendChild(document.createTextNode("NULL"));
+                            valueElement.appendChild(document.createTextNode(nullReplacement));
 
                     } else {
 
                         Object value = exportTableModel.getValueAt(row, col);
                         valueElement.appendChild(value != null ?
                                 document.createTextNode(value.toString()) :
-                                document.createTextNode("NULL")
+                                document.createTextNode(nullReplacement)
                         );
                     }
 

@@ -19,6 +19,7 @@ import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.browser.managment.*;
+import org.executequery.gui.browser.profiler.ProfilerPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -556,28 +557,28 @@ public class UserManagerPanel extends JPanel {
     private void databaseBoxActionPerformed(ItemEvent evt) {
 
 
-            if (listConnections.size() > 0) {
-                int selectedIndex = databaseBox.getSelectedIndex();
-                if (selectedIndex == -1)
-                    return;
-                if (getSelectedDatabaseConnection().isConnected()) {
-                    act = Action.REFRESH;
-                    executeThread();
+        if (listConnections.size() > 0) {
+            int selectedIndex = databaseBox.getSelectedIndex();
+            if (selectedIndex == -1)
+                return;
+            if (getSelectedDatabaseConnection().isConnected()) {
+                act = Action.REFRESH;
+                executeThread();
 
-                } else {
-                    initNotConnected();
-                    if (execute_w) {
-                        JFrame frameLogin = new FrameLogin(this, getSelectedDatabaseConnection().getUserName(),
-                                getSelectedDatabaseConnection().getUnencryptedPassword());
-                        frameLogin.setVisible(true);
-                        int width = Toolkit.getDefaultToolkit().getScreenSize().width;
-                        int height = Toolkit.getDefaultToolkit().getScreenSize().height;
-                        frameLogin.setLocation(width / 2 - frameLogin.getWidth() / 2, height / 2 - frameLogin.getHeight() / 2);
-                    }
-                }
             } else {
                 initNotConnected();
+                if (execute_w) {
+                    JFrame frameLogin = new FrameLogin(this, getSelectedDatabaseConnection().getUserName(),
+                            getSelectedDatabaseConnection().getUnencryptedPassword());
+                    frameLogin.setVisible(true);
+                    int width = Toolkit.getDefaultToolkit().getScreenSize().width;
+                    int height = Toolkit.getDefaultToolkit().getScreenSize().height;
+                    frameLogin.setLocation(width / 2 - frameLogin.getWidth() / 2, height / 2 - frameLogin.getHeight() / 2);
+                }
             }
+        } else {
+            initNotConnected();
+        }
     }
 
     private void cancelButtonActionPerformed(ActionEvent evt) {
@@ -653,7 +654,7 @@ public class UserManagerPanel extends JPanel {
                     GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
                     System.out.println(e);
                 } finally {
-                    if(!state.isClosed())
+                    if (!state.isClosed())
                         state.close();
                 }
             }
@@ -714,7 +715,8 @@ public class UserManagerPanel extends JPanel {
         for (Component component : components) {
             component.setEnabled(enable);
             if (component instanceof Container) {
-                enableComponents((Container) component, enable);
+                if (!(component instanceof ProfilerPanel))
+                    enableComponents((Container) component, enable);
             }
         }
     }
@@ -777,7 +779,7 @@ public class UserManagerPanel extends JPanel {
             } catch (Exception e) {
                 GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
             } finally {
-                if(!st.isClosed())
+                if (!st.isClosed())
                     st.close();
             }
         }
@@ -844,7 +846,7 @@ public class UserManagerPanel extends JPanel {
             ));
             user_names.clear();
             for (IFBUser u : users.values()) {
-                    user_names.add(new UserRole(u.getUserName().trim(), true));
+                user_names.add(new UserRole(u.getUserName().trim(), true));
                 Object[] rowData = new Object[]{u.getUserName(), u.getFirstName(), u.getMiddleName(), u.getLastName()};
                 ((RoleTableModel) usersTable.getModel()).addRow(rowData);
             }

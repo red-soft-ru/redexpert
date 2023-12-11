@@ -211,6 +211,7 @@ public class LineNumber extends JComponent {
 
     public void setBorderLabels(List<String> borderLabels) {
         this.borderLabels = borderLabels;
+        repaint();
     }
 
     public void resetBorderLabels() {

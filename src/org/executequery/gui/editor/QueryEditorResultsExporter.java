@@ -42,6 +42,7 @@ import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
+import org.underworldlabs.util.SystemProperties;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -168,19 +169,21 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         components.put(saveBlobsIndividuallyCheck.getName(), saveBlobsIndividuallyCheck);
 
         replaceEndlCheck = WidgetFactory.createCheckBox("replaceEndlCheck", bundleString("replaceEndlLabel"));
-        replaceEndlCheck.addActionListener(e -> replaceEndlField.setEditable(replaceEndlCheck.isSelected()));
+        replaceEndlCheck.addActionListener(e -> replaceEndlField.setEnabled(replaceEndlCheck.isSelected()));
         components.put(replaceEndlCheck.getName(), replaceEndlCheck);
 
         replaceNullCheck = WidgetFactory.createCheckBox("replaceNullCheck", bundleString("replaceNullCheck"));
-        replaceNullCheck.addActionListener(e -> replaceNullField.setEditable(replaceNullCheck.isSelected()));
+        replaceNullCheck.addActionListener(e -> replaceNullField.setEnabled(replaceNullCheck.isSelected()));
         components.put(replaceNullCheck.getName(), replaceNullCheck);
 
         replaceEndlField = WidgetFactory.createTextField("replaceEndlCombo");
-        replaceEndlField.setEditable(false);
+        replaceEndlField.setEnabled(false);
+        replaceEndlField.setText("\\r\\n");
         components.put(replaceEndlField.getName(), replaceEndlField);
 
         replaceNullField = WidgetFactory.createTextField("replaceNullField");
-        replaceNullField.setEditable(false);
+        replaceNullField.setEnabled(false);
+        replaceNullField.setText(SystemProperties.getProperty("user", "results.table.cell.null.text"));
         components.put(replaceNullField.getName(), replaceNullField);
 
         exportTableNameField = WidgetFactory.createTextField("exportTableNameField");

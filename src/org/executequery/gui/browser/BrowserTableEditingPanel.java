@@ -86,8 +86,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         ChangeListener,
         VetoableChangeListener {
 
-    // TEXT FUNCTION CONTAINER
-
+    public static final String NAME = "BrowserTableEditingPanel";
     private static final int TABLE_COLUMNS_INDEX = 0;
     private static final int TABLE_CONSTRAINTS_INDEX = TABLE_COLUMNS_INDEX + 1;
     private static final int TABLE_INDEXES_INDEX = TABLE_CONSTRAINTS_INDEX + 1;
@@ -99,458 +98,515 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private static final int TABLE_METADATA_INDEX = TABLE_SQL_INDEX + 1;
     private static final int TABLE_DEPENDENCIES_INDEX = TABLE_METADATA_INDEX + 1;
     private static final int TABLE_PROPERTIES_INDEX = TABLE_DEPENDENCIES_INDEX + 1;
+    private static final int SQL_PANE_INDEX = 6;
 
-    public static final String NAME = "BrowserTableEditingPanel";
+    // --- GUI components ---
 
-    /**
-     * Contains the table name
-     */
-    private DisabledField tableNameField;
-
-    /**
-     * Contains the data row count
-     */
+    private DisabledField adapterField;
     private DisabledField rowCountField;
+    private DisabledField tableNameField;
+    private DisabledField externalFileField;
 
-    /**
-     * The table view tabbed pane
-     */
     private JTabbedPane tabPane;
-
-    /**
-     * The SQL text pane for alter text
-     */
-    private SimpleSqlTextPanel alterSqlText;
-
-    /**
-     * The SQL text pane for create table text
-     */
-    private SimpleSqlTextPanel createSqlText;
-
-    private EditableDatabaseTable descriptionTable;
-
-    /**
-     * The panel displaying the table's constraints
-     */
-    private EditableColumnConstraintTable constraintsTable;
-
-    /**
-     * Contains the column indexes for a selected table
-     */
-    private JTable columnIndexTable;
-    private JTable triggersTable;
-
-    /**
-     * A reference to the currently selected table.
-     * This is not a new <code>JTable</code> instance
-     */
-    private JTable focusTable;
-
-    private TableColumnIndexTableModel citm;
-    private TableTriggersTableModel tttm;
-
-    /**
-     * Holds temporary SQL text during modifications
-     */
-    private StringBuffer sbTemp;
-
-    /**
-     * table data tab panel
-     */
     private TableDataTab tableDataPanel;
 
-    /**
-     * current node selection object
-     */
-    private BaseDatabaseObject metaObject;
-
-    /**
-     * the erd panel
-     */
-    private ReferencesDiagramPanel referencesPanel;
-
-    /**
-     * the apply changes button
-     */
-    private JButton applyButton;
-
-    /**
-     * the cancel changes button
-     */
-    private JButton cancelButton;
-
-    /**
-     * the button to get count os table rows
-     */
-    private JButton rowsCountButton;
-
-    /**
-     * the browser's control object
-     */
-    private final BrowserController controller;
-
-    private DatabaseObjectMetaDataPanel metaDataPanel;
-    DependenciesPanel dependenciesPanel;
-
-    /**
-     * the last focused editor
-     */
-    private TextEditor lastFocusEditor;
-
+    private JPanel indexesPanel;
+    private JPanel triggersPanel;
+    private JPanel descriptionPanel;
+    private JPanel constraintsPanel;
     private JPanel buttonsEditingColumnPanel;
-    private JPanel buttonsEditingConstraintPanel;
     private JPanel buttonsEditingIndexesPanel;
     private JPanel buttonsEditingTriggersPanel;
-    private PropertiesPanel propertiesPanel;
+    private JPanel buttonsEditingConstraintPanel;
 
-    Semaphore lock;
+    private PropertiesPanel propertiesPanel;
+    private SimpleSqlTextPanel alterSqlText;
+    private SimpleSqlTextPanel createSqlText;
+    private DependenciesPanel dependenciesPanel;
+    private ReferencesDiagramPanel referencesPanel;
+    private DatabaseObjectMetaDataPanel metaDataPanel;
+
+    private JTable triggersTable;
+    private TableTriggersTableModel triggersTableModel;
+
+    private JTable columnIndexTable;
+    private TableColumnIndexTableModel columnIndexTableModel;
+
+    private EditableDatabaseTable descriptionTable;
+    private EditableColumnConstraintTable constraintsTable;
+
+    private JButton applyButton;
+    private JButton cancelButton;
+    private JButton rowsCountButton;
+
+    // ---
+
+    private final BrowserController controller;
+
+    private Timer timer;
+    private Semaphore lock;
+    private SwingWorker worker;
+    private DatabaseTable table;
+    private StringBuffer sbTemp;
+    private TextEditor lastFocusEditor;
+    private List<JComponent> externalFileComponents;
+
+    /**
+     * Indicates that the references tab has been previously displayed
+     * for the current selection. Aims to keep any changes made to the
+     * references ERD (moving tables around) stays as was previously set.
+     */
+    private boolean referencesLoaded;
+    private boolean loadingRowCount;
 
     public BrowserTableEditingPanel(BrowserController controller) {
         this.controller = controller;
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        init();
+        arrange();
     }
 
-    private List<JComponent> externalFileComponents;
-    private DisabledField externalFileField;
-    private DisabledField adapterField;
-
     private void init() {
-        // the column index table
-        //citm = new ColumnIndexTableModel();
-        externalFileComponents = new ArrayList<>();
-        externalFileField = new DisabledField();
-        adapterField = new DisabledField();
-        columnIndexTable = new DefaultTable();
-        triggersTable = new DefaultTable();
-        citm = new TableColumnIndexTableModel();
-        tttm = new TableTriggersTableModel();
-        columnIndexTable.setModel(new TableSorter(citm, columnIndexTable.getTableHeader()));
-        triggersTable.setModel(new TableSorter(tttm, triggersTable.getTableHeader()));
 
+        lock = new Semaphore(1);
+        sbTemp = new StringBuffer(100);
+        externalFileComponents = new ArrayList<>();
+
+        // --- columnIndexTable ---
+
+        columnIndexTableModel = new TableColumnIndexTableModel();
+
+        columnIndexTable = new DefaultTable();
+        columnIndexTable.setModel(new TableSorter(columnIndexTableModel, columnIndexTable.getTableHeader()));
         columnIndexTable.setColumnSelectionAllowed(false);
         columnIndexTable.getTableHeader().setReorderingAllowed(false);
-
-        //externalFilePanel
-        GridBagHelper gbh = new GridBagHelper();
-
-        // column indexes panel
-        JPanel indexesPanel = new JPanel(new GridBagLayout());
-        indexesPanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-indexes")));
-        createButtonsEditingIndexesPanel();
-        indexesPanel.add(buttonsEditingIndexesPanel, new GridBagConstraints(
-                1, 0, 1, 1, 0, 0,
-                GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL,
-                new Insets(2, 2, 2, 2), 0, 0));
-        indexesPanel.add(new JScrollPane(columnIndexTable), new GridBagConstraints(
-                1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST,
-                GridBagConstraints.BOTH,
-                new Insets(2, 2, 2, 2), 0, 0));
         columnIndexTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1) {
-                    int row = columnIndexTable.getSelectedRow();
-                    if (row >= 0) {
-                        row = ((TableSorter) columnIndexTable.getModel()).modelIndex(row);
-                        DefaultDatabaseIndex index = ((TableColumnIndexTableModel) ((TableSorter) columnIndexTable.getModel()).getTableModel()).getIndexes().get(row);
-                        BaseDialog dialog = new BaseDialog("Edit Index", true);
-                        CreateIndexPanel panel = new CreateIndexPanel(table.getHost().getDatabaseConnection(), dialog, index, table.getName());
-                        dialog.addDisplayComponent(panel);
-                        dialog.display();
-                        try {
-                            table.reset();
-                            setValues(table);
-
-                        } catch (DataSourceException ex) {
-                            GUIUtilities.displayExceptionErrorDialog(ex.getMessage(), ex);
-                        }
-                    }
-                }
+                editColumnIndex(e);
             }
         });
 
-        // table triggers panel
-        JPanel triggersPanel = new JPanel(new GridBagLayout());
-        triggersPanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-triggers")));
-        createButtonsEditingTriggersPanel();
-        GridBagHelper gbhTrigger = new GridBagHelper();
-        gbhTrigger.setDefaults(GridBagHelper.DEFAULT_CONSTRAINTS).defaults();
-        triggersPanel.add(buttonsEditingTriggersPanel, gbhTrigger.get());
-        triggersPanel.add(new JScrollPane(triggersTable), gbhTrigger.anchorSouthEast().fillBoth().spanX().spanY().nextRow().get());
+        // --- triggersTable ---
+
+        triggersTableModel = new TableTriggersTableModel();
+        triggersTable = new DefaultTable();
+        triggersTable.setModel(new TableSorter(triggersTableModel, triggersTable.getTableHeader()));
         triggersTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1) {
-                    int row = triggersTable.getSelectedRow();
-                    if (row >= 0) {
-                        row = ((TableSorter) triggersTable.getModel()).modelIndex(row);
-                        DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
-                        BaseDialog dialog = new BaseDialog("Edit Trigger", true);
-                        CreateTriggerPanel panel = new CreateTriggerPanel(table.getHost().getDatabaseConnection(), dialog, trigger, DefaultDatabaseTrigger.TABLE_TRIGGER);
-                        dialog.addDisplayComponent(panel);
-                        dialog.display();
-                        try {
-                            table.reset();
-                            setValues(table);
-
-                        } catch (DataSourceException ex) {
-                            GUIUtilities.displayExceptionErrorDialog(ex.getMessage(), ex);
-                        }
-                    }
-                }
+                editTrigger(e);
             }
         });
 
-        // table meta data table
-        metaDataPanel = new DatabaseObjectMetaDataPanel();
+        // --- constraintsTable ---
 
-        // table data panel
-        tableDataPanel = new TableDataTab(true);
+        constraintsTable = new EditableColumnConstraintTable();
+        constraintsTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                editConstraint(e);
+            }
+        });
 
-        // table references erd panel
-        referencesPanel = new ReferencesDiagramPanel();
+        // --- descriptionTable ---
 
-        // alter sql text panel
+        descriptionTable = new EditableDatabaseTable();
+        descriptionTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                editDescription(e);
+            }
+        });
+
+        // --- alterSqlText ---
+
         alterSqlText = new SimpleSqlTextPanel();
         alterSqlText.setBorder(BorderFactory.createTitledBorder(bundleString("alter-table")));
         alterSqlText.setPreferredSize(new Dimension(100, 100));
         alterSqlText.getEditorTextComponent().addFocusListener(this);
 
-        // create sql text panel
+        // --- createSqlText ---
+
         createSqlText = new SimpleSqlTextPanel();
         createSqlText.setBorder(BorderFactory.createTitledBorder(bundleString("create-table")));
         createSqlText.getEditorTextComponent().addFocusListener(this);
 
-        // sql text split pane
-        FlatSplitPane splitPane = new FlatSplitPane(FlatSplitPane.VERTICAL_SPLIT);
-        splitPane.setTopComponent(alterSqlText);
-        splitPane.setBottomComponent(createSqlText);
-        splitPane.setDividerSize(7);
-        splitPane.setResizeWeight(0.25);
+        // --- sqlSplitPane ---
 
-        constraintsTable = new EditableColumnConstraintTable();
-        JPanel constraintsPanel = new JPanel(new GridBagLayout());
+        FlatSplitPane sqlSplitPane = new FlatSplitPane(FlatSplitPane.VERTICAL_SPLIT);
+        sqlSplitPane.setTopComponent(alterSqlText);
+        sqlSplitPane.setBottomComponent(createSqlText);
+        sqlSplitPane.setDividerSize(7);
+        sqlSplitPane.setResizeWeight(0.25);
+
+        // --- panels ---
+
+        indexesPanel = new JPanel(new GridBagLayout());
+        indexesPanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-indexes")));
+
+        triggersPanel = new JPanel(new GridBagLayout());
+        triggersPanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-triggers")));
+
+        constraintsPanel = new JPanel(new GridBagLayout());
         constraintsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-keys")));
-        createButtonsEditingConstraintPanel();
-        constraintsPanel.add(buttonsEditingConstraintPanel, new GridBagConstraints(
-                1, 0, 1, 1, 0, 0,
-                GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL,
-                new Insets(2, 2, 2, 2), 0, 0));
-        constraintsPanel.add(new JScrollPane(constraintsTable), new GridBagConstraints(
-                1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST,
-                GridBagConstraints.BOTH,
-                new Insets(2, 2, 2, 2), 0, 0));
-        constraintsTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1) {
-                    int row = constraintsTable.getSelectedRow();
-                    if (row >= 0) {
-                        row = ((TableSorter) constraintsTable.getModel()).modelIndex(row);
-                        ColumnConstraint constraint = constraintsTable.getColumnConstraintTableModel().getConstraints().get(row);
-                        BaseDialog dialog = new BaseDialog(EditConstraintPanel.EDIT_TITLE, true);
-                        EditConstraintPanel panel = new EditConstraintPanel(table, dialog, constraint);
-                        dialog.addDisplayComponent(panel);
-                        dialog.display();
-                        try {
-                            table.reset();
-                            setValues(table);
-                        } catch (DataSourceException ex) {
-                            GUIUtilities.displayExceptionErrorDialog(ex.getMessage(), ex);
-                        }
-                    }
-                }
-            }
-        });
 
-        descriptionTable = new EditableDatabaseTable();
-        createButtonsEditingColumnPanel();
-        JPanel descTablePanel = new JPanel(new GridBagLayout());
-        descTablePanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-columns")));
-        GridBagConstraints gbcDesc = new GridBagConstraints(
-                1, 0, 1, 1, 0, 0,
-                GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL,
-                new Insets(2, 2, 2, 2), 0, 0);
-        //gbcDesc.gridy++;
-        descTablePanel.add(buttonsEditingColumnPanel, gbcDesc);
-        descTablePanel.add(
-                new JScrollPane(descriptionTable),
-                new GridBagConstraints(
-                        1, 1, 1, 1, 1.0, 1.0,
-                        GridBagConstraints.SOUTHEAST,
-                        GridBagConstraints.BOTH,
-                        new Insets(2, 2, 2, 2), 0, 0));
+        descriptionPanel = new JPanel(new GridBagLayout());
+        descriptionPanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-columns")));
 
-        descriptionTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1) {
-                    int row = descriptionTable.getSelectedRow();
-                    if (row >= 0) {
-                        row = ((TableSorter) descriptionTable.getModel()).modelIndex(row);
-                        DatabaseColumn column = descriptionTable.getDatabaseTableModel().getDatabaseColumns().get(row);
-                        BaseDialog dialog = new BaseDialog(InsertColumnPanel.EDIT_TITLE, true);
-                        InsertColumnPanel panel = new InsertColumnPanel(table, dialog, column);
-                        dialog.addDisplayComponent(panel);
-                        dialog.display();
-                    }
-                }
-            }
-        });
+        propertiesPanel = new PropertiesPanel();
+        dependenciesPanel = new DependenciesPanel();
+        referencesPanel = new ReferencesDiagramPanel();
+        metaDataPanel = new DatabaseObjectMetaDataPanel();
+        tableDataPanel = new TableDataTab(true);
 
-        tableNameField = new DisabledField();
-        //schemaNameField = new DisabledField();
+        // --- disabled fields ---
+
+        adapterField = new DisabledField();
         rowCountField = new DisabledField();
+        tableNameField = new DisabledField();
+        externalFileField = new DisabledField();
+
+        // --- tabPane --
 
         VetoableSingleSelectionModel model = new VetoableSingleSelectionModel();
         model.addVetoableChangeListener(this);
-        dependenciesPanel = new DependenciesPanel();
-        //dependenciesPanel.setDatabaseObject(table);
 
-        propertiesPanel = new PropertiesPanel();
-
-        // create the tabbed pane
         tabPane = new JTabbedPane();
         tabPane.setModel(model);
+        tabPane.addChangeListener(this);
 
-        tabPane.add(Bundles.getCommon("columns"), descTablePanel);
+        tabPane.add(Bundles.getCommon("columns"), descriptionPanel);
         tabPane.add(Bundles.getCommon("constraints"), constraintsPanel);
         tabPane.add(Bundles.getCommon("indexes"), indexesPanel);
         tabPane.add(Bundles.getCommon("triggers"), triggersPanel);
         addPrivilegesTab(tabPane, null);
         tabPane.add(Bundles.getCommon("references"), referencesPanel);
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
-        tabPane.add(Bundles.getCommon("SQL"), splitPane);
+        tabPane.add(Bundles.getCommon("SQL"), sqlSplitPane);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
         tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
         tabPane.add(bundleString("preferences-panel-label"), propertiesPanel);
-        //dependenciesPanel.load();
 
-        tabPane.addChangeListener(this);
+        // --- buttons ---
 
-        // apply/cancel buttons
         applyButton = new DefaultPanelButton(Bundles.get("common.apply.button"));
-        cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
-
         applyButton.addActionListener(this);
+
+        cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
         cancelButton.addActionListener(this);
 
         rowsCountButton = new DefaultPanelButton(Bundles.getCommon("get-rows-count"));
         rowsCountButton.addActionListener(this);
 
-        // add to the base panel
-        JPanel base = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(10, 5, 0, 5);
-        gbc.insets = ins;
-        gbc.anchor = GridBagConstraints.NORTHEAST;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbh.setDefaults(gbc).defaults();
-        gbh.topGap(5);
-        gbh.addLabelFieldPair(base, bundleString("table-name"), tableNameField, null);
-        JLabel label = new JLabel(bundleString("external-file"));
-        externalFileComponents.add(label);
-        externalFileComponents.add(externalFileField);
-        gbh.addLabelFieldPair(base, label, externalFileField, null);
-        label = new JLabel(bundleString("adapter"));
-        externalFileComponents.add(label);
-        externalFileComponents.add(adapterField);
-        gbh.addLabelFieldPair(base, label, adapterField, null);
-        base.add(tabPane, gbh.nextRowFirstCol().fillBoth().spanY().get());
-        /*base.add()
-        // add the bottom components
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.weighty = 0;
-        gbc.weightx = 0;
-        gbc.insets.top = 1;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
-        base.add(rowsCountButton, gbc);
-        gbc.gridx = 2;
-        gbc.insets.top = 0;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridwidth = 1;
-        gbc.insets.right = 0;
-        base.add(rowCountField, gbc);
-        gbc.gridx = 3;
-        gbc.weightx = 0;
-        gbc.insets.top = 0;
-        gbc.insets.right = 5;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.EAST;
-        base.add(applyButton, gbc);
-        gbc.gridx = 4;
-        gbc.weightx = 0;
-        gbc.insets.left = 0;
-        base.add(cancelButton, gbc);*/
+        // ---
 
-        // set up and add the focus listener for the tables
-        FocusListener tableFocusListener = new FocusListener() {
-            public void focusLost(FocusEvent e) {
+        createButtonsEditingIndexesPanel();
+        createButtonsEditingTriggersPanel();
+        createButtonsEditingColumnPanel();
+        createButtonsEditingConstraintPanel();
+    }
+
+    private void createButtonsEditingIndexesPanel() {
+
+        buttonsEditingIndexesPanel = new AbstractToolBarForTableIndexes(
+                "Create Index",
+                "Delete Index",
+                "Refresh",
+                "Selectivity"
+        ) {
+
+            @Override
+            public void insert(ActionEvent e) {
+                insertAfter();
             }
 
-            public void focusGained(FocusEvent e) {
-                focusTable = (JTable) e.getSource();
+            @Override
+            public void delete(ActionEvent e) {
+                deleteRow();
+            }
+
+            @Override
+            public void refresh(ActionEvent e) {
+                if (table instanceof DefaultDatabaseTable)
+                    ((DefaultDatabaseTable) table).clearIndexes();
+                loadIndexes();
+            }
+
+            @Override
+            public void reselectivity(ActionEvent e) {
+                reselectAllIndexes();
             }
         };
-        descriptionTable.addFocusListener(tableFocusListener);
-        //columnDataTable.addTableFocusListener(tableFocusListener);
-        constraintsTable.addFocusListener(tableFocusListener);
+    }
 
-        sbTemp = new StringBuffer(100);
+    private void createButtonsEditingTriggersPanel() {
+        buttonsEditingTriggersPanel = new AbstractToolBarForTable(
+                "Create Trigger",
+                "Delete Trigger",
+                "Refresh"
+        ) {
+            @Override
+            public void insert(ActionEvent e) {
+                insertAfter();
+            }
 
-        setContentPanel(base);
-        setHeaderIcon(GUIUtilities.loadIcon("DatabaseTable24.png"));
-        setHeaderText(bundleString("db-table"));
+            @Override
+            public void delete(ActionEvent e) {
+                deleteRow();
+            }
 
-        // register for keyword changes
-        EventMediator.registerListener(this);
+            @Override
+            public void refresh(ActionEvent e) {
+                if (table instanceof DefaultDatabaseTable)
+                    ((DefaultDatabaseTable) table).clearTriggers();
+                loadTriggers();
+            }
+        };
+    }
 
-        lock = new Semaphore(1);
+    private void createButtonsEditingColumnPanel() {
+
+        PanelToolBar bar = new PanelToolBar();
+
+        RolloverButton addRolloverButton = new RolloverButton();
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
+        addRolloverButton.setToolTipText("Insert column");
+        addRolloverButton.addActionListener(actionEvent -> insertAfter());
+        bar.add(addRolloverButton);
+
+        RolloverButton deleteRolloverButton = new RolloverButton();
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
+        deleteRolloverButton.setToolTipText("Delete column");
+        deleteRolloverButton.addActionListener(actionEvent -> deleteRow());
+        bar.add(deleteRolloverButton);
+
+        RolloverButton moveUpButton = new RolloverButton();
+        moveUpButton.setIcon(GUIUtilities.loadIcon("Up16.png"));
+        moveUpButton.setToolTipText("Move up");
+        moveUpButton.addActionListener(actionEvent -> moveColumnUp());
+        bar.add(moveUpButton);
+
+        RolloverButton moveDownButton = new RolloverButton();
+        moveDownButton.setIcon(GUIUtilities.loadIcon("Down16.png"));
+        moveDownButton.setToolTipText("Move down");
+        moveDownButton.addActionListener(actionEvent -> moveColumnDown());
+        bar.add(moveDownButton);
+
+        RolloverButton commitRolloverButton = new RolloverButton();
+        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        commitRolloverButton.setToolTipText("Commit");
+        commitRolloverButton.addActionListener(actionEvent -> commitColumnsChanges());
+        bar.add(commitRolloverButton);
+
+        RolloverButton rollbackRolloverButton = new RolloverButton();
+        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
+        rollbackRolloverButton.setToolTipText("Rollback");
+        rollbackRolloverButton.addActionListener(actionEvent -> refresh());
+        bar.add(rollbackRolloverButton);
+
+        buttonsEditingColumnPanel = new JPanel(new GridBagLayout());
+        buttonsEditingColumnPanel.add(bar, new GridBagConstraints(
+                4, 0, 1, 1, 1.0, 1.0,
+                GridBagConstraints.CENTER,
+                GridBagConstraints.HORIZONTAL,
+                new Insets(0, 0, 0, 0),
+                0, 0
+        ));
+    }
+
+    private void createButtonsEditingConstraintPanel() {
+
+
+        PanelToolBar bar = new PanelToolBar();
+        RolloverButton addRolloverButton = new RolloverButton();
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
+        addRolloverButton.setToolTipText("Insert constraint");
+        addRolloverButton.addActionListener(actionEvent -> insertAfter());
+        bar.add(addRolloverButton);
+
+        RolloverButton deleteRolloverButton = new RolloverButton();
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
+        deleteRolloverButton.setToolTipText("Delete constraint");
+        deleteRolloverButton.addActionListener(actionEvent -> deleteRow());
+        bar.add(deleteRolloverButton);
+
+        RolloverButton commitRolloverButton = new RolloverButton();
+        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        commitRolloverButton.setToolTipText("Commit");
+        commitRolloverButton.addActionListener(actionEvent -> commitColumnsChanges());
+        bar.add(commitRolloverButton);
+
+        RolloverButton rollbackRolloverButton = new RolloverButton();
+        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
+        rollbackRolloverButton.setToolTipText("Rollback");
+        rollbackRolloverButton.addActionListener(actionEvent -> refresh());
+        bar.add(rollbackRolloverButton);
+
+        buttonsEditingConstraintPanel = new JPanel(new GridBagLayout());
+        buttonsEditingConstraintPanel.add(bar, new GridBagConstraints(
+                4, 0, 1, 1, 1.0, 1.0,
+                GridBagConstraints.CENTER,
+                GridBagConstraints.HORIZONTAL,
+                new Insets(0, 0, 0, 0),
+                0, 0
+        ));
+    }
+
+    private void arrange() {
+
+        GridBagHelper gbh;
+
+        // --- column indexes panel ---
+
+        gbh = new GridBagHelper().setInsets(2, 2, 2, 2).anchorNorthWest().fillHorizontally();
+        indexesPanel.add(buttonsEditingIndexesPanel, gbh.nextCol().setMinWeightX().setMinWeightY().get());
+        indexesPanel.add(new JScrollPane(columnIndexTable), gbh.nextRow().anchorSouth().fillBoth().spanX().spanY().get());
+
+        // --- table triggers panel ---
+
+        gbh = new GridBagHelper().setDefaults(GridBagHelper.DEFAULT_CONSTRAINTS).defaults();
+        triggersPanel.add(buttonsEditingTriggersPanel, gbh.get());
+        triggersPanel.add(new JScrollPane(triggersTable), gbh.anchorSouthEast().fillBoth().spanX().spanY().nextRow().get());
+
+        // --- constraints panel ---
+
+        gbh = new GridBagHelper().setInsets(2, 2, 2, 2).anchorNorthWest().fillHorizontally();
+        constraintsPanel.add(buttonsEditingConstraintPanel, gbh.nextCol().setMinWeightX().setMinWeightY().get());
+        constraintsPanel.add(new JScrollPane(constraintsTable), gbh.nextRow().anchorSouth().fillBoth().spanX().spanY().get());
+
+        // --- description panel ---
+
+        gbh = new GridBagHelper().setInsets(2, 2, 2, 2).anchorNorthWest().fillHorizontally();
+        descriptionPanel.add(buttonsEditingColumnPanel, gbh.nextCol().setMinWeightX().setMinWeightY().get());
+        descriptionPanel.add(new JScrollPane(descriptionTable), gbh.nextRow().anchorSouth().fillBoth().spanX().spanY().get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        JLabel externalFileLabel = new JLabel(bundleString("external-file"));
+        JLabel adapterLabel = new JLabel(bundleString("adapter"));
+
+        gbh = new GridBagHelper().setInsets(5, 10, 5, 0).anchorNorthWest().fillBoth();
+        gbh.setDefaults(gbh.get());
+
+        gbh.addLabelFieldPair(mainPanel, bundleString("table-name"), tableNameField, null);
+        gbh.addLabelFieldPair(mainPanel, externalFileLabel, externalFileField, null);
+        gbh.addLabelFieldPair(mainPanel, adapterLabel, adapterField, null);
+        mainPanel.add(tabPane, gbh.nextRowFirstCol().fillBoth().spanY().get());
+
+        // --- hide external components ---
+
+        externalFileComponents.add(externalFileLabel);
+        externalFileComponents.add(externalFileField);
+        externalFileComponents.add(adapterLabel);
+        externalFileComponents.add(adapterField);
         for (JComponent component : externalFileComponents)
             component.setVisible(false);
+
+        // --- base ---
+
+        setContentPanel(mainPanel);
+        setHeaderText(bundleString("db-table"));
+        setHeaderIcon(GUIUtilities.loadIcon("DatabaseTable24.png"));
+        EventMediator.registerListener(this);
+    }
+
+    private void editColumnIndex(MouseEvent e) {
+
+        if (e.getClickCount() < 2)
+            return;
+
+        if (columnIndexTable.getSelectedRow() >= 0) {
+
+            int row = ((TableSorter) columnIndexTable.getModel()).modelIndex(columnIndexTable.getSelectedRow());
+            DefaultDatabaseIndex index = ((TableColumnIndexTableModel) ((TableSorter) columnIndexTable.getModel()).getTableModel()).getIndexes().get(row);
+            BaseDialog dialog = new BaseDialog("Edit Index", true);
+            CreateIndexPanel panel = new CreateIndexPanel(table.getHost().getDatabaseConnection(), dialog, index, table.getName());
+            dialog.addDisplayComponent(panel);
+            dialog.display();
+
+            refresh();
+        }
+    }
+
+    private void editTrigger(MouseEvent e) {
+
+        if (e.getClickCount() < 2)
+            return;
+
+        if (triggersTable.getSelectedRow() >= 0) {
+
+            int row = ((TableSorter) triggersTable.getModel()).modelIndex(triggersTable.getSelectedRow());
+            DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
+            BaseDialog dialog = new BaseDialog("Edit Trigger", true);
+            CreateTriggerPanel panel = new CreateTriggerPanel(table.getHost().getDatabaseConnection(), dialog, trigger, DefaultDatabaseTrigger.TABLE_TRIGGER);
+            dialog.addDisplayComponent(panel);
+            dialog.display();
+
+            refresh();
+        }
+    }
+
+    private void editConstraint(MouseEvent e) {
+
+        if (e.getClickCount() < 2)
+            return;
+
+        if (constraintsTable.getSelectedRow() >= 0) {
+
+            int row = ((TableSorter) constraintsTable.getModel()).modelIndex(constraintsTable.getSelectedRow());
+            ColumnConstraint constraint = constraintsTable.getColumnConstraintTableModel().getConstraints().get(row);
+            BaseDialog dialog = new BaseDialog(EditConstraintPanel.EDIT_TITLE, true);
+            EditConstraintPanel panel = new EditConstraintPanel(table, dialog, constraint);
+            dialog.addDisplayComponent(panel);
+            dialog.display();
+
+            refresh();
+        }
+    }
+
+    private void editDescription(MouseEvent e) {
+
+        if (e.getClickCount() < 2)
+            return;
+
+        if (descriptionTable.getSelectedRow() >= 0) {
+            int row = ((TableSorter) descriptionTable.getModel()).modelIndex(descriptionTable.getSelectedRow());
+            DatabaseColumn column = descriptionTable.getDatabaseTableModel().getDatabaseColumns().get(row);
+            BaseDialog dialog = new BaseDialog(InsertColumnPanel.EDIT_TITLE, true);
+            InsertColumnPanel panel = new InsertColumnPanel(table, dialog, column);
+            dialog.addDisplayComponent(panel);
+            dialog.display();
+        }
     }
 
     /**
      * Invoked when a SQL text pane gains the keyboard focus.
      */
+    @Override
     public void focusGained(FocusEvent e) {
+
         Object source = e.getSource();
-        // check which editor we are in
-        if (createSqlText.getEditorTextComponent() == source) {
+        if (createSqlText.getEditorTextComponent() == source)
             lastFocusEditor = createSqlText;
-        } else if (alterSqlText.getEditorTextComponent() == source) {
+        else if (alterSqlText.getEditorTextComponent() == source)
             lastFocusEditor = alterSqlText;
-        }
     }
 
     /**
      * Invoked when a SQL text pane loses the keyboard focus.
      * Does nothing here.
      */
+    @Override
     public void focusLost(FocusEvent e) {
-        if (e.getSource() == alterSqlText) {
+        if (e.getSource() == alterSqlText)
             table.setModifiedSQLText(alterSqlText.getSQLText());
-        }
     }
 
     /**
      * Notification of a new keyword added to the list.
      */
+    @Override
     public void keywordsAdded(KeywordEvent e) {
         alterSqlText.setSQLKeywords(true);
         createSqlText.setSQLKeywords(true);
@@ -559,20 +615,18 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     /**
      * Notification of a keyword removed from the list.
      */
+    @Override
     public void keywordsRemoved(KeywordEvent e) {
         alterSqlText.setSQLKeywords(true);
         createSqlText.setSQLKeywords(true);
     }
 
+    @Override
     public boolean canHandleEvent(ApplicationEvent event) {
         return (event instanceof DefaultKeywordEvent);
     }
 
-    /**
-     * Performs the apply/cancel changes.
-     *
-     * @param event - the event
-     */
+    @Override
     public void actionPerformed(ActionEvent event) {
 
         if (table.isAltered()) {
@@ -581,20 +635,20 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             if (source == applyButton) {
 
                 try {
+
                     if (tabPane.getSelectedComponent() == tableDataPanel)
                         tableDataPanel.stopEditing();
-                    DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(table);
-                    docp.applyChanges();
-                    if (docp.applied)
+
+                    DatabaseObjectChangeProvider changeProvider = new DatabaseObjectChangeProvider(table);
+                    changeProvider.applyChanges();
+                    if (changeProvider.applied)
                         setValues(table);
 
                 } catch (DataSourceException e) {
-
                     GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
                 }
 
             } else if (source == cancelButton) {
-
                 table.revert();
                 setValues(table);
             }
@@ -602,25 +656,21 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         }
 
         if (event.getSource() == rowsCountButton) {
-
             table.resetRowsCount();
             updateRowCount(bundleString("quering"));
             reloadDataRowCount();
         }
     }
 
+    @Override
     public String getLayoutName() {
         return NAME;
     }
 
-    public void refresh() {
-    }
-
+    @Override
     public Printable getPrintable() {
 
-        int tabIndex = tabPane.getSelectedIndex();
-
-        switch (tabIndex) {
+        switch (tabPane.getSelectedIndex()) {
 
             case TABLE_COLUMNS_INDEX:
                 return new TablePrinter(descriptionTable,
@@ -633,9 +683,11 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             case TABLE_INDEXES_INDEX:
                 return new TablePrinter(columnIndexTable,
                         bundleString("indexes-table") + table.getName());
+
             case TABLE_TRIGGERS_INDEX:
                 return new TablePrinter(triggersTable,
                         bundleString("triggers-table") + table.getName());
+
             case TABLE_REFERENCES_INDEX:
                 return referencesPanel.getPrintable();
 
@@ -649,18 +701,18 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             default:
                 return null;
-
         }
-
     }
 
+    @Override
     public void cleanup() {
         super.cleanup();
-        if (worker != null) {
 
+        if (worker != null) {
             worker.interrupt();
             worker = null;
         }
+
         if (tableDataPanel != null) {
             tableDataPanel.closeResultSet();
             tableDataPanel.cleanup();
@@ -668,6 +720,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         if (referencesPanel != null)
             referencesPanel.cleanup();
+
         EventMediator.deregisterListener(this);
     }
 
@@ -694,6 +747,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     /**
      * Handles a change tab selection.
      */
+    @Override
     public void stateChanged(ChangeEvent e) {
 
         final int index = tabPane.getSelectedIndex();
@@ -705,92 +759,60 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             tableDataPanel.loadDataForTable(table);
 
         if (index != TABLE_DATA_TAB_INDEX && tableDataPanel.isExecuting()) {
-
             tableDataPanel.cancelStatement();
             return;
         }
 
-//        GUIUtils.startWorker(new Runnable() {
-//
-//            public void run() {
-
         tabIndexSelected(index);
-//            }
-//
-//        });
-
     }
 
     private void tabIndexSelected(int index) {
 
         switch (index) {
+
             case TABLE_INDEXES_INDEX:
                 loadIndexes();
                 break;
+
             case TABLE_TRIGGERS_INDEX:
                 loadTriggers();
                 break;
+
             case TABLE_REFERENCES_INDEX:
                 loadReferences();
                 break;
+
             case TABLE_DATA_TAB_INDEX:
                 if (!tableDataPanel.isLoaded())
                     tableDataPanel.loadDataForTable(table);
                 break;
+
             case TABLE_SQL_INDEX:
-                try {
-                    // check for any table defn changes
-                    // and update the alter text pane
-                    if (table.isAltered()) {
-
-                        alterSqlText.setSQLText(table.getAlteredSQLText().trim());
-
-                    } else {
-
-                        alterSqlText.setSQLText(EMPTY);
-                    }
-
-                } catch (DataSourceException exc) {
-
-                    controller.handleException(exc);
-                    alterSqlText.setSQLText(EMPTY);
-                }
-
+                alterSqlText.setSQLText(table.isAltered() ? table.getAlteredSQLText().trim() : EMPTY);
                 break;
+
             case TABLE_METADATA_INDEX:
                 loadTableMetaData();
                 break;
         }
-
     }
-
-    /**
-     * Indicates that the references tab has been previously displayed
-     * for the current selection. Aims to keep any changes made to the
-     * references ERD (moving tables around) stays as was previosuly set.
-     */
-    private boolean referencesLoaded;
 
     /**
      * Loads database table references.
      */
     private void loadReferences() {
 
-        // TODO: to be refactored out when erd receives new impl
-
-        if (referencesLoaded) {
+        if (referencesLoaded)
             return;
-        }
 
+        GUIUtilities.showWaitCursor();
         try {
 
-            GUIUtilities.showWaitCursor();
-
-            List<ColumnData[]> columns = new ArrayList<ColumnData[]>();
-            List<String> tableNames = new ArrayList<String>();
+            List<ColumnData[]> columns = new ArrayList<>();
+            List<String> tableNames = new ArrayList<>();
 
             List<ColumnConstraint> constraints = table.getConstraints();
-            Set<String> tableNamesAdded = new HashSet<String>();
+            Set<String> tableNamesAdded = new HashSet<>();
 
             for (ColumnConstraint constraint : constraints) {
 
@@ -820,8 +842,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         );
                     }
 
-                    String columnName = constraint.getColumnName();
-                    if (!tableNames.contains(tableName) && !columns.contains(columnName)) {
+                    //noinspection SuspiciousMethodCalls
+                    if (!tableNames.contains(tableName) && !columns.contains(constraint.getColumnName())) {
 
                         tableNames.add(tableName);
                         tableNamesAdded.add(tableName);
@@ -830,10 +852,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                                 tableName, table.getHost().getDatabaseConnection())
                         );
                     }
-
-
                 }
-
             }
 
             List<DatabaseColumn> exportedKeys = table.getExportedKeys();
@@ -849,11 +868,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                             parentsName, table.getHost().getDatabaseConnection())
                     );
                 }
-
             }
 
             if (tableNames.isEmpty()) {
-
                 tableNames.add(table.getName());
                 columns.add(new ColumnData[0]);
             }
@@ -861,10 +878,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             referencesPanel.setTables(tableNames, columns);
 
         } catch (DataSourceException e) {
-
             controller.handleException(e);
-        } finally {
 
+        } finally {
             GUIUtilities.showNormalCursor();
         }
 
@@ -877,11 +893,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private void loadTableMetaData() {
 
         try {
-
             metaDataPanel.setData(table.getColumnMetaData());
 
         } catch (DataSourceException e) {
-
             controller.handleException(e);
             metaDataPanel.setData(null);
         }
@@ -892,11 +906,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      */
     private synchronized void loadIndexes() {
         try {
-            // reset the data
-            citm.setIndexData(table.getIndexes());
 
-            // reset the view properties
+            columnIndexTableModel.setIndexData(table.getIndexes());
             columnIndexTable.setCellSelectionEnabled(true);
+
             TableColumnModel tcm = columnIndexTable.getColumnModel();
             tcm.getColumn(0).setPreferredWidth(25);
             tcm.getColumn(0).setMaxWidth(25);
@@ -909,48 +922,33 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         } catch (DataSourceException e) {
             controller.handleException(e);
-            citm.setIndexData(null);
+            columnIndexTableModel.setIndexData(null);
         }
-
     }
 
     private synchronized void loadTriggers() {
         try {
-            // reset the data
-            tttm.setTriggersData(table.getTriggers());
 
-            // reset the view properties
+            triggersTableModel.setTriggersData(table.getTriggers());
             columnIndexTable.setCellSelectionEnabled(true);
-            /*TableColumnModel tcm = columnIndexTable.getColumnModel();
-            tcm.getColumn(0).setPreferredWidth(25);
-            tcm.getColumn(0).setMaxWidth(25);
-            tcm.getColumn(0).setMinWidth(25);
-            tcm.getColumn(0).setCellRenderer(new KeyCellRenderer());
-            tcm.getColumn(1).setPreferredWidth(130);
-            tcm.getColumn(2).setPreferredWidth(130);
-            tcm.getColumn(3).setPreferredWidth(130);
-            tcm.getColumn(4).setPreferredWidth(90);*/
 
         } catch (DataSourceException e) {
             controller.handleException(e);
-            tttm.setTriggersData(null);
+            triggersTableModel.setTriggersData(null);
         }
-
     }
-
-
-    private DatabaseTable table;
 
     public void setValues(DatabaseTable table) {
 
         this.table = table;
         if (!MiscUtils.isNull(table.getExternalFile())) {
             externalFileField.setText(table.getExternalFile());
+
             if (!MiscUtils.isNull(table.getAdapter()))
                 adapterField.setText(table.getAdapter());
+
             for (JComponent component : externalFileComponents)
                 component.setVisible(true);
-
         }
 
         if (propertiesPanel != null) {
@@ -967,10 +965,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         }
 
         reloadView();
-        if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
-
+        if (SystemProperties.getBooleanProperty("user", "browser.query.row.count"))
             reloadDataRowCount();
-        }
 
         stateChanged(null);
     }
@@ -980,18 +976,17 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         try {
 
-            if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
-
-                updateRowCount(bundleString("quering"));
-
-            } else {
-
-                updateRowCount(bundleString("option-disabled"));
-            }
+            updateRowCount(SystemProperties.getBooleanProperty("user", "browser.query.row.count") ?
+                    bundleString("quering") :
+                    bundleString("option-disabled")
+            );
 
             referencesLoaded = false;
             tableNameField.setText(table.getName());
             descriptionTable.setDatabaseTable(table);
+
+            // --- load constraints ---
+
             SwingWorker sw = new SwingWorker("loadingConstraintsFor'" + table.getName() + "'") {
                 @Override
                 public Object construct() {
@@ -1000,6 +995,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
+
+            // --- load indices ---
+
             sw = new SwingWorker("loadingIndicesFor'" + table.getName() + "'") {
                 @Override
                 public Object construct() {
@@ -1008,6 +1006,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
+
+            // --- load triggers ---
+
             sw = new SwingWorker("loadingTriggersFor'" + table.getName() + "'") {
                 @Override
                 public Object construct() {
@@ -1016,6 +1017,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
+
+            // --- load dependencies ---
+
             sw = new SwingWorker("loadingDependenciesFor'" + table.getName() + "'") {
                 @Override
                 public Object construct() {
@@ -1024,66 +1028,57 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
+
+            // ---
+
             alterSqlText.setSQLText(EMPTY);
             createSqlText.setSQLText(createTableStatementFormatted());
 
         } catch (DataSourceException e) {
 
-            ///controller.handleException(e);
             Log.error("Error load table:", e);
 
             descriptionTable.resetDatabaseTable();
             constraintsTable.resetConstraintsTable();
         }
-
     }
 
     private String createTableStatementFormatted() {
-
         return table.getCreateSQLText();
     }
 
-    private boolean loadingRowCount;
-    private SwingWorker worker;
-    private Timer timer;
-
     private void reloadDataRowCount() {
 
-        if (timer != null) {
-
+        if (timer != null)
             timer.cancel();
-        }
 
         timer = new Timer();
         timer.schedule(new TimerTask() {
-
             @Override
             public void run() {
-
                 updateDataRowCount();
             }
         }, 600);
-
     }
 
     private void updateDataRowCount() {
 
         if (worker != null) {
-
-            if (loadingRowCount) {
-
+            if (loadingRowCount)
                 Log.debug("Interrupting worker for data row count");
-            }
+
             worker.interrupt();
         }
 
         worker = new SwingWorker("loadingRowCountFor'" + table.getName() + "'") {
+            @Override
             public Object construct() {
                 try {
 
                     loadingRowCount = true;
                     try {
                         Thread.sleep(200);
+
                     } catch (InterruptedException e) {
                         Log.error("Error load data row count:", e);
                     }
@@ -1092,75 +1087,19 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     return String.valueOf(table.getDataRowCount());
 
                 } catch (DataSourceException e) {
-
                     return "Error: " + e.getMessage();
 
                 } finally {
-
                     loadingRowCount = false;
                 }
             }
 
+            @Override
             public void finished() {
-
                 updateRowCount(get().toString());
             }
         };
         worker.start();
-    }
-
-    /**
-     * Fires a change in the selected table node and reloads
-     * the current table display view.
-     *
-     * @param metaObject - the selected meta object
-     * @param reset      - whether to reset the view, regardless of the current
-     *                   view which may be the same metaObject
-     */
-    public void selectionChanged(BaseDatabaseObject metaObject, boolean reset) {
-
-        if (this.metaObject == metaObject && !reset) {
-
-            return;
-        }
-
-        this.metaObject = metaObject;
-    }
-
-    /**
-     * Fires a change in the selected table node and reloads
-     * the current table display view.
-     *
-     * @param metaObject - the selected meta object
-     */
-    public void selectionChanged(BaseDatabaseObject metaObject) {
-        selectionChanged(metaObject, false);
-    }
-
-    public TableDataTab getTableDataPanel() {
-        return tableDataPanel;
-    }
-
-    public void setBrowserPreferences() {
-        tableDataPanel.setTableProperties();
-    }
-
-    public JTable getTableInFocus() {
-        return focusTable;
-    }
-
-    /**
-     * Returns whether the SQL panel has any text in it.
-     */
-    public boolean hasSQLText() {
-        return !(alterSqlText.isEmpty());
-    }
-
-    /**
-     * Resets the contents of the SQL panel to nothing.
-     */
-    public void resetSQLText() {
-        alterSqlText.setSQLText(EMPTY);
     }
 
     /**
@@ -1177,40 +1116,48 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     /**
      * Deletes the selected row on the currently selected table.
      */
+    @Override
     public void deleteRow() {
 
         int tabIndex = tabPane.getSelectedIndex();
-
         if (tabIndex == TABLE_COLUMNS_INDEX) {
-
             descriptionTable.deleteSelectedColumn();
 
         } else if (tabIndex == TABLE_CONSTRAINTS_INDEX) {
-
             constraintsTable.deleteSelectedConstraint();
-        } else if (tabIndex == TABLE_INDEXES_INDEX) {
-            int row = columnIndexTable.getSelectedRow();
-            if (row >= 0) {
-                row = ((TableSorter) columnIndexTable.getModel()).modelIndex(row);
-                DefaultDatabaseIndex index = ((TableColumnIndexTableModel) ((TableSorter) columnIndexTable.getModel()).getTableModel()).getIndexes().get(row);
-                String query = "DROP INDEX " + MiscUtils.getFormattedObject(index.getName(), table.getHost().getDatabaseConnection());
-                ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, table.getHost().getDatabaseConnection(), true);
-                eqd.display();
-                if (eqd.getCommit())
-                    table.reset();
-                setValues(table);
+
+        } else {
+
+            String query = null;
+            if (tabIndex == TABLE_INDEXES_INDEX) {
+
+                if (columnIndexTable.getSelectedRow() >= 0) {
+                    int row = ((TableSorter) columnIndexTable.getModel()).modelIndex(columnIndexTable.getSelectedRow());
+                    DefaultDatabaseIndex index = ((TableColumnIndexTableModel) ((TableSorter) columnIndexTable.getModel()).getTableModel()).getIndexes().get(row);
+                    query = "DROP INDEX " + MiscUtils.getFormattedObject(index.getName(), table.getHost().getDatabaseConnection());
+                }
+
+            } else if (tabIndex == TABLE_TRIGGERS_INDEX) {
+
+                if (triggersTable.getSelectedRow() >= 0) {
+                    int row = ((TableSorter) triggersTable.getModel()).modelIndex(triggersTable.getSelectedRow());
+                    DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
+                    query = "DROP TRIGGER " + MiscUtils.getFormattedObject(trigger.getName(), table.getHost().getDatabaseConnection());
+                }
             }
-        } else if (tabIndex == TABLE_TRIGGERS_INDEX) {
-            int row = triggersTable.getSelectedRow();
-            if (row >= 0) {
-                row = ((TableSorter) triggersTable.getModel()).modelIndex(row);
-                DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
-                String query = "DROP TRIGGER " + MiscUtils.getFormattedObject(trigger.getName(), table.getHost().getDatabaseConnection());
-                ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, table.getHost().getDatabaseConnection(), true);
-                eqd.display();
-                if (eqd.getCommit())
-                    table.reset();
-                setValues(table);
+
+            if (query != null) {
+
+                ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(
+                        "Dropping object",
+                        query,
+                        table.getHost().getDatabaseConnection(),
+                        true
+                );
+                executeQueryDialog.display();
+
+                if (executeQueryDialog.getCommit())
+                    refresh();
             }
         }
 
@@ -1220,108 +1167,105 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     /**
      * Inserts a row after the selected row on the currently selected table.
      */
+    @Override
     public void insertAfter() {
 
-        int tabIndex = tabPane.getSelectedIndex();
-        JPanel panelForDialog = null;
         BaseDialog dialog = null;
+        JPanel panelForDialog = null;
+
+        int tabIndex = tabPane.getSelectedIndex();
         if (tabIndex == TABLE_COLUMNS_INDEX) {
             dialog = new BaseDialog(InsertColumnPanel.CREATE_TITLE, true);
             panelForDialog = new InsertColumnPanel(table, dialog);
+
         } else if (tabIndex == TABLE_CONSTRAINTS_INDEX) {
             dialog = new BaseDialog(EditConstraintPanel.CREATE_TITLE, true);
             panelForDialog = new EditConstraintPanel(table, dialog);
+
         } else if (tabIndex == TABLE_INDEXES_INDEX) {
             dialog = new BaseDialog(CreateIndexPanel.CREATE_TITLE, true);
             panelForDialog = new CreateIndexPanel(table.getHost().getDatabaseConnection(), dialog, table.getName());
+
         } else if (tabIndex == TABLE_TRIGGERS_INDEX) {
             dialog = new BaseDialog(CreateTriggerPanel.CREATE_TITLE, true);
             panelForDialog = new CreateTriggerPanel(table.getHost().getDatabaseConnection(), dialog, DefaultDatabaseTrigger.TABLE_TRIGGER, table.getName());
         }
-        dialog.addDisplayComponent(panelForDialog);
-        dialog.display();
-        table.reset();
-        reloadView();
 
+        if (panelForDialog != null) {
+            dialog.addDisplayComponent(panelForDialog);
+            dialog.display();
+            table.reset();
+            reloadView();
+        }
     }
 
-    public void reselectivityAllIndexes() {
-        DatabaseConnection dc = table.getHost().getDatabaseConnection();
+    public void reselectAllIndexes() {
+
         StringBuilder sb = new StringBuilder();
-        List<DefaultDatabaseIndex> indexes = table.getIndexes();
-        for (DefaultDatabaseIndex node : indexes) {
+        DatabaseConnection dc = table.getHost().getDatabaseConnection();
+
+        for (DefaultDatabaseIndex node : table.getIndexes()) {
             sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName(), dc)).append(";\n");
             node.reset();
         }
-        ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), sb.toString(), dc, true, ";", true, false);
-        eqd.display();
+
+        ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(
+                bundledString("Recompute"),
+                sb.toString(),
+                dc,
+                true,
+                ";",
+                true,
+                false
+        );
+        executeQueryDialog.display();
     }
 
+    @Override
     public void setSQLText() {
-
         sbTemp.setLength(0);
         alterSqlText.setSQLText("");
     }
 
-    public void setSQLText(String values, int type) {
-
-        sbTemp.setLength(0);
-        
-        /*
-        if (type == TableModifier.COLUMN_VALUES) {
-            sbTemp.append(values).
-                   append(conPanel.getSQLText());
-        }
-        /*
-        else if (type == TableModifier.CONSTRAINT_VALUES) {
-            sbTemp.append(columnDataTable.getSQLText()).
-                   append(values);
-        }
-        */
-        alterSqlText.setSQLText(sbTemp.toString());
-    }
-
+    @Override
     public String getTableName() {
         return tableNameField.getText();
     }
 
+    @Override
     public List<String> getTables() {
         return controller.getTables(null);
     }
 
+    @Override
     public List<String> getColumns(String tableName) {
         return controller.getColumnNamesVector(tableName);
     }
 
+    @Override
     public void insertBefore() {
     }
 
+    @Override
     public void moveColumnUp() {
-        int tabIndex = tabPane.getSelectedIndex();
-        if (tabIndex == TABLE_COLUMNS_INDEX) {
-
+        if (tabPane.getSelectedIndex() == TABLE_COLUMNS_INDEX)
             descriptionTable.moveUpSelectedColumn();
-
-        }
     }
 
+    @Override
     public void moveColumnDown() {
-        int tabIndex = tabPane.getSelectedIndex();
-        if (tabIndex == TABLE_COLUMNS_INDEX) {
-
+        if (tabPane.getSelectedIndex() == TABLE_COLUMNS_INDEX)
             descriptionTable.moveDownSelectedColumn();
-
-        }
     }
 
+    @Override
     public ColumnData[] getTableColumnData() {
         return null;
-        //return columnDataTable.getTableColumnData();
     }
 
+    @Override
     public Vector<ColumnData> getTableColumnDataVector() {
         return null;
-        //return columnDataTable.getTableColumnDataVector();
     }
 
     @Override
@@ -1330,246 +1274,72 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     /**
-     * Tab index of the SQL text panes
-     */
-    private static final int SQL_PANE_INDEX = 6;
-
-    /**
      * Returns the focused TextEditor panel where the selected
      * tab is the SQL text pane.
      */
     protected TextEditor getFocusedTextEditor() {
-        if (tabPane.getSelectedIndex() == SQL_PANE_INDEX) {
-            if (lastFocusEditor != null) {
+
+        if (tabPane.getSelectedIndex() == SQL_PANE_INDEX)
+            if (lastFocusEditor != null)
                 return lastFocusEditor;
-            }
-        }
+
         return null;
     }
 
-    private void updateRowCount(final String text) {
+    private synchronized void updateRowCount(final String text) {
         if (lock.tryAcquire()) {
-            GUIUtils.invokeLater(new Runnable() {
-                public void run() {
-                    synchronized (rowCountField) {
-                        rowCountField.setText(text);
-                        lock.release();
-                    }
-                }
+            GUIUtils.invokeLater(() -> {
+                rowCountField.setText(text);
+                lock.release();
             });
         }
     }
 
-    private void createButtonsEditingColumnPanel() {
-        buttonsEditingColumnPanel = new JPanel(new GridBagLayout());
-        PanelToolBar bar = new PanelToolBar();
-        RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
-        addRolloverButton.setToolTipText("Insert column");
-        addRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                insertAfter();
-            }
-        });
-        bar.add(addRolloverButton);
-        RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
-        deleteRolloverButton.setToolTipText("Delete column");
-        deleteRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                deleteRow();
-            }
-        });
-        bar.add(deleteRolloverButton);
-        RolloverButton moveUpButton = new RolloverButton();
-        moveUpButton.setIcon(GUIUtilities.loadIcon("Up16.png"));
-        moveUpButton.setToolTipText("Move up");
-        moveUpButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                moveColumnUp();
-            }
-        });
-        bar.add(moveUpButton);
-        RolloverButton moveDownButton = new RolloverButton();
-        moveDownButton.setIcon(GUIUtilities.loadIcon("Down16.png"));
-        moveDownButton.setToolTipText("Move down");
-        moveDownButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                moveColumnDown();
-            }
-        });
-        bar.add(moveDownButton);
-        RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
-        commitRolloverButton.setToolTipText("Commit");
-        commitRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-
-
-                try {
-                    DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(table);
-                    if (docp.applyDefinitionChanges())
-                        setValues(table);
-
-                } catch (DataSourceException e) {
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
-                }
-            }
-        });
-        bar.add(commitRolloverButton);
-        RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
-        rollbackRolloverButton.setToolTipText("Rollback");
-        rollbackRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                table.reset();
-                setValues(table);
-            }
-        });
-        bar.add(rollbackRolloverButton);
-        GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
-                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
-        buttonsEditingColumnPanel.add(bar, gbc3);
-    }
-
-    private void createButtonsEditingConstraintPanel() {
-        buttonsEditingConstraintPanel = new JPanel(new GridBagLayout());
-        PanelToolBar bar = new PanelToolBar();
-        RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
-        addRolloverButton.setToolTipText("Insert constraint");
-        addRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                insertAfter();
-            }
-        });
-        bar.add(addRolloverButton);
-        RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
-        deleteRolloverButton.setToolTipText("Delete constraint");
-        deleteRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                deleteRow();
-            }
-        });
-        bar.add(deleteRolloverButton);
-        RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
-        commitRolloverButton.setToolTipText("Commit");
-        commitRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-
-
-                try {
-                    DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(table);
-                    if (docp.applyDefinitionChanges())
-                        setValues(table);
-
-                } catch (DataSourceException e) {
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
-                }
-            }
-        });
-        bar.add(commitRolloverButton);
-        RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
-        rollbackRolloverButton.setToolTipText("Rollback");
-        rollbackRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                table.revert();
-                setValues(table);
-            }
-        });
-        bar.add(rollbackRolloverButton);
-        GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
-                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
-        buttonsEditingConstraintPanel.add(bar, gbc3);
-    }
-
-    private void createButtonsEditingIndexesPanel() {
-        buttonsEditingIndexesPanel = new AbstractToolBarForTableIndexes("Create Index", "Delete Index", "Refresh", "Reselectivity") {
-
-            @Override
-            public void insert(ActionEvent e) {
-                insertAfter();
-            }
-
-            @Override
-            public void delete(ActionEvent e) {
-                deleteRow();
-            }
-
-            @Override
-            public void refresh(ActionEvent e) {
-                if (table instanceof DefaultDatabaseTable)
-                    ((DefaultDatabaseTable) table).clearIndexes();
-                loadIndexes();
-            }
-
-            @Override
-            public void reselectivity(ActionEvent e) {
-                reselectivityAllIndexes();
-            }
-        };
-
-    }
-
-    private void createButtonsEditingTriggersPanel() {
-        buttonsEditingTriggersPanel = new AbstractToolBarForTable("Create Trigger", "Delete Trigger", "Refresh") {
-            @Override
-            public void insert(ActionEvent e) {
-                insertAfter();
-            }
-
-            @Override
-            public void delete(ActionEvent e) {
-                deleteRow();
-            }
-
-            @Override
-            public void refresh(ActionEvent e) {
-                if (table instanceof DefaultDatabaseTable)
-                    ((DefaultDatabaseTable) table).clearTriggers();
-                loadTriggers();
-            }
-        };
-    }
-
-
     public boolean commitResultSet() {
         try {
+
             if (tableDataPanel.resultSet != null) {
                 if (tableDataPanel.resultSet instanceof TransactionAgnosticResultSet) {
+
                     Connection con = ((TransactionAgnosticResultSet) tableDataPanel.resultSet).getConnection();
                     if (con != null && !con.isClosed()) {
                         con.commit();
                         con.close();
                     }
                 }
-
             }
+            return true;
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
+            return false;
         }
-        return true;
+    }
+
+    private void commitColumnsChanges() {
+        try {
+
+            DatabaseObjectChangeProvider changeProvider = new DatabaseObjectChangeProvider(table);
+            if (changeProvider.applyDefinitionChanges())
+                setValues(table);
+
+        } catch (DataSourceException e) {
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void refresh() {
+        table.reset();
+        setValues(table);
     }
 
     private class PropertiesPanel extends JPanel {
 
         private static final String NONE = "NONE";
 
-        private DynamicComboBoxModel tablespaceComboModel;
         private List<Object> oldValues;
+        private DynamicComboBoxModel tablespaceComboModel;
 
         private JComboBox<?> sqlSecurityComboBox;
         private JComboBox<?> tablespaceComboBox;
@@ -1704,9 +1474,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                 executeQueryDialog.display();
                 if (executeQueryDialog.getCommit())
-                    table.reset();
-
-                setValues(table);
+                    refresh();
             }
 
         }
@@ -1721,7 +1489,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             return BrowserTableEditingPanel.bundledString("PreferencesPanel." + key);
         }
 
-    }
+    } // PropertiesPanel class
 
     public static String bundledString(String key) {
         return Bundles.get(BrowserTableEditingPanel.class, key);

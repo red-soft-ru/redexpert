@@ -368,6 +368,20 @@ public class BrowserController {
                     return editingPanel;
                 }
 
+                case NamedObject.VIEW: {
+
+                    BrowserViewEditingPanel objectDefinitionPanel;
+                    if (!viewPanel.containsPanel(ObjectDefinitionPanel.NAME)) {
+                        objectDefinitionPanel = new BrowserViewEditingPanel(this);
+                        viewPanel.addToLayout(objectDefinitionPanel);
+
+                    } else
+                        objectDefinitionPanel = (BrowserViewEditingPanel) viewPanel.getFormObjectView(ObjectDefinitionPanel.NAME);
+
+                    objectDefinitionPanel.setValues((org.executequery.databaseobjects.DatabaseObject) databaseObject);
+                    return objectDefinitionPanel;
+                }
+
                 case NamedObject.TABLE_COLUMN: {
 
                     if (node.getParent() != null && ((DatabaseObjectNode) node.getParent()).getDatabaseObject() instanceof DatabaseTable) {

@@ -20,17 +20,17 @@
 
 package org.executequery.databaseobjects.impl;
 
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.DatabaseView;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.log.Log;
 import org.executequery.sql.TokenizingFormatter;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -49,6 +49,7 @@ public class DefaultDatabaseView extends AbstractTableObject
     }
 
     private List<String> fields;
+    private List<DefaultDatabaseTrigger> triggers;
 
     private static final String DESCRIPTION = "DESCRIPTION";
     private static final String SOURCE = "VIEW_SOURCE";
@@ -271,8 +272,54 @@ public class DefaultDatabaseView extends AbstractTableObject
         checkOnReload(fields);
         return fields;
     }
+
+    public void clearTriggers() {
+
+        if (triggers != null)
+            triggers.clear();
+
+        triggers = null;
+    }
+
+    public List<DefaultDatabaseTrigger> getTriggers() throws DataSourceException {
+
+        if (!isMarkedForReload() && triggers != null)
+            return triggers;
+
+        triggers = new ArrayList<>();
+        ResultSet rs;
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        String query = "select T.RDB$TRIGGER_NAME,\n" +
+                "T.RDB$RELATION_NAME\n" +
+                "from RDB$TRIGGERS T\n" +
+                "left join RDB$CHECK_CONSTRAINTS C ON C.RDB$TRIGGER_NAME = T.RDB$TRIGGER_NAME\n" +
+                "where ((T.RDB$SYSTEM_FLAG = 0) or (T.RDB$SYSTEM_FLAG is null))\n" +
+                "and (C.RDB$TRIGGER_NAME is NULL)\n" +
+                "and (T.RDB$RELATION_NAME = ?)\n" +
+                "order by T.RDB$TRIGGER_SEQUENCE, T.RDB$TRIGGER_NAME";
+
+        try {
+
+            PreparedStatement st = querySender.getPreparedStatement(query);
+            st.setString(1, getName());
+            rs = querySender.getResultSet(-1, st).getResultSet();
+
+            while (rs.next()) {
+                String trigName = rs.getString(1);
+                if (trigName != null) {
+                    trigName = trigName.trim();
+                    triggers.add((DefaultDatabaseTrigger) ((DefaultDatabaseHost) getHost()).getDatabaseObjectFromTypeAndName(NamedObject.TRIGGER, trigName));
+                }
+            }
+
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+
+        } finally {
+            querySender.releaseResources();
+        }
+
+        return triggers;
+    }
+
 }
-
-
-
-

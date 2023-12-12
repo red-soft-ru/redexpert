@@ -78,8 +78,8 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     private DependenciesPanel dependenciesPanel;
     private DatabaseObjectMetaDataPanel metaDataPanel;
 
-    private JTabbedPane tabPane;
-    private TableDataTab tableDataPanel;
+    protected JTabbedPane tabPane;
+    protected TableDataTab tableDataPanel;
 
     private JLabel noResultsLabel;
     private JButton formatSqlButton;
@@ -87,14 +87,14 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
     // ---
 
-    private final BrowserController controller;
+    protected final BrowserController controller;
 
-    private DatabaseObject currentObjectView;
+    protected DatabaseObject currentObjectView;
     private DefaultDatabaseObjectTable tableDescriptionTable;
 
     private boolean hasResults;
-    private boolean dataLoaded;
-    private boolean metaDataLoaded;
+    protected boolean dataLoaded;
+    protected boolean metaDataLoaded;
 
     public ObjectDefinitionPanel(BrowserController controller) {
         super();
@@ -247,8 +247,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
                 descBottomPanel.add(tableDescriptionPanel, BorderLayout.CENTER);
             }
 
-            sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText());
-            sqlTextPanel.getTextPane().setEditable(false);
+            setSQLText();
 
         } catch (DataSourceException e) {
             controller.handleException(e);
@@ -281,7 +280,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         return true;
     }
 
-    private void loadMetaData() {
+    protected void loadMetaData() {
         try {
             metaDataPanel.setData(currentObjectView.getMetaData());
 
@@ -294,7 +293,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         }
     }
 
-    private void loadData() {
+    protected void loadData() {
         try {
             tableDataPanel.loadDataForTable(currentObjectView);
         } finally {
@@ -313,6 +312,15 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
     public DatabaseConnection getSelectedConnection() {
         return currentObjectView.getHost().getDatabaseConnection();
+    }
+
+    protected void addTab(JPanel panel, int index) {
+        tabPane.add(panel, index);
+    }
+
+    protected void setSQLText() {
+        sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText());
+        sqlTextPanel.getTextPane().setEditable(false);
     }
 
     @Override

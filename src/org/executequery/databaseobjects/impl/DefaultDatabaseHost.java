@@ -1132,14 +1132,18 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
                 // --- db encrypt mode ---
 
-                value = rs.getInt("MON$CRYPT_STATE");
-                if (value.equals(0))
-                    value = bundleString("noEncrypt");
-                else if (value.equals(1))
-                    value = bundleString("encrypted");
-                else
-                    value = bundleString("activeEncrypt");
-                properties.put(bundleString("CRYPT_STATE"), value);
+                if (new DefaultDatabaseHost(getDatabaseConnection()).getDatabaseProductName().toLowerCase().contains("reddatabase") &&
+                        getDatabaseConnection().getMajorServerVersion() >= 5) {
+
+                    value = rs.getInt("MON$CRYPT_STATE");
+                    if (value.equals(0))
+                        value = bundleString("noEncrypt");
+                    else if (value.equals(1))
+                        value = bundleString("encrypted");
+                    else
+                        value = bundleString("activeEncrypt");
+                    properties.put(bundleString("CRYPT_STATE"), value);
+                }
 
                 // --- db file name ---
 

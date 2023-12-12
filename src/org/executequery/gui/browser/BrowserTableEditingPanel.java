@@ -706,6 +706,16 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     @Override
     public void cleanup() {
+
+        if (getDatabaseConnection().isConnected()) {
+            if (tabPane.getSelectedIndex() == TABLE_DATA_TAB_INDEX) {
+                if (tableDataPanel.hasChanges()) {
+                    DatabaseObjectChangeProvider provider = new DatabaseObjectChangeProvider(table);
+                    provider.applyChanges(true, false);
+                }
+            }
+        }
+
         super.cleanup();
 
         if (worker != null) {

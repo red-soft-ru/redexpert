@@ -66,29 +66,27 @@ public class DatabaseObjectChangeProvider implements Interruptible {
     }
 
     public boolean applyChanges(boolean showDialog) {
+        return applyChanges(showDialog, true);
+    }
 
-        // dialog
-
-        // need to run in worker
+    public boolean applyChanges(boolean showDialog, boolean showCancelButton) {
 
         if (isTable() && table().isAltered()) {
-
-            if (showDialog) {
-
-                return apply();
-
-            } else {
-
+            if (showDialog)
+                return apply(showCancelButton);
+            else
                 execute();
-            }
         }
 
         return true;
     }
 
-    private boolean apply() {
+    private boolean apply(boolean showCancelButton) {
 
-        int yesNo = GUIUtilities.displayConfirmCancelDialog(Bundles.getCommon("message.apply-changes"));
+        int yesNo = showCancelButton ?
+                GUIUtilities.displayConfirmCancelDialog(Bundles.getCommon("message.apply-changes")) :
+                GUIUtilities.displayConfirmDialog(Bundles.getCommon("message.apply-changes"));
+
         lastOption = yesNo;
 
         if (yesNo == JOptionPane.NO_OPTION) {

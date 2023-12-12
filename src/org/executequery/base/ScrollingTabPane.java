@@ -1083,9 +1083,11 @@ public class ScrollingTabPane extends AbstractTabPane
                 } else {
                     g.setColor(activeNoFocusColor);
                 }
-                Rectangle selected = tabRects[selectedIndex];
-                g.fillRect(selected.x + 1, selected.y + 1,
-                        selected.width - 2, selected.height - 1);
+                if (tabRects.length > selectedIndex) {
+                    Rectangle selected = tabRects[selectedIndex];
+                    g.fillRect(selected.x + 1, selected.y + 1,
+                            selected.width - 2, selected.height - 1);
+                }
             }
 
             // -----------------------------------

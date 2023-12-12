@@ -40,6 +40,7 @@ import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.executequery.sql.TokenizingFormatter;
 import org.underworldlabs.Constants;
@@ -52,8 +53,8 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.print.Printable;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -68,115 +69,64 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
     public static final String NAME = "ObjectDefinitionPanel";
 
+    // --- GUI objects ---
+
+    private JPanel sqlPanel;
+    private JPanel descBottomPanel;
+    private JPanel tableDescriptionPanel;
+    private SimpleSqlTextPanel sqlTextPanel;
     private DependenciesPanel dependenciesPanel;
-
-    /**
-     * The table data display
-     */
-    private TableDataTab tableDataPanel;
-
-    /**
-     * The tabbed description pane
-     */
-    private JTabbedPane tabPane;
-
-    /**
-     * Contains the view name
-     */
-    private DisabledField tableNameField;
-
     private DatabaseObjectMetaDataPanel metaDataPanel;
 
-    /**
-     * table description base panel
-     */
-    private JPanel tableDescriptionPanel;
+    private JTabbedPane tabPane;
+    private TableDataTab tableDataPanel;
 
-    /**
-     * the table description table
-     */
-    private DefaultDatabaseObjectTable tableDescriptionTable;
-
-
-    /**
-     * the current database object in view
-     */
-    private DatabaseObject currentObjectView;
-
-    /**
-     * panel base
-     */
-    private JPanel descBottomPanel;
-
-    /**
-     * no results label
-     */
     private JLabel noResultsLabel;
+    private JButton formatSqlButton;
+    private DisabledField tableNameField;
 
-    private SimpleCommentPanel simpleCommentPanel;
-    private boolean hasResults;
+    // ---
 
-    /**
-     * whether we have privilege data loaded
-     */
-    private boolean privilegesLoaded;
-
-    /**
-     * whether we have data loaded
-     */
-    private boolean dataLoaded;
-
-    /**
-     * the browser's control object
-     */
     private final BrowserController controller;
 
-    private boolean metaDataLoaded;
+    private DatabaseObject currentObjectView;
+    private DefaultDatabaseObjectTable tableDescriptionTable;
 
-    private SimpleSqlTextPanel sqlTextPanel;
+    private boolean hasResults;
+    private boolean dataLoaded;
+    private boolean metaDataLoaded;
 
     public ObjectDefinitionPanel(BrowserController controller) {
         super();
         this.controller = controller;
 
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        init();
+        arrange();
     }
 
-    private void jbInit() {
+    private void init() {
 
-        GridBagHelper gridBagHelper = new GridBagHelper().
-                anchorNorthWest().fillBoth().setInsets(5,5,5,5);
+        // --- panels ---
 
-        dependenciesPanel = new DependenciesPanel();
-        noResultsLabel = new JLabel("No information for this object is available.",
-                JLabel.CENTER);
-
-        tableNameField = new DisabledField();
-        //schemaNameField = new DisabledField();
-
-        // configure the table column descriptions panel
         descBottomPanel = new JPanel(new BorderLayout());
         descBottomPanel.setBorder(BorderFactory.createTitledBorder(Bundles.getCommon("columns")));
 
+        sqlPanel = new JPanel(new GridBagLayout());
+        sqlTextPanel = new SimpleSqlTextPanel();
+        dependenciesPanel = new DependenciesPanel();
+        metaDataPanel = new DatabaseObjectMetaDataPanel();
         tableDataPanel = new TableDataTab(true);
 
-        metaDataPanel = new DatabaseObjectMetaDataPanel();
+        // --- others ---
 
-        sqlTextPanel = new SimpleSqlTextPanel();
-        JButton formatSqlButton = WidgetFactory.createButton("formatSQLButton", Bundles.getCommon("FormatSQL"));
+        formatSqlButton = WidgetFactory.createButton("formatSQLButton", Bundles.getCommon("FormatSQL"));
         formatSqlButton.addActionListener(e -> formatSql());
 
-        //sql panel
-        JPanel sqlPanel = new JPanel(new GridBagLayout());
+        noResultsLabel = new JLabel("No information for this object is available.", JLabel.CENTER);
+        tableNameField = new DisabledField();
 
-        sqlPanel.add(formatSqlButton, gridBagHelper.setLabelDefault().get());
-        sqlPanel.add(sqlTextPanel, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        // --- tabbed pane ---
 
-        //tabbed panel
         tabPane = new JTabbedPane();
         tabPane.add(Bundles.getCommon("columns"), descBottomPanel);
         addPrivilegesTab(tabPane, null);
@@ -185,238 +135,112 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
         tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
         tabPane.add(Bundles.getCommon("comment-field-label"), null);
+        tabPane.addChangeListener(this);
+    }
 
-        //components arranging
+    private void arrange() {
+
+        GridBagHelper gridBagHelper;
+
+        // --- sql panel ---
+
+        gridBagHelper = new GridBagHelper().anchorNorthWest().fillBoth().setInsets(5, 5, 5, 5);
+        sqlPanel.add(formatSqlButton, gridBagHelper.setLabelDefault().get());
+        sqlPanel.add(sqlTextPanel, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
+
+        // --- desc panel ---
+
         JPanel descPanel = new JPanel(new GridBagLayout());
 
-        gridBagHelper = new GridBagHelper().
-                anchorNorthWest().fillBoth().setInsets(5,5,5,5);
-
-        gridBagHelper.addLabelFieldPair(descPanel,
-                new JLabel(Bundles.getCommon("name")), tableNameField,
-                null, true, true);
-//        gridBagHelper.addLabelFieldPair(descPanel,
-//                new JLabel("Schema:"), schemaNameField,
-//                null, true, true);
+        gridBagHelper = new GridBagHelper().anchorNorthWest().fillBoth().setInsets(5, 5, 5, 5);
+        descPanel.add(new JLabel(Bundles.getCommon("name")), gridBagHelper.fillHorizontally().get());
+        descPanel.add(tableNameField, gridBagHelper.nextCol().spanX().get());
         descPanel.add(tabPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().setMaxWeightY().get());
 
-        tabPane.addChangeListener(this);
-        //tableDescPanel = new SimpleTableDescriptionPanel();
+        // --- base ---
 
         setHeader("Database Object", GUIUtilities.loadIcon(BrowserConstants.DATABASE_OBJECT_IMAGE));
         setContentPanel(descPanel);
-        //cache = new HashMap();
     }
-
-    public DatabaseConnection getSelectedConnection() {
-        return currentObjectView.getHost().getDatabaseConnection();
-    }
-
-    public String getLayoutName() {
-        return NAME;
-    }
-
-    public Printable getPrintable() {
-
-        int tabIndex = tabPane.getSelectedIndex();
-        switch (tabIndex) {
-
-            case 0:
-                return new TablePrinter(tableDescriptionTable,
-                        "Table: " + currentObjectView.getName());
-
-
-            case 2:
-                return new TablePrinter(tableDataPanel.getTable(),
-                        "Table Data: " + currentObjectView.getName());
-
-            case 4:
-                return new TablePrinter(metaDataPanel.getTable(),
-                        "Meta Data: " + currentObjectView.getName());
-
-            default:
-                return null;
-
-        }
-
-    }
-
-    /**
-     * Notification of a new keyword added to the list.
-     */
-    public void keywordsAdded(KeywordEvent e) {
-        sqlTextPanel.setSQLKeywords(true);
-    }
-
-    /**
-     * Notification of a keyword removed from the list.
-     */
-    public void keywordsRemoved(KeywordEvent e) {
-        sqlTextPanel.setSQLKeywords(true);
-    }
-
-    public boolean canHandleEvent(ApplicationEvent event) {
-        return (event instanceof DefaultKeywordEvent);
-    }
-
-    public void stateChanged(ChangeEvent e) {
-
-        int selectedIndex = tabPane.getSelectedIndex();
-        if (selectedIndex == 2) {
-
-            if (!dataLoaded) {
-
-                loadData();
-            }
-
-        } else if (selectedIndex == 4) {
-
-            if (!metaDataLoaded) {
-
-                loadMetaData();
-            }
-
-        } else if (tableDataPanel.isExecuting()) {
-
-            tableDataPanel.cancelStatement();
-        }
-
-    }
-
-    private void loadMetaData() {
-
-        try {
-
-            metaDataPanel.setData(currentObjectView.getMetaData());
-
-        } catch (DataSourceException e) {
-
-            controller.handleException(e);
-            metaDataPanel.setData(null);
-
-        } finally {
-
-            metaDataLoaded = true;
-        }
-
-    }
-
-    private void loadData() {
-
-        try {
-
-            tableDataPanel.loadDataForTable(currentObjectView);
-
-        } finally {
-
-            dataLoaded = true;
-        }
-    }
-
-
 
     /**
      * Create the table description panel if not yet initialised.
      */
     private void createTablePanel() {
+
         if (tableDescriptionPanel == null) {
+
             tableDescriptionTable = new DefaultDatabaseObjectTable();
-            tableDescriptionTable.addMouseListener(new MouseListener() {
+            tableDescriptionTable.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
+
                     if (e.getClickCount() > 1) {
                         if (currentObjectView instanceof DefaultDatabaseView) {
-                            BaseDialog dialog = new BaseDialog("Edit View", true);
+
                             DatabaseConnection databaseConnection = controller.getDatabaseConnection();
-                            if (databaseConnection == null) {
+                            if (databaseConnection == null)
                                 databaseConnection = currentObjectView.getHost().getDatabaseConnection();
-                            }
-                            CreateViewPanel panel = new CreateViewPanel(databaseConnection,
-                                    dialog, (DefaultDatabaseView) currentObjectView);
+
+                            BaseDialog dialog = new BaseDialog("Edit View", true);
+                            CreateViewPanel panel = new CreateViewPanel(databaseConnection, dialog, (DefaultDatabaseView) currentObjectView);
                             dialog.addDisplayComponent(panel);
                             dialog.display();
                         }
                     }
                 }
-
-                @Override
-                public void mousePressed(MouseEvent mouseEvent) {
-
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent mouseEvent) {
-
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent mouseEvent) {
-
-                }
-
-                @Override
-                public void mouseExited(MouseEvent mouseEvent) {
-
-                }
             });
+
             tableDescriptionPanel = new JPanel(new GridBagLayout());
             tableDescriptionPanel.add(
                     new JScrollPane(tableDescriptionTable),
                     new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
                             GridBagConstraints.SOUTHEAST,
                             GridBagConstraints.BOTH,
-                            new Insets(2, 2, 2, 2), 0, 0));
+                            new Insets(2, 2, 2, 2), 0, 0)
+            );
         }
     }
 
     public void setValues(DatabaseObject object) {
 
-        // reset to the first tab
-//        tabPane.setSelectedIndex(0);
+        // --- reset the current object values ---
 
-        // reset the current object values
         currentObjectView = object;
-        privilegesLoaded = false;
         dataLoaded = false;
         metaDataLoaded = false;
 
         sqlTextPanel.getTextPane().setDatabaseConnection(object.getHost().getDatabaseConnection());
         sqlTextPanel.setSQLText(Constants.EMPTY);
 
-        simpleCommentPanel = new SimpleCommentPanel(currentObjectView);
-        simpleCommentPanel.addActionForCommentUpdateButton(e -> {
-            sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText());
-        });
+        SimpleCommentPanel simpleCommentPanel = new SimpleCommentPanel(currentObjectView);
+        simpleCommentPanel.addActionForCommentUpdateButton(e -> sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText()));
         tabPane.setComponentAt(6, simpleCommentPanel.getCommentPanel());
 
-        // header values
+        // --- header values ---
+
         if (object.getType() == NamedObject.VIEW) {
             setHeaderText(bundleString("DatabaseView"));
             dependenciesPanel.setDatabaseObject(object);
+
         } else {
             setHeaderText("Database " + MiscUtils.firstLetterToUpper(object.getMetaDataKey()));
             tabPane.remove(dependenciesPanel);
         }
+
+        // ---
+
         tableNameField.setText(object.getName());
-        //schemaNameField.setText(object.getSchemaName());
-
-        object.getType();
-
         setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.TABLES_IMAGE));
-
-
         descBottomPanel.removeAll();
 
         try {
 
-            // retrieve the description info
             List<DatabaseColumn> columns = object.getColumns();
-            if (columns == null || columns.size() == 0) {
-
+            if (columns == null || columns.isEmpty()) {
                 descBottomPanel.add(noResultsLabel, BorderLayout.CENTER);
 
             } else {
-
                 hasResults = true;
                 createTablePanel();
                 tableDescriptionTable.setColumnData(columns);
@@ -427,7 +251,6 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             sqlTextPanel.getTextPane().setEditable(false);
 
         } catch (DataSourceException e) {
-
             controller.handleException(e);
             descBottomPanel.add(noResultsLabel, BorderLayout.CENTER);
         }
@@ -436,53 +259,127 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         repaint();
     }
 
-    private void formatSql() {
-        String sqlText = sqlTextPanel.getSQLText();
-        if (StringUtils.isNotEmpty(sqlText)) {
-            sqlTextPanel.setSQLText(new TokenizingFormatter().format(sqlText));
-        }
-    }
-
-    public void refresh() {
-        super.refresh();
-        privilegesLoaded = false;
-        dataLoaded = false;
-    }
-
-    public void cleanup() {
-        super.cleanup();
-        sqlTextPanel.cleanup();
-    }
-
-    public JTable getTable() {
-        if (!hasResults)
-            return null;
-
-        return (tabPane.getSelectedIndex() == 0) ? tableDescriptionTable : null;
-    }
-
     public boolean commitResultSet() {
+
         try {
+
             if (tableDataPanel.resultSet != null) {
                 if (tableDataPanel.resultSet instanceof TransactionAgnosticResultSet) {
+
                     Connection con = ((TransactionAgnosticResultSet) tableDataPanel.resultSet).getConnection();
                     if (con != null && !con.isClosed()) {
                         con.commit();
                         con.close();
                     }
                 }
-
             }
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
         }
+
         return true;
     }
 
+    private void loadMetaData() {
+        try {
+            metaDataPanel.setData(currentObjectView.getMetaData());
+
+        } catch (DataSourceException e) {
+            controller.handleException(e);
+            metaDataPanel.setData(null);
+
+        } finally {
+            metaDataLoaded = true;
+        }
+    }
+
+    private void loadData() {
+        try {
+            tableDataPanel.loadDataForTable(currentObjectView);
+        } finally {
+            dataLoaded = true;
+        }
+    }
+
+    private void formatSql() {
+        if (StringUtils.isNotEmpty(sqlTextPanel.getSQLText()))
+            sqlTextPanel.setSQLText(new TokenizingFormatter().format(sqlTextPanel.getSQLText()));
+    }
+
+    public JTable getTable() {
+        return (hasResults && tabPane.getSelectedIndex() == 0) ? tableDescriptionTable : null;
+    }
+
+    public DatabaseConnection getSelectedConnection() {
+        return currentObjectView.getHost().getDatabaseConnection();
+    }
+
+    @Override
+    public String getLayoutName() {
+        return NAME;
+    }
+
+    @Override
+    public Printable getPrintable() {
+
+        switch (tabPane.getSelectedIndex()) {
+
+            case 0:
+                return new TablePrinter(tableDescriptionTable, "Table: " + currentObjectView.getName());
+
+            case 2:
+                return new TablePrinter(tableDataPanel.getTable(), "Table Data: " + currentObjectView.getName());
+
+            case 4:
+                return new TablePrinter(metaDataPanel.getTable(), "Meta Data: " + currentObjectView.getName());
+
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public void keywordsAdded(KeywordEvent e) {
+        sqlTextPanel.setSQLKeywords(true);
+    }
+
+    @Override
+    public void keywordsRemoved(KeywordEvent e) {
+        sqlTextPanel.setSQLKeywords(true);
+    }
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return (event instanceof DefaultKeywordEvent);
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+
+        int selectedIndex = tabPane.getSelectedIndex();
+        if (selectedIndex == 2) {
+            if (!dataLoaded)
+                loadData();
+
+        } else if (selectedIndex == 4) {
+            if (!metaDataLoaded)
+                loadMetaData();
+
+        } else if (tableDataPanel.isExecuting())
+            tableDataPanel.cancelStatement();
+    }
+
+    @Override
+    public void refresh() {
+        super.refresh();
+        dataLoaded = false;
+    }
+
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        sqlTextPanel.cleanup();
+    }
+
 }
-
-
-
-
-
-

@@ -1179,11 +1179,11 @@ public class ConnectionsTreePanel extends TreePanel
     @Override
     public synchronized void valueChanged(DatabaseObjectNode node) {
         if (node.getDatabaseObject().getParent().getType() != NamedObject.PACKAGE)
-            controller.valueChanged_(node, null);
+            controller.valueChanged(node, null);
     }
 
     public synchronized void valueChanged(DatabaseObjectNode node, DatabaseConnection connection) {
-        controller.valueChanged_(node, connection);
+        controller.valueChanged(node, connection);
     }
 
     /**

@@ -705,7 +705,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         controller = treePanel.getController();
         DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
         DatabaseConnection connection = currentSelection;
-        controller.valueChanged_(node, connection);
+        controller.valueChanged(node, connection);
 
     }
 

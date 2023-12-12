@@ -205,7 +205,7 @@ public class ApplicationLauncher {
                     DatabaseConnection dc = databaseConnectionRepository().findBySourceName(fileForOpenPath);
                     if (dc != null) {
                         if (connectionsTreePanel != null) { //show connection panel
-                            connectionsTreePanel.getController().valueChanged_(connectionsTreePanel.getHostNode(dc), dc);
+                            connectionsTreePanel.getController().valueChanged(connectionsTreePanel.getHostNode(dc), dc);
                         }
                         if (StringUtils.isNotBlank(dc.getPassword()) && StringUtils.isNotBlank(dc.getUserName()))
                             openStartupConnection(dc);

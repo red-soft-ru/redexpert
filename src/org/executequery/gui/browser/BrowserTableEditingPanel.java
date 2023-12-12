@@ -801,9 +801,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                         tableNames.add(tableName);
                         tableNamesAdded.add(tableName);
-                        columns.add(controller.getColumnData(constraint.getCatalogName(),
+                        columns.add(controller.getColumnData(
                                 constraint.getSchemaName(),
-                                tableName, table.getHost().getDatabaseConnection()));
+                                tableName, table.getHost().getDatabaseConnection())
+                        );
                     }
 
                 } else if (constraint.isForeignKey()) {
@@ -813,9 +814,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                         tableNames.add(referencedTable);
                         tableNamesAdded.add(referencedTable);
-                        columns.add(controller.getColumnData(constraint.getReferencedCatalog(),
+                        columns.add(controller.getColumnData(
                                 constraint.getReferencedSchema(),
-                                referencedTable, table.getHost().getDatabaseConnection()));
+                                referencedTable, table.getHost().getDatabaseConnection())
+                        );
                     }
 
                     String columnName = constraint.getColumnName();
@@ -823,9 +825,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                         tableNames.add(tableName);
                         tableNamesAdded.add(tableName);
-                        columns.add(controller.getColumnData(constraint.getCatalogName(),
+                        columns.add(controller.getColumnData(
                                 constraint.getSchemaName(),
-                                tableName, table.getHost().getDatabaseConnection()));
+                                tableName, table.getHost().getDatabaseConnection())
+                        );
                     }
 
 
@@ -841,9 +844,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                     tableNames.add(parentsName);
                     tableNamesAdded.add(parentsName);
-                    columns.add(controller.getColumnData(column.getCatalogName(),
+                    columns.add(controller.getColumnData(
                             column.getSchemaName(),
-                            parentsName, table.getHost().getDatabaseConnection()));
+                            parentsName, table.getHost().getDatabaseConnection())
+                    );
                 }
 
             }
@@ -988,7 +992,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             referencesLoaded = false;
             tableNameField.setText(table.getName());
             descriptionTable.setDatabaseTable(table);
-            SwingWorker sw = new SwingWorker("loadingConstraintsFor'"+table.getName()+"'") {
+            SwingWorker sw = new SwingWorker("loadingConstraintsFor'" + table.getName() + "'") {
                 @Override
                 public Object construct() {
                     constraintsTable.setDatabaseTable(table);
@@ -996,7 +1000,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
-            sw = new SwingWorker("loadingIndicesFor'"+table.getName()+"'") {
+            sw = new SwingWorker("loadingIndicesFor'" + table.getName() + "'") {
                 @Override
                 public Object construct() {
                     loadIndexes();
@@ -1004,7 +1008,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             };
             sw.start();
-            sw = new SwingWorker("loadingTriggersFor'"+table.getName()+"'") {
+            sw = new SwingWorker("loadingTriggersFor'" + table.getName() + "'") {
                 @Override
                 public Object construct() {
                     loadTriggers();
@@ -1073,7 +1077,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             worker.interrupt();
         }
 
-        worker = new SwingWorker("loadingRowCountFor'"+table.getName()+"'") {
+        worker = new SwingWorker("loadingRowCountFor'" + table.getName() + "'") {
             public Object construct() {
                 try {
 
@@ -1286,7 +1290,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     public List<String> getColumns(String tableName) {
-        return controller.getColumnNamesVector(tableName, null);
+        return controller.getColumnNamesVector(tableName);
     }
 
     public void insertBefore() {

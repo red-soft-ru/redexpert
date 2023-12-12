@@ -488,7 +488,7 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
 
                 controller.setSelectedConnection(selectedConnections.get(0));
                 DatabaseObjectNode node = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(selectedConnections.get(0));
-                controller.valueChanged_(node, selectedConnections.get(0));
+                controller.valueChanged(node, selectedConnections.get(0));
             }
 
         }

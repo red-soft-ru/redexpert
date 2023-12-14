@@ -1152,9 +1152,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
                 // --- db file size ---
 
-                File dbFile = new File((String) value);
-                if (dbFile.exists())
-                    properties.put(bundleString("dbFileSize"), dbFile.length());
+                long pageSize = rs.getLong("MON$PAGE_SIZE");    // db pages size
+                long pagesCount = rs.getLong("MON$PAGES");      // db pages count
+
+                properties.put(bundleString("PAGE_SIZE"), pageSize);
+                properties.put(bundleString("PAGES"), pagesCount);
+                properties.put(bundleString("dbFileSize"), pageSize * pagesCount);
 
                 // --- db security mode ---
 
@@ -1173,7 +1176,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
                 // --- others ---
 
-                properties.put(bundleString("PAGE_SIZE"), rs.getInt("MON$PAGE_SIZE"));                      // db pages size
                 properties.put(bundleString("OLDEST_TRANSACTION"), rs.getInt("MON$OLDEST_TRANSACTION"));    // oldest transaction number
                 properties.put(bundleString("OLDEST_ACTIVE"), rs.getInt("MON$OLDEST_ACTIVE"));              // oldest active transaction number
                 properties.put(bundleString("OLDEST_SNAPSHOT"), rs.getInt("MON$OLDEST_SNAPSHOT"));          // snapshot transaction number
@@ -1182,7 +1184,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 properties.put(bundleString("SQL_DIALECT"), rs.getInt("MON$SQL_DIALECT"));                  // SQL dialect
                 properties.put(bundleString("SWEEP_INTERVAL"), rs.getInt("MON$SWEEP_INTERVAL"));            // sweep interval
                 properties.put(bundleString("CREATION_DATE"), rs.getTimestamp("MON$CREATION_DATE"));        // db creation date
-                properties.put(bundleString("PAGES"), rs.getInt("MON$PAGES"));                              // db pages count
                 properties.put(bundleString("STAT_ID"), rs.getInt("MON$STAT_ID"));                          // statistics index
                 if (getDatabaseConnection().getMajorServerVersion() >= 3) {
                     properties.put(bundleString("CRYPT_PAGE"), rs.getInt("MON$CRYPT_PAGE"));                // now encrypted db pages

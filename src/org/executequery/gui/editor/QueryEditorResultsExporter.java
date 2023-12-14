@@ -177,12 +177,10 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         components.put(replaceNullCheck.getName(), replaceNullCheck);
 
         replaceEndlField = WidgetFactory.createTextField("replaceEndlCombo");
-        replaceEndlField.setEnabled(false);
         replaceEndlField.setText("\\r\\n");
         components.put(replaceEndlField.getName(), replaceEndlField);
 
         replaceNullField = WidgetFactory.createTextField("replaceNullField");
-        replaceNullField.setEnabled(false);
         replaceNullField.setText(SystemProperties.getProperty("user", "results.table.cell.null.text"));
         components.put(replaceNullField.getName(), replaceNullField);
 
@@ -250,6 +248,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         showDelimiterPanel(false);
         new ParametersSaver().restore();
+
+        replaceEndlField.setEnabled(replaceEndlCheck.isSelected());
+        replaceNullField.setEnabled(replaceNullCheck.isSelected());
 
         setLayout(new GridBagLayout());
         add(basePanel, gridBagHelper.fillBoth().get());

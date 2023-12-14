@@ -1158,15 +1158,18 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
                 // --- db security mode ---
 
-                value = rs.getString("MON$SEC_DATABASE");
-                if (value.equals("Default"))
-                    value = bundleString("DefaultSecurity");
-                else if (value.equals("Self"))
-                    value = bundleString("SelfSecurity");
-                else
-                    value = bundleString("OtherSecurity");
+                if (getDatabaseConnection().getMajorServerVersion() >= 3) {
 
-                properties.put(bundleString("SEC_DATABASE"), value);
+                    value = rs.getString("MON$SEC_DATABASE");
+                    if (value.equals("Default"))
+                        value = bundleString("DefaultSecurity");
+                    else if (value.equals("Self"))
+                        value = bundleString("SelfSecurity");
+                    else
+                        value = bundleString("OtherSecurity");
+
+                    properties.put(bundleString("SEC_DATABASE"), value);
+                }
 
                 // --- others ---
 
@@ -1181,8 +1184,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 properties.put(bundleString("CREATION_DATE"), rs.getTimestamp("MON$CREATION_DATE"));        // db creation date
                 properties.put(bundleString("PAGES"), rs.getInt("MON$PAGES"));                              // db pages count
                 properties.put(bundleString("STAT_ID"), rs.getInt("MON$STAT_ID"));                          // statistics index
-                properties.put(bundleString("CRYPT_PAGE"), rs.getInt("MON$CRYPT_PAGE"));                    // now encrypted db pages
-                properties.put(bundleString("OWNER"), rs.getString("MON$OWNER"));                           // db owner name
+                if (getDatabaseConnection().getMajorServerVersion() >= 3) {
+                    properties.put(bundleString("CRYPT_PAGE"), rs.getInt("MON$CRYPT_PAGE"));                // now encrypted db pages
+                    properties.put(bundleString("OWNER"), rs.getString("MON$OWNER"));                       // db owner name
+                }
             }
 
         } catch (SQLException e) {

@@ -175,7 +175,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
                 }
             }
         }
-        users.add(createUser("PUBLIC"));
+
         return users;
     }
 
@@ -266,12 +266,14 @@ public class GrantManagerPanel extends JPanel implements TabView {
     }
 
     void get_user_list(List<String> metatags) {
+
         for (String metatag : metatags) {
             List<NamedObject> list = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dbc).getDatabaseObjectsForMetaTag(metatag);
-            for (NamedObject object : list) {
+            for (NamedObject object : list)
                 userlistModel.addElement(object);
-            }
         }
+
+        userlistModel.addElement(createUser("PUBLIC"));
     }
 
     void get_triggers_for_userlist() {

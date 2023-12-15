@@ -235,21 +235,25 @@ DefaultDatabaseUDF extends DefaultDatabaseFunction
         Table collations2 = Table.createTable("RDB$COLLATIONS", "CO2");
         sb.appendFields(functions, getFieldName(), DESCRIPTION, RETURN_ARGUMENT, MODULE_NAME, ENTRYPOINT);
         sb.appendField(buildSqlSecurityField(functions));
-        sb.appendFields(FA, arguments, PARAMETER_NAME, PARAMETER_NUMBER, DESCRIPTION, PARAMETER_MECHANISM, mechanismLabel(), DEFAULT_SOURCE, RELATION_NAME, FIELD_NAME);
-        sb.appendFields(arguments, DEFAULT_SOURCE, FIELD_NAME, FIELD_TYPE, FIELD_LENGTH, FIELD_SCALE, FIELD_SUB_TYPE, FIELD_PRECISION);
+        sb.appendFields(FA, arguments, getDatabaseMajorVersion() < 3 && !isRDB(), PARAMETER_NAME, DESCRIPTION, PARAMETER_MECHANISM, mechanismLabel(), DEFAULT_SOURCE, RELATION_NAME, FIELD_NAME);
+        sb.appendFields(FA, arguments, PARAMETER_NUMBER);
+        sb.appendFields(arguments, getDatabaseMajorVersion() < 3 && !isRDB(), DEFAULT_SOURCE, FIELD_NAME);
+        sb.appendFields(arguments, FIELD_TYPE, FIELD_LENGTH, FIELD_SCALE, FIELD_SUB_TYPE, FIELD_PRECISION);
         sb.appendFields(charsets, CHARACTER_SET_NAME, DEFAULT_COLLATE_NAME);
         sb.appendField(Field.createField(arguments, "CHARACTER_LENGTH").setAlias(CHARACTER_LENGTH));
-        sb.appendField(Field.createField(collations1, COLLATION_NAME).setAlias("CO1_" + COLLATION_NAME));
-        sb.appendField(Field.createField(collations2, COLLATION_NAME).setAlias("CO2_" + COLLATION_NAME));
+        sb.appendField(Field.createField(collations1, COLLATION_NAME).setAlias("CO1_" + COLLATION_NAME).setNull(getDatabaseMajorVersion() < 3 && !isRDB()));
+        sb.appendField(Field.createField(collations2, COLLATION_NAME).setAlias("CO2_" + COLLATION_NAME).setNull(getDatabaseMajorVersion() < 3 && !isRDB()));
         sb.appendField(Field.createField(arguments, NULL_FLAG).setNull(getDatabaseMajorVersion() < 3).setAlias(prefixLabel() + NULL_FLAG));
         sb.appendFields(charsets, CHARACTER_SET_NAME, BYTES_PER_CHARACTER);
         sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(functions, getFieldName()),
                 Field.createField(arguments, getFieldName())));
         sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
-        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, "COLLATION_ID"), Field.createField(collations1, "COLLATION_ID"))
-                .appendFields(Field.createField(arguments, CHARACTER_SET_ID), Field.createField(collations1, CHARACTER_SET_ID)));
-        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, "COLLATION_ID"), Field.createField(collations2, "COLLATION_ID"))
-                .appendFields(Field.createField(arguments, CHARACTER_SET_ID), Field.createField(collations2, CHARACTER_SET_ID)));
+        if (isRDB() || getDatabaseMajorVersion() >= 3) {
+            sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, "COLLATION_ID"), Field.createField(collations1, "COLLATION_ID"))
+                    .appendFields(Field.createField(arguments, CHARACTER_SET_ID), Field.createField(collations1, CHARACTER_SET_ID)));
+            sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(arguments, "COLLATION_ID"), Field.createField(collations2, "COLLATION_ID"))
+                    .appendFields(Field.createField(arguments, CHARACTER_SET_ID), Field.createField(collations2, CHARACTER_SET_ID)));
+        }
         sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(arguments, PARAMETER_NUMBER).getFieldTable());
         return sb;
     }

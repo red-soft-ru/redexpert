@@ -431,7 +431,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         if (databaseConnection != null)
             ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).setPauseLoadingTreeForSearch(!enable);
         if (grantManagerPanel != null)
-            grantManagerPanel.setEnableElements(enable);
+            grantManagerPanel.setElementsEnabled(enable);
     }
 
     void grantOnRole(int grant, int row, int col) {

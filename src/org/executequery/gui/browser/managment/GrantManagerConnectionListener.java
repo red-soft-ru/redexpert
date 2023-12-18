@@ -23,8 +23,8 @@ public class GrantManagerConnectionListener implements ConnectionListener {
     public void disconnected(ConnectionEvent connectionEvent) {
         if (GUIUtilities.getCentralPane(GrantManagerPanel.TITLE) != null) {
             GrantManagerPanel gmp = (GrantManagerPanel) GUIUtilities.getCentralPane(GrantManagerPanel.TITLE);
-            if (connectionEvent.getDatabaseConnection() == gmp.dbc)
-                gmp.load_connections();
+            if (connectionEvent.getDatabaseConnection() == gmp.connection)
+                gmp.loadConnections();
         }
         if (GUIUtilities.getCentralPane(UserManagerPanel.TITLE) != null) {
             UserManagerPanel ump = (UserManagerPanel) GUIUtilities.getCentralPane(UserManagerPanel.TITLE);

@@ -317,6 +317,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             public void keyReleased(KeyEvent e) {
                 act = CREATE_TABLE;
                 execute_thread();
+                filterField.requestFocusInWindow();
             }
         });
         invertFilterCheckBox = new JCheckBox();
@@ -1094,23 +1095,33 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == cancelButton)
+
+        if (e.getSource() == cancelButton) {
             setEnableElements(true);
-        else if (e.getSource() == refreshButton) {
+
+        } else if (e.getSource() == refreshButton) {
             act = CREATE_TABLE;
             execute_thread();
+
         } else if (e.getActionCommand() != null && e.getActionCommand().startsWith("field_")) {
             grantSomeForCol((RolloverButton) e.getSource());
+
         } else {
-            if (e.getSource() instanceof RolloverButton)
-                for (int i = 0; i < iconNames.length; i++)
+
+            if (e.getSource() instanceof RolloverButton) {
+                for (int i = 0; i < iconNames.length; i++) {
                     if (iconNames[i].equals(e.getActionCommand())) {
                         act = i;
                         break;
                     } else
                         act = CREATE_TABLE;
+                }
+            }
+
             execute_thread();
         }
+
+        ((Component) e.getSource()).requestFocusInWindow();
     }
 
     public void cleanup() {

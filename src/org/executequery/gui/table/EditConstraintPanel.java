@@ -478,7 +478,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
             if (!first)
                 sb.append(", ");
             first = false;
-            sb.append(MiscUtils.getFormattedObject(key, getDatabaseConnection()));
+            sb.append(key);
         }
 
         return sb.toString();

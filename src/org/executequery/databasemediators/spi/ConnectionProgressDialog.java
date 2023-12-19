@@ -23,49 +23,33 @@ package org.executequery.databasemediators.spi;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionBuilder;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.ProgressBar;
 import org.underworldlabs.swing.ProgressBarFactory;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * @author Takis Diakoumis
  */
 public class ConnectionProgressDialog extends JDialog
-        implements Runnable,
-        ActionListener {
+        implements Runnable {
 
-    /**
-     * The connection event parent to this object
-     */
-    private ConnectionBuilder connectonBuilder;
-
-    /**
-     * The progress bar widget
-     */
+    private final ConnectionBuilder connectionBuilder;
     private ProgressBar progressBar;
+    private JButton cancelButton;
 
-    /**
-     * connection name label
-     */
-    private JLabel connectionNameLabel;
-
-    public ConnectionProgressDialog(ConnectionBuilder connectonBuilder) {
+    public ConnectionProgressDialog(ConnectionBuilder connectionBuilder) {
 
         super(GUIUtilities.getParentFrame(), Bundles.getCommon("connecting"), true);
-        this.connectonBuilder = connectonBuilder;
+        this.connectionBuilder = connectionBuilder;
+
         init();
-    }
-
-    public void run() {
-
-        progressBar.start();
-        setVisible(true);
+        arrange();
     }
 
     private void init() {
@@ -73,65 +57,46 @@ public class ConnectionProgressDialog extends JDialog
         progressBar = ProgressBarFactory.create(true, true);
         ((JComponent) progressBar).setPreferredSize(new Dimension(280, 20));
 
+        cancelButton = WidgetFactory.createButton("cancelButton", Bundles.getCommon("cancel.button"));
+        cancelButton.setPreferredSize(new Dimension(75, 30));
+        cancelButton.setMargin(Constants.EMPTY_INSETS);
+        cancelButton.addActionListener(e -> cancel());
+    }
+
+    private void arrange() {
+
         JPanel base = new JPanel(new GridBagLayout());
-
-        JButton cancelButton = new CancelButton();
-        cancelButton.addActionListener(this);
-
-        connectionNameLabel = new JLabel(Bundles.get(this.getClass(), "connectionLabel", connectonBuilder.getConnectionName()));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(10, 20, 10, 20);
-        gbc.insets = ins;
-        base.add(connectionNameLabel, gbc);
-        gbc.gridy = 1;
-        gbc.insets.top = 5;
-        base.add(((JComponent) progressBar), gbc);
-        gbc.gridy = 2;
-        gbc.weighty = 1.0;
-        gbc.insets.left = 10;
-        gbc.insets.right = 10;
-        base.add(cancelButton, gbc);
-
         base.setBorder(BorderFactory.createEtchedBorder());
 
-        Container c = this.getContentPane();
-        c.setLayout(new GridBagLayout());
-        c.add(base, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST,
-                GridBagConstraints.BOTH,
-                new Insets(5, 5, 5, 5), 0, 0));
-        setResizable(false);
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        GridBagHelper gbh = new GridBagHelper().setInsets(10, 10, 10, 5);
+        base.add(new JLabel(bundleString("connectionLabel", connectionBuilder.getConnectionName())), gbh.get());
+        base.add(((JComponent) progressBar), gbh.setInsets(10, 0, 10, 5).nextRowFirstCol().spanX().get());
+        base.add(cancelButton, gbh.nextRow().setInsets(10, 0, 10, 10).spanX().get());
+
+        add(base);
 
         pack();
+        setResizable(false);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLocation(GUIUtilities.getLocationForDialog(getSize()));
     }
 
-    public void updateLabel(String name) {
-
-        connectionNameLabel.setText(bundleString("connectionLabel") + name);
-        Runnable update = new Runnable() {
-            public void run() {
-                Dimension dim = connectionNameLabel.getSize();
-                connectionNameLabel.paintImmediately(0, 0, dim.width, dim.height);
-            }
-        };
-        SwingUtilities.invokeLater(update);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-
+    public void cancel() {
         Log.info(bundleString("connection-canceled"));
-
-        connectonBuilder.cancel();
+        connectionBuilder.cancel();
         dispose();
     }
 
+    @Override
+    public void run() {
+        progressBar.start();
+        setVisible(true);
+    }
+
+    @Override
     public void dispose() {
 
         if (progressBar != null) {
-
             progressBar.stop();
             progressBar.cleanup();
         }
@@ -139,61 +104,12 @@ public class ConnectionProgressDialog extends JDialog
         super.dispose();
     }
 
-    public String bundleString(String key) {
-        return Bundles.get(getClass(), key);
+    public static String bundleString(String key) {
+        return Bundles.get(ConnectionProgressDialog.class, key);
     }
 
-    class CancelButton extends JButton {
-
-        private int DEFAULT_WIDTH = 75;
-        private int DEFAULT_HEIGHT = 30;
-
-        public CancelButton() {
-
-            super(Bundles.get("common.cancel.button"));
-            setMargin(Constants.EMPTY_INSETS);
-        }
-
-        public int getWidth() {
-
-            int width = super.getWidth();
-
-            if (width < DEFAULT_WIDTH) {
-
-                return DEFAULT_WIDTH;
-            }
-
-            return width;
-        }
-
-        public int getHeight() {
-
-            int height = super.getHeight();
-
-            if (height < DEFAULT_HEIGHT) {
-
-                return DEFAULT_HEIGHT;
-            }
-
-            return height;
-        }
-
-        public Dimension getPreferredSize() {
-
-            return new Dimension(getWidth(), getHeight());
-        }
-
+    public static String bundleString(String key, Object... args) {
+        return Bundles.get(ConnectionProgressDialog.class, key, args);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -97,22 +97,27 @@ public final class ConnectionManager {
         ((DefaultDatabaseHost) hostNode.getDatabaseObject()).resetCountFinishedMetaTags();
         long startTime = System.currentTimeMillis();
         loadTree(hostNode, connectionBuilder);
+
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(databaseConnection);
         try {
+
             ResultSet rs = querySender.getResultSet("select rdb$character_set_name from rdb$database").getResultSet();
-            if (rs.next()) {
+            if (rs != null && rs.next()) {
                 if (rs.getString(1) != null) {
                     databaseConnection.setDBCharset(rs.getString(1).trim());
                 }
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
+
         } finally {
             querySender.releaseResources();
         }
+
         if (connectionBuilder != null && connectionBuilder.isCancelled())
             databaseConnection.setConnected(false);
+
         if (databaseConnection.isConnected()) {
             Log.info("Connection time = "+(System.currentTimeMillis()-startTime)+"ms");
             Log.info("Data source " + databaseConnection.getName() + " initialized.");

@@ -221,13 +221,15 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      *
      * @return the database meta data
      */
+    @Override
     public DatabaseMetaData getDatabaseMetaData() throws DataSourceException {
 
         if (!isConnected()) {
             if (!getDatabaseConnection().isConnected()) {
-                Log.info("Connection lost");
+                Log.debug("Connection lost");
                 return null;
-            } else throw new DataSourceException("Connection closed.", true);
+            } else
+                throw new DataSourceException("Connection closed.", true);
         }
 
         try {

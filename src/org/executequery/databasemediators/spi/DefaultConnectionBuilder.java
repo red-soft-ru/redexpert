@@ -32,121 +32,79 @@ import org.underworldlabs.swing.util.SwingWorker;
  */
 public class DefaultConnectionBuilder implements ConnectionBuilder {
 
-    /**
-     * The worker thread to establish the connection
-     */
-    private SwingWorker worker;
-
-    /**
-     * The connection progress dialog
-     */
-    private ConnectionProgressDialog progressDialog;
-
-    /**
-     * Indicates whether the process was cancelled
-     */
-    private boolean cancelled;
-
-    /**
-     * The database connection object
-     */
     private final DatabaseConnection databaseConnection;
 
-    /**
-     * The exception on error
-     */
-    private DataSourceException dataSourceException;
+    private boolean cancelled;
+    private SwingWorker worker;
+    private DataSourceException exception;
 
     public DefaultConnectionBuilder(DatabaseConnection databaseConnection) {
-
         this.databaseConnection = databaseConnection;
     }
 
-    public void cancel() {
+    @Override
+    public void connect() throws IllegalArgumentException {
 
-        cancelled = true;
-        databaseConnection.setConnected(false);
-        ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).close();
-        worker.interrupt();
+        ConnectionBuilder connectionBuilder = this;
+        ConnectionProgressDialog progressDialog = new ConnectionProgressDialog(this);
+
+        worker = new SwingWorker("Connection to " + databaseConnection.getName()) {
+
+            @Override
+            public Object construct() {
+
+                try {
+                    ConnectionManager.createDataSource(databaseConnection, connectionBuilder);
+
+                } catch (IllegalArgumentException e) {
+                    exception = new DataSourceException(e);
+                    if (e.getMessage().contentEquals("Connection cancelled"))
+                        cancel();
+                }
+
+                return null;
+            }
+
+            @Override
+            public void finished() {
+                progressDialog.dispose();
+            }
+        };
+
+        worker.start();
+        progressDialog.run();
     }
 
-    public String getConnectionName() {
+    @Override
+    public void cancel() {
+        ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).close();
+        databaseConnection.setConnected(false);
+        worker.interrupt();
+        cancelled = true;
+    }
 
+    @Override
+    public String getConnectionName() {
         return databaseConnection.getName();
     }
 
     public DataSourceException getException() {
-
-        return dataSourceException;
+        return exception;
     }
 
+    @Override
     public String getErrorMessage() {
-
-        if (dataSourceException != null) {
-
-            return dataSourceException.getMessage();
-        }
-
-        return "";
+        return exception != null ? exception.getMessage() : "";
     }
 
+    @Override
     public boolean isCancelled() {
-
         return cancelled;
     }
 
+    @Override
     public boolean isConnected() {
-
         return databaseConnection.isConnected();
     }
 
-    public void connect() throws IllegalArgumentException {
-
-        progressDialog = new ConnectionProgressDialog(this);
-
-        worker = new SwingWorker("Connection to "+databaseConnection.getName()) {
-            public Object construct() {
-                try {
-                    createDataSource();
-                } catch (IllegalArgumentException e) {
-                    dataSourceException = new DataSourceException(e);
-                }
-                return null;
-            }
-
-            public void finished() {
-
-                if (progressDialog != null) {
-
-                    progressDialog.dispose();
-                }
-
-            }
-        };
-        worker.start();
-        progressDialog.run();
-
-    }
-
-    private void createDataSource() throws IllegalArgumentException {
-
-        try {
-
-            ConnectionManager.createDataSource(databaseConnection, this);
-
-        } catch (DataSourceException e) {
-
-            dataSourceException = e;
-            if (e.getMessage().contentEquals("Connection cancelled")) {
-                cancel();
-            }
-        }
-
-    }
-
 }
-
-
-
-
-

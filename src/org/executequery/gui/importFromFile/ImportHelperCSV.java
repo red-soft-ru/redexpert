@@ -23,9 +23,13 @@ import java.util.*;
 
 class ImportHelperCSV extends AbstractImportHelper {
 
+    private final String sourceDelimiter;
+
     public ImportHelperCSV(ImportDataFromFilePanel parent, String pathToFile, String pathToLob, int previewRowCount, boolean isFirstRowHeaders) {
         super(parent, pathToFile, pathToLob, previewRowCount, isFirstRowHeaders);
-        delimiter = parent.getDelimiter();
+
+        sourceDelimiter = parent.getDelimiter();
+        delimiter = sourceDelimiter.equals("|") ? "\\" + sourceDelimiter : sourceDelimiter;
     }
 
     @Override
@@ -146,7 +150,7 @@ class ImportHelperCSV extends AbstractImportHelper {
         try {
 
             Properties properties = new Properties();
-            properties.setProperty("separator", delimiter);
+            properties.setProperty("separator", sourceDelimiter);
             if (!isFirstRowHeaders) {
                 properties.setProperty("suppressHeaders", "true");
                 properties.setProperty("defectiveHeaders", "true");

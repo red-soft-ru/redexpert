@@ -20,12 +20,17 @@
 
 package org.executequery.databasemediators.spi;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionBuilder;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.SystemProperties;
+
+import java.util.Properties;
 
 /**
  * @author Takis Diakoumis
@@ -47,6 +52,7 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
 
         ConnectionBuilder connectionBuilder = this;
         ConnectionProgressDialog progressDialog = new ConnectionProgressDialog(this);
+        Integer connectionTimeout = SystemProperties.getIntProperty("user", "connection.connect.timeout");
 
         worker = new SwingWorker("Connection to " + databaseConnection.getName()) {
 
@@ -54,12 +60,23 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
             public Object construct() {
 
                 try {
+
+                    Properties props = new Properties();
+                    props.setProperty("connectTimeout", String.valueOf(connectionTimeout));
+
+                    databaseConnection.setJdbcProperties(props);
                     ConnectionManager.createDataSource(databaseConnection, connectionBuilder);
 
-                } catch (IllegalArgumentException e) {
-                    exception = new DataSourceException(e);
-                    if (e.getMessage().contentEquals("Connection cancelled"))
+                } catch (DataSourceException e) {
+
+                    if (e.getMessage().contains("java.sql.SQLTimeoutException") && progressDialog.isActive()) {
                         cancel();
+                        GUIUtilities.displayWarningMessage(Bundles.get(DefaultConnectionBuilder.class, "TimeoutException", connectionTimeout));
+
+                    } else if (e.getMessage().contentEquals("Connection cancelled"))
+                        cancel();
+
+                    exception = e;
                 }
 
                 return null;

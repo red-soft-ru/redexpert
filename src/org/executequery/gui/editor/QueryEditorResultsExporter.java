@@ -272,14 +272,46 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         int type = getExportFileType();
 
-        if (type == ImportExportDataProcess.DELIMITED)
-            showDelimiterPanel(isVisible());
-        else if (type == ImportExportDataProcess.EXCEL)
-            showXlsxPanel(isVisible());
-        else if (type == ImportExportDataProcess.XML)
-            showXmlPanel(isVisible());
-        else if (type == ImportExportDataProcess.SQL)
-            showSqlPanel(isVisible());
+        String validExtension;
+        switch (type) {
+            case (ImportExportDataProcess.EXCEL):
+                showXlsxPanel(isVisible());
+                validExtension = ".xlsx";
+                break;
+            case (ImportExportDataProcess.XML):
+                showXmlPanel(isVisible());
+                validExtension = ".xml";
+                break;
+            case (ImportExportDataProcess.SQL):
+                showSqlPanel(isVisible());
+                validExtension = ".sql";
+                break;
+            default:
+                showDelimiterPanel(isVisible());
+                validExtension = ".csv";
+        }
+
+        updateFilePath(filePathField, validExtension);
+    }
+
+    private void updateFilePath(JTextField field, String validExtension) {
+
+        String filePath = field.getText();
+        if (!filePath.isEmpty()) {
+
+            int extensionIndex = filePath.lastIndexOf(".") - 1;
+            if (extensionIndex < 0) {
+                filePath += validExtension;
+                field.setText(filePath);
+                return;
+            }
+
+            String extension = filePath.substring(extensionIndex);
+            if (!extension.equalsIgnoreCase(validExtension))
+                filePath = filePath.substring(0, extensionIndex + 1) + validExtension;
+        }
+
+        field.setText(filePath);
     }
 
     private void showDelimiterPanel(boolean changeValues) {
@@ -408,11 +440,8 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             suffix = ".lob";
         }
 
-        String path = fileChooser.getSelectedFile().getAbsolutePath();
-        if (!path.endsWith(suffix))
-            path += suffix;
-
-        field.setText(path);
+        field.setText(fileChooser.getSelectedFile().getAbsolutePath());
+        updateFilePath(field, suffix);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

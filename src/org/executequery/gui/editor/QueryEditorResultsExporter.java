@@ -112,6 +112,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private final String tableNameForExport;
     private final List<DatabaseColumn> databaseColumns;
     private Map<String, Component> components;
+    private static String columnDelimiterComboName = "";
 
     public QueryEditorResultsExporter(TableModel exportTableModel, String tableNameForExport) {
         this(exportTableModel, tableNameForExport, null);
@@ -139,8 +140,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         typeCombo.addActionListener(e -> updateDialog());
         components.put(typeCombo.getName(), typeCombo);
 
-        String[] columnDelimiters = {"|", ",", ";", "#"};
+        String[] columnDelimiters = {";", "|", ",", "#"};
         columnDelimiterCombo = WidgetFactory.createComboBox("columnDelimiterCombo", columnDelimiters);
+        columnDelimiterComboName = columnDelimiterCombo.getName();
         columnDelimiterCombo.setEditable(true);
         components.put(columnDelimiterCombo.getName(), columnDelimiterCombo);
 
@@ -247,7 +249,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         // --- this panel ---
 
         showDelimiterPanel(false);
-        new ParametersSaver().restore();
+        new ParametersSaver().restore(components);
 
         replaceEndlField.setEnabled(replaceEndlCheck.isSelected());
         replaceNullField.setEnabled(replaceNullCheck.isSelected());
@@ -897,10 +899,18 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         return false;
     }
 
+    public static String getParametersSaverFilePath() {
+        return new ParametersSaver().getFileName();
+    }
+
+    public static String getParametersSaverDelimiter() {
+        return new ParametersSaver().getDelimiter();
+    }
+
     @Override
     public void dispose() {
         exportTableModel = null;
-        new ParametersSaver().save();
+        new ParametersSaver().save(components);
         super.dispose();
     }
 
@@ -1015,13 +1025,13 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
     } // class ResultsProgressDialog
 
-    private class ParametersSaver {
+    private static class ParametersSaver {
 
         private final String FILE_NAME =
                 ApplicationContext.getInstance().getUserSettingsHome() + FileSystems.getDefault().getSeparator() + "resultsExporter.save";
         private final String DELIMITER = "===";
 
-        void save() {
+        void save(Map<String, Component> components) {
 
             // clear old values
             try (PrintWriter writer = new PrintWriter(new FileWriter(FILE_NAME, false))) {
@@ -1046,7 +1056,11 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                         writer.println(((JTextField) component).getText().trim());
 
                     } else if (component instanceof JComboBox) {
-                        writer.println(((JComboBox<?>) component).getSelectedIndex());
+
+                        if (component.getName().equals(columnDelimiterComboName))
+                            writer.println(((JComboBox<?>) component).getSelectedItem());
+                        else
+                            writer.println(((JComboBox<?>) component).getSelectedIndex());
                     }
                 }
 
@@ -1055,7 +1069,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             }
         }
 
-        void restore() {
+        void restore(Map<String, Component> components) {
 
             try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {
 
@@ -1073,13 +1087,26 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                         ((JTextField) component).setText(value);
 
                     } else if (component instanceof JComboBox) {
-                        ((JComboBox<?>) component).setSelectedIndex(Integer.parseInt(value));
+
+                        if (component.getName().equals(columnDelimiterComboName))
+                            ((JComboBox<?>) component).setSelectedItem(value);
+                        else
+                            ((JComboBox<?>) component).setSelectedIndex(Integer.parseInt(value));
+
                     }
                 }
 
             } catch (IOException e) {
                 Log.error("Error restoring QueryEditorResultsExporter values", e);
             }
+        }
+
+        String getFileName() {
+            return FILE_NAME;
+        }
+
+        String getDelimiter() {
+            return DELIMITER;
         }
     }
 

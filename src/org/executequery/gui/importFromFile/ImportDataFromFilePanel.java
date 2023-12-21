@@ -13,6 +13,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.NamedView;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.editor.QueryEditorResultsExporter;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
@@ -35,8 +36,7 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -123,8 +123,9 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         List<DatabaseConnection> connections = ((DatabaseConnectionRepository) Objects.requireNonNull(RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
 
         delimiterCombo = WidgetFactory.createComboBox("delimiterCombo", delimiters);
-        delimiterCombo.addActionListener(e -> previewSourceFile(false));
         delimiterCombo.setEditable(true);
+        setDelimiterComboSelectedValue("columnDelimiterCombo", delimiterCombo);
+        delimiterCombo.addActionListener(e -> previewSourceFile(false));
 
         targetTableCombo = WidgetFactory.createComboBox("targetTableCombo");
         targetTableCombo.addActionListener(e -> updateMappingTable());
@@ -763,6 +764,25 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             previewSourceTable();
         else
             previewSourceFile(false);
+    }
+
+    private void setDelimiterComboSelectedValue(@SuppressWarnings("SameParameterValue") String key, JComboBox combo) {
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(QueryEditorResultsExporter.getParametersSaverFilePath()))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+
+                String[] data = line.split(QueryEditorResultsExporter.getParametersSaverDelimiter());
+                if (data[0].equals(key)) {
+                    if (data.length > 1)
+                        combo.setSelectedItem(data[1]);
+                    break;
+                }
+            }
+
+        } catch (IOException ignored) {
+        }
     }
 
     private boolean targetNotSelected(boolean displayWarnings) {

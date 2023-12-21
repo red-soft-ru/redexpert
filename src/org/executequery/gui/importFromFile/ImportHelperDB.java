@@ -102,6 +102,7 @@ public class ImportHelperDB extends AbstractImportHelper {
         executor.getConnection().commit();
         sourceExecutor.releaseResources();
         Log.info("Import finished, " + executorIndex + " records was added");
+        addedRecordsCount = executorIndex;
     }
 
     @Override

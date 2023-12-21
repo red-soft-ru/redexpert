@@ -613,21 +613,29 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         progressDialog = new DefaultProgressDialog(bundleString("ExecutingProgressDialog"));
         pathToLob = !lobFileField.getText().trim().isEmpty() ? lobFileField.getText().trim() : null;
 
-        SwingWorker worker = new SwingWorker("ImportCSV") {
+        SwingWorker worker = new SwingWorker("ImportData") {
+
+            private final ImportHelper thisImportHelper = getImportHelper(fileType);
+            private int addedRecordsCount = 0;
+
             @Override
             public Object construct() {
 
                 if (eraseTableCheck.isSelected())
                     eraseTable(Objects.requireNonNull(targetTableCombo.getSelectedItem()).toString());
-                getImportHelper(fileType).importData(sourceColumnList, valuesIndexes, insertStatement, executor);
+                thisImportHelper.importData(sourceColumnList, valuesIndexes, insertStatement, executor);
 
+                addedRecordsCount = thisImportHelper.getAddedRecordsCount();
                 return null;
             }
 
             @Override
             public void finished() {
+
                 if (progressDialog != null)
                     progressDialog.dispose();
+
+                GUIUtilities.displayInformationMessage(bundleString("ImportDataFinished", addedRecordsCount));
             }
         };
 
@@ -878,6 +886,10 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     @Override
     public String bundleString(String key) {
         return Bundles.get(ImportDataFromFilePanel.class, key);
+    }
+
+    public String bundleString(String key, Object... args) {
+        return Bundles.get(ImportDataFromFilePanel.class, key, args);
     }
 
     private class MappingCellRenderer extends DefaultTableCellRenderer {

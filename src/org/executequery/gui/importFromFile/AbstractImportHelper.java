@@ -22,6 +22,7 @@ abstract class AbstractImportHelper implements ImportHelper {
     protected final String pathToLob;
 
     protected String delimiter = ";;;";
+    protected int addedRecordsCount;
 
     protected AbstractImportHelper(ImportDataFromFilePanel parent, String pathToFile, String pathToLob, int previewRowCount, boolean isFirstRowHeaders) {
         this.headers = new LinkedList<>();
@@ -105,4 +106,8 @@ abstract class AbstractImportHelper implements ImportHelper {
         return delimiter;
     }
 
+    @Override
+    public int getAddedRecordsCount() {
+        return addedRecordsCount;
+    }
 }

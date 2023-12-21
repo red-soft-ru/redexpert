@@ -37,4 +37,6 @@ interface ImportHelper {
 
     String getDelimiter();
 
+    int getAddedRecordsCount();
+
 }

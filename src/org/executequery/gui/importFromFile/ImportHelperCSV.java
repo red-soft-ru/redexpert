@@ -116,6 +116,7 @@ class ImportHelperCSV extends AbstractImportHelper {
         insertStatement.executeBatch();
         executor.getConnection().commit();
         Log.info("Import finished, " + executorIndex + " records was added");
+        addedRecordsCount = executorIndex;
     }
 
     @Override

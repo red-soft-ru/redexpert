@@ -774,17 +774,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DefaultDatabaseUDF udf = new DefaultDatabaseUDF(
                 this, MiscUtils.trimEnd(rs.getString(1)), this.getHost());
 
-        String moduleName = rs.getString(3);
-        if (!MiscUtils.isNull(moduleName))
-            udf.setModuleName(moduleName.trim());
-
-        String entryPoint = rs.getString(4);
-        if (!MiscUtils.isNull(entryPoint))
-            udf.setEntryPoint(entryPoint.trim());
-
-        udf.setReturnArg(rs.getInt(5));
-        udf.setRemarks(rs.getString("description"));
-
         return udf;
     }
 
@@ -1034,12 +1023,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getUDFResultSet() throws SQLException {
 
         String query = "SELECT\n" +
-                "CAST (RDB$FUNCTION_NAME as VARCHAR(1024))," +
-                "RDB$DESCRIPTION," +
-                "RDB$MODULE_NAME," +
-                "RDB$ENTRYPOINT," +
-                "RDB$RETURN_ARGUMENT," +
-                "RDB$DESCRIPTION AS DESCRIPTION\n" +
+                "CAST (RDB$FUNCTION_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$FUNCTIONS\n" +
                 ((getHost().getDatabaseMetaData().getDatabaseMajorVersion() == 2) ?
                         "WHERE RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL\n" :

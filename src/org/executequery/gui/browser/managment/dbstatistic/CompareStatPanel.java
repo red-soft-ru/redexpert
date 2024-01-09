@@ -4,6 +4,7 @@ import org.executequery.gui.browser.managment.AbstractServiceManagerPanel;
 import org.executequery.gui.text.DifferenceTextPanel;
 import org.underworldlabs.statParser.StatDatabase;
 import org.underworldlabs.swing.AbstractPanel;
+import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 
@@ -17,7 +18,14 @@ public class CompareStatPanel extends AbstractPanel {
     public CompareStatPanel(StatDatabase db, StatDatabase db1, StatDatabase db2) {
         super();
         this.db = db;
-        textPanel.setTexts(db2.sb.toString(), db1.sb.toString());
+        SwingWorker sw = new SwingWorker("compareStatText") {
+            @Override
+            public Object construct() {
+                textPanel.setTexts(db2.sb.toString(), db1.sb.toString());
+                return null;
+            }
+        };
+        sw.start();
         tablesPanel.setRows(db.tables);
         indexesPanel.setRows(db.indices);
     }

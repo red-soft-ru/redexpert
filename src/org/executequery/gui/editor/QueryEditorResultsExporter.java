@@ -91,6 +91,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private JCheckBox addQuotesCheck;
     private JCheckBox saveBlobsIndividuallyCheck;
     private JCheckBox openQueryEditorCheck;
+    private JCheckBox addCreateTableStatementCheck;
 
     private JCheckBox replaceNullCheck;
     private JTextField replaceNullField;
@@ -199,6 +200,9 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         openQueryEditorCheck = WidgetFactory.createCheckBox("openQueryEditorCheck", bundleString("openQueryEditorCheck"));
         components.put(openQueryEditorCheck.getName(), openQueryEditorCheck);
 
+        addCreateTableStatementCheck = WidgetFactory.createCheckBox("addCreateTableStatementCheck", bundleString("addCreateTableStatementCheck"));
+        components.put(addCreateTableStatementCheck.getName(), addCreateTableStatementCheck);
+
         saveBlobsIndividuallyCheck = WidgetFactory.createCheckBox("saveBlobsIndividuallyCheck", bundleString("saveBlobsIndividually"));
         saveBlobsIndividuallyCheck.setEnabled(false);
         components.put(saveBlobsIndividuallyCheck.getName(), saveBlobsIndividuallyCheck);
@@ -253,6 +257,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         optionsPanel.add(addColumnHeadersCheck, gridBagHelper.spanX().get());
         optionsPanel.add(addQuotesCheck, gridBagHelper.nextRowFirstCol().get());
         optionsPanel.add(openQueryEditorCheck, gridBagHelper.nextRowFirstCol().get());
+        optionsPanel.add(addCreateTableStatementCheck, gridBagHelper.nextRowFirstCol().get());
         optionsPanel.add(saveBlobsIndividuallyCheck, gridBagHelper.nextRowFirstCol().get());
         optionsPanel.add(replaceNullCheck, gridBagHelper.nextRowFirstCol().setMinWeightX().setWidth(1).get());
         optionsPanel.add(replaceNullField, gridBagHelper.nextCol().setMaxWeightX().spanX().get());
@@ -358,6 +363,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setVisible(true);
         addQuotesCheck.setVisible(true);
         openQueryEditorCheck.setVisible(false);
+        addCreateTableStatementCheck.setVisible(false);
         delimiterLabel.setVisible(true);
         columnDelimiterCombo.setVisible(true);
         replaceEndlCheck.setVisible(true);
@@ -376,6 +382,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setVisible(true);
         addQuotesCheck.setVisible(false);
         openQueryEditorCheck.setVisible(false);
+        addCreateTableStatementCheck.setVisible(false);
         delimiterLabel.setVisible(false);
         columnDelimiterCombo.setVisible(false);
         replaceEndlCheck.setVisible(false);
@@ -394,6 +401,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setVisible(false);
         addQuotesCheck.setVisible(false);
         openQueryEditorCheck.setVisible(false);
+        addCreateTableStatementCheck.setVisible(false);
         delimiterLabel.setVisible(false);
         columnDelimiterCombo.setVisible(false);
         replaceEndlCheck.setVisible(false);
@@ -412,6 +420,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         addColumnHeadersCheck.setVisible(false);
         addQuotesCheck.setVisible(false);
         openQueryEditorCheck.setVisible(true);
+        addCreateTableStatementCheck.setVisible(true);
         delimiterLabel.setVisible(false);
         columnDelimiterCombo.setVisible(false);
         replaceEndlCheck.setVisible(false);
@@ -814,15 +823,18 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
             try {
 
-                // --- add simple 'create table' statement ---
+                // --- add 'create table' statement ---
 
-                String createTableTemplate = "/* Uncomment this block if the table doesn't exist\n\n" +
-                        (databaseColumns != null && !databaseColumns.isEmpty() ?
-                                ((AbstractDatabaseObject) databaseColumns.get(0).getParent()).getCreateSQLText() :
-                                SQLUtils.generateCreateTable(tableName, exportTableModel)) +
-                        "*/\n";
+                if (addCreateTableStatementCheck.isSelected()) {
 
-                result.append(createTableTemplate);
+                    String createTableTemplate = "-- table creating --\n\n" +
+                            (databaseColumns != null && !databaseColumns.isEmpty() ?
+                                    ((AbstractDatabaseObject) databaseColumns.get(0).getParent()).getCreateSQLText() :
+                                    SQLUtils.generateCreateTable(tableName, exportTableModel))
+                            + "\n-- inserting data --\n";
+
+                    result.append(createTableTemplate);
+                }
 
                 // --- setup *.lob file ---
 
@@ -906,7 +918,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 displayErrorMessage(e);
             }
 
-            String generatedSqlScript = result.toString();
+            String generatedSqlScript = result.toString().trim();
             PrintWriter writer = new PrintWriter(new FileWriter(filePathField.getText(), false), true);
             writer.println(generatedSqlScript);
             writer.close();

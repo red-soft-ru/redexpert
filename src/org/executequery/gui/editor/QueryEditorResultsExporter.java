@@ -165,7 +165,8 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         });
 
         tabbedPane = new JTabbedPane();
-        tabbedPane.addTab(bundleString("ColumnsTab"), new JScrollPane(columnTable));
+        if (databaseColumns != null)
+            tabbedPane.addTab(bundleString("ColumnsTab"), new JScrollPane(columnTable));
 
         String[] types = {"CSV", "XLSX", "XML", "SQL"};
         typeCombo = WidgetFactory.createComboBox("typeCombo", types);

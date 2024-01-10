@@ -8,6 +8,7 @@ import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.AbstractServiceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.*;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
@@ -17,6 +18,7 @@ import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.ListSelectionPanel;
+import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
@@ -27,6 +29,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Driver;
@@ -47,9 +50,11 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
     private JButton fileConfButton;
     private JButton startStopSessionButton;
     private JButton clearTableButton;
-    private JButton openFileLog;
+    protected RolloverButton openFileLog;
+    protected JComboBox encodeCombobox;
+    protected JToolBar toolBar;
     private JTextField fileConfField;
-    private JTextField openFileLogField;
+    //private JTextField openFileLogField;
     LogMessage constMsg = new LogMessage();
     private JCheckBox useBuildConfBox;
     private JTextField sessionField;
@@ -172,9 +177,15 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         loggerPanel = new TablePanel(columnsCheckPanel);
         analisePanel = new AnalisePanel(loggerPanel.getTableRows());
         fileConfButton = new JButton("...");
-        openFileLog = new JButton("...");
+        toolBar = WidgetFactory.createToolBar("toolBar");
+        toolBar.setFloatable(false);
+        openFileLog = WidgetFactory.createRolloverButton("openLogButton", bundleString("OpenFileLog"), "Open16.png");
+        toolBar.add(openFileLog);
+        encodeCombobox = WidgetFactory.createComboBox("encodingCombobox", Charset.availableCharsets().keySet().toArray());
+        encodeCombobox.setSelectedItem(UserProperties.getInstance().getStringProperty("system.file.encoding"));
+        encodeCombobox.setToolTipText(bundleString("Charset"));
+        toolBar.add(encodeCombobox);
         fileConfField = new JTextField();
-        openFileLogField = new JTextField();
 
         useBuildConfBox = new JCheckBox(bundleString("UseConfigFile"));
         useBuildConfBox.setSelected(true);
@@ -216,14 +227,13 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                     SwingWorker sw = new SwingWorker("loadTraceFromFile") {
                         @Override
                         public Object construct() {
-                            openFileLogField.setText(fileChooser.getSelectedFile().getAbsolutePath());
                             clearAll();
                             idLogMessage = 0;
                             BufferedReader reader = null;
                             try {
                                 reader = new BufferedReader(
                                         new InputStreamReader(
-                                                Files.newInputStream(Paths.get(openFileLogField.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
+                                                Files.newInputStream(Paths.get(fileChooser.getSelectedFile().getAbsolutePath())), (String) encodeCombobox.getSelectedItem()));
                                 readFromBufferedReader(reader, true);
                             } catch (Exception e1) {
                                 GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
@@ -389,9 +399,9 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new GridBagLayout());
         JLabel label = new JLabel(bundleString("OpenFileLog"));
-        topPanel.add(label, gbh.setLabelDefault().get());
-        gbh.nextCol();
-        gbh.addLabelFieldPair(topPanel, openFileLog, openFileLogField, null, false, false);
+        topPanel.add(toolBar, gbh.fillHorizontally().spanX().get());
+        //gbh.nextCol();
+        //gbh.addLabelFieldPair(topPanel, openFileLog, openFileLogField, null, false, false);
 
         topPanel.add(tabPane, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
 
@@ -425,6 +435,8 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         gbh.addLabelFieldPair(connectionPanel, bundleString("Charset"), charsetCombo, null, true, true);
         gbh.nextRowFirstCol();
         connectionPanel.add(useBuildConfBox, gbh.setLabelDefault().get());
+        /*gbh.nextCol();
+        connectionPanel.add(newConfButton, gbh.setLabelDefault().get());*/
         gbh.addLabelFieldPair(connectionPanel, fileConfButton, fileConfField, null, false, true);
         gbh.nextRowFirstCol();
         connectionPanel.add(logToFileBox, gbh.setLabelDefault().get());

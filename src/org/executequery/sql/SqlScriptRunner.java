@@ -35,6 +35,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
 import java.net.MalformedURLException;
@@ -364,6 +365,7 @@ public class SqlScriptRunner {
             temp.setPassword(password);
             temp.setCharset(charSet);
             Properties properties = new Properties();
+            properties.setProperty("connectTimeout", String.valueOf(SystemProperties.getIntProperty("user", "connection.connect.timeout")));
             properties.setProperty("sqlDialect", sqlDialect);
             if (StringUtils.isNotEmpty(charSet))
                 properties.setProperty("lc_ctype", charSet);

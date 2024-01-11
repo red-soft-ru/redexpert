@@ -90,6 +90,7 @@ public class ImportHelperDB extends AbstractImportHelper {
             }
             insertStatement.addBatch();
 
+            progressDialog.setInformationLabelText(String.format(bundleString("RecordsAddedLabel"), executorIndex));
             if (executorIndex % batchStep == 0 && executorIndex != 0) {
                 insertStatement.executeBatch();
                 executor.getConnection().commit();

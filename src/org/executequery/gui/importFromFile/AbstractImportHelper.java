@@ -3,6 +3,7 @@ package org.executequery.gui.importFromFile;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.DefaultProgressDialog;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
@@ -21,6 +22,7 @@ abstract class AbstractImportHelper implements ImportHelper {
     protected final String pathToFile;
     protected final String pathToLob;
 
+    protected DefaultProgressDialog progressDialog;
     protected String delimiter = ";;;";
     protected int addedRecordsCount;
 
@@ -62,12 +64,15 @@ abstract class AbstractImportHelper implements ImportHelper {
 
     @Override
     public final void importData(
+            DefaultProgressDialog progressDialog,
             StringBuilder sourceColumnList,
             boolean[] valuesIndexes,
             PreparedStatement insertStatement,
             DefaultStatementExecutor executor) {
 
         try {
+            this.progressDialog = progressDialog;
+
             startImport(
                     sourceColumnList,
                     valuesIndexes,

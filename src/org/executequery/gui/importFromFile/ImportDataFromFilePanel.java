@@ -20,6 +20,7 @@ import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.swing.BackgroundProgressDialog;
 import org.underworldlabs.swing.DefaultProgressDialog;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -222,7 +223,15 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         readFileButton.addActionListener(e -> previewSourceFile(true));
 
         startImportButton = WidgetFactory.createButton("startImportButton", bundleString("StartImportButtonText"));
-        startImportButton.addActionListener(e -> importData());
+        startImportButton.addActionListener(e -> {
+
+            if (startImportButton.getText().equals(Bundles.getCommon("cancel.button"))) {
+                progressDialog.setCancel();
+                return;
+            }
+
+            importData();
+        });
 
         // --- panels ---
 
@@ -610,7 +619,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // -- start import
 
-        progressDialog = new DefaultProgressDialog(bundleString("ExecutingProgressDialog"));
+        progressDialog = new BackgroundProgressDialog(bundleString("ExecutingProgressDialog"));
         pathToLob = !lobFileField.getText().trim().isEmpty() ? lobFileField.getText().trim() : null;
 
         SwingWorker worker = new SwingWorker("ImportData") {
@@ -621,9 +630,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             @Override
             public Object construct() {
 
+                startImportButton.setText(Bundles.getCommon("cancel.button"));
+
                 if (eraseTableCheck.isSelected())
                     eraseTable(Objects.requireNonNull(targetTableCombo.getSelectedItem()).toString());
-                thisImportHelper.importData(sourceColumnList, valuesIndexes, insertStatement, executor);
+                thisImportHelper.importData(progressDialog, sourceColumnList, valuesIndexes, insertStatement, executor);
 
                 addedRecordsCount = thisImportHelper.getAddedRecordsCount();
                 return null;
@@ -635,6 +646,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
                 if (progressDialog != null)
                     progressDialog.dispose();
 
+                startImportButton.setText(bundleString("StartImportButtonText"));
                 GUIUtilities.displayInformationMessage(bundleString("ImportDataFinished", addedRecordsCount));
             }
         };

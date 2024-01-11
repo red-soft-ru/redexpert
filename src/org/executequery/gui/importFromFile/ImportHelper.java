@@ -11,6 +11,7 @@ import java.util.List;
 interface ImportHelper {
 
     void importData(
+            DefaultProgressDialog progressDialog,
             StringBuilder sourceColumnList,
             boolean[] valuesIndexes,
             PreparedStatement insertStatement,

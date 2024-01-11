@@ -8,74 +8,96 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * @author Alexey Kozlov
  */
 
 public class DefaultProgressDialog extends JDialog
-        implements Runnable,
-        ActionListener {
+        implements Runnable {
 
+    private static final String TITLE = bundledString("Executing");
+
+    // --- GUI components ---
+
+    protected JLabel infoLabel;
     protected ProgressBar progressBar;
-    protected final String description;
-    protected boolean isCancel = false;
     protected JPanel buttonPanel;
 
-    public boolean isCancel() {
-        return isCancel;
-    }
+    // ---
+
+    protected final String description;
+    protected boolean isCancel = false;
 
     public DefaultProgressDialog(String description) {
-
-        super(GUIUtilities.getParentFrame(), bundledString("Executing"), true);
+        super(GUIUtilities.getParentFrame(), TITLE, true);
 
         this.description = description;
         init();
-
     }
 
     private void init() {
 
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        buttonPanel = new JPanel(new GridBagLayout());
+        // --- init ---
+
+        infoLabel = new JLabel("");
+        infoLabel.setVisible(false);
 
         progressBar = ProgressBarFactory.create(true, true);
         ((JComponent) progressBar).setPreferredSize(new Dimension(280, 20));
 
-        JButton cancelButton = new ProgressDialogButton();
-        cancelButton.addActionListener(this);
+        JButton cancelButton = new ProgressDialogButton(Bundles.getCommon("cancel.button"));
         cancelButton.setToolTipText(bundledString("CancelButtonToolTipText"));
+        cancelButton.addActionListener(e -> {
+            Log.info("Action canceled");
+            isCancel = true;
+            dispose();
+        });
 
-        // ---------------------------------------------
-        // Components arranging
-        // ---------------------------------------------
+        // --- arrange ---
 
         GridBagHelper gridBagHelper = new GridBagHelper();
         gridBagHelper.setInsets(5, 5, 5, 5);
         gridBagHelper.anchorCenter();
 
+        // button panel
+        buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.add(cancelButton, gridBagHelper.get());
 
+        // main panel
+        JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.add(new JLabel(description), gridBagHelper.setLabelDefault().get());
-        mainPanel.add((JComponent) progressBar, gridBagHelper.nextRowFirstCol().fillHorizontally().get());
+        mainPanel.add(infoLabel, gridBagHelper.topGap(1).nextRowFirstCol().get());
+        mainPanel.add((JComponent) progressBar, gridBagHelper.topGap(5).nextRowFirstCol().fillHorizontally().get());
         mainPanel.add(buttonPanel, gridBagHelper.nextRowFirstCol().setLabelDefault().get());
 
+        // base
         add(mainPanel, BorderLayout.CENTER);
-
         setResizable(false);
         setUndecorated(true);
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-
         pack();
         setLocation(GUIUtilities.getLocationForDialog(getSize()));
 
     }
 
-    public void run() {
+    public void setCancel() {
+        isCancel = true;
+    }
 
+    public boolean isCancel() {
+        return isCancel;
+    }
+
+    public void setInformationLabelText(String text) {
+        infoLabel.setText(text);
+        infoLabel.setVisible(text != null && !text.isEmpty());
+        repaint();
+        pack();
+    }
+
+    @Override
+    public void run() {
         progressBar.start();
         setVisible(true);
     }
@@ -84,7 +106,6 @@ public class DefaultProgressDialog extends JDialog
     public void dispose() {
 
         if (progressBar != null) {
-
             progressBar.stop();
             progressBar.cleanup();
         }
@@ -92,27 +113,11 @@ public class DefaultProgressDialog extends JDialog
         super.dispose();
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-        Log.info("Action canceled");
-        isCancel = true;
-        dispose();
-    }
-
-    // ---------------------------------------------
-    // Cancel button class
-    // ---------------------------------------------
-
+    @SuppressWarnings("FieldCanBeLocal")
     protected static class ProgressDialogButton extends JButton {
 
         private final int DEFAULT_WIDTH = 75;
         private final int DEFAULT_HEIGHT = 30;
-
-        public ProgressDialogButton() {
-            super(Bundles.get("common.cancel.button"));
-            setMargin(Constants.EMPTY_INSETS);
-        }
 
         public ProgressDialogButton(String text) {
             super(text);
@@ -134,26 +139,10 @@ public class DefaultProgressDialog extends JDialog
             return new Dimension(getWidth(), getHeight());
         }
 
-    }
-
-    // ---------------------------------------------
-    // Localization settings
-    // ---------------------------------------------
+    } // class ProgressDialogButton
 
     public static String bundledString(String key) {
         return Bundles.get(DefaultProgressDialog.class, key);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-

@@ -8,6 +8,7 @@ import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.AbstractServiceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.*;
@@ -19,6 +20,7 @@ import org.executequery.repository.RepositoryCache;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.RolloverButton;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
@@ -51,12 +53,13 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
     private JButton startStopSessionButton;
     private JButton clearTableButton;
     protected RolloverButton openFileLog;
+    protected RolloverButton visibleColumnsButton;
     protected JComboBox encodeCombobox;
     protected JToolBar toolBar;
     private JTextField fileConfField;
     //private JTextField openFileLogField;
     LogMessage constMsg = new LogMessage();
-    private JCheckBox useBuildConfBox;
+    private JButton buildConfigButton;
     private JTextField sessionField;
     private int idLogMessage = 0;
     private JButton hideShowTabPaneButton;
@@ -178,21 +181,39 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         analisePanel = new AnalisePanel(loggerPanel.getTableRows());
         fileConfButton = new JButton("...");
         toolBar = WidgetFactory.createToolBar("toolBar");
+        toolBar.setLayout(new GridBagLayout());
+        GridBagHelper gbhToolBar = new GridBagHelper();
+        gbhToolBar.setDefaultsStatic().defaults();
+        gbhToolBar.setInsets(0, 0, 0, 0);
         toolBar.setFloatable(false);
         openFileLog = WidgetFactory.createRolloverButton("openLogButton", bundleString("OpenFileLog"), "Open16.png");
-        toolBar.add(openFileLog);
+        toolBar.add(openFileLog, gbhToolBar.nextCol().setLabelDefault().get());
         encodeCombobox = WidgetFactory.createComboBox("encodingCombobox", Charset.availableCharsets().keySet().toArray());
         encodeCombobox.setSelectedItem(UserProperties.getInstance().getStringProperty("system.file.encoding"));
         encodeCombobox.setToolTipText(bundleString("Charset"));
-        toolBar.add(encodeCombobox);
-        fileConfField = new JTextField();
-
-        useBuildConfBox = new JCheckBox(bundleString("UseConfigFile"));
-        useBuildConfBox.setSelected(true);
-        useBuildConfBox.addActionListener(new ActionListener() {
+        toolBar.add(encodeCombobox, gbhToolBar.nextCol().setLabelDefault().get());
+        //toolBar.add(new JSeparator(),gbhToolBar.nextCol().setLabelDefault().get());
+        visibleColumnsButton = WidgetFactory.createRolloverButton("visibleColumnsButton", bundleString("VisibleColumns"), "FindAgain16.png");
+        visibleColumnsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setEnableElements();
+                BaseDialog dialog = new BaseDialog(bundleString("VisibleColumns"), true);
+                dialog.addDisplayComponentWithEmptyBorder(columnsCheckPanel);
+                dialog.display();
+            }
+        });
+        toolBar.add(visibleColumnsButton, gbhToolBar.nextCol().setLabelDefault().get());
+        toolBar.add(new JPanel(), gbhToolBar.nextCol().fillHorizontally().spanX().get());
+        fileConfField = new JTextField();
+
+        buildConfigButton = WidgetFactory.createButton("newConfigButton", bundleString("BuildConfigurationFile"));
+        buildConfigButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BaseDialog dialog = new BaseDialog(bundleString("BuildConfigurationFile"), true);
+                dialog.addDisplayComponentWithEmptyBorder(confPanel);
+                dialog.setResizable(false);
+                dialog.display();
             }
         });
         startStopSessionButton = new JButton(bundleString("Start"));
@@ -319,13 +340,13 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                     traceManager.setPort(portField.getValue());
                     try {
                         String conf;
-                        if (useBuildConfBox.isSelected()) {
-                            if (fileConfField.getText().isEmpty()) {
-                                GUIUtilities.displayErrorMessage("Please select configuration file");
-                                return;
-                            }
+                        if (fileConfField.getText().isEmpty()) {
+                            conf = confPanel.getConfig();
+                            //GUIUtilities.displayErrorMessage("Please select configuration file");
+                            //return;
+                        } else
                             conf = FileUtils.loadFile(fileConfField.getText());
-                        } else conf = confPanel.getConfig();
+                        //else conf = confPanel.getConfig();
                         traceManager.startTraceSession(sessionField.getText(), conf);
                         startStopSessionButton.setText(bundleString("Stop"));
                         tabPane.add(bundleString("SessionManager"), sessionManagerPanel);
@@ -416,8 +437,8 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
 
 
         tabPane.add(bundleString("Connection"), connectionPanel);
-        tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));
-        tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
+        //tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));
+        //tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
         tabPane.add(bundleString("Logger"), loggerPanel);
         tabPane.add(bundleString("Analise"), analisePanel);
         connectionPanel.setLayout(new GridBagLayout());
@@ -428,16 +449,16 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         connectionPanel.add(label, gbh.setLabelDefault().get());
         gbh.addLabelFieldPair(connectionPanel, fileDatabaseButton, fileDatabaseField, null, false, true);
         gbh.addLabelFieldPair(connectionPanel, bundleString("SessionName"), sessionField, null, true, false, 2);
-        gbh.addLabelFieldPair(connectionPanel, bundleString("Host"), hostField, null, false, false);
+        gbh.nextCol();
+        label = new JLabel(bundleString("ConfigFile"));
+        connectionPanel.add(label, gbh.setLabelDefault().get());
+        gbh.addLabelFieldPair(connectionPanel, fileConfButton, fileConfField, null, false, false);
+        connectionPanel.add(buildConfigButton, gbh.nextCol().setLabelDefault().fillHorizontally().get());
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Host"), hostField, null, true, false, 2);
         gbh.addLabelFieldPair(connectionPanel, bundleString("Port"), portField, null, false, true);
         gbh.addLabelFieldPair(connectionPanel, bundleString("Username"), userField, null, true, false, 2);
         gbh.addLabelFieldPair(connectionPanel, bundleString("Password"), passwordField, null, false, true);
         gbh.addLabelFieldPair(connectionPanel, bundleString("Charset"), charsetCombo, null, true, true);
-        gbh.nextRowFirstCol();
-        connectionPanel.add(useBuildConfBox, gbh.setLabelDefault().get());
-        /*gbh.nextCol();
-        connectionPanel.add(newConfButton, gbh.setLabelDefault().get());*/
-        gbh.addLabelFieldPair(connectionPanel, fileConfButton, fileConfField, null, false, true);
         gbh.nextRowFirstCol();
         connectionPanel.add(logToFileBox, gbh.setLabelDefault().get());
         gbh.addLabelFieldPair(connectionPanel, fileLogButton, fileLogField, null, false, true);
@@ -508,8 +529,6 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
     }
 
     protected void setEnableElements() {
-        fileConfButton.setEnabled(useBuildConfBox.isSelected());
-        fileConfField.setEnabled(useBuildConfBox.isSelected());
         fileLogButton.setEnabled(logToFileBox.isSelected());
         fileLogField.setEnabled(logToFileBox.isSelected());
     }

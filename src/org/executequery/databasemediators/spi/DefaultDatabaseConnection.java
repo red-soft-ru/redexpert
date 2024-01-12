@@ -598,6 +598,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         copy.setTransactionIsolation(getTransactionIsolation());
         copy.setURL(getURL());
         copy.setUserName(getUserName());
+        copy.setCharset(getCharset());
 
         if (getJdbcProperties() != null) {
 
@@ -611,6 +612,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
             copy.setPassword(getPassword());
         }
+
 
         copy.setSshHost(getSshHost());
         copy.setSshTunnel(isSshTunnel());
@@ -626,6 +628,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         copy.setUseNewAPI(useNewAPI());
         copy.setMajorServerVersion(getMajorServerVersion());
         copy.setMinorServerVersion(getMinorServerVersion());
+        copy.setPathToTraceConfig(getPathToTraceConfig());
         return copy;
     }
 

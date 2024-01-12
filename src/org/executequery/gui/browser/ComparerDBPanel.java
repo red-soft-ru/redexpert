@@ -111,8 +111,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
         isExtractMetadata = true;
         init();
 
-        dbTargetComboBox.setSelectedItem(dc.getName());
-        dbMasterComboBox.setSelectedItem(dc.getName());
+        if (dc != null) {
+            dbTargetComboBox.setSelectedItem(dc.getName());
+            dbMasterComboBox.setSelectedItem(dc.getName());
+        }
 
         attributesCheckBoxMap.values().forEach(checkBox -> checkBox.setSelected(true));
     }

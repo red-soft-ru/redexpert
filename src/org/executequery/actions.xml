@@ -602,13 +602,13 @@
             execute-class="org.executequery.actions.databasecommands.CreateSequenceCommand"/>
 
     <action id="generate-scripts-command"
-            name="Generate SQL Scripts"
+            name="Extract database metadata"
             mnemonic="S"
             accel-editable="true"
             small-icon="/org/executequery/icons/CreateScripts16.png"
             large-icon="/org/executequery/icons/CreateScripts24.png"
-            description="Generates SQL CREATE TABLE scripts"
-            execute-class="org.executequery.actions.databasecommands.GenerateScriptsCommand"/>
+            description="Extract database metadata into SQL script"
+            execute-class="org.executequery.actions.toolscommands.ExportDbMetadataCommands"/>
 
     <action id="help-command"
             name="Help Topics"

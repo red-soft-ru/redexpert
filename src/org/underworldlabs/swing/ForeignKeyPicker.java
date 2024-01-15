@@ -112,6 +112,7 @@ public class ForeignKeyPicker extends JPanel
     }
 
     private ResultSetTable getCreateTable() {
+        selectedIndex = -1;
         foreignTable = new ResultSetTable() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -138,28 +139,37 @@ public class ForeignKeyPicker extends JPanel
         } else {
             foreignTable.setTableColumnWidth(SystemProperties.getIntProperty("user", "results.table.column.width"));
         }
-        for (int row = 0; row < foreignTable.getRowCount(); row++) {
-
-            int matchCounter = 0;
-            for (int col : selectedValues.keySet()) {
-
-                RecordDataItem value = (RecordDataItem) foreignTable.getValueAt(row, foreignTable.getColumn(foreignKeysNames.get(col)).getModelIndex());
-                if (value.getValue() != null)
-                    if (value.getValue() instanceof Number && selectedValues.get(col) != null) {
-                        if (value.getValue().toString().contentEquals(selectedValues.get(col)))
-                            matchCounter++;
-                        else break;
-                    } else {
-                        if (value.getValue().equals(selectedValues.get(col)))
-                            matchCounter++;
-                        else break;
-                    }
-                else break;
-            }
-
-            if (matchCounter == selectedValues.size()) {
-                selectedIndex = row;
+        boolean notSelected = true;
+        for (String s : selectedValues.values()) {
+            if (s != null) {
+                notSelected = false;
                 break;
+            }
+        }
+        if (!notSelected) {
+            for (int row = 0; row < foreignTable.getRowCount(); row++) {
+
+                int matchCounter = 0;
+                for (int col : selectedValues.keySet()) {
+
+                    RecordDataItem value = (RecordDataItem) foreignTable.getValueAt(row, foreignTable.getColumn(foreignKeysNames.get(col)).getModelIndex());
+                    if (value.getValue() != null)
+                        if (value.getValue() instanceof Number && selectedValues.get(col) != null) {
+                            if (value.getValue().toString().contentEquals(selectedValues.get(col)))
+                                matchCounter++;
+                            else break;
+                        } else {
+                            if (value.getValue().equals(selectedValues.get(col)))
+                                matchCounter++;
+                            else break;
+                        }
+                    else break;
+                }
+
+                if (matchCounter == selectedValues.size()) {
+                    selectedIndex = row;
+                    break;
+                }
             }
 
         }
@@ -218,11 +228,9 @@ public class ForeignKeyPicker extends JPanel
                 foreignTable.setRowSelectionInterval(selectedIndex, selectedIndex);
                 foreignTable.scrollRectToVisible(new Rectangle(foreignTable.getCellRect(selectedIndex, 0, true)));
             }
-
             int defaultX = this.toggleButton.getLocationOnScreen().x + this.toggleButton.getBounds().width - this.popup.getBounds().width - 2;
             int defaultY = this.toggleButton.getLocationOnScreen().y + this.toggleButton.getBounds().height + 2;
             setPopupLocation(this.popup, defaultX, defaultY, this, this.textField);
-
             popup.show();
             editorPanel.requestFocus();
         }

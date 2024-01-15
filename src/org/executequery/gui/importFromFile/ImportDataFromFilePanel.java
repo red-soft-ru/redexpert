@@ -20,9 +20,7 @@ import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
-import org.underworldlabs.swing.BackgroundProgressDialog;
-import org.underworldlabs.swing.DefaultProgressDialog;
-import org.underworldlabs.swing.FlatSplitPane;
+import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -35,6 +33,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
@@ -96,16 +96,16 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private JButton browseDataFileButton;
     private JButton browseLobFileButton;
-    private JButton readFileButton;
     private JButton startImportButton;
 
-    private DefaultProgressDialog progressDialog;
+    private JLabel progressLabel;
 
     // ---
 
     private DefaultDatabaseHost targetHost;
     private ImportHelper importHelper;
     private List<String> sourceHeaders;
+    private boolean isCancel;
     private String pathToFile;
     private String pathToLob;
     private String fileName;
@@ -219,14 +219,12 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         browseLobFileButton = WidgetFactory.createButton("browseLobFileButton", bundleString("BrowseButtonText"));
         browseLobFileButton.addActionListener(e -> browseFile(lobFileField));
 
-        readFileButton = WidgetFactory.createButton("readFileButton", bundleString("ReadFileButtonText"));
-        readFileButton.addActionListener(e -> previewSourceFile(true));
-
         startImportButton = WidgetFactory.createButton("startImportButton", bundleString("StartImportButtonText"));
         startImportButton.addActionListener(e -> {
 
             if (startImportButton.getText().equals(Bundles.getCommon("cancel.button"))) {
-                progressDialog.setCancel();
+                startImportButton.setEnabled(false);
+                isCancel = true;
                 return;
             }
 
@@ -246,10 +244,25 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         xlsxPropsPanel = new JPanel(new GridBagLayout());
         xlsxPropsPanel.setVisible(false);
 
-        // --- other ---
+        // --- fields ---
 
         fileNameField = WidgetFactory.createTextField("fileNameField");
+        fileNameField.setPreferredSize(browseDataFileButton.getPreferredSize());
+        fileNameField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == KeyEvent.VK_ENTER)
+                    previewSourceFile(true);
+            }
+        });
+
         lobFileField = WidgetFactory.createTextField("lobFileField");
+        lobFileField.setPreferredSize(browseLobFileButton.getPreferredSize());
+
+        // ---
+
+        progressLabel = new JLabel();
+        progressLabel.setVisible(false);
 
         // ---
 
@@ -291,30 +304,29 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         JPanel selectFilePanel = new JPanel(new GridBagLayout());
 
         gridBagHelper = new GridBagHelper().setInsets(0, 0, 5, 5).anchorNorthWest();
-        selectFilePanel.add(new JLabel(bundleString("fileNameFieldLabel")), gridBagHelper.setMinWeightX().get());
-        selectFilePanel.add(fileNameField, gridBagHelper.nextCol().fillHorizontally().setMaxWeightX().get());
-        selectFilePanel.add(browseDataFileButton, gridBagHelper.nextCol().setMinWeightX().get());
-        selectFilePanel.add(readFileButton, gridBagHelper.nextCol().setInsets(0, 0, 0, 0).setHeight(2).fillVertical().spanY().get());
-        selectFilePanel.add(new JLabel(bundleString("lobFileFieldLabel")), gridBagHelper.nextRowFirstCol().setHeight(1).setInsets(0, 0, 5, 0).setMinWeightX().get());
-        selectFilePanel.add(lobFileField, gridBagHelper.nextCol().fillHorizontally().setMaxWeightX().get());
-        selectFilePanel.add(browseLobFileButton, gridBagHelper.nextCol().setMinWeightX().get());
+        selectFilePanel.add(new JLabel(bundleString("fileNameFieldLabel")), gridBagHelper.topGap(3).setMinWeightX().get());
+        selectFilePanel.add(fileNameField, gridBagHelper.topGap(0).nextCol().fillHorizontally().setMaxWeightX().get());
+        selectFilePanel.add(browseDataFileButton, gridBagHelper.nextCol().rightGap(0).bottomGap(0).setMinWeightX().get());
+        selectFilePanel.add(new JLabel(bundleString("lobFileFieldLabel")), gridBagHelper.nextRowFirstCol().setHeight(1).topGap(3).rightGap(5).setMinWeightX().get());
+        selectFilePanel.add(lobFileField, gridBagHelper.nextCol().topGap(0).bottomGap(0).fillHorizontally().setMaxWeightX().get());
+        selectFilePanel.add(browseLobFileButton, gridBagHelper.nextCol().rightGap(0).setMinWeightX().get());
 
         // --- file preview panel ---
 
         gridBagHelper = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest();
         importFilePanel.add(selectFilePanel, gridBagHelper.fillHorizontally().spanX().get());
         importFilePanel.add(filePreviewScrollPane, gridBagHelper.nextRowFirstCol().fillBoth().setMaxWeightY().spanX().get());
-        importFilePanel.add(firstRowIsNamesCheck, gridBagHelper.nextRowFirstCol().setMaxWeightX().setMinWeightY().setWidth(1).get());
-        importFilePanel.add(csvPropsPanel, gridBagHelper.nextCol().spanX().setMinWeightX().get());
+        importFilePanel.add(firstRowIsNamesCheck, gridBagHelper.nextRowFirstCol().leftGap(0).setMaxWeightX().setMinWeightY().setWidth(1).get());
+        importFilePanel.add(csvPropsPanel, gridBagHelper.nextCol().leftGap(5).spanX().setMinWeightX().get());
         importFilePanel.add(xlsxPropsPanel, gridBagHelper.get());
 
         // --- connection preview panel ---
 
         gridBagHelper = new GridBagHelper().fillHorizontally().setInsets(5, 5, 5, 5).anchorNorthWest();
-        importConnectionPanel.add(new JLabel(bundleString("sourceConnectionLabel")), gridBagHelper.setMinWeightX().get());
-        importConnectionPanel.add(sourceConnectionsCombo, gridBagHelper.nextCol().setMaxWeightX().get());
-        importConnectionPanel.add(new JLabel(bundleString("sourceTableLabel")), gridBagHelper.setMinWeightX().nextCol().get());
-        importConnectionPanel.add(sourceTableCombo, gridBagHelper.nextCol().setMaxWeightX().get());
+        importConnectionPanel.add(new JLabel(bundleString("sourceConnectionLabel")), gridBagHelper.topGap(8).setMinWeightX().get());
+        importConnectionPanel.add(sourceConnectionsCombo, gridBagHelper.nextCol().setMaxWeightX().topGap(5).get());
+        importConnectionPanel.add(new JLabel(bundleString("sourceTableLabel")), gridBagHelper.setMinWeightX().topGap(8).nextCol().get());
+        importConnectionPanel.add(sourceTableCombo, gridBagHelper.nextCol().topGap(5).setMaxWeightX().get());
         importConnectionPanel.add(connectionPreviewScrollPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
         // --- start import panel ---
@@ -322,9 +334,8 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         JPanel startImportPanel = new JPanel(new GridBagLayout());
 
         gridBagHelper = new GridBagHelper().fillBoth().anchorNorthWest();
-        startImportPanel.add(importFromConnectionCheck, gridBagHelper.nextRowFirstCol().setMaxWeightX().get());
-        startImportPanel.add(startImportButton, gridBagHelper.nextCol().anchorNorthEast().setHeight(2).spanX().spanY().setMinWeightX().get());
-        startImportPanel.add(eraseTableCheck, gridBagHelper.nextRowFirstCol().anchorNorthWest().setMaxWeightX().setWidth(1).setHeight(1).get());
+        startImportPanel.add(eraseTableCheck, gridBagHelper.setMaxWeightX().get());
+        startImportPanel.add(startImportButton, gridBagHelper.nextCol().anchorNorthEast().spanX().setMinWeightX().get());
 
         // --- mapping panel ---
 
@@ -332,21 +343,22 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         mappingPanel.setBorder(BorderFactory.createTitledBorder(bundleString("MappingTableLabel")));
 
         gridBagHelper = new GridBagHelper().fillHorizontally().setInsets(5, 5, 5, 5).anchorNorthWest();
-        mappingPanel.add(new JLabel(bundleString("TargetConnectionLabel")), gridBagHelper.setMinWeightX().get());
-        mappingPanel.add(targetConnectionsCombo, gridBagHelper.nextCol().setMaxWeightX().get());
-        mappingPanel.add(new JLabel(bundleString("TargetTableLabel")), gridBagHelper.setMinWeightX().nextCol().get());
-        mappingPanel.add(targetTableCombo, gridBagHelper.nextCol().setMaxWeightX().get());
+        mappingPanel.add(new JLabel(bundleString("TargetConnectionLabel")), gridBagHelper.topGap(8).setMinWeightX().get());
+        mappingPanel.add(targetConnectionsCombo, gridBagHelper.nextCol().topGap(5).setMaxWeightX().get());
+        mappingPanel.add(new JLabel(bundleString("TargetTableLabel")), gridBagHelper.topGap(8).setMinWeightX().nextCol().get());
+        mappingPanel.add(targetTableCombo, gridBagHelper.nextCol().topGap(5).setMaxWeightX().get());
         mappingPanel.add(mappingTableScrollPane, gridBagHelper.nextRowFirstCol().setMaxWeightY().fillBoth().spanX().get());
-        mappingPanel.add(startImportPanel, gridBagHelper.nextRowFirstCol().setMinWeightY().spanX().get());
+        mappingPanel.add(startImportPanel, gridBagHelper.leftGap(2).nextRowFirstCol().setMinWeightY().spanX().get());
 
         // --- preview panel ---
 
         JPanel previewPanel = new JPanel(new GridBagLayout());
         previewPanel.setBorder(BorderFactory.createTitledBorder(bundleString("PreviewTableLabel")));
 
-        gridBagHelper = new GridBagHelper().fillHorizontally().setInsets(5, 5, 5, 5).anchorNorthWest();
-        previewPanel.add(importFilePanel, gridBagHelper.fillBoth().spanX().spanY().get());
-        previewPanel.add(importConnectionPanel, gridBagHelper.fillBoth().spanX().spanY().get());
+        gridBagHelper = new GridBagHelper().fillHorizontally().setInsets(5, 5, 5, 0).anchorNorthWest();
+        previewPanel.add(importFromConnectionCheck, gridBagHelper.spanX().get());
+        previewPanel.add(importFilePanel, gridBagHelper.setInsets(5, 5, 0, 5).nextRowFirstCol().fillBoth().spanX().spanY().get());
+        previewPanel.add(importConnectionPanel, gridBagHelper.get());
 
         // --- split pane ---
 
@@ -357,10 +369,14 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         JPanel bottomPanel = new JPanel(new GridBagLayout());
 
-        gridBagHelper = new GridBagHelper().fillHorizontally().setInsets(5, 5, 5, 5).anchorNorthWest();
-        gridBagHelper.addLabelFieldPair(bottomPanel, bundleString("FirstNumericSelectorsLabel"), firstImportedRowSelector, null, false, false);
-        gridBagHelper.addLabelFieldPair(bottomPanel, bundleString("LastNumericSelectorsLabel"), lastImportedRowSelector, null, false, false);
-        gridBagHelper.addLabelFieldPair(bottomPanel, bundleString("CommitSelectorLabel"), commitStepSelector, null, false, true);
+        gridBagHelper = new GridBagHelper().fillHorizontally().setInsets(3, 8, 0, 5).anchorNorthWest();
+        bottomPanel.add(new JLabel(bundleString("FirstNumericSelectorsLabel")), gridBagHelper.setMinWeightX().get());
+        bottomPanel.add(firstImportedRowSelector, gridBagHelper.nextCol().rightGap(10).setMaxWeightX().get());
+        bottomPanel.add(new JLabel(bundleString("LastNumericSelectorsLabel")), gridBagHelper.nextCol().rightGap(0).setMinWeightX().get());
+        bottomPanel.add(lastImportedRowSelector, gridBagHelper.nextCol().rightGap(10).setMaxWeightX().get());
+        bottomPanel.add(new JLabel(bundleString("CommitSelectorLabel")), gridBagHelper.nextCol().rightGap(0).setMinWeightX().get());
+        bottomPanel.add(commitStepSelector, gridBagHelper.nextCol().rightGap(10).setMaxWeightX().get());
+        bottomPanel.add(progressLabel, gridBagHelper.nextCol().rightGap(3).spanX().setMinWeightX().get());
 
         // --- panels settings ---
 
@@ -619,40 +635,38 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
         // -- start import
 
-        progressDialog = new BackgroundProgressDialog(bundleString("ExecutingProgressDialog"));
+        isCancel = false;
         pathToLob = !lobFileField.getText().trim().isEmpty() ? lobFileField.getText().trim() : null;
 
         SwingWorker worker = new SwingWorker("ImportData") {
 
             private final ImportHelper thisImportHelper = getImportHelper(fileType);
-            private int addedRecordsCount = 0;
 
             @Override
             public Object construct() {
 
+                progressLabel.setVisible(true);
                 startImportButton.setText(Bundles.getCommon("cancel.button"));
 
                 if (eraseTableCheck.isSelected())
                     eraseTable(Objects.requireNonNull(targetTableCombo.getSelectedItem()).toString());
-                thisImportHelper.importData(progressDialog, sourceColumnList, valuesIndexes, insertStatement, executor);
+                thisImportHelper.importData(sourceColumnList, valuesIndexes, insertStatement, executor);
 
-                addedRecordsCount = thisImportHelper.getAddedRecordsCount();
                 return null;
             }
 
             @Override
             public void finished() {
 
-                if (progressDialog != null)
-                    progressDialog.dispose();
-
+                progressLabel.setVisible(false);
+                startImportButton.setEnabled(true);
                 startImportButton.setText(bundleString("StartImportButtonText"));
-                GUIUtilities.displayInformationMessage(bundleString("ImportDataFinished", addedRecordsCount));
+
+                GUIUtilities.displayInformationMessage(bundleString("ImportDataFinished", thisImportHelper.getAddedRecordsCount()));
             }
         };
 
         worker.start();
-        progressDialog.run();
     }
 
     // --- helper methods ---
@@ -875,12 +889,23 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
         return sheetNumberSpinner;
     }
 
-    public DefaultProgressDialog getProgressDialog() {
-        return progressDialog;
-    }
-
     public String getFileName() {
         return fileName;
+    }
+
+    public boolean isCancel() {
+        return isCancel;
+    }
+
+    public void setProgressLabel(String text) {
+
+        FontMetrics fontMetrics = progressLabel.getFontMetrics(progressLabel.getFont());
+
+        progressLabel.setText(text);
+        progressLabel.setPreferredSize(new Dimension(
+                fontMetrics.stringWidth(text),
+                fontMetrics.getHeight()
+        ));
     }
 
     // ---

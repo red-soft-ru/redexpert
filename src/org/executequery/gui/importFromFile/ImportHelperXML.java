@@ -2,7 +2,6 @@ package org.executequery.gui.importFromFile;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.DefaultProgressDialog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -32,8 +31,7 @@ public class ImportHelperXML extends AbstractImportHelper {
             int firstRow,
             int lastRow,
             int batchStep,
-            JTable mappingTable,
-            DefaultProgressDialog progressDialog) throws Exception {
+            JTable mappingTable) throws Exception {
 
         Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File(pathToFile));
         document.getDocumentElement().normalize();
@@ -54,7 +52,7 @@ public class ImportHelperXML extends AbstractImportHelper {
                     cellsValues.put(cell.getNodeName(), cell.getFirstChild().getNodeValue());
             }
 
-            if (progressDialog.isCancel() || linesCount > lastRow)
+            if (parent.isCancel() || linesCount > lastRow)
                 break;
 
             if (linesCount < firstRow) {
@@ -105,7 +103,7 @@ public class ImportHelperXML extends AbstractImportHelper {
             }
             insertStatement.addBatch();
 
-            progressDialog.setInformationLabelText(String.format(bundleString("RecordsAddedLabel"), executorIndex));
+            parent.setProgressLabel(String.format(bundleString("RecordsAddedLabel"), executorIndex));
             if (executorIndex % batchStep == 0 && executorIndex != 0) {
                 insertStatement.executeBatch();
                 executor.getConnection().commit();

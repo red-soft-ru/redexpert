@@ -6,7 +6,6 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.DefaultProgressDialog;
 
 import javax.swing.*;
 import java.io.File;
@@ -16,7 +15,9 @@ import java.nio.file.Paths;
 import java.sql.PreparedStatement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ImportHelperXLSX extends AbstractImportHelper {
 
@@ -33,8 +34,7 @@ public class ImportHelperXLSX extends AbstractImportHelper {
             int firstRow,
             int lastRow,
             int batchStep,
-            JTable mappingTable,
-            DefaultProgressDialog progressDialog) throws Exception {
+            JTable mappingTable) throws Exception {
 
         XSSFWorkbook workbook = new XSSFWorkbook(Files.newInputStream(Paths.get(pathToFile)));
         XSSFSheet sheet = workbook.getSheetAt(parent.getSheetNumber() - 1);
@@ -44,7 +44,7 @@ public class ImportHelperXLSX extends AbstractImportHelper {
 
         for (int rowIndex = 0; rowIndex < sheet.getLastRowNum(); rowIndex++) {
 
-            if (progressDialog.isCancel() || linesCount > lastRow)
+            if (parent.isCancel() || linesCount > lastRow)
                 break;
 
             if (linesCount < firstRow) {
@@ -105,7 +105,7 @@ public class ImportHelperXLSX extends AbstractImportHelper {
             }
             insertStatement.addBatch();
 
-            progressDialog.setInformationLabelText(String.format(bundleString("RecordsAddedLabel"), executorIndex));
+            parent.setProgressLabel(String.format(bundleString("RecordsAddedLabel"), executorIndex));
             if (executorIndex % batchStep == 0 && executorIndex != 0) {
                 insertStatement.executeBatch();
                 executor.getConnection().commit();

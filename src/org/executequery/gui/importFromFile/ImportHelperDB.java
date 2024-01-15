@@ -9,7 +9,6 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
 import org.executequery.gui.resultset.ResultSetColumnHeader;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
-import org.underworldlabs.swing.DefaultProgressDialog;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -42,8 +41,7 @@ public class ImportHelperDB extends AbstractImportHelper {
             int firstRow,
             int lastRow,
             int batchStep,
-            JTable mappingTable,
-            DefaultProgressDialog progressDialog) throws Exception {
+            JTable mappingTable) throws Exception {
 
         String[] sourceFields = sourceColumnList.toString().split(",");
         int executorIndex = 0;
@@ -58,7 +56,7 @@ public class ImportHelperDB extends AbstractImportHelper {
 
         while (sourceFileData.next()) {
 
-            if (progressDialog.isCancel() || linesCount > lastRow)
+            if (parent.isCancel() || linesCount > lastRow)
                 break;
 
             if (linesCount < firstRow) {
@@ -90,7 +88,7 @@ public class ImportHelperDB extends AbstractImportHelper {
             }
             insertStatement.addBatch();
 
-            progressDialog.setInformationLabelText(String.format(bundleString("RecordsAddedLabel"), executorIndex));
+            parent.setProgressLabel(String.format(bundleString("RecordsAddedLabel"), executorIndex));
             if (executorIndex % batchStep == 0 && executorIndex != 0) {
                 insertStatement.executeBatch();
                 executor.getConnection().commit();

@@ -3,7 +3,6 @@ package org.executequery.gui.importFromFile;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.DefaultProgressDialog;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.util.MiscUtils;
 
@@ -41,8 +40,7 @@ class ImportHelperCSV extends AbstractImportHelper {
             int firstRow,
             int lastRow,
             int batchStep,
-            JTable mappingTable,
-            DefaultProgressDialog progressDialog) throws Exception {
+            JTable mappingTable) throws Exception {
 
         Statement sourceFileStatement = getCreateStatement();
         if (sourceFileStatement == null)
@@ -56,7 +54,7 @@ class ImportHelperCSV extends AbstractImportHelper {
         ResultSet sourceFileData = sourceFileStatement.executeQuery(sourceSelectQuery);
         while (sourceFileData.next()) {
 
-            if (progressDialog.isCancel() || linesCount > lastRow)
+            if (parent.isCancel() || linesCount > lastRow)
                 break;
 
             if (linesCount < firstRow) {
@@ -105,7 +103,7 @@ class ImportHelperCSV extends AbstractImportHelper {
             }
             insertStatement.addBatch();
 
-            progressDialog.setInformationLabelText(String.format(bundleString("RecordsAddedLabel"), executorIndex));
+            parent.setProgressLabel(String.format(bundleString("RecordsAddedLabel"), executorIndex));
             if (executorIndex % batchStep == 0 && executorIndex != 0) {
                 insertStatement.executeBatch();
                 executor.getConnection().commit();

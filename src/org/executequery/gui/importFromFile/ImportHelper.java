@@ -1,17 +1,14 @@
 package org.executequery.gui.importFromFile;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.underworldlabs.swing.DefaultProgressDialog;
 
 import javax.swing.*;
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.util.List;
 
 interface ImportHelper {
 
     void importData(
-            DefaultProgressDialog progressDialog,
             StringBuilder sourceColumnList,
             boolean[] valuesIndexes,
             PreparedStatement insertStatement,
@@ -26,8 +23,7 @@ interface ImportHelper {
             int firstRow,
             int lastRow,
             int batchStep,
-            JTable mappingTable,
-            DefaultProgressDialog progressDialog
+            JTable mappingTable
     ) throws Exception;
 
     List<String> getPreviewData() throws Exception;

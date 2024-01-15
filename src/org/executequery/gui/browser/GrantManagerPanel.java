@@ -262,6 +262,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
         tags.add(NamedObject.META_TYPES[NamedObject.SYSTEM_ROLE]);
 
         getUserList(tags);
+        userListModel.addElement(getCreateUser("PUBLIC"));
     }
 
     private void getViews() {
@@ -318,8 +319,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
             for (NamedObject object : list)
                 userListModel.addElement(object);
         }
-
-        userListModel.addElement(getCreateUser("PUBLIC"));
     }
 
     private void loadUserList() {

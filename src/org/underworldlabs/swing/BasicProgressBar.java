@@ -27,10 +27,6 @@ public class BasicProgressBar extends JProgressBar implements ProgressBar {
     private static final int MIN_VALUE = 0;
     private static final int MAX_VALUE = 100;
 
-    public BasicProgressBar() {
-        this(true);
-    }
-
     public BasicProgressBar(boolean paintBorder) {
         super(MIN_VALUE, MAX_VALUE);
         setIndeterminate(true);
@@ -39,14 +35,17 @@ public class BasicProgressBar extends JProgressBar implements ProgressBar {
         }
     }
 
+    @Override
     public void start() {
         setValue(MIN_VALUE);
     }
 
+    @Override
     public void stop() {
         setValue(MAX_VALUE);
     }
 
+    @Override
     public void cleanup() {
         setValue(MAX_VALUE);
     }
@@ -55,9 +54,14 @@ public class BasicProgressBar extends JProgressBar implements ProgressBar {
     public void fillWhenStopped() {
     }
 
+    @Override
+    public void setLabel(String text) {
+        setString(text);
+    }
+
+    @Override
+    public void resetLabel() {
+        setString("");
+    }
 
 }
-
-
-
-

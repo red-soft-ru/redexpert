@@ -24,8 +24,6 @@ import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * @author Takis Diakoumis
@@ -33,93 +31,81 @@ import java.awt.event.ActionListener;
 public class IndeterminateProgressBar extends JComponent
         implements Runnable, ProgressBar {
 
-    private Color scrollbarColour;
+    private final int scrollWidth;
+    private final boolean paintBorder;
+    private final Color scrollbarColour;
 
-    private int scrollerWidth;
-    private int animationOffset;
-
+    private String label;
+    private boolean isStopped;
     private boolean inProgress;
-    private boolean paintBorder;
-
-    private boolean stopped;
+    private int animationOffset;
     private boolean fillWhenStopped;
 
     private Timer timer;
 
-    public IndeterminateProgressBar() {
-        this(true);
-    }
-
     public IndeterminateProgressBar(boolean paintBorder) {
 
-        inProgress = false;
-        scrollerWidth = 20;
+        this.isStopped = true;
+        this.inProgress = false;
         this.paintBorder = paintBorder;
 
-        animationOffset = scrollerWidth * -1;
-        Color foregroundColour = UIManager.getColor("ProgressBar.foreground");
+        this.scrollWidth = 20;
+        this.animationOffset = scrollWidth * -1;
 
-        if (UIUtils.isNativeMacLookAndFeel()) {
-            foregroundColour = UIManager.getColor("Focus.color");
-        }
-
-        setScrollbarColour(foregroundColour);
+        this.scrollbarColour = UIUtils.isNativeMacLookAndFeel() ?
+                UIManager.getColor("Focus.color") :
+                UIManager.getColor("ProgressBar.foreground");
 
         createTimer();
     }
 
-    private void createTimer() {
-        timer = new Timer(25, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                run();
-            }
-        });
-        timer.setInitialDelay(0);
-    }
-
+    @Override
     public void run() {
+
         animationOffset++;
         repaint();
-        if (animationOffset >= 0) {
-            animationOffset = scrollerWidth * -1;
-        }
+
+        if (animationOffset >= 0)
+            animationOffset = scrollWidth * -1;
     }
 
-    public void stop() {
-        if (hasTimer()) {
-            timer.stop();
-        }
-        inProgress = false;
-        stopped = true;
-        repaint();
-    }
-
-    private boolean hasTimer() {
-        return timer != null;
-    }
-
+    @Override
     public void start() {
-        if (!hasTimer()) {
+
+        if (!hasTimer())
             createTimer();
-        }
-        timer.start();
+
         inProgress = true;
+        isStopped = false;
+        timer.start();
         repaint();
     }
 
+    @Override
+    public void stop() {
+
+        if (hasTimer())
+            timer.stop();
+
+        inProgress = false;
+        isStopped = true;
+        repaint();
+    }
+
+    @Override
     public void cleanup() {
         if (hasTimer()) {
             timer.stop();
+            timer = null;
         }
-        timer = null;
     }
 
     @Override
     public int getHeight() {
-
         return (int) Math.max(super.getHeight(), getPreferredSize().getHeight());
     }
 
+    @Override
     public void paintComponent(Graphics g) {
 
         UIUtils.antialias(g);
@@ -131,52 +117,41 @@ public class IndeterminateProgressBar extends JComponent
         int y4 = height - 3;
 
         if (paintBorder) {
-
-            // draw the line border
-            g.setColor(getScrollbarColour());
+            g.setColor(scrollbarColour);
             g.drawRect(0, 0, width - 2, height - 2);
             width--;
-
-        } else {
-
-            // draw the default border
-//            paintBorder(g);
-//            y1 = height;
-//            y4 = height - 1;
         }
 
         if (!inProgress) {
 
-            if (stopped && fillWhenStopped) {
-
-                g.setColor(getScrollbarColour());
+            if (isStopped && fillWhenStopped) {
+                g.setColor(scrollbarColour);
                 g.fillRect(0, 0, width, height);
             }
 
+            drawLabel(g, width - 2, height - 2);
             return;
         }
 
         // set the polygon points
-        int[] xPosns = {0, 0, 0, 0};
-        int[] yPosns = {y1, 1, 1, y1};
+        int[] xPos = {0, 0, 0, 0};
+        int[] yPos = {y1, 1, 1, y1};
 
         // constrain the clip
-        //g.setClip(1, 1, width - 3, y4);
         g.setClip(0, 1, width, y4);
+        g.setColor(hasLabel() ? scrollbarColour.brighter() : scrollbarColour);
 
-        g.setColor(getScrollbarColour());
+        for (int i = 0, k = width + scrollWidth; i < k; i += scrollWidth) {
 
-        for (int i = 0, k = width + scrollerWidth; i < k; i += scrollerWidth) {
+            xPos[0] = i + animationOffset;
+            xPos[1] = xPos[0] + (scrollWidth / 2);
+            xPos[2] = xPos[0] + scrollWidth;
+            xPos[3] = xPos[1];
 
-            xPosns[0] = i + animationOffset;
-            xPosns[1] = xPosns[0] + (scrollerWidth / 2);
-            xPosns[2] = xPosns[0] + scrollerWidth;
-            xPosns[3] = xPosns[1];
-
-            g.fillPolygon(xPosns, yPosns, 4);
-
+            g.fillPolygon(xPos, yPos, 4);
         }
 
+        drawLabel(g, width - 2, height - 2);
     }
 
     @Override
@@ -184,14 +159,44 @@ public class IndeterminateProgressBar extends JComponent
         this.fillWhenStopped = true;
     }
 
-    public Color getScrollbarColour() {
-        return scrollbarColour;
+    @Override
+    public void setLabel(String label) {
+        this.label = label;
     }
 
-    public void setScrollbarColour(Color scrollbarColour) {
-        this.scrollbarColour = scrollbarColour;
+    @Override
+    public void resetLabel() {
+        this.label = null;
+    }
+
+    private void drawLabel(Graphics g, int containerWidth, int containerHeight) {
+
+        if (!hasLabel())
+            return;
+
+        Font font = UIManager.getDefaults().getFont("Label.font");
+        Color textColor = new JLabel().getForeground();
+        FontMetrics fontMetrics = g.getFontMetrics(font);
+
+        int x = (containerWidth - fontMetrics.stringWidth(label)) / 2;
+        int y = ((containerHeight - fontMetrics.getHeight()) / 2) + fontMetrics.getAscent();
+
+        g.setFont(font);
+        g.setColor(textColor);
+        g.drawString(label, x, y);
+    }
+
+    private void createTimer() {
+        timer = new Timer(25, e -> run());
+        timer.setInitialDelay(0);
+    }
+
+    private boolean hasTimer() {
+        return timer != null;
+    }
+
+    private boolean hasLabel() {
+        return label != null && !label.isEmpty();
     }
 
 }
-
-

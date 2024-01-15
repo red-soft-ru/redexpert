@@ -30,8 +30,8 @@ public interface ProgressBar {
 
     void fillWhenStopped();
 
+    void setLabel(String text);
+
+    void resetLabel();
+
 }
-
-
-
-

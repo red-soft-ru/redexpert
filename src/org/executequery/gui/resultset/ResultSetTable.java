@@ -281,6 +281,16 @@ public class ResultSetTable extends JTable implements StandardTable {
         copySelectedCells(',', false, true);
     }
 
+    public void copyColumnNames() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < getColumnCount(); i++) {
+            if (i != 0)
+                sb.append(",");
+            sb.append(getColumnName(i));
+        }
+        GUIUtilities.copyToClipBoard(sb.toString());
+    }
+
     public void copySelectedCellsAsCSVQuoted() {
         copySelectedCells(',', true, false);
     }

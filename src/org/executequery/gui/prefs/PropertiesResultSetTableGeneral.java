@@ -149,6 +149,13 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 bundledString("Right-alignNumericValues"),
                 Boolean.valueOf(stringUserProperty(key))));
 
+        key = "results.table.left.align.text";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("Left-alignTextValues"),
+                Boolean.valueOf(stringUserProperty(key))));
+
         key = "results.table.use.form.adding.deleting";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

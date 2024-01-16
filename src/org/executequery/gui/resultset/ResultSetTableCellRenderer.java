@@ -73,6 +73,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
     private boolean otherColorForNull;
     private boolean rightAlignNumeric;
+    private boolean leftAlignText;
 
     private DateTimeFormatter dateFormat;
     private DateTimeFormatter timeFormat;
@@ -121,7 +122,32 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 break;
 
             default:
+                //setHorizontalAlignment(SwingConstants.LEFT);
+                break;
+        }
+
+    }
+
+    private void alignText(Object value) {
+
+        RecordDataItem recordDataItem = (RecordDataItem) value;
+        if (recordDataItem == null || recordDataItem.isDisplayValueNull())
+            return;
+
+        int sqlType = recordDataItem.getDataType();
+        switch (sqlType) {
+
+            case Types.VARCHAR:
+            case Types.LONGNVARCHAR:
+            case Types.CHAR:
+            case Types.CLOB:
+            case Types.NCHAR:
+            case Types.NCLOB:
+            case Types.NVARCHAR:
                 setHorizontalAlignment(SwingConstants.LEFT);
+                break;
+
+            default:
                 break;
         }
 
@@ -180,6 +206,8 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 case Types.NVARCHAR:
                 case Types.CLOB:
                     color = charValueDisplayColor;
+                    if (leftAlignText)
+                        setHorizontalAlignment(SwingConstants.LEFT);
                     break;
 
                 case Types.BIT:
@@ -198,6 +226,8 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 case Types.REAL:
                 case Types.DOUBLE:
                     color = numericValueDisplayColor;
+                    if (rightAlignNumeric)
+                        setHorizontalAlignment(SwingConstants.RIGHT);
                     break;
 
                 case Types.DATE:
@@ -281,6 +311,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         rightAlignNumeric = SystemProperties.getBooleanProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.right.align.numeric");
+
+        leftAlignText = SystemProperties.getBooleanProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.left.align.text");
 
         nullValueDisplayColor = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.null.background.colour");
@@ -382,8 +415,10 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         isSelected = isSelected || row == table.getSelectedRow();
         formatValueForDisplay(value, isSelected);
 
-        if (rightAlignNumeric)
+        /*if (rightAlignNumeric)
             alignNumeric(value);
+        if (leftAlignText)
+            alignText(value);*/
 
         return this;
     }

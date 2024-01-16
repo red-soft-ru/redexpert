@@ -13,7 +13,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.NamedView;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.editor.QueryEditorResultsExporter;
+import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
@@ -802,12 +802,12 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     private void setDelimiterComboSelectedValue(@SuppressWarnings("SameParameterValue") String key, JComboBox combo) {
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(QueryEditorResultsExporter.getParametersSaverFilePath()))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(ExportDataPanel.getParametersSaverFilePath()))) {
 
             String line;
             while ((line = reader.readLine()) != null) {
 
-                String[] data = line.split(QueryEditorResultsExporter.getParametersSaverDelimiter());
+                String[] data = line.split(ExportDataPanel.getParametersSaverDelimiter());
                 if (data[0].equals(key)) {
                     if (data.length > 1)
                         combo.setSelectedItem(data[1]);

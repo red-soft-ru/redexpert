@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.UserPreferencesManager;
 import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.resultset.*;
 import org.executequery.localization.Bundles;
 import org.executequery.print.PrintingSupport;
@@ -265,14 +266,12 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         return (ResultSetTableModel) tableSorter.getReferencedTableModel();
     }
 
+    @SuppressWarnings("unused")
     public void exportSelection(ActionEvent e) {
 
         TableModel selected = table.selectedCellsAsTableModel();
-        if (selected != null) {
-            if (tableObject != null)
-                new QueryEditorResultsExporter(selected, tableObject.getName());
-            else new QueryEditorResultsExporter(selected, null);
-        }
+        if (selected != null)
+            new ExportDataPanel(selected, tableObject != null ? tableObject.getName() : null);
     }
 
     public void transposeRow(ActionEvent e) {
@@ -329,10 +328,12 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         table.copySelectedCellsAsCSVQuotedWithNames();
     }
 
+    @SuppressWarnings("unused")
     public void exportTable(ActionEvent e) {
         if (tableObject != null)
-            new QueryEditorResultsExporter(resultSetTableModel(), tableObject.getName(), tableObject.getColumns());
-        else new QueryEditorResultsExporter(resultSetTableModel(), null);
+            new ExportDataPanel(resultSetTableModel(), tableObject.getName(), tableObject.getColumns());
+        else
+            new ExportDataPanel(resultSetTableModel(), null);
     }
 
     public void printSelection(ActionEvent e) {

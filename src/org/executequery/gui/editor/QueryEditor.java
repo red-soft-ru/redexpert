@@ -33,6 +33,7 @@ import org.executequery.gui.FocusablePanel;
 import org.executequery.gui.SaveFunction;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.components.SelectConnectionsPanel;
+import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.gui.text.TextEditor;
@@ -605,7 +606,7 @@ public class QueryEditor extends DefaultTabView
             revalidate();
 
         } else
-            new QueryEditorResultsExporter(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
+            new ExportDataPanel(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
 
         return rowCount;
     }
@@ -622,7 +623,7 @@ public class QueryEditor extends DefaultTabView
             revalidate();
 
         } else
-            new QueryEditorResultsExporter(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
+            new ExportDataPanel(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
     }
 
     /**
@@ -636,7 +637,7 @@ public class QueryEditor extends DefaultTabView
         if (!executeToFileCheckBox.isSelected())
             resultsPanel.setResultSet(resultSet, true, getMaxRecords(), query);
         else
-            new QueryEditorResultsExporter(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
+            new ExportDataPanel(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
     }
 
     public void destroyTable() {

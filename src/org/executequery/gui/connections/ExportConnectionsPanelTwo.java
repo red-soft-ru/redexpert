@@ -110,7 +110,7 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
 
-        fileChooser.setDialogTitle(Bundles.get("QueryEditorResultsExporter.SelectExportFilePath"));
+        fileChooser.setDialogTitle(Bundles.get("ExportDataPanel.SelectExportFilePath"));
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
 
         int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), Bundles.get("common.select.button"));

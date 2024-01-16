@@ -22,19 +22,20 @@ package org.executequery.actions.othercommands;
 
 import org.executequery.GUIUtilities;
 import org.executequery.gui.editor.QueryEditor;
-import org.executequery.gui.editor.QueryEditorResultsExporter;
+import org.executequery.gui.exportData.ExportDataPanel;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 
 /**
- * The Expot Query Results command.
+ * The Export Table Data command.
  *
  * @author Takis Diakoumis
  */
-public class ExportResultsTableCommand extends AbstractBaseCommand {
+public class ExportDataCommand extends AbstractBaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
 
         JPanel panel = GUIUtilities.getSelectedCentralPane();
@@ -42,15 +43,11 @@ public class ExportResultsTableCommand extends AbstractBaseCommand {
 
             QueryEditor editor = (QueryEditor) panel;
             if (editor.isResultSetSelected()) {
-                new QueryEditorResultsExporter(editor.getResultSetTableModel(), null);
+                new ExportDataPanel(editor.getResultSetTableModel(), null);
 
-            } else {
-
+            } else
                 GUIUtilities.displayErrorMessage(bundledString("errorMessage"));
-            }
-
         }
     }
 
 }
-

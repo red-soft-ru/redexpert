@@ -494,7 +494,7 @@
             name="Export Result Set"
             accel-editable="false"
             small-icon="/org/executequery/icons/ExportDelimited16.png"
-            execute-class="org.executequery.actions.othercommands.ExportResultsTableCommand"/>
+            execute-class="org.executequery.actions.othercommands.ExportDataCommand"/>
 
     <action id="editor-show-hide-rs-columns-command"
             name="Visible Result Set Columns"

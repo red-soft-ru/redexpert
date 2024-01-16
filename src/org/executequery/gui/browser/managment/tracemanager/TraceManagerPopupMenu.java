@@ -1,6 +1,6 @@
 package org.executequery.gui.browser.managment.tracemanager;
 
-import org.executequery.gui.editor.QueryEditorResultsExporter;
+import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ReflectiveAction;
@@ -37,8 +37,9 @@ public class TraceManagerPopupMenu extends JPopupMenu implements MouseListener {
         return Bundles.get(ResultSetTablePopupMenu.class, key);
     }
 
+    @SuppressWarnings("unused")
     public void exportTable(ActionEvent e) {
-        new QueryEditorResultsExporter(table.getModel(), null);
+        new ExportDataPanel(table.getModel(), null);
     }
 
     private void maybeShowPopup(MouseEvent e) {

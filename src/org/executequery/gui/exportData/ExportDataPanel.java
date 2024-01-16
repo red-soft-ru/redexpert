@@ -18,46 +18,27 @@
  *
  */
 
-package org.executequery.gui.editor;
+package org.executequery.gui.exportData;
 
-import org.apache.poi.ss.SpreadsheetVersion;
 import org.executequery.ApplicationContext;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.Types;
-import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.importexport.DefaultExcelWorkbookBuilder;
-import org.executequery.gui.importexport.ExcelWorkbookBuilder;
 import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
-import org.executequery.gui.resultset.RecordDataItem;
-import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.AbstractBaseDialog;
-import org.underworldlabs.swing.DefaultProgressDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.SQLUtils;
 import org.underworldlabs.util.SystemProperties;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -66,8 +47,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
 
@@ -75,7 +54,7 @@ import java.util.*;
 /**
  * @author Takis Diakoumis
  */
-public class QueryEditorResultsExporter extends AbstractBaseDialog {
+public class ExportDataPanel extends AbstractBaseDialog {
 
     public static final String TITLE = bundleString("title");
 
@@ -119,11 +98,11 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private Map<String, Component> components;
     private static String columnDelimiterComboName = "";
 
-    public QueryEditorResultsExporter(TableModel exportTableModel, String tableNameForExport) {
+    public ExportDataPanel(TableModel exportTableModel, String tableNameForExport) {
         this(exportTableModel, tableNameForExport, null);
     }
 
-    public QueryEditorResultsExporter(TableModel exportTableModel, String tableNameForExport, List<DatabaseColumn> databaseColumns) {
+    public ExportDataPanel(TableModel exportTableModel, String tableNameForExport, List<DatabaseColumn> databaseColumns) {
 
         super(GUIUtilities.getParentFrame(), TITLE, true);
 
@@ -473,22 +452,39 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         updateFilePath(field, suffix);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void export() {
 
-        String exportFilePath = filePathField.getText();
-        String exportBlobPath = blobPathField.getText();
+        if (exportAllow()) {
 
+            ExportHelper exportHelper = getExportHelper();
+            if (exportHelper != null) {
+                exportHelper.export(exportTableModel);
+                GUIUtilities.displayInformationMessage(bundleString("ResultSetExportComplete"));
+                dispose();
+            }
+        }
+    }
+
+    // --- helper method ---
+
+    private boolean exportAllow() {
+
+        String exportFilePath = getFilePath();
+        String exportBlobPath = getBlobPath();
+
+        // export file defined
         if (MiscUtils.isNull(exportFilePath)) {
             GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
-            return;
+            return false;
         }
 
+        // blob file defined
         if (isContainsBlob() && MiscUtils.isNull(exportBlobPath)) {
             GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
-            return;
+            return false;
         }
 
+        // fields for export defined
         if (columnTable.getRowCount() > 0) {
 
             boolean selected = false;
@@ -501,10 +497,11 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
             if (!selected) {
                 GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAColumnToExportTo"));
-                return;
+                return false;
             }
         }
 
+        // overwrite export file check
         if (FileUtils.fileExists(exportFilePath)) {
 
             int result = GUIUtilities.displayYesNoDialog(
@@ -515,10 +512,11 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             if (result == JOptionPane.NO_OPTION) {
                 filePathField.selectAll();
                 filePathField.requestFocus();
-                return;
+                return false;
             }
         }
 
+        // overwrite blob file check
         if (isContainsBlob()) {
 
             if (!saveBlobsIndividuallyCheck.isSelected()) {
@@ -533,7 +531,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                     if (result == JOptionPane.NO_OPTION) {
                         blobPathField.selectAll();
                         blobPathField.requestFocus();
-                        return;
+                        return false;
                     }
                 }
 
@@ -543,482 +541,14 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 }
 
             } else
+                //noinspection ResultOfMethodCallIgnored
                 new File(exportBlobPath).mkdirs();
         }
 
-        SwingWorker worker = new SwingWorker("ExportFromResultSet") {
-
-            boolean success = false;
-
-            @Override
-            public Object construct() {
-
-                switch (getExportFileType()) {
-
-                    case ImportExportDataProcess.DELIMITED:
-                        success = exportCSV();
-                        break;
-
-                    case ImportExportDataProcess.EXCEL:
-                        success = exportXLSX();
-                        break;
-
-                    case ImportExportDataProcess.XML:
-                        success = exportXML();
-                        break;
-
-                    case ImportExportDataProcess.SQL:
-                        success = exportSQL();
-                        break;
-                }
-
-                return null;
-            }
-
-            @Override
-            public void finished() {
-                if (success)
-                    GUIUtilities.displayInformationMessage(bundleString("ResultSetExportComplete"));
-                dispose();
-            }
-        };
-        worker.start();
-    }
-
-    // --- export handlers ---
-
-    private boolean exportCSV() {
-
-        DefaultProgressDialog progressDialog = new DefaultProgressDialog(TITLE);
-        SwingWorker worker = new SwingWorker("ExportResultSet", this) {
-            @Override
-            public Object construct() {
-                try {
-
-                    String columnDelimiter = Objects.requireNonNull(columnDelimiterCombo.getSelectedItem()).toString();
-                    String endlReplacement = replaceEndlCheck.isSelected() ? replaceEndlField.getText().trim() : null;
-                    String nullReplacement = replaceNullCheck.isSelected() ? replaceNullField.getText().trim() : "";
-
-                    int rowCount = exportTableModel.getRowCount();
-                    int columnCount = exportTableModel.getColumnCount();
-
-                    StringBuilder resultText = new StringBuilder();
-                    PrintWriter writer = new PrintWriter(new FileWriter(filePathField.getText(), false), true);
-
-                    if (addColumnHeadersCheck.isSelected()) {
-
-                        for (int i = 0; i < columnCount; i++) {
-                            if (isFieldSelected(i)) {
-                                resultText.append(exportTableModel.getColumnName(i));
-                                resultText.append(columnDelimiter);
-                            }
-                        }
-                        resultText.deleteCharAt(resultText.length() - 1);
-
-                        writer.println(resultText);
-                        resultText.setLength(0);
-                    }
-
-                    for (int row = 0; row < rowCount; row++) {
-
-                        if (progressDialog.isCancel())
-                            break;
-
-                        for (int col = 0; col < columnCount; col++) {
-
-                            if (progressDialog.isCancel())
-                                break;
-
-                            if (!isFieldSelected(col))
-                                continue;
-
-                            String stringValue = null;
-                            RecordDataItem value = (RecordDataItem) exportTableModel.getValueAt(row, col);
-
-                            if (!value.isValueNull()) {
-                                stringValue = getFormattedValue(value, endlReplacement, nullReplacement);
-
-                                if (addQuotesCheck.isSelected() && !stringValue.isEmpty())
-                                    if (isCharType(value))
-                                        stringValue = "\"" + stringValue + "\"";
-
-                                if (isBlobType(value))
-                                    stringValue = writeBlobToFile((AbstractLobRecordDataItem) value, col, row);
-                            }
-
-                            resultText.append(stringValue != null ? stringValue : nullReplacement);
-                            resultText.append(columnDelimiter);
-                        }
-                        resultText.deleteCharAt(resultText.length() - 1);
-
-                        writer.println(resultText);
-                        resultText.setLength(0);
-                    }
-                    writer.close();
-
-                } catch (IOException e) {
-                    return displayErrorMessage(e);
-                }
-
-                return null;
-            }
-
-            @Override
-            public void finished() {
-                progressDialog.dispose();
-            }
-        };
-        worker.start();
-        progressDialog.run();
-
         return true;
     }
 
-    private boolean exportXLSX() {
-
-        DefaultProgressDialog progressDialog = new DefaultProgressDialog(TITLE);
-        SwingWorker worker = new SwingWorker("ExportResultSet", this) {
-            @Override
-            public Object construct() {
-                try {
-
-                    String nullReplacement = replaceNullCheck.isSelected() ? replaceNullField.getText().trim() : "";
-                    int columnCount = exportTableModel.getColumnCount();
-                    int rowCount = exportTableModel.getRowCount();
-
-                    if (rowCount > SpreadsheetVersion.EXCEL2007.getLastRowIndex()) {
-                        GUIUtilities.displayWarningMessage(String.format(bundleString("maxRowMessage"), SpreadsheetVersion.EXCEL2007.getLastRowIndex()));
-                        rowCount = SpreadsheetVersion.EXCEL2007.getLastRowIndex();
-                    }
-
-                    ExcelWorkbookBuilder builder = new DefaultExcelWorkbookBuilder();
-                    builder.createSheet("Result Set Export");
-
-                    if (addColumnHeadersCheck.isSelected()) {
-
-                        List<String> headers = new ArrayList<>();
-                        for (int i = 0; i < columnCount; i++)
-                            if (isFieldSelected(i))
-                                headers.add(exportTableModel.getColumnName(i));
-
-                        builder.addRowHeader(headers);
-                    }
-
-                    for (int row = 0; row < rowCount; row++) {
-
-                        if (progressDialog.isCancel())
-                            break;
-
-                        List<String> values = new ArrayList<>();
-                        for (int col = 0; col < columnCount; col++) {
-
-                            if (progressDialog.isCancel())
-                                break;
-
-                            if (!isFieldSelected(col))
-                                continue;
-
-                            String stringValue = null;
-                            RecordDataItem value = (RecordDataItem) exportTableModel.getValueAt(row, col);
-
-                            if (!value.isValueNull()) {
-                                stringValue = getFormattedValue(value, null, nullReplacement);
-
-                                if (isCharType(value))
-                                    stringValue = getFormattedValue(value, null, nullReplacement);
-                                else if (isBlobType(value))
-                                    stringValue = writeBlobToFile((AbstractLobRecordDataItem) value, col, row);
-                            }
-
-                            values.add(stringValue != null ? stringValue : nullReplacement);
-                        }
-
-                        builder.addRow(values);
-                    }
-
-                    OutputStream outputStream = new FileOutputStream(filePathField.getText(), false);
-                    builder.writeTo(outputStream);
-                    outputStream.close();
-
-                } catch (IOException e) {
-                    return displayErrorMessage(e);
-                }
-
-                return null;
-            }
-
-            @Override
-            public void finished() {
-                progressDialog.dispose();
-            }
-        };
-        worker.start();
-        progressDialog.run();
-
-        return true;
-    }
-
-    private boolean exportXML() {
-
-        String nullReplacement = replaceNullCheck.isSelected() ? replaceNullField.getText().trim() : "";
-        String outputPath = filePathField.getText();
-        int rowCount = exportTableModel.getRowCount();
-        int columnCount = exportTableModel.getColumnCount();
-
-        DefaultProgressDialog progressDialog = new DefaultProgressDialog(TITLE);
-        SwingWorker worker = new SwingWorker("ExportResultSet", this) {
-
-            @Override
-            public Object construct() {
-                try {
-
-                    Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-                    Element rootElement = document.createElement("result-set");
-                    document.appendChild(rootElement);
-
-                    if (exportTableModel instanceof ResultSetTableModel) {
-                        Element queryElement = document.createElement("query");
-                        queryElement.appendChild(document.createTextNode("\n" + ((ResultSetTableModel) exportTableModel).getQuery() + "\n"));
-                        rootElement.appendChild(queryElement);
-                    }
-
-                    List<String> exportData = new ArrayList<>();
-                    Element dataElement = document.createElement("data");
-
-                    for (int row = 0; row < rowCount; row++) {
-
-                        if (progressDialog.isCancel())
-                            break;
-
-                        Element rowElement = document.createElement("row");
-                        dataElement.appendChild(rowElement);
-
-                        Attr attribute = document.createAttribute("number");
-                        attribute.setValue(String.valueOf(row + 1));
-                        rowElement.setAttributeNode(attribute);
-
-                        dataElement.appendChild(rowElement);
-
-                        for (int col = 0; col < columnCount; col++) {
-
-                            if (progressDialog.isCancel())
-                                break;
-
-                            if (!isFieldSelected(col))
-                                continue;
-
-                            Element valueElement = document.createElement(exportTableModel.getColumnName(col));
-                            if (exportTableModel instanceof ResultSetTableModel) {
-
-                                RecordDataItem value = (RecordDataItem) exportTableModel.getValueAt(row, col);
-                                if (!value.isValueNull()) {
-
-                                    valueElement.appendChild(isBlobType(value) ?
-                                            document.createTextNode(writeBlobToFile((AbstractLobRecordDataItem) value, col, row)) :
-                                            document.createTextNode(value.toString())
-                                    );
-
-                                    String name = value.getName();
-                                    if (isCharType(value) && !exportData.contains(name))
-                                        exportData.add(name);
-
-                                } else
-                                    valueElement.appendChild(document.createTextNode(nullReplacement));
-
-                            } else {
-
-                                Object value = exportTableModel.getValueAt(row, col);
-                                valueElement.appendChild(value != null ?
-                                        document.createTextNode(value.toString()) :
-                                        document.createTextNode(nullReplacement)
-                                );
-                            }
-
-                            rowElement.appendChild(valueElement);
-                        }
-                    }
-                    rootElement.appendChild(dataElement);
-
-                    StringBuilder query = new StringBuilder("query");
-                    exportData.forEach(val -> query.append(" ").append(val));
-
-                    Transformer transformer = TransformerFactory.newInstance().newTransformer();
-                    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                    transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-                    transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, query.toString());
-                    transformer.transform(new DOMSource(document), new StreamResult(new File(outputPath)));
-
-                } catch (Exception e) {
-                    return displayErrorMessage(e);
-                }
-
-                return null;
-            }
-
-            @Override
-            public void finished() {
-                progressDialog.dispose();
-            }
-        };
-        worker.start();
-        progressDialog.run();
-
-        return true;
-    }
-
-    private boolean exportSQL() {
-
-        try {
-
-            StringBuilder result = new StringBuilder();
-
-            int rowCount = exportTableModel.getRowCount();
-            int columnCount = exportTableModel.getColumnCount();
-
-            String tableName = !exportTableNameField.getText().isEmpty() ?
-                    exportTableNameField.getText() :
-                    tableNameForExport;
-
-            DefaultProgressDialog progressDialog = new DefaultProgressDialog(TITLE);
-            SwingWorker worker = new SwingWorker("ExportResultSet", this) {
-
-                @Override
-                public Object construct() {
-
-                    try {
-
-                        // --- add 'create table' statement ---
-
-                        if (addCreateTableStatementCheck.isSelected()) {
-
-                            String createTableTemplate = "-- table creating --\n\n" +
-                                    (databaseColumns != null && !databaseColumns.isEmpty() ?
-                                            ((AbstractDatabaseObject) databaseColumns.get(0).getParent()).getCreateSQLText() :
-                                            SQLUtils.generateCreateTable(tableName, exportTableModel))
-                                    + "\n-- inserting data --\n";
-
-                            result.append(createTableTemplate);
-                        }
-
-                        // --- setup *.lob file ---
-
-                        if (!saveBlobsIndividuallyCheck.isSelected() && isContainsBlob())
-                            result.append("\nSET BLOBFILE '").append(blobPathField.getText().trim()).append("';\n");
-
-                        // --- create 'insert into' template ---
-
-                        StringBuilder insertTemplate = new StringBuilder();
-                        insertTemplate.append("\nINSERT INTO ").append(MiscUtils.getFormattedObject(tableName, null)).append("(");
-
-                        for (int col = 0; col < columnCount; col++) {
-
-                            if (!isFieldSelected(col))
-                                continue;
-
-                            insertTemplate.append("\n\t")
-                                    .append(MiscUtils.getFormattedObject(exportTableModel.getColumnName(col), null))
-                                    .append(",");
-                        }
-
-                        insertTemplate.deleteCharAt(insertTemplate.lastIndexOf(","));
-                        insertTemplate.append("\n) VALUES (%s\n);\n");
-
-                        // --- add values to script ---
-
-                        StringBuilder values = new StringBuilder();
-
-                        for (int row = 0; row < rowCount; row++) {
-
-                            if (progressDialog.isCancel())
-                                break;
-
-                            for (int col = 0; col < columnCount; col++) {
-
-                                if (progressDialog.isCancel())
-                                    break;
-
-                                if (!isFieldSelected(col))
-                                    continue;
-
-                                values.append("\n\t");
-
-                                Object value = exportTableModel.getValueAt(row, col);
-                                String stringValue = getFormattedValue(value, null, "");
-
-                                if (isBlobType(value)) {
-                                    if (saveBlobsIndividuallyCheck.isSelected())
-                                        values.append("?'").append(writeBlobToFile((AbstractLobRecordDataItem) value, col, row)).append("'");
-                                    else
-                                        values.append(writeBlobToFile((AbstractLobRecordDataItem) value, col, row));
-
-                                } else if (!stringValue.isEmpty()) {
-
-                                    if (value instanceof RecordDataItem) {
-
-                                        if (isCharType(value))
-                                            values.append("'").append(stringValue).append("'");
-                                        else if (isDateType(value))
-                                            values.append("'").append(stringValue.replace('T', ' ')).append("'");
-                                        else
-                                            values.append(stringValue);
-
-                                    } else {
-
-                                        if (exportTableModel.getColumnClass(col) == String.class)
-                                            values.append("'").append(stringValue).append("'");
-                                        else if (exportTableModel.getColumnClass(col) == Timestamp.class)
-                                            values.append("'").append(stringValue.replace('T', ' ')).append("'");
-                                        else
-                                            values.append(stringValue);
-                                    }
-                                } else
-                                    values.append("NULL");
-
-                                values.append(",");
-                            }
-                            values.deleteCharAt(values.lastIndexOf(","));
-                            result.append(String.format(insertTemplate.toString(), values));
-                            values.setLength(0);
-                        }
-                        progressDialog.dispose();
-
-                    } catch (Exception e) {
-                        displayErrorMessage(e);
-                    }
-
-                    return null;
-                }
-
-                @Override
-                public void finished() {
-                    progressDialog.dispose();
-                }
-            };
-            worker.start();
-            progressDialog.run();
-
-            String generatedSqlScript = result.toString().trim();
-            PrintWriter writer = new PrintWriter(new FileWriter(filePathField.getText(), false), true);
-            writer.println(generatedSqlScript);
-            writer.close();
-
-            if (openQueryEditorCheck.isSelected()) {
-                GUIUtilities.addCentralPane(
-                        QueryEditor.TITLE, QueryEditor.FRAME_ICON,
-                        new QueryEditor(generatedSqlScript), null, true
-                );
-            }
-
-            return true;
-
-        } catch (IOException e) {
-            return displayErrorMessage(e);
-        }
-    }
-
-    // ---
-
-    private boolean isFieldSelected(int fieldIndex) {
+    protected boolean isFieldSelected(int fieldIndex) {
 
         Object value = columnTable.getValueAt(fieldIndex, 0);
         if (value == null)
@@ -1027,38 +557,14 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         return value.toString().toLowerCase().contains("true");
     }
 
-    private boolean isContainsBlob() {
+    protected boolean isContainsBlob() {
 
         if (exportTableModel == null)
             return false;
 
         for (int col = 0; col < exportTableModel.getColumnCount(); col++)
-            if (isFieldSelected(col) && isBlobType(exportTableModel.getValueAt(0, col)))
+            if (isFieldSelected(col) && exportTableModel.getValueAt(0, col) instanceof AbstractLobRecordDataItem)
                 return true;
-
-        return false;
-    }
-
-    private boolean isBlobType(Object value) {
-        return value instanceof AbstractLobRecordDataItem;
-    }
-
-    private boolean isCharType(Object value) {
-
-        if (value instanceof RecordDataItem) {
-            int type = ((RecordDataItem) value).getDataType();
-            return type == Types.CHAR || type == Types.VARCHAR || type == Types.LONGVARCHAR;
-        }
-
-        return false;
-    }
-
-    private boolean isDateType(Object value) {
-
-        if (value instanceof RecordDataItem) {
-            int type = ((RecordDataItem) value).getDataType();
-            return type == Types.DATE || type == Types.TIME || type == Types.TIMESTAMP;
-        }
 
         return false;
     }
@@ -1077,62 +583,24 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         }
     }
 
-    private String getFormattedValue(Object value, String endlReplacement, String nullReplacement) {
+    private ExportHelper getExportHelper() {
 
-        String result = nullReplacement;
+        switch (getExportFileType()) {
 
-        if (value instanceof RecordDataItem) {
-            RecordDataItem recordDataItem = (RecordDataItem) value;
-            if (!recordDataItem.isValueNull())
-                result = recordDataItem.getDisplayValue().toString().replaceAll("'", "''");
-
-        } else if (value != null)
-            result = value.toString().replaceAll("'", "''");
-
-        if (!result.isEmpty() && endlReplacement != null)
-            result = result.replaceAll("\n", endlReplacement);
-
-        return result;
-    }
-
-    private String writeBlobToFile(AbstractLobRecordDataItem lobValue, int col, int row) throws IOException {
-
-        String stringValue = "NULL";
-
-        byte[] lobData = lobValue.getData();
-        if (lobData != null) {
-
-            if (saveBlobsIndividuallyCheck.isSelected()) {
-
-                String lobType = lobValue.getLobRecordItemName();
-                lobType = lobType.contains("/") ? lobType.split("/")[1] : "txt";
-
-                stringValue = exportTableModel.getColumnName(col) + "_" + row + "." + lobType;
-
-                File outputFile = new File(blobPathField.getText().trim(), stringValue);
-                try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
-                    outputStream.write(lobData);
-                }
-
-                stringValue = outputFile.getAbsolutePath();
-
-            } else {
-
-                String startIndex = String.format("%08x", new File(blobPathField.getText().trim()).length());
-                String dataLength = String.format("%08x", lobData.length);
-                stringValue = ":h" + startIndex + "_" + dataLength;
-
-                Files.write(Paths.get(blobPathField.getText().trim()), lobData, StandardOpenOption.APPEND);
-            }
+            case ImportExportDataProcess.DELIMITED:
+                return new ExportHelperCSV(this);
+            case ImportExportDataProcess.EXCEL:
+                return new ExportHelperXLSX(this);
+            case ImportExportDataProcess.XML:
+                return new ExportHelperXML(this);
+            case ImportExportDataProcess.SQL:
+                return new ExportHelperSQL(this);
+            default:
+                return null;
         }
-
-        return stringValue;
     }
 
-    private boolean displayErrorMessage(Throwable e) {
-        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorWritingToFile") + e.getMessage(), e);
-        return false;
-    }
+    // --- getters ---
 
     public static String getParametersSaverFilePath() {
         return new ParametersSaver().getFileName();
@@ -1142,12 +610,55 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         return new ParametersSaver().getDelimiter();
     }
 
-    @Override
-    public void dispose() {
-        exportTableModel = null;
-        new ParametersSaver().save(components);
-        super.dispose();
+    protected List<DatabaseColumn> getDatabaseColumns() {
+        return databaseColumns;
     }
+
+    protected String getColumnDelimiter() {
+        return Objects.requireNonNull(columnDelimiterCombo.getSelectedItem()).toString();
+    }
+
+    protected String getEndlReplacement() {
+        return replaceEndlCheck.isSelected() ? replaceEndlField.getText().trim() : null;
+    }
+
+    protected String getNullReplacement() {
+        return replaceNullCheck.isSelected() ? replaceNullField.getText().trim() : "";
+    }
+
+    protected String getExportTableName() {
+        return !exportTableNameField.getText().isEmpty() ? exportTableNameField.getText().trim() : tableNameForExport;
+    }
+
+    protected String getFilePath() {
+        return filePathField.getText().trim();
+    }
+
+    protected String getBlobPath() {
+        return blobPathField.getText().trim();
+    }
+
+    protected boolean isAddHeaders() {
+        return addColumnHeadersCheck.isSelected();
+    }
+
+    protected boolean isAddQuotes() {
+        return addQuotesCheck.isSelected();
+    }
+
+    protected boolean isSaveBlobsIndividually() {
+        return saveBlobsIndividuallyCheck.isSelected();
+    }
+
+    protected boolean isAddCreateTableStatement() {
+        return addCreateTableStatementCheck.isSelected();
+    }
+
+    protected boolean isOpenQueryEditor() {
+        return openQueryEditorCheck.isSelected();
+    }
+
+    // --- inner classes ---
 
     private static class ParametersSaver {
 
@@ -1162,7 +673,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 writer.print("");
 
             } catch (IOException e) {
-                Log.error("Error saving QueryEditorResultsExporter values", e);
+                Log.error("Error saving ExportDataPanel values", e);
             }
 
             // save new values
@@ -1189,7 +700,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 }
 
             } catch (IOException e) {
-                Log.error("Error saving QueryEditorResultsExporter values", e);
+                Log.error("Error saving ExportDataPanel values", e);
             }
         }
 
@@ -1221,7 +732,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 }
 
             } catch (IOException e) {
-                Log.error("Error restoring QueryEditorResultsExporter values", e);
+                Log.error("Error restoring ExportDataPanel values", e);
             }
         }
 
@@ -1364,8 +875,17 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
     } // class TableColumn
 
+    // ---
+
+    @Override
+    public void dispose() {
+        exportTableModel = null;
+        new ParametersSaver().save(components);
+        super.dispose();
+    }
+
     private static String bundleString(String key) {
-        return Bundles.get(QueryEditorResultsExporter.class, key);
+        return Bundles.get(ExportDataPanel.class, key);
     }
 
 }

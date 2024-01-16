@@ -24,6 +24,7 @@ import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.IconManager;
@@ -219,12 +220,12 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
         sb.append("</td></tr><td>").append(bundleString("User")).append("</td><td></td><td>");
         sb.append(connection.getUserName());
         sb.append("</td></tr><td>").append(bundleString("Driver")).append("</td><td></td><td>");
-        sb.append(connection.isConnected() ? ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseProperties().get("Driver") : connection.getDriverName());
+        sb.append(connection.isConnected() ? ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseProperties().get(Bundles.get(DefaultDatabaseHost.class, "Driver")) : connection.getDriverName());
         if (connection.isConnected()) {
             sb.append("</td></tr><td>").append(bundleString("ServerVersion")).append("</td><td></td><td>");
-            sb.append(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseProperties().get("Server version"));
+            sb.append(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseProperties().get(Bundles.get(DefaultDatabaseHost.class, "ServerVersion")));
             sb.append("</td></tr><td>").append(bundleString("ODSVersion")).append("</td><td></td><td>");
-            sb.append(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseProperties().get("ODS version"));
+            sb.append(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseProperties().get(Bundles.get(DefaultDatabaseHost.class, "ODS_VERSION")));
         }
         sb.append("</td></tr>");
         sb.append(Constants.TABLE_TAG_END);

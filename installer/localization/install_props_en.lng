@@ -1,2 +1,3 @@
 Installer.Parameter.question_remove_props=Do you want the uninstall to also remove the user properties?
 Installer.Parameter.associate_file=Associate .fdb files with RedExpert
+Installer.Parameter.warning_app_already_run=RedExpert is already running. Please close it and try again.

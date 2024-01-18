@@ -85,12 +85,15 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         cellOpensDialog.setSelected(doubleClickCellOpensDialog());
         cellOpensDialog.setActionCommand("cellOpensDialog");
 
-        add(create(bundleString("CopyColumnNames"), "copyColumnNames"));
         add(create(bundleString("CopySelectedCells"), "copySelectedCells"));
-        add(create(bundleString("CopySelectedCells-CommaSeparated"), "copySelectedCellsAsCSV"));
-        add(create(bundleString("CopySelectedCells-CommaSeparatedWithNames"), "copySelectedCellsAsCSVWithNames"));
-        add(create(bundleString("CopySelectedCells-CommaSeparatedAndQuoted"), "copySelectedCellsAsCSVQuoted"));
-        add(create(bundleString("CopySelectedCells-CommaSeparatedAndQuotedWithNames"), "copySelectedCellsAsCSVQuotedWithNames"));
+        // the copy sub-menu
+        JMenu copyMenu = MenuItemFactory.createMenu(bundleString("CopyOtherOptions"));
+        create(copyMenu, bundleString("CopySelectedColumnNames"), "copySelectedColumnNames");
+        create(copyMenu, bundleString("CopySelectedCells-CommaSeparated"), "copySelectedCellsAsCSV");
+        create(copyMenu, bundleString("CopySelectedCells-CommaSeparatedWithNames"), "copySelectedCellsAsCSVWithNames");
+        create(copyMenu, bundleString("CopySelectedCells-CommaSeparatedAndQuoted"), "copySelectedCellsAsCSVQuoted");
+        create(copyMenu, bundleString("CopySelectedCells-CommaSeparatedAndQuotedWithNames"), "copySelectedCellsAsCSVQuotedWithNames");
+        add(copyMenu);
         addSeparator();
         add(create(bundleString("SelectRow"), "selectRow"));
         add(create(bundleString("SelectColumn"), "selectColumn"));
@@ -313,9 +316,9 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         table.copySelectedCellsAsCSVWithNames();
     }
 
-    public void copyColumnNames(ActionEvent e) {
+    public void copySelectedColumnNames(ActionEvent e) {
 
-        table.copyColumnNames();
+        table.copySelectedColumnNames();
     }
 
     public void copySelectedCellsAsCSVQuoted(ActionEvent e) {

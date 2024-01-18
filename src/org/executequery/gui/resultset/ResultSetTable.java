@@ -281,13 +281,18 @@ public class ResultSetTable extends JTable implements StandardTable {
         copySelectedCells(',', false, true);
     }
 
-    public void copyColumnNames() {
+    public void copySelectedColumnNames() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < getColumnCount(); i++) {
-            if (i != 0)
-                sb.append(",");
-            sb.append(getColumnName(i));
-        }
+        int cols = getSelectedColumnCount();
+
+        if (cols == 0)
+            return;
+
+        int[] selectedCols = getSelectedColumns();
+        List<String> list = new ArrayList<>();
+        for (int j = 0; j < cols; j++)
+          list.add(getColumnName(selectedCols[j]));
+        sb.append(StringUtils.join(list, ", ")).append('\n');
         GUIUtilities.copyToClipBoard(sb.toString());
     }
 

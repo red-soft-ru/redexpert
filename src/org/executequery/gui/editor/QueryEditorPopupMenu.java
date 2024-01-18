@@ -251,7 +251,7 @@ public class QueryEditorPopupMenu extends JPopupMenu
 
     private JMenuItem createRecycleResultSetTabMenuItem() {
         JCheckBoxMenuItem menuItem = MenuItemFactory.createCheckBoxMenuItem(action());
-        menuItem.setText(bundleString("use-single-resut-set-tab"));
+        menuItem.setText(bundleString("use-single-result-set-tab"));
         menuItem.setSelected(UserPreferencesManager.isResultSetTabSingle());
         menuItem.setActionCommand("recycleResultSetTabs");
         executeActionButtons().add(menuItem);

@@ -75,7 +75,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         }
 
         sb.deleteCharAt(sb.length() - 1);
-        sb.append("\nORDER BY ").append(cols.get(0)).append(" \n");
+        sb.append("\nORDER BY ").append(MiscUtils.getFormattedObject(cols.get(0).getName(), getHost().getDatabaseConnection())).append(" \n");
         sb.append("ROWS 1");
 
         return sb.toString();

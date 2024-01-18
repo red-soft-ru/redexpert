@@ -1,5 +1,6 @@
 package org.executequery.gui.exportData;
 
+import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
 import org.executequery.gui.resultset.RecordDataItem;
 
@@ -7,7 +8,11 @@ import javax.swing.table.TableModel;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Blob;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.List;
 
 public class ExportHelperCSV extends AbstractExportHelper {
 
@@ -18,6 +23,70 @@ public class ExportHelperCSV extends AbstractExportHelper {
     @Override
     protected void exportResultSet(ResultSet resultSet) {
 
+        String filePath = parent.getFilePath();
+        String columnDelimiter = parent.getColumnDelimiter();
+        String endlReplacement = parent.getEndlReplacement();
+        String nullReplacement = parent.getNullReplacement();
+
+        boolean addHeaders = parent.isAddHeaders();
+        boolean addQuotes = parent.isAddQuotes();
+        boolean saveBlobsIndividually = parent.isSaveBlobsIndividually();
+
+        try {
+
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            List<ColumnData> columns = getCreateColumnData(metaData);
+            int columnCount = metaData.getColumnCount();
+
+            StringBuilder resultText = new StringBuilder();
+            PrintWriter writer = new PrintWriter(new FileWriter(filePath, false), true);
+
+            if (addHeaders)
+                writer.println(getHeaders(columnCount, columnDelimiter, metaData));
+
+            int row = 0;
+            while (resultSet.next()) {
+
+                if (isCancel())
+                    break;
+
+                for (int col = 1; col < columnCount + 1; col++) {
+
+                    if (isCancel())
+                        break;
+
+                    if (!isFieldSelected(col - 1))
+                        continue;
+
+                    String stringValue = null;
+                    Object value = resultSet.getObject(col);
+                    ColumnData columnData = columns.get(col - 1);
+
+                    if (value != null) {
+                        stringValue = getFormattedValue(value, endlReplacement, nullReplacement);
+
+                        if (isCharType(columnData) && addQuotes && !stringValue.isEmpty()) {
+                            stringValue = "\"" + stringValue + "\"";
+
+                        } else if (isBlobType(columnData)) {
+                            stringValue = writeBlob(resultSet.getBlob(col), saveBlobsIndividually, getCreateBlobFileName(columnData, col, row));
+                        }
+                    }
+
+                    resultText.append(stringValue != null ? stringValue : nullReplacement);
+                    resultText.append(columnDelimiter);
+                }
+                resultText.deleteCharAt(resultText.length() - 1);
+
+                writer.println(resultText);
+                resultText.setLength(0);
+                row++;
+            }
+            writer.close();
+
+        } catch (Exception e) {
+            displayErrorMessage(e);
+        }
     }
 
     @Override
@@ -39,19 +108,8 @@ public class ExportHelperCSV extends AbstractExportHelper {
             StringBuilder resultText = new StringBuilder();
             PrintWriter writer = new PrintWriter(new FileWriter(filePath, false), true);
 
-            if (addHeaders) {
-
-                for (int i = 0; i < columnCount; i++) {
-                    if (isFieldSelected(i)) {
-                        resultText.append(tableModel.getColumnName(i));
-                        resultText.append(columnDelimiter);
-                    }
-                }
-                resultText.deleteCharAt(resultText.length() - 1);
-
-                writer.println(resultText);
-                resultText.setLength(0);
-            }
+            if (addHeaders)
+                writer.println(getHeaders(columnCount, columnDelimiter, tableModel));
 
             for (int row = 0; row < rowCount; row++) {
 
@@ -76,7 +134,7 @@ public class ExportHelperCSV extends AbstractExportHelper {
                             stringValue = "\"" + stringValue + "\"";
 
                         } else if (isBlobType(value)) {
-                            stringValue = writeBlobToFile((AbstractLobRecordDataItem) value, saveBlobsIndividually, getCreateBlobFileName(tableModel, col, row));
+                            stringValue = writeBlob((AbstractLobRecordDataItem) value, saveBlobsIndividually, getCreateBlobFileName(tableModel, col, row));
                         }
                     }
 
@@ -90,9 +148,29 @@ public class ExportHelperCSV extends AbstractExportHelper {
             }
             writer.close();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             displayErrorMessage(e);
         }
+    }
+
+    private String getHeaders(int columnCount, String columnDelimiter, Object columnData) throws SQLException {
+
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < columnCount; i++) {
+            if (isFieldSelected(i)) {
+
+                String columnName = null;
+                if (columnData instanceof ResultSetMetaData)
+                    columnName = ((ResultSetMetaData) columnData).getColumnName(i + 1);
+                else if (columnData instanceof TableModel)
+                    columnName = ((TableModel) columnData).getColumnName(i);
+
+                sb.append(columnName).append(columnDelimiter);
+            }
+        }
+
+        return sb.deleteCharAt(sb.length() - 1).toString().trim();
     }
 
 }

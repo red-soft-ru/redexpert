@@ -2,6 +2,7 @@ package org.executequery.gui.exportData;
 
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.executequery.GUIUtilities;
+import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.importexport.DefaultExcelWorkbookBuilder;
 import org.executequery.gui.importexport.ExcelWorkbookBuilder;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
@@ -12,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,77 @@ public class ExportHelperXLSX extends AbstractExportHelper {
     @Override
     void exportResultSet(ResultSet resultSet) {
 
+        String filePath = parent.getFilePath();
+        String nullReplacement = parent.getNullReplacement();
+
+        boolean addHeaders = parent.isAddHeaders();
+        boolean saveBlobsIndividually = parent.isSaveBlobsIndividually();
+
+        try {
+
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            List<ColumnData> columns = getCreateColumnData(metaData);
+            int columnCount = metaData.getColumnCount();
+
+            ExcelWorkbookBuilder builder = new DefaultExcelWorkbookBuilder();
+            builder.createSheet("Exported Data");
+
+            if (addHeaders) {
+
+                List<String> headers = new ArrayList<>();
+                for (int i = 1; i < columnCount + 1; i++)
+                    if (isFieldSelected(i))
+                        headers.add(metaData.getColumnName(i));
+
+                builder.addRowHeader(headers);
+            }
+
+            int row = 0;
+            while (resultSet.next()) {
+
+                if (row > SpreadsheetVersion.EXCEL2007.getLastRowIndex()) {
+                    GUIUtilities.displayWarningMessage(String.format(bundleString("maxRowMessage"), SpreadsheetVersion.EXCEL2007.getLastRowIndex()));
+                    break;
+                }
+
+                if (isCancel())
+                    break;
+
+                List<String> values = new ArrayList<>();
+                for (int col = 1; col < columnCount + 1; col++) {
+
+                    if (isCancel())
+                        break;
+
+                    if (!isFieldSelected(col - 1))
+                        continue;
+
+                    String stringValue = null;
+                    Object value = resultSet.getObject(col);
+                    ColumnData columnData = columns.get(col - 1);
+
+                    if (value != null) {
+
+                        if (isBlobType(columnData))
+                            stringValue = writeBlob(resultSet.getBlob(col), saveBlobsIndividually, getCreateBlobFileName(columnData, col, row));
+                        else
+                            stringValue = getFormattedValue(value, null, nullReplacement);
+                    }
+
+                    values.add(stringValue != null ? stringValue : nullReplacement);
+                }
+
+                builder.addRow(values);
+                row++;
+            }
+
+            OutputStream outputStream = new FileOutputStream(filePath, false);
+            builder.writeTo(outputStream);
+            outputStream.close();
+
+        } catch (Exception e) {
+            displayErrorMessage(e);
+        }
     }
 
     @Override
@@ -78,7 +151,7 @@ public class ExportHelperXLSX extends AbstractExportHelper {
                     if (!value.isValueNull()) {
 
                         if (isBlobType(value))
-                            stringValue = writeBlobToFile((AbstractLobRecordDataItem) value, saveBlobsIndividually, getCreateBlobFileName(tableModel, col, row));
+                            stringValue = writeBlob((AbstractLobRecordDataItem) value, saveBlobsIndividually, getCreateBlobFileName(tableModel, col, row));
                         else
                             stringValue = getFormattedValue(value, null, nullReplacement);
                     }

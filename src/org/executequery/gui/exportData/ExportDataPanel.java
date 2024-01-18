@@ -47,6 +47,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
 
@@ -92,23 +95,31 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     // ---
 
-    private TableModel exportTableModel;
+    private final Object exportData;
     private final String tableNameForExport;
     private final List<DatabaseColumn> databaseColumns;
+
     private Map<String, Component> components;
     private static String columnDelimiterComboName = "";
 
-    public ExportDataPanel(TableModel exportTableModel, String tableNameForExport) {
-        this(exportTableModel, tableNameForExport, null);
+    // ---
+
+    public ExportDataPanel(Object exportData, String tableNameForExport) {
+        this(exportData, tableNameForExport, null);
     }
 
-    public ExportDataPanel(TableModel exportTableModel, String tableNameForExport, List<DatabaseColumn> databaseColumns) {
-
+    public ExportDataPanel(Object exportData, String tableNameForExport, List<DatabaseColumn> databaseColumns) {
         super(GUIUtilities.getParentFrame(), TITLE, true);
 
-        this.exportTableModel = exportTableModel;
+        this.exportData = exportData;
         this.tableNameForExport = tableNameForExport;
         this.databaseColumns = databaseColumns;
+
+        if (exportData == null) {
+            GUIUtilities.displayWarningMessage(bundleString("NoDataForExport"));
+            super.dispose();
+            return;
+        }
 
         init();
         arrange();
@@ -164,7 +175,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         browseBlobFileButton = WidgetFactory.createButton("browseFolderButton", Bundles.get("common.browse.button"));
         browseBlobFileButton.addActionListener(e -> browseFile(blobPathField));
-        browseBlobFileButton.setEnabled(false);
+        browseBlobFileButton.setEnabled(isContainsBlob());
 
         exportButton = WidgetFactory.createButton("exportButton", Bundles.get("common.export.button"));
         exportButton.addActionListener(e -> export());
@@ -185,7 +196,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         components.put(addCreateTableStatementCheck.getName(), addCreateTableStatementCheck);
 
         saveBlobsIndividuallyCheck = WidgetFactory.createCheckBox("saveBlobsIndividuallyCheck", bundleString("saveBlobsIndividually"));
-        saveBlobsIndividuallyCheck.setEnabled(false);
+        saveBlobsIndividuallyCheck.setEnabled(isContainsBlob());
         components.put(saveBlobsIndividuallyCheck.getName(), saveBlobsIndividuallyCheck);
 
         replaceEndlCheck = WidgetFactory.createCheckBox("replaceEndlCheck", bundleString("replaceEndlLabel"));
@@ -208,7 +219,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         components.put(exportTableNameField.getName(), exportTableNameField);
 
         blobPathField = WidgetFactory.createTextField("folderPathField");
-        blobPathField.setEnabled(false);
+        blobPathField.setEnabled(isContainsBlob());
         components.put(blobPathField.getName(), blobPathField);
 
         filePathField = WidgetFactory.createTextField("filePathField");
@@ -455,13 +466,9 @@ public class ExportDataPanel extends AbstractBaseDialog {
     private void export() {
 
         if (exportAllow()) {
-
-            ExportHelper exportHelper = getExportHelper();
-            if (exportHelper != null) {
-                exportHelper.export(exportTableModel);
-                GUIUtilities.displayInformationMessage(bundleString("ResultSetExportComplete"));
-                dispose();
-            }
+            Objects.requireNonNull(getExportHelper()).export(exportData);
+            GUIUtilities.displayInformationMessage(bundleString("ResultSetExportComplete"));
+            dispose();
         }
     }
 
@@ -559,12 +566,25 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     protected boolean isContainsBlob() {
 
-        if (exportTableModel == null)
-            return false;
+        if (exportData instanceof TableModel) {
 
-        for (int col = 0; col < exportTableModel.getColumnCount(); col++)
-            if (isFieldSelected(col) && exportTableModel.getValueAt(0, col) instanceof AbstractLobRecordDataItem)
-                return true;
+            TableModel tableModel = (TableModel) exportData;
+            for (int col = 0; col < tableModel.getColumnCount(); col++)
+                if (isFieldSelected(col) && tableModel.getValueAt(0, col) instanceof AbstractLobRecordDataItem)
+                    return true;
+
+        } else if (exportData instanceof ResultSet) {
+            try {
+
+                ResultSetMetaData metaData = ((ResultSet) exportData).getMetaData();
+                for (int i = 1; i < metaData.getColumnCount() + 1; i++)
+                    if (metaData.getColumnTypeName(i).toLowerCase().contains("blob"))
+                        return true;
+
+            } catch (SQLException e) {
+                Log.error(e.getMessage(), e);
+            }
+        }
 
         return false;
     }
@@ -879,7 +899,6 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     @Override
     public void dispose() {
-        exportTableModel = null;
         new ParametersSaver().save(components);
         super.dispose();
     }

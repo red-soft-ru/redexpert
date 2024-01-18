@@ -2,9 +2,13 @@ package org.executequery.gui.exportData;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.Types;
+import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
+import org.executequery.util.mime.MimeType;
+import org.executequery.util.mime.MimeTypes;
 import org.underworldlabs.swing.DefaultProgressDialog;
 import org.underworldlabs.swing.util.SwingWorker;
 
@@ -15,7 +19,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.sql.Blob;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 
 public abstract class AbstractExportHelper implements ExportHelper {
 
@@ -79,22 +88,106 @@ public abstract class AbstractExportHelper implements ExportHelper {
         return formattedValue;
     }
 
-    protected String writeBlobToFile(AbstractLobRecordDataItem lobValue, boolean saveIndividually, String fileName) throws IOException {
+    protected List<ColumnData> getCreateColumnData(ResultSetMetaData metaData) throws SQLException {
+
+        List<ColumnData> columns = new LinkedList<>();
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
+            ColumnData columnData = new ColumnData(metaData.getColumnLabel(i), null);
+            columnData.setSQLType(metaData.getColumnType(i));
+            columns.add(columnData);
+        }
+
+        return columns;
+    }
+
+    protected final boolean isBlobType(Object value) {
+        return (value instanceof ColumnData && ((ColumnData) value).isLOB())
+                || value instanceof AbstractLobRecordDataItem;
+    }
+
+    protected final boolean isCharType(Object value) {
+
+        if (value instanceof RecordDataItem) {
+            int type = ((RecordDataItem) value).getDataType();
+            return type == Types.CHAR || type == Types.VARCHAR || type == Types.LONGVARCHAR;
+
+        } else if (value instanceof ColumnData) {
+            return ((ColumnData) value).isCharacterType();
+        }
+
+        return false;
+    }
+
+    protected final boolean isDateType(Object value) {
+
+        if (value instanceof RecordDataItem) {
+            int type = ((RecordDataItem) value).getDataType();
+            return type == Types.DATE || type == Types.TIME || type == Types.TIMESTAMP;
+
+        } else if (value instanceof ColumnData) {
+            return ((ColumnData) value).isDateDataType();
+        }
+
+        return false;
+    }
+
+    protected final boolean isFieldSelected(int col) {
+        return parent.isFieldSelected(col);
+    }
+
+    protected final boolean isCancel() {
+        return progressDialog == null || progressDialog.isCancel();
+    }
+
+    // -- blob save methods ---
+
+    protected final String getCreateBlobFileName(Object data, int col, int row) {
+
+        if (data instanceof TableModel)
+            return ((TableModel) data).getColumnName(col) + "_" + row;
+
+        else if (data instanceof ColumnData)
+            return ((ColumnData) data).getColumnName() + "_" + row;
+
+        else
+            return "BLOB_FILE_" + row;
+    }
+
+    protected String writeBlob(AbstractLobRecordDataItem lobValue, boolean saveIndividually, String fileName) throws IOException {
+        return saveBlobToFile(lobValue.getData(), lobValue.getLobRecordItemName(), fileName, saveIndividually);
+    }
+
+    protected String writeBlob(Blob lobValue, boolean saveIndividually, String fileName) throws IOException {
+
+        byte[] lobData = null;
+        String lobType = "txt";
+
+        try {
+            lobData = lobValue.getBytes(1, (int) lobValue.length());
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
+
+        MimeType mimeType = MimeTypes.get().getMimeType(lobData);
+        if (mimeType != null)
+            lobType = MimeTypes.get().getMimeType(lobData).getName();
+
+        return saveBlobToFile(lobData, lobType, fileName, saveIndividually);
+    }
+
+    private String saveBlobToFile(byte[] lobData, String lobType, String fileName, boolean saveIndividually) throws IOException {
 
         String stringValue = "NULL";
         String blobFilePath = parent.getBlobPath();
 
-        byte[] lobData = lobValue.getData();
         if (lobData != null) {
 
             if (saveIndividually) {
 
-                String lobType = lobValue.getLobRecordItemName();
                 lobType = lobType.contains("/") ? lobType.split("/")[1] : "txt";
+                fileName += "." + lobType;
 
-                stringValue = fileName + "." + lobType;
-
-                File outputFile = new File(blobFilePath, stringValue);
+                File outputFile = new File(blobFilePath, fileName);
                 try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
                     outputStream.write(lobData);
                 }
@@ -114,41 +207,7 @@ public abstract class AbstractExportHelper implements ExportHelper {
         return stringValue;
     }
 
-    protected final boolean isBlobType(Object value) {
-        return value instanceof AbstractLobRecordDataItem;
-    }
-
-    protected final boolean isCharType(Object value) {
-
-        if (value instanceof RecordDataItem) {
-            int type = ((RecordDataItem) value).getDataType();
-            return type == Types.CHAR || type == Types.VARCHAR || type == Types.LONGVARCHAR;
-        }
-
-        return false;
-    }
-
-    protected final boolean isDateType(Object value) {
-
-        if (value instanceof RecordDataItem) {
-            int type = ((RecordDataItem) value).getDataType();
-            return type == Types.DATE || type == Types.TIME || type == Types.TIMESTAMP;
-        }
-
-        return false;
-    }
-
-    protected final boolean isFieldSelected(int col) {
-        return parent.isFieldSelected(col);
-    }
-
-    protected final boolean isCancel() {
-        return progressDialog == null || progressDialog.isCancel();
-    }
-
-    protected final String getCreateBlobFileName(TableModel model, int col, int row) {
-        return model.getColumnName(col) + "_" + row;
-    }
+    // ---
 
     protected final void displayErrorMessage(Throwable e) {
         GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorWritingToFile") + e.getMessage(), e);

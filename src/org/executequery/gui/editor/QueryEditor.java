@@ -606,7 +606,7 @@ public class QueryEditor extends DefaultTabView
             revalidate();
 
         } else
-            new ExportDataPanel(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
+            new ExportDataPanel(resultSet, getDisplayName());
 
         return rowCount;
     }
@@ -623,7 +623,7 @@ public class QueryEditor extends DefaultTabView
             revalidate();
 
         } else
-            new ExportDataPanel(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
+            new ExportDataPanel(resultSet, getDisplayName());
     }
 
     /**
@@ -637,7 +637,7 @@ public class QueryEditor extends DefaultTabView
         if (!executeToFileCheckBox.isSelected())
             resultsPanel.setResultSet(resultSet, true, getMaxRecords(), query);
         else
-            new ExportDataPanel(new ResultSetTableModel(resultSet, -1, false), getDisplayName());
+            new ExportDataPanel(resultSet, getDisplayName());
     }
 
     public void destroyTable() {

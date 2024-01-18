@@ -3,6 +3,7 @@ package org.executequery.gui.text;
 import com.github.difflib.text.DiffRow;
 import com.github.difflib.text.DiffRowGenerator;
 import org.executequery.components.LineNumber;
+import org.executequery.log.Log;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -28,16 +29,16 @@ public class DifferenceSqlTextPanel extends JPanel {
     private List<String> newLineBorders;
     private List<String> oldLineBorders;
 
-    public DifferenceSqlTextPanel(String newTitle, String oldTitle) {
+    public DifferenceSqlTextPanel(String newTitle, String oldTitle, boolean showOldPanel) {
         super(new BorderLayout());
 
         this.newTitle = newTitle;
         this.oldTitle = oldTitle;
 
-        init();
+        init(showOldPanel);
     }
 
-    private void init() {
+    private void init(boolean showOldPanel) {
 
         highlights = new ArrayList<>();
         newLineBorders = new LinkedList<>();
@@ -52,12 +53,18 @@ public class DifferenceSqlTextPanel extends JPanel {
         newTextPanel.getTextPane().getLineBorder().setFont(newTextPanel.getTextPane().getFont());
         oldTextPanel.getTextPane().getLineBorder().setFont(oldTextPanel.getTextPane().getFont());
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setResizeWeight(0.5);
-        splitPane.setTopComponent(oldTextPanel);
-        splitPane.setBottomComponent(newTextPanel);
+        if (showOldPanel) {
 
-        add(splitPane, BorderLayout.CENTER);
+            JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            splitPane.setResizeWeight(0.5);
+            splitPane.setTopComponent(oldTextPanel);
+            splitPane.setBottomComponent(newTextPanel);
+
+            add(splitPane, BorderLayout.CENTER);
+
+        } else
+            add(newTextPanel, BorderLayout.CENTER);
+
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
     }
 
@@ -126,7 +133,7 @@ public class DifferenceSqlTextPanel extends JPanel {
         try {
             sqlTextArea.addLineHighlight(line, color);
         } catch (BadLocationException e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
         }
     }
 

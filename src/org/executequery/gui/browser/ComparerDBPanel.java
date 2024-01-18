@@ -45,6 +45,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("ExtractMethodRecommender")
 public class ComparerDBPanel extends JPanel implements TabView {
 
     public static final String TITLE = bundleString("title");
@@ -70,7 +71,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     private boolean isComparing;
     private boolean isReverseOrder;
-    private boolean isExtractMetadata;
+    private final boolean isExtractMetadata;
 
     // --- panel components ---
 
@@ -188,7 +189,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         propertiesCheckBoxMap.get(CHECK_CREATE).setSelected(true);
 
         if (isExtractMetadata) {
-            propertiesCheckBoxMap.get(CHECK_CREATE).setEnabled(false);
+            propertiesCheckBoxMap.get(CHECK_CREATE).setVisible(false);
             propertiesCheckBoxMap.get(CHECK_ALTER).setVisible(false);
             propertiesCheckBoxMap.get(CHECK_DROP).setVisible(false);
         } else {
@@ -236,7 +237,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         progressBar.setMinimum(0);
 
         sqlTextPanel = new SimpleSqlTextPanel();
-        differenceSqlTextPanel = new DifferenceSqlTextPanel(bundleString("SourceLabel"), bundleString("TargetLabel"));
+        differenceSqlTextPanel = new DifferenceSqlTextPanel(bundleString("SourceLabel"), bundleString("TargetLabel"), !isExtractMetadata);
 
         // ---
 
@@ -667,8 +668,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     int[] counter = comparer.getCounter();
                     long elapsedTime = System.currentTimeMillis() - startTime;
 
-                    GUIUtilities.displayInformationMessage(
-                            String.format(bundleString("ComparingEnds"), counter[0], counter[1], counter[2]));
+                    GUIUtilities.displayInformationMessage(isExtractMetadata ?
+                            String.format(bundleString("ExtractingFinishMessage"), counter[0]) :
+                            String.format(bundleString("ComparingFinishMessage"), counter[0], counter[1], counter[2]));
                     Log.info(String.format("Comparing has been finished. Time elapsed: %d ms", elapsedTime));
                 }
 
@@ -704,7 +706,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         compareButton.setEnabled(true);
         compareButton.setText(bundleString(isExtractMetadata ? "CompareExportButton" : "CompareButton"));
         progressBar.setValue(progressBar.getMaximum());
-        progressBar.setString(bundleString("ProgressBarFinish"));
+        progressBar.setString(isExtractMetadata ? bundleString("ExtractingFinish") : bundleString("ComparingFinish"));
 
         for (int i = 0; i < rootTreeNode.getChildCount(); i++)
             sortTreeNodes(rootTreeNode.getChildAt(i));

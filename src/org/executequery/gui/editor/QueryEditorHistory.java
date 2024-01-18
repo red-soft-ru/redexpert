@@ -137,7 +137,7 @@ public class QueryEditorHistory {
         editors = new HashMap<>();
         try {
             FileInputStream fstream = new FileInputStream(historyFile());
-            BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
+            BufferedReader br = new BufferedReader(new InputStreamReader(fstream, SystemProperties.getProperty("user", "system.file.encoding")));
             String strLine;
             while ((strLine = br.readLine()) != null) {
                 String[] strings = strLine.split(";");
@@ -166,7 +166,8 @@ public class QueryEditorHistory {
 
     private static void saveEditors() {
         try {
-            FileWriter writer = new FileWriter(historyFile(), false);
+            FileOutputStream fileOutputStream = new FileOutputStream(historyFile(), false);
+            Writer writer = new OutputStreamWriter(fileOutputStream, SystemProperties.getProperty("user", "system.file.encoding"));
             for (String key : editors().keySet()) {
                 List<PathNumber> list = editors().get(key);
                 for (int i = 0; i < list.size(); i++) {

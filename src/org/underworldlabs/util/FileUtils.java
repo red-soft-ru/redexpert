@@ -25,7 +25,9 @@ import org.apache.commons.lang.StringUtils;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.UUID;
 
 /**
@@ -63,7 +65,7 @@ public class FileUtils {
 
     public static String randomTempFilePath() {
         return System.getProperty("java.io.tmpdir") +
-                System.getProperty("file.separator") + UUID.randomUUID().toString();
+                System.getProperty("file.separator") + UUID.randomUUID();
     }
 
     public static boolean fileExists(String path) {
@@ -151,17 +153,14 @@ public class FileUtils {
     }
 
     public static String loadFile(File file, boolean escapeLines, String encoding) throws IOException {
-
-        FileReader fileReader = null;
-        BufferedReader reader = null;
-
+        Scanner scanner = null;
         try {
-            fileReader = new FileReader(file);
-            reader = new BufferedReader(fileReader);
+            scanner = new Scanner(file, encoding);
             String value = null;
             StringBuilder sb = new StringBuilder();
 
-            while ((value = reader.readLine()) != null) {
+            while (scanner.hasNextLine()) {
+                value = scanner.nextLine();
                 sb.append(value);
 
                 if (escapeLines) {
@@ -169,20 +168,11 @@ public class FileUtils {
                 }
 
             }
-            if (StringUtils.isNotBlank(encoding)) {
-
-                return new String(sb.toString().getBytes(), encoding);
-            }
 
             return sb.toString();
 
         } finally {
-            if (reader != null) {
-                reader.close();
-            }
-            if (fileReader != null) {
-                fileReader.close();
-            }
+            scanner.close();
         }
     }
 
@@ -201,7 +191,7 @@ public class FileUtils {
                 input = ClassLoader.getSystemResourceAsStream(path);
             }
 
-            reader = new BufferedReader(new InputStreamReader(input,"utf-8"));
+            reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             String line = null;
             StringBuilder buf = new StringBuilder();

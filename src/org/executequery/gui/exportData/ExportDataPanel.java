@@ -290,8 +290,8 @@ public class ExportDataPanel extends AbstractBaseDialog {
         add(basePanel, gridBagHelper.fillBoth().get());
 
         setPreferredSize(new Dimension(500, 455));
+        setMinimumSize(getPreferredSize());
         setSize(getPreferredSize());
-        setResizable(false);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
 

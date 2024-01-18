@@ -86,7 +86,7 @@ public class TablePanel extends JPanel {
         ensureFileExists(filePathVisibleCols());
         try {
             String strCols = FileUtils.loadFile(filePathVisibleCols());
-            if (!MiscUtils.isNull(strCols)) {
+            if (!MiscUtils.isNull(strCols) && !strCols.trim().contentEquals("#Red Expert - User Defined System Properties")) {
                 String[] cols = strCols.split("\n");
                 columnsCheckPanel.removeAllAction();
                 for (int i = 0; i < cols.length; i++) {

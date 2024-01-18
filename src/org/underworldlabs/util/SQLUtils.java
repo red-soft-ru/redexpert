@@ -12,12 +12,11 @@ import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import javax.swing.table.TableModel;
-import java.sql.DatabaseMetaData;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.Date;
 
 import static org.executequery.databaseobjects.NamedObject.*;
 import static org.executequery.gui.browser.ColumnConstraint.RESTRICT;
@@ -140,6 +139,25 @@ public final class SQLUtils {
 
         return sb.toString();
     }
+
+    public static String generateCreateTable(String name, ResultSetMetaData metaData) throws SQLException {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CREATE TABLE ").append(format(name, null)).append(" (");
+
+        int columnCount = metaData.getColumnCount();
+        for (int i = 1; i < columnCount + 1; i++) {
+
+            sb.append("\n\t").append(metaData.getColumnName(i).trim()).append(SPACE).append(metaData.getColumnTypeName(i));
+            if (i < columnCount - 1)
+                sb.append(",");
+        }
+        sb.append("\n);");
+
+        return sb.toString();
+    }
+
 
     public static String generateDefinitionColumn(ColumnData cd, boolean computedNeed, boolean startWithNewLine, boolean setComma) {
 

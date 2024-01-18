@@ -7,7 +7,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
 import org.executequery.gui.resultset.RecordDataItem;
-import org.executequery.gui.resultset.ResultSetTableModel;
+import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -15,9 +15,9 @@ import javax.swing.table.TableModel;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -43,8 +43,8 @@ public class ExportHelperSQL extends AbstractExportHelper {
             List<DatabaseColumn> databaseColumns = parent.getDatabaseColumns();
 
             String insertTemplate = getInsertTemplate(tableName, columnCount, columns);
-//            if (addCreateTableStatement)
-//                result.append(getCreateTableStatement(databaseColumns, tableName, new ResultSetTableModel(resultSet, 1, true)));
+            if (addCreateTableStatement)
+                result.append(getCreateTableStatement(databaseColumns, tableName, metaData));
             if (!saveBlobsIndividually && parent.isContainsBlob())
                 result.append(getSetBlobFileStatement());
 
@@ -232,8 +232,7 @@ public class ExportHelperSQL extends AbstractExportHelper {
         return sb.toString();
     }
 
-    @SuppressWarnings("UnnecessaryLocalVariable")
-    private String getCreateTableStatement(List<DatabaseColumn> databaseColumns, String tableName, TableModel tableModel) {
+    private String getCreateTableStatement(List<DatabaseColumn> databaseColumns, String tableName, Object tableData) throws SQLException {
 
         AbstractDatabaseObject databaseObject = null;
         if (databaseColumns != null && !databaseColumns.isEmpty()) {
@@ -241,11 +240,22 @@ public class ExportHelperSQL extends AbstractExportHelper {
             databaseObject.setName(tableName);
         }
 
-        String createTableTemplate = "-- table creating --\n\n"
-                + (databaseObject != null ? databaseObject.getCreateSQLText() : SQLUtils.generateCreateTable(tableName, tableModel))
-                + "\n-- inserting data --\n";
+        String createTableTemplate = "-- table creating --\n\n";
+        if (databaseObject != null) {
+            createTableTemplate += databaseObject.getCreateSQLText();
 
-        return createTableTemplate;
+        } else if (tableData instanceof TableModel) {
+            createTableTemplate += SQLUtils.generateCreateTable(tableName, (TableModel) tableData);
+
+        } else if (tableData instanceof ResultSetMetaData) {
+            createTableTemplate += SQLUtils.generateCreateTable(tableName, (ResultSetMetaData) tableData);
+
+        } else {
+            Log.error("Error generating 'CREATE TABLE' template for data export. No data to create table from.");
+            return null;
+        }
+
+        return createTableTemplate + "\n-- inserting data --\n";
     }
 
     private String getSetBlobFileStatement() {

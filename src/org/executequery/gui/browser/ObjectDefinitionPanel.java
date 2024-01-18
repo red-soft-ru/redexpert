@@ -215,7 +215,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
         SimpleCommentPanel simpleCommentPanel = new SimpleCommentPanel(currentObjectView);
         simpleCommentPanel.addActionForCommentUpdateButton(e -> sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText()));
-        tabPane.setComponentAt(6, simpleCommentPanel.getCommentPanel());
+        tabPane.setComponentAt(tabPane.getTabCount() - 1, simpleCommentPanel.getCommentPanel());
 
         // --- header values ---
 

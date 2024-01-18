@@ -712,15 +712,6 @@
             large-icon="/org/executequery/icons/ExportDelimited24.png"
             execute-class="org.executequery.actions.toolscommands.ExportDelimitedCommand"/>
 
-    <action id="export-resultset-command"
-            name="Export Result Set"
-            description="Execute SQL SELECT statements writing results direct to file"
-            mnemonic="X"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ExportDelimited16.png"
-            large-icon="/org/executequery/icons/ExportDelimited24.png"
-            execute-class="org.executequery.actions.databasecommands.ExportResultSetCommand"/>
-
     <action id="import-data-from-file-command"
             name="Import data from file"
             description="Import data into database from local files (*.csv, *.xlsx, ...)"

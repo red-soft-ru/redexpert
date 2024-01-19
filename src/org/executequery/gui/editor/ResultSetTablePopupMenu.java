@@ -45,6 +45,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.print.Printable;
 
+@SuppressWarnings("unused")
 public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener {
 
     private Point lastPopupPoint;
@@ -76,8 +77,13 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
 
         // the print sub-menu
         JMenu printMenu = MenuItemFactory.createMenu(bundleString("Print"));
-        create(printMenu, bundleString("PrintSelection"), "printSelection");
-        create(printMenu, bundleString("PrintTable"), "printTable");
+        create(printMenu, bundleString("Selection"), "printSelection");
+        create(printMenu, bundleString("Table"), "printTable");
+
+        // the export sub-menu
+        JMenu exportMenu = MenuItemFactory.createMenu(bundleString("Export"));
+        create(exportMenu, bundleString("Selection"), "exportSelection");
+        create(exportMenu, bundleString("Table"), "exportTable");
 
         JCheckBoxMenuItem cellOpensDialog =
                 MenuItemFactory.createCheckBoxMenuItem(reflectiveAction);
@@ -107,14 +113,12 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         addSeparator();
         add(create(bundleString("SetNull"), "setNull"));
         addSeparator();
-        add(create(bundleString("ExportSelection"), "exportSelection"));
-        add(create(bundleString("ExportTable"), "exportTable"));
-        addSeparator();
         if (resultSetTableContainer != null && resultSetTableContainer.isTransposeAvailable()) {
             add(createFromAction("editor-show-hide-rs-columns-command", "Show/hide result set columns"));
             addSeparator();
         }
         add(create(bundleString("View"), "openDataItemViewer"));
+        add(exportMenu);
         add(printMenu);
         addSeparator();
         add(cellOpensDialog);

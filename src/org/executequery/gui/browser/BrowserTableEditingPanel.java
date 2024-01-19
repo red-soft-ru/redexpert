@@ -571,12 +571,16 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             return;
 
         if (descriptionTable.getSelectedRow() >= 0) {
+
             int row = ((TableSorter) descriptionTable.getModel()).modelIndex(descriptionTable.getSelectedRow());
             DatabaseColumn column = descriptionTable.getDatabaseTableModel().getDatabaseColumns().get(row);
             BaseDialog dialog = new BaseDialog(InsertColumnPanel.EDIT_TITLE, true);
             InsertColumnPanel panel = new InsertColumnPanel(table, dialog, column);
+
             dialog.addDisplayComponent(panel);
             dialog.display();
+            table.reset();
+            reloadView();
         }
     }
 

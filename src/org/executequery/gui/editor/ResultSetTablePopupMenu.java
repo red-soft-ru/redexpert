@@ -233,12 +233,12 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
 
     @SuppressWarnings("unused")
     public void selectRow(ActionEvent e) {
-        table.selectRow(lastPopupPoint);
+        table.setColumnSelectionInterval(0, table.getColumnCount() - 1);
     }
 
     @SuppressWarnings("unused")
     public void selectColumn(ActionEvent e) {
-        table.selectColumn(lastPopupPoint);
+        table.setRowSelectionInterval(0, table.getRowCount() - 1);
     }
 
     @SuppressWarnings("unused")

@@ -715,7 +715,7 @@
     <action id="import-data-from-file-command"
             name="Import data from file"
             description="Import data into database from local files (*.csv, *.xlsx, ...)"
-            execute-class="org.executequery.actions.databasecommands.ImportDataFromFileCommand"/>
+            execute-class="org.executequery.actions.databasecommands.ImportDataCommand"/>
 
     <action id="table-validation-command"
             name="Table Validation"

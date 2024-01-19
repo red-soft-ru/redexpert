@@ -1,4 +1,4 @@
-package org.executequery.gui.importFromFile;
+package org.executequery.gui.importData;
 
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -13,19 +13,18 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.NamedView;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
+import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
-import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -50,10 +49,10 @@ import java.util.Vector;
  * @author Alexey Kozlov
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
+public class ImportDataPanel extends DefaultTabViewActionPanel
         implements NamedView {
 
-    public static final String TITLE = Bundles.get(ImportDataFromFilePanel.class, "Title");
+    public static final String TITLE = Bundles.get(ImportDataPanel.class, "Title");
     public static final String FRAME_ICON = "ImportDelimited16.png";
 
     private static final int PREVIEW_ROWS_COUNT = 50;
@@ -111,7 +110,7 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
     private String fileName;
     private String fileType;
 
-    public ImportDataFromFilePanel() {
+    public ImportDataPanel() {
         super(new BorderLayout());
         init();
     }
@@ -524,29 +523,6 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
             for (DatabaseColumn column : targetHost.getColumns(targetTableCombo.getSelectedItem().toString())) {
 
                 String fieldProperty = "";
-                if (isTimeType(column.getTypeName())) {
-                    switch (column.getTypeName()) {
-
-                        case "DATE":
-                            fieldProperty = SystemProperties.getProperty("user", "results.date.pattern");
-                            if (fieldProperty == null || fieldProperty.isEmpty())
-                                fieldProperty = SystemProperties.getProperty("system", "results.date.pattern");
-                            break;
-
-                        case "TIME":
-                            fieldProperty = SystemProperties.getProperty("user", "results.time.pattern");
-                            if (fieldProperty == null || fieldProperty.isEmpty())
-                                fieldProperty = SystemProperties.getProperty("system", "results.time.pattern");
-                            break;
-
-                        case "TIMESTAMP":
-                            fieldProperty = SystemProperties.getProperty("user", "results.timestamp.pattern");
-                            if (fieldProperty == null || fieldProperty.isEmpty())
-                                fieldProperty = SystemProperties.getProperty("system", "results.timestamp.pattern");
-                            break;
-                    }
-                }
-
                 if (isBlobType(column.getTypeName()))
                     fieldProperty = "true";
 
@@ -922,11 +898,11 @@ public class ImportDataFromFilePanel extends DefaultTabViewActionPanel
 
     @Override
     public String bundleString(String key) {
-        return Bundles.get(ImportDataFromFilePanel.class, key);
+        return Bundles.get(ImportDataPanel.class, key);
     }
 
     public String bundleString(String key, Object... args) {
-        return Bundles.get(ImportDataFromFilePanel.class, key, args);
+        return Bundles.get(ImportDataPanel.class, key, args);
     }
 
     private class MappingCellRenderer extends DefaultTableCellRenderer {

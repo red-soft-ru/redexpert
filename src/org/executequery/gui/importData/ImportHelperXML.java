@@ -1,7 +1,5 @@
-package org.executequery.gui.importFromFile;
+package org.executequery.gui.importData;
 
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.log.Log;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -9,16 +7,14 @@ import org.w3c.dom.NodeList;
 import javax.swing.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.sql.PreparedStatement;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class ImportHelperXML extends AbstractImportHelper {
 
-    protected ImportHelperXML(ImportDataFromFilePanel parent, String pathToFile, String pathToLob, int previewRowCount, boolean isFirstRowHeaders) {
+    protected ImportHelperXML(ImportDataPanel parent, String pathToFile, String pathToLob, int previewRowCount, boolean isFirstRowHeaders) {
         super(parent, pathToFile, pathToLob, previewRowCount, isFirstRowHeaders);
     }
 
@@ -26,8 +22,6 @@ public class ImportHelperXML extends AbstractImportHelper {
     public void startImport(
             StringBuilder sourceColumnList,
             boolean[] valuesIndexes,
-            PreparedStatement insertStatement,
-            DefaultStatementExecutor executor,
             int firstRow,
             int lastRow,
             int batchStep,
@@ -74,25 +68,10 @@ public class ImportHelperXML extends AbstractImportHelper {
                         insertStatement.setNull(fieldIndex + 1, columnType);
 
                     } else {
-
-                        if (parent.isTimeType(columnTypeName)) {
-                            insertParameter = LocalDateTime.parse(insertParameter.toString(), DateTimeFormatter.ofPattern(columnProperty));
-
-                        } else if (parent.isBlobType(columnTypeName) && columnProperty.equals("true")) {
-
-                            if (insertParameter.toString().startsWith(":h")) {
-
-                                String parameter = insertParameter.toString();
-                                int startIndex = Integer.parseInt(parameter.substring(2).split("_")[0], 16);
-                                int endIndex = startIndex + Integer.parseInt(parameter.split("_")[1], 16);
-
-                                insertParameter = Arrays.copyOfRange(Files.readAllBytes(Paths.get(pathToLob)), startIndex, endIndex);
-
-                            } else {
-                                String path = insertParameter.toString().replace("\"", "").replace("'", "");
-                                insertParameter = Files.newInputStream(new File(path).toPath());
-                            }
-                        }
+                        if (parent.isTimeType(columnTypeName))
+                            insertParameter = getFormattedTimeValue(insertParameter);
+                        else if (parent.isBlobType(columnTypeName) && columnProperty.equals("true"))
+                            insertParameter = getFormattedBlobValue(insertParameter, true);
 
                         insertStatement.setObject(fieldIndex + 1, insertParameter);
                     }
@@ -103,19 +82,13 @@ public class ImportHelperXML extends AbstractImportHelper {
             }
             insertStatement.addBatch();
 
-            parent.setProgressLabel(String.format(bundleString("RecordsAddedLabel"), executorIndex));
-            if (executorIndex % batchStep == 0 && executorIndex != 0) {
-                insertStatement.executeBatch();
-                executor.getConnection().commit();
-            }
+            boolean execute = executorIndex % batchStep == 0 && executorIndex != 0;
+            updateProgressLabel(executorIndex, execute, false);
             linesCount++;
             executorIndex++;
         }
 
-        insertStatement.executeBatch();
-        executor.getConnection().commit();
-        Log.info("Import finished, " + executorIndex + " records was added");
-        addedRecordsCount = executorIndex;
+        updateProgressLabel(executorIndex, true, true);
     }
 
     @Override

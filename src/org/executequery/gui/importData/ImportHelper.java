@@ -1,4 +1,4 @@
-package org.executequery.gui.importFromFile;
+package org.executequery.gui.importData;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 
@@ -18,8 +18,6 @@ interface ImportHelper {
     void startImport(
             StringBuilder sourceColumnList,
             boolean[] valuesIndexes,
-            PreparedStatement insertStatement,
-            DefaultStatementExecutor executor,
             int firstRow,
             int lastRow,
             int batchStep,

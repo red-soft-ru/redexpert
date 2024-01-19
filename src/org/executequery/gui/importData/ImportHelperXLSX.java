@@ -1,27 +1,21 @@
-package org.executequery.gui.importFromFile;
+package org.executequery.gui.importData;
 
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.log.Log;
 
 import javax.swing.*;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.PreparedStatement;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 public class ImportHelperXLSX extends AbstractImportHelper {
 
-    public ImportHelperXLSX(ImportDataFromFilePanel parent, String pathToFile, String pathToLob, int previewRowCount, boolean isFirstRowHeaders) {
+    public ImportHelperXLSX(ImportDataPanel parent, String pathToFile, String pathToLob, int previewRowCount, boolean isFirstRowHeaders) {
         super(parent, pathToFile, pathToLob, previewRowCount, isFirstRowHeaders);
     }
 
@@ -29,8 +23,6 @@ public class ImportHelperXLSX extends AbstractImportHelper {
     public void startImport(
             StringBuilder sourceColumnList,
             boolean[] valuesIndexes,
-            PreparedStatement insertStatement,
-            DefaultStatementExecutor executor,
             int firstRow,
             int lastRow,
             int batchStep,
@@ -75,26 +67,12 @@ public class ImportHelperXLSX extends AbstractImportHelper {
                         insertStatement.setNull(fieldIndex + 1, columnType);
 
                     } else {
-
-                        if (parent.isIntegerType(columnTypeName)) {
-                            insertParameter = insertParameter.toString().split("\\.")[0].trim();
-
-                        } else if (parent.isTimeType(columnTypeName)) {
-                            insertParameter = LocalDateTime.parse(insertParameter.toString(), DateTimeFormatter.ofPattern(columnProperty));
-
-                        } else if (parent.isBlobType(columnTypeName) && columnProperty.equals("true")) {
-
-                            if (insertParameter.toString().startsWith(":h")) {
-
-                                String parameter = insertParameter.toString();
-                                int startIndex = Integer.parseInt(parameter.substring(2).split("_")[0], 16);
-                                int endIndex = startIndex + Integer.parseInt(parameter.split("_")[1], 16);
-
-                                insertParameter = Arrays.copyOfRange(Files.readAllBytes(Paths.get(pathToLob)), startIndex, endIndex);
-
-                            } else
-                                insertParameter = Files.newInputStream(new File(insertParameter.toString()).toPath());
-                        }
+                        if (parent.isIntegerType(columnTypeName))
+                            insertParameter = getFormattedIntValue(insertParameter);
+                        else if (parent.isTimeType(columnTypeName))
+                            insertParameter = getFormattedTimeValue(insertParameter);
+                        else if (parent.isBlobType(columnTypeName) && columnProperty.equals("true"))
+                            insertParameter = getFormattedBlobValue(insertParameter, false);
 
                         insertStatement.setObject(fieldIndex + 1, insertParameter);
                     }
@@ -105,19 +83,13 @@ public class ImportHelperXLSX extends AbstractImportHelper {
             }
             insertStatement.addBatch();
 
-            parent.setProgressLabel(String.format(bundleString("RecordsAddedLabel"), executorIndex));
-            if (executorIndex % batchStep == 0 && executorIndex != 0) {
-                insertStatement.executeBatch();
-                executor.getConnection().commit();
-            }
+            boolean execute = executorIndex % batchStep == 0 && executorIndex != 0;
+            updateProgressLabel(executorIndex, execute, false);
             linesCount++;
             executorIndex++;
         }
 
-        insertStatement.executeBatch();
-        executor.getConnection().commit();
-        Log.info("Import finished, " + executorIndex + " records was added");
-        addedRecordsCount = executorIndex;
+        updateProgressLabel(executorIndex, true, true);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.executequery.gui.importFromFile;
+package org.executequery.gui.importData;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
@@ -7,12 +7,10 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
 import org.executequery.gui.resultset.ResultSetColumnHeader;
-import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -26,7 +24,7 @@ public class ImportHelperDB extends AbstractImportHelper {
     private final String sourceTableName;
     private final DatabaseConnection sourceConnection;
 
-    protected ImportHelperDB(ImportDataFromFilePanel parent, String sourceTableName, int previewRowCount, DatabaseConnection sourceConnection) {
+    protected ImportHelperDB(ImportDataPanel parent, String sourceTableName, int previewRowCount, DatabaseConnection sourceConnection) {
         super(parent, null, null, previewRowCount, false);
         this.sourceTableName = sourceTableName;
         this.sourceConnection = sourceConnection;
@@ -36,8 +34,6 @@ public class ImportHelperDB extends AbstractImportHelper {
     public void startImport(
             StringBuilder sourceColumnList,
             boolean[] valuesIndexes,
-            PreparedStatement insertStatement,
-            DefaultStatementExecutor executor,
             int firstRow,
             int lastRow,
             int batchStep,
@@ -76,9 +72,8 @@ public class ImportHelperDB extends AbstractImportHelper {
                         insertStatement.setNull(fieldIndex + 1, columnType);
 
                     } else {
-
                         if (parent.isIntegerType(columnTypeName))
-                            insertParameter = insertParameter.toString().split("\\.")[0].trim();
+                            insertParameter = getFormattedIntValue(insertParameter);
 
                         insertStatement.setObject(fieldIndex + 1, insertParameter);
                     }
@@ -88,20 +83,14 @@ public class ImportHelperDB extends AbstractImportHelper {
             }
             insertStatement.addBatch();
 
-            parent.setProgressLabel(String.format(bundleString("RecordsAddedLabel"), executorIndex));
-            if (executorIndex % batchStep == 0 && executorIndex != 0) {
-                insertStatement.executeBatch();
-                executor.getConnection().commit();
-            }
+            boolean execute = executorIndex % batchStep == 0 && executorIndex != 0;
+            updateProgressLabel(executorIndex, execute, false);
             linesCount++;
             executorIndex++;
         }
 
-        insertStatement.executeBatch();
-        executor.getConnection().commit();
+        updateProgressLabel(executorIndex, true, true);
         sourceExecutor.releaseResources();
-        Log.info("Import finished, " + executorIndex + " records was added");
-        addedRecordsCount = executorIndex;
     }
 
     @Override

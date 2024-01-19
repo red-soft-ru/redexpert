@@ -1435,6 +1435,15 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return null;
     }
 
+    public void reloadMetaTag(int type) {
+        for (DatabaseMetaTag metaTag : getMetaObjects()) {
+            if (metaTag.getMetaDataKey().equals(NamedObject.META_TYPES[type])) {
+                metaTag.reset();
+                return;
+            }
+        }
+    }
+
     public List<String> getDatabaseObjectNamesForMetaTag(String metadatakey) {
         List<String> list = new ArrayList<>();
         List<NamedObject> databaseObjects = getDatabaseObjectsForMetaTag(metadatakey);

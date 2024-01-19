@@ -1199,6 +1199,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         } else if (tabIndex == TABLE_TRIGGERS_INDEX) {
             dialog = new BaseDialog(CreateTriggerPanel.CREATE_TITLE, true);
             panelForDialog = new CreateTriggerPanel(table.getHost().getDatabaseConnection(), dialog, DefaultDatabaseTrigger.TABLE_TRIGGER, table.getName());
+            ((DefaultDatabaseHost) table.getHost()).reloadMetaTag(NamedObject.TRIGGER);
         }
 
         if (panelForDialog != null) {

@@ -1,5 +1,7 @@
 package org.executequery.gui.browser;
 
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.gui.BaseDialog;
@@ -37,7 +39,11 @@ public class BrowserViewEditingPanel extends ObjectDefinitionPanel {
 
         triggersLoaded = false;
 
-        buttonsEditingTriggersPanel = new AbstractToolBarForTable("Create Trigger", "Delete Trigger", "Refresh") {
+        buttonsEditingTriggersPanel = new AbstractToolBarForTable(
+                "Create Trigger",
+                "Delete Trigger",
+                "Refresh"
+        ) {
             @Override
             public void insert(ActionEvent e) {
                 insertTrigger();
@@ -118,6 +124,7 @@ public class BrowserViewEditingPanel extends ObjectDefinitionPanel {
         dialog.addDisplayComponent(panelForDialog);
         dialog.display();
 
+        ((DefaultDatabaseHost) currentObjectView.getHost()).reloadMetaTag(NamedObject.TRIGGER);
         currentObjectView.reset();
         setValues(currentObjectView);
         loadTriggers();

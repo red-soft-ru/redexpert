@@ -7,52 +7,40 @@ import org.executequery.localization.Bundles;
 import java.util.List;
 
 public class TableTriggersTableModel extends AbstractDatabaseTableViewModel {
-    private static final String[] header = Bundles.get(TableTriggersTableModel.class, new String[]{
+
+    private static final String[] header = bundleString(
             "TriggerName",
             "TriggerType",
             "Active",
             "Position",
             "Description"
-    });
-    /**
-     * the table indexed columns
-     */
+    );
+
     private List<DefaultDatabaseTrigger> triggers;
 
-    /**
-     * Creates a new instance of DatabaseTableColumnIndexTableModel
-     */
-    public TableTriggersTableModel() {
-    }
-
     public void setTriggersData(List<DefaultDatabaseTrigger> triggers) {
-        if (this.triggers == triggers) {
-            return;
-        }
         this.triggers = triggers;
         fireTableDataChanged();
     }
 
+    @Override
     public int getRowCount() {
-        if (triggers == null) {
-            return 0;
-        }
-        return triggers.size();
+        return triggers != null ? triggers.size() : 0;
     }
 
+    @Override
     public int getColumnCount() {
         return header.length;
     }
 
+    @Override
     public String getColumnName(int col) {
         return header[col];
     }
 
-    public boolean isCellEditable(int row, int col) {
-        return false;
-    }
-
+    @Override
     public Object getValueAt(int row, int col) {
+
         DefaultDatabaseTrigger trigger = triggers.get(row);
         switch (col) {
             case 0:
@@ -70,30 +58,17 @@ public class TableTriggersTableModel extends AbstractDatabaseTableViewModel {
         }
     }
 
-    public void setValueAt(Object value, int row, int col) {
-    /*DefaultDatabaseIndex index = indexes.get(row);
-    switch (col) {
-      case 1:
-        index.setName((String) value);
-        break;
-      case 2:
-        index.addIndexedColumn((String) value);
-        break;
-      case 4:
-        index.setNonUnique(((Boolean) value).booleanValue());
-        break;
-    }
-    fireTableRowsUpdated(row, row);*/
-    }
-
+    @Override
     public Class<?> getColumnClass(int col) {
-        if (col == 2) {
-            return Boolean.class;
-        }
-        return String.class;
+        return col == 2 ? Boolean.class : String.class;
     }
 
     public List<DefaultDatabaseTrigger> getTriggers() {
         return triggers;
     }
+
+    private static String[] bundleString(String... keys) {
+        return Bundles.get(TableTriggersTableModel.class, keys);
+    }
+
 }

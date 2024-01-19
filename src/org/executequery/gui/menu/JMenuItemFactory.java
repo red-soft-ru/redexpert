@@ -89,9 +89,7 @@ public class JMenuItemFactory {
             }
 
         } catch (Exception e) {
-
-            e.printStackTrace();
-            System.out.println(menuItem.getImplementingClass());
+            Log.error("Error occurred by object with id '" + menuItem.getId() + "'", e);
         }
 
         jMenuItem.setIcon(null);

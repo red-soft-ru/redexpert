@@ -21,13 +21,10 @@
 package org.executequery.sql;
 
 import biz.redsoft.IFBCreateDatabase;
-import biz.redsoft.IFBDatabasePerformance;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultDatabaseConnection;
-import org.executequery.databasemediators.spi.DefaultDatabaseDriver;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.SimpleDataSource;
@@ -38,9 +35,6 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
@@ -77,7 +71,7 @@ public class SqlScriptRunner {
     }
 
     public SqlStatementResult execute(DatabaseConnection databaseConnection,
-                                      String script, ActionOnError actionOnError) {
+                                      String script, boolean stopOnError) {
 
         int count = 0;
         int result = 0;
@@ -183,7 +177,7 @@ public class SqlScriptRunner {
                     executionController.errorMessage("Error executing statement:");
                     executionController.actionMessage(derivedQuery);
 
-                    if (actionOnError != ActionOnError.CONTINUE) {
+                    if (stopOnError) {
 
                         throw e;
 

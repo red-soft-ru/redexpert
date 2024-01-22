@@ -22,572 +22,406 @@ package org.executequery.gui;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ActiveComponent;
-import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabViewActionPanel;
 import org.executequery.components.FileChooserDialog;
-import org.executequery.components.MinimumWidthActionButton;
 import org.executequery.components.SplitPaneFactory;
-import org.executequery.components.TableSelectionCombosGroup;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.ConnectionEvent;
-import org.executequery.event.ConnectionListener;
-import org.executequery.event.DefaultKeywordEvent;
+import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextFileWriter;
 import org.executequery.localization.Bundles;
-import org.executequery.sql.ActionOnError;
+import org.executequery.repository.DatabaseConnectionRepository;
+import org.executequery.repository.Repository;
+import org.executequery.repository.RepositoryCache;
 import org.executequery.sql.ExecutionController;
 import org.executequery.sql.SqlScriptRunner;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.util.ThreadUtils;
-import org.executequery.util.ThreadWorker;
 import org.underworldlabs.swing.AbstractStatusBarPanel;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.ProgressBar;
 import org.underworldlabs.swing.ProgressBarFactory;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Takis Diakoumis
  */
 public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         implements NamedView,
-        FocusComponentPanel,
         ActiveComponent,
-        ExecutionController,
-        ConnectionListener {
+        ExecutionController {
 
     public static final String TITLE = Bundles.get(ExecuteSqlScriptPanel.class, "title");
     public static final String FRAME_ICON = "ExecuteSqlScript16.png";
-    public static final int MAX_LENGTH_TEXT_PANE = 1000000;
 
-    private JComboBox connectionsCombo;
+    public static final int MAX_LENGTH_TEXT_PANE = 1000000;
+    private static final int STATUS_BAR_HEIGHT = 26;
+
+    private static int instanceCounter = 1;
+
+    // --- GUI components ---
+
+    private JComboBox<?> connectionsCombo;
+
+    private JCheckBox useConnectionCheck;
+    private JCheckBox stopOnErrorCheck;
+    private JCheckBox logOutputCheck;
 
     private JTextField fileNameField;
-
-    private TableSelectionCombosGroup combosGroup;
-
     private SimpleSqlTextPanel sqlText;
-
     private LoggingOutputPanel outputPanel;
-
     private SqlTextPaneStatusBar statusBar;
 
-    private JComboBox actionOnErrorCombo;
-
-    private JCheckBox logOutputCheckBox;
-
-    private JCheckBox useConnection;
-
-    private JButton saveButton;
-
-    private JButton startButton;
-
-    private JButton rollbackButton;
-
-    private JButton commitButton;
-
+    private JButton saveScriptButton;
     private JButton stopButton;
+    private JButton startButton;
+    private JButton commitButton;
+    private JButton rollbackButton;
+    private JButton browseFileButton;
 
-    private SqlScriptRunner sqlScriptRunner;
+    private ProgressBar progressBar;
 
-    private boolean resetButtons;
+    // ---
 
     private String script = null;
 
-    public ExecuteSqlScriptPanel() {
+    private boolean executing;
+    private boolean resetButtons;
 
+    private SwingWorker swingWorker;
+    private SqlScriptRunner sqlScriptRunner;
+    private final Map<String, DatabaseConnection> connections;
+
+    public ExecuteSqlScriptPanel() {
         super(new BorderLayout());
 
-        try {
+        this.connections = new HashMap<>();
 
-            init();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-
+        init();
+        arrange();
     }
 
-    private void init() throws Exception {
+    private void init() {
+
+        Repository repository = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+        if (repository != null)
+            for (DatabaseConnection dc : ((DatabaseConnectionRepository) repository).findAll())
+                connections.put(dc.getName(), dc);
+
+        // --- comboBoxes ---
+
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", connections.keySet().toArray());
+        connectionsCombo.setEnabled(false);
+
+        // --- checkBoxes ---
+
+        logOutputCheck = WidgetFactory.createCheckBox("logOutputCheck", bundleString("logOutput"));
+        logOutputCheck.setSelected(true);
+
+        useConnectionCheck = WidgetFactory.createCheckBox("useConnectionCheck", bundleString("UseConnection"));
+        useConnectionCheck.addItemListener(e -> connectionUsageChanged());
+        useConnectionCheck.setSelected(false);
+
+        stopOnErrorCheck = WidgetFactory.createCheckBox("stopOnErrorCheck", bundleString("stopOnErrorCheck"));
+        stopOnErrorCheck.setSelected(true);
+
+        // --- buttons ---
+
+        browseFileButton = WidgetFactory.createButton("browseFileButton", bundleString("Browse"));
+        browseFileButton.addActionListener(e -> browse());
+
+        saveScriptButton = WidgetFactory.createButton("saveScriptButton", bundleString("SaveScript"));
+        saveScriptButton.addActionListener(e -> saveScript());
+
+        startButton = WidgetFactory.createButton("startButton", bundleString("Start"));
+        startButton.addActionListener(e -> start());
+
+        commitButton = WidgetFactory.createButton("commitButton", bundleString("Commit"));
+        commitButton.addActionListener(e -> commit());
+        commitButton.setEnabled(false);
+
+        rollbackButton = WidgetFactory.createButton("rollbackButton", bundleString("Rollback"));
+        rollbackButton.addActionListener(e -> rollback());
+        rollbackButton.setEnabled(false);
+
+        stopButton = WidgetFactory.createButton("stopButton", bundleString("Stop"));
+        stopButton.addActionListener(e -> stop());
+        stopButton.setEnabled(false);
+
+        // --- others ---
 
         fileNameField = WidgetFactory.createTextField("fileNameField");
-        fileNameField.setActionCommand("fileNameChanged");
-        fileNameField.addActionListener(this);
-        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo");
-        combosGroup = new TableSelectionCombosGroup(connectionsCombo);
-        connectionsCombo.setEnabled(false);
+        fileNameField.setPreferredSize(browseFileButton.getPreferredSize());
+        fileNameField.addActionListener(e -> fileNameChanged());
 
         sqlText = new SimpleSqlTextPanel(false, false);
         sqlText.setBorder(null);
         sqlText.setScrollPaneBorder(BorderFactory.createMatteBorder(1, 1, 0, 1, UIUtils.getDefaultBorderColour()));
 
-        actionOnErrorCombo = WidgetFactory.createComboBox("actionOnErrorCombo");
-
-        ActionOnError[] actionsOnError = {
-                ActionOnError.HALT,
-                ActionOnError.CONTINUE
-        };
-
-        actionOnErrorCombo.setModel(new DefaultComboBoxModel(actionsOnError));
-
-        outputPanel = new LoggingOutputPanel();
         statusBar = new SqlTextPaneStatusBar();
         statusBar.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 1));
 
-        JButton button = new MinimumWidthActionButton(85, this, bundleString("Browse"), "browse");
-        button.setMnemonic('r');
+        outputPanel = new LoggingOutputPanel();
 
-        logOutputCheckBox = new JCheckBox(bundleString("logOutput"));
-        logOutputCheckBox.setSelected(true);
+    }
 
-        useConnection = new JCheckBox(bundleString("UseConnection"));
-        useConnection.addItemListener(new ItemListener() {
+    private void arrange() {
 
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                activateConnUsage();
-            }
-        });
-        useConnection.setSelected(false);
+        GridBagHelper gbh;
 
-        saveButton = new MinimumWidthActionButton(85, this,
-                bundleString("SaveScript"), "saveScript");
+        // --- split pane ---
 
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.gridheight = 1;
-        gbc.insets.top = 7;
-        gbc.insets.bottom = 5;
-        gbc.insets.right = 10;
-        gbc.insets.left = 10;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        mainPanel.add(useConnection, gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.insets.top = 5;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        mainPanel.add(connectionsCombo, gbc);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        gbc.gridwidth = 1;
-        gbc.insets.top = 5;
-        mainPanel.add(new JLabel(bundleString("ActionOnError")), gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets.top = 0;
-        mainPanel.add(actionOnErrorCombo, gbc);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        gbc.gridwidth = 1;
-        gbc.insets.top = 5;
-        mainPanel.add(new JLabel(bundleString("InputFile")), gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.insets.top = 0;
-        mainPanel.add(fileNameField, gbc);
-        gbc.gridx = 2;
-        gbc.weightx = 0;
-        gbc.insets.left = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        mainPanel.add(button, gbc);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.insets.top = 2;
-        gbc.insets.left = 10;
-        gbc.gridwidth = 2;
-        mainPanel.add(logOutputCheckBox, gbc);
-        gbc.gridx = 2;
-        gbc.gridwidth = 1;
-        gbc.insets.left = 0;
-        mainPanel.add(saveButton, gbc);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.weighty = 1.0;
-        gbc.weightx = 1.0;
-        gbc.insets.top = 5;
-        gbc.insets.left = 10;
-        gbc.insets.bottom = 0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.BOTH;
-        JSplitPane splitPane = new SplitPaneFactory().create(JSplitPane.VERTICAL_SPLIT,
-                sqlText, outputPanel);
+        JSplitPane splitPane = new SplitPaneFactory().create(JSplitPane.VERTICAL_SPLIT, sqlText, outputPanel);
         splitPane.setResizeWeight(0.5);
         splitPane.setDividerLocation(400);
         splitPane.setDividerSize(5);
-        mainPanel.add(splitPane, gbc);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.weighty = 0;
-        gbc.insets.bottom = 5;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        mainPanel.add(statusBar, gbc);
 
+        // --- file panel ---
+
+        JPanel filePanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally().rightGap(5);
+        filePanel.add(new JLabel(bundleString("InputFile")), gbh.setMinWeightX().topGap(3).get());
+        filePanel.add(fileNameField, gbh.nextCol().setMaxWeightX().topGap(0).get());
+        filePanel.add(browseFileButton, gbh.nextCol().setMinWeightX().get());
+        filePanel.add(saveScriptButton, gbh.nextCol().rightGap(0).get());
+
+        // --- properties panel ---
+
+        JPanel propertiesPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally().rightGap(5);
+        propertiesPanel.add(stopOnErrorCheck, gbh.get());
+        propertiesPanel.add(logOutputCheck, gbh.nextCol().get());
+        propertiesPanel.add(useConnectionCheck, gbh.nextCol().get());
+        propertiesPanel.add(connectionsCombo, gbh.nextCol().rightGap(0).spanX().get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        int minimumButtonWidth = 85;
-        startButton = new MinimumWidthActionButton(minimumButtonWidth, this, bundleString("Start"), "start");
-        rollbackButton = new MinimumWidthActionButton(minimumButtonWidth, this, bundleString("Commit"), "commit");
-        commitButton = new MinimumWidthActionButton(minimumButtonWidth, this, bundleString("Rollback"), "rollback");
-        stopButton = new MinimumWidthActionButton(minimumButtonWidth, this, bundleString("Stop"), "stop");
+        gbh = new GridBagHelper().anchorNorthWest().fillBoth().setInsets(5, 5, 5, 0);
+        mainPanel.add(filePanel, gbh.fillBoth().spanX().get());
+        mainPanel.add(propertiesPanel, gbh.nextRowFirstCol().spanX().get());
+        mainPanel.add(splitPane, gbh.nextRowFirstCol().setMaxWeightY().spanX().get());
+        mainPanel.add(statusBar, gbh.nextRowFirstCol().setMinWeightY().bottomGap(5).spanX().get());
 
-        rollbackButton.setEnabled(false);
-        commitButton.setEnabled(false);
-        stopButton.setEnabled(false);
+        // --- button panel ---
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 5));
-        buttonPanel.add(startButton);
-        buttonPanel.add(rollbackButton);
-        buttonPanel.add(commitButton);
-        buttonPanel.add(stopButton);
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().fillHorizontally().anchorNorthWest();
+        buttonPanel.add(new JPanel(), gbh.setMaxWeightX().get());
+        buttonPanel.add(startButton, gbh.setMinWeightX().nextCol().get());
+        buttonPanel.add(rollbackButton, gbh.nextCol().get());
+        buttonPanel.add(commitButton, gbh.nextCol().get());
+        buttonPanel.add(stopButton, gbh.nextCol().get());
+
+        // --- base ---
 
         add(mainPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-
-        EventMediator.registerListener(this);
     }
 
-    public int saveScript() {
-        TextFileWriter writer = new TextFileWriter(sqlText.getSQLText());
-        int result = writer.write();
-        writer = null;
-        return result;
+    private void enableButtons(boolean start, boolean stop, boolean commit, boolean rollback) {
+        GUIUtils.invokeLater(() -> {
+            startButton.setEnabled(start);
+            stopButton.setEnabled(stop);
+            commitButton.setEnabled(commit);
+            rollbackButton.setEnabled(rollback);
+        });
     }
 
-    public void activateConnUsage() {
-        if (useConnection.isSelected()) {
-            connectionsCombo.setEnabled(true);
-            if (connectionsCombo.getSelectedItem() != null)
-                sqlText.getTextPane().setDatabaseConnection(((DatabaseHost) connectionsCombo.getSelectedItem()).getDatabaseConnection());
-        } else {
-            connectionsCombo.setEnabled(false);
-            sqlText.getTextPane().setDatabaseConnection(null);
-        }
+    // --- handlers ---
+
+    public void connectionUsageChanged() {
+
+        boolean useConnection = useConnectionCheck.isSelected();
+
+        connectionsCombo.setEnabled(useConnection);
+        sqlText.getTextPane().setDatabaseConnection(useConnection ? getSelectedConnection() : null);
     }
 
     public void fileNameChanged() {
-        File file = new File(fileNameField.getText());
-
         try {
-            sqlText.setSQLText(FileUtils.loadFile(file.getPath()));
+            script = FileUtils.loadFile(new File(fileNameField.getText()).getPath());
+            if (script.length() < MAX_LENGTH_TEXT_PANE)
+                sqlText.setSQLText(script);
+            else
+                GUIUtilities.displayWarningMessage(bundleString("FileLengthOverrun"));
+
         } catch (IOException e) {
             GUIUtilities.displayErrorMessage(bundleString("error.load-file"));
         }
     }
 
-    public boolean logOutput() {
-
-        return logOutputCheckBox.isSelected();
+    public void saveScript() {
+        new TextFileWriter(sqlText.getSQLText()).write();
     }
 
-    public void browse() throws IOException {
+    public void browse() {
 
         FileChooserDialog fileChooser = new FileChooserDialog();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("SQL", "sql"));
 
         fileChooser.setDialogTitle(bundleString("title.file-chooser"));
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
 
         int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), bundleString("Select"));
-        if (result == JFileChooser.CANCEL_OPTION) {
-
+        if (result == JFileChooser.CANCEL_OPTION)
             return;
-        }
 
         File file = fileChooser.getSelectedFile();
         fileNameField.setText(file.getAbsolutePath());
-        script = FileUtils.loadFile(file.getPath());
-        if(script.length()<MAX_LENGTH_TEXT_PANE)
-            sqlText.setSQLText(script);
-        else sqlText.setSQLText("'File is very big.It can not opened in editor'");
+        fileNameChanged();
     }
-
-    private boolean fieldsValid() {
-
-        String fileName = fileNameField.getText();
-        if (StringUtils.isBlank(fileName) && StringUtils.isEmpty(sqlText.getSQLText())) {
-
-            GUIUtilities.displayErrorMessage(bundleString("error.select-input-file"));
-            return false;
-
-        } else if (StringUtils.isNotEmpty(fileName)){
-
-            File file = new File(fileName);
-
-            if (!file.exists()) {
-
-                GUIUtilities.displayErrorMessage("The selected file does not exists in the file system");
-                return false;
-            }
-
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean tabViewClosing() {
-
-        cleanup();
-        return true;
-    }
-
-    @Override
-    public void cleanup() {
-        sqlText.cleanup();
-        combosGroup.close();
-
-        if (statusBar != null) {
-
-            statusBar.cleanup();
-        }
-        boolean keepAlive = true;
-        if (!keepAlive)
-            closeConnection();
-        EventMediator.deregisterListener(this);
-    }
-
-    private void closeConnection() {
-
-        if (sqlScriptRunner != null) {
-
-            try {
-
-                sqlScriptRunner.close();
-
-            } catch (SQLException e) {
-
-                e.printStackTrace();
-            }
-
-        }
-    }
-
-    @Override
-    public boolean canHandleEvent(ApplicationEvent event) {
-
-        return (event instanceof DefaultKeywordEvent) || (event instanceof ConnectionEvent);
-    }
-
-    @Override
-    public Component getDefaultFocusComponent() {
-
-        return fileNameField;
-    }
-
-    private void enableButtons(final boolean enableStart, final boolean enableStop,
-                               final boolean enableCommit, final boolean enableRollback) {
-
-        GUIUtils.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                startButton.setEnabled(enableStart);
-                stopButton.setEnabled(enableStop);
-                commitButton.setEnabled(enableCommit);
-                rollbackButton.setEnabled(enableRollback);
-            }
-
-        });
-    }
-
-    private SwingWorker swingWorker;
-    private boolean executing;
 
     public void start() {
 
-        if (!executing) {
+        if (executing || !fieldsValid())
+            return;
 
-            resetButtons = false;
+        resetButtons = false;
+        enableButtons(false, true, false, false);
 
-            if (fieldsValid()) {
+        swingWorker = new SwingWorker("ExecuteSQLScript") {
 
-                enableButtons(false, true, false, false);
-
-                swingWorker = new ThreadWorker("ExecuteSQLScript") {
-                    public Object construct() {
-
-                        executing = true;
-                        return execute();
-                    }
-
-                    public void finished() {
-
-                        SqlStatementResult sqlStatementResult = (SqlStatementResult) get();
-
-                        try {
-
-                            outputPanel.append("Statements executed: " + sqlStatementResult.getStatementCount());
-                            outputPanel.append("Total records affected: " + sqlStatementResult.getUpdateCount());
-
-                        } finally {
-
-                            executing = false;
-                            // if connected to database from script, connection will be committed from script executor
-                            if (resetButtons)
-                                enableButtons(true, false, false, false);
-                            else
-                                enableButtons(true, false, true, true);
-                        }
-                    }
-                };
-                swingWorker.start();
+            @Override
+            public Object construct() {
+                executing = true;
+                return execute();
             }
 
-        }
+            @Override
+            public void finished() {
+                try {
+                    SqlStatementResult sqlStatementResult = (SqlStatementResult) get();
+                    outputPanel.append("Statements executed: " + sqlStatementResult.getStatementCount());
+                    outputPanel.append("Total records affected: " + sqlStatementResult.getUpdateCount());
+
+                } finally {
+                    executing = false;
+                    enableButtons(true, false, !resetButtons, !resetButtons);
+                }
+            }
+        };
+        swingWorker.start();
     }
 
     public void stop() {
 
-        ThreadUtils.startWorker(new Runnable() {
+        if (!executing)
+            return;
 
-            public void run() {
+        if (swingWorker != null)
+            swingWorker.interrupt();
 
-                if (executing) {
-                    try {
-
-                        if (swingWorker != null) {
-
-                            swingWorker.interrupt();
-                        }
-                        sqlScriptRunner.stop();
-
-                    } finally {
-
-                        executing = false;
-                    }
-                }
-            }
-        });
+        sqlScriptRunner.stop();
+        executing = false;
     }
 
     public void commit() {
 
-        if (sqlScriptRunner != null) {
+        if (sqlScriptRunner == null)
+            return;
 
-            try {
+        try {
+            sqlScriptRunner.commit();
+            outputPanel.append("Commit complete");
 
-                sqlScriptRunner.commit();
-                outputPanel.append("Commit complete");
+        } catch (SQLException e) {
+            outputPanel.appendError("Error during commit:\n" + e.getMessage());
 
-            } catch (SQLException e) {
-
-                outputPanel.appendError("Error during commit:\n" + e.getMessage());
-
-            } finally {
-
-                boolean keepAlive = true;
-                if (!keepAlive)
-                    closeConnection();
-                enableButtons(true, false, false, false);
-            }
+        } finally {
+            enableButtons(true, false, false, false);
         }
-
     }
 
     public void rollback() {
 
-        if (sqlScriptRunner != null) {
+        if (sqlScriptRunner == null)
+            return;
 
-            try {
+        try {
+            sqlScriptRunner.rollback();
+            outputPanel.append("Rollback complete");
 
-                sqlScriptRunner.rollback();
-                outputPanel.append("Rollback complete");
+        } catch (SQLException e) {
+            outputPanel.appendError("Error during rollback:\n" + e.getMessage());
 
-            } catch (SQLException e) {
-
-                outputPanel.appendError("Error during rollback:\n" + e.getMessage());
-
-            } finally {
-
-                boolean keepAlive = true;
-                if (!keepAlive)
-                    closeConnection();
-                enableButtons(true, false, false, false);
-            }
+        } finally {
+            enableButtons(true, false, false, false);
         }
-
     }
+
+    // --- other methods ---
 
     private SqlStatementResult execute() {
 
-        if (sqlScriptRunner == null) {
-
+        if (sqlScriptRunner == null)
             sqlScriptRunner = new SqlScriptRunner(this);
-        }
 
-        outputPanel.clear();
         long startTime = System.currentTimeMillis();
         SqlStatementResult sqlStatementResult = null;
         DatabaseConnection connection = null;
 
         try {
 
+            outputPanel.clear();
             statusBar.setStatusText(Bundles.getCommon("executing"));
             statusBar.startProgressBar();
 
-            if (useConnection.isSelected()) {
-                DatabaseHost selectedHost = combosGroup.getSelectedHost();
-                if (selectedHost != null)
-                    connection = selectedHost.getDatabaseConnection();
+            if (useConnectionCheck.isSelected()) {
+                connection = getSelectedConnection();
+                if (connection != null && !connection.isConnected()) {
+                    outputPanel.appendAction("Connecting to the DB");
+                    ConnectionManager.createDataSource(connection);
+                    outputPanel.appendAction("Connection success");
+                }
             }
+
             if (script == null || script.length() < MAX_LENGTH_TEXT_PANE)
                 script = sqlText.getSQLText();
+
             sqlStatementResult = sqlScriptRunner.execute(
                     connection,
                     script,
-                    (ActionOnError) actionOnErrorCombo.getSelectedItem());
+                    stopOnErrorCheck.isSelected()
+            );
 
         } finally {
 
             if (sqlStatementResult != null && sqlStatementResult.isException()) {
-
-                if (sqlStatementResult.isInterrupted()) {
-
+                if (sqlStatementResult.isInterrupted())
                     outputPanel.appendWarning("Operation cancelled by user action");
-
-                } else {
-
+                else
                     outputPanel.appendError("Execution error:\n" + sqlStatementResult.getErrorMessage());
-                }
-
             }
 
-            long endTime = System.currentTimeMillis();
-
+            outputPanel.append("Total duration: " + MiscUtils.formatDuration(System.currentTimeMillis() - startTime));
             statusBar.setStatusText("Done");
             statusBar.stopProgressBar();
 
-            outputPanel.append("Total duration: " + MiscUtils.formatDuration(endTime - startTime));
-
-            // if connected to database from script, connection will be committed from script executor
-            if (sqlScriptRunner.isNeedCloseDatabase()) {
+            if (sqlScriptRunner.isNeedCloseDatabase())
                 resetButtons = true;
-            }
 
             GUIUtilities.scheduleGC();
         }
@@ -595,45 +429,84 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         return sqlStatementResult;
     }
 
-    private static int instanceCount = 1;
-
-    public String getDisplayName() {
-
-        return TITLE + (instanceCount++);
+    private DatabaseConnection getSelectedConnection() {
+        Object selectedValue = connectionsCombo.getSelectedItem();
+        return selectedValue != null ? connections.get(selectedValue.toString()) : null;
     }
 
-    public String toString() {
+    private boolean fieldsValid() {
 
+        String fileName = fileNameField.getText();
+
+        if (StringUtils.isBlank(fileName) && StringUtils.isEmpty(sqlText.getSQLText())) {
+            GUIUtilities.displayErrorMessage(bundleString("error.select-input-file"));
+            return false;
+        }
+
+        if (StringUtils.isNotEmpty(fileName) && !new File(fileName).exists()) {
+            GUIUtilities.displayErrorMessage(bundleString("FileNotExist"));
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean tabViewClosing() {
+        cleanup();
+        return true;
+    }
+
+    @Override
+    public void cleanup() {
+        sqlText.cleanup();
+        if (statusBar != null)
+            statusBar.cleanup();
+    }
+
+    @Override
+    public boolean logOutput() {
+        return logOutputCheck.isSelected();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return TITLE + " " + (instanceCounter++);
+    }
+
+    @Override
+    public String toString() {
         return getDisplayName();
     }
 
-    // ---------------------------------------------
-    // ConnectionListener implementation
-    // ---------------------------------------------
+    // --- logging methods ---
 
-    /**
-     * Indicates a connection has been established.
-     *
-     * @param connectionEvent encapsulating event
-     */
-    public void connected(ConnectionEvent connectionEvent) {
-
-        combosGroup.connectionOpened(connectionEvent.getDatabaseConnection());
+    @Override
+    public void message(final String message) {
+        ThreadUtils.invokeAndWait(() -> outputPanel.append(message));
     }
 
-    /**
-     * Indicates a connection has been closed.
-     *
-     * @param connectionEvent encapsulating event
-     */
-    public void disconnected(ConnectionEvent connectionEvent) {
-
-        combosGroup.connectionClosed(connectionEvent.getDatabaseConnection());
+    @Override
+    public void actionMessage(final String message) {
+        ThreadUtils.invokeAndWait(() -> outputPanel.appendAction(message));
     }
 
-    private static final int STATUS_BAR_HEIGHT = 26;
+    @Override
+    public void errorMessage(final String message) {
+        ThreadUtils.invokeAndWait(() -> outputPanel.appendError(message));
+    }
 
-    private ProgressBar progressBar;
+    @Override
+    public void queryMessage(final String message) {
+        ThreadUtils.invokeAndWait(() -> outputPanel.appendActionFixedWidth(message));
+    }
+
+    @Override
+    public void warningMessage(final String message) {
+        ThreadUtils.invokeAndWait(() -> outputPanel.appendWarning(message));
+    }
+
+    // ---
 
     class SqlTextPaneStatusBar extends AbstractStatusBarPanel {
 
@@ -647,78 +520,22 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         }
 
         public void setStatusText(String text) {
-
             setLabelText(0, text);
         }
 
-        public void cleanup() {
+        public void startProgressBar() {
+            GUIUtils.invokeLater(() -> progressBar.start());
+        }
 
+        public void stopProgressBar() {
+            GUIUtils.invokeLater(() -> progressBar.stop());
+        }
+
+        public void cleanup() {
             progressBar.cleanup();
             progressBar = null;
         }
 
-        public void startProgressBar() {
-
-            GUIUtils.invokeLater(new Runnable() {
-                public void run() {
-
-                    progressBar.start();
-                }
-            });
-        }
-
-        public void stopProgressBar() {
-
-            GUIUtils.invokeLater(new Runnable() {
-                public void run() {
-
-                    progressBar.stop();
-                }
-            });
-        }
-
-    } // SqlTextPaneStatusBar
-
-    public void message(final String message) {
-        ThreadUtils.invokeAndWait(new Runnable() {
-            public void run() {
-                outputPanel.append(message);
-            }
-        });
-    }
-
-    public void actionMessage(final String message) {
-        ThreadUtils.invokeAndWait(new Runnable() {
-            public void run() {
-                outputPanel.appendAction(message);
-            }
-        });
-    }
-
-    public void errorMessage(final String message) {
-        ThreadUtils.invokeAndWait(new Runnable() {
-            public void run() {
-                outputPanel.appendError(message);
-            }
-        });
-    }
-
-    public void queryMessage(final String message) {
-        ThreadUtils.invokeAndWait(new Runnable() {
-            public void run() {
-                outputPanel.appendActionFixedWidth(message);
-            }
-        });
-    }
-
-    public void warningMessage(final String message) {
-        ThreadUtils.invokeAndWait(new Runnable() {
-            public void run() {
-                outputPanel.appendWarning(message);
-            }
-        });
-    }
+    } // SqlTextPaneStatusBar class
 
 }
-
-

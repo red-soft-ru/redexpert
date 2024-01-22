@@ -91,4 +91,9 @@ public class StatTable extends StatTableIndex {
     protected String[][] getItems() {
         return ITEMS_TBL;
     }
+
+    @Override
+    int getCountSkipItems() {
+        return 1;
+    }
 }

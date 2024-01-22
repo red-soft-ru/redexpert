@@ -16,11 +16,13 @@ public abstract class TableModelObject {
 
     protected abstract String[][] getItems();
 
+    abstract int getCountSkipItems();
+
     public List<String> getColumns() {
         if (columns == null) {
             columns = new ArrayList<>();
             for (String[] item : getItems()) {
-                if (item[2] == null || !item[2].contentEquals("name"))
+                if (item[2] == null || (!item[2].contentEquals("name") && !item[2].contentEquals("table_name")))
                     columns.add(item[0].replace(":", ""));
             }
         }
@@ -34,7 +36,7 @@ public abstract class TableModelObject {
 
 
     public Class<?> getColumnClass(int columnIndex) {
-        String type = getItems()[columnIndex + 1][1];
+        String type = getItems()[columnIndex + getCountSkipItems()][1];
         switch (type) {
             case "p":
                 return Integer.class;
@@ -63,9 +65,9 @@ public abstract class TableModelObject {
 
 
     public Object getValueAt(int columnIndex) {
-        String key = getItems()[columnIndex + 1][0];
-        String valtype = getItems()[columnIndex + 1][1];
-        String name = getItems()[columnIndex + 1][2];
+        String key = getItems()[columnIndex + getCountSkipItems()][0];
+        String valtype = getItems()[columnIndex + getCountSkipItems()][1];
+        String name = getItems()[columnIndex + getCountSkipItems()][2];
         if (name == null) {
             name = key.substring(0, 1).toLowerCase() + key.substring(1).replace(":", "");
             name = name.replace(" ", "_");

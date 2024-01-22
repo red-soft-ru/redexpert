@@ -493,6 +493,12 @@ public class StatDatabase extends TableModelObject {
     }
 
     @Override
+    int getCountSkipItems() {
+        return 1;
+    }
+
+
+    @Override
     public void calculateValues() {
 
     }

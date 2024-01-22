@@ -81,4 +81,9 @@ public class StatIndex extends StatTableIndex {
     protected String[][] getItems() {
         return ITEMS_IDX;
     }
+
+    @Override
+    int getCountSkipItems() {
+        return 2;
+    }
 }

@@ -12,8 +12,7 @@ import org.underworldlabs.statParser.TableModelObject;
 import org.underworldlabs.swing.AbstractPanel;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
@@ -181,14 +180,17 @@ public class StatisticTablePanel extends AbstractPanel {
 
     class HeaderTableModel extends AbstractTableModel {
         TableModelObject tableModelObject;
-
+        String[] headers;
         public HeaderTableModel(TableModelObject tableModelObject) {
             this.tableModelObject = tableModelObject;
+            if (tableModelObject instanceof StatIndex)
+                headers = new String[]{"name", "table name"};
+            else headers = new String[]{"name"};
         }
 
         @Override
         public String getColumnName(int column) {
-            return "name";
+            return headers[column];
         }
 
         @Override
@@ -208,12 +210,14 @@ public class StatisticTablePanel extends AbstractPanel {
 
         @Override
         public int getColumnCount() {
-            return 1;
+            return headers.length;
         }
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            return rows.get(rowIndex);
+            if (columnIndex == 0)
+                return rows.get(rowIndex);
+            else return ((StatIndex) rows.get(rowIndex)).table_name;
         }
     }
 
@@ -257,14 +261,15 @@ public class StatisticTablePanel extends AbstractPanel {
                     superComp.setIcon(indexIcon);
                 if (StatisticTablePanel.this instanceof CompareStatisticTablePanel) {
                     int x = table.convertRowIndexToModel(row);
-                    int y = table.convertColumnIndexToModel(column);
+
+
                     if (((TableModelObject) rows.get(x)).getCompared() == TableModelObject.ADDED) {
                         superComp.setBackground(Color.GREEN);
                     } else if (((TableModelObject) rows.get(x)).getCompared() == TableModelObject.DELETED) {
                         superComp.setBackground(Color.RED);
                     } else superComp.setBackground(table.getBackground());
                 }
-            }
+            } else superComp.setIcon(tableIcon);
             return superComp;
         }
     }

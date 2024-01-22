@@ -41,9 +41,12 @@ public class ImportHelperXML extends AbstractImportHelper {
 
             NodeList cells = rows.item(rowIndex).getChildNodes();
             for (int columnIndex = 0; columnIndex < cells.getLength(); columnIndex++) {
+
                 Node cell = cells.item(columnIndex);
-                if (!cell.getNodeName().startsWith("#text"))
-                    cellsValues.put(cell.getNodeName(), cell.getFirstChild().getNodeValue());
+                if (!cell.getNodeName().startsWith("#text")) {
+                    String value = cell.getFirstChild() != null ? cell.getFirstChild().getNodeValue() : null;
+                    cellsValues.put(cell.getNodeName(), value);
+                }
             }
 
             if (parent.isCancel() || linesCount > lastRow)
@@ -122,7 +125,11 @@ public class ImportHelperXML extends AbstractImportHelper {
             if (cell.getNodeName().startsWith("#text"))
                 continue;
 
-            String value = cell.getFirstChild().getNodeValue();
+            cell = cell.getFirstChild();
+            if (cell == null)
+                continue;
+
+            String value = cell.getNodeValue();
             if (value != null && !value.equalsIgnoreCase("NULL"))
                 rowData.add(value);
             else

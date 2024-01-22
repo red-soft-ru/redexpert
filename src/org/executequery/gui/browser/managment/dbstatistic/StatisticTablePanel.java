@@ -129,6 +129,10 @@ public class StatisticTablePanel extends AbstractPanel {
             table.getColumnModel().getColumn(i).setWidth(colWidth);
             table.getColumnModel().getColumn(i).setMinWidth(colWidth);
         }
+        table.getColumnModel().removeColumn(table.getColumnModel().getColumn(0));
+        if (tableModelObject instanceof StatIndex) {
+            table.getColumnModel().removeColumn(table.getColumnModel().getColumn(0));
+        }
     }
 
     public List<TableModelObject> getRows() {

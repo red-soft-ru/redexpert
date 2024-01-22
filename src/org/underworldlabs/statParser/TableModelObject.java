@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class TableModelObject {
+public abstract class TableModelObject implements Comparable {
 
     public static final int ADDED = 1;
     public static final int DELETED = -1;
@@ -22,7 +22,6 @@ public abstract class TableModelObject {
         if (columns == null) {
             columns = new ArrayList<>();
             for (String[] item : getItems()) {
-                if (item[2] == null || (!item[2].contentEquals("name") && !item[2].contentEquals("table_name")))
                     columns.add(item[0].replace(":", ""));
             }
         }
@@ -93,5 +92,12 @@ public abstract class TableModelObject {
     @Override
     public String toString() {
         return name;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if (o instanceof TableModelObject)
+            return toString().compareTo(o.toString());
+        else return -1;
     }
 }

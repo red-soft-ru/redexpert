@@ -4,6 +4,7 @@ import java.util.List;
 
 public abstract class StatTableIndex extends TableModelObject {
 
+    public long page_size;
     public FillDistribution distribution;
 
     public FillDistribution getDistribution() {

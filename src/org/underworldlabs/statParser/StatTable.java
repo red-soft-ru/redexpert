@@ -34,7 +34,13 @@ public class StatTable extends StatTableIndex {
             {"total length:", "i+", "blobs_total_length"},
             {"Level 0:", "i", null},
             {"Level 1:", "i", null},
-            {"Level 2:", "i", null}
+            {"Level 2:", "i", null},
+            {"table size(without blobs):", "i", "table_size"},
+            {"table size+level0:", "i", "table_size_level0"},
+            {"level1+level2:", "i", "level12"},
+            {"size with blobs:", "i", "size_with_blobs"},
+            {"full size with indices:", "i", "size_with_indices"}
+
     };
     public long table_id;
     public long primary_pointer_page;
@@ -69,6 +75,11 @@ public class StatTable extends StatTableIndex {
     public long level_0;
     public long level_1;
     public long level_2;
+    public long table_size;
+    public long table_size_level0;
+    public long level12;
+    public long size_with_blobs;
+    public long size_with_indices;
 
     public StatTable() {
     }
@@ -84,7 +95,16 @@ public class StatTable extends StatTableIndex {
 
     @Override
     public void calculateValues() {
-
+        table_size = data_pages * page_size;
+        table_size_level0 = table_size + level_0;
+        level12 = level_1 + level_2;
+        size_with_blobs = table_size_level0 + level12;
+        long ind_size = 0;
+        if (indices != null)
+            for (StatIndex index : indices) {
+                ind_size += index.full_size;
+            }
+        size_with_indices = size_with_blobs + ind_size;
     }
 
     @Override
@@ -94,6 +114,6 @@ public class StatTable extends StatTableIndex {
 
     @Override
     int getCountSkipItems() {
-        return 1;
+        return 0;
     }
 }

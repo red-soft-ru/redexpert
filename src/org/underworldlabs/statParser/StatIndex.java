@@ -1,6 +1,8 @@
 package org.underworldlabs.statParser;
 
 
+import java.util.ArrayList;
+
 public class StatIndex extends StatTableIndex {
     public static final String[][] ITEMS_IDX = {
             {"Index name:", "s", "name"},
@@ -42,11 +44,15 @@ public class StatIndex extends StatTableIndex {
     public float avg_prefix_length;
     public float clustering_factor;
     public float ratio;
-    public long page_size;
     public long full_size;
 
     public StatIndex(StatTable table) {
         this.table = table;
+        if (table != null) {
+            if (table.indices == null)
+                table.indices = new ArrayList<>();
+            table.indices.add(this);
+        }
     }
 
     // Getters and Setters
@@ -84,6 +90,6 @@ public class StatIndex extends StatTableIndex {
 
     @Override
     int getCountSkipItems() {
-        return 2;
+        return 0;
     }
 }

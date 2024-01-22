@@ -96,6 +96,10 @@ public class StatParser {
                         parserParameters.index.page_size = db.page_size;
                         parserParameters.index.calculateValues();
                     }
+                    if (parserParameters.table != null) {
+                        parserParameters.table.page_size = db.page_size;
+                        parserParameters.table.calculateValues();
+                    }
                 } else {
                     if (parserParameters.new_block) {
                         parserParameters.new_block = false;

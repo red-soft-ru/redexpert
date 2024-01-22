@@ -42,7 +42,37 @@ public class StatisticTablePanel extends AbstractPanel {
         table.setDefaultRenderer(Double.class, new DoubleTableCellRenderer());
         table.setDefaultRenderer(Long.class, new LongTableCellRenderer());
         headerRows.setDefaultRenderer(TableModelObject.class, new StatisticHeaderCellRenderer());
+        headerRows.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        headerRows.getTableHeader().setResizingAllowed(true);
+        headerRows.setPreferredScrollableViewportSize(new Dimension(headerRows.getWidth() + 2, 0));
+        headerRows.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+            @Override
+            public void columnAdded(TableColumnModelEvent e) {
+
+            }
+
+            @Override
+            public void columnRemoved(TableColumnModelEvent e) {
+
+            }
+
+            @Override
+            public void columnMoved(TableColumnModelEvent e) {
+
+            }
+
+            @Override
+            public void columnMarginChanged(ChangeEvent e) {
+                headerRows.setPreferredScrollableViewportSize(new Dimension(headerRows.getWidth() + 2, 0));
+            }
+
+            @Override
+            public void columnSelectionChanged(ListSelectionEvent e) {
+
+            }
+        });
         scrollPane.setRowHeaderView(headerRows);
+        scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, headerRows.getTableHeader());
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -89,6 +119,7 @@ public class StatisticTablePanel extends AbstractPanel {
         table.setModel(model);
         headerModel = new HeaderTableModel(tableModelObject);
         headerRows.setModel(headerModel);
+        headerRows.getColumnModel().getColumn(0).setPreferredWidth(200);
         AnalisePanel.AnaliseSorter sorter = new AnalisePanel.AnaliseSorter<>(model);
         table.setRowSorter(sorter);
         headerRows.setRowSorter(sorter);

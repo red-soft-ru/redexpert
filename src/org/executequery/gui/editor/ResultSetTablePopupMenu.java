@@ -23,6 +23,7 @@ package org.executequery.gui.editor;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.UserPreferencesManager;
+import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.exportData.ExportDataPanel;
@@ -43,6 +44,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener {
 
@@ -160,9 +163,26 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
 
     @SuppressWarnings("unused")
     public void exportSelection(ActionEvent e) {
+
         TableModel selected = table.selectedCellsAsTableModel();
-        if (selected != null)
-            new ExportDataPanel(selected, tableObject != null ? tableObject.getName() : null);
+        if (selected == null)
+            return;
+
+        if (tableObject != null) {
+
+            List<DatabaseColumn> columns = new LinkedList<>();
+            for (DatabaseColumn column : tableObject.getColumns()) {
+                for (int i = 0; i < selected.getColumnCount(); i++) {
+                    if (column.getName().equals(selected.getColumnName(i))) {
+                        columns.add(column);
+                        break;
+                    }
+                }
+            }
+            new ExportDataPanel(selected, tableObject.getName(), columns);
+
+        } else
+            new ExportDataPanel(selected, null);
     }
 
     @SuppressWarnings("unused")

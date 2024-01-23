@@ -28,16 +28,18 @@ import org.executequery.databasemediators.spi.DefaultDatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.SimpleDataSource;
+import org.executequery.gui.editor.InputParametersDialog;
+import org.executequery.gui.editor.QueryEditorHistory;
+import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.log.Log;
+import org.underworldlabs.sqlParser.SqlParser;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,6 +69,7 @@ public class SqlScriptRunner {
 
         String delimiter = ";";
         String sqlDialect = "3";
+        String blobFilePath = null;
 
         DerivedQuery query;
         PreparedStatement statement = null;
@@ -102,6 +105,7 @@ public class SqlScriptRunner {
                 if (maybeStop())
                     throw new InterruptedException();
 
+                String derivedQuery = query.getDerivedQuery().trim();
                 if (query.getQueryType() == QueryTypes.CREATE_DATABASE) {
 
                     this.localDataSource = createDatabase(query, sqlDialect);
@@ -113,9 +117,8 @@ public class SqlScriptRunner {
 
                     closeConnection = true;
                     continue;
-                }
 
-                if (query.getQueryType() == QueryTypes.SQL_DIALECT) {
+                } else if (query.getQueryType() == QueryTypes.SQL_DIALECT) {
 
                     Pattern pattern = Pattern.compile("\\d", Pattern.CASE_INSENSITIVE);
                     Matcher matcher = pattern.matcher(query.getQueryWithoutComments());
@@ -123,19 +126,30 @@ public class SqlScriptRunner {
                         sqlDialect = matcher.group().trim();
 
                     continue;
+
+                } else if (derivedQuery.toUpperCase().contains("SET BLOBFILE ")) {
+                    derivedQuery = query.getQueryWithoutComments().trim();
+                    blobFilePath = "blobfile=" + derivedQuery.substring(14, derivedQuery.length() - 1);
+                    continue;
                 }
 
                 count++;
-                String derivedQuery = query.getDerivedQuery().trim();
                 try {
 
+                    start = System.currentTimeMillis();
                     if (logOutput) {
                         controller.message("Executing query " + count + ":");
                         controller.queryMessage(derivedQuery);
                     }
 
-                    start = System.currentTimeMillis();
-                    statement = querySender.getPreparedStatement(derivedQuery);
+                    if (query.getQueryType() == QueryTypes.INSERT)
+                        statement = getPreparedStatementWithParameters(querySender, derivedQuery, blobFilePath);
+                    else
+                        statement = querySender.getPreparedStatement(derivedQuery);
+
+                    if (statement == null)
+                        continue;
+
                     statementResult = querySender.execute(query.getQueryType(), statement);
 
                     if (statementResult.isException()) {
@@ -357,6 +371,66 @@ public class SqlScriptRunner {
         }
 
         return new SimpleDataSource(temporaryConnection);
+    }
+
+    public PreparedStatement getPreparedStatementWithParameters(DefaultStatementExecutor querySender, String sql, String variables) throws SQLException {
+
+        SqlParser parser = new SqlParser(sql, variables);
+        List<Parameter> params = parser.getParameters();
+        List<Parameter> displayParams = parser.getDisplayParameters();
+
+        PreparedStatement statement = querySender.getPreparedStatement(parser.getProcessedSql());
+        statement.setEscapeProcessing(true);
+
+        ParameterMetaData parameterMetaData = statement.getParameterMetaData();
+        for (int i = 0; i < params.size(); i++) {
+            params.get(i).setType(parameterMetaData.getParameterType(i + 1));
+            params.get(i).setTypeName(parameterMetaData.getParameterTypeName(i + 1));
+        }
+
+        // restore old params if needed
+        if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
+            List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
+
+            for (Parameter displayParam : displayParams) {
+                for (Parameter oldParam : oldParams) {
+
+                    if (displayParam.getValue() == null
+                            && oldParam.getType() == displayParam.getType()
+                            && oldParam.getName().contentEquals(displayParam.getName())) {
+
+                        displayParam.setValue(oldParam.getValue());
+                        oldParams.remove(oldParam);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // check for input params
+        if (!displayParams.isEmpty()) {
+            if (displayParams.stream().anyMatch(param -> param.getValue() == null)) {
+
+                InputParametersDialog dialog = new InputParametersDialog(displayParams);
+                dialog.display();
+
+                if (dialog.isCanceled())
+                    return null;
+            }
+        }
+
+        // remember inputted params
+        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+
+        // add params to the statement
+        for (int i = 0; i < params.size(); i++) {
+            if (params.get(i).isNull())
+                statement.setNull(i + 1, params.get(i).getType());
+            else
+                statement.setObject(i + 1, params.get(i).getPreparedValue());
+        }
+
+        return statement;
     }
 
     private int getFirstWhitespaceIndex(String text) {

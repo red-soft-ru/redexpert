@@ -590,7 +590,7 @@ public class AnalisePanel extends JPanel {
         }
     }
 
-    class AnaliseSorter<M extends TableModel> extends TableRowSorter {
+    public static class AnaliseSorter<M extends TableModel> extends TableRowSorter {
         public AnaliseSorter(TableModel model) {
             super(model);
         }

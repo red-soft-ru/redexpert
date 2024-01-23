@@ -20,6 +20,9 @@
 
 package org.executequery.gui.text;
 
+import org.executequery.components.LineNumber;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rtextarea.RTextScrollPane;
 import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
 
 import javax.swing.*;
@@ -30,7 +33,14 @@ import java.awt.*;
  */
 public class SimpleTextArea extends JPanel {
 
-    private JTextArea textArea;
+    private RSyntaxTextArea textArea;
+    protected LineNumber lineBorder;
+
+
+    public SimpleTextArea(String label) {
+        this();
+        setBorder(BorderFactory.createTitledBorder(label));
+    }
 
     public SimpleTextArea() {
 
@@ -40,20 +50,20 @@ public class SimpleTextArea extends JPanel {
 
     private void init() {
 
-        textArea = new JTextArea();
+        textArea = new RSyntaxTextArea();
+        RTextScrollPane scrollPane = new RTextScrollPane(textArea);
+        scrollPane.setLineNumbersEnabled(true);
+        scrollPane.setFoldIndicatorEnabled(true);
         new SimpleTextComponentPopUpMenu(textArea);
 
-        textArea.setFont(new Font("monospaced", 0, 12));
+        //textArea.setFont(new Font("monospaced", 0, 12));
         textArea.setMargin(new Insets(3, 3, 3, 3));
         textArea.setCaretPosition(0);
         textArea.setDragEnabled(true);
-
-        JScrollPane scroller = new JScrollPane(textArea);
-        scroller.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        this.add(scroller, BorderLayout.CENTER);
+        this.add(scrollPane, BorderLayout.CENTER);
     }
 
-    public JTextArea getTextAreaComponent() {
+    public RSyntaxTextArea getTextAreaComponent() {
         return textArea;
     }
 

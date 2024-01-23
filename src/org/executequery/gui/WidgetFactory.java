@@ -20,10 +20,12 @@
 
 package org.executequery.gui;
 
+import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.DefaultInlineFieldButton;
 import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.RolloverButton;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
@@ -64,6 +66,15 @@ public final class WidgetFactory {
     public static JButton createButton(String name, String text) {
         JButton button = new JButton(text);
         button.setName(name);
+        return button;
+    }
+
+    public static RolloverButton createRolloverButton(String name, String text, String iconName) {
+        RolloverButton button = new RolloverButton();
+        button.setIcon(GUIUtilities.loadIcon(iconName));
+        button.setToolTipText(text);
+        button.setName(name);
+        button.setMouseEnteredContentAreaFill(false);
         return button;
     }
 
@@ -164,6 +175,26 @@ public final class WidgetFactory {
         return table;
     }
 
+    public static JTabbedPane createTabbedPane(String name) {
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.setName(name);
+        return tabbedPane;
+    }
+
+    public static JPanel createPanel(String name) {
+        JPanel panel = new JPanel();
+        panel.setName(name);
+        return panel;
+    }
+
+    public static JToolBar createToolBar(String name) {
+        JToolBar toolBar = new JToolBar();
+        toolBar.setName(name);
+        return toolBar;
+    }
+
+
+    @Deprecated /*use GridBagHelper.addLabelFieldPair instead this method*/
     public static void addLabelFieldPair(JPanel panel, String label,
                                          JComponent field, GridBagConstraints gbc) {
 

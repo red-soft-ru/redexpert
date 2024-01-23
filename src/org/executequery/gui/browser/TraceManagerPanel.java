@@ -6,20 +6,20 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.managment.AbstractServiceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.*;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.gui.browser.managment.tracemanager.net.SessionInfo;
 import org.executequery.localization.Bundles;
-import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.util.UserProperties;
-import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.ListSelectionPanel;
-import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
@@ -31,84 +31,48 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.*;
+import java.util.Vector;
 
-public class TraceManagerPanel extends JPanel implements TabView {
+public class TraceManagerPanel extends AbstractServiceManagerPanel implements TabView {
 
     public static final String TITLE = Bundles.get(TraceManagerPanel.class, "title");
     private IFBTraceManager traceManager;
     private TablePanel loggerPanel;
-
     private AnalisePanel analisePanel;
-    private FileOutputStream fileLog;
-    private PipedOutputStream outputStream;
-
-    private PipedInputStream inputStream;
-
-    private BufferedReader bufferedReader;
-    private JButton fileLogButton;
-    private JButton fileDatabaseButton;
     private JButton fileConfButton;
     private JButton startStopSessionButton;
     private JButton clearTableButton;
-    private JButton openFileLog;
-    private JTextField fileLogField;
-    private JTextField fileDatabaseField;
+    protected RolloverButton openFileLog;
+    protected RolloverButton visibleColumnsButton;
+    protected JComboBox encodeCombobox;
+    protected JToolBar toolBar;
     private JTextField fileConfField;
-    private JTextField openFileLogField;
-    private JTextField userField;
-    private JPasswordField passwordField;
-    private JCheckBox logToFileBox;
+    //private JTextField openFileLogField;
     LogMessage constMsg = new LogMessage();
-    private JCheckBox useBuildConfBox;
-    private JTextField hostField;
-    private NumberTextField portField;
+    private JButton buildConfigButton;
     private JTextField sessionField;
-    private JComboBox<DatabaseConnection> databaseBox;
     private int idLogMessage = 0;
-    private List<String> charsets;
-    private JComboBox charsetCombo;
-    private JTabbedPane tabPane;
     private JButton hideShowTabPaneButton;
     private Message message;
     private List<SessionInfo> sessions;
     private SessionManagerPanel sessionManagerPanel;
     private BuildConfigurationPanel confPanel;
-    private JPanel connectionPanel;
     private int currentSessionId;
-
-    public static String bundleString(String key) {
-        return Bundles.get(TraceManagerPanel.class, key);
-    }
-    private JCheckBox parseBox;
-
-    public TraceManagerPanel() {
-        init();
-    }
+    ListSelectionPanel columnsCheckPanel;
 
     private void initTraceManager(DatabaseConnection dc) {
         try {
-
-            Driver driver = null;
-            Map<String, Driver> drivers = DefaultDriverLoader.getLoadedDrivers();
-            if (dc != null) {
-                for (String driverName : drivers.keySet()) {
-                    if (driverName.startsWith(String.valueOf(dc.getDriverId()))) {
-                        driver = drivers.get(driverName);
-                        break;
-                    }
-                }
-            }
-            if (driver == null)
-                driver = DefaultDriverLoader.getDefaultDriver();
-
+            Driver driver = loadDriver(dc);
             traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(
                     driver.getMajorVersion(), driver, "FBTraceManagerImpl");
 
@@ -116,6 +80,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
             e.printStackTrace();
         }
     }
+
 
     private void readFromBufferedReader(BufferedReader reader, boolean fromFile) {
         String s = "";
@@ -203,86 +168,52 @@ public class TraceManagerPanel extends JPanel implements TabView {
         return true;
     }
 
-    private void init() {
+    protected void initOtherComponents() {
         message = Message.LOG_MESSAGE;
         sessions = new ArrayList<>();
         initTraceManager(null);
         sessionField = new JTextField();
         sessionField.setText("Session");
         sessionManagerPanel = new SessionManagerPanel(traceManager, sessionField);
-        loadCharsets();
-        ListSelectionPanel columnsCheckPanel = new ListSelectionPanel(new Vector<>(Arrays.asList(LogConstants.COLUMNS)));
+        columnsCheckPanel = new ListSelectionPanel(new Vector<>(Arrays.asList(LogConstants.COLUMNS)));
         columnsCheckPanel.selectAllAction();
         loggerPanel = new TablePanel(columnsCheckPanel);
         analisePanel = new AnalisePanel(loggerPanel.getTableRows());
-        fileLogButton = new JButton("...");
-        fileDatabaseButton = new JButton("...");
         fileConfButton = new JButton("...");
-        openFileLog = new JButton("...");
-        fileLogField = new JTextField();
-        fileDatabaseField = new JTextField();
+        toolBar = WidgetFactory.createToolBar("toolBar");
+        toolBar.setLayout(new GridBagLayout());
+        GridBagHelper gbhToolBar = new GridBagHelper();
+        gbhToolBar.setDefaultsStatic().defaults();
+        gbhToolBar.setInsets(0, 0, 0, 0);
+        toolBar.setFloatable(false);
+        openFileLog = WidgetFactory.createRolloverButton("openLogButton", bundleString("OpenFileLog"), "Open16.png");
+        toolBar.add(openFileLog, gbhToolBar.nextCol().setLabelDefault().get());
+        encodeCombobox = WidgetFactory.createComboBox("encodingCombobox", Charset.availableCharsets().keySet().toArray());
+        encodeCombobox.setSelectedItem(UserProperties.getInstance().getStringProperty("system.file.encoding"));
+        encodeCombobox.setToolTipText(bundleString("Charset"));
+        toolBar.add(encodeCombobox, gbhToolBar.nextCol().setLabelDefault().get());
+        //toolBar.add(new JSeparator(),gbhToolBar.nextCol().setLabelDefault().get());
+        visibleColumnsButton = WidgetFactory.createRolloverButton("visibleColumnsButton", bundleString("VisibleColumns"), "FindAgain16.png");
+        visibleColumnsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BaseDialog dialog = new BaseDialog(bundleString("VisibleColumns"), true);
+                dialog.addDisplayComponentWithEmptyBorder(columnsCheckPanel);
+                dialog.display();
+            }
+        });
+        toolBar.add(visibleColumnsButton, gbhToolBar.nextCol().setLabelDefault().get());
+        toolBar.add(new JPanel(), gbhToolBar.nextCol().fillHorizontally().spanX().get());
         fileConfField = new JTextField();
-        openFileLogField = new JTextField();
-        userField = new JTextField();
-        passwordField = new JPasswordField();
-        parseBox = new JCheckBox(bundleString("parseTraceToGrid"));
-        parseBox.setSelected(true);
-        logToFileBox = new JCheckBox(bundleString("LogToFile"));
-        logToFileBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
-                setEnableElements();
-                if (fileLog != null) {
-                    try {
-                        fileLog.close();
-                        fileLog = null;
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        });
-        hostField = new JTextField("127.0.0.1");
-        portField = new NumberTextField();
-        portField.setText("3050");
-        useBuildConfBox = new JCheckBox(bundleString("UseConfigFile"));
-        useBuildConfBox.setSelected(true);
-        useBuildConfBox.addActionListener(new ActionListener() {
+        buildConfigButton = WidgetFactory.createButton("newConfigButton", bundleString("BuildConfigurationFile"));
+        buildConfigButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setEnableElements();
-            }
-        });
-        charsetCombo = new JComboBox<>(charsets.toArray());
-        DynamicComboBoxModel model = new DynamicComboBoxModel();
-        List<DatabaseConnection> databaseConnectionList = new ArrayList<>();
-        databaseConnectionList.add(null);
-        databaseConnectionList.addAll(((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll());
-        model.setElements(databaseConnectionList);
-        databaseBox = new JComboBox<>(model);
-        databaseBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (databaseBox.getSelectedItem() != null) {
-                    DatabaseConnection dc = (DatabaseConnection) databaseBox.getSelectedItem();
-                    fileDatabaseField.setText(dc.getSourceName());
-                    userField.setText(dc.getUserName());
-                    passwordField.setText(dc.getUnencryptedPassword());
-                    hostField.setText(dc.getHost());
-                    portField.setText(dc.getPort());
-                    sessionField.setText(dc.getName() + "_trace_session");
-                    charsetCombo.setSelectedItem(dc.getCharset());
-                    if (dc.getPathToTraceConfig() != null)
-                        fileConfField.setText(dc.getPathToTraceConfig());
-                    if (dc.getMajorServerVersion() >= 3) {
-                        confPanel.getAppropriationBox().setSelectedIndex(1);
-                    } else {
-                        confPanel.getAppropriationBox().setSelectedIndex(0);
-                    }
-                    initTraceManager(dc);
-                    sessionManagerPanel.setFbTraceManager(traceManager);
-                }
+                BaseDialog dialog = new BaseDialog(bundleString("BuildConfigurationFile"), true);
+                dialog.addDisplayComponentWithEmptyBorder(confPanel);
+                dialog.setResizable(false);
+                dialog.display();
             }
         });
         startStopSessionButton = new JButton(bundleString("Start"));
@@ -291,47 +222,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
             @Override
             public void actionPerformed(ActionEvent e) {
                 clearAll();
-            }
-        });
-        fileLogButton.addActionListener(new ActionListener() {
-            final FileChooserDialog fileChooser = new FileChooserDialog();
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChooser.showSaveDialog(fileLogButton);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    if (fileLog != null) {
-                        try {
-                            fileLog.close();
-                            fileLog = null;
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                    File file = fileChooser.getSelectedFile();
-                    fileLogField.setText(file.getAbsolutePath());
-                    try {
-                        fileLog = new FileOutputStream(file, false);
-                        fileLog.close();
-                        fileLog = null;
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        });
-
-
-        fileDatabaseButton.addActionListener(new ActionListener() {
-            final FileChooserDialog fileChooser = new FileChooserDialog();
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChooser.showOpenDialog(fileDatabaseButton);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
-                    fileDatabaseField.setText(file.getAbsolutePath());
-                }
             }
         });
 
@@ -358,14 +248,13 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     SwingWorker sw = new SwingWorker("loadTraceFromFile") {
                         @Override
                         public Object construct() {
-                            openFileLogField.setText(fileChooser.getSelectedFile().getAbsolutePath());
                             clearAll();
                             idLogMessage = 0;
                             BufferedReader reader = null;
                             try {
                                 reader = new BufferedReader(
                                         new InputStreamReader(
-                                                Files.newInputStream(Paths.get(openFileLogField.getText())), UserProperties.getInstance().getStringProperty("system.file.encoding")));
+                                                Files.newInputStream(Paths.get(fileChooser.getSelectedFile().getAbsolutePath())), (String) encodeCombobox.getSelectedItem()));
                                 readFromBufferedReader(reader, true);
                             } catch (Exception e1) {
                                 GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
@@ -423,7 +312,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                             }
                         }
                         if (fileLog != null) {
-                            outputStream = new TraceOutputStream();
+                            outputStream = new ServiceOutputStream();
                         } else {
                             GUIUtilities.displayErrorMessage("File is empty");
                             return;
@@ -443,7 +332,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     traceManager.setPassword(new String(passwordField.getPassword()));
                     traceManager.setLogger(outputStream);
                     if (charsetCombo.getSelectedIndex() == 0)
-                        traceManager.setCharSet(null);
+                        traceManager.setCharSet("UTF8");
                     else
                         traceManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem()));
                     traceManager.setDatabase(fileDatabaseField.getText());
@@ -451,13 +340,13 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     traceManager.setPort(portField.getValue());
                     try {
                         String conf;
-                        if (useBuildConfBox.isSelected()) {
-                            if (fileConfField.getText().isEmpty()) {
-                                GUIUtilities.displayErrorMessage("Please select configuration file");
-                                return;
-                            }
+                        if (fileConfField.getText().isEmpty()) {
+                            conf = confPanel.getConfig();
+                            //GUIUtilities.displayErrorMessage("Please select configuration file");
+                            //return;
+                        } else
                             conf = FileUtils.loadFile(fileConfField.getText());
-                        } else conf = confPanel.getConfig();
+                        //else conf = confPanel.getConfig();
                         traceManager.startTraceSession(sessionField.getText(), conf);
                         startStopSessionButton.setText(bundleString("Stop"));
                         tabPane.add(bundleString("SessionManager"), sessionManagerPanel);
@@ -517,21 +406,23 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 else hideShowTabPaneButton.setText(bundleString("HideTopPanel"));
             }
         });
-
-        tabPane = new JTabbedPane();
-        connectionPanel = new JPanel();
         confPanel = new BuildConfigurationPanel();
 
-        setLayout(new GridBagLayout());
-        // JSplitPane mainSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+    }
+
+    @Override
+    protected void postInitActions() {
+        setEnableElements();
+    }
+
+    @Override
+    protected void arrangeComponents() {
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new GridBagLayout());
         JLabel label = new JLabel(bundleString("OpenFileLog"));
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic().defaults();
-        topPanel.add(label, gbh.setLabelDefault().get());
-        gbh.nextCol();
-        gbh.addLabelFieldPair(topPanel, openFileLog, openFileLogField, null, false, false);
+        topPanel.add(toolBar, gbh.fillHorizontally().spanX().get());
+        //gbh.nextCol();
+        //gbh.addLabelFieldPair(topPanel, openFileLog, openFileLogField, null, false, false);
 
         topPanel.add(tabPane, gbh.nextRowFirstCol().fillBoth().spanX().setMaxWeightY().get());
 
@@ -546,8 +437,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
 
         tabPane.add(bundleString("Connection"), connectionPanel);
-        tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));
-        tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
+        //tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));
+        //tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
         tabPane.add(bundleString("Logger"), loggerPanel);
         tabPane.add(bundleString("Analise"), analisePanel);
         connectionPanel.setLayout(new GridBagLayout());
@@ -558,21 +449,21 @@ public class TraceManagerPanel extends JPanel implements TabView {
         connectionPanel.add(label, gbh.setLabelDefault().get());
         gbh.addLabelFieldPair(connectionPanel, fileDatabaseButton, fileDatabaseField, null, false, true);
         gbh.addLabelFieldPair(connectionPanel, bundleString("SessionName"), sessionField, null, true, false, 2);
-        gbh.addLabelFieldPair(connectionPanel, bundleString("Host"), hostField, null, false, false);
+        gbh.nextCol();
+        label = new JLabel(bundleString("ConfigFile"));
+        connectionPanel.add(label, gbh.setLabelDefault().get());
+        gbh.addLabelFieldPair(connectionPanel, fileConfButton, fileConfField, null, false, false);
+        connectionPanel.add(buildConfigButton, gbh.nextCol().setLabelDefault().fillHorizontally().get());
+        gbh.addLabelFieldPair(connectionPanel, bundleString("Host"), hostField, null, true, false, 2);
         gbh.addLabelFieldPair(connectionPanel, bundleString("Port"), portField, null, false, true);
         gbh.addLabelFieldPair(connectionPanel, bundleString("Username"), userField, null, true, false, 2);
         gbh.addLabelFieldPair(connectionPanel, bundleString("Password"), passwordField, null, false, true);
         gbh.addLabelFieldPair(connectionPanel, bundleString("Charset"), charsetCombo, null, true, true);
         gbh.nextRowFirstCol();
-        connectionPanel.add(useBuildConfBox, gbh.setLabelDefault().get());
-        gbh.addLabelFieldPair(connectionPanel, fileConfButton, fileConfField, null, false, true);
-        gbh.nextRowFirstCol();
         connectionPanel.add(logToFileBox, gbh.setLabelDefault().get());
         gbh.addLabelFieldPair(connectionPanel, fileLogButton, fileLogField, null, false, true);
         connectionPanel.add(parseBox, gbh.nextRowFirstCol().setLabelDefault().get());
         connectionPanel.add(new JPanel(), gbh.anchorSouth().nextRowFirstCol().fillBoth().spanX().spanY().get());
-        setEnableElements();
-
     }
 
     private void parseMessage(String msg, Message message, boolean fromFile) {
@@ -610,24 +501,25 @@ public class TraceManagerPanel extends JPanel implements TabView {
         idLogMessage = 0;
     }
 
-    private void loadCharsets() {
-        try {
-            if (charsets == null)
-                charsets = new ArrayList<String>();
-            else
-                charsets.clear();
-
-            String resource = FileUtils.loadResource("org/executequery/charsets.properties");
-            String[] strings = resource.split("\n");
-            for (String s : strings) {
-                if (!s.startsWith("#") && !s.isEmpty())
-                    charsets.add(s);
+    protected void changeDatabaseConnection() {
+        if (databaseBox.getSelectedItem() != null) {
+            DatabaseConnection dc = (DatabaseConnection) databaseBox.getSelectedItem();
+            fileDatabaseField.setText(dc.getSourceName());
+            userField.setText(dc.getUserName());
+            passwordField.setText(dc.getUnencryptedPassword());
+            hostField.setText(dc.getHost());
+            portField.setText(dc.getPort());
+            sessionField.setText(dc.getName() + "_trace_session");
+            charsetCombo.setSelectedItem(dc.getCharset());
+            if (dc.getPathToTraceConfig() != null)
+                fileConfField.setText(dc.getPathToTraceConfig());
+            if (dc.getMajorServerVersion() >= 3) {
+                confPanel.getAppropriationBox().setSelectedIndex(1);
+            } else {
+                confPanel.getAppropriationBox().setSelectedIndex(0);
             }
-            java.util.Collections.sort(charsets);
-            charsets.add(0, "NONE");
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            initTraceManager(dc);
+            sessionManagerPanel.setFbTraceManager(traceManager);
         }
     }
 
@@ -636,9 +528,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 DatabaseDriverRepository.REPOSITORY_ID);
     }
 
-    private void setEnableElements() {
-        fileConfButton.setEnabled(useBuildConfBox.isSelected());
-        fileConfField.setEnabled(useBuildConfBox.isSelected());
+    protected void setEnableElements() {
         fileLogButton.setEnabled(logToFileBox.isSelected());
         fileLogField.setEnabled(logToFileBox.isSelected());
     }
@@ -666,16 +556,5 @@ public class TraceManagerPanel extends JPanel implements TabView {
         SESSION_INFO
     }
 
-    class TraceOutputStream extends PipedOutputStream {
-        @Override
-        public void write(int b) throws IOException {
-            fileLog.write(b);
-            super.write(b);
-        }
 
-        public void close() throws IOException {
-            fileLog.close();
-            super.close();
-        }
-    }
 }

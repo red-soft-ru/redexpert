@@ -3,21 +3,24 @@ package biz.redsoft;
 import org.firebirdsql.gds.ServiceRequestBuffer;
 import org.firebirdsql.gds.ng.FbService;
 import org.firebirdsql.management.FBMaintenanceManager;
-import org.firebirdsql.management.FBServiceManager;
 
-import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.List;
 
 import static org.firebirdsql.gds.ISCConstants.*;
 
-public class FBMaintenanceManagerImpl extends FBServiceManager implements IFBMaintenanceManager {
+public class FBMaintenanceManagerImpl extends AbstractServiceManager implements IFBMaintenanceManager {
 
     FBMaintenanceManager fbMaintenanceManager;
 
     public FBMaintenanceManagerImpl() {
         super();
+    }
+
+    @Override
+    protected void initServiceManager() {
         fbMaintenanceManager = new FBMaintenanceManager();
+        fbServiceManager = fbMaintenanceManager;
     }
 
     @Override
@@ -155,76 +158,6 @@ public class FBMaintenanceManagerImpl extends FBServiceManager implements IFBMai
     @Override
     public void rollbackTransaction(long var1) throws SQLException {
         fbMaintenanceManager.rollbackTransaction(var1);
-    }
-
-    @Override
-    public String getCharSet() {
-        return fbMaintenanceManager.getCharSet();
-    }
-
-    @Override
-    public void setCharSet(String var1) {
-        fbMaintenanceManager.setCharSet(var1);
-    }
-
-    @Override
-    public String getUser() {
-        return fbMaintenanceManager.getUser();
-    }
-
-    @Override
-    public void setUser(String var1) {
-        fbMaintenanceManager.setUser(var1);
-    }
-
-    @Override
-    public String getPassword() {
-        return fbMaintenanceManager.getPassword();
-    }
-
-    @Override
-    public void setPassword(String var1) {
-        fbMaintenanceManager.setPassword(var1);
-    }
-
-    @Override
-    public String getDatabase() {
-        return fbMaintenanceManager.getDatabase();
-    }
-
-    @Override
-    public void setDatabase(String var1) {
-        fbMaintenanceManager.setDatabase(var1);
-    }
-
-    @Override
-    public String getHost() {
-        return fbMaintenanceManager.getHost();
-    }
-
-    @Override
-    public void setHost(String var1) {
-        fbMaintenanceManager.setHost(var1);
-    }
-
-    @Override
-    public int getPort() {
-        return fbMaintenanceManager.getPort();
-    }
-
-    @Override
-    public void setPort(int var1) {
-        fbMaintenanceManager.setPort(var1);
-    }
-
-    @Override
-    public OutputStream getLogger() {
-        return fbMaintenanceManager.getLogger();
-    }
-
-    @Override
-    public void setLogger(OutputStream var1) {
-        fbMaintenanceManager.setLogger(var1);
     }
 
 }

@@ -66,8 +66,7 @@ public class StatusBarPanel extends AbstractStatusBarPanel {
         addLabel(2, 50, true);
         addLabel(3, 75, true);
         addLabel(4, 150, false);
-
-        addComponent(new HeapMemoryStatusSnippet(), 5, 150, false);
+        //addComponent(new HeapMemoryStatusSnippet(), 5, 150, false);
     }
 
     public void setThirdLabelText(String text) {

@@ -12,64 +12,20 @@ import java.util.TreeMap;
 /**
  * Created by Vasiliy on 14.07.2017.
  */
-public class FBUserManagerImpl implements IFBUserManager {
+public class FBUserManagerImpl extends AbstractServiceManager implements IFBUserManager {
 
     private FBUserManager fbUserManager;
 
     public FBUserManagerImpl() {
-        if (fbUserManager == null)
-            fbUserManager = new FBUserManager();
+        super();
     }
 
     @Override
-    public String getUser() {
-        return fbUserManager.getUser();
+    protected void initServiceManager() {
+        fbUserManager = new FBUserManager();
+        fbServiceManager = fbUserManager;
     }
 
-    @Override
-    public void setUser(String user) {
-        fbUserManager.setUser(user);
-    }
-
-    @Override
-    public String getPassword() {
-        return fbUserManager.getPassword();
-    }
-
-    @Override
-    public void setPassword(String password) {
-        fbUserManager.setPassword(password);
-    }
-
-    @Override
-    public String getDatabase() {
-        return fbUserManager.getDatabase();
-    }
-
-    @Override
-    public void setDatabase(String database) {
-        fbUserManager.setDatabase(database);
-    }
-
-    @Override
-    public String getHost() {
-        return fbUserManager.getHost();
-    }
-
-    @Override
-    public void setHost(String host) {
-        fbUserManager.setHost(host);
-    }
-
-    @Override
-    public int getPort() {
-        return fbUserManager.getPort();
-    }
-
-    @Override
-    public void setPort(int port) {
-        fbUserManager.setPort(port);
-    }
 
     @Override
     public void add(IFBUser user) throws SQLException, IOException {

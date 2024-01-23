@@ -392,9 +392,8 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
             if (useConnectionCheck.isSelected()) {
                 connection = getSelectedConnection();
                 if (connection != null && !connection.isConnected()) {
-                    outputPanel.appendAction("Connecting to the DB");
+                    outputPanel.appendAction("Connecting to the DB...");
                     ConnectionManager.createDataSource(connection);
-                    outputPanel.appendAction("Connection success");
                 }
             }
 
@@ -420,7 +419,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
             statusBar.setStatusText("Done");
             statusBar.stopProgressBar();
 
-            if (sqlScriptRunner.isNeedCloseDatabase())
+            if (sqlScriptRunner.isCloseConnection())
                 resetButtons = true;
 
             GUIUtilities.scheduleGC();

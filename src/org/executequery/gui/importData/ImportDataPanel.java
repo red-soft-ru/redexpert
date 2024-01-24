@@ -104,6 +104,9 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
     private DefaultDatabaseHost targetHost;
     private ImportHelper importHelper;
     private List<String> sourceHeaders;
+    private List<String> targetTablesList;
+    private List<String> sourceTablesList;
+
     private boolean isCancel;
     private String pathToFile;
     private String pathToLob;
@@ -117,6 +120,9 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
     private void init() {
 
+        targetTablesList = new LinkedList<>();
+        sourceTablesList = new LinkedList<>();
+
         // --- comboBoxes ---
 
         String[] delimiters = {";", "|", ",", "#"};
@@ -129,7 +135,15 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
         targetTableCombo = WidgetFactory.createComboBox("targetTableCombo");
         targetTableCombo.addActionListener(e -> updateMappingTable());
+        targetTableCombo.setEditable(true);
         targetTableCombo.setEnabled(false);
+        targetTableCombo.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyChar() == '\n')
+                    setSelectedComboItem(targetTableCombo, targetTablesList);
+            }
+        });
 
         targetConnectionsCombo = WidgetFactory.createComboBox("targetConnectionsCombo");
         targetConnectionsCombo.addActionListener(e -> targetConnectionChanged());
@@ -138,12 +152,23 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
         sourceTableCombo = WidgetFactory.createComboBox("sourceTableCombo");
         sourceTableCombo.addActionListener(e -> previewSourceTable());
+        sourceTableCombo.setEditable(true);
         sourceTableCombo.setEnabled(false);
+        sourceTableCombo.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyChar() == '\n')
+                    setSelectedComboItem(sourceTableCombo, sourceTablesList);
+            }
+        });
 
         sourceConnectionsCombo = WidgetFactory.createComboBox("sourceConnectionsCombo");
         sourceConnectionsCombo.addActionListener(e -> sourceConnectionChanged());
         sourceConnectionsCombo.addItem(bundleString("SelectDB"));
         connections.forEach(dc -> sourceConnectionsCombo.addItem(dc));
+
+        targetTableCombo.setPreferredSize(targetConnectionsCombo.getPreferredSize());
+        sourceTableCombo.setPreferredSize(sourceConnectionsCombo.getPreferredSize());
 
         // --- checkBoxes ---
 
@@ -520,18 +545,22 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         thirdColumn.setCellEditor(new DefaultCellEditor(sourceComboBox));
 
         if (targetTableCombo.getSelectedItem() != null) {
-            for (DatabaseColumn column : targetHost.getColumns(targetTableCombo.getSelectedItem().toString())) {
 
-                String fieldProperty = "";
-                if (isBlobType(column.getTypeName()))
-                    fieldProperty = "true";
+            List<DatabaseColumn> columns = targetHost.getColumns(targetTableCombo.getSelectedItem().toString());
+            if (columns != null) {
+                for (DatabaseColumn column : columns) {
 
-                columnMappingTableModel.addRow(new Object[]{
-                        column.getName(),
-                        column.getTypeName(),
-                        NOTHING_HEADER,
-                        fieldProperty
-                });
+                    String fieldProperty = "";
+                    if (isBlobType(column.getTypeName()))
+                        fieldProperty = "true";
+
+                    columnMappingTableModel.addRow(new Object[]{
+                            column.getName(),
+                            column.getTypeName(),
+                            NOTHING_HEADER,
+                            fieldProperty
+                    });
+                }
             }
         }
     }
@@ -716,11 +745,10 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
     private void targetConnectionChanged() {
 
-        targetTableCombo.removeAllItems();
-
         if (columnMappingTable != null)
             columnMappingTableModel.setRowCount(0);
 
+        targetTableCombo.removeAllItems();
         if (targetConnectionsCombo.getSelectedIndex() == 0) {
             targetTableCombo.setEnabled(false);
             return;
@@ -730,23 +758,25 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         if (!targetHost.isConnected())
             ConnectionManager.createDataSource(targetHost.getDatabaseConnection());
 
-        targetTableCombo.setEnabled(true);
-        targetTableCombo.addItem(bundleString("SelectTable"));
+        targetTablesList.clear();
+        targetTablesList.add(bundleString("SelectTable"));
         targetHost.getTables().stream()
                 .filter(table -> !table.isSystem())
-                .forEach(table -> targetTableCombo.addItem(table.getName()));
+                .forEach(table -> targetTablesList.add(table.getName()));
+
+        targetTablesList.forEach(targetTableCombo::addItem);
+        targetTableCombo.setEnabled(true);
 
         targetHost.close();
     }
 
     private void sourceConnectionChanged() {
 
-        sourceTableCombo.removeAllItems();
-
         if (connectionPreviewTableModel != null)
             for (int i = 0; i < connectionPreviewTableModel.getRowCount(); i++)
                 connectionPreviewTableModel.deleteRow(i);
 
+        sourceTableCombo.removeAllItems();
         if (sourceConnectionsCombo.getSelectedIndex() == 0) {
             sourceTableCombo.setEnabled(false);
             return;
@@ -756,13 +786,34 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         if (!host.isConnected())
             ConnectionManager.createDataSource(host.getDatabaseConnection());
 
-        sourceTableCombo.setEnabled(true);
-        sourceTableCombo.addItem(bundleString("SelectTable"));
+        sourceTablesList.clear();
+        sourceTablesList.add(bundleString("SelectTable"));
         host.getTables().stream()
                 .filter(table -> !table.isSystem())
-                .forEach(table -> sourceTableCombo.addItem(table.getName()));
+                .forEach(table -> sourceTablesList.add(table.getName()));
+
+        sourceTablesList.forEach(sourceTableCombo::addItem);
+        sourceTableCombo.setEnabled(true);
 
         host.close();
+    }
+
+    private void setSelectedComboItem(JComboBox comboBox, List<String> itemsList) {
+
+        String filter = comboBox.getEditor().getItem().toString().toLowerCase().trim();
+        if (!filter.isEmpty()) {
+
+            String selected = itemsList.stream()
+                    .filter(item -> item.toLowerCase().contains(filter))
+                    .findFirst().orElse(null);
+
+            if (selected != null) {
+                comboBox.setSelectedItem(selected);
+                return;
+            }
+        }
+
+        comboBox.setSelectedIndex(0);
     }
 
     private void updateSourcePropertiesFields() {

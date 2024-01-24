@@ -427,7 +427,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
                             setPlainMessage(key.toString() + " = " + results.get(key.toString()));
 
                     if (result.isResultSet())
-                        resultsPanel.setResultSet(result.getResultSet(), false, -1);
+                        resultsPanel.setResultSet(result.getResultSet(), false, -1, null);
 
                 } else
                     setErrorMessage(result.getErrorMessage());

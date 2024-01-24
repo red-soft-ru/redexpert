@@ -279,9 +279,9 @@ public class QueryEditorDelegate implements QueryDelegate {
         queryEditor.setResultText(dc, result, type, metaName);
     }
 
-    public void setResultSet(ResultSet rs, String query) throws SQLException {
+    public void setResultSet(ResultSet rs, String query, DatabaseConnection dc) throws SQLException {
 
-        queryEditor.setResultSet(rs, query);
+        queryEditor.setResultSet(rs, query, dc);
     }
 
     public void setStatusMessage(String text) {

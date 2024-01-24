@@ -396,9 +396,9 @@ public class QueryEditorTextPanel extends JPanel {
      * @param rset  the table results to display
      * @param query the executed query of the result set
      */
-    public void setResultSet(ResultSet rset, String query) throws SQLException {
+    public void setResultSet(ResultSet rset, String query, DatabaseConnection dc) throws SQLException {
 
-        queryEditor.setResultSet(rset, query);
+        queryEditor.setResultSet(rset, query, dc);
     }
 
     public void setResult(DatabaseConnection dc, int updateCount, int type, String metaName) {

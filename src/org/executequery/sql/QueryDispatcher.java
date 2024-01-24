@@ -615,7 +615,7 @@ public class QueryDispatcher {
 
                     } else {
 
-                        setResultSet(rset, sql, anyConnections);
+                        setResultSet(rset, sql, anyConnections, querySender.getDatabaseConnection());
                     }
 
                 } else {
@@ -782,7 +782,7 @@ public class QueryDispatcher {
 
                     printPlan(rset, anyConnections);
 
-                    setResultSet(rset, query.getOriginalQuery(), anyConnections);
+                    setResultSet(rset, query.getOriginalQuery(), anyConnections, querySender.getDatabaseConnection());
 
                     printExecutionPlan(before, anyConnections);
                 }
@@ -1100,7 +1100,7 @@ public class QueryDispatcher {
 
                             printPlan(rset, anyConnections);
 
-                            setResultSet(rset, query.getOriginalQuery(), anyConnections);
+                            setResultSet(rset, query.getOriginalQuery(), anyConnections, querySender.getDatabaseConnection());
 
                             printExecutionPlan(before, anyConnections);
                         }
@@ -1658,7 +1658,7 @@ public class QueryDispatcher {
         });
     }
 
-    private void setResultSet(final ResultSet rs, final String query, boolean anyConnections) {
+    private void setResultSet(final ResultSet rs, final String query, boolean anyConnections, DatabaseConnection dc) {
 /*
         ThreadUtils.invokeAndWait(new Runnable() {
             public void run() {
@@ -1671,7 +1671,7 @@ public class QueryDispatcher {
         });
 */
         try {
-            delegate.setResultSet(rs, query);
+            delegate.setResultSet(rs, query, anyConnections ? dc : null);
         } catch (SQLException e) {
             processException(e, anyConnections);
         }

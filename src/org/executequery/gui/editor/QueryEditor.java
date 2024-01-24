@@ -597,12 +597,12 @@ public class QueryEditor extends DefaultTabView
      * @param resultSet     the executed result set
      * @param showRowNumber to return the result set row count
      */
-    public int setResultSet(ResultSet resultSet, boolean showRowNumber) throws SQLException {
+    public int setResultSet(ResultSet resultSet, boolean showRowNumber, DatabaseConnection dc) throws SQLException {
 
         int rowCount = -1;
 
         if (!executeToFileCheckBox.isSelected()) {
-            rowCount = resultsPanel.setResultSet(resultSet, showRowNumber, getMaxRecords());
+            rowCount = resultsPanel.setResultSet(resultSet, showRowNumber, getMaxRecords(), dc);
             revalidate();
 
         } else
@@ -616,10 +616,10 @@ public class QueryEditor extends DefaultTabView
      *
      * @param resultSet the executed result set
      */
-    public void setResultSet(ResultSet resultSet) throws SQLException {
+    public void setResultSet(ResultSet resultSet, DatabaseConnection dc) throws SQLException {
 
         if (!executeToFileCheckBox.isSelected()) {
-            resultsPanel.setResultSet(resultSet, true, getMaxRecords());
+            resultsPanel.setResultSet(resultSet, true, getMaxRecords(), dc);
             revalidate();
 
         } else
@@ -632,10 +632,10 @@ public class QueryEditor extends DefaultTabView
      * @param resultSet the executed result set
      * @param query     the executed query of the result set
      */
-    public void setResultSet(ResultSet resultSet, String query) throws SQLException {
+    public void setResultSet(ResultSet resultSet, String query, DatabaseConnection dc) throws SQLException {
 
         if (!executeToFileCheckBox.isSelected())
-            resultsPanel.setResultSet(resultSet, true, getMaxRecords(), query);
+            resultsPanel.setResultSet(resultSet, true, getMaxRecords(), query, dc);
         else
             new ExportDataPanel(resultSet, getDisplayName());
     }

@@ -281,7 +281,7 @@ public class ErdExecuteSQL extends ErdPrintableDialog
         return null;
     }
 
-    public void setResultSet(ResultSet rs, String query) throws SQLException {
+    public void setResultSet(ResultSet rs, String query, DatabaseConnection dc) throws SQLException {
     }
 
     public boolean isLogEnabled() {

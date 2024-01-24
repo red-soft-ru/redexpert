@@ -126,10 +126,7 @@ public class ImportHelperXML extends AbstractImportHelper {
                 continue;
 
             cell = cell.getFirstChild();
-            if (cell == null)
-                continue;
-
-            String value = cell.getNodeValue();
+            String value = cell != null ? cell.getNodeValue() : null;
             if (value != null && !value.equalsIgnoreCase("NULL"))
                 rowData.add(value);
             else

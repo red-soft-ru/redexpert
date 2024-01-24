@@ -54,7 +54,7 @@ public class ExportHelperXLSX extends AbstractExportHelper {
             int row = 0;
             while (resultSet.next()) {
 
-                if (row > SpreadsheetVersion.EXCEL2007.getLastRowIndex()) {
+                if (row >= SpreadsheetVersion.EXCEL2007.getLastRowIndex()) {
                     GUIUtilities.displayWarningMessage(String.format(bundleString("maxRowMessage"), SpreadsheetVersion.EXCEL2007.getLastRowIndex()));
                     break;
                 }

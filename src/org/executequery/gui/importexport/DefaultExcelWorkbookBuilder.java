@@ -20,7 +20,13 @@
 
 package org.executequery.gui.importexport;
 
-import org.apache.poi.xssf.usermodel.*;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.xssf.streaming.SXSSFCell;
+import org.apache.poi.xssf.streaming.SXSSFRow;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,90 +39,70 @@ public class DefaultExcelWorkbookBuilder implements ExcelWorkbookBuilder {
 
     private int currentRow;
 
-    private final XSSFWorkbook workbook;
-
-    private XSSFSheet currentSheet;
-
-    private final XSSFCellStyle defaultCellStyle;
+    private final CellStyle defaultCellStyle;
+    private final SXSSFWorkbook workbook;
+    private SXSSFSheet sheet;
 
     public DefaultExcelWorkbookBuilder() {
-
-        workbook = new XSSFWorkbook();
+        workbook = new SXSSFWorkbook();
         defaultCellStyle = createStyle();
     }
 
+    @Override
     public void reset() {
-
         currentRow = 0;
-        currentSheet = null;
+        sheet = null;
     }
 
+    @Override
     public void writeTo(OutputStream outputStream) throws IOException {
-
         workbook.write(outputStream);
     }
 
+    @Override
     public void createSheet(String sheetName) {
-
-        currentSheet = workbook.createSheet(sheetName);
+        sheet = workbook.createSheet(sheetName);
     }
 
+    @Override
     public void addRow(List<String> values) {
-
         fillRow(values, createRow(++currentRow), defaultCellStyle);
     }
 
+    @Override
     public void addRowHeader(List<String> values) {
 
-        if (currentRow > 0) {
-
+        if (currentRow > 0)
             currentRow++;
-        }
 
-        XSSFFont font = createFont();
+        Font font = createFont();
         font.setBold(true);
 
-        XSSFCellStyle style = createStyle();
+        CellStyle style = createStyle();
         style.setFont(font);
 
         fillRow(values, createRow(currentRow), style);
     }
 
-    private XSSFRow createRow(int rowNumber) {
-
-        return currentSheet.createRow(rowNumber);
+    private SXSSFRow createRow(int rowNumber) {
+        return sheet.createRow(rowNumber);
     }
 
-    private void fillRow(List<String> values, XSSFRow row, XSSFCellStyle style) {
+    private void fillRow(List<String> values, SXSSFRow row, CellStyle style) {
 
         for (int i = 0, n = values.size(); i < n; i++) {
-
-            XSSFCell cell = row.createCell(i);
-
-            // set encoding no longer supported in POI 3.2
-//            cell.setEncoding(XSSFCell.ENCODING_UTF_16);
-
+            SXSSFCell cell = row.createCell(i);
             cell.setCellStyle(style);
             cell.setCellValue(new XSSFRichTextString(values.get(i)));
         }
-
     }
 
-    private XSSFCellStyle createStyle() {
-
+    private CellStyle createStyle() {
         return workbook.createCellStyle();
     }
 
-    private XSSFFont createFont() {
-
+    private Font createFont() {
         return workbook.createFont();
     }
 
 }
-
-
-
-
-
-
-

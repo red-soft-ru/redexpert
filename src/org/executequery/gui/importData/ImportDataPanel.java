@@ -95,6 +95,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
     private JButton browseDataFileButton;
     private JButton browseLobFileButton;
+    private JButton correlateButton;
     private JButton startImportButton;
 
     private JLabel progressLabel;
@@ -243,6 +244,10 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         browseLobFileButton = WidgetFactory.createButton("browseLobFileButton", bundleString("BrowseButtonText"));
         browseLobFileButton.addActionListener(e -> browseFile(lobFileField));
 
+        correlateButton = WidgetFactory.createButton("correlateButton", bundleString("CorrelateButtonText"));
+        correlateButton.addActionListener(e -> correlateFields());
+        correlateButton.setEnabled(false);
+
         startImportButton = WidgetFactory.createButton("startImportButton", bundleString("StartImportButtonText"));
         startImportButton.addActionListener(e -> {
 
@@ -359,7 +364,8 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
         gridBagHelper = new GridBagHelper().fillBoth().anchorNorthWest();
         startImportPanel.add(eraseTableCheck, gridBagHelper.setMaxWeightX().get());
-        startImportPanel.add(startImportButton, gridBagHelper.nextCol().anchorNorthEast().spanX().setMinWeightX().get());
+        startImportPanel.add(correlateButton, gridBagHelper.nextCol().rightGap(5).anchorNorthEast().setMinWeightX().get());
+        startImportPanel.add(startImportButton, gridBagHelper.nextCol().rightGap(0).get());
 
         // --- mapping panel ---
 
@@ -410,6 +416,32 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
     }
 
     // --- buttons handlers ---
+
+    private void correlateFields() {
+
+        if (targetNotSelected(true) || importHelper == null)
+            return;
+
+        if (importHelper instanceof ImportHelperCSV || importHelper instanceof ImportHelperXLSX) {
+            if (!firstRowIsNamesCheck.isSelected()) {
+
+                for (int i = 0; i < columnMappingTable.getRowCount() && i < importHelper.getHeaders().size(); i++)
+                    columnMappingTable.setValueAt(importHelper.getHeaders().get(i), i, 2);
+                return;
+            }
+        }
+
+        for (int i = 0; i < columnMappingTable.getRowCount(); i++) {
+            for (int j = 0; j < importHelper.getHeaders().size(); j++) {
+
+                String value = importHelper.getHeaders().get(j);
+                if (columnMappingTable.getValueAt(i, 0).toString().equals(value)) {
+                    columnMappingTable.setValueAt(value, i, 2);
+                    break;
+                }
+            }
+        }
+    }
 
     private void browseFile(JTextField field) {
 
@@ -533,6 +565,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
     private synchronized void updateMappingTable() {
 
         columnMappingTableModel.setRowCount(0);
+        correlateButton.setEnabled(false);
 
         if (targetNotSelected(false) || importHelper == null)
             return;
@@ -562,6 +595,8 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
                     });
                 }
             }
+
+            correlateButton.setEnabled(columns != null);
         }
     }
 

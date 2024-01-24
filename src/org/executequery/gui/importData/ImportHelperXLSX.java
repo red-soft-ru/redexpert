@@ -34,7 +34,7 @@ public class ImportHelperXLSX extends AbstractImportHelper {
         int executorIndex = 0;
         int linesCount = 0;
 
-        for (int rowIndex = 0; rowIndex < sheet.getLastRowNum(); rowIndex++) {
+        for (int rowIndex = isFirstRowHeaders ? 1 : 0; rowIndex < sheet.getLastRowNum(); rowIndex++) {
 
             if (parent.isCancel() || linesCount > lastRow)
                 break;

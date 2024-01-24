@@ -16,8 +16,6 @@ public class StatIndex extends StatTableIndex {
             {"leaf buckets:", "i", null},
             {"nodes:", "i", null},
             {"Average node length:", "f", "avg_node_length"},
-            {"total dup:", "i", null},
-            {"max dup:", "i", null},
             {"Average key length:", "f", "avg_key_length"},
             {"compression ratio:", "f", null},
             {"Average prefix length:", "f", "avg_prefix_length"},

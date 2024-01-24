@@ -43,8 +43,8 @@ public final class DerivedQuery {
 
     private List<QueryTable> queryTables;
 
-    private String endDelimiter;
-    private boolean isSetTerm;
+    private final String endDelimiter;
+    private final boolean isSetTerm;
 
     static {
 
@@ -208,8 +208,11 @@ public final class DerivedQuery {
 
         ind = indexSpace(query);
         objectName = query.substring(0, ind);
-        if (objectName.startsWith("\"") && objectName.length() > 2)
-            objectName = objectName.substring(1, objectName.length() - 1);
+        if (objectName.startsWith("\"")) {
+            query = query.substring(1);
+            ind = query.indexOf("\"");
+            objectName = query.substring(0, ind);
+        }
         ind = queryWithoutComments.toUpperCase().indexOf(objectName);
         objectName = ind > -1 ? queryWithoutComments.substring(ind, objectName.length() + ind) : objectName;
     }

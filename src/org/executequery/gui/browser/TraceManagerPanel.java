@@ -30,6 +30,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -69,6 +71,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
     private BuildConfigurationPanel confPanel;
     private int currentSessionId;
     ListSelectionPanel columnsCheckPanel;
+    final FileChooserDialog fileChooser = new FileChooserDialog();
 
     private void initTraceManager(DatabaseConnection dc) {
         try {
@@ -191,6 +194,44 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         encodeCombobox = WidgetFactory.createComboBox("encodingCombobox", Charset.availableCharsets().keySet().toArray());
         encodeCombobox.setSelectedItem(UserProperties.getInstance().getStringProperty("system.file.encoding"));
         encodeCombobox.setToolTipText(bundleString("Charset"));
+        encodeCombobox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (fileChooser.getSelectedFile() != null) {
+
+
+                    SwingWorker sw = new SwingWorker("loadTraceFromFile") {
+                        @Override
+                        public Object construct() {
+                            loadFromFile();
+                            return null;
+                        }
+
+                        @Override
+                        public void finished() {
+                            GUIUtilities.showNormalCursor();
+                            tabPane.setEnabled(true);
+                            loggerPanel.setEnableElements(true);
+                            SwingWorker sw = new SwingWorker("buildAnalise") {
+                                @Override
+                                public Object construct() {
+                                    analisePanel.setMessages(loggerPanel.getTableRows());
+                                    analisePanel.rebuildRows();
+                                    return null;
+                                }
+                            };
+                            sw.start();
+
+                        }
+                    };
+                    GUIUtilities.showWaitCursor();
+                    tabPane.setEnabled(false);
+                    loggerPanel.setEnableElements(false);
+                    sw.start();
+                    tabPane.setSelectedComponent(loggerPanel);
+                }
+            }
+        });
         toolBar.add(encodeCombobox, gbhToolBar.nextCol().setLabelDefault().get());
         //toolBar.add(new JSeparator(),gbhToolBar.nextCol().setLabelDefault().get());
         visibleColumnsButton = WidgetFactory.createRolloverButton("visibleColumnsButton", bundleString("VisibleColumns"), "FindAgain16.png");
@@ -239,7 +280,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         });
 
         openFileLog.addActionListener(new ActionListener() {
-            final FileChooserDialog fileChooser = new FileChooserDialog();
+
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -248,24 +289,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                     SwingWorker sw = new SwingWorker("loadTraceFromFile") {
                         @Override
                         public Object construct() {
-                            clearAll();
-                            idLogMessage = 0;
-                            BufferedReader reader = null;
-                            try {
-                                reader = new BufferedReader(
-                                        new InputStreamReader(
-                                                Files.newInputStream(Paths.get(fileChooser.getSelectedFile().getAbsolutePath())), (String) encodeCombobox.getSelectedItem()));
-                                readFromBufferedReader(reader, true);
-                            } catch (Exception e1) {
-                                GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
-                            } finally {
-                                if (reader != null) {
-                                    try {
-                                        reader.close();
-                                    } catch (IOException e1) {
-                                    }
-                                }
-                            }
+                            loadFromFile();
                             return null;
                         }
 
@@ -290,9 +314,10 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                     tabPane.setEnabled(false);
                     loggerPanel.setEnableElements(false);
                     sw.start();
+                    tabPane.setSelectedComponent(loggerPanel);
 
                 }
-                tabPane.setSelectedComponent(loggerPanel);
+
             }
         });
 
@@ -408,6 +433,27 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         });
         confPanel = new BuildConfigurationPanel();
 
+    }
+
+    protected void loadFromFile() {
+        clearAll();
+        idLogMessage = 0;
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(
+                    new InputStreamReader(
+                            Files.newInputStream(Paths.get(fileChooser.getSelectedFile().getAbsolutePath())), (String) encodeCombobox.getSelectedItem()));
+            readFromBufferedReader(reader, true);
+        } catch (Exception e1) {
+            GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e1) {
+                }
+            }
+        }
     }
 
     @Override

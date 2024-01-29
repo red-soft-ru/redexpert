@@ -1,4 +1,46 @@
 --- RedExpert  - RELEASE NOTES -
+Major changes - v2024.01
+----------------------------------------
+Added:
+1.  Support of work with database statistics:
+1.1.    Obtaining database statistics via services
+1.2.    Parsing DB statistics from a file
+1.3.    DB statistics comparing
+2.  Data import support from XLSX and XML files
+3.  Export/import of data with BLOB type
+4.  Ability to select columns when exporting data
+5.  Ability to transfer data from one database to another
+6.  Database metadata extracting into SQL-script
+7.  SQL-queries executing to a file directly
+8.  Transaction parameters support in the Query Editor
+9.  Query execution in several connections simultaneously
+10. Transaction confirmation window when closing the Query Editor and the "Data" tab of tables and views
+11. Displaying connection and database properties (such as server, page size, database file size, etc.)
+12. Ability to copy column names from a Result Set
+13. “Triggers” tab for views
+14. Ability to configure database connection timeout
+15. Updated data import and export panels
+Fixed:
+1.  Display tables with “NONE” encoding
+2.  Recognizing VARCHAR and CHAR types other than undefined subtype and with fixed binary data
+3.  Reloading of views after making changes
+4.  Auto-completion: by occurrence, not by string start
+5.  UDF opening errors
+6.  Editing foreign keys
+7.  Copying connection with encoding
+8.  Editing data in columns with names containing spaces
+9.  Disappearance of the edited procedure text on the “DDL” tab when switching tabs
+10. Searching for database objects in the connection tree with names containing '$'
+11. GUI defects when double-clicking on a table name in the Query Editor
+12. Limitations on the number of characters and maximum value when editing field value with INT128 type
+13. SQL code generation for external UDR functions, indexes and constraints
+14. Table Validation with a large number of fields and indexes
+15. Profiler buttons availability when switching between application tabs
+16. Display PUBLIC role in the "Users" group in the Grant Manager
+17. Focus shift when changing a filter field in the Grant Manager
+18. Updating the list of triggers for tables and views when adding a new trigger
+19. Updating the list of table fields when they are changed
+
 Major changes - v2023.10.1
 ----------------------------------------
 Added:

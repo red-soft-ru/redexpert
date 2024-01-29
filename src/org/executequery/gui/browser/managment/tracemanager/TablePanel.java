@@ -363,6 +363,7 @@ public class TablePanel extends JPanel {
 
     public void clearAll() {
         dataModel.clearAll();
+        txtFieldRawSql.setSQLText("");
     }
 
     public void cleanup() {

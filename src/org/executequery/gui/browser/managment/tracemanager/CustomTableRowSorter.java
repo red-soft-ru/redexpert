@@ -5,8 +5,8 @@ import javax.swing.table.TableRowSorter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomTableRowSorter extends TableRowSorter<ResultSetDataModel> {
-    public CustomTableRowSorter(final ResultSetDataModel datamodel) {
+public class CustomTableRowSorter extends TableRowSorter<TraceDataModel> {
+    public CustomTableRowSorter(final TraceDataModel datamodel) {
         super(datamodel);
     }
 

@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class ResultSetDataModel extends AbstractTableModel {
+public class TraceDataModel extends AbstractTableModel {
 
     private List<String> columnNames = new ArrayList<>();
     private List<String> visibleColumnNames = new ArrayList<>();
@@ -27,7 +27,7 @@ public class ResultSetDataModel extends AbstractTableModel {
     private ListSelectionPanel listSelectionPanel;
 
 
-    public ResultSetDataModel(ListSelectionPanel listSelectionPanel, JComboBox filterTypeBox, JComboBox filterColumnBox, JTextField filterTextField, JCheckBox matchCaseBox) {
+    public TraceDataModel(ListSelectionPanel listSelectionPanel, JComboBox filterTypeBox, JComboBox filterColumnBox, JTextField filterTextField, JCheckBox matchCaseBox) {
         this.filterTypeBox = filterTypeBox;
         this.filterColumnBox = filterColumnBox;
         this.filterTextField = filterTextField;

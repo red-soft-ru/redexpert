@@ -43,7 +43,7 @@ public class TablePanel extends JPanel {
 
     TableCounterModel tableCounterModel;
     SimpleSqlTextPanel txtFieldRawSql;
-    private ResultSetDataModel dataModel;
+    private TraceDataModel dataModel;
     private JComboBox<Filter.FilterType> comboBoxFilterType;
     private JComboBox<String> comboBoxFilterColumn;
     private JTextField txtFldSqlFilter;
@@ -142,7 +142,7 @@ public class TablePanel extends JPanel {
         dynamicComboBoxModel = new DynamicComboBoxModel();
         comboBoxFilterColumn.setModel(dynamicComboBoxModel);
         loadCols();
-        dataModel = new ResultSetDataModel(columnsCheckPanel, comboBoxFilterType, comboBoxFilterColumn, txtFldSqlFilter, matchCaseBox);
+        dataModel = new TraceDataModel(columnsCheckPanel, comboBoxFilterType, comboBoxFilterColumn, txtFldSqlFilter, matchCaseBox);
         table = new JTable(dataModel);
         tableCounterModel = new TableCounterModel();
         tableCounter = new JTable(tableCounterModel) {

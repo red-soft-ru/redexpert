@@ -19,7 +19,7 @@ public class StatementTimestampTableCellRenderer extends CustomTableCellRenderer
         final StatementTimestampTableCellRenderer component = (StatementTimestampTableCellRenderer) super
                 .getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-        final ResultSetDataModel dataModel = (ResultSetDataModel) table.getModel();
+        final TraceDataModel dataModel = (TraceDataModel) table.getModel();
         if (value != null && LogConstants.TSTAMP_COLUMN.equals(dataModel.getColumnName(column))) {
             final Timestamp tstamp = (Timestamp) value;
             String str = tstampFormat.format(tstamp);

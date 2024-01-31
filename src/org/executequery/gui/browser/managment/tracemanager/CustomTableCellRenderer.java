@@ -110,7 +110,7 @@ public class CustomTableCellRenderer extends JLabel implements TableCellRenderer
         if (table == null) {
             return this;
         }
-        ResultSetDataModel model = (ResultSetDataModel) table.getModel();
+        TraceDataModel model = (TraceDataModel) table.getModel();
         int model_row = table.getRowSorter().convertRowIndexToModel(row);
         LogMessage message = model.getVisibleRows().get(model_row);
         Color fg = null;

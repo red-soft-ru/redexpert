@@ -199,36 +199,8 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
             public void itemStateChanged(ItemEvent e) {
                 if (fileChooser.getSelectedFile() != null) {
 
-
-                    SwingWorker sw = new SwingWorker("loadTraceFromFile") {
-                        @Override
-                        public Object construct() {
-                            loadFromFile();
-                            return null;
-                        }
-
-                        @Override
-                        public void finished() {
-                            GUIUtilities.showNormalCursor();
-                            tabPane.setEnabled(true);
-                            loggerPanel.setEnableElements(true);
-                            SwingWorker sw = new SwingWorker("buildAnalise") {
-                                @Override
-                                public Object construct() {
-                                    analisePanel.setMessages(loggerPanel.getTableRows());
-                                    analisePanel.rebuildRows();
-                                    return null;
-                                }
-                            };
-                            sw.start();
-
-                        }
-                    };
-                    GUIUtilities.showWaitCursor();
-                    tabPane.setEnabled(false);
-                    loggerPanel.setEnableElements(false);
-                    sw.start();
-                    tabPane.setSelectedComponent(loggerPanel);
+                    int selectedRow = loggerPanel.getSelectedRow();
+                    loadFromFile(selectedRow);
                 }
             }
         });
@@ -286,36 +258,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
             public void actionPerformed(ActionEvent e) {
                 int returnVal = fileChooser.showOpenDialog(openFileLog);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    SwingWorker sw = new SwingWorker("loadTraceFromFile") {
-                        @Override
-                        public Object construct() {
-                            loadFromFile();
-                            return null;
-                        }
-
-                        @Override
-                        public void finished() {
-                            GUIUtilities.showNormalCursor();
-                            tabPane.setEnabled(true);
-                            loggerPanel.setEnableElements(true);
-                            SwingWorker sw = new SwingWorker("buildAnalise") {
-                                @Override
-                                public Object construct() {
-                                    analisePanel.setMessages(loggerPanel.getTableRows());
-                                    analisePanel.rebuildRows();
-                                    return null;
-                                }
-                            };
-                            sw.start();
-
-                        }
-                    };
-                    GUIUtilities.showWaitCursor();
-                    tabPane.setEnabled(false);
-                    loggerPanel.setEnableElements(false);
-                    sw.start();
-                    tabPane.setSelectedComponent(loggerPanel);
-
+                    loadFromFile(-1);
                 }
 
             }
@@ -435,25 +378,57 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
 
     }
 
-    protected void loadFromFile() {
-        clearAll();
-        idLogMessage = 0;
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(
-                    new InputStreamReader(
-                            Files.newInputStream(Paths.get(fileChooser.getSelectedFile().getAbsolutePath())), (String) encodeCombobox.getSelectedItem()));
-            readFromBufferedReader(reader, true);
-        } catch (Exception e1) {
-            GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
-        } finally {
-            if (reader != null) {
+
+    protected void loadFromFile(int selectedRow) {
+
+        SwingWorker sw = new SwingWorker("loadTraceFromFile") {
+            @Override
+            public Object construct() {
+                clearAll();
+                idLogMessage = 0;
+                BufferedReader reader = null;
                 try {
-                    reader.close();
-                } catch (IOException e1) {
+                    reader = new BufferedReader(
+                            new InputStreamReader(
+                                    Files.newInputStream(Paths.get(fileChooser.getSelectedFile().getAbsolutePath())), (String) encodeCombobox.getSelectedItem()));
+                    readFromBufferedReader(reader, true);
+                } catch (Exception e1) {
+                    GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (IOException e1) {
+                        }
+                    }
                 }
+                return null;
             }
-        }
+
+            @Override
+            public void finished() {
+                GUIUtilities.showNormalCursor();
+                tabPane.setEnabled(true);
+                loggerPanel.setEnableElements(true);
+                SwingWorker sw = new SwingWorker("buildAnalise") {
+                    @Override
+                    public Object construct() {
+                        analisePanel.setMessages(loggerPanel.getTableRows());
+                        analisePanel.rebuildRows();
+                        return null;
+                    }
+                };
+                sw.start();
+                if (selectedRow >= 0)
+                    loggerPanel.setSelectedRow(selectedRow);
+
+            }
+        };
+        GUIUtilities.showWaitCursor();
+        tabPane.setEnabled(false);
+        loggerPanel.setEnableElements(false);
+        sw.start();
+        tabPane.setSelectedComponent(loggerPanel);
     }
 
     @Override

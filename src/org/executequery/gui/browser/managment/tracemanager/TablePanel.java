@@ -375,5 +375,13 @@ public class TablePanel extends JPanel {
         return dataModel.getRowCount();
     }
 
+    public int getSelectedRow() {
+        return table.getSelectedRow();
+    }
+
+    public void setSelectedRow(int row) {
+        table.getSelectionModel().setSelectionInterval(row, row);
+    }
+
 
 }

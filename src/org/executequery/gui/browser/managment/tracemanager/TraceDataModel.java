@@ -102,6 +102,9 @@ public class TraceDataModel extends AbstractTableModel {
                 || visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.TIME_EXECUTION_COLUMN)
                 || visibleColumnNameFromIndex(columnIndex).contains("COUNT_")
                 || visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.RECORDS_FETCHED_COLUMN)
+                || visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.SORT_MEMORY_USAGE_TOTAL_COLUMN)
+                || visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.SORT_MEMORY_USAGE_CACHED_COLUMN)
+                || visibleColumnNameFromIndex(columnIndex).contentEquals(LogConstants.SORT_MEMORY_USAGE_ON_DISK_COLUMN)
         )
             return Long.class;
         return String.class;

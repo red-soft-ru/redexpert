@@ -45,7 +45,7 @@ public class ImportConnectionsPanelOne extends ActionPanel {
 
         fileNameField = WidgetFactory.createTextField("fileNameField");
 
-        JButton button = WidgetFactory.createInlineFieldButton(Bundles.get("CreateTableFunctionPanel.BrowseButtonText"));
+        JButton button = WidgetFactory.createInlineFieldButton("browseButton", Bundles.get("CreateTableFunctionPanel.BrowseButtonText"));
         button.setActionCommand("browse");
         button.addActionListener(this);
         button.setMnemonic('r');

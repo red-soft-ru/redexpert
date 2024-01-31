@@ -203,7 +203,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
 
         });
 
-        browseExternalTableFileButton = WidgetFactory.createInlineFieldButton(bundledString("BrowseButtonText"));
+        browseExternalTableFileButton = WidgetFactory.createInlineFieldButton("browseExternalTableFileButton", bundledString("BrowseButtonText"));
         browseExternalTableFileButton.addActionListener(e -> browseExternalTableFile());
 
         isAdapterNeeded = new JCheckBox(bundledString("IsAdapterNeededText"));

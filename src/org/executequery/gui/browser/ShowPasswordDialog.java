@@ -40,9 +40,8 @@ public class ShowPasswordDialog extends BaseDialog implements ActionListener {
         super(bundleString("Password"), true);
         this.password = password;
 
-        JButton okButton = WidgetFactory.createPanelButton(Bundles.get("common.close.button"), null, this);
-        JButton copyButton = WidgetFactory.createPanelButton(bundleString("Copy"),
-                bundleString("CopyToolTip"), this, COPY_COMMAND);
+        JButton okButton = WidgetFactory.createPanelButton("okButton", Bundles.get("common.close.button"), null, this);
+        JButton copyButton = WidgetFactory.createPanelButton("copyButton", bundleString("Copy"), bundleString("CopyToolTip"), this, COPY_COMMAND);
 
         JPanel basePanel = new JPanel(new GridBagLayout());
 

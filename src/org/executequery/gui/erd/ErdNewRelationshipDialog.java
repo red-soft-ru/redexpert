@@ -26,6 +26,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.DefaultFieldLabel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -148,12 +149,69 @@ public class ErdNewRelationshipDialog extends ErdPrintableDialog {
         panel.setBorder(BorderFactory.createEtchedBorder());
 
         GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        WidgetFactory.addLabelFieldPair(panel, "Constraint Name:", nameField, gbc);
-        WidgetFactory.addLabelFieldPair(panel, "Referencing Table:", referencingTableCombo, gbc);
-        WidgetFactory.addLabelFieldPair(panel, "Referencing Column:", referencingColumnCombo, gbc);
-        WidgetFactory.addLabelFieldPair(panel, "Referenced Table:", referencedTableCombo, gbc);
-        WidgetFactory.addLabelFieldPair(panel, "Referenced Column:", referencedColumnCombo, gbc);
+        gbc.insets = new Insets(10, 10, 0, 10);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.insets.top = 0;
+        gbc.weightx = 0;
+        panel.add(new DefaultFieldLabel("Constraint Name:"), gbc);
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridx = 1;
+        gbc.insets.left = 5;
+        gbc.weightx = 1.0;
+        panel.add(nameField, gbc);
+
+        gbc.insets = new Insets(10, 10, 0, 10);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.weightx = 0;
+        panel.add(new DefaultFieldLabel("Referencing Table:"), gbc);
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridx = 1;
+        gbc.insets.left = 5;
+        gbc.weightx = 1.0;
+        panel.add(referencingTableCombo, gbc);
+
+        gbc.insets = new Insets(10, 10, 0, 10);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.weightx = 0;
+        panel.add(new DefaultFieldLabel("Referencing Column:"), gbc);
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridx = 1;
+        gbc.insets.left = 5;
+        gbc.weightx = 1.0;
+        panel.add(referencingColumnCombo, gbc);
+
+        gbc.insets = new Insets(10, 10, 0, 10);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.weightx = 0;
+        panel.add(new DefaultFieldLabel("Referenced Table:"), gbc);
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridx = 1;
+        gbc.insets.left = 5;
+        gbc.weightx = 1.0;
+        panel.add(referencedTableCombo, gbc);
+
+        gbc.insets = new Insets(10, 10, 0, 10);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.weightx = 0;
+        panel.add(new DefaultFieldLabel("Referenced Column:"), gbc);
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridx = 1;
+        gbc.insets.left = 5;
+        gbc.weightx = 1.0;
+        panel.add(referencedColumnCombo, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 5;

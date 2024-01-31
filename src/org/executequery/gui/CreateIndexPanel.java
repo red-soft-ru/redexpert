@@ -44,6 +44,7 @@ import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.ActionPanel;
+import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.MoveListItemStrategy;
 import org.underworldlabs.swing.actions.ActionUtilities;
@@ -188,11 +189,60 @@ public class CreateIndexPanel extends ActionPanel
         // add all components
         gbc = new GridBagConstraints();
         JPanel mainPanel = new JPanel(new GridBagLayout());
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        WidgetFactory.addLabelFieldPair(mainPanel, "Connection:", connectionsCombo, gbc);
-        WidgetFactory.addLabelFieldPair(mainPanel, "Schema:", schemaCombo, gbc);
-        WidgetFactory.addLabelFieldPair(mainPanel, "Table:", tableCombo, gbc);
-        WidgetFactory.addLabelFieldPair(mainPanel, "Index Name:", nameField, gbc);
+        gbc.insets = new Insets(10, 10, 0, 10);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.insets.top = 0;
+        gbc.weightx = 0;
+        mainPanel.add(new DefaultFieldLabel("Connection:"), gbc);
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridx = 1;
+        gbc.insets.left = 5;
+        gbc.weightx = 1.0;
+        mainPanel.add(connectionsCombo, gbc);
+
+        gbc.insets = new Insets(10, 10, 0, 10);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.insets.top = 0;
+        gbc.weightx = 0;
+        mainPanel.add(new DefaultFieldLabel("Schema:"), gbc);
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridx = 1;
+        gbc.insets.left = 5;
+        gbc.weightx = 1.0;
+        mainPanel.add(schemaCombo, gbc);
+
+        gbc.insets = new Insets(10, 10, 0, 10);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.insets.top = 0;
+        gbc.weightx = 0;
+        mainPanel.add(new DefaultFieldLabel("Table:"), gbc);
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridx = 1;
+        gbc.insets.left = 5;
+        gbc.weightx = 1.0;
+        mainPanel.add(tableCombo, gbc);
+
+        gbc.insets = new Insets(10, 10, 0, 10);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.insets.top = 0;
+        gbc.weightx = 0;
+        mainPanel.add(new DefaultFieldLabel("Index Name:"), gbc);
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridx = 1;
+        gbc.insets.left = 5;
+        gbc.weightx = 1.0;
+        mainPanel.add(nameField, gbc);
 
         gbc.insets.left = 0;
         gbc.insets.right = 0;

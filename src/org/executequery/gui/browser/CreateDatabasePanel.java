@@ -396,7 +396,7 @@ public class CreateDatabasePanel extends ActionPanel
         advPropsPanel.add(scroller, gbh.get());
 
         // transaction isolation
-        txApplyButton = WidgetFactory.createInlineFieldButton(Bundles.get("common.apply.button"), "transactionLevelChanged");
+        txApplyButton = WidgetFactory.createInlineFieldButton("txApplyButton", Bundles.get("common.apply.button"), "transactionLevelChanged");
         txApplyButton.setToolTipText(bundledString("txApplyButton.tool-tip"));
         txApplyButton.setEnabled(false);
         txApplyButton.addActionListener(this);

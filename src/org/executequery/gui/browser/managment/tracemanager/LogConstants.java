@@ -57,6 +57,9 @@ public class LogConstants {
     public static final String OLDEST_ACTIVE_COLUMN = "OLDEST_ACTIVE";
     public static final String OLDEST_SNAPSHOT_COLUMN = "OLDEST_SNAPSHOT";
     public static final String NEXT_TRANSACTION_COLUMN = "NEXT_TRANSACTION";
+    public static final String SORT_MEMORY_USAGE_TOTAL_COLUMN = "SORT_MEMORY_USAGE_TOTAL";
+    public static final String SORT_MEMORY_USAGE_CACHED_COLUMN = "SORT_MEMORY_USAGE_CACHED";
+    public static final String SORT_MEMORY_USAGE_ON_DISK_COLUMN = "SORT_MEMORY_USAGE_ON_DISK_CACHED";
     public static final String[] COLUMNS =
             {
                     ID_COLUMN,
@@ -111,7 +114,10 @@ public class LogConstants {
                     OLDEST_INTERESTING_COLUMN,
                     OLDEST_ACTIVE_COLUMN,
                     OLDEST_SNAPSHOT_COLUMN,
-                    NEXT_TRANSACTION_COLUMN
+                    NEXT_TRANSACTION_COLUMN,
+                    SORT_MEMORY_USAGE_TOTAL_COLUMN,
+                    SORT_MEMORY_USAGE_CACHED_COLUMN,
+                    SORT_MEMORY_USAGE_ON_DISK_COLUMN
             };
     public static final String TABLE = "Table";
     public static final String NATURAL = "Natural";

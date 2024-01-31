@@ -1092,6 +1092,15 @@ public class LogMessage {
                 case LogConstants.PARAMETERS_TEXT_COLUMN:
                     setParamText(field.field);
                     break;
+                case LogConstants.SORT_MEMORY_USAGE_TOTAL_COLUMN:
+                    setTotalCacheMemory(Long.parseLong(field.field));
+                    break;
+                case LogConstants.SORT_MEMORY_USAGE_CACHED_COLUMN:
+                    setRamCacheMemory(Long.parseLong(field.field));
+                    break;
+                case LogConstants.SORT_MEMORY_USAGE_ON_DISK_COLUMN:
+                    setDiskCacheMemory(Long.parseLong(field.field));
+                    break;
                 default:
                     break;
             }
@@ -1210,6 +1219,12 @@ public class LogMessage {
                 return getOldestSnapshot();
             case LogConstants.NEXT_TRANSACTION_COLUMN:
                 return getNextTransaction();
+            case LogConstants.SORT_MEMORY_USAGE_TOTAL_COLUMN:
+                return getTotalCacheMemory();
+            case LogConstants.SORT_MEMORY_USAGE_CACHED_COLUMN:
+                return getRamCacheMemory();
+            case LogConstants.SORT_MEMORY_USAGE_ON_DISK_COLUMN:
+                return getDiskCacheMemory();
             default:
                 return null;
         }

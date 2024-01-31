@@ -59,7 +59,7 @@ public class LogConstants {
     public static final String NEXT_TRANSACTION_COLUMN = "NEXT_TRANSACTION";
     public static final String SORT_MEMORY_USAGE_TOTAL_COLUMN = "SORT_MEMORY_USAGE_TOTAL";
     public static final String SORT_MEMORY_USAGE_CACHED_COLUMN = "SORT_MEMORY_USAGE_CACHED";
-    public static final String SORT_MEMORY_USAGE_ON_DISK_COLUMN = "SORT_MEMORY_USAGE_ON_DISK_CACHED";
+    public static final String SORT_MEMORY_USAGE_ON_DISK_COLUMN = "SORT_MEMORY_USAGE_ON_DISK";
     public static final String[] COLUMNS =
             {
                     ID_COLUMN,

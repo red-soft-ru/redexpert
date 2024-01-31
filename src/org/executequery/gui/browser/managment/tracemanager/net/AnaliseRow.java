@@ -33,11 +33,12 @@ public class AnaliseRow {
     public final static int TOTAL = 0;
     public final static int AVG = TOTAL + 1;
     public final static int MAX = AVG + 1;
-    public final static int STD_DEV = MAX + 1;
+    public final static int MIN = MAX + 1;
+    public final static int STD_DEV = MIN + 1;
 
     public final static String[] PARAMS = new String[]{
 
-            "TOTAL", "AVG", "MAX", "STD_DEV"
+            "TOTAL", "AVG", "MAX", "MIN", "STD_DEV"
     };
 
     List<LogMessage>[] rows;
@@ -45,6 +46,7 @@ public class AnaliseRow {
     AnaliseValue[] average = new AnaliseValue[TYPES.length];
     AnaliseValue[] total = new AnaliseValue[TYPES.length];
     AnaliseValue[] max = new AnaliseValue[TYPES.length];
+    AnaliseValue[] min = new AnaliseValue[TYPES.length];
     AnaliseValue[] std_dev = new AnaliseValue[TYPES.length];
     long[] count = new long[TYPES.length];
 
@@ -71,6 +73,7 @@ public class AnaliseRow {
             rows[i] = new ArrayList<>();
             total[i] = new AnaliseValue(0, i);
             max[i] = new AnaliseValue(0, i);
+            min[i] = new AnaliseValue(-1, i);
             average[i] = new AnaliseValue(0, i);
             std_dev[i] = new AnaliseValue(0, i);
         }
@@ -87,6 +90,10 @@ public class AnaliseRow {
 
     public AnaliseValue[] getMax() {
         return max;
+    }
+
+    public AnaliseValue[] getMin() {
+        return min;
     }
 
     public List<LogMessage>[] getRows() {
@@ -118,6 +125,8 @@ public class AnaliseRow {
         total[type].longValue += currentValue;
         if (currentValue > max[type].longValue)
             max[type].longValue = currentValue;
+        if (currentValue < min[type].longValue || min[type].longValue == -1)
+            min[type].longValue = currentValue;
 
     }
 
@@ -210,6 +219,8 @@ public class AnaliseRow {
                 return getAverage()[type];
             case MAX:
                 return getMax()[type];
+            case MIN:
+                return getMin()[type];
             case STD_DEV:
                 return getStd_dev()[type];
         }

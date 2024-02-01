@@ -1330,8 +1330,8 @@ public class QueryEditor extends DefaultTabView
 
         String text = editorPanel.getQueryAreaText();
         QueryEditorFileWriter writer = new QueryEditorFileWriter();
+        String oldAbsolutePath = scriptFile.getAbsolutePath();
         boolean saved = writer.write(text, scriptFile, saveAs);
-
         if (saved) {
 
             GUIUtilities.setTabTitleForComponent(this, getDisplayName());
@@ -1339,7 +1339,12 @@ public class QueryEditor extends DefaultTabView
 
             isContentChanged = false;
         }
-
+        if (!scriptFile.getAbsolutePath().contentEquals(oldAbsolutePath)) {
+            String connectionID = (getSelectedConnection() != null) ?
+                    getSelectedConnection().getId() : QueryEditorHistory.NULL_CONNECTION;
+            QueryEditorHistory.removeEditor(connectionID, oldAbsolutePath);
+            QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), -1);
+        }
         return SaveFunction.SAVE_COMPLETE;
     }
 

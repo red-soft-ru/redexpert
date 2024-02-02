@@ -20,7 +20,6 @@
 
 package org.executequery.gui.text;
 
-import org.executequery.components.LineNumber;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
@@ -34,8 +33,6 @@ import java.awt.*;
 public class SimpleTextArea extends JPanel {
 
     private RSyntaxTextArea textArea;
-    protected LineNumber lineBorder;
-
 
     public SimpleTextArea(String label) {
         this();
@@ -43,7 +40,6 @@ public class SimpleTextArea extends JPanel {
     }
 
     public SimpleTextArea() {
-
         super(new BorderLayout());
         init();
     }
@@ -68,7 +64,3 @@ public class SimpleTextArea extends JPanel {
     }
 
 }
-
-
-
-

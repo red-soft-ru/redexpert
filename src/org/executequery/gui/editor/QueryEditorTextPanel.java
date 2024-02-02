@@ -26,6 +26,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.TextUtilities;
 import org.executequery.log.Log;
+import org.fife.ui.rtextarea.RTextScrollPane;
 import org.underworldlabs.swing.GUIUtils;
 
 import javax.swing.*;
@@ -71,6 +72,11 @@ public class QueryEditorTextPanel extends JPanel {
     private QueryEditorTextPane queryPane;
 
     /**
+     * The SQL text pane scroll pane
+     */
+    private RTextScrollPane queryScroll;
+
+    /**
      * The editor's controller
      */
     private QueryEditor queryEditor;
@@ -98,9 +104,8 @@ public class QueryEditorTextPanel extends JPanel {
         queryPane = new QueryEditorTextPane(this);
         queryPane.setSize(new Dimension(400, 300));
 
-        JScrollPane queryScroll = new JScrollPane();
-        queryScroll.getViewport().add(queryPane, BorderLayout.CENTER);
-        queryScroll.setRowHeaderView(queryPane.getLineBorder());
+        queryScroll = new RTextScrollPane(queryPane);
+        queryScroll.setLineNumbersEnabled(true);
         queryScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         queryScroll.setBorder(new EditorScrollerBorder());
 
@@ -137,19 +142,11 @@ public class QueryEditorTextPanel extends JPanel {
     }
 
     public void showLineNumbers(boolean show) {
-        queryPane.showLineNumbers(show);
+        queryScroll.setLineNumbersEnabled(show);
     }
 
     protected void setTextFocus() {
         GUIUtils.requestFocusInWindow(queryPane);
-    }
-
-    /**
-     * Resets the executing line within the line
-     * number border panel.
-     */
-    public void resetExecutingLine() {
-        queryPane.resetExecutingLine();
     }
 
     /**

@@ -1011,7 +1011,6 @@ public class QueryEditor extends DefaultTabView
         if (query == null)
             query = editorPanel.getQueryAreaText();
 
-        editorPanel.resetExecutingLine();
         boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
         delegate.executeQuery(getSelectedConnection(), query, executeAsBlock, false, true);
     }
@@ -1024,8 +1023,6 @@ public class QueryEditor extends DefaultTabView
             if (query == null) {
                 query = editorPanel.getQueryAreaText();
             }
-
-            editorPanel.resetExecutingLine();
 
             for (DatabaseConnection dc : selectConnectionsPanel.getSelectedConnections()) {
                 preExecute(dc);
@@ -1061,8 +1058,6 @@ public class QueryEditor extends DefaultTabView
         if (script == null)
             script = editorPanel.getQueryAreaText();
 
-        editorPanel.resetExecutingLine();
-
         delegate.executeScript(getSelectedConnection(), script, false);
     }
 
@@ -1073,7 +1068,6 @@ public class QueryEditor extends DefaultTabView
         if (query == null)
             query = editorPanel.getQueryAreaText();
 
-        editorPanel.resetExecutingLine();
         boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
         delegate.executeQueryInProfiler(getSelectedConnection(), query, executeAsBlock);
 
@@ -1086,7 +1080,6 @@ public class QueryEditor extends DefaultTabView
         if (MiscUtils.isNull(query))
             query = editorPanel.getQueryAreaText();
 
-        editorPanel.resetExecutingLine();
         delegate.printExecutedPlan(getSelectedConnection(), query, explained);
     }
 

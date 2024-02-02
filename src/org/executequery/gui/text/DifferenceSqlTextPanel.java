@@ -2,7 +2,6 @@ package org.executequery.gui.text;
 
 import com.github.difflib.text.DiffRow;
 import com.github.difflib.text.DiffRowGenerator;
-import org.executequery.components.LineNumber;
 import org.executequery.log.Log;
 
 import javax.swing.*;
@@ -10,7 +9,6 @@ import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 public class DifferenceSqlTextPanel extends JPanel {
@@ -26,8 +24,6 @@ public class DifferenceSqlTextPanel extends JPanel {
     private SimpleSqlTextPanel oldTextPanel;
 
     private List<Object[]> highlights;
-    private List<String> newLineBorders;
-    private List<String> oldLineBorders;
 
     public DifferenceSqlTextPanel(String newTitle, String oldTitle, boolean showOldPanel) {
         super(new BorderLayout());
@@ -41,17 +37,12 @@ public class DifferenceSqlTextPanel extends JPanel {
     private void init(boolean showOldPanel) {
 
         highlights = new ArrayList<>();
-        newLineBorders = new LinkedList<>();
-        oldLineBorders = new LinkedList<>();
 
         newTextPanel = new SimpleSqlTextPanel(newTitle);
         oldTextPanel = new SimpleSqlTextPanel(oldTitle);
 
         newTextPanel.setSQLTextEditable(false);
         oldTextPanel.setSQLTextEditable(false);
-
-        newTextPanel.getTextPane().getLineBorder().setFont(newTextPanel.getTextPane().getFont());
-        oldTextPanel.getTextPane().getLineBorder().setFont(oldTextPanel.getTextPane().getFont());
 
         if (showOldPanel) {
 
@@ -73,8 +64,6 @@ public class DifferenceSqlTextPanel extends JPanel {
         DiffRowGenerator diffGenerator = DiffRowGenerator.create().build();
 
         highlights.clear();
-        newLineBorders.clear();
-        oldLineBorders.clear();
 
         newTextPanel.setSQLText("");
         oldTextPanel.setSQLText("");
@@ -88,26 +77,23 @@ public class DifferenceSqlTextPanel extends JPanel {
         ) {
 
             if (row.getTag().equals(DiffRow.Tag.INSERT))
-                addRow(row, INSERT_COLOR, "+++");
+                addRow(row, INSERT_COLOR);
 
             else if (row.getTag().equals(DiffRow.Tag.DELETE))
-                addRow(row, DELETE_COLOR, "---");
+                addRow(row, DELETE_COLOR);
 
             else if (row.getTag().equals(DiffRow.Tag.CHANGE))
-                addRow(row, CHANGE_COLOR, "***");
+                addRow(row, CHANGE_COLOR);
 
             else
-                addRow(row, null, "   ");
+                addRow(row, null);
         }
 
         for (Object[] highlight : highlights)
             addHighlightLine((SQLTextArea) highlight[0], (int) highlight[1], (Color) highlight[2]);
-
-        ((LineNumber) newTextPanel.getTextPane().getLineBorder()).setBorderLabels(newLineBorders);
-        ((LineNumber) oldTextPanel.getTextPane().getLineBorder()).setBorderLabels(oldLineBorders);
     }
 
-    private void addRow(DiffRow row, Color color, String label) {
+    private void addRow(DiffRow row, Color color) {
 
         //add rows
         newTextPanel.getTextPane().append(row.getNewLine() + "\n");
@@ -118,10 +104,6 @@ public class DifferenceSqlTextPanel extends JPanel {
             highlights.add(getHighlight(newTextPanel.getTextPane(), color));
             highlights.add(getHighlight(oldTextPanel.getTextPane(), color));
         }
-
-        //add border labels
-        newLineBorders.add(label);
-        oldLineBorders.add(label);
 
     }
 

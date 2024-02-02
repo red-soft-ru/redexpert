@@ -25,6 +25,7 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
 import org.executequery.gui.editor.QueryEditorSettings;
+import org.fife.ui.rtextarea.RTextScrollPane;
 import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
 
 import javax.swing.*;
@@ -64,9 +65,9 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     private final StringBuffer sqlBuffer;
 
     /**
-     * The text area's scroller
+     * The text area's scroll
      */
-    private JScrollPane sqlScroller;
+    private RTextScrollPane queryScroll;
 
     /**
      * The default border
@@ -113,13 +114,12 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
         popup = new SimpleTextComponentPopUpMenu(textPane);
 
-        sqlScroller = new JScrollPane();
-        sqlScroller.getViewport().add(textPane, BorderLayout.CENTER);
-        sqlScroller.setRowHeaderView(textPane.getLineBorder());
-        sqlScroller.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        //sqlScroller.setBorder(new QueryEditorTextPanel.EditorScrollerBorder());
-        defaultBorder = sqlScroller.getBorder();
-        add(sqlScroller, BorderLayout.CENTER);
+        queryScroll = new RTextScrollPane(textPane);
+        queryScroll.setLineNumbersEnabled(true);
+        queryScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        defaultBorder = queryScroll.getBorder();
+
+        add(queryScroll, BorderLayout.CENTER);
         add(textPane.getCaretPositionLabel(),BorderLayout.SOUTH);
     }
 
@@ -154,11 +154,11 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     }
 
     public void setDefaultBorder() {
-        sqlScroller.setBorder(defaultBorder);
+        queryScroll.setBorder(defaultBorder);
     }
 
     public void setScrollPaneBorder(Border border) {
-        sqlScroller.setBorder(border);
+        queryScroll.setBorder(border);
     }
 
     public void setSQLText(String text) {

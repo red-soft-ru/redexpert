@@ -588,11 +588,8 @@ public class QueryEditorTextPane extends SQLTextArea
             setDocument(document);
 
         } finally {
-
             fireTextUpdateFinished();
-//            undoManager.reinstate();
             setCaretPosition(0);
-            updateLineBorder();
         }
 
     }
@@ -603,7 +600,6 @@ public class QueryEditorTextPane extends SQLTextArea
     }
 
     private void fireTextUpdateFinished() {
-        //updateLineBorder();
         reinstallListeners();
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -720,9 +716,6 @@ public class QueryEditorTextPane extends SQLTextArea
     public void resetAttributeSets() {
         String text = getText();
         setEditorPreferences();
-        //document.resetAttributeSets();
-        lineBorder.updatePreferences(QueryEditorSettings.getEditorFont());
-        lineBorder.repaint();
         setText(text);
     }
 
@@ -843,9 +836,9 @@ public class QueryEditorTextPane extends SQLTextArea
      *
      * @param the event object
      */
+    @Override
     public void insertUpdate(DocumentEvent e) {
         editorPanel.setContentChanged(true);
-        super.insertUpdate(e);
     }
 
 
@@ -956,13 +949,8 @@ public class QueryEditorTextPane extends SQLTextArea
     protected void setExecutingQuery(String query) {
 
         int index = getText().indexOf(query);
-        if (query.charAt(0) == Constants.NEW_LINE_CHAR) {
-
+        if (query.charAt(0) == Constants.NEW_LINE_CHAR)
             index++;
-        }
-
-        lineBorder.setExecutingLine(getRowAt(index));
-        lineBorder.repaint();
     }
 
     public String getTextAtRow(int rowNumber) {
@@ -1127,17 +1115,17 @@ public class QueryEditorTextPane extends SQLTextArea
     /**
      * Executes the undo action.
      */
+    @Override
     public void undo() {
         undoManager.undo();
-        //updateLineBorder();
     }
 
     /**
      * Executes the redo action.
      */
+    @Override
     public void redo() {
         undoManager.redo();
-        //updateLineBorder();
     }
 
     // ----------------------------------------

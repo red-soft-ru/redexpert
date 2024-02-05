@@ -50,7 +50,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     public static final String TITLE = bundleString("title");
     public static final String TITLE_EXPORT = bundleString("title-export");
-    public static final String FRAME_ICON = "ComparerDB_16.png";
+    public static final String COMPARE_ICON = "ComparerDB_16.png";
+    public static final String EXTRACT_ICON = "CreateScripts16.png";
 
     private static final int CHECK_CREATE = 0;
     private static final int CHECK_ALTER = 1;

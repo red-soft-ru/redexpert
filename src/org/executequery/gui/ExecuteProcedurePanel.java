@@ -187,6 +187,11 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
 
     private void arrangeComponents() {
 
+        // --- tablePanel ---
+
+        JScrollPane tablePanel = new JScrollPane(table);
+        tablePanel.setMinimumSize(new Dimension(0, 230));
+
         // --- resultPanel ---
 
         JPanel resultPanel = new JPanel(new BorderLayout());
@@ -197,7 +202,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setResizeWeight(0.5);
-        splitPane.setTopComponent(new JScrollPane(table));
+        splitPane.setTopComponent(tablePanel);
         splitPane.setBottomComponent(resultPanel);
 
         // --- basePanel ---

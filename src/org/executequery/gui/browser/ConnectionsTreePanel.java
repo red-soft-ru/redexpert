@@ -48,6 +48,7 @@ import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.tree.DynamicTree;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -1224,6 +1225,18 @@ public class ConnectionsTreePanel extends TreePanel
                 tree.expandPath(path);
 
             pathChanged(oldSelectionPath, path);
+
+            // --- reload panel view ---
+
+            String type = "";
+            if (node.getType() < NamedObject.META_TYPES.length)
+                type = NamedObject.META_TYPES[node.getType()];
+
+            String title = MiscUtils.trimEnd(node.getShortName()) + ":" + type + ":" + getDatabaseConnection(node).getName();
+            if (GUIUtilities.isPanelOpen(title)) {
+                GUIUtilities.closeTab(title);
+                valueChanged(node, null);
+            }
 
         } finally {
             GUIUtilities.showNormalCursor();

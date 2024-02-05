@@ -224,6 +224,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     selectAllChildren.setVisible(false);
                     selectAll.setVisible(false);
                     disconnect.setVisible(false);
+                    getMetadata.setVisible(false);
                     dataBaseInformation.setVisible(false);
                     reload.setVisible(true);
                     recycleConnection.setVisible(false);
@@ -340,6 +341,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             addNewConnection.setVisible(false);
             connect.setVisible(false);
             disconnect.setVisible(false);
+            getMetadata.setVisible(false);
             reload.setVisible(true);
             reload.setText(bundleString("reload", StringUtils.EMPTY));
             createObject.setVisible(false);

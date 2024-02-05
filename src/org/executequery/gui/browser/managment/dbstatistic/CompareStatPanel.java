@@ -11,6 +11,7 @@ import javax.swing.*;
 public class CompareStatPanel extends AbstractPanel {
     CompareStatisticTablePanel tablesPanel;
     CompareStatisticTablePanel indexesPanel;
+    CompareStatisticTablePanel tablespacesPanel;
     DifferenceTextPanel textPanel;
     StatDatabase db;
     JTabbedPane tabPane = new JTabbedPane();
@@ -28,6 +29,7 @@ public class CompareStatPanel extends AbstractPanel {
         sw.start();
         tablesPanel.setRows(db.tables);
         indexesPanel.setRows(db.indices);
+        tablespacesPanel.setRows(db.tablespaces);
     }
 
     @Override
@@ -37,10 +39,13 @@ public class CompareStatPanel extends AbstractPanel {
         tablesPanel.initModel(StatisticTablePanel.TABLE);
         indexesPanel = new CompareStatisticTablePanel();
         indexesPanel.initModel(StatisticTablePanel.INDEX);
+        tablespacesPanel = new CompareStatisticTablePanel();
+        tablespacesPanel.initModel(StatisticTablePanel.TABLESPACE);
         tabPane = new JTabbedPane();
         tabPane.add(AbstractServiceManagerPanel.bundleString("tabText"), textPanel);
         tabPane.add(AbstractServiceManagerPanel.bundleString("tables"), tablesPanel);
         tabPane.add(AbstractServiceManagerPanel.bundleString("indices"), indexesPanel);
+        tabPane.add(AbstractServiceManagerPanel.bundleString("tablespaces"), tablespacesPanel);
     }
 
     @Override

@@ -5,10 +5,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.tracemanager.AnalisePanel;
-import org.underworldlabs.statParser.StatDatabase;
-import org.underworldlabs.statParser.StatIndex;
-import org.underworldlabs.statParser.StatTable;
-import org.underworldlabs.statParser.TableModelObject;
+import org.underworldlabs.statParser.*;
 import org.underworldlabs.swing.AbstractPanel;
 
 import javax.swing.*;
@@ -23,6 +20,7 @@ public class StatisticTablePanel extends AbstractPanel {
     public static final int DATABASE = 0;
     public static final int TABLE = 1;
     public static final int INDEX = 2;
+    public static final int TABLESPACE = 3;
     JTable table;
     protected StatisticTableModel model;
     protected HeaderTableModel headerModel;
@@ -110,6 +108,9 @@ public class StatisticTablePanel extends AbstractPanel {
                 break;
             case INDEX:
                 tableModelObject = new StatIndex(null);
+                break;
+            case TABLESPACE:
+                tableModelObject = new StatTablespace();
                 break;
             default:
                 return;

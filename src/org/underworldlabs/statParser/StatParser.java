@@ -29,6 +29,13 @@ public class StatParser {
     public static final int ATTR_BACKUP_MERGE = 9;
     public static final int ATTR_BACKUP_WRONG = 10;
 
+    public static final int STEP_FREE_PARSE = 0;
+    public static final int STEP_HEADER_PARSE = STEP_FREE_PARSE + 1;
+    public static final int STEP_VARIABLES_HEADER_PARSE = STEP_HEADER_PARSE + 1;
+    public static final int STEP_DATABASE_FILE_PARSE = STEP_VARIABLES_HEADER_PARSE + 1;
+    public static final int STEP_TABLESPACES_PARSE = STEP_DATABASE_FILE_PARSE + 1;
+    public static final int STEP_DATABASE_PAGES_PARSE = STEP_TABLESPACES_PARSE + 1;
+
     public static List<String> items_fill = Arrays.asList("0 - 19%", "20 - 39%", "40 - 59%", "60 - 79%", "80 - 99%");
 
 
@@ -42,74 +49,119 @@ public class StatParser {
             StatDatabase db = parserParameters.db;
             if (line.startsWith("Gstat completion time")) {
                 db.setCompleted(LocalDateTime.parse(line.substring(22).replace("  ", " 0"), formatter));
-            } else if (parserParameters.step == 0) {
+            } else if (parserParameters.step == STEP_FREE_PARSE) {
                 if (line.startsWith("Gstat execution time")) {
                     db.setExecuted(LocalDateTime.parse(line.substring(21).replace("  ", " 0"), formatter));
                 } else if (line.startsWith("Database header page information:")) {
-                    parserParameters.step = 1;
+                    parserParameters.step = STEP_HEADER_PARSE;
                 } else if (line.startsWith("Variable header data:")) {
-                    parserParameters.step = 2;
+                    parserParameters.step = STEP_VARIABLES_HEADER_PARSE;
                 } else if (line.startsWith("Database file sequence:")) {
-                    parserParameters.step = 3;
+                    parserParameters.step = STEP_DATABASE_FILE_PARSE;
+                } else if (line.startsWith("Tablespaces:")) {
+                    parserParameters.step = STEP_TABLESPACES_PARSE;
                 } else if (line.contains("encrypted") && line.contains("non-crypted")) {
                     parse_encryption(line, db, parserParameters.line_no);
-                    } else if (line.startsWith("Analyzing database pages ...")) {
-                    parserParameters.step = 4;
+                } else if (line.startsWith("Analyzing database pages ...")) {
+                    parserParameters.step = STEP_DATABASE_PAGES_PARSE;
                 } else if (MiscUtils.isNull(line)) {
                     return parserParameters;
                 } else if (line.startsWith("Database \"")) {
                     String[] parts = line.split(" ");
                     db.setFilename(parts[1]);
-                    parserParameters.step = 0;
+                    parserParameters.step = STEP_FREE_PARSE;
                 } else {
                     throw new ParseError("Unrecognized data (line " + parserParameters.line_no + ")");
                 }
-            } else if (parserParameters.step == 1) {
+            } else if (parserParameters.step == STEP_HEADER_PARSE) {
                 if (MiscUtils.isNull(line)) {
-                    parserParameters.step = 0;
+                    parserParameters.step = STEP_FREE_PARSE;
                 } else {
                     parse_hdr(line, db, parserParameters.line_no);
                 }
-            } else if (parserParameters.step == 2) {
+            } else if (parserParameters.step == STEP_VARIABLES_HEADER_PARSE) {
                 if (MiscUtils.isNull(line) || line.contains("*END*")) {
-                    parserParameters.step = 0;
+                    parserParameters.step = STEP_FREE_PARSE;
                 } else {
                     parse_var(line, db, parserParameters.line_no);
                 }
-            } else if (parserParameters.step == 3) {
+            } else if (parserParameters.step == STEP_DATABASE_FILE_PARSE) {
                 if (MiscUtils.isNull(line)) {
-                    parserParameters.step = 0;
+                    parserParameters.step = STEP_FREE_PARSE;
                 } else {
                     if (!line.startsWith("File") && line.contains("(") && line.contains(")")) {
-                        parserParameters.step = 4;
+                        parserParameters.step = STEP_DATABASE_PAGES_PARSE;
                         parserParameters.table = new StatTable();
+                        parserParameters.table.db = parserParameters.db;
                         db.getTables().add(parserParameters.table);
                         parserParameters.in_table = true;
                         parse_table(line, parserParameters.table, db, parserParameters.line_no);
                     }
                     parse_fseq(line, db, parserParameters.line_no);
                 }
-            } else if (parserParameters.step == 4) {
+            } else if (parserParameters.step == STEP_TABLESPACES_PARSE) {
+                if (MiscUtils.isNull(line)) {
+                    parserParameters.new_block = true;
+                    parserParameters.in_tablespace_indices = false;
+                    parserParameters.in_tablespace_tables = false;
+                    parserParameters.in_tablespace = false;
+                } else {
+                    if (parserParameters.new_block) {
+                        parserParameters.new_block = false;
+                        if (line.startsWith("Analyzing database pages ...")) {
+                            parserParameters.step = STEP_DATABASE_PAGES_PARSE;
+                            parserParameters.new_block = true;
+                        } else {
+                            parserParameters.tablespace = new StatTablespace();
+                            parserParameters.tablespace.db = parserParameters.db;
+                            db.getTablespaces().add(parserParameters.tablespace);
+                            parserParameters.in_tablespace = true;
+                            StatTablespace tablespace = parserParameters.tablespace;
+                            if (tablespace.name == null) {
+                                String[] parts = line.split(" \\(");
+                                tablespace.name = parts[0];
+                                tablespace.id = (Long.parseLong(parts[1].replace("(", "").replace(")", "")));
+                            }
+                        }
+                    } else {
+                        if (line.startsWith("Tables:")) {
+                            parserParameters.in_tablespace_tables = true;
+                            parserParameters.in_tablespace_indices = false;
+                        } else if (line.startsWith("Indices:")) {
+                            parserParameters.in_tablespace_tables = false;
+                            parserParameters.in_tablespace_indices = true;
+                        } else {
+                            if (parserParameters.in_tablespace_tables) {
+                                parserParameters.tablespace.tableNames.add(line);
+                            } else if (parserParameters.in_tablespace_indices) {
+                                parserParameters.tablespace.indexNames.add(line);
+                            } else if (line.startsWith("Full path: ")) {
+                                parserParameters.tablespace.full_path = line.replace("Full path:", "");
+                            } else Log.info("error parse " + parserParameters.line_no + " line: " + "ts error");
+                        }
+                    }
+                }
+            } else if (parserParameters.step == STEP_DATABASE_PAGES_PARSE) {
                 if (MiscUtils.isNull(line)) {
                     parserParameters.new_block = true;
                     if (parserParameters.index != null) {
                         parserParameters.index.page_size = db.page_size;
-                        parserParameters.index.calculateValues();
                     }
                     if (parserParameters.table != null) {
                         parserParameters.table.page_size = db.page_size;
-                        parserParameters.table.calculateValues();
                     }
                 } else {
                     if (parserParameters.new_block) {
                         parserParameters.new_block = false;
                         if (!line.startsWith("Index ")) {
                             parserParameters.table = new StatTable();
+                            parserParameters.table.db = parserParameters.db;
                             db.getTables().add(parserParameters.table);
                             parserParameters.in_table = true;
                             parse_table(line, parserParameters.table, db, parserParameters.line_no);
                         } else {
                             parserParameters.index = new StatIndex(parserParameters.table);
+                            parserParameters.index.db = parserParameters.db;
                             db.getIndices().add(parserParameters.index);
                             parserParameters.in_table = false;
                             parse_index(line, parserParameters.index, db, parserParameters.line_no);
@@ -219,6 +271,8 @@ public class StatParser {
                                     table.getClass().getField(name).setFloat(table, Float.parseFloat(value));
                                 } else if (valtype.equals("p")) {
                                     table.getClass().getField(name).setInt(table, Integer.parseInt(value.replace("%", "")));
+                                } else if (valtype.equals("s")) {
+                                    table.getClass().getField(name).set(table, value);
                                 } else {
                                     throw new ParseError("Unknown value type " + valtype);
                                 }
@@ -305,7 +359,7 @@ public class StatParser {
             index.setName(parts[0]);
             index.indexId = (Long.parseLong(parts[1].replace("(", "").replace(")", "")));
         } else {
-            if (line.contains(",")) {
+            if (line.contains(",") || !line.contains("=")) {
                 String[] items = line.split(",");
                 for (String item : items) {
                     item = item.trim();
@@ -327,6 +381,8 @@ public class StatParser {
                                     index.getClass().getField(name).setLong(index, Long.parseLong(value));
                                 } else if (valtype.equals("f")) {
                                     index.getClass().getField(name).setFloat(index, Float.parseFloat(value));
+                                } else if (valtype.equals("s")) {
+                                    index.getClass().getField(name).set(index, value);
                                 } else {
                                     throw new ParseError("Unknown value type " + valtype);
                                 }
@@ -335,6 +391,8 @@ public class StatParser {
                                 break;
                             }
                         }
+                    } else {
+                        found = true;
                     }
 
                     if (!found) {
@@ -381,9 +439,13 @@ public class StatParser {
         public int line_no = 0;
         public StatTable table;
         public StatIndex index;
+        public StatTablespace tablespace;
         public boolean new_block = true;
         public boolean in_table = false;
-        public int step = 0;
+        public boolean in_tablespace = false;
+        public boolean in_tablespace_tables = false;
+        public boolean in_tablespace_indices = false;
+        public int step = STEP_FREE_PARSE;
     }
 
     public static void parse_encryption(String line, StatDatabase db, int line_no) throws ParseError {

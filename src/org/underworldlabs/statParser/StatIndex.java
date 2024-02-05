@@ -7,6 +7,7 @@ public class StatIndex extends StatTableIndex {
     public static final String[][] ITEMS_IDX = {
             {"Index name:", "s", "name"},
             {"Table name:", "s", "table_name"},
+            {"Tablespace:", "s", "tablespaceName"},
             {"Real selectivity:", "f+", "real_selectivity"},
             {"Average data length:", "f", "avg_data_length"},
             {"total dup:", "i", null},
@@ -63,14 +64,6 @@ public class StatIndex extends StatTableIndex {
         this.table = table;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
 
     @Override
     public void calculateValues() {
@@ -79,6 +72,7 @@ public class StatIndex extends StatTableIndex {
         full_size *= page_size;
         long temp = nodes - total_dup;
         real_selectivity = (1 / (double) temp);
+        calculateTS();
     }
 
     @Override

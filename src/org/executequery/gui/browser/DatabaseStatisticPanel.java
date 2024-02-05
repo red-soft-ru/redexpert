@@ -480,6 +480,21 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 e.printStackTrace();
             }
         }
+        if (parserParameters.db.indices != null) {
+            for (StatIndex index : parserParameters.db.indices) {
+                index.calculateValues();
+            }
+        }
+        if (parserParameters.db.tables != null) {
+            for (StatTable table : parserParameters.db.tables) {
+                table.calculateValues();
+            }
+        }
+        if (parserParameters.db.tablespaces != null) {
+            for (StatTablespace ts : parserParameters.db.tablespaces) {
+                ts.calculateValues();
+            }
+        }
         statDatabaseList.add(parserParameters.db);
         DbStatPanel dbStatPanel = new DbStatPanel(parserParameters.db);
         tabPane.addTab(null, null, dbStatPanel, parserParameters.db.fullPath);
@@ -555,6 +570,36 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
             index.setCompared(TableModelObject.ADDED);
             db.indices.add(index);
+        }
+
+        List<StatTablespace> firstListTS = new ArrayList<>();
+        firstListTS.addAll(mainDb.tablespaces);
+        List<StatTablespace> secondListTS = new ArrayList<>();
+        secondListTS.addAll(compareDb.tablespaces);
+        for (StatTablespace tablespace : firstListTS) {
+            boolean finded = false;
+            for (StatTablespace tablespace1 : secondListTS) {
+                if (tablespace.getName().contentEquals(tablespace1.getName())) {
+                    finded = true;
+                    StatTablespace res = new StatTablespace();
+                    res.name = tablespace.name;
+                    res = (StatTablespace) compareObjects(tablespace, tablespace1, res);
+                    res.setCompared(TableModelObject.NOT_CHANGED);
+                    db.tablespaces.add(res);
+                    secondListTS.remove(tablespace1);
+                    break;
+                }
+            }
+            if (!finded) {
+                tablespace.setCompared(TableModelObject.DELETED);
+                db.tablespaces.add(tablespace);
+            }
+
+        }
+        for (StatTablespace tablespace : secondListTS) {
+
+            tablespace.setCompared(TableModelObject.ADDED);
+            db.tablespaces.add(tablespace);
         }
         return db;
     }

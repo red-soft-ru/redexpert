@@ -9,6 +9,8 @@ public abstract class TableModelObject implements Comparable {
     public static final int ADDED = 1;
     public static final int DELETED = -1;
     public static final int NOT_CHANGED = 0;
+
+    public StatDatabase db;
     protected int compared;
 
     protected List<String> columns;
@@ -99,5 +101,13 @@ public abstract class TableModelObject implements Comparable {
         if (o instanceof TableModelObject)
             return toString().compareTo(o.toString());
         else return -1;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

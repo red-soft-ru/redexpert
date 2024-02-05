@@ -10,6 +10,7 @@ import javax.swing.*;
 public class DbStatPanel extends AbstractPanel {
     StatisticTablePanel tablesPanel;
     StatisticTablePanel indexesPanel;
+    StatisticTablePanel tablespacesPanel;
     SimpleTextArea textPanel;
     StatDatabase db;
     JTabbedPane tabPane = new JTabbedPane();
@@ -20,6 +21,7 @@ public class DbStatPanel extends AbstractPanel {
         textPanel.getTextAreaComponent().setText(db.sb.toString());
         tablesPanel.setRows(db.tables);
         indexesPanel.setRows(db.indices);
+        tablespacesPanel.setRows(db.tablespaces);
     }
 
     @Override
@@ -29,10 +31,13 @@ public class DbStatPanel extends AbstractPanel {
         tablesPanel.initModel(StatisticTablePanel.TABLE);
         indexesPanel = new StatisticTablePanel();
         indexesPanel.initModel(StatisticTablePanel.INDEX);
+        tablespacesPanel = new StatisticTablePanel();
+        tablespacesPanel.initModel(StatisticTablePanel.TABLESPACE);
         tabPane = new JTabbedPane();
         tabPane.add(AbstractServiceManagerPanel.bundleString("tabText"), textPanel);
         tabPane.add(AbstractServiceManagerPanel.bundleString("tables"), tablesPanel);
         tabPane.add(AbstractServiceManagerPanel.bundleString("indices"), indexesPanel);
+        tabPane.add(AbstractServiceManagerPanel.bundleString("tablespaces"), tablespacesPanel);
     }
 
     @Override

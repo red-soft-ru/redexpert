@@ -5,6 +5,7 @@ import java.util.List;
 public class StatTable extends StatTableIndex {
     public static final String[][] ITEMS_TBL = {
             {"Table name:", "s", "name"},
+            {"Tablespace:", "s", "tablespaceName"},
             {"Primary pointer page:", "i", null},
             {"Index root page:", "i", null},
             {"Pointer pages:", "i", "pointer_pages"},
@@ -84,14 +85,6 @@ public class StatTable extends StatTableIndex {
     public StatTable() {
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
 
     @Override
     public void calculateValues() {
@@ -105,6 +98,7 @@ public class StatTable extends StatTableIndex {
                 ind_size += index.full_size;
             }
         size_with_indices = size_with_blobs + ind_size;
+        calculateTS();
     }
 
     @Override

@@ -102,6 +102,7 @@ public class StatDatabase extends TableModelObject {
 
     public List<StatIndex> indices;
     public List<StatTable> tables;
+    public List<StatTablespace> tablespaces;
     public String server;
     public String ods_version;
     public long sequence_number;
@@ -146,6 +147,7 @@ public class StatDatabase extends TableModelObject {
         this.continuation_files = new ArrayList<>();
         this.tables = new ArrayList<>();
         this.indices = new ArrayList<>();
+        tablespaces = new ArrayList<>();
         variables = new ArrayList<>();
     }
 
@@ -459,6 +461,14 @@ public class StatDatabase extends TableModelObject {
 
     public void setTables(List<StatTable> tables) {
         this.tables = tables;
+    }
+
+    public List<StatTablespace> getTablespaces() {
+        return tablespaces;
+    }
+
+    public void setTablespaces(List<StatTablespace> tablespaces) {
+        this.tablespaces = tablespaces;
     }
 
     public String getServer() {

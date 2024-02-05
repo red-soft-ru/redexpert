@@ -5,6 +5,8 @@ import java.util.List;
 public abstract class StatTableIndex extends TableModelObject {
 
     public long page_size;
+    public String tablespaceName;
+    public StatTablespace tablespace;
     public FillDistribution distribution;
 
     public FillDistribution getDistribution() {
@@ -13,6 +15,21 @@ public abstract class StatTableIndex extends TableModelObject {
 
     public void setDistribution(FillDistribution distribution) {
         this.distribution = distribution;
+    }
+
+    protected void calculateTS() {
+        if (db.tablespaces != null) {
+            for (StatTablespace ts : db.tablespaces) {
+                if (ts.name != null && ts.name.contentEquals(tablespaceName)) {
+                    tablespace = ts;
+                    if (this instanceof StatTable)
+                        tablespace.tables.add((StatTable) this);
+                    if (this instanceof StatIndex)
+                        tablespace.indices.add((StatIndex) this);
+                    return;
+                }
+            }
+        }
     }
 
     public List<String> getColumns() {

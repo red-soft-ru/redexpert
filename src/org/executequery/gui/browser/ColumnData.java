@@ -33,6 +33,7 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -503,6 +504,9 @@ public class ColumnData implements Serializable {
                         || metaTagNode.getMetaDataKey().equals(NamedObject.META_TYPES[NamedObject.SYSTEM_DOMAIN])) {
                     ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
                 }
+            }
+            if (!SystemProperties.getBooleanProperty("user", "browser.show.system.objects")) {
+                ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).reloadMetaTag(NamedObject.SYSTEM_DOMAIN);
             }
 
             defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.DOMAIN, domain);

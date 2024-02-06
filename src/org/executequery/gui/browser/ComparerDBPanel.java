@@ -66,9 +66,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private static final int STUBS = -100;
 
     private Comparer comparer;
-    private List<DatabaseConnection> databaseConnectionList;
     private List<Integer> scriptGenerationOrder;
     private List<ComparedObject> comparedObjectList;
+    private List<DatabaseConnection> databaseConnectionList;
+    private static final List<DatabaseConnection> busyConnectionList = new ArrayList<>();
 
     private boolean isComparing;
     private boolean isReverseOrder;
@@ -391,6 +392,14 @@ public class ComparerDBPanel extends JPanel implements TabView {
         DatabaseConnection masterConnection = databaseConnectionList.get(dbMasterComboBox.getSelectedIndex());
         DatabaseConnection targetConnection = databaseConnectionList.get(dbTargetComboBox.getSelectedIndex());
 
+        if (busyConnectionList.contains(masterConnection) || busyConnectionList.contains(targetConnection)) {
+            GUIUtilities.displayWarningMessage(isExtractMetadata ?
+                    bundleString("UnableExtractBusyConnections") :
+                    bundleString("UnableCompareBusyConnections")
+            );
+            return false;
+        }
+
         try {
 
             if (!masterConnection.isConnected())
@@ -427,6 +436,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
                         !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
                         !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
                 );
+
+        if (!isExtractMetadata)
+            busyConnectionList.add(masterConnection);
+        busyConnectionList.add(targetConnection);
 
         loggingOutputPanel.clear();
         sqlTextPanel.setSQLText("");
@@ -673,6 +686,11 @@ public class ComparerDBPanel extends JPanel implements TabView {
                             String.format(bundleString("ExtractingFinishMessage"), counter[0]) :
                             String.format(bundleString("ComparingFinishMessage"), counter[0], counter[1], counter[2]));
                     Log.info(String.format("Comparing has been finished. Time elapsed: %d ms", elapsedTime));
+
+                    if (comparer != null) {
+                        busyConnectionList.remove(comparer.getMasterConnection());
+                        busyConnectionList.remove(comparer.getCompareConnection());
+                    }
                 }
 
                 return null;

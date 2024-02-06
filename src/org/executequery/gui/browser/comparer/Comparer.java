@@ -1018,6 +1018,10 @@ public class Comparer {
         return masterConnection;
     }
 
+    public DatabaseConnection getCompareConnection() {
+        return compareConnection;
+    }
+
     public StatementExecutor getMasterExecutor() {
         return masterExecutor;
     }

@@ -59,7 +59,6 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
     protected JComboBox encodeCombobox;
     protected JToolBar toolBar;
     private JTextField fileConfField;
-    //private JTextField openFileLogField;
     LogMessage constMsg = new LogMessage();
     private JButton buildConfigButton;
     private JTextField sessionField;
@@ -197,10 +196,12 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         encodeCombobox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                if (fileChooser.getSelectedFile() != null) {
-
-                    int selectedRow = loggerPanel.getSelectedRow();
-                    loadFromFile(selectedRow);
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    if (fileChooser.getSelectedFile() != null) {
+                        int selectedRow = loggerPanel.getSelectedRow();
+                        int selectedCol = loggerPanel.getSelectedCol();
+                        loadFromFile(selectedRow, selectedCol);
+                    }
                 }
             }
         });
@@ -258,7 +259,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
             public void actionPerformed(ActionEvent e) {
                 int returnVal = fileChooser.showOpenDialog(openFileLog);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    loadFromFile(-1);
+                    loadFromFile(-1, -1);
                 }
 
             }
@@ -379,7 +380,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
     }
 
 
-    protected void loadFromFile(int selectedRow) {
+    protected void loadFromFile(int selectedRow, int selectedCol) {
 
         SwingWorker sw = new SwingWorker("loadTraceFromFile") {
             @Override
@@ -421,6 +422,8 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                 sw.start();
                 if (selectedRow >= 0)
                     loggerPanel.setSelectedRow(selectedRow);
+                if (selectedCol >= 0)
+                    loggerPanel.setSelectedCol(selectedCol);
 
             }
         };
@@ -516,6 +519,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
     }
 
     public void clearAll() {
+        analisePanel.setTerminate(true);
         loggerPanel.clearAll();
         analisePanel.setMessages(loggerPanel.getTableRows());
         analisePanel.rebuildRows();

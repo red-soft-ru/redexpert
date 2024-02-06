@@ -110,13 +110,28 @@ public class AnalisePanel extends JPanel {
     }
 
     AnaliseRow sumRow;
+    boolean terminate = false;
+
+    public boolean isTerminate() {
+        return terminate;
+    }
+
+    public void setTerminate(boolean terminate) {
+        this.terminate = terminate;
+    }
 
     void runRebuildRowsInThread() {
         SwingWorker sw = new SwingWorker("rebuildAuditAnalise") {
             @Override
             public Object construct() {
                 GUIUtilities.showWaitCursor();
-                rebuildRows();
+                try {
+                    rebuildRows();
+                } catch (Exception e) {
+                    if (!isTerminate())
+                        e.printStackTrace();
+                }
+                setTerminate(false);
                 return null;
             }
 

@@ -1626,7 +1626,7 @@ public final class SQLUtils {
 
         String formattedOutputParams = formattedParameters(outputParams, false);
         if (!MiscUtils.isNull(formattedOutputParams.trim()))
-            sb.append(String.format("RETURNS (\n%s)", formattedOutputParams));
+            sb.append(String.format(" RETURNS (\n%s)", formattedOutputParams));
 
         return sb.append("\nAS BEGIN END^\n").toString();
     }

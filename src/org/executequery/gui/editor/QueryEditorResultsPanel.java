@@ -132,7 +132,6 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     private void init() {
 
         outputTextPane = new LoggingOutputPanel();
-        outputTextPane.setBorder(null);
 
         outputTabIcon = GUIUtilities.loadIcon("SystemOutput.png", true);
         resultSetTabIcon = GUIUtilities.loadIcon("FrameIcon16.png", true);

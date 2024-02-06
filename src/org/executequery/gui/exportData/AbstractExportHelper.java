@@ -113,9 +113,7 @@ public abstract class AbstractExportHelper implements ExportHelper {
 
         } else if (value instanceof ColumnData) {
             return ((ColumnData) value).isCharacterType();
-        }
-
-        return false;
+        } else return value instanceof String;
     }
 
     protected final boolean isDateType(Object value) {

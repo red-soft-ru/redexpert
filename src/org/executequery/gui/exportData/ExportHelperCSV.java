@@ -6,9 +6,7 @@ import org.executequery.gui.resultset.RecordDataItem;
 
 import javax.swing.table.TableModel;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -125,16 +123,26 @@ public class ExportHelperCSV extends AbstractExportHelper {
                         continue;
 
                     String stringValue = null;
-                    RecordDataItem value = (RecordDataItem) tableModel.getValueAt(row, col);
+                    Object value = tableModel.getValueAt(row, col);
+                    if (value instanceof RecordDataItem) {
+                        RecordDataItem rdi = (RecordDataItem) value;
 
-                    if (!value.isValueNull()) {
-                        stringValue = getFormattedValue(value, endlReplacement, nullReplacement);
+                        if (!rdi.isValueNull()) {
+                            stringValue = getFormattedValue(rdi, endlReplacement, nullReplacement);
 
-                        if (isCharType(value) && addQuotes && !stringValue.isEmpty()) {
-                            stringValue = "\"" + stringValue + "\"";
+                            if (isCharType(rdi) && addQuotes && !stringValue.isEmpty()) {
+                                stringValue = "\"" + stringValue + "\"";
 
-                        } else if (isBlobType(value)) {
-                            stringValue = writeBlob((AbstractLobRecordDataItem) value, saveBlobsIndividually, getCreateBlobFileName(tableModel, col, row));
+                            } else if (isBlobType(rdi)) {
+                                stringValue = writeBlob((AbstractLobRecordDataItem) rdi, saveBlobsIndividually, getCreateBlobFileName(tableModel, col, row));
+                            }
+                        }
+                    } else {
+                        if (value != null) {
+                            stringValue = getFormattedValue(value, endlReplacement, nullReplacement);
+                            if (isCharType(value) && addQuotes && !stringValue.isEmpty()) {
+                                stringValue = "\"" + stringValue + "\"";
+                            }
                         }
                     }
 

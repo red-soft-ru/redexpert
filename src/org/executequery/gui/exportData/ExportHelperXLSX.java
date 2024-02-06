@@ -146,16 +146,22 @@ public class ExportHelperXLSX extends AbstractExportHelper {
                         continue;
 
                     String stringValue = null;
-                    RecordDataItem value = (RecordDataItem) tableModel.getValueAt(row, col);
+                    Object value = tableModel.getValueAt(row, col);
+                    if (value instanceof RecordDataItem) {
+                        RecordDataItem rdi = (RecordDataItem) value;
 
-                    if (!value.isValueNull()) {
+                        if (!rdi.isValueNull()) {
 
-                        if (isBlobType(value))
-                            stringValue = writeBlob((AbstractLobRecordDataItem) value, saveBlobsIndividually, getCreateBlobFileName(tableModel, col, row));
-                        else
+                            if (isBlobType(rdi))
+                                stringValue = writeBlob((AbstractLobRecordDataItem) rdi, saveBlobsIndividually, getCreateBlobFileName(tableModel, col, row));
+                            else
+                                stringValue = getFormattedValue(rdi, null, nullReplacement);
+                        }
+                    } else {
+                        if (value != null) {
                             stringValue = getFormattedValue(value, null, nullReplacement);
+                        }
                     }
-
                     values.add(stringValue != null ? stringValue : nullReplacement);
                 }
 

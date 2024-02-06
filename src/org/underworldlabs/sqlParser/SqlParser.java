@@ -182,6 +182,8 @@ public class SqlParser {
                             state = DEFAULT_STATE;
                             parameters.get(parameters.size() - 1).setValue(new File(blobParameter.toString()));
                             displayParameters.get(displayParameters.size() - 1).setValue(new File(blobParameter.toString()));
+                            parameters.get(parameters.size() - 1).setNeedUpdateValue(false);
+                            displayParameters.get(displayParameters.size() - 1).setNeedUpdateValue(false);
                             blobParameter.setLength(0);
                         }
                         blobStart = false;
@@ -252,6 +254,7 @@ public class SqlParser {
 
                 Parameter newParameter = new Parameter(name);
                 newParameter.setValue(parameterData);
+                newParameter.setNeedUpdateValue(false);
 
                 parameters.add(newParameter);
                 displayParameters.add(newParameter);

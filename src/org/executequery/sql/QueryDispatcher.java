@@ -1051,7 +1051,7 @@ public class QueryDispatcher {
                     PreparedStatement statement;
 
                     if (queryToExecute.toUpperCase().contains("SET BLOBFILE ")) {
-                        blobFilePath = "blobfile=" + queryToExecute.substring(14, queryToExecute.length() - 1);
+                        blobFilePath = "blobfile=" + queryToExecute.substring(queryToExecute.indexOf("SET BLOBFILE ") + 14, queryToExecute.length() - 1);
                         continue;
                     }
 
@@ -1324,16 +1324,12 @@ public class QueryDispatcher {
 
         // check for input params
         if (!displayParams.isEmpty()) {
-            if (displayParams.stream().anyMatch(param -> param.getValue() == null)) {
 
-                InputParametersDialog dialog = new InputParametersDialog(displayParams);
-                dialog.display();
-
-                if (dialog.isCanceled()) {
-                    statementCancelled = true;
-                    throw new DataSourceException("Canceled");
-                }
-            }
+            if (displayParams.stream().noneMatch(Parameter::isNeedUpdateValue)) {
+                if (displayParams.stream().anyMatch(Parameter::isNull))
+                    showInputParametersDialog(displayParams);
+            } else
+                showInputParametersDialog(displayParams);
         }
 
         // remember inputted params
@@ -1348,6 +1344,17 @@ public class QueryDispatcher {
         }
 
         return statement;
+    }
+
+    private void showInputParametersDialog(List<Parameter> displayParams) {
+
+        InputParametersDialog dialog = new InputParametersDialog(displayParams);
+        dialog.display();
+
+        if (dialog.isCanceled()) {
+            statementCancelled = true;
+            throw new DataSourceException("Canceled");
+        }
     }
 
     private CallableStatement prepareCallableStatementWithParameters(String sql, String parameters) throws SQLException {

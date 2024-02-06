@@ -7,13 +7,16 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 public class Parameter {
+
     int type;
     Object value;
     String name;
     String typeName;
+    boolean needUpdateValue;
 
     public Parameter(String name) {
         this.name = name;
+        this.needUpdateValue = true;
     }
 
     public int getType() {
@@ -52,6 +55,14 @@ public class Parameter {
 
     public void setTypeName(String typeName) {
         this.typeName = typeName;
+    }
+
+    public boolean isNeedUpdateValue() {
+        return needUpdateValue;
+    }
+
+    public void setNeedUpdateValue(boolean updateValue) {
+        this.needUpdateValue = updateValue;
     }
 
     public boolean isNull()

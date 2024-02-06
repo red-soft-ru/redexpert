@@ -839,6 +839,19 @@ public class QueryEditorTextPane extends SQLTextArea
     @Override
     public void insertUpdate(DocumentEvent e) {
         editorPanel.setContentChanged(true);
+        super.insertUpdate(e);
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        editorPanel.setContentChanged(true);
+        super.removeUpdate(e);
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        editorPanel.setContentChanged(true);
+        super.changedUpdate(e);
     }
 
 
@@ -1251,7 +1264,6 @@ public class QueryEditorTextPane extends SQLTextArea
 
         } catch (BadLocationException e) {
 
-            return;
         }
     }
 
@@ -1287,7 +1299,6 @@ public class QueryEditorTextPane extends SQLTextArea
 
         } catch (BadLocationException e) {
 
-            return;
         }
     }
 

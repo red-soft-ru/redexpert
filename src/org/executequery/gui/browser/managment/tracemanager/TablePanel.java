@@ -376,11 +376,17 @@ public class TablePanel extends JPanel {
     }
 
     public int getSelectedRow() {
-        return table.getSelectedRow();
+        int row = table.getSelectedRow();
+        if (row >= 0)
+            row = table.convertRowIndexToModel(row);
+        return row;
     }
 
     public int getSelectedCol() {
-        return table.getSelectedColumn();
+        int col = table.getSelectedColumn();
+        if (col >= 0)
+            col = table.convertColumnIndexToModel(col);
+        return col;
     }
 
     public void setSelectedRow(int row) {

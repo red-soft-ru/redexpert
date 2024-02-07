@@ -310,6 +310,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      *
      * @param e - the event object
      */
+    @Override
     public void stateChanged(ChangeEvent e) {
 
         Component selectedComponent = getSelectedComponent();
@@ -319,11 +320,8 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
             resetEditorRowCount(rowCount);
         }
 
-        if (hasNoTabs()) {
-
+        if (hasNoTabs() && queryEditor != null)
             queryEditor.allResultTabsClosed();
-        }
-
     }
 
     /**
@@ -553,8 +551,19 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     }
 
     private boolean hasNoTabs() {
-
         return getTabCount() == 0;
+    }
+
+    private boolean hasOutputTab() {
+
+        if (hasNoTabs())
+            return false;
+
+        for (int i =0; i < getTabCount(); i++)
+            if (getTitleAt(0).equals(OUTPUT_TAB_TITLE))
+                return true;
+
+        return false;
     }
 
     public void setResultBackground(Color colour) {
@@ -695,6 +704,10 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     }
 
     protected void appendOutput(int type, String text) {
+
+        if (!hasOutputTab())
+            addTextOutputTab();
+
         outputTextPane.append(type, text);
     }
 

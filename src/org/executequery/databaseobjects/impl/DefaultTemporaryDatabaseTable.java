@@ -80,8 +80,15 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultTemporaryDatabaseTable comparingTable = (DefaultTemporaryDatabaseTable) databaseObject;
-        return SQLUtils.generateAlterTable(this, comparingTable, true,
-                new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed(), Comparer.isFieldsPositionsNeed());
+        return SQLUtils.generateAlterTable(
+                this,
+                comparingTable,
+                true,
+                new boolean[]{false, false, false, false},
+                Comparer.isCommentsNeed(),
+                Comparer.isComputedFieldsNeed(),
+                Comparer.isFieldsPositionsNeed()
+        );
     }
 
     protected SelectBuilder builderCommonQuery() {

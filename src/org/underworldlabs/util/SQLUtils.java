@@ -1020,9 +1020,10 @@ public final class SQLUtils {
 
     public static String generateAlterTable(
             DefaultDatabaseTable thisTable, DefaultDatabaseTable comparingTable,
-            boolean temporary, boolean[] constraints, boolean computed, boolean fieldsPositions) {
+            boolean temporary, boolean[] constraints, boolean comments, boolean computed, boolean fieldsPositions) {
 
         StringBuilder sb = new StringBuilder();
+        StringBuilder columnComments = new StringBuilder();
 
         if (temporary)
             sb.append("ALTER GLOBAL TEMPORARY TABLE ");
@@ -1041,10 +1042,31 @@ public final class SQLUtils {
             //check for ALTER COLUMN
             for (String comparingColumn : comparingColumnsNames) {
                 if (Objects.equals(thisColumn, comparingColumn)) {
-                    sb.append(generateAlterDefinitionColumn(
-                            new ColumnData(thisTable.getHost().getDatabaseConnection(), thisTable.getColumn(thisColumn), false),
-                            new ColumnData(comparingTable.getHost().getDatabaseConnection(), comparingTable.getColumn(comparingColumn), false),
-                            computed, fieldsPositions));
+
+                    ColumnData thisCD = new ColumnData(
+                            thisTable.getHost().getDatabaseConnection(),
+                            thisTable.getColumn(thisColumn), false
+                    );
+                    ColumnData comparingCD = new ColumnData(
+                            comparingTable.getHost().getDatabaseConnection(),
+                            comparingTable.getColumn(comparingColumn), false
+                    );
+
+                    sb.append(generateAlterDefinitionColumn(thisCD, comparingCD, computed, fieldsPositions));
+
+                    if (comments) {
+                        if (!Objects.equals(thisCD.getDescription(), comparingCD.getDescription())) {
+                            columnComments.append(generateComment(
+                                    format(thisCD.getTableName(), thisCD.getDatabaseConnection()) + "." + thisCD.getFormattedColumnName(),
+                                    "COLUMN",
+                                    comparingCD.getDescription(),
+                                    ";",
+                                    true,
+                                    thisCD.getDatabaseConnection()
+                            ));
+                        }
+                    }
+
                     break;
 
                 } else dropCheck++;
@@ -1056,12 +1078,28 @@ public final class SQLUtils {
         }
 
         //check for ADD COLUMN
-        for (String comparingColumn : comparingColumnsNames)
-            if (!thisColumnsNames.contains(comparingColumn))
-                sb.append("\n\tADD ").append(generateDefinitionColumn(new ColumnData(
-                                comparingTable.getHost().getDatabaseConnection(),
-                                comparingTable.getColumn(comparingColumn), false), computed, false, false))
-                        .append(COMMA);
+        for (String comparingColumn : comparingColumnsNames) {
+            if (!thisColumnsNames.contains(comparingColumn)) {
+
+                ColumnData comparingCD = new ColumnData(
+                        comparingTable.getHost().getDatabaseConnection(),
+                        comparingTable.getColumn(comparingColumn), false
+                );
+
+                sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, computed, false, false)).append(COMMA);
+
+                if (comments) {
+                    columnComments.append(generateComment(
+                            format(comparingCD.getTableName(), comparingCD.getDatabaseConnection()) + "." + comparingCD.getFormattedColumnName(),
+                            "COLUMN",
+                            comparingCD.getDescription(),
+                            ";",
+                            true,
+                            comparingCD.getDatabaseConnection()
+                    ));
+                }
+            }
+        }
 
         if (!Arrays.equals(constraints, new boolean[]{false, false, false, false})) {
 
@@ -1111,9 +1149,29 @@ public final class SQLUtils {
 
         }
 
-        if (noChangesCheckString.contentEquals(sb))
+        if (!noChangesCheckString.contentEquals(sb))
+            sb.deleteCharAt(sb.length() - 1).append(";\n");
+        else
+            sb.setLength(0);
+
+        //check for comments
+        if (comments) {
+            sb.append(columnComments);
+            if (!Objects.equals(thisTable.getRemarks(), comparingTable.getRemarks())) {
+                sb.append(generateComment(
+                        thisTable.getName(),
+                        "TABLE",
+                        comparingTable.getRemarks(),
+                        ";",
+                        false,
+                        thisTable.getHost().getDatabaseConnection())
+                );
+            }
+        }
+
+        if (sb.toString().isEmpty())
             return "/* there are no changes */\n";
-        return sb.deleteCharAt(sb.length() - 1).append(";\n").toString();
+        return sb.toString();
     }
 
     public static String generateAlterException(

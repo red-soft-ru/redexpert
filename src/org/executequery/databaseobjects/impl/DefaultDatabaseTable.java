@@ -671,8 +671,15 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) {
         DefaultDatabaseTable comparingTable = (DefaultDatabaseTable) databaseObject;
-        return SQLUtils.generateAlterTable(this, comparingTable, false,
-                new boolean[]{false, false, false, false}, Comparer.isComputedFieldsNeed(), Comparer.isFieldsPositionsNeed());
+        return SQLUtils.generateAlterTable(
+                this,
+                comparingTable,
+                false,
+                new boolean[]{false, false, false, false},
+                Comparer.isCommentsNeed(),
+                Comparer.isComputedFieldsNeed(),
+                Comparer.isFieldsPositionsNeed()
+        );
     }
 
     public String getDropSQLText(boolean cascadeConstraints) {

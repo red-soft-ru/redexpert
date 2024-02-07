@@ -27,6 +27,7 @@ import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.RolloverButton;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -239,6 +240,27 @@ public final class WidgetFactory {
         table.setModel(model);
 
         return table;
+    }
+
+    /**
+     * Create named JTable class instance
+     *
+     * @param name        the component's name
+     * @param columnNames the names of the columns
+     */
+    public static JTable createTable(String name, Object[] columnNames) {
+        return createTable(name, new Object[][]{}, columnNames);
+    }
+
+    /**
+     * Create named JTable class instance
+     *
+     * @param name        the component's name
+     * @param data        the data of the table
+     * @param columnNames the names of the columns
+     */
+    public static JTable createTable(String name, Object[][] data, Object[] columnNames) {
+        return createTable(name, new DefaultTableModel(data, columnNames));
     }
 
     /**

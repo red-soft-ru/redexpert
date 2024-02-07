@@ -63,6 +63,39 @@ public final class WidgetFactory {
     }
 
     /**
+     * Create named JButton class instance
+     *
+     * @param name    the component's name
+     * @param icon    the icon used as the default image
+     * @param toolTip the string to display
+     */
+    public static JButton createButton(String name, Icon icon, String toolTip) {
+
+        JButton button = createButton(name, null);
+        button.setIcon(icon);
+        button.setToolTipText(toolTip);
+
+        return button;
+    }
+
+    /**
+     * Create named JButton class instance
+     *
+     * @param name    the component's name
+     * @param text    the displayed button text
+     * @param icon    the icon used as the default image
+     * @param toolTip the string to display
+     */
+    public static JButton createButton(String name, String text, Icon icon, String toolTip) {
+
+        JButton button = createButton(name, icon, toolTip);
+        button.setText(text);
+        button.setPreferredSize(getPreferredSize(button));
+
+        return button;
+    }
+
+    /**
      * Create named JComboBox class instance
      *
      * @param name the component's name

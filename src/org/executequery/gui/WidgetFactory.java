@@ -335,6 +335,20 @@ public final class WidgetFactory {
         return toolBar;
     }
 
+    /**
+     * Create named JProgressBar class instance
+     *
+     * @param name the component's name
+     */
+    public static JProgressBar createProgressBar(String name) {
+
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setName(name);
+        progressBar.setPreferredSize(getPreferredSize(progressBar));
+
+        return progressBar;
+    }
+
 
     // -------------------------
     // --- Custom Components ---

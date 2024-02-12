@@ -6,6 +6,7 @@ import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.swing.RolloverButton;
@@ -83,19 +84,38 @@ public class SimpleCommentPanel {
             DefaultStatementExecutor executor = new DefaultStatementExecutor();
 
             String comment = commentField.getTextAreaComponent().getText().trim();
-            if (comment.equals(""))
+            if (comment.isEmpty())
                 comment = "NULL";
 
             try {
                 String metaTag = NamedObject.META_TYPES[currentDatabaseObject.getType()];
 
-
                 executor.setCommitMode(false);
                 executor.setKeepAlive(true);
                 executor.setDatabaseConnection(getSelectedConnection());
 
-                String request = SQLUtils.generateComment(currentDatabaseObject.getName(), metaTag,
-                        comment, ";", false, getSelectedConnection());
+                String request;
+                if (currentDatabaseObject instanceof DefaultDatabaseUser) {
+                    request = SQLUtils.generateComment(
+                            currentDatabaseObject.getName(),
+                            metaTag,
+                            comment,
+                            ((DefaultDatabaseUser) currentDatabaseObject).getPlugin(),
+                            ";",
+                            false,
+                            getSelectedConnection()
+                    );
+
+                } else {
+                    request = SQLUtils.generateComment(
+                            currentDatabaseObject.getName(),
+                            metaTag,
+                            comment,
+                            ";",
+                            false,
+                            getSelectedConnection()
+                    );
+                }
 
                 Log.info("Query created: " + request);
 
@@ -113,16 +133,15 @@ public class SimpleCommentPanel {
 
 
             } catch (Exception e) {
-
                 GUIUtilities.displayExceptionErrorDialog("Error updating comment on table", e);
                 Log.error("Error updating comment on table", e);
 
             } finally {
-
                 executor.releaseResources();
             }
-        } else Log.error("databaseObject is null");
 
+        } else
+            Log.error("databaseObject is null");
     }
 
     public void resetComment() {

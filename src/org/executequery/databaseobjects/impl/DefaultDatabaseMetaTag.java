@@ -754,7 +754,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      * Loads the database roles
      */
     private AbstractDatabaseObject getRole(ResultSet rs) throws SQLException {
-        return new DefaultDatabaseRole(this, rs.getObject(1).toString());
+        return new DefaultDatabaseRole(this, rs.getObject(1).toString(), rs.getObject(2).toString());
     }
 
     /**
@@ -944,7 +944,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemRolesResultSet() throws SQLException {
 
-        String query = "SELECT CAST (RDB$ROLE_NAME as VARCHAR(1024))\n" +
+        String query = "SELECT\n" +
+                "CAST (RDB$ROLE_NAME as VARCHAR(1024)),\n" +
+                "RDB$OWNER_NAME\n" +
                 "FROM RDB$ROLES\n" +
                 "WHERE RDB$SYSTEM_FLAG != 0 AND RDB$SYSTEM_FLAG IS NOT NULL\n" +
                 "ORDER BY 1";
@@ -976,7 +978,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getRolesResultSet() throws SQLException {
 
-        String query = "SELECT CAST (RDB$ROLE_NAME as VARCHAR(1024))\n" +
+        String query = "SELECT\n" +
+                "CAST (RDB$ROLE_NAME as VARCHAR(1024)),\n" +
+                "RDB$OWNER_NAME\n" +
                 "FROM RDB$ROLES\n" +
                 "WHERE RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL\n" +
                 "ORDER BY 1";

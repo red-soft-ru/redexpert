@@ -5,1096 +5,834 @@
  */
 package org.executequery.gui.browser;
 
-import biz.redsoft.IFBUser;
-import biz.redsoft.IFBUserManager;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
+import org.executequery.components.table.RowHeaderRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.DatabaseDriver;
-import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseRole;
+import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.datasource.ConnectionManager;
-import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.DefaultNumberTextField;
-import org.executequery.gui.browser.managment.*;
-import org.executequery.gui.browser.profiler.ProfilerPanel;
+import org.executequery.gui.ExecuteQueryDialog;
+import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.databaseobjects.CreateRolePanel;
+import org.executequery.gui.databaseobjects.CreateUserPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.DatabaseDriverRepository;
+import org.executequery.repository.Repository;
 import org.executequery.repository.RepositoryCache;
-import org.underworldlabs.swing.DefaultButton;
-import org.underworldlabs.util.DynamicLibraryLoader;
-import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 /**
  * @author mikhan808
  */
-public class UserManagerPanel extends JPanel {
+public class UserManagerPanel extends JPanel implements Runnable {
 
-    enum Action {
+    public static final String TITLE = Bundles.get(UserManagerPanel.class, "UserManager");
+    public static final String FRAME_ICON = "user_manager_16.png";
+
+    private static final Icon GRANT_ROLE_ICON = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
+    private static final Icon REVOKE_ROLE_ICON = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
+    private static final Icon GRANT_ADMIN_ROLE_ICON = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+
+    private enum Action {
         REFRESH,
         GET_USERS,
         GET_ROLES,
         GET_MEMBERSHIP
     }
 
-    public static final String TITLE = Bundles.get(UserManagerPanel.class, "UserManager");
-    public static final String FRAME_ICON = "user_manager_16.png";
-    public IFBUserManager userManager;
-    public BrowserController controller;
-    public IFBUser userAdd;
-    boolean execute_w;
-    boolean enableElements;
-    Icon gr, no, adm;
-    Connection con;
-    List<DatabaseConnection> listConnections;
-    Map<String, IFBUser> users;
-    Vector<UserRole> user_names;
-    Vector<String> role_names;
-    ResultSet result;
-    int version;
-    Action act;
+    // --- GUI components ---
+
     private JButton addUserButton;
-    private JButton addRoleButton;
-    private JButton adminButton;
-    private JLabel adminLabel;
-    private JComboBox<DatabaseConnection> databaseBox;
-    private JLabel databaseLabel;
-    private JButton deleteUserButton;
-    private JButton deleteRoleButton;
     private JButton editUserButton;
-    private JButton grantButton;
-    private JLabel grantLabel;
-    private JPanel connectPanel;
-    private JPanel interruptPanel;
-    private JScrollPane jScrollPane1;
-    private JScrollPane jScrollPane2;
-    private JScrollPane jScrollPane3;
-    private JTabbedPane jTabbedPane1;
-    private JPanel membershipPanel;
-    private JTable membershipTable;
-    private JButton no_grantButton;
-    private JLabel no_grantLabel;
-    private JButton refreshUsersButton;
-    private JPanel rolesPanel;
-    private JComboBox<String> serverBox;
-    private JLabel serverLabel;
-    private JPanel usersPanel;
+    private JButton deleteUserButton;
+
+    private JButton addRoleButton;
+    private JButton deleteRoleButton;
+
+    private JButton grantRoleButton;
+    private JButton revokeRoleButton;
+    private JButton grandAdminRoleButton;
+
+    private JButton refreshButton;
+    private JButton cancelButton;
+
     private JTable usersTable;
     private JTable rolesTable;
-    private JProgressBar jProgressBar1;
-    private JButton cancelButton;
-    private JButton connectButton;
-    private boolean useCustomServer;
-    private JTextField portField;
-    private JCheckBox roleRoleBox;
+    private JTable membershipTable;
 
-    /**
-     * Creates new form UserManagerPanel
-     */
+    private JProgressBar progressBar;
+    private JCheckBox roleToRoleCheck;
+    private JComboBox<DatabaseConnection> databasesCombo;
+
+    private JPanel usersPanel;
+    private JPanel rolesPanel;
+    private JPanel membershipPanel;
+    private JTabbedPane tabbedPane;
+    private JScrollPane membershipScrollPane;
+
+    // ---
+
+    private boolean execute;
+    private boolean enableElements;
+
+    private Action currentAction;
+    private Connection connection;
+    private List<DatabaseConnection> databaseConnectionList;
+
+    private int version;
+    private List<DefaultDatabaseUser> userList;
+    private final Vector<String> roleNamesVector;
+    private final Vector<UserRole> userNamesVector;
+
     public UserManagerPanel() {
-        gr = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
-        no = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
-        adm = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
-        execute_w = false;
-        user_names = new Vector<UserRole>();
-        role_names = new Vector<String>();
-        initComponents();
+
+        execute = false;
+        userNamesVector = new Vector<>();
+        roleNamesVector = new Vector<>();
+
+        init();
+        arrange();
+        loadConnections();
+    }
+
+    private void init() {
+
+        // --- comboBoxes ---
+
+        //noinspection unchecked
+        databasesCombo = WidgetFactory.createComboBox("databasesCombo");
+        databasesCombo.setEditable(true);
+        databasesCombo.addItemListener(e -> databaseChanged());
+
+        // --- tables ---
+
+        membershipTable = WidgetFactory.createTable("membershipTable", new String[]{"Title 1", "Title 2", "Title 3", "Title 4"});
+        membershipTable.setDefaultRenderer(Object.class, new BrowserTableCellRenderer());
+        membershipTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                if (evt.getClickCount() > 1)
+                    changeMemberships();
+            }
+        });
+
+        rolesTable = WidgetFactory.createTable("rolesTable", new String[]{"", ""});
+        usersTable = WidgetFactory.createTable("usersTable", new String[]{"", "", "", ""});
+
+        // --- buttons ---
+
+        addUserButton = WidgetFactory.createButton("addUserButton", bundleString("Add"));
+        addUserButton.addActionListener(e -> showCreateUserDialog());
+
+        editUserButton = WidgetFactory.createButton("editUserButton", bundleString("Edit"));
+        editUserButton.addActionListener(e -> showEditUserDialog());
+
+        deleteUserButton = WidgetFactory.createButton("deleteUserButton", bundleString("Delete"));
+        deleteUserButton.addActionListener(e -> showDropUserDialog());
+
+        addRoleButton = WidgetFactory.createButton("addRoleButton", bundleString("Add"));
+        addRoleButton.addActionListener(e -> showCreateRoleDialog());
+
+        deleteRoleButton = WidgetFactory.createButton("deleteRoleButton", bundleString("Delete"));
+        deleteRoleButton.addActionListener(e -> showDropRoleDialog());
+
+        grantRoleButton = WidgetFactory.createButton(
+                "grantRoleButton",
+                "GRANT",
+                GRANT_ROLE_ICON,
+                "GRANT ROLE"
+        );
+        grantRoleButton.addActionListener(e -> grantRole());
+
+        grandAdminRoleButton = WidgetFactory.createButton(
+                "grandAdminRoleButton",
+                "ADMIN",
+                GRANT_ADMIN_ROLE_ICON,
+                "GRANT ROLE WITH ADMIN OPTION"
+        );
+        grandAdminRoleButton.addActionListener(e -> grandAdminRole());
+
+        revokeRoleButton = WidgetFactory.createButton(
+                "revokeRoleButton",
+                "REVOKE",
+                REVOKE_ROLE_ICON,
+                "REVOKE ROLE"
+        );
+        revokeRoleButton.addActionListener(e -> revokeRole());
+
+        refreshButton = WidgetFactory.createButton("refreshButton", bundleString("Refresh"));
+        refreshButton.addActionListener(e -> setRefreshAction());
+
+        cancelButton = WidgetFactory.createButton("cancelButton", bundleString("cancelButton"));
+        cancelButton.addActionListener(e -> setEnableElements(true));
+
+        // --- panels ---
+
+        usersPanel = new JPanel(new GridBagLayout());
+        rolesPanel = new JPanel(new GridBagLayout());
+        membershipPanel = new JPanel(new GridBagLayout());
+
+        tabbedPane = new JTabbedPane();
+        tabbedPane.addTab(bundleString("Users"), usersPanel);
+        tabbedPane.addTab(bundleString("Roles"), rolesPanel);
+        tabbedPane.addTab(bundleString("Membership"), membershipPanel);
+        tabbedPane.getAccessibleContext().setAccessibleName(bundleString("Users"));
+
+        membershipScrollPane = new JScrollPane(
+                membershipTable,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS
+        );
+
+        // --- others ---
+
+        roleToRoleCheck = WidgetFactory.createCheckBox("roleToRoleCheck", bundleString("RoleRole"));
+        roleToRoleCheck.addItemListener(e -> setRefreshAction());
+        roleToRoleCheck.setSelected(false);
+
+        progressBar = WidgetFactory.createProgressBar("progressBar");
+    }
+
+    private void arrange() {
+
+        GridBagHelper gbh;
+
+        // --- scroll panes ---
+
+        JScrollPane usersTableScrollPane = new JScrollPane();
+        usersTableScrollPane.setViewportView(usersTable);
+
+        JScrollPane rolesTableScrollPane = new JScrollPane();
+        rolesTableScrollPane.setViewportView(rolesTable);
+
+        // --- connection panel ---
+
+        JPanel connectionPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillNone();
+        connectionPanel.add(new JLabel(bundleString("database")), gbh.setMinWeightX().get());
+        connectionPanel.add(databasesCombo, gbh.nextCol().setMaxWeightX().fillHorizontally().get());
+        connectionPanel.add(refreshButton, gbh.nextCol().setMinWeightX().get());
+
+        // --- progress panel ---
+
+        JPanel progressPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+        progressPanel.add(progressBar, gbh.setMaxWeightX().get());
+        progressPanel.add(cancelButton, gbh.nextCol().setMinWeightX().fillNone().get());
+
+        // --- users panel ---
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+        usersPanel.add(usersTableScrollPane, gbh.setMaxWeightX().spanY().get());
+        usersPanel.add(addUserButton, gbh.nextCol().setHeight(1).fillHorizontally().setMinWeightY().setMinWeightX().get());
+        usersPanel.add(editUserButton, gbh.nextRow().get());
+        usersPanel.add(deleteUserButton, gbh.nextRow().get());
+        usersPanel.add(new JPanel(), gbh.setMaxWeightY().fillBoth().spanY().get());
+
+        // --- roles panel ---
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+        rolesPanel.add(rolesTableScrollPane, gbh.setMaxWeightX().spanY().get());
+        rolesPanel.add(addRoleButton, gbh.nextCol().setHeight(1).fillHorizontally().setMinWeightY().setMinWeightX().get());
+        rolesPanel.add(deleteRoleButton, gbh.nextRow().get());
+        rolesPanel.add(new JPanel(), gbh.setMaxWeightY().fillBoth().spanY().get());
+
+        // --- membership panel ---
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+        membershipPanel.add(membershipScrollPane, gbh.setMaxWeightX().spanY().get());
+        membershipPanel.add(grantRoleButton, gbh.nextCol().setHeight(1).fillHorizontally().setMinWeightY().setMinWeightX().get());
+        membershipPanel.add(grandAdminRoleButton, gbh.nextRow().get());
+        membershipPanel.add(revokeRoleButton, gbh.nextRow().get());
+        membershipPanel.add(roleToRoleCheck, gbh.nextRow().get());
+        membershipPanel.add(new JPanel(), gbh.setMaxWeightY().fillBoth().spanY().get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+        mainPanel.add(connectionPanel, gbh.setMinWeightY().spanX().get());
+        mainPanel.add(tabbedPane, gbh.nextRowFirstCol().setMaxWeightY().fillBoth().get());
+        mainPanel.add(progressPanel, gbh.nextRowFirstCol().setMinWeightY().spanX().get());
+
+        // --- base ---
+
+        setLayout(new GridBagLayout());
+        add(mainPanel, new GridBagHelper().fillBoth().spanX().spanY().get());
+        setVisible(true);
         setEnableElements(true);
+    }
+
+    private void setEnableElements(boolean enable) {
+        enableElements = enable;
+        addUserButton.setEnabled(enable);
+        editUserButton.setEnabled(enable);
+        deleteUserButton.setEnabled(enable);
+        refreshButton.setEnabled(enable);
+        addRoleButton.setEnabled(enable);
+        deleteRoleButton.setEnabled(enable);
+        grantRoleButton.setEnabled(enable);
+        grandAdminRoleButton.setEnabled(enable);
+        revokeRoleButton.setEnabled(enable);
+        cancelButton.setEnabled(!enable);
+        progressBar.setEnabled(!enable);
+        progressBar.setValue(0);
+    }
+
+    // --- handlers ---
+
+    private void databaseChanged() {
+
+        if (databaseConnectionList.isEmpty()) {
+            refreshNoConnection();
+            return;
+        }
+
+        int selectedIndex = databasesCombo.getSelectedIndex();
+        if (selectedIndex < 0)
+            return;
+
+        if (!getSelectedConnection().isConnected())
+            ConnectionManager.createDataSource(getSelectedConnection());
+
         try {
-            loadConnections();
-        } catch (Exception e) {
-            e.printStackTrace();
+            DatabaseMetaData metadata = new DefaultDatabaseHost(getSelectedConnection()).getDatabaseMetaData();
+            if (metadata != null)
+                version = metadata.getDatabaseMajorVersion();
+
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
+
+        setRefreshAction();
+    }
+
+    private void showCreateUserDialog() {
+        BaseDialog dialog = new BaseDialog(CreateUserPanel.CREATE_TITLE, false);
+        CreateUserPanel panel = new CreateUserPanel(getSelectedConnection(), dialog);
+        showDialog(dialog, panel);
+    }
+
+    private void showEditUserDialog() {
+
+        int selectedRow = usersTable.getSelectedRow();
+        if (selectedRow < 0)
+            return;
+
+        BaseDialog dialog = new BaseDialog(CreateUserPanel.EDIT_TITLE, false);
+        CreateUserPanel panel = new CreateUserPanel(getSelectedConnection(), dialog, userList.get(selectedRow));
+        showDialog(dialog, panel);
+    }
+
+    private void showDropUserDialog() {
+
+        int selectedRow = usersTable.getSelectedRow();
+        if (selectedRow < 0)
+            return;
+
+        ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(
+                "Dropping object",
+                userList.get(selectedRow).getDropSQL(),
+                getSelectedConnection(),
+                true
+        );
+
+        executeQueryDialog.display();
+        setRefreshAction();
+    }
+
+    private void showCreateRoleDialog() {
+        BaseDialog dialog = new BaseDialog(CreateRolePanel.TITLE, true);
+        CreateRolePanel panel = new CreateRolePanel(getSelectedConnection(), dialog, null);
+        showDialog(dialog, panel);
+    }
+
+    private void showDropRoleDialog() {
+
+        int selectedRow = rolesTable.getSelectedRow();
+        if (selectedRow < 0)
+            return;
+
+        String roleName = (String) rolesTable.getModel().getValueAt(selectedRow, 0);
+        String query = SQLUtils.generateDefaultDropQuery("ROLE", roleName, getSelectedConnection());
+        ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog("Dropping object", query, getSelectedConnection(), true);
+
+        executeQueryDialog.display();
+        setRefreshAction();
+    }
+
+    private void grantRole() {
+
+        int row = membershipTable.getSelectedRow();
+        int col = membershipTable.getSelectedColumn();
+
+        if (enableElements && col >= 0) {
+            if (membershipTable.getValueAt(row, col).equals(GRANT_ADMIN_ROLE_ICON))
+                revoke(row, col);
+            grant(row, col);
         }
     }
 
-    public void loadConnections() throws Exception {
-        setEnableElements(true);
-        con = null;
-        initUserManager();
-        execute_w = false;
-        databaseBox.removeAllItems();
-        listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
+    private void grandAdminRole() {
+
+        int row = membershipTable.getSelectedRow();
+        int col = membershipTable.getSelectedColumn();
+
+        if (enableElements && col >= 0)
+            grantWithAdminOption(row, col);
+    }
+
+    private void revokeRole() {
+
+        int row = membershipTable.getSelectedRow();
+        int col = membershipTable.getSelectedColumn();
+
+        if (enableElements && col >= 0)
+            revoke(row, col);
+    }
+
+    private void changeMemberships() {
+
+        if (!enableElements)
+            return;
+
+        int row = membershipTable.getSelectedRow();
+        int col = membershipTable.getSelectedColumn();
+        if (col < 0)
+            return;
+
+        if (membershipTable.getValueAt(row, col).equals(GRANT_ROLE_ICON))
+            grantWithAdminOption(row, col);
+        else if (membershipTable.getValueAt(row, col).equals(GRANT_ADMIN_ROLE_ICON))
+            revoke(row, col);
+        else
+            grant(row, col);
+    }
+
+    // --- helpers ---
+
+    private void grantWithAdminOption(int row, int col) {
+
+        if (col < 0)
+            return;
+
+        String roleName = roleNamesVector.elementAt(col);
+        String userName = userNamesVector.elementAt(row).getName();
+
+        String type = "";
+        if (userNamesVector.elementAt(row).isUser())
+            type = "USER ";
+        else if (version >= 3)
+            type = "ROLE ";
+
+        String query = "GRANT \"" + roleName + "\" " +
+                "TO " + type + "\"" + userName + "\"" +
+                "WITH ADMIN OPTION;";
+
+        executeStatement(query);
+        setGetMembershipAction();
+    }
+
+    private void grant(int row, int col) {
+
+        if (col < 0)
+            return;
+
+        String roleName = roleNamesVector.elementAt(col);
+        String userName = userNamesVector.elementAt(row).getName();
+
+        String type = "";
+        if (userNamesVector.elementAt(row).isUser())
+            type = "USER ";
+        else if (version >= 3)
+            type = "ROLE ";
+
+        String query = "GRANT \"" + roleName + "\" " +
+                "TO " + type + "\"" + userName + "\";";
+
+        executeStatement(query);
+        setGetMembershipAction();
+    }
+
+    private void revoke(int row, int col) {
+
+        if (col < 0)
+            return;
+
+        String roleName = roleNamesVector.elementAt(col);
+        String userName = userNamesVector.elementAt(row).getName();
+
+        String type = "";
+        if (userNamesVector.elementAt(row).isUser())
+            type = "USER ";
+        else if (version >= 3)
+            type = "ROLE ";
+
+        String query = "REVOKE \"" + roleName + "\" " +
+                "FROM " + type + "\"" + userName + "\";";
+
+        executeStatement(query);
+        setGetMembershipAction();
+    }
+
+    private void loadConnections() {
+
+        execute = false;
+        connection = null;
         enableElements = true;
+        databasesCombo.removeAllItems();
+
+        Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+        if (repo == null)
+            return;
+
+        databaseConnectionList = ((DatabaseConnectionRepository) repo).findAll();
+
         boolean selected = false;
-        for (DatabaseConnection dc : listConnections) {
-            databaseBox.addItem(dc);
+        for (DatabaseConnection dc : databaseConnectionList) {
+            databasesCombo.addItem(dc);
             if (dc.isConnected() && !selected) {
-                execute_w = true;
-                databaseBox.setSelectedItem(dc);
+                execute = true;
+                databasesCombo.setSelectedItem(dc);
                 selected = true;
             }
         }
-        if (!execute_w) {
-            if (databaseBox.getItemCount() == 0)
-                databaseBox.addItem(null);
-            databaseBox.setSelectedIndex(0);
-            execute_w = true;
 
+        if (!execute) {
+            if (databasesCombo.getItemCount() == 0)
+                databasesCombo.addItem(null);
+
+            databasesCombo.setSelectedIndex(0);
+            execute = true;
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void initComponents() {
+    private void showDialog(BaseDialog dialog, JPanel panel) {
 
-        connectPanel = new JPanel(new GridBagLayout());
-        interruptPanel = new JPanel();
-        databaseLabel = new JLabel();
-        serverLabel = new JLabel();
-        databaseBox = new JComboBox<>();
-        serverBox = new JComboBox<>();
-        jTabbedPane1 = new JTabbedPane();
-        usersPanel = new JPanel();
-        jScrollPane1 = new JScrollPane();
-        jScrollPane2 = new JScrollPane();
-        membershipTable = new JTable();
-        jScrollPane3 = new JScrollPane(membershipTable, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-        usersTable = new JTable();
-        rolesTable = new JTable();
-        addUserButton = new DefaultButton();
-        addRoleButton = new DefaultButton();
-        editUserButton = new DefaultButton();
-        deleteUserButton = new DefaultButton();
-        deleteRoleButton = new DefaultButton();
-        refreshUsersButton = new DefaultButton();
-        rolesPanel = new JPanel();
-        membershipPanel = new JPanel();
-        //membershipTable = new JTable();
-        grantButton = new JButton();
-        adminButton = new JButton();
-        no_grantButton = new JButton();
-        grantLabel = new JLabel();
-        adminLabel = new JLabel();
-        no_grantLabel = new JLabel();
-        jProgressBar1 = new JProgressBar();
-        cancelButton = new DefaultButton();
-        connectButton = new DefaultButton();
-        portField = new DefaultNumberTextField();
-        roleRoleBox = new JCheckBox(bundleString("RoleRole"));
-        portField.setText("3050");
-
-        connectButton.setText(bundleString("connectButton"));
-        connectButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                FrameLogin frameLogin;
-                if (getSelectedDatabaseConnection() != null) {
-                    frameLogin = new FrameLogin(UserManagerPanel.this,
-                            getSelectedDatabaseConnection().getUserName(),
-                            getSelectedDatabaseConnection().getUnencryptedPassword());
-                } else {
-                    frameLogin = new FrameLogin(UserManagerPanel.this,
-                            "",
-                            "");
-                    frameLogin.setUseCustomServer(true);
-                }
-                frameLogin.setVisible(true);
-                int width = Toolkit.getDefaultToolkit().getScreenSize().width;
-                int height = Toolkit.getDefaultToolkit().getScreenSize().height;
-                frameLogin.setLocation(width / 2 - frameLogin.getWidth() / 2, height / 2 - frameLogin.getHeight() / 2);
-            }
-        });
-
-        cancelButton.setText(bundleString("cancelButton"));
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
-
-        connectPanel.setName("upPanel"); // NOI18N
-
-        databaseLabel.setText(bundleString("database"));
-
-        serverLabel.setText(bundleString("server"));
-
-        databaseBox.setEditable(true);
-        databaseBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent evt) {
-                if (evt.getStateChange() == ItemEvent.SELECTED)
-                    databaseBoxActionPerformed(evt);
-            }
-        });
-
-        serverBox.setEditable(true);
-
-        interruptPanel.setLayout(new GridBagLayout());
-        interruptPanel.add(jProgressBar1, new GridBagConstraints(0, 0, 1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
-        interruptPanel.add(cancelButton, new GridBagConstraints(1, 0, 1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
-
-        connectPanel.setBorder(BorderFactory.createEtchedBorder());
-        connectPanel.add(databaseLabel, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectPanel.add(databaseBox, new GridBagConstraints(1, 0,
-                3, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectPanel.add(serverLabel, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connectPanel.add(serverBox, new GridBagConstraints(1, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectPanel.add(portField, new GridBagConstraints(2, 1,
-                1, 1, 0.15, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connectPanel.add(connectButton, new GridBagConstraints(3, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        jTabbedPane1.setToolTipText("");
-
-        usersTable.setModel(new RoleTableModel(
-                new Object[][]{},
-                new String[]{
-                        "User name", "First name", "Middle name", "Last name", "Active"
-                }
-        ));
-        jScrollPane1.setViewportView(usersTable);
-        rolesTable.setModel(new RoleTableModel(
-                new Object[][]{},
-                new String[]{
-                        "Role name", "Owner"
-                }
-        ));
-        jScrollPane2.setViewportView(rolesTable);
-
-        addUserButton.setText(bundleString("Add"));
-        addUserButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                addUserButtonActionPerformed(evt);
-            }
-        });
-        addRoleButton.setText(bundleString("Add"));
-        addRoleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                addRoleButtonActionPerformed(evt);
-            }
-        });
-
-        editUserButton.setText(bundleString("Edit"));
-        editUserButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                editUserButtonActionPerformed(evt);
-            }
-        });
-
-        deleteUserButton.setText(bundleString("Delete"));
-        deleteUserButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                deleteUserButtonActionPerformed(evt);
-            }
-        });
-
-        deleteRoleButton.setText(bundleString("Delete"));
-        deleteRoleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    deleteRoleButtonActionPerformed(evt);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        refreshUsersButton.setText(bundleString("Refresh"));
-        refreshUsersButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                refreshUserButtonActionPerformed(evt);
-            }
-        });
-
-
-        GroupLayout usersPanelLayout = new GroupLayout(usersPanel);
-        usersPanel.setLayout(usersPanelLayout);
-        usersPanelLayout.setHorizontalGroup(
-                usersPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(usersPanelLayout.createSequentialGroup()
-                                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                                .addGap(18, 18, 18)
-                                .addGroup(usersPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(addUserButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(editUserButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(deleteUserButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(refreshUsersButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE))
-                                .addContainerGap())
-        );
-        usersPanelLayout.setVerticalGroup(
-                usersPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(jScrollPane1, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addGroup(usersPanelLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(addUserButton)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(editUserButton)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(deleteUserButton)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(refreshUsersButton)
-                                .addGap(18, 18, 18)
-                                .addContainerGap(47, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab(bundleString("Users"), usersPanel);
-
-        GroupLayout rolesPanelLayout = new GroupLayout(rolesPanel);
-        rolesPanel.setLayout(rolesPanelLayout);
-        rolesPanelLayout.setHorizontalGroup(
-                rolesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(rolesPanelLayout.createSequentialGroup()
-                                .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                                .addGap(18, 18, 18)
-                                .addGroup(rolesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(addRoleButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(deleteRoleButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE))
-                                .addContainerGap())
-        );
-
-        rolesPanelLayout.setVerticalGroup(
-                rolesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(jScrollPane2, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addGroup(rolesPanelLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(addRoleButton)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(deleteRoleButton)
-                                .addGap(18, 18, 18)
-                                .addContainerGap(47, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab(bundleString("Roles"), rolesPanel);
-
-        membershipTable.setModel(new RoleTableModel(
-                new Object[][]{},
-                new String[]{
-                        "Title 1", "Title 2", "Title 3", "Title 4"
-                }
-        ));
-        membershipTable.setDefaultRenderer(Object.class, new BrowserTableCellRenderer());
-        jScrollPane3.setViewportView(membershipTable);
-        membershipTable.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent evt) {
-                try {
-                    membershipMouseClicked(evt);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        grantButton.setIcon(gr);
-        grantButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    grantButtonActionPerformed(evt);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        grantButton.setToolTipText("GRANT ROLE");
-        grantLabel.setText("GRANT ROLE");
-
-        adminButton.setIcon(adm);
-        adminButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    adminButtonActionPerformed(evt);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        adminButton.setToolTipText("GRANT ROLE WITH ADMIN OPTION");
-        adminLabel.setText("GRANT ROLE WITH ADMIN OPTION");
-
-        no_grantButton.setIcon(no);
-        no_grantButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    no_grantButtonActionPerformed(evt);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        no_grantButton.setToolTipText("REVOKE ROLE");
-        no_grantLabel.setText("REVOKE ROLE");
-
-        roleRoleBox.setSelected(false);
-        roleRoleBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                try {
-                    act = Action.REFRESH;
-                    executeThread();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-
-        GroupLayout membershipPanelLayout = new GroupLayout(membershipPanel);
-        membershipPanel.setLayout(membershipPanelLayout);
-        membershipPanelLayout.setHorizontalGroup(
-                membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(GroupLayout.Alignment.TRAILING, membershipPanelLayout.createSequentialGroup()
-                                .addGap(18, 18, 18)
-                                .addGroup(membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addGroup(membershipPanelLayout.createSequentialGroup()
-                                                .addComponent(grantButton)
-                                                .addGap(5)
-                                                .addComponent(grantLabel))
-                                        .addGroup(membershipPanelLayout.createSequentialGroup()
-                                                .addComponent(adminButton)
-                                                .addGap(5)
-                                                .addComponent(adminLabel))
-                                        .addGroup(membershipPanelLayout.createSequentialGroup()
-                                                .addComponent(no_grantButton)
-                                                .addGap(5)
-                                                .addComponent(no_grantLabel))
-                                        .addComponent(roleRoleBox))
-                                .addGap(32, 32, 32)
-                                .addComponent(jScrollPane3, GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
-                                .addGap(20, 20, 20))
-        );
-        membershipPanelLayout.setVerticalGroup(
-                membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(GroupLayout.Alignment.TRAILING, membershipPanelLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addGroup(membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addGroup(membershipPanelLayout.createSequentialGroup()
-                                                .addGroup(membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                        .addComponent(grantButton)
-                                                        .addComponent(grantLabel))
-                                                .addGap(18, 18, 18)
-                                                .addGroup(membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                        .addComponent(adminButton)
-                                                        .addComponent(adminLabel))
-                                                .addGap(18, 18, 18)
-                                                .addGroup(membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                        .addComponent(no_grantButton)
-                                                        .addComponent(no_grantLabel))
-                                                .addGap(18, 18, 18)
-                                                .addComponent(roleRoleBox))
-                                        .addComponent(jScrollPane3, GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE))
-                                .addContainerGap())
-        );
-
-        jTabbedPane1.addTab(bundleString("Membership"), membershipPanel);
-
-        GroupLayout layout = new GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(connectPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jTabbedPane1)
-                        .addComponent(interruptPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addComponent(connectPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap()
-                                .addComponent(jTabbedPane1, GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
-                                .addContainerGap()
-                                .addComponent(interruptPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        )
-        );
-
-        jTabbedPane1.getAccessibleContext().setAccessibleName(bundleString("Users"));
-    }
-
-    void initUserManager() throws Exception {
-        if (con == null) {
-            version = 2;
-            Driver driver = DefaultDriverLoader.getDefaultDriver();
-            userAdd = (IFBUser) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver, "FBUserImpl");
-            this.userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver, "FBUserManagerImpl");
-            ;
-        } else {
-            Connection connection = con.unwrap(Connection.class);
-            DatabaseHost host = new DefaultDatabaseHost(getSelectedDatabaseConnection());
-            version = host.getDatabaseMetaData().getDatabaseMajorVersion();
-
-
-            userAdd = (IFBUser) DynamicLibraryLoader.loadingObjectFromClassLoader(getSelectedDatabaseConnection().getDriverMajorVersion(), connection, "FBUserImpl");
-            if (version >= 3) {
-                DynamicLibraryLoader.Parameter param = new DynamicLibraryLoader.Parameter(Connection.class, con);
-                this.userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(getSelectedDatabaseConnection().getDriverMajorVersion(), connection, "FB3UserManagerImpl", param);
-
-            } else
-                this.userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(getSelectedDatabaseConnection().getDriverMajorVersion(), connection, "FBUserManagerImpl");
-        }
-    }
-
-    private void databaseBoxActionPerformed(ItemEvent evt) {
-
-
-        if (listConnections.size() > 0) {
-            int selectedIndex = databaseBox.getSelectedIndex();
-            if (selectedIndex == -1)
-                return;
-            if (getSelectedDatabaseConnection().isConnected()) {
-                act = Action.REFRESH;
-                executeThread();
-
-            } else {
-                initNotConnected();
-                if (execute_w) {
-                    JFrame frameLogin = new FrameLogin(this, getSelectedDatabaseConnection().getUserName(),
-                            getSelectedDatabaseConnection().getUnencryptedPassword());
-                    frameLogin.setVisible(true);
-                    int width = Toolkit.getDefaultToolkit().getScreenSize().width;
-                    int height = Toolkit.getDefaultToolkit().getScreenSize().height;
-                    frameLogin.setLocation(width / 2 - frameLogin.getWidth() / 2, height / 2 - frameLogin.getHeight() / 2);
-                }
-            }
-        } else {
-            initNotConnected();
-        }
-    }
-
-    private void cancelButtonActionPerformed(ActionEvent evt) {
-        setEnableElements(true);
-    }
-
-    void addUserButtonActionPerformed(ActionEvent evt) {
-        GUIUtilities.addCentralPane(bundleString("AddUser"),
-                UserManagerPanel.FRAME_ICON,
-                new WindowAddUser(this, version),
-                null,
-                true);
-    }
-
-    void editUserButtonActionPerformed(ActionEvent evt) {
-        int ind = usersTable.getSelectedRow();
-        if (ind >= 0) {
-            GUIUtilities.addCentralPane(bundleString("EditUser"),
-                    UserManagerPanel.FRAME_ICON,
-                    new WindowAddUser(this, ((IFBUser) (users.values().toArray()[ind])), version),
-                    null,
-                    true);
-        }
-    }
-
-    void addRoleButtonActionPerformed(ActionEvent evt) {
         try {
             GUIUtilities.showWaitCursor();
-            BaseDialog dialog =
-                    new BaseDialog(WindowAddRole.TITLE, true);
-            WindowAddRole panel = new WindowAddRole(dialog, getSelectedDatabaseConnection());
+
             dialog.addDisplayComponentWithEmptyBorder(panel);
+            dialog.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    setRefreshAction();
+                    super.windowClosed(e);
+                }
+            });
             dialog.display();
-            act = Action.REFRESH;
-            executeThread();
+
         } finally {
             GUIUtilities.showNormalCursor();
         }
     }
 
-    void refreshUserButtonActionPerformed(ActionEvent evt) {
-        act = Action.REFRESH;
-        executeThread();
+    private void refreshUsers() {
+
+        List<NamedObject> namedObjects = ConnectionsTreePanel.getPanelFromBrowser()
+                .getDefaultDatabaseHostFromConnection(getSelectedConnection())
+                .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.USER]);
+
+        userList = namedObjects != null ?
+                namedObjects.stream()
+                        .map(obj -> (DefaultDatabaseUser) obj)
+                        .collect(Collectors.toList()) :
+                new ArrayList<>();
+
+        usersTable.setModel(new RoleTableModel(
+                new Object[][]{},
+                bundleStrings(new String[]{
+                        "UserName", "FirstName", "MiddleName", "LastName"
+                })
+        ));
+
+        userNamesVector.clear();
+        for (DefaultDatabaseUser user : userList) {
+
+            user.loadData();
+            userNamesVector.add(new UserRole(user.getShortName().trim(), true));
+
+            ((RoleTableModel) usersTable.getModel()).addRow(new Object[]{
+                    user.getShortName(),
+                    user.getFirstName(),
+                    user.getMiddleName(),
+                    user.getLastName()
+            });
+        }
     }
 
-    void deleteUserButtonActionPerformed(ActionEvent evt) {
-        int ind = usersTable.getSelectedRow();
-        if (ind >= 0) {
-            if (GUIUtilities.displayConfirmDialog(bundleString("message.confirm-delete-user")) == 0) {
-                try {
-                    userManager.delete(((IFBUser) (users.values().toArray()[ind])));
-                } catch (Exception e) {
-                    System.out.println(e);
+    private void refreshRoles() {
+
+        List<NamedObject> customRoles = ConnectionsTreePanel.getPanelFromBrowser()
+                .getDefaultDatabaseHostFromConnection(getSelectedConnection())
+                .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.ROLE]);
+
+        List<NamedObject> systemRoles = ConnectionsTreePanel.getPanelFromBrowser()
+                .getDefaultDatabaseHostFromConnection(getSelectedConnection())
+                .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.SYSTEM_ROLE]);
+
+        List<DefaultDatabaseRole> roleList = new ArrayList<>();
+        if (customRoles != null) {
+            roleList.addAll(customRoles.stream()
+                    .map(obj -> (DefaultDatabaseRole) obj)
+                    .collect(Collectors.toList())
+            );
+        }
+        if (systemRoles != null) {
+            roleList.addAll(systemRoles.stream()
+                    .map(obj -> (DefaultDatabaseRole) obj)
+                    .collect(Collectors.toList())
+            );
+        }
+
+        rolesTable.setModel(new RoleTableModel(
+                new Object[][]{},
+                bundleStrings(new String[]{
+                        "RoleName", "Owner"
+                })
+        ));
+
+        roleNamesVector.clear();
+        for (DefaultDatabaseRole role : roleList) {
+
+            roleNamesVector.add(role.getName());
+            if (roleToRoleCheck.isSelected())
+                userNamesVector.add(new UserRole(role.getName(), false));
+
+            ((RoleTableModel) rolesTable.getModel()).addRow(new Object[]{
+                    role.getName(),
+                    role.getOwner()
+            });
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void refreshMembership() {
+
+        String query = "SELECT DISTINCT\n" +
+                "RDB$PRIVILEGE,\n" +
+                "RDB$GRANT_OPTION,\n" +
+                "RDB$RELATION_NAME\n" +
+                "FROM RDB$USER_PRIVILEGES\n" +
+                "WHERE (RDB$USER='%s')\n" +
+                "AND (RDB$OBJECT_TYPE=8 OR RDB$OBJECT_TYPE=13)\n" +
+                "AND RDB$USER_TYPE=%s;";
+
+        membershipTable.setModel(new RoleTableModel(
+                new Object[][]{},
+                roleNamesVector.toArray()
+        ));
+
+        refreshTabs();
+        progressBar.setMaximum(userNamesVector.size());
+
+        boolean first = true;
+        for (int i = 0; i < userNamesVector.size() && !enableElements; i++) {
+            progressBar.setValue(i);
+
+            String userName = userNamesVector.elementAt(i).getName();
+            String type = userNamesVector.elementAt(i).isUser() ? "8" : "13";
+
+            try {
+
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(String.format(query, userName, type));
+
+                Vector<Object> roleData = new Vector<>();
+                roleNamesVector.forEach(role -> roleData.add(REVOKE_ROLE_ICON));
+
+                while (resultSet.next()) {
+
+                    int roleIndex = roleNamesVector.indexOf(resultSet.getString(3).trim());
+                    if (roleIndex < 0)
+                        continue;
+
+                    if (resultSet.getInt(2) == 0)
+                        roleData.set(roleIndex, GRANT_ROLE_ICON);
+                    else
+                        roleData.set(roleIndex, GRANT_ADMIN_ROLE_ICON);
                 }
-                act = Action.REFRESH;
-                executeThread();
-            }
-        }
-    }
+                if (!statement.isClosed())
+                    statement.close();
 
-    void deleteRoleButtonActionPerformed(ActionEvent evt) throws SQLException {
-        int ind = rolesTable.getSelectedRow();
-        if (ind >= 0) {
-            String role = (String) rolesTable.getModel().getValueAt(ind, 0);
-            if (GUIUtilities.displayConfirmDialog(bundleString("message.confirm-delete-role") + role + "?") == 0) {
-                Statement state = null;
-                try {
-                    state = con.createStatement();
-                    state.execute("DROP ROLE " + role);
-                    act = Action.REFRESH;
-                    executeThread();
-                } catch (Exception e) {
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
-                    System.out.println(e);
-                } finally {
-                    if (!state.isClosed())
-                        state.close();
-                }
-            }
-        }
-    }
-
-    private void grantButtonActionPerformed(ActionEvent evt) throws SQLException {
-        int row = membershipTable.getSelectedRow();
-        int col = membershipTable.getSelectedColumn();
-        if (enableElements) if (col >= 0) {
-            if (membershipTable.getValueAt(row, col).equals(adm)) {
-                revokeGrant(row, col);
-            }
-            grantTo(row, col);
-        }
-    }
-
-    private void adminButtonActionPerformed(ActionEvent evt) throws SQLException {
-        int row = membershipTable.getSelectedRow();
-        int col = membershipTable.getSelectedColumn();
-        if (enableElements) {
-            if (col >= 0) {
-                grantWithAdmin(row, col);
-            }
-        }
-    }
-
-    private void no_grantButtonActionPerformed(ActionEvent evt) throws SQLException {
-        int row = membershipTable.getSelectedRow();
-        int col = membershipTable.getSelectedColumn();
-        if (col >= 0) {
-            if (enableElements) {
-                revokeGrant(row, col);
-            }
-        }
-    }
-
-    private void membershipMouseClicked(MouseEvent evt) throws SQLException {
-        if (evt.getClickCount() > 1) {
-            int row = membershipTable.getSelectedRow();
-            int col = membershipTable.getSelectedColumn();
-            if (enableElements) {
-                if (col >= 0) {
-                    if (membershipTable.getValueAt(row, col).equals(gr)) {
-                        grantWithAdmin(row, col);
-                    } else if (membershipTable.getValueAt(row, col).equals(adm)) {
-                        revokeGrant(row, col);
-                    } else {
-                        grantTo(row, col);
-                    }
-                }
-            }
-        }
-    }
-
-    public void enableComponents(Container container, boolean enable) {
-        Component[] components = container.getComponents();
-        for (Component component : components) {
-            component.setEnabled(enable);
-            if (component instanceof Container) {
-                if (!(component instanceof ProfilerPanel))
-                    enableComponents((Container) component, enable);
-            }
-        }
-    }
-
-    void setEnableElements(boolean enable) {
-        enableComponents(GUIUtilities.getParentFrame(), enable);
-        enableElements = enable;
-        addUserButton.setEnabled(enable);
-        editUserButton.setEnabled(enable);
-        deleteUserButton.setEnabled(enable);
-        refreshUsersButton.setEnabled(enable);
-        addRoleButton.setEnabled(enable);
-        deleteRoleButton.setEnabled(enable);
-        grantButton.setEnabled(enable);
-        adminButton.setEnabled(enable);
-        no_grantButton.setEnabled(enable);
-        //cancelButton.setVisible(!enable);
-        cancelButton.setEnabled(!enable);
-        jProgressBar1.setEnabled(!enable);
-        jProgressBar1.setValue(0);
-    }
-
-    public void run() {
-        switch (act) {
-            case REFRESH:
-                if (!enableElements) {
-                    try {
-                        refresh();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                break;
-            case GET_MEMBERSHIP:
-                if (!enableElements) {
-                    createMembership();
+                ((RoleTableModel) membershipTable.getModel()).addRow(roleData);
+                if (GUIUtilities.getCentralPane(TITLE) == null)
                     setEnableElements(true);
+
+                if (first) {
+
+                    int totalSize = 0;
+                    for (int j = 0; j < roleNamesVector.size(); j++) {
+                        int size = roleNamesVector.elementAt(j).length() * 8;
+                        membershipTable.getColumn(roleNamesVector.elementAt(j)).setMinWidth(size);
+                        totalSize += size;
+                    }
+
+                    JList<UserRole> rowHeader = new JList<>(userNamesVector);
+                    rowHeader.setFixedCellWidth(150);
+                    rowHeader.setFixedCellHeight(membershipTable.getRowHeight());
+                    rowHeader.setCellRenderer(new MembershipListCellRenderer(membershipTable));
+
+                    membershipScrollPane.setRowHeaderView(rowHeader);
+
+                    int paneWidth = membershipScrollPane.getPreferredSize().width;
+                    membershipTable.setAutoResizeMode(totalSize > paneWidth ?
+                            JTable.AUTO_RESIZE_OFF :
+                            JTable.AUTO_RESIZE_ALL_COLUMNS
+                    );
+
+                    first = false;
                 }
-            default:
-                break;
-        }
-    }
 
-    void grantWithAdmin(int row, int col) throws SQLException {
-        if (col >= 0) {
-            Statement st = null;
-            try {
-                st = con.createStatement();
-                String type = "";
-                if (user_names.elementAt(row).isUser())
-                    type = "USER";
-                else if (version >= 3)
-                    type = "ROLE";
-                String query = "GRANT \"" + role_names.elementAt(col) + "\" TO " + type + " \"" +
-                        user_names.elementAt(row).getName() + "\" WITH ADMIN OPTION;";
-                Log.info("Execution:" + query);
-                st.execute(query);
-                act = Action.GET_MEMBERSHIP;
-                executeThread();
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
-            } finally {
-                if (!st.isClosed())
-                    st.close();
+                Log.error(e.getMessage(), e);
             }
         }
     }
 
-    void grantTo(int row, int col) throws SQLException {
-        if (col >= 0) {
-            Statement st = null;
-            try {
-                st = con.createStatement();
-                String type = "";
-                if (user_names.elementAt(row).isUser())
-                    type = "USER";
-                else if (version >= 3)
-                    type = "ROLE";
-                String query = "GRANT \"" + role_names.elementAt(col) + "\" TO " + type + " \"" +
-                        user_names.elementAt(row).getName() + "\";";
-                Log.info("Execution:" + query);
-                st.execute(query);
-                act = Action.GET_MEMBERSHIP;
-                executeThread();
-            } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
-            } finally {
-                if (!st.isClosed())
-                    st.close();
-            }
-        }
-    }
+    public void refresh() {
 
-    void revokeGrant(int row, int col) throws SQLException {
-        if (col >= 0) {
-            Statement st = null;
-            try {
-                st = con.createStatement();
-                String type = "";
-                if (user_names.elementAt(row).isUser())
-                    type = "USER";
-                else if (version >= 3)
-                    type = "ROLE";
-                String query = "REVOKE \"" + role_names.elementAt(col) + "\" FROM " + type + " \"" +
-                        user_names.elementAt(row).getName() + "\";";
-                Log.info("Execution:" + query);
-                st.execute(query);
-            } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
-            } finally {
-                if (!st.isClosed())
-                    st.close();
-            }
-            act = Action.GET_MEMBERSHIP;
-            executeThread();
-        }
-    }
+        if (!databaseConnectionList.isEmpty() && getSelectedConnection().isConnected()) {
 
-    void getUsersPanel() {
-        try {
-            users = userManager.getUsers();
-            usersTable.setModel(new RoleTableModel(
-                    new Object[][]{},
-                    bundleStrings(new String[]{
-                            "UserName", "FirstName", "MiddleName", "LastName"
-                    })
-            ));
-            user_names.clear();
-            for (IFBUser u : users.values()) {
-                user_names.add(new UserRole(u.getUserName().trim(), true));
-                Object[] rowData = new Object[]{u.getUserName(), u.getFirstName(), u.getMiddleName(), u.getLastName()};
-                ((RoleTableModel) usersTable.getModel()).addRow(rowData);
-            }
-        } catch (Exception e) {
-            System.out.println(e);
-            GUIUtilities.displayErrorMessage(e.toString());
-        }
-    }
+            ConnectionsTreePanel.getPanelFromBrowser().getHostNode(getSelectedConnection()).getDatabaseObject().reset();
+            connection = ConnectionManager.getTemporaryConnection(getSelectedConnection());
 
-    public void refresh() throws Exception {
-        if (getUseCustomServer()) {
-            userManager.setHost(serverBox.getSelectedItem().toString());
-            userManager.setPort(Integer.valueOf(portField.getText()));
-            getUsersPanel();
-            if (jTabbedPane1.getTabCount() > 1) {
-                jTabbedPane1.remove(rolesPanel);
-                jTabbedPane1.remove(membershipPanel);
+            if (tabbedPane.getTabCount() < 2) {
+                tabbedPane.addTab(bundleString("Roles"), rolesPanel);
+                tabbedPane.addTab(bundleString("Membership"), membershipPanel);
             }
+
+            refreshUsers();
+            refreshRoles();
+            refreshMembership();
+            refreshTabs();
+
         } else {
-            if (getSelectedDatabaseConnection() != null) {
-                serverBox.removeAllItems();
-                serverBox.addItem(getSelectedDatabaseConnection().getHost());
-                portField.setText(getSelectedDatabaseConnection().getPort());
-            }
-            if (listConnections.size() > 0) {
-                userManager.setDatabase(getSelectedDatabaseConnection().getSourceName());
-                userManager.setHost(getSelectedDatabaseConnection().getHost());
-                userManager.setPort(getSelectedDatabaseConnection().getPortInt());
-
-                if (getSelectedDatabaseConnection().isConnected()) {
-                    if (jTabbedPane1.getTabCount() < 2) {
-                        jTabbedPane1.addTab(bundleString("Roles"), rolesPanel);
-                        jTabbedPane1.addTab(bundleString("Membership"), membershipPanel);
-                    }
-                    con = ConnectionManager.getTemporaryConnection(getSelectedDatabaseConnection());
-                    initUserManager();
-                    userManager.setDatabase(getSelectedDatabaseConnection().getSourceName());
-                    userManager.setHost(getSelectedDatabaseConnection().getHost());
-                    userManager.setPort(getSelectedDatabaseConnection().getPortInt());
-                    userManager.setUser(getSelectedDatabaseConnection().getUserName());
-                    userManager.setPassword(getSelectedDatabaseConnection().getUnencryptedPassword());
-                    getUsersPanel();
-                    getRoles();
-                    createMembership();
-                    update();
-                } else {
-                    getUsersPanel();
-                    if (jTabbedPane1.getTabCount() > 1) {
-                        jTabbedPane1.remove(rolesPanel);
-                        jTabbedPane1.remove(membershipPanel);
-                    }
-                }
-            } else {
-                getUsersPanel();
-                if (jTabbedPane1.getTabCount() > 1) {
-                    jTabbedPane1.remove(rolesPanel);
-                    jTabbedPane1.remove(membershipPanel);
-                }
+            refreshUsers();
+            if (tabbedPane.getTabCount() > 1) {
+                tabbedPane.remove(rolesPanel);
+                tabbedPane.remove(membershipPanel);
             }
         }
 
         setEnableElements(true);
     }
 
-    void getRoles() throws SQLException {
-        Statement state = null;
-        try {
-            state = con.createStatement();
-            result = state.executeQuery("SELECT RDB$ROLE_NAME,RDB$OWNER_NAME FROM RDB$ROLES ORDER BY" +
-                    " RDB$ROLE_NAME");
-            rolesTable.setModel(new RoleTableModel(
-                    new Object[][]{},
-                    bundleStrings(new String[]{
-                            "RoleName", "Owner"
-                    })
-            ));
-            role_names.clear();
-            while (result.next()) {
-                String rol = result.getString(1).trim();
-                role_names.add(rol);
-                if (roleRoleBox.isSelected())
-                    user_names.add(new UserRole(rol, false));
-                Object[] roleData = new Object[]{rol, result.getObject(2)};
-                ((RoleTableModel) rolesTable.getModel()).addRow(roleData);
-            }
-        } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.toString());
-        } finally {
-            if (!state.isClosed())
-                state.close();
+    public void refreshNoConnection() {
+
+        if (tabbedPane.getTabCount() > 1) {
+            tabbedPane.remove(rolesPanel);
+            tabbedPane.remove(membershipPanel);
         }
-    }
 
-    void update() {
-        int ind = jTabbedPane1.getSelectedIndex();
-        jTabbedPane1.setSelectedIndex(1);
-        jTabbedPane1.setSelectedIndex(2);
-        jTabbedPane1.setSelectedIndex(0);
-        jTabbedPane1.setSelectedIndex(ind);
-    }
-
-    void createMembership() {
-        membershipTable.setModel(new RoleTableModel(
-                new Object[][]{},
-                role_names.toArray()
-        ));
-
-        update();
-
-        boolean first = true;
-
-        jProgressBar1.setMaximum(user_names.size());
-        for (int i = 0; i < user_names.size() && !enableElements; i++) {
-            jProgressBar1.setValue(i);
-            Statement statement = null;
-            ResultSet resultSet = null;
-            try {
-                statement = con.createStatement();
-                String type = "13";
-                if (user_names.elementAt(i).isUser())
-                    type = "8";
-                resultSet = statement.executeQuery("select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION,rdb$Relation_name from RDB$USER_PRIVILEGES\n" +
-                        "where (RDB$USER='" + user_names.elementAt(i).getName() + "') and (rdb$object_type=8 or rdb$object_type=13) and rdb$user_type=" + type);
-                Vector<Object> roleData = new Vector<Object>();
-                for (String u : role_names) {
-                    roleData.add(no);
-                }
-                while (resultSet.next()) {
-                    String u = resultSet.getString(3);
-                    u = u.trim();
-                    int ind = role_names.indexOf(u);
-                    if (resultSet.getInt(2) == 0)
-                        roleData.set(ind, gr);
-                    else
-                        roleData.set(ind, adm);
-
-                }
-                ((RoleTableModel) membershipTable.getModel()).addRow(roleData);
-                isClose();
-
-                // need update UI
-                if (first) {
-                    int sizer = 0;
-                    for (int j = 0; j < role_names.size(); j++) {
-                        int temper = role_names.elementAt(j).length() * 8;
-                        String s = role_names.elementAt(j);
-                        membershipTable.getColumn(s).setMinWidth(temper);
-                        sizer += temper;
-                    }
-
-                    JList rowHeader = new JList(user_names);
-                    rowHeader.setFixedCellWidth(150);
-                    rowHeader.setFixedCellHeight(membershipTable.getRowHeight());
-                    rowHeader.setCellRenderer(new MembershipListCellRenderer(membershipTable));
-                    jScrollPane3.setRowHeaderView(rowHeader);
-                    int wid = jScrollPane3.getPreferredSize().width;
-                    if (sizer > wid)
-                        membershipTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-                    else
-                        membershipTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-                    first = false;
-                }
-            } catch (ArrayIndexOutOfBoundsException e) {
-                Log.error("Error index  out of bounds");
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (!statement.isClosed())
-                        statement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private DatabaseDriverRepository driverRepository() {
-        return (DatabaseDriverRepository) RepositoryCache.load(
-                DatabaseDriverRepository.REPOSITORY_ID);
-    }
-
-    public void addUser() throws SQLException, IOException {
-        userManager.add(userAdd);
-        act = Action.REFRESH;
-        executeThread();
-    }
-
-    public void editUser() throws SQLException, IOException {
-        userManager.update(userAdd);
-        act = Action.REFRESH;
-        executeThread();
-    }
-
-    void executeThread() {
-        if (enableElements) {
-            setEnableElements(false);
-            Runnable r = new ThreadOfUserManager(this);
-            Thread t = new Thread(r);
-            t.start();
-        }
-    }
-
-    public String bundleString(String key) {
-        return Bundles.get(UserManagerPanel.class, key);
-    }
-
-    private String[] bundleStrings(String[] key) {
-        for (int i = 0; i < key.length; i++)
-            key[i] = bundleString(key[i]);
-        return key;
-    }
-
-    void isClose() {
-        if (GUIUtilities.getCentralPane(TITLE) == null)
-            setEnableElements(true);
-    }
-
-    public void initNotConnected() {
-        if (jTabbedPane1.getTabCount() > 1) {
-            jTabbedPane1.remove(rolesPanel);
-            jTabbedPane1.remove(membershipPanel);
-        }
         usersTable.setModel(new RoleTableModel(
-                new Object[][]{
-
-                },
+                new Object[][]{},
                 bundleStrings(new String[]{
                         "UserName", "FirstName", "MiddleName", "LastName"
                 })
         ));
     }
 
-    public void setUseCustomServer(boolean useCustomServer) {
-        this.useCustomServer = useCustomServer;
+    private void refreshTabs() {
+
+        int selectedTabIndex = tabbedPane.getSelectedIndex();
+
+        tabbedPane.setSelectedIndex(1);
+        tabbedPane.setSelectedIndex(2);
+        tabbedPane.setSelectedIndex(0);
+        tabbedPane.setSelectedIndex(selectedTabIndex);
     }
 
-    public boolean getUseCustomServer() {
-        return useCustomServer;
+    private void executeStatement(String query) {
+
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(query);
+            if (!statement.isClosed())
+                statement.close();
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+        }
     }
 
-    public DatabaseConnection getSelectedDatabaseConnection() {
-        return (DatabaseConnection) databaseBox.getSelectedItem();
+    private void executeThread() {
+        if (enableElements) {
+            setEnableElements(false);
+            new Thread(this).start();
+        }
+
     }
 
-    public class UserRole {
+    private void setRefreshAction() {
+        currentAction = Action.REFRESH;
+        executeThread();
+    }
+
+    private void setGetMembershipAction() {
+        currentAction = Action.GET_MEMBERSHIP;
+        executeThread();
+    }
+
+    public DatabaseConnection getSelectedConnection() {
+        return (DatabaseConnection) databasesCombo.getSelectedItem();
+    }
+
+    // --- runnable ---
+
+    @Override
+    public void run() {
+
+        if (enableElements)
+            return;
+
+        switch (currentAction) {
+            case REFRESH:
+                refresh();
+                break;
+            case GET_MEMBERSHIP:
+                refreshMembership();
+                setEnableElements(true);
+                break;
+        }
+    }
+
+    // ---
+
+    public String bundleString(String key) {
+        return Bundles.get(UserManagerPanel.class, key);
+    }
+
+    private String[] bundleStrings(String[] keys) {
+        for (int i = 0; i < keys.length; i++)
+            keys[i] = bundleString(keys[i]);
+        return keys;
+    }
+
+    public static class UserRole {
+
         private final String name;
         private final boolean isUser;
 
@@ -1110,8 +848,33 @@ public class UserManagerPanel extends JPanel {
         public boolean isUser() {
             return isUser;
         }
-    }
+
+    } // UserRole class
+
+    private static class MembershipListCellRenderer extends RowHeaderRenderer {
+
+        private final ImageIcon roleIcon = GUIUtilities.loadIcon("user_manager_16.png");
+        private final ImageIcon userIcon = GUIUtilities.loadIcon("User16.png");
+
+        public MembershipListCellRenderer(JTable table) {
+            super(table);
+        }
+
+        @Override
+        protected void setValue(Object value) {
+
+            if (value.getClass().equals(String.class)) {
+                setIcon(null);
+                setText((String) value);
+            }
+
+            if (value.getClass().equals(UserManagerPanel.UserRole.class)) {
+                UserManagerPanel.UserRole userRole = (UserManagerPanel.UserRole) value;
+                setText(userRole.getName());
+                setIcon(userRole.isUser() ? userIcon : roleIcon);
+            }
+        }
+
+    } // MembershipListCellRenderer class
 
 }
-
-

@@ -375,13 +375,16 @@ public final class SQLUtils {
     }
 
     public static String generateComment(
-            String name, String metaTag, String comment, String delimiter, boolean nameAlreadyFormatted, DatabaseConnection dc) {
+            String name, String metaTag, String comment, String delimiter,
+            boolean nameAlreadyFormatted, DatabaseConnection dc) {
+
         if (metaTag != null && metaTag.contentEquals(NamedObject.META_TYPES[GLOBAL_TEMPORARY]))
             metaTag = NamedObject.META_TYPES[TABLE];
+
         if (metaTag != null && (metaTag.contentEquals(NamedObject.META_TYPES[DATABASE_TRIGGER]) || metaTag.contentEquals(NamedObject.META_TYPES[DDL_TRIGGER])))
             metaTag = NamedObject.META_TYPES[TRIGGER];
-        StringBuilder sb = new StringBuilder();
 
+        StringBuilder sb = new StringBuilder();
         if (comment != null && !comment.isEmpty()) {
 
             if (comment.startsWith("'") && comment.endsWith("'"))
@@ -393,6 +396,43 @@ public final class SQLUtils {
             sb.append(nameAlreadyFormatted ? name : format(name, dc));
             sb.append(" IS ");
 
+            if (!comment.equals("NULL"))
+                sb.append("'").append(comment).append("'");
+            else
+                sb.append("NULL");
+
+            sb.append(delimiter);
+            sb.append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    public static String generateComment(
+            String name, String metaTag, String comment, String plugin, String delimiter,
+            boolean nameAlreadyFormatted, DatabaseConnection dc) {
+
+        if (metaTag != null && metaTag.contentEquals(NamedObject.META_TYPES[GLOBAL_TEMPORARY]))
+            metaTag = NamedObject.META_TYPES[TABLE];
+
+        if (metaTag != null && (metaTag.contentEquals(NamedObject.META_TYPES[DATABASE_TRIGGER]) || metaTag.contentEquals(NamedObject.META_TYPES[DDL_TRIGGER])))
+            metaTag = NamedObject.META_TYPES[TRIGGER];
+
+        StringBuilder sb = new StringBuilder();
+        if (comment != null && !comment.isEmpty()) {
+
+            if (comment.startsWith("'") && comment.endsWith("'"))
+                comment = comment.substring(1, comment.length() - 1);
+
+            comment = comment.replace("'", "''");
+
+            sb.append("COMMENT ON ").append(metaTag).append(" ");
+            sb.append(nameAlreadyFormatted ? name : format(name, dc));
+
+            if (plugin != null && !plugin.isEmpty())
+                sb.append(" USING PLUGIN ").append(plugin);
+
+            sb.append(" IS ");
             if (!comment.equals("NULL"))
                 sb.append("'").append(comment).append("'");
             else
@@ -836,9 +876,11 @@ public final class SQLUtils {
     }
 
     public static String generateDefaultDropQuery(String metaTag, String name, DatabaseConnection dc) {
-        String sb = "DROP " + metaTag + " " +
-                format(name, dc) + ";\n";
-        return sb;
+        return "DROP " + metaTag + " " + format(name, dc) + ";\n";
+    }
+
+    public static String generateDefaultDropQuery(String metaTag, String name, String plugin, DatabaseConnection dc) {
+        return "DROP " + metaTag + " " + format(name, dc) + " USING PLUGIN " + plugin + ";\n";
     }
 
     public static String generateCreateDomain(
@@ -871,30 +913,28 @@ public final class SQLUtils {
     }
 
     public static String generateCreateUser(DefaultDatabaseUser user, boolean setComment) {
+
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE");
-        sb.append(" USER ").append(format(user.getName(), user.getHost().getDatabaseConnection()));
+        sb.append("CREATE USER ").append(format(user.getName(), user.getHost().getDatabaseConnection()));
+
         if (!MiscUtils.isNull(user.getFirstName()))
             sb.append("\nFIRSTNAME '").append(user.getFirstName()).append("'");
         if (!MiscUtils.isNull(user.getMiddleName()))
             sb.append("\nMIDDLENAME '").append(user.getMiddleName()).append("'");
         if (!MiscUtils.isNull(user.getLastName()))
             sb.append("\nLASTNAME '").append(user.getLastName()).append("'");
-        if (!MiscUtils.isNull(user.getPassword())) {
+        if (!MiscUtils.isNull(user.getPassword()))
             sb.append("\nPASSWORD '").append(user.getPassword()).append("'");
-        }
-        if (user.getActive()) {
-            sb.append("\nACTIVE");
-        } else {
-            sb.append("\nINACTIVE");
-        }
-        if (user.getAdministrator()) {
+
+        sb.append(user.getActive() ? "\nACTIVE" : "\nINACTIVE");
+
+        if (user.getAdministrator())
             sb.append("\nGRANT ADMIN ROLE");
-        }
-        if (!user.getPlugin().equals(""))
+        if (!user.getPlugin().isEmpty())
             sb.append("\nUSING PLUGIN ").append(user.getPlugin());
+
         Map<String, String> tags = user.getTags();
-        if (tags.size() > 0) {
+        if (!tags.isEmpty()) {
             sb.append("\nTAGS (");
             boolean first = true;
             for (String tag : tags.keySet()) {
@@ -906,8 +946,10 @@ public final class SQLUtils {
             sb.append(" )");
         }
         sb.append(";\n");
-        if (setComment && !MiscUtils.isNull(user.getComment()))
-            sb.append("COMMENT ON USER ").append(format(user.getName(), user.getHost().getDatabaseConnection())).append(" is '").append(user.getComment()).append("'");
+
+        if (setComment && !MiscUtils.isNull(user.getRemarks()))
+            sb.append(generateComment(user.getName(), "USER", user.getRemarks(), user.getPlugin(), ";", false, user.getHost().getDatabaseConnection()));
+
         return sb.toString();
     }
 
@@ -1271,9 +1313,8 @@ public final class SQLUtils {
         if (thisUser.getAdministrator() != compareUser.getAdministrator())
             sb.append(compareUser.getAdministrator() ? "\n\tGRANT ADMIN ROLE" : "\n\tREVOKE ADMIN ROLE");
 
-        if (!Objects.equals(thisUser.getPlugin(), compareUser.getPlugin()))
-            if (!Objects.equals(compareUser.getPlugin(), "") && compareUser.getPlugin() != null)
-                sb.append("\nUSING PLUGIN ").append(compareUser.getPlugin());
+        if (!thisUser.getPlugin().isEmpty())
+            sb.append("\nUSING PLUGIN ").append(compareUser.getPlugin());
 
         Map<String, String> thisTags = thisUser.getTags();
         Map<String, String> compareTags = compareUser.getTags();
@@ -1296,15 +1337,11 @@ public final class SQLUtils {
         else
             sb.append(";\n");
 
-        if (setComment && !Objects.equals(thisUser.getComment(), compareUser.getComment())) {
-            sb.append("COMMENT ON USER ").append(format(thisUser.getName(), thisUser.getHost().getDatabaseConnection())).append(" IS ");
-            if (!Objects.equals(compareUser.getComment(), "") && compareUser.getComment() != null)
-                sb.append("'").append(compareUser.getComment()).append("'");
-            else
-                sb.append("NULL");
+        if (setComment && !Objects.equals(thisUser.getRemarks(), compareUser.getRemarks())) {
+            sb.append(generateComment(thisUser.getName(), "USER", compareUser.getRemarks(), thisUser.getPlugin(), ";", false, thisUser.getHost().getDatabaseConnection()));
         }
 
-        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */\n";
+        return !sb.toString().isEmpty() ? sb.toString() : "/* there are no changes */\n";
     }
 
 

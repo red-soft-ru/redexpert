@@ -28,9 +28,9 @@ public class GrantManagerConnectionListener implements ConnectionListener {
         }
         if (GUIUtilities.getCentralPane(UserManagerPanel.TITLE) != null) {
             UserManagerPanel ump = (UserManagerPanel) GUIUtilities.getCentralPane(UserManagerPanel.TITLE);
-            if (connectionEvent.getDatabaseConnection() == ump.getSelectedDatabaseConnection()) {
+            if (connectionEvent.getDatabaseConnection() == ump.getSelectedConnection()) {
                 try {
-                    ump.initNotConnected();
+                    ump.refreshNoConnection();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

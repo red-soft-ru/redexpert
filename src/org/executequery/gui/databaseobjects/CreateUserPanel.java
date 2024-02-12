@@ -9,7 +9,6 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ConnectionPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.browser.managment.WindowAddUser;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DefaultButton;
@@ -202,7 +201,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
         user.setMiddleName(middleNameField.getText());
         user.setLastName(lastNameField.getText());
         user.setPlugin((String) pluginField.getSelectedItem());
-        user.setComment(simpleCommentPanel.getComment());
+        user.setRemarks(simpleCommentPanel.getComment());
         user.setActive(activeBox.isSelected());
         user.setAdministrator(adminBox.isSelected());
         user.setTags(new HashMap<>());
@@ -268,12 +267,9 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
 
     }
 
+    @Override
     public String bundleString(String key) {
-        return Bundles.get(WindowAddUser.class, key);
-    }
-
-    private String bundleString(String key, Object... args) {
-        return Bundles.get(WindowAddUser.class, key, args);
+        return Bundles.get("WindowAddUser." + key);
     }
 
     private String[] bundleStrings(String[] key) {

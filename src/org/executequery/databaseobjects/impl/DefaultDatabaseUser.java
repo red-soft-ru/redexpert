@@ -25,7 +25,6 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     private String firstName;
     private String middleName;
     private String lastName;
-    private String comment;
 
     public DefaultDatabaseUser(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
@@ -91,9 +90,9 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
             setAdministrator(false);
         }
         try {
-            setComment(rs.getString(7));
+            setRemarks(rs.getString(7));
         } catch (NullPointerException e) {
-            setComment("");
+            setRemarks("");
         }
         try {
             setPlugin(rs.getString(8).trim());
@@ -132,14 +131,6 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     @Override
     public boolean allowsChildren() {
         return false;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
     }
 
     public String getPassword() {
@@ -225,7 +216,7 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         user.setLastName(lastName);
         user.setActive(active);
         user.setAdministrator(admin);
-        user.setComment(comment);
+        user.setRemarks(getRemarks());
         //user.setPassword(password);
         user.setPlugin(plugin);
         user.tags = new HashMap<>();
@@ -267,7 +258,7 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("USER", getName(), getHost().getDatabaseConnection());
+        return SQLUtils.generateDefaultDropQuery("USER", getName(), getPlugin(), getHost().getDatabaseConnection());
     }
 
     @Override

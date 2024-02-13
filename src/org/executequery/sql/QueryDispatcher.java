@@ -719,7 +719,7 @@ public class QueryDispatcher {
                     try {
 
                         db.setConnection(connection);
-                        before = db.getPerformanceInfo();
+                        before = db.getPerformanceInfo(databaseConnection.getDriverMajorVersion());
 
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -997,7 +997,7 @@ public class QueryDispatcher {
                     try {
 
                         db.setConnection(connection);
-                        before = db.getPerformanceInfo();
+                        before = db.getPerformanceInfo(driver.getMajorVersion());
 
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -1420,7 +1420,7 @@ public class QueryDispatcher {
             try {
                 IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabasePerformanceImpl");
                 db.setConnection(connection);
-                after = db.getPerformanceInfo();
+                after = db.getPerformanceInfo(databaseConnection.getDriverMajorVersion());
 
             } catch (SQLException | ClassNotFoundException e) {
                 e.printStackTrace();

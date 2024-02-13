@@ -12,7 +12,7 @@ public interface IFBDatabasePerformance {
 
     void setConnection(Connection connection) throws SQLException;
 
-    IFBPerformanceInfo getPerformanceInfo() throws SQLException;
+    IFBPerformanceInfo getPerformanceInfo(int driverMajorVersion) throws SQLException;
 
     String getLastExecutedPlan(ResultSet rs) throws SQLException;
 

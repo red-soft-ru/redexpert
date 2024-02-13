@@ -34,10 +34,10 @@ public class FBDatabasePerformanceImpl implements IFBDatabasePerformance {
     }
 
     @Override
-    public FBPerformanceInfoImpl getPerformanceInfo() throws SQLException {
+    public FBPerformanceInfoImpl getPerformanceInfo(int driverMajorVersion) throws SQLException {
         byte[] databaseInfo = null;
         FBPerformanceInfoImpl performanceInfo = null;
-        if (fbConnection.getMetaData().getDriverMajorVersion() >= 3) {
+        if (driverMajorVersion >= 3) {
 
             databaseInfo = fbConnection.getFbDatabase().getDatabaseInfo(perfomanceInfoBytes, 256);
 

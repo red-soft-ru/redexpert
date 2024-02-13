@@ -286,7 +286,7 @@ public class PooledConnection implements Connection {
             for (int i = 0; i < stack.length - 2; i++)
                 Log.info(stack[stack.length - 1 - i]);*/
             timerDelay.schedule(task, timeoutShutdown);
-            db.getPerformanceInfo();
+            db.getPerformanceInfo(databaseConnection.getDriverMajorVersion());
             timerDelay.cancel();
             //Log.info("---------------------------------Finish check.----------------------------------\n\n\n");
         } catch (SQLException e)

@@ -209,7 +209,12 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         this.plugin = plugin;
     }
 
-    public DefaultDatabaseUser getCopy() {
+    /**
+     * Returns copy of this object
+     */
+    @Override
+    public DefaultDatabaseUser copy() {
+
         DefaultDatabaseUser user = new DefaultDatabaseUser((DatabaseMetaTag) getParent(), getName());
         user.setFirstName(firstName);
         user.setMiddleName(middleName);

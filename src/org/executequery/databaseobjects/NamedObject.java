@@ -209,9 +209,7 @@ public interface NamedObject extends Named, java.io.Serializable {
     int getType();
 
     /**
-     * Returns the name of this object.
-     *
-     * @return the object name
+     * Sets the name fof this object.
      */
     void setName(String name);
 
@@ -223,9 +221,9 @@ public interface NamedObject extends Named, java.io.Serializable {
     String getShortName();
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
     String getMetaDataKey();
 
@@ -257,8 +255,7 @@ public interface NamedObject extends Named, java.io.Serializable {
      * @return drop statement result
      */
     int drop() throws DataSourceException;
-
-
+    
     String getDescription();
 
     boolean isSystem();
@@ -294,6 +291,12 @@ public interface NamedObject extends Named, java.io.Serializable {
         }
     }
 
+    /**
+     * Returns copy of this named object<br>
+     * (by default returns NULL and should be overridden)
+     */
+    default NamedObject copy() {
+        return null;
+    };
+    
 }
-
-

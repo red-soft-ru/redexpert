@@ -778,6 +778,12 @@ public class ConnectionsTreePanel extends TreePanel
         connectionAdded(dc);
     }
 
+    public void copyConnection(DatabaseConnection dc) {
+        dc.setName(dc.getName() + "_copy");
+        connections.add(dc);
+        connectionAdded(dc);
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void moveNode(List list, Object object, int direction) {
 

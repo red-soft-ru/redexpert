@@ -64,6 +64,11 @@ public class DatabaseHostNode extends DatabaseObjectNode {
 
     @Override
     public DatabaseObjectNode copy() {
+        return new DatabaseHostNode((DatabaseHost) getDatabaseObject().copy(), parentFolder);
+    }
+
+    @Override
+    public DatabaseObjectNode newInstance() {
         return new DatabaseHostNode((DatabaseHost) getDatabaseObject(), parentFolder);
     }
 

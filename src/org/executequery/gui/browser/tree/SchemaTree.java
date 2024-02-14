@@ -20,7 +20,9 @@
 
 package org.executequery.gui.browser.tree;
 
+import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTreeCellRenderer;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
@@ -272,6 +274,8 @@ public class SchemaTree extends DynamicTree
         DataFlavor nodesFlavor;
         DataFlavor[] flavors = new DataFlavor[1];
         DefaultMutableTreeNode[] nodesToRemove;
+        List<DatabaseConnection> hostToAdd = new ArrayList<>();
+        int currentAction;
 
         public TreeTransferHandler() {
 
@@ -372,9 +376,19 @@ public class SchemaTree extends DynamicTree
 
         @Override
         public void exportAsDrag(JComponent comp, InputEvent e, int action) {
+
             if (loadingNode)
                 return;
+
+            hostToAdd.clear();
+            currentAction = action;
             super.exportAsDrag(comp, e, action);
+
+            if (action == 1 && !hostToAdd.isEmpty()) {
+                ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+                if (connectionsTreePanel != null)
+                    hostToAdd.forEach(connectionsTreePanel::copyConnection);
+            }
         }
 
         @Override
@@ -394,11 +408,14 @@ public class SchemaTree extends DynamicTree
                     if (!canDrag(node) || isExpanded(path))
                         return null;
 
-                    DefaultMutableTreeNode copy = ((DatabaseObjectNode) node).copy();
+                    DefaultMutableTreeNode copy = currentAction == 1 ?
+                            ((DatabaseObjectNode) node).copy() :
+                            ((DatabaseObjectNode) node).newInstance();
+
+                    if (copy instanceof DatabaseHostNode)
+                        hostToAdd.add(((DatabaseHostNode) copy).getDatabaseConnection());
                     copies.add(copy);
                     toRemove.add(node);
-
-
                 }
 
                 DefaultMutableTreeNode[] nodes = copies.toArray(new DefaultMutableTreeNode[copies.size()]);

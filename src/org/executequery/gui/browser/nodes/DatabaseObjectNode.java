@@ -66,6 +66,10 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
     }
 
     public DatabaseObjectNode copy() {
+        return new DatabaseObjectNode(this.databaseObject.copy());
+    }
+
+    public DatabaseObjectNode newInstance() {
         return new DatabaseObjectNode(this.databaseObject);
     }
 

@@ -242,6 +242,14 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
     /**
+     * Returns copy of this object
+     */
+    @Override
+    public NamedObject copy() {
+        return new DefaultDatabaseHost(databaseConnection.copy(), typeTree);
+    }
+
+    /**
      * Returns the catalogs hosted by this host.
      *
      * @return the hosted catalogs

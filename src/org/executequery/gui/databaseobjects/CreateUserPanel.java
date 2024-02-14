@@ -318,7 +318,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
             user = new DefaultDatabaseUser(metaTag, "");
             user.setParent(metaTag);
         } else user.loadData();
-        this.beginUser = user.getCopy();
+        this.beginUser = user.copy();
     }
 
     @Override

@@ -36,6 +36,7 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
 
     DefaultDatabaseUser user;
     DefaultDatabaseUser beginUser;
+    private boolean useSql = true;
 
     private JPanel mainPanel;
     private JTextField firstNameField;
@@ -54,19 +55,23 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
     private SimpleSqlTextPanel sqlTextPanel;
     private JCheckBox showPassword;
 
+    public CreateUserPanel(DatabaseConnection dc, ActionContainer dialog) {
+        super(dc, dialog, null);
+    }
+
     public CreateUserPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseUser databaseObject) {
         super(dc, dialog, databaseObject);
     }
 
     public CreateUserPanel(DatabaseConnection dc, ActionContainer dialog, IFBUser fbUser, UserManagerPanel userManagerPanel, boolean edited) {
         super(dc, dialog, null);
+
         this.fbUser = fbUser;
         this.userManagerPanel = userManagerPanel;
         super.edited = edited;
-    }
 
-    public CreateUserPanel(DatabaseConnection dc, ActionContainer dialog) {
-        super(dc, dialog, null);
+        useSql = false;
+        tabbedPane.remove(sqlTextPanel);
     }
 
     @Override
@@ -230,7 +235,12 @@ public class CreateUserPanel extends AbstractCreateObjectPanel {
                 user.setTag(tag, value);
         }
 
-        return editing ? SQLUtils.generateAlterUser(beginUser, user, true) : SQLUtils.generateCreateUser(user, true);
+        if (useSql)
+            return editing ?
+                    SQLUtils.generateAlterUser(beginUser, user, true) :
+                    SQLUtils.generateCreateUser(user, true);
+        else
+            return "";
     }
 
     protected void generateSQL() {

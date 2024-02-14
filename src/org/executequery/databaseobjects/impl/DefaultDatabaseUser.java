@@ -216,13 +216,13 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         user.setLastName(lastName);
         user.setActive(active);
         user.setAdministrator(admin);
-        user.setRemarks(getRemarks());
+        user.setRemarks(remarks);
         //user.setPassword(password);
         user.setPlugin(plugin);
         user.tags = new HashMap<>();
-        for (String key : tags.keySet()) {
+        for (String key : tags.keySet())
             user.tags.put(key, tags.get(key));
-        }
+
         return user;
     }
 

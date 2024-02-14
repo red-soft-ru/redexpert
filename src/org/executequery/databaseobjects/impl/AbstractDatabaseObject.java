@@ -63,7 +63,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     /**
      * the object's remarks
      */
-    private String remarks;
+    protected String remarks;
 
     /**
      * this objects columns

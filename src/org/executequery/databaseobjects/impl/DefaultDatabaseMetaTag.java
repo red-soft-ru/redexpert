@@ -248,9 +248,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         boolean first = true;
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        String query = ((AbstractDatabaseObject) objects.get(0)).getBuilderLoadColsForAllTables().getSQLQuery();
-
         try {
+        String query = ((AbstractDatabaseObject) objects.get(0)).getBuilderLoadColsForAllTables().getSQLQuery();
 
             InterruptibleThread thread = null;
             if (Thread.currentThread() instanceof InterruptibleThread)
@@ -309,8 +308,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 previousObject.setMarkedForReloadCols(false);
             }
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            if (getHost().isConnected())
+                throw new RuntimeException(e);
 
         } finally {
             querySender.releaseResources();

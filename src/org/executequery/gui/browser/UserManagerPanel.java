@@ -121,13 +121,11 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     private void init() {
 
-        databaseComboListener = e -> databaseChanged();
-
         // --- comboBoxes ---
 
         //noinspection unchecked
         databasesCombo = WidgetFactory.createComboBox("databasesCombo");
-        databasesCombo.setEditable(true);
+        databaseComboListener = e -> databaseChanged();
 
         // --- tables ---
 

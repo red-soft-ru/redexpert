@@ -12,6 +12,7 @@ import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.components.table.RowHeaderRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.spi.DefaultConnectionBuilder;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseRole;
@@ -319,7 +320,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
             return;
 
         if (!getSelectedConnection().isConnected())
-            ConnectionManager.createDataSource(getSelectedConnection());
+            new DefaultConnectionBuilder(getSelectedConnection()).connect();
 
         try {
             DatabaseMetaData metadata = new DefaultDatabaseHost(getSelectedConnection()).getDatabaseMetaData();
@@ -770,7 +771,10 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     public void refresh() {
 
-        if (!databaseConnectionList.isEmpty() && getSelectedConnection().isConnected()) {
+        if (!databaseConnectionList.isEmpty()) {
+
+            if (!getSelectedConnection().isConnected())
+                new DefaultConnectionBuilder(getSelectedConnection()).connect();
 
             ConnectionsTreePanel.getPanelFromBrowser().getHostNode(getSelectedConnection()).getDatabaseObject().reset();
             connection = ConnectionManager.getTemporaryConnection(getSelectedConnection());

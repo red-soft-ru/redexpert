@@ -125,6 +125,7 @@ public final class QueryTypes {
     public static final int RECREATE_OBJECT = 50;
 
     public static final int SET_STATISTICS = 51;
+    public static final int DECLARE_OBJECT = 52;
 
     private QueryTypes() {
     }
@@ -157,6 +158,7 @@ public final class QueryTypes {
                 rText = "Rollback complete.";
                 break;
             case QueryTypes.SELECT_INTO:
+            case QueryTypes.SET_STATISTICS:
                 rText = "Statement executed successfully.";
                 break;
             case QueryTypes.REVOKE:
@@ -172,14 +174,14 @@ public final class QueryTypes {
             case QueryTypes.CREATE_OR_ALTER:
                 rText = metaName + " " + objectName + " created";
                 break;
+            case QueryTypes.DECLARE_OBJECT:
+                rText = metaName + " " + objectName + " declared";
+                break;
             case QueryTypes.RECREATE_OBJECT:
                 rText = metaName + " " + objectName + " recreated";
                 break;
             case QueryTypes.ALTER_OBJECT:
                 rText = metaName + " " + objectName + " altered";
-                break;
-            case QueryTypes.SET_STATISTICS:
-                rText = "Statement executed successfully.";
                 break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:

@@ -63,6 +63,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author Takis Diakoumis
@@ -779,7 +780,23 @@ public class ConnectionsTreePanel extends TreePanel
     }
 
     public void copyConnection(DatabaseConnection dc) {
-        dc.setName(dc.getName() + "_copy");
+
+        List<String> sameNamesSuffixes = connections.stream()
+                .map(DatabaseConnection::getName)
+                .filter(name -> name.startsWith(dc.getName()))
+                .map(name -> name.substring(dc.getName().length()))
+                .collect(Collectors.toList());
+
+        String newName = dc.getName() + "_copy";
+        for (int i = 1; i < sameNamesSuffixes.size() + 1; i++) {
+            String suffix = "_copy" + i;
+            if (!sameNamesSuffixes.contains(suffix)) {
+                newName += i;
+                break;
+            }
+        }
+
+        dc.setName(newName);
         connections.add(dc);
         connectionAdded(dc);
     }

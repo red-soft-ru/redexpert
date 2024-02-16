@@ -21,8 +21,10 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.databaseobjects.AbstractCreateUserPanel;
+import org.executequery.gui.databaseobjects.CreateFbUserPanel;
 import org.executequery.gui.databaseobjects.CreateRolePanel;
-import org.executequery.gui.databaseobjects.CreateUserPanel;
+import org.executequery.gui.databaseobjects.CreateDatabaseUserPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -337,10 +339,10 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     private void showCreateUserDialog() {
 
-        BaseDialog dialog = new BaseDialog(CreateUserPanel.CREATE_TITLE, false);
-        CreateUserPanel panel = version >= 3 ?
-                new CreateUserPanel(getSelectedConnection(), dialog) :
-                new CreateUserPanel(getSelectedConnection(), dialog, fbUser, this, false);
+        BaseDialog dialog = new BaseDialog(CreateDatabaseUserPanel.CREATE_TITLE, false);
+        AbstractCreateUserPanel panel = version >= 3 ?
+                new CreateDatabaseUserPanel(getSelectedConnection(), dialog) :
+                new CreateFbUserPanel(getSelectedConnection(), dialog, fbUser, this, false);
 
         showDialog(dialog, panel);
     }
@@ -351,10 +353,10 @@ public class UserManagerPanel extends JPanel implements Runnable {
         if (selectedRow < 0)
             return;
 
-        BaseDialog dialog = new BaseDialog(CreateUserPanel.EDIT_TITLE, false);
-        CreateUserPanel panel = version >= 3 ?
-                new CreateUserPanel(getSelectedConnection(), dialog, (DefaultDatabaseUser) userList.get(selectedRow)) :
-                new CreateUserPanel(getSelectedConnection(), dialog, fbUser, this, true);
+        BaseDialog dialog = new BaseDialog(CreateDatabaseUserPanel.EDIT_TITLE, false);
+        AbstractCreateUserPanel panel = version >= 3 ?
+                new CreateDatabaseUserPanel(getSelectedConnection(), dialog, (DefaultDatabaseUser) userList.get(selectedRow)) :
+                new CreateFbUserPanel(getSelectedConnection(), dialog, (IFBUser) userList.get(selectedRow), this, true);
 
         showDialog(dialog, panel);
     }

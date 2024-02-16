@@ -332,16 +332,16 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     }
                     break;
                 case NamedObject.USER:
-                    if (GUIUtilities.isDialogOpen(CreateUserPanel.CREATE_TITLE)) {
+                    if (GUIUtilities.isDialogOpen(CreateDatabaseUserPanel.CREATE_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateUserPanel.CREATE_TITLE);
+                        GUIUtilities.setSelectedDialog(CreateDatabaseUserPanel.CREATE_TITLE);
 
                     } else {
                         try {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
-                                    new BaseDialog(CreateUserPanel.CREATE_TITLE, false);
-                            CreateUserPanel panel = new CreateUserPanel(currentSelection, dialog);
+                                    new BaseDialog(CreateDatabaseUserPanel.CREATE_TITLE, false);
+                            CreateDatabaseUserPanel panel = new CreateDatabaseUserPanel(currentSelection, dialog);
                             showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
@@ -597,16 +597,16 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 }
                 break;
             case NamedObject.USER:
-                if (GUIUtilities.isDialogOpen(CreateUserPanel.EDIT_TITLE)) {
+                if (GUIUtilities.isDialogOpen(CreateDatabaseUserPanel.EDIT_TITLE)) {
 
-                    GUIUtilities.setSelectedDialog(CreateUserPanel.EDIT_TITLE);
+                    GUIUtilities.setSelectedDialog(CreateDatabaseUserPanel.EDIT_TITLE);
 
                 } else {
                     try {
                         GUIUtilities.showWaitCursor();
 
-                        BaseDialog dialog = new BaseDialog(CreateUserPanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateUserPanel(currentSelection, dialog, (DefaultDatabaseUser) node.getDatabaseObject());
+                        BaseDialog dialog = new BaseDialog(CreateDatabaseUserPanel.EDIT_TITLE, false);
+                        createObjectPanel = new CreateDatabaseUserPanel(currentSelection, dialog, (DefaultDatabaseUser) node.getDatabaseObject());
                         showDialogCreateObject(createObjectPanel, dialog);
                     } finally {
                         GUIUtilities.showNormalCursor();

@@ -21,14 +21,11 @@
 package org.executequery.gui.prefs;
 
 import org.executequery.GUIUtilities;
-import org.executequery.localization.Bundles;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,9 +34,10 @@ import java.util.List;
  *
  * @author Takis Diakoumis
  */
-public class PropertiesAppearance extends AbstractPropertiesBasePanel implements ItemListener {
+public class PropertiesAppearance extends AbstractPropertiesBasePanel {
 
     private SimplePreferencesPanel preferencesPanel;
+    private boolean lafChangeWarningShown = false;
 
     public PropertiesAppearance() {
         try {
@@ -123,65 +121,31 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
 
-        lookAndFeelCombBox().addItemListener(this);
+        lookAndFeelCombBox().addActionListener(e -> itemStateChanged());
     }
 
     @SuppressWarnings("rawtypes")
     private JComboBox lookAndFeelCombBox() {
-
         return (JComboBox) preferencesPanel.getComponentEditorForKey("startup.display.lookandfeel");
     }
 
-    private boolean lafChangeWarningShown = false;
+    public void itemStateChanged() {
 
-    @Override
-    public void itemStateChanged(ItemEvent e) {
-
-        if (!lafChangeWarningShown && e.getStateChange() == ItemEvent.DESELECTED) {
-
+        if (!lafChangeWarningShown) {
             GUIUtilities.displayInformationMessage(bundleString("ChangingTheme.Information"));
-
-            PropertiesEditorColours colorsPanel1 = new PropertiesEditorColours();
-            colorsPanel1.restoreDefaults();
-            colorsPanel1.save();
-
-            PropertiesResultSetTableColours colorsPanel2 = new PropertiesResultSetTableColours();
-            colorsPanel2.restoreDefaults();
-            colorsPanel2.save();
-
             lafChangeWarningShown = true;
         }
-        
-        /*
-        
-        LabelValuePair labelValuePair = (LabelValuePair) e.getItem();
-        LookAndFeelType lookAndFeelType = (LookAndFeelType) labelValuePair.getValue();
-        if (e.getStateChange() == ItemEvent.DESELECTED) {
-            
-            lastLookAndFeelSelection = labelValuePair;
 
-            if (UIUtils.isDarkLookAndFeel() && !isDarkTheme(lookAndFeelType) && !lafChangeWarningShown) {
-                
-                showColoursWarning();
-            }
-        
-        } else if (e.getStateChange() == ItemEvent.SELECTED) {
-            
-            if (isDarkTheme(lookAndFeelType) && !UIUtils.isDarkLookAndFeel() && !lafChangeWarningShown) {
+        AbstractPropertiesColours.setSelectedLookAndFeel(getCurrentlySelectedLookAndFeel());
 
-                showColoursWarning();
-            }
+        PropertiesEditorColours editorColours = new PropertiesEditorColours();
+        editorColours.restoreDefaults();
+        editorColours.save();
 
-        }
-        */
+        PropertiesResultSetTableColours resultsetColours = new PropertiesResultSetTableColours();
+        resultsetColours.restoreDefaults();
+        resultsetColours.save();
     }
-
-    /*
-    private boolean isDarkTheme(LookAndFeelType lookAndFeelType) {
-
-        return lookAndFeelType == LookAndFeelType.EXECUTE_QUERY_DARK;
-    }
-    */
 
     private Object[] lookAndFeelValuePairs() {
 
@@ -196,9 +160,13 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
         return values;
     }
 
-    public LookAndFeelType getSelectedLookAndFeel() {
+    private LookAndFeelType getCurrentlySelectedLookAndFeel() {
 
-        return (LookAndFeelType) lookAndFeelCombBox().getSelectedItem();
+        LabelValuePair selectedValue = (LabelValuePair) lookAndFeelCombBox().getSelectedItem();
+        if (selectedValue == null)
+            return null;
+
+        return (LookAndFeelType) (selectedValue).getValue();
     }
 
     @Override

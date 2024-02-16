@@ -34,46 +34,21 @@ public abstract class AbstractPropertiesColours extends AbstractPropertiesBasePa
 
     private static final String LOOK_AND_FEEL_KEY = "startup.display.lookandfeel";
 
-    private LookAndFeelType selectedLookAndFeel;
-    private LookAndFeelType lastSelectedLookAndFeel;
+    private static LookAndFeelType selectedLookAndFeel;
 
     @Override
     public void preferenceChange(PreferenceChangeEvent e) {
 
         if (LOOK_AND_FEEL_KEY.equals(e.getKey())) {
 
-            lastSelectedLookAndFeel = selectedLookAndFeel;
+            LookAndFeelType lastSelectedLookAndFeel = selectedLookAndFeel;
             selectedLookAndFeel = (LookAndFeelType) e.getValue();
-            if (lastSelectedLookAndFeel != selectedLookAndFeel) {
 
-                lookAndFeelSelectionChanged();
-            }
-
+            if (lastSelectedLookAndFeel != selectedLookAndFeel)
+                restoreDefaults();
         }
 
         super.preferenceChange(e);
-    }
-
-    private void lookAndFeelSelectionChanged() {
-
-        if (((currentlySavedLookAndFeel().isDarkTheme() && !selectedLookAndFeel.isDarkTheme())
-                || (!currentlySavedLookAndFeel().isDarkTheme() && selectedLookAndFeel.isDarkTheme()))
-                || ((lastSelectionIsDark() && !currentSelectionIsDark())
-                || (!lastSelectionIsDark() && currentSelectionIsDark()))) {
-
-            restoreDefaults();
-        }
-
-    }
-
-    private boolean currentSelectionIsDark() {
-
-        return selectedLookAndFeel != null && selectedLookAndFeel.isDarkTheme();
-    }
-
-    private boolean lastSelectionIsDark() {
-
-        return lastSelectedLookAndFeel != null && lastSelectedLookAndFeel.isDarkTheme();
     }
 
     protected Properties defaultsForTheme() {
@@ -81,28 +56,20 @@ public abstract class AbstractPropertiesColours extends AbstractPropertiesBasePa
         try {
 
             Properties defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.default.profile");
-            if (selectedLookAndFeel().isDarkTheme()) {
-
-                // catering only for the built-in dark theme 
-
+            if (selectedLookAndFeel().isDarkTheme())
                 defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.dark.profile");
-            }
 
             return defaults;
 
         } catch (IOException e) {
-
             throw new ApplicationException(e);
         }
     }
 
     private LookAndFeelType selectedLookAndFeel() {
 
-        if (selectedLookAndFeel == null) {
-
+        if (selectedLookAndFeel == null)
             selectedLookAndFeel = currentlySavedLookAndFeel();
-            lastSelectedLookAndFeel = selectedLookAndFeel;
-        }
 
         return selectedLookAndFeel;
     }
@@ -118,5 +85,8 @@ public abstract class AbstractPropertiesColours extends AbstractPropertiesBasePa
         return new Color(Integer.parseInt(rgb));
     }
 
-}
+    public static void setSelectedLookAndFeel(LookAndFeelType selectedLookAndFeel) {
+        AbstractPropertiesColours.selectedLookAndFeel = selectedLookAndFeel;
+    }
 
+}

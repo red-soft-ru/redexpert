@@ -248,18 +248,19 @@ public class QueryDispatcher {
             querySender = new DefaultStatementExecutor(null, true);
         }
 
-        if (dc != null) {
 
-            querySender.setDatabaseConnection(dc);
-        }
-
-        querySender.setTpb(tpp.getTpb(dc));
 
         statementCancelled = false;
         if (inBackground) {
             worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
 
                 public Object construct() {
+                    if (dc != null) {
+
+                        querySender.setDatabaseConnection(dc);
+                    }
+
+                    querySender.setTpb(tpp.getTpb(dc));
 
                     return executeSQL(query, executeAsBlock, anyConnections);
                 }
@@ -289,6 +290,12 @@ public class QueryDispatcher {
         if (inBackground)
             worker.start();
         else {
+            if (dc != null) {
+
+                querySender.setDatabaseConnection(dc);
+            }
+
+            querySender.setTpb(tpp.getTpb(dc));
             executeSQL(query, executeAsBlock, anyConnections);
             delegate.finished(duration);
 

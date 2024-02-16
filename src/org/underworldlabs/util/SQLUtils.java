@@ -1292,6 +1292,9 @@ public final class SQLUtils {
 
         StringBuilder sb = new StringBuilder();
         sb.append("ALTER USER ").append(format(thisUser.getName(), thisUser.getHost().getDatabaseConnection()));
+        if (!thisUser.getPlugin().isEmpty())
+            sb.append("\nUSING PLUGIN ").append(thisUser.getPlugin());
+
         String noChangesCheckString = sb.toString();
 
         if (!Objects.equals(thisUser.getFirstName(), compareUser.getFirstName()))
@@ -1312,9 +1315,6 @@ public final class SQLUtils {
 
         if (thisUser.getAdministrator() != compareUser.getAdministrator())
             sb.append(compareUser.getAdministrator() ? "\n\tGRANT ADMIN ROLE" : "\n\tREVOKE ADMIN ROLE");
-
-        if (!thisUser.getPlugin().isEmpty())
-            sb.append("\nUSING PLUGIN ").append(compareUser.getPlugin());
 
         Map<String, String> thisTags = thisUser.getTags();
         Map<String, String> compareTags = compareUser.getTags();

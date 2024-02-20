@@ -72,8 +72,12 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private Color alternatingRowBackground;
 
     private boolean otherColorForNull;
-    private boolean rightAlignNumeric;
-    private boolean leftAlignText;
+    private String alignNumeric;
+    private String alignText;
+    private String alignBool;
+    private String alignNull;
+    private String alignOther;
+
 
     private DateTimeFormatter dateFormat;
     private DateTimeFormatter timeFormat;
@@ -152,9 +156,25 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         }
 
     }
+    protected void setAllign(String align)
+    {
+        if(align!=null)
+        {
+            switch(align)
+            {
+                case"left":setHorizontalAlignment(SwingConstants.LEFT);
+                break;
+                case"right":setHorizontalAlignment(SwingConstants.RIGHT);
+                    break;
+                default:setHorizontalAlignment(SwingConstants.CENTER);
+                    break;
+            }
+        }
+    }
 
     private void formatValueForDisplay(Object value, boolean isSelected) {
 
+        setAllign(alignOther);
         if (value != null) {
             if (value instanceof RecordDataItem) {
 
@@ -206,13 +226,13 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 case Types.NVARCHAR:
                 case Types.CLOB:
                     color = charValueDisplayColor;
-                    if (leftAlignText)
-                        setHorizontalAlignment(SwingConstants.LEFT);
+                    setAllign(alignText);
                     break;
 
                 case Types.BIT:
                 case Types.BOOLEAN:
                     color = booleanValueDisplayColor;
+                    setAllign(alignBool);
                     break;
 
                 case Types.TINYINT:
@@ -226,8 +246,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 case Types.REAL:
                 case Types.DOUBLE:
                     color = numericValueDisplayColor;
-                    if (rightAlignNumeric)
-                        setHorizontalAlignment(SwingConstants.RIGHT);
+                    setAllign(alignNumeric);
                     break;
 
                 case Types.DATE:
@@ -278,7 +297,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private void formatForNullValue(boolean isSelected, boolean changed, boolean deleted, boolean newValue) {
 
         setValue(nullValueDisplayString);
-        setHorizontalAlignment(SwingConstants.CENTER);
+        setAllign(alignNull);
 
         if (!isSelected) {
 
@@ -309,11 +328,20 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 Constants.USER_PROPERTIES_KEY, "results.timestamp.pattern");
         timestampFormat = !MiscUtils.isNull(timestampPattern) ? DateTimeFormatter.ofPattern(timestampPattern) : null;
 
-        rightAlignNumeric = SystemProperties.getBooleanProperty(
-                Constants.USER_PROPERTIES_KEY, "results.table.right.align.numeric");
+        alignNumeric = SystemProperties.getStringProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.align.numeric");
 
-        leftAlignText = SystemProperties.getBooleanProperty(
-                Constants.USER_PROPERTIES_KEY, "results.table.left.align.text");
+        alignText = SystemProperties.getStringProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.align.text");
+
+        alignBool = SystemProperties.getStringProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.align.bool");
+
+        alignNull = SystemProperties.getStringProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.align.null");
+
+        alignOther = SystemProperties.getStringProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.align.other");
 
         nullValueDisplayColor = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.null.background.colour");

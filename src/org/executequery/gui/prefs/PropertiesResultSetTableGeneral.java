@@ -142,19 +142,45 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 bundledString("TransposeWhenSingleRowResult"),
                 Boolean.valueOf(stringUserProperty(key))));
 
-        key = "results.table.right.align.numeric";
+        key = "results.table.align.numeric";
         list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
+                UserPreference.STRING_TYPE,
                 key,
-                bundledString("Right-alignNumericValues"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledString("alignNumericValues"),
+                stringUserProperty(key),
+                aliigns));
 
-        key = "results.table.left.align.text";
+        key = "results.table.align.text";
         list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
+                UserPreference.STRING_TYPE,
                 key,
-                bundledString("Left-alignTextValues"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledString("alignTextValues"),
+                stringUserProperty(key),
+                aliigns));
+
+        key = "results.table.align.bool";
+        list.add(new UserPreference(
+                UserPreference.STRING_TYPE,
+                key,
+                bundledString("alignBoolValues"),
+                stringUserProperty(key),
+                aliigns));
+
+        key = "results.table.align.null";
+        list.add(new UserPreference(
+                UserPreference.STRING_TYPE,
+                key,
+                bundledString("alignNullValues"),
+                stringUserProperty(key),
+                aliigns));
+
+        key = "results.table.align.other";
+        list.add(new UserPreference(
+                UserPreference.STRING_TYPE,
+                key,
+                bundledString("alignOtherValues"),
+                stringUserProperty(key),
+                aliigns));
 
         key = "results.table.use.form.adding.deleting";
         list.add(new UserPreference(
@@ -183,6 +209,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         addContent(preferencesPanel);
 
     }
+    public static final String[] aliigns={ "left","center","right"};
 
     public void restoreDefaults() {
         preferencesPanel.restoreDefaults();

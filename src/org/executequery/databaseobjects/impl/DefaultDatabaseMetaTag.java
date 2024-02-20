@@ -946,7 +946,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         String query = "SELECT\n" +
                 "CAST (RDB$ROLE_NAME as VARCHAR(1024)),\n" +
-                "RDB$OWNER_NAME\n" +
+                "RDB$OWNER_NAME AS OWNER_NAME\n" +
                 "FROM RDB$ROLES\n" +
                 "WHERE RDB$SYSTEM_FLAG != 0 AND RDB$SYSTEM_FLAG IS NOT NULL\n" +
                 "ORDER BY 1";
@@ -980,7 +980,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         String query = "SELECT\n" +
                 "CAST (RDB$ROLE_NAME as VARCHAR(1024)),\n" +
-                "RDB$OWNER_NAME\n" +
+                "RDB$OWNER_NAME AS OWNER_NAME\n" +
                 "FROM RDB$ROLES\n" +
                 "WHERE RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL\n" +
                 "ORDER BY 1";

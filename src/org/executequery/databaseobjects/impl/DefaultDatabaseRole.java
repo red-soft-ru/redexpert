@@ -15,6 +15,8 @@ import java.sql.SQLException;
  */
 public class DefaultDatabaseRole extends AbstractDatabaseObject {
 
+    private static final String OWNER_NAME = "OWNER_NAME";
+
     public String name;
     private String owner;
 
@@ -63,7 +65,7 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
     protected SelectBuilder builderCommonQuery() {
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table table = getMainTable();
-        sb.appendFields(table, getFieldName(), DESCRIPTION);
+        sb.appendFields(table, getFieldName(), DESCRIPTION, OWNER_NAME);
         sb.appendTable(table);
         sb.setOrdering(getObjectField().getFieldTable());
         return sb;
@@ -72,7 +74,7 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
     @Override
     public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
         setRemarks(getFromResultSet(rs, DESCRIPTION));
-        setOwner(getFromResultSet(rs, "RDB$OWNER_NAME"));
+        setOwner(getFromResultSet(rs, OWNER_NAME));
         return null;
     }
 

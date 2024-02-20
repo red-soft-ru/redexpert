@@ -166,7 +166,7 @@ public class TablePanel extends JPanel {
                 return tip;
             }
         };
-        tableCounter.addMouseListener(new TraceManagerPopupMenu(tableCounter));
+        tableCounter.addMouseListener(new ServiceManagerPopupMenu(tableCounter));
         loadWidthCols();
         table.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
             @Override
@@ -282,7 +282,7 @@ public class TablePanel extends JPanel {
             }
         });
 
-        table.addMouseListener(new TraceManagerPopupMenu(table));
+        table.addMouseListener(new ServiceManagerPopupMenu(table));
 
         table.addMouseListener(new MouseAdapter() {
             @Override

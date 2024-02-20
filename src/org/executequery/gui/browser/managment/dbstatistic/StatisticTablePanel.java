@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.tracemanager.AnalisePanel;
+import org.executequery.gui.browser.managment.tracemanager.ServiceManagerPopupMenu;
 import org.underworldlabs.statParser.*;
 import org.underworldlabs.swing.AbstractPanel;
 
@@ -31,6 +32,7 @@ public class StatisticTablePanel extends AbstractPanel {
     @Override
     protected void initComponents() {
         table = WidgetFactory.createTable("StatisticTable");
+        table.addMouseListener(new ServiceManagerPopupMenu(table));
         headerRows = WidgetFactory.createTable("HeaderRows");
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         headerRows.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

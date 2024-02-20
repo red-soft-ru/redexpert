@@ -4,6 +4,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.sql.sqlbuilder.Condition;
 import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
@@ -27,11 +28,15 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     private String lastName;
 
     public DefaultDatabaseUser(DatabaseMetaTag metaTagParent, String name) {
+        this(metaTagParent, name, "");
+    }
+
+    public DefaultDatabaseUser(DatabaseMetaTag metaTagParent, String name, String plugin) {
         super(metaTagParent, name);
+        this.plugin = plugin;
         active = true;
         tags = new HashMap<>();
         admin = false;
-        plugin = "";
     }
 
     @Override
@@ -249,6 +254,14 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     public void loadData() {
         getObjectInfo();
         loadTags();
+    }
+
+    @Override
+    protected String queryForInfo() {
+        SelectBuilder sb = builderCommonQuery();
+        sb.appendCondition(buildNameCondition(getObjectField()));
+        sb.appendCondition(Condition.createCondition().setStatement(String.format("SEC$PLUGIN = '%s'", getPlugin())));
+        return sb.getSQLQuery();
     }
 
     @Override

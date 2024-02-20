@@ -726,7 +726,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      * Loads the database users
      */
     private AbstractDatabaseObject getUser(ResultSet rs) throws SQLException {
-        return new DefaultDatabaseUser(this, rs.getObject(1).toString());
+        return new DefaultDatabaseUser(this, rs.getObject(1).toString(), rs.getObject(2).toString());
     }
 
     /**
@@ -966,7 +966,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getUsersResultSet() throws SQLException {
 
-        String query = "SELECT CAST (SEC$USER_NAME as VARCHAR(1024)) FROM SEC$USERS ORDER BY 1";
+        String query = "SELECT CAST (SEC$USER_NAME as VARCHAR(1024)), SEC$PLUGIN FROM SEC$USERS ORDER BY 1";
 
         if (typeTree == TreePanel.DEPENDED_ON)
             query = getDependOnQuery(8);

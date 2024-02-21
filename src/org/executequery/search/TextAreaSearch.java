@@ -22,6 +22,7 @@ package org.executequery.search;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 
 import javax.swing.text.JTextComponent;
 import java.util.ArrayList;
@@ -34,7 +35,13 @@ import java.util.regex.PatternSyntaxException;
  *
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public class TextAreaSearch {
+
+    public static final char[] REGEX_SPECIAL = {
+            '.', '(', ')', '[', ']', '{', '}',
+            '^', '$', '*', '|', '+', '?'
+    };
 
     /**
      * Denotes an upward search
@@ -96,64 +103,44 @@ public class TextAreaSearch {
      */
     private static int searchDirection;
 
-    public static final char[] REGEX_SPECIAL = {'.', '(', ')', '[', ']', '{',
-            '}', '^', '$', '*', '|', '+', '?'};
-
+    @SuppressWarnings("UnusedReturnValue")
     public static int findNext(boolean replacing, boolean showErrorDialog) {
 
         GUIUtilities.scheduleGC();
+
         if (textComponent == null) {
-
-            GUIUtilities.displayWarningMessage("Search text not found.");
+            GUIUtilities.displayWarningMessage(bundleString("textNotFound"));
             return -1;
         }
 
-        if (StringUtils.isBlank(findText)) {
-
+        if (StringUtils.isBlank(findText))
             return -1;
-        }
 
         String text = textComponent.getText();
         if (StringUtils.isBlank(text)) {
-
-            GUIUtilities.displayWarningMessage("Search text not found.");
+            GUIUtilities.displayWarningMessage(bundleString("textNotFound"));
             return -1;
         }
 
         if (replacing) {
-
-            if (replacementText == null) {
-
+            if (replacementText == null)
                 replacementText = "";
-            }
 
             textComponent.replaceSelection(replacementText);
         }
 
-        String regexPattern = null;
-        if (!useRegex) {
+        String regexPattern = useRegex ?
+                findText :
+                formatRegularExpression(findText, wholeWords);
 
-            regexPattern = formatRegularExpression(findText, wholeWords);
-
-        } else {
-
-            regexPattern = findText;
-        }
-
-        Pattern pattern = null;
-        Matcher matcher = null;
+        Pattern pattern;
+        Matcher matcher;
         try {
 
-            if (matchCase) {
+            pattern = matchCase ?
+                    Pattern.compile(regexPattern) :
+                    Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE);
 
-                pattern = Pattern.compile(regexPattern);
-
-            } else {
-
-                pattern = Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE);
-            }
-
-            regexPattern = null;
             text = textComponent.getText();
             matcher = pattern.matcher(text);
 
@@ -169,16 +156,10 @@ public class TextAreaSearch {
                 while (matcher.find()) {
 
                     if (matcher.end() > caretPosition) {
-
-                        if (!found && wrapSearch) {
-
+                        if (!found && wrapSearch)
                             caretPosition = textLength - 1;
-
-                        } else {
-
+                        else
                             break;
-                        }
-
                     }
 
                     found = true;
@@ -186,102 +167,63 @@ public class TextAreaSearch {
                     foundEnd = matcher.end();
                 }
 
-                if (!found && showErrorDialog) {
-
-                    GUIUtilities.displayWarningMessage("Search text not found.");
-
-                } else {
-
+                if (found)
                     setSelection(foundStart, foundEnd);
-                }
+                else if (showErrorDialog)
+                    GUIUtilities.displayWarningMessage(bundleString("textNotFound"));
 
             } else {
 
                 if (matcher.find(caretPosition)) {
-
                     found = true;
                     foundStart = matcher.start();
                     foundEnd = matcher.end();
                     setSelection(foundStart, foundEnd);
 
-                } else {
-
-                    if (wrapSearch && matcher.find(0)) {
-
-                        found = true;
-                        foundStart = matcher.start();
-                        foundEnd = matcher.end();
-                        setSelection(foundStart, foundEnd);
-                    }
-
+                } else if (wrapSearch && matcher.find(0)) {
+                    found = true;
+                    foundStart = matcher.start();
+                    foundEnd = matcher.end();
+                    setSelection(foundStart, foundEnd);
                 }
 
-                if (!found && showErrorDialog) {
-
-                    GUIUtilities.displayWarningMessage("Search text not found.");
-                }
-
+                if (!found && showErrorDialog)
+                    GUIUtilities.displayWarningMessage(bundleString("textNotFound"));
             }
-
-            if (replacing) {
-
-//                setSelection(foundStart, foundStart + replacementText.length());
-            }
-
-//            if (replacing) {
-//                
-//                if (replacementText == null)
-//                    replacementText = "";
-//                
-//                textComponent.replaceSelection(replacementText);
-//                setSelection(foundStart, foundStart + replacementText.length());
-//                
-//            }
 
         } catch (PatternSyntaxException pExc) {
-
-            if (useRegex) {
-                GUIUtilities.displayErrorMessage(
-                        "The regular expression search pattern is invalid.");
-            }
-
+            if (useRegex)
+                GUIUtilities.displayErrorMessage(bundleString("regularInvalid"));
         }
 
         return 0;
-
     }
 
     public static String formatRegularExpression(String input, boolean useWholeWords) {
-
-        boolean firstCharSpecial = false;
-        StringBuilder regexPattern = new StringBuilder();
 
         char space = ' ';
         char regexChar = '\\';
         String regexSpace = "\\s";
 
         char[] chars = input.toCharArray();
-        firstCharSpecial = chars[0] == space;
+        boolean firstCharSpecial = chars[0] == space;
+        StringBuilder regexPattern = new StringBuilder();
 
         for (int i = 0; i < chars.length; i++) {
 
-            for (int j = 0; j < REGEX_SPECIAL.length; j++) {
+            for (char c : REGEX_SPECIAL) {
+                if (chars[i] == c) {
 
-                if (chars[i] == REGEX_SPECIAL[j]) {
                     regexPattern.append(regexChar);
-
                     if (i == 0)
                         firstCharSpecial = true;
-
                 }
-
             }
 
             if (chars[i] == space)
                 regexPattern.append(regexSpace);
             else
                 regexPattern.append(chars[i]);
-
         }
 
         if (useWholeWords) {
@@ -290,32 +232,27 @@ public class TextAreaSearch {
 
             if (!firstCharSpecial)
                 regexPattern.insert(0, rx);
-
             regexPattern.append(rx);
-
         }
 
-        String _regexPattern = regexPattern.toString();
-        regexPattern = null;
-        return _regexPattern;
-
+        return regexPattern.toString();
     }
 
     public static int replaceAll() {
 
         if (textComponent == null) {
-            GUIUtilities.displayWarningMessage("Search text not found.");
+            GUIUtilities.displayWarningMessage(bundleString("textNotFound"));
             return -1;
         }
 
-        if (findText == null || findText.length() == 0)
+        if (findText == null || findText.isEmpty())
             return -1;
 
-        String _text = null;
+        String _text;
         String text = textComponent.getText();
 
-        if (text == null || text.length() == 0) {
-            GUIUtilities.displayWarningMessage("Search text not found.");
+        if (text == null || text.isEmpty()) {
+            GUIUtilities.displayWarningMessage(bundleString("textNotFound"));
             return -1;
         }
 
@@ -324,60 +261,46 @@ public class TextAreaSearch {
         if (replacementText == null)
             replacementText = "";
 
-        String regexPattern = null;
+        String regexPattern = useRegex ?
+                findText :
+                formatRegularExpression(findText, wholeWords);
 
-        if (!useRegex)
-            regexPattern = formatRegularExpression(findText, wholeWords);
-        else
-            regexPattern = findText;
-
-        Pattern pattern = null;
-        Matcher matcher = null;
+        Pattern pattern;
+        Matcher matcher;
         StringBuilder resultText = null;
 
         try {
-
-            if (matchCase)
-                pattern = Pattern.compile(regexPattern);
-            else
-                pattern = Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE);
+            pattern = matchCase ?
+                    Pattern.compile(regexPattern) :
+                    Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE);
 
             if (wrapSearch)
                 matcher = pattern.matcher(text);
 
             else {
-
-                if (searchDirection == SEARCH_UP)
-                    matcher = pattern.matcher(text.substring(0, caretPosition));
-                else
-                    matcher = pattern.matcher(text.substring(caretPosition));
-
+                matcher = searchDirection == SEARCH_UP ?
+                        pattern.matcher(text.substring(0, caretPosition)) :
+                        pattern.matcher(text.substring(caretPosition));
             }
 
             if (matcher.find()) {
-
                 _text = matcher.replaceAll(replacementText);
 
             } else {
-
-                GUIUtilities.displayWarningMessage("Search text not found.");
+                GUIUtilities.displayWarningMessage(bundleString("textNotFound"));
                 return -1;
             }
 
-
             if (wrapSearch) {
-
                 resultText = new StringBuilder(_text);
 
             } else {
-
                 resultText = new StringBuilder(text);
 
                 if (searchDirection == SEARCH_UP)
                     resultText.replace(0, caretPosition, _text);
                 else
                     resultText.replace(caretPosition, text.length() - 1, _text);
-
             }
 
             textComponent.setText(resultText.toString());
@@ -386,22 +309,16 @@ public class TextAreaSearch {
         } catch (PatternSyntaxException pExc) {
 
             if (useRegex)
-                GUIUtilities.displayErrorMessage(
-                        "The regular expression search pattern is invalid.");
+                GUIUtilities.displayErrorMessage(bundleString("regularInvalid"));
 
             return -1;
 
         } finally {
 
-            if (resultText != null) {
-                int length = resultText.length();
-                textComponent.setCaretPosition(length < caretPosition ?
-                        length : caretPosition);
-            }
-
+            if (resultText != null)
+                textComponent.setCaretPosition(Math.min(resultText.length(), caretPosition));
             GUIUtilities.scheduleGC();
         }
-
     }
 
     private static void setSelection(int start, int end) {
@@ -412,9 +329,9 @@ public class TextAreaSearch {
         if (searchDirection == SEARCH_UP) {
             textComponent.setCaretPosition(end);
             textComponent.moveCaretPosition(start);
+
         } else
             textComponent.select(start, end);
-
     }
 
     /**
@@ -425,16 +342,13 @@ public class TextAreaSearch {
      * @return the used find values
      */
     public static Object[] getPrevFindValues() {
-
         return previousFindValues().toArray();
     }
 
     private static ArrayList<String> previousFindValues() {
 
-        if (prevFindValues == null) {
-
-            prevFindValues = new ArrayList<String>();
-        }
+        if (prevFindValues == null)
+            prevFindValues = new ArrayList<>();
 
         return prevFindValues;
     }
@@ -447,7 +361,6 @@ public class TextAreaSearch {
      * <code>Object</code> array
      */
     public static Object[] getPrevReplaceValues() {
-
         return previousReplaceValues().toArray();
     }
 
@@ -455,51 +368,41 @@ public class TextAreaSearch {
      * <p>Adds a value to the find list after a search
      * is performed using the Find/Replace dialog.
      *
-     * @param the find value to add
+     * @param value the find value to add
      */
     public static void addPrevFindValue(String value) {
 
-        if (previousFindValues().contains(value)) {
-
+        if (previousFindValues().contains(value))
             return;
-        }
 
         // maintain only 5 previous values
-        if (prevFindValues.size() == 5) {
-
+        if (prevFindValues.size() == 5)
             prevFindValues.remove(4);
-        }
 
         prevFindValues.add(0, value);
     }
 
     /**
-     * <p>Adds a value to the replace list after a search
+     * <p>Adds a value to the replacement list after a search
      * is performed using the Find/Replace dialog.
      *
-     * @param the replace value to add
+     * @param value the replacement value to add
      */
     public static void addPrevReplaceValue(String value) {
 
-        if (previousReplaceValues().contains(value)) {
-
+        if (previousReplaceValues().contains(value))
             return;
-        }
 
-        if (prevReplaceValues.size() == 5) {
-
+        if (prevReplaceValues.size() == 5)
             prevReplaceValues.remove(4);
-        }
 
         prevReplaceValues.add(0, value);
     }
 
     private static ArrayList<String> previousReplaceValues() {
 
-        if (prevReplaceValues == null) {
-
-            prevReplaceValues = new ArrayList<String>();
-        }
+        if (prevReplaceValues == null)
+            prevReplaceValues = new ArrayList<>();
 
         return prevReplaceValues;
     }
@@ -568,21 +471,8 @@ public class TextAreaSearch {
         return searchDirection;
     }
 
+    private static String bundleString(String key) {
+        return Bundles.get(TextAreaSearch.class, key);
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

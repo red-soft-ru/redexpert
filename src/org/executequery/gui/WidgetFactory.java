@@ -97,6 +97,35 @@ public final class WidgetFactory {
     }
 
     /**
+     * Create named JRadioButton class instance
+     *
+     * @param name the component's name
+     * @param text the displayed button text
+     */
+    public static JRadioButton createRadioButton(String name, String text) {
+
+        JRadioButton radioButton = new JRadioButton(text);
+        radioButton.setName(name);
+
+        return radioButton;
+    }
+
+    /**
+     * Create named JRadioButton class instance
+     *
+     * @param name     the component's name
+     * @param text     the displayed button text
+     * @param selected true if the button is selected
+     */
+    public static JRadioButton createRadioButton(String name, String text, boolean selected) {
+
+        JRadioButton radioButton = createRadioButton(name, text);
+        radioButton.setSelected(true);
+
+        return radioButton;
+    }
+
+    /**
      * Create named JComboBox class instance
      *
      * @param name the component's name

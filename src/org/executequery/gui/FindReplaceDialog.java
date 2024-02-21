@@ -25,277 +25,215 @@ import org.executequery.GUIUtilities;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.localization.Bundles;
 import org.executequery.search.TextAreaSearch;
-import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.swing.actions.ActionUtilities;
-import org.underworldlabs.swing.actions.ReflectiveAction;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
-import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 /**
- * <p>Find replace for text components.
+ * Find replace for text components.
  *
  * @author Takis Diakoumis
  */
 public class FindReplaceDialog extends DefaultActionButtonsPanel
-        implements ActionListener,
-        ActiveComponent {
+        implements ActiveComponent {
 
     public static final String TITLE = Bundles.get("FindReplaceDialog.FindAndReplace");
 
     public static final int FIND = 0;
     public static final int REPLACE = 1;
 
+    // --- GUI components ---
+
+    private final ActionContainer parent;
+    private final TextEditor textEditor;
+
     private JButton findNextButton;
+    @SuppressWarnings("FieldCanBeLocal")
     private JButton closeButton;
     private JButton replaceButton;
     private JButton replaceAllButton;
 
-    private JCheckBox wholeWordsCheck;
-    private JCheckBox regexCheck;
-    private JCheckBox matchCaseCheck;
-    private JCheckBox replaceCheck;
-    private JCheckBox wrapCheck;
+    private JCheckBox isWholeWordsCheck;
+    private JCheckBox isUseRegexCheck;
+    private JCheckBox isMatchCaseCheck;
+    private JCheckBox isReplaceCheck;
+    private JCheckBox isWrapCheck;
 
     private JRadioButton searchUpRadio;
     private JRadioButton searchDownRadio;
 
-    private JComboBox findField;
-    private JComboBox replaceField;
-    private final TextEditor textEditor;
+    private JComboBox<?> findStringCombo;
+    private JComboBox<?> replaceStringCombo;
 
-    private final ActionContainer parent;
+    // ---
 
     public FindReplaceDialog(ActionContainer parent, int type, TextEditor textEditor) {
+
         this.textEditor = textEditor;
         this.parent = parent;
+
         init();
+        arrange();
         setFindReplace(type == REPLACE);
     }
 
     private void init() {
 
-        JPanel optionsPanel = new JPanel(new GridBagLayout());
-        optionsPanel.setBorder(BorderFactory.createTitledBorder("Options"));
-
-        Dimension optionsDim = new Dimension(600, 140);
-        optionsPanel.setPreferredSize(optionsDim);
-
-
-        JTextComponent textComponent = textEditor.getEditorTextComponent();
-        String selectedText = textComponent.getSelectedText();
-
-        if (selectedText != null && selectedText.length() > 0) {
+        String selectedText = textEditor.getEditorTextComponent().getSelectedText();
+        if (selectedText != null && !selectedText.isEmpty())
             addFind(selectedText);
-        }
 
-        findField = WidgetFactory.createComboBox("findField", TextAreaSearch.getPrevFindValues());
-        replaceField = WidgetFactory.createComboBox("replaceField", TextAreaSearch.getPrevReplaceValues());
-        findField.setEditable(true);
-        replaceField.setEditable(true);
+        // --- combo boxes ---
 
-        KeyAdapter keyListener = createKeyListener();
-        findFieldTextEditor().addKeyListener(keyListener);
-        replaceFieldTextEditor().addKeyListener(keyListener);
+        KeyAdapter keyListener = getCreateKeyListener();
 
-        wholeWordsCheck = new JCheckBox(bundleString("WholeWordsCheck"));
-        matchCaseCheck = new JCheckBox(bundleString("MatchCaseCheck"));
-        wrapCheck = new JCheckBox(bundleString("WrapCheck"), true);
+        findStringCombo = WidgetFactory.createComboBox("findField", TextAreaSearch.getPrevFindValues());
+        findStringCombo.getEditor().getEditorComponent().addKeyListener(keyListener);
+        findStringCombo.setEditable(true);
 
-        replaceCheck = ActionUtilities.createCheckBox(bundleString("Replace") + ':', "setToReplace");
-        replaceCheck.setEnabled(textEditor.getEditorTextComponent().isEditable());
-        regexCheck = ActionUtilities.createCheckBox(bundleString("RegularExpressions"), "setToRegex");
+        replaceStringCombo = WidgetFactory.createComboBox("replaceField", TextAreaSearch.getPrevReplaceValues());
+        replaceStringCombo.getEditor().getEditorComponent().addKeyListener(keyListener);
+        replaceStringCombo.setEditable(true);
 
-        searchUpRadio = new JRadioButton(bundleString("SearchUp"));
-        searchDownRadio = new JRadioButton(bundleString("SearchDown"), true);
+        // --- check boxes ---
 
-        ButtonGroup btnGroup = new ButtonGroup();
-        btnGroup.add(searchUpRadio);
-        btnGroup.add(searchDownRadio);
+        isReplaceCheck = WidgetFactory.createCheckBox("isReplaceCheck", bundleString("Replace") + ":");
+        isReplaceCheck.setEnabled(textEditor.getEditorTextComponent().isEditable());
+        isReplaceCheck.addActionListener(e -> setToReplace());
 
-        findNextButton = new DefaultButton(Bundles.get("action.find-next-command"));
-        replaceButton = new DefaultButton(bundleString("Replace"));
-        replaceAllButton = new DefaultButton(bundleString("ReplaceAll"));
-        closeButton = ActionUtilities.createButton(Bundles.get("common.close.button"), "close");
+        isUseRegexCheck = WidgetFactory.createCheckBox("isUseRegexCheck", bundleString("RegularExpressions"));
+        isUseRegexCheck.addActionListener(e -> setToRegex());
+
+        isWrapCheck = WidgetFactory.createCheckBox("isWrapCheck", bundleString("WrapCheck"));
+        isWrapCheck.setSelected(true);
+
+        isWholeWordsCheck = WidgetFactory.createCheckBox("isWholeWordsCheck", bundleString("WholeWordsCheck"));
+        isMatchCaseCheck = WidgetFactory.createCheckBox("isMatchCaseCheck", bundleString("MatchCaseCheck"));
+
+        // --- radio buttons ---
+
+        searchUpRadio = WidgetFactory.createRadioButton("searchUpRadio", bundleString("SearchUp"));
+        searchDownRadio = WidgetFactory.createRadioButton("searchDownRadio", bundleString("SearchDown"), true);
+
+        ButtonGroup radioButtonGroup = new ButtonGroup();
+        radioButtonGroup.add(searchUpRadio);
+        radioButtonGroup.add(searchDownRadio);
+
+        // --- buttons ---
 
         setExpandButtonsToFill(true);
 
+        findNextButton = WidgetFactory.createButton("findNextButton", Bundles.get("action.find-next-command"));
+        findNextButton.addActionListener(e -> startFindReplace(e.getSource()));
+        findNextButton.setMnemonic('F');
         addActionButton(findNextButton);
+
+        replaceButton = WidgetFactory.createButton("replaceButton", bundleString("Replace"));
+        replaceButton.addActionListener(e -> startFindReplace(e.getSource()));
+        replaceButton.setMnemonic('R');
         addActionButton(replaceButton);
+
+        replaceAllButton = WidgetFactory.createButton("replaceAllButton", bundleString("ReplaceAll"));
+        replaceAllButton.addActionListener(e -> startFindReplace(e.getSource()));
+        replaceAllButton.setMnemonic('A');
         addActionButton(replaceAllButton);
+
+        closeButton = WidgetFactory.createButton("closeButton", Bundles.get("common.close.button"));
+        closeButton.addActionListener(e -> parent.finished());
+        closeButton.setMnemonic('C');
         addActionButton(closeButton);
 
-        findNextButton.setMnemonic('F');
-        replaceButton.setMnemonic('R');
-        replaceAllButton.setMnemonic('A');
-        closeButton.setMnemonic('C');
-
-        JPanel panel = new JPanel(new GridBagLayout());
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(15, 10, 0, 5);
-        gbc.insets = ins;
-        gbc.anchor = GridBagConstraints.WEST;
-        optionsPanel.add(matchCaseCheck, gbc);
-        gbc.gridy = 1;
-        gbc.insets.top = 0;
-        optionsPanel.add(wholeWordsCheck, gbc);
-        gbc.gridy = 2;
-        gbc.insets.bottom = 10;
-        optionsPanel.add(regexCheck, gbc);
-        gbc.insets.bottom = 10;
-        gbc.insets.left = 20;
-        gbc.insets.right = 5;
-        gbc.gridy = 2;
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        optionsPanel.add(wrapCheck, gbc);
-        gbc.insets.bottom = 0;
-        gbc.gridy = 1;
-        optionsPanel.add(searchDownRadio, gbc);
-        gbc.gridy = 0;
-        gbc.insets.top = 15;
-        optionsPanel.add(searchUpRadio, gbc);
-        gbc.weightx = 0;
-        gbc.gridx = 0;
-        gbc.insets.left = 10;
-        gbc.insets.top = 13;
-        gbc.insets.right = 5;
-        panel.add(new JLabel(bundleString("FindText")), gbc);
-        gbc.insets.top = 10;
-        gbc.insets.top = 5;
-        gbc.insets.left = 5;
-        gbc.gridy = 1;
-        panel.add(replaceCheck, gbc);
-        gbc.insets.top = 10;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.gridwidth = 3;
-        panel.add(findField, gbc);
-        gbc.gridy = 1;
-        gbc.insets.top = 5;
-        panel.add(replaceField, gbc);
-        gbc.insets.left = 5;
-        gbc.gridwidth = 4;
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.insets.bottom = 10;
-        panel.add(optionsPanel, gbc);
-
-        addContentPanel(panel);
-
-        ReflectiveAction action = new ReflectiveAction(this);
-        replaceCheck.addActionListener(action);
-        regexCheck.addActionListener(action);
-        closeButton.addActionListener(action);
-
-        findNextButton.addActionListener(this);
-        replaceButton.addActionListener(this);
-        replaceAllButton.addActionListener(this);
-
     }
 
-    private JTextField replaceFieldTextEditor() {
-        return editorFromComboBox(replaceField);
+    private void arrange() {
+
+        GridBagHelper gbh;
+
+        // --- options panel ---
+
+        JPanel optionsPanel = new JPanel(new GridBagLayout());
+        optionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("Options")));
+        optionsPanel.setPreferredSize(new Dimension(600, 140));
+
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally().setInsets(5, 5, 5, 5);
+        optionsPanel.add(isMatchCaseCheck, gbh.setMinWeightX().get());
+        optionsPanel.add(searchUpRadio, gbh.setMaxWeightX().nextCol().spanX().get());
+        optionsPanel.add(isWholeWordsCheck, gbh.setMinWeightX().nextRowFirstCol().setWidth(1).get());
+        optionsPanel.add(searchDownRadio, gbh.setMaxWeightX().nextCol().spanX().get());
+        optionsPanel.add(isUseRegexCheck, gbh.setMinWeightX().nextRowFirstCol().setWidth(1).get());
+        optionsPanel.add(isWrapCheck, gbh.setMaxWeightX().nextCol().spanX().get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().setInsets(5, 5, 5, 5).fillHorizontally();
+        mainPanel.add(new JLabel(bundleString("FindText")), gbh.get());
+        mainPanel.add(findStringCombo, gbh.nextCol().setMaxWeightX().spanX().get());
+        mainPanel.add(isReplaceCheck, gbh.nextRowFirstCol().setMinWeightX().setWidth(1).get());
+        mainPanel.add(replaceStringCombo, gbh.nextCol().setMaxWeightX().spanX().get());
+        mainPanel.add(optionsPanel, gbh.nextRowFirstCol().setMaxWeightY().fillBoth().spanX().spanY().get());
+
+        // --- base ---
+
+        addContentPanel(mainPanel);
     }
 
-    private JTextField findFieldTextEditor() {
-        return editorFromComboBox(findField);
-    }
-
-    private JTextField editorFromComboBox(JComboBox comboBox) {
-        return (JTextField) comboBox.getEditor().getEditorComponent();
-    }
-
-    private KeyAdapter createKeyListener() {
-        KeyAdapter keyListener = new KeyAdapter() {
+    private KeyAdapter getCreateKeyListener() {
+        return new KeyAdapter() {
+            @Override
             public void keyPressed(KeyEvent e) {
-                keyPressedInFields(e);
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    startFindReplace(
+                            e.getSource() == findStringCombo.getEditor().getEditorComponent() ?
+                                    findNextButton :
+                                    replaceButton
+                    );
+                }
             }
         };
-        return keyListener;
     }
 
-    private void keyPressedInFields(KeyEvent e) {
-        int keyCode = e.getKeyCode();
-
-        if (keyCode == KeyEvent.VK_ENTER) {
-            JTextField comboField = findFieldTextEditor();
-
-            if (comboField == e.getSource()) {
-                startFindReplace(findNextButton);
-            } else {
-                startFindReplace(replaceButton);
-            }
-
-        }
-
-    }
-
-    public Component getDefaultFocusComponent() {
-        return findField;
-    }
-
-    public void cleanup() {
-        TextAreaSearch.setTextComponent(null);
-    }
+    // --- handlers ---
 
     private void startFindReplace(Object button) {
 
         try {
-
             GUIUtilities.showWaitCursor();
 
             String find = getFindFieldText();
             String replacement = getReplaceFieldText();
 
-            if (!isValidForReplace(find, replacement)) {
-
+            if (!isValidForReplace(find, replacement))
                 return;
-            }
 
             addFind(find);
-
 
             TextAreaSearch.setTextComponent(textEditor.getEditorTextComponent());
             TextAreaSearch.setFindText(find);
             TextAreaSearch.setSearchDirection(searchUpRadio.isSelected() ?
                     TextAreaSearch.SEARCH_UP :
-                    TextAreaSearch.SEARCH_DOWN);
+                    TextAreaSearch.SEARCH_DOWN
+            );
 
-            boolean useRegex = regexCheck.isSelected();
+            boolean useRegex = isUseRegexCheck.isSelected();
             TextAreaSearch.setUseRegex(useRegex);
+            TextAreaSearch.setWholeWords(!useRegex && isWholeWordsCheck.isSelected());
 
-            if (useRegex) {
-
-                TextAreaSearch.setWholeWords(false);
-
-            } else {
-
-                TextAreaSearch.setWholeWords(wholeWordsCheck.isSelected());
-            }
-
-            TextAreaSearch.setMatchCase(matchCaseCheck.isSelected());
-            TextAreaSearch.setWrapSearch(wrapCheck.isSelected());
+            TextAreaSearch.setMatchCase(isMatchCaseCheck.isSelected());
+            TextAreaSearch.setWrapSearch(isWrapCheck.isSelected());
 
             if (button == findNextButton) {
-
                 TextAreaSearch.findNext(false, true);
 
             } else if (button == replaceButton) {
 
-                if (!replaceCheck.isSelected()) {
-
+                if (!isReplaceCheck.isSelected())
                     return;
-                }
 
                 addReplace(replacement);
                 TextAreaSearch.setReplacementText(replacement);
@@ -303,33 +241,26 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
 
             } else if (button == replaceAllButton) {
 
-                if (!replaceCheck.isSelected()) {
-
+                if (!isReplaceCheck.isSelected())
                     return;
-                }
 
                 addReplace(replacement);
                 TextAreaSearch.setReplacementText(replacement);
                 TextAreaSearch.replaceAll();
             }
 
-            findField.requestFocusInWindow();
+            findStringCombo.requestFocusInWindow();
             GUIUtils.scheduleGC();
 
         } finally {
-
             GUIUtilities.showNormalCursor();
         }
-
     }
 
     private boolean isValidForReplace(String find, String replacement) {
 
-        if (replaceCheck.isSelected() && find.compareTo(replacement) == 0) {
-
-            GUIUtilities.displayErrorMessage(
-                    bundleString("message"));
-
+        if (isReplaceCheck.isSelected() && find.compareTo(replacement) == 0) {
+            GUIUtilities.displayErrorMessage(bundleString("message"));
             return false;
         }
 
@@ -337,27 +268,19 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
     }
 
     private String getReplaceFieldText() {
-        return (String) (replaceField.getEditor().getItem());
+        return (String) (replaceStringCombo.getEditor().getItem());
     }
 
     private String getFindFieldText() {
-        return (String) (findField.getEditor().getItem());
+        return (String) (findStringCombo.getEditor().getItem());
     }
 
-    public void setToReplace(ActionEvent e) {
-        setFindReplace(replaceCheck.isSelected());
+    public void setToReplace() {
+        setFindReplace(isReplaceCheck.isSelected());
     }
 
-    public void setToRegex(ActionEvent e) {
-        wholeWordsCheck.setEnabled(!regexCheck.isSelected());
-    }
-
-    public void close(ActionEvent e) {
-        parent.finished();
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        startFindReplace(e.getSource());
+    public void setToRegex() {
+        isWholeWordsCheck.setEnabled(!isUseRegexCheck.isSelected());
     }
 
     private void addFind(String s) {
@@ -369,16 +292,23 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
     }
 
     private void setFindReplace(boolean replace) {
+
         if (!textEditor.getEditorTextComponent().isEditable())
             replace = false;
-        {
-            replaceCheck.setSelected(replace);
-            replaceField.setEditable(replace);
-            replaceField.setEnabled(replace);
-            replaceField.setOpaque(replace);
-        }
+
+        isReplaceCheck.setSelected(replace);
+        replaceStringCombo.setEditable(replace);
+        replaceStringCombo.setEnabled(replace);
+        replaceStringCombo.setOpaque(replace);
+    }
+
+    public Component getDefaultFocusComponent() {
+        return findStringCombo;
+    }
+
+    @Override
+    public void cleanup() {
+        TextAreaSearch.setTextComponent(null);
     }
 
 }
-
-

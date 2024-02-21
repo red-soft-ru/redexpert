@@ -23,6 +23,7 @@ package org.executequery.gui;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.DefaultInlineFieldButton;
 import org.underworldlabs.swing.DefaultButton;
+import org.underworldlabs.swing.LinkButton;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.RolloverButton;
 
@@ -447,6 +448,20 @@ public final class WidgetFactory {
         button.setIcon(GUIUtilities.loadIcon(icon));
         button.setMouseEnteredContentAreaFill(false);
         button.setToolTipText(toolTip);
+        button.setName(name);
+
+        return button;
+    }
+
+    /**
+     * Create named LinkButton class instance
+     *
+     * @param name the component's name
+     * @param text the text for display on this component
+     */
+    public static LinkButton createLinkButton(String name, String text) {
+
+        LinkButton button = new LinkButton(text);
         button.setName(name);
 
         return button;

@@ -23,165 +23,152 @@ package org.executequery.gui.browser;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.DefaultPanelButton;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.LinkButton;
-import org.underworldlabs.swing.actions.ReflectiveAction;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-@SuppressWarnings({"rawtypes", "unchecked"})
 public class MoveConnectionToFolderDialog extends BaseDialog {
 
-    private JList list;
-    private DefaultListModel listModel;
-    private ConnectionsTreePanel treePanel;
-    private DatabaseConnection databaseConnection;
+    public static final String TITLE = bundleString("title");
+
+    private final ConnectionsTreePanel treePanel;
+    private final DatabaseConnection databaseConnection;
+
+    // --- GUI components ---
+
+    private JList<ConnectionsFolderNode> foldersList;
+    private DefaultListModel<ConnectionsFolderNode> foldersListModel;
+
+    private JButton newFolderButton;
+    private JButton okButton;
+    private JButton cancelButton;
+
+    // ---
 
     public MoveConnectionToFolderDialog(DatabaseConnection databaseConnection, ConnectionsTreePanel treePanel) {
+        super(TITLE, true);
 
-        super("Move to folder...", true);
         this.databaseConnection = databaseConnection;
         this.treePanel = treePanel;
-        init();
 
-        pack();
-        this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
-        setVisible(true);
+        init();
+        arrange();
     }
 
     private void init() {
 
-        listModel = new DefaultListModel<ConnectionsFolderNode>();
-        for (ConnectionsFolderNode folder : treePanel.getFolderNodes()) {
+        // --- folder list ---
 
-            listModel.addElement(folder);
-        }
+        foldersListModel = new DefaultListModel<>();
+        for (ConnectionsFolderNode folder : treePanel.getFolderNodes())
+            foldersListModel.addElement(folder);
 
-        list = new JList(listModel);
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        list.addKeyListener(new KeyAdapter() {
+        foldersList = new JList<>(foldersListModel);
+        foldersList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        foldersList.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyReleased(KeyEvent e) {
-
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-
-                    move(null);
-                }
-
+                move(e);
             }
         });
-
-        list.addMouseListener(new MouseAdapter() {
+        foldersList.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
-
-                if (e.getClickCount() >= 2) {
-
-                    move(null);
-                }
+                move(e);
             }
         });
 
-        Action newFolderAction = new AbstractAction("New Folder") {
-            public void actionPerformed(ActionEvent e) {
-                newFolder(e);
-            }
-        };
-        LinkButton newFolderButton = new LinkButton(newFolderAction);
+        // --- buttons ---
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEtchedBorder());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.gridy++;
-        gbc.gridx++;
-        gbc.insets.top = 10;
-        gbc.insets.left = 7;
-        gbc.insets.right = 5;
-        gbc.insets.bottom = 5;
-        panel.add(new JLabel("Choose the destination folder"), gbc);
-        gbc.gridx++;
-        gbc.weightx = 1.0;
-        gbc.insets.right = 10;
-        gbc.anchor = GridBagConstraints.NORTHEAST;
-        panel.add(newFolderButton, gbc);
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.insets.left = 5;
-        gbc.insets.right = 5;
-        gbc.insets.top = 5;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.BOTH;
-        panel.add(new JScrollPane(list), gbc);
+        newFolderButton = WidgetFactory.createLinkButton("newFolderButton", bundleString("newFolderButton"));
+        newFolderButton.addActionListener(e -> newFolder());
 
-        ReflectiveAction action = new ReflectiveAction(this);
+        okButton = WidgetFactory.createButton("okButton", Bundles.get("common.ok.button"));
+        okButton.addActionListener(e -> move());
 
-        JPanel base = new JPanel(new BorderLayout());
-        base.setPreferredSize(new Dimension(400, 350));
+        cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"));
+        cancelButton.addActionListener(e -> dispose());
 
-        base.add(panel, BorderLayout.CENTER);
-        base.add(buttonPanel(action), BorderLayout.SOUTH);
-
-        Container c = getContentPane();
-        c.setLayout(new GridBagLayout());
-        c.add(base, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST, GridBagConstraints.BOTH,
-                new Insets(5, 5, 5, 5), 0, 0));
-
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     }
 
-    private JPanel buttonPanel(ReflectiveAction action) {
+    private void arrange() {
 
-        JButton okButton = new DefaultPanelButton(action, Bundles.get("common.ok.button"), "move");
-        JButton cancelButton = new DefaultPanelButton(action, Bundles.get("common.cancel.button"), "cancel");
+        GridBagHelper gbh;
+
+        // --- button panel ---
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx++;
-        gbc.weightx = 0.5;
-        gbc.insets.top = 5;
-        gbc.anchor = GridBagConstraints.EAST;
-        buttonPanel.add(okButton, gbc);
-        gbc.weightx = 0;
-        gbc.gridx++;
-        gbc.insets.left = 5;
-        buttonPanel.add(cancelButton, gbc);
 
-        return buttonPanel;
+        gbh = new GridBagHelper().anchorNorthWest().fillNone().rightGap(5);
+        buttonPanel.add(okButton, gbh.get());
+        buttonPanel.add(cancelButton, gbh.nextCol().rightGap(0).get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().setInsets(10, 10, 0, 5);
+        mainPanel.add(new JLabel(bundleString("chooseFolderLabel")), gbh.get());
+        mainPanel.add(newFolderButton, gbh.nextCol().leftGap(0).rightGap(10).spanX().get());
+        mainPanel.add(new JScrollPane(foldersList), gbh.nextRowFirstCol().setMaxWeightY().leftGap(10).topGap(5).fillBoth().spanX().get());
+        mainPanel.add(buttonPanel, gbh.nextRowFirstCol().setMinWeightY().anchorCenter().bottomGap(10).spanX().get());
+
+        // --- base ---
+
+        setLayout(new GridBagLayout());
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        add(mainPanel, new GridBagHelper().fillBoth().spanX().spanY().get());
+
+        setPreferredSize(new Dimension(400, 350));
+        setResizable(false);
+        pack();
+
+        setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
+        setVisible(true);
     }
 
-    public void newFolder(ActionEvent e) {
+    // --- handlers ---
+
+    public void newFolder() {
 
         ConnectionsFolder newFolder = treePanel.newFolder();
         if (newFolder != null) {
 
             ConnectionsFolderNode newFolderNode = treePanel.getFolderNode(newFolder);
-            listModel.addElement(newFolderNode);
+            foldersListModel.addElement(newFolderNode);
 
-            list.requestFocus();
-            list.setSelectedValue(newFolderNode, true);
+            foldersList.requestFocus();
+            foldersList.setSelectedValue(newFolderNode, true);
         }
-
     }
 
-    public void move(ActionEvent e) {
+    public void move(InputEvent event) {
 
-        treePanel.moveToFolder(databaseConnection, (ConnectionsFolderNode) list.getSelectedValue());
+        if (event instanceof KeyEvent)
+            if (((KeyEvent) event).getKeyCode() != KeyEvent.VK_ENTER)
+                return;
+
+        if (event instanceof MouseEvent)
+            if (((MouseEvent) event).getClickCount() < 2)
+                return;
+
+        move();
+    }
+
+    public void move() {
+        treePanel.moveToFolder(databaseConnection, foldersList.getSelectedValue());
         dispose();
     }
 
-    public void cancel(ActionEvent e) {
+    // ---
 
-        dispose();
+    private static String bundleString(String key) {
+        return Bundles.get(MoveConnectionToFolderDialog.class, key);
     }
 
 }
-
-

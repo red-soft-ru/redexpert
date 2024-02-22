@@ -21,6 +21,8 @@
 package org.executequery.gui.prefs;
 
 
+import org.executequery.Constants;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.util.SystemProperties;
 
 import java.util.ArrayList;
@@ -32,6 +34,12 @@ import java.util.List;
  * @author Takis Diakoumis
  */
 public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel {
+
+    public static final String[] ALIIGNS = {
+            Bundles.get("preferences.allign.right"),
+            Bundles.get("preferences.allign.left"),
+            Bundles.get("preferences.allign.center")
+    };
 
     private SimplePreferencesPanel preferencesPanel;
 
@@ -147,40 +155,40 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.STRING_TYPE,
                 key,
                 bundledString("alignNumericValues"),
-                stringUserProperty(key),
-                aliigns));
+                alignUserProperty(key),
+                ALIIGNS));
 
         key = "results.table.align.text";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
                 bundledString("alignTextValues"),
-                stringUserProperty(key),
-                aliigns));
+                alignUserProperty(key),
+                ALIIGNS));
 
         key = "results.table.align.bool";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
                 bundledString("alignBoolValues"),
-                stringUserProperty(key),
-                aliigns));
+                alignUserProperty(key),
+                ALIIGNS));
 
         key = "results.table.align.null";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
                 bundledString("alignNullValues"),
-                stringUserProperty(key),
-                aliigns));
+                alignUserProperty(key),
+                ALIIGNS));
 
         key = "results.table.align.other";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
                 bundledString("alignOtherValues"),
-                stringUserProperty(key),
-                aliigns));
+                alignUserProperty(key),
+                ALIIGNS));
 
         key = "results.table.use.form.adding.deleting";
         list.add(new UserPreference(
@@ -209,21 +217,24 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         addContent(preferencesPanel);
 
     }
-    public static final String[] aliigns={ "left","center","right"};
 
+    protected String alignUserProperty(String key) {
+
+        String property = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, key);
+        if (property != null && property.contains("default-"))
+            property = Bundles.get("preferences.allign." + property.replace("default-", ""));
+
+        return property;
+    }
+
+    @Override
     public void restoreDefaults() {
         preferencesPanel.restoreDefaults();
     }
 
+    @Override
     public void save() {
         preferencesPanel.savePreferences();
     }
 
 }
-
-
-
-
-
-
-

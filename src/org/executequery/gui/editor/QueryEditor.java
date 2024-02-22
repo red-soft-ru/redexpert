@@ -1328,7 +1328,7 @@ public class QueryEditor extends DefaultTabView
         if (saved) {
 
             GUIUtilities.setTabTitleForComponent(this, getDisplayName());
-            statusBar.setStatus(" File saved to " + scriptFile.getFileName());
+            statusBar.setStatus(bundleString("FileSavedTo") + scriptFile.getFileName());
 
             isContentChanged = false;
         }

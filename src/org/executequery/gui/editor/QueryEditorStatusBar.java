@@ -107,7 +107,11 @@ public class QueryEditorStatusBar extends AbstractStatusBarPanel {
      */
     public void setCommitStatus(boolean autoCommit) {
 
-        setLabelText(5, Bundles.get(QueryEditor.class, "autocommit", autoCommit));
+        String labelText = autoCommit ?
+                Bundles.get(QueryEditor.class, "autocommitEnable") :
+                Bundles.get(QueryEditor.class, "autocommitDisable");
+
+        setLabelText(5, labelText);
     }
 
     /**

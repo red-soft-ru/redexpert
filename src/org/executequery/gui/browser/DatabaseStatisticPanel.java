@@ -99,7 +99,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         compareButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                BaseDialog dialog = new BaseDialog("select statistic", true);
+                BaseDialog dialog = new BaseDialog(bundleString("selectStatsDialogTitle"), true);
                 JComboBox comboBox1 = WidgetFactory.createComboBox("combobox1");
                 DynamicComboBoxModel model1 = new DynamicComboBoxModel();
                 model1.setElements(statDatabaseList);
@@ -145,9 +145,9 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
                     @Override
                     protected void arrangeComponents() {
-                        add(comboBox1, gbh.fillHorizontally().spanX().get());
-                        add(comboBox2, gbh.nextRowFirstCol().fillHorizontally().spanX().get());
-                        add(bottomButtonPanel, gbh.nextRowFirstCol().get());
+                        add(comboBox1, gbh.setInsets(10,10,10,0).fillHorizontally().spanX().get());
+                        add(comboBox2, gbh.nextRowFirstCol().topGap(5).fillHorizontally().spanX().get());
+                        add(bottomButtonPanel, gbh.nextRowFirstCol().bottomGap(10).rightGap(5).spanX().get());
                     }
 
                     @Override
@@ -156,6 +156,8 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                     }
                 };
                 dialog.setContentPane(panel);
+                dialog.setPreferredSize(new Dimension(300, 120));
+                dialog.setResizable(false);
                 dialog.display();
 
             }
@@ -300,8 +302,9 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                         SwingWorker sw = new SwingWorker("displayDialog") {
                             @Override
                             public Object construct() {
-                                BaseDialog dialog = new BaseDialog("select table", true);
+                                BaseDialog dialog = new BaseDialog(bundleString("selectTableDialogTitle"), true);
                                 dialog.addDisplayComponent(new DialogPanel());
+                                dialog.setResizable(false);
                                 dialog.display();
                                 return null;
                             }
@@ -328,6 +331,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         onlySelectTablesBox.addItemListener(itemListener);
         onlySelectTablesBox.setEnabled(false);
         tablesStatPanel = new ListSelectionPanel();
+        tablesStatPanel.setLabelText(bundleString("availableTablesLabel"), bundleString("selectedTablesLabel"));
         tablesField = WidgetFactory.createTextField("tablesField");
         tablesField.setEditable(false);
         okListener = new ActionListener() {
@@ -656,6 +660,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
     }
 
     class DialogPanel extends AbstractPanel {
+
         BottomButtonPanel bottomButtonPanel;
 
         @Override
@@ -666,7 +671,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
         @Override
         protected void arrangeComponents() {
-            add(tablesStatPanel, gbh.fillBoth().spanX().setMaxWeightY().get());
+            add(tablesStatPanel, gbh.fillBoth().topGap(10).spanX().setMaxWeightY().get());
             add(bottomButtonPanel, gbh.fillHorizontally().spanX().nextRowFirstCol().get());
         }
 

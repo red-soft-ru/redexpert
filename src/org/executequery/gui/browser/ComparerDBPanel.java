@@ -5,6 +5,7 @@ import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.SimpleDataSource;
 import org.executequery.gui.LoggingOutputPanel;
@@ -219,12 +220,14 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     ComparerTreeNode node = (ComparerTreeNode) selectionPath.getLastPathComponent();
                     comparedObjectList.stream()
-                            .filter(i -> (i.getType() == node.type && i.getName().equals(node.name))).findFirst()
+                            .filter(i -> i.getType() == node.type)
+                            .filter(i -> Objects.equals(i.getName(), node.name))
+                            .filter(i -> Objects.equals(i.getPlugin(), node.plugin))
+                            .findFirst()
                             .ifPresent(i -> differenceSqlTextPanel.setTexts(i.getSourceObjectScript(), i.getTargetObjectScript()));
 
                     if (e.getClickCount() > 1)
                         goToScript(node);
-
                 }
             }
         });
@@ -402,7 +405,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         try {
 
-            if (!masterConnection.isConnected())
+            if (!isExtractMetadata && !masterConnection.isConnected())
                 ConnectionManager.createDataSource(masterConnection);
             if (!targetConnection.isConnected())
                 ConnectionManager.createDataSource(targetConnection);
@@ -452,14 +455,14 @@ public class ComparerDBPanel extends JPanel implements TabView {
             DefaultDatabaseHost slaveHost = new DefaultDatabaseHost(databaseConnectionList.get(dbTargetComboBox.getSelectedIndex()));
 
             if (!slaveHost.getDatabaseProductName().toLowerCase().contains("reddatabase") ||
-                    !masterHost.getDatabaseProductName().toLowerCase().contains("reddatabase")) {
+                    (!isExtractMetadata && !masterHost.getDatabaseProductName().toLowerCase().contains("reddatabase"))) {
 
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
                 loggingOutputPanel.append(bundleString("FDBCompared"));
             }
 
-            if (slaveHost.getDatabaseMajorVersion() < 3 || masterHost.getDatabaseMajorVersion() < 3) {
+            if (slaveHost.getDatabaseMajorVersion() < 3 || (!isExtractMetadata && masterHost.getDatabaseMajorVersion() < 3)) {
 
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("USER")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("PACKAGE")).setSelected(false);
@@ -469,7 +472,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
                 loggingOutputPanel.append(bundleString("RDBVersionBelow3"));
 
-            } else if (slaveHost.getDatabaseMajorVersion() < 4 || masterHost.getDatabaseMajorVersion() < 4) {
+            } else if (slaveHost.getDatabaseMajorVersion() < 4 || (!isExtractMetadata && masterHost.getDatabaseMajorVersion() < 4)) {
 
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
@@ -906,14 +909,16 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     }
 
-    public void addTreeComponent(int action, int type, String name) {
+    public void addTreeComponent(int action, int type, NamedObject object) {
 
         ComparerTreeNode actionNode = (ComparerTreeNode) rootTreeNode.getChildByAction(action);
         if (actionNode != null) {
 
             ComparerTreeNode typeNode = (ComparerTreeNode) actionNode.getChildByType(type);
-            if (typeNode != null)
-                typeNode.add(new ComparerTreeNode(action, type, name, ComparerTreeNode.COMPONENT));
+            if (typeNode != null) {
+                String plugin = object instanceof DefaultDatabaseUser ? ((DefaultDatabaseUser) object).getPlugin() : null;
+                typeNode.add(new ComparerTreeNode(action, type, object.getName(), plugin, ComparerTreeNode.COMPONENT));
+            }
         }
 
     }
@@ -939,8 +944,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     }
 
-    public List<ComparedObject> getComparedObjectList() {
-        return comparedObjectList;
+    public void addComparedObject(ComparedObject object) {
+        comparedObjectList.add(object);
     }
 
     public boolean isCanceled() {
@@ -1005,20 +1010,26 @@ public class ComparerDBPanel extends JPanel implements TabView {
         private final int action;
         private final int type;
         private final String name;
+        private final String plugin;
 
         public ComparerTreeNode(String name) {
-            this(-1, -1, name, ROOT);
+            this(-1, -1, name, null, ROOT);
         }
 
         public ComparerTreeNode(int action, String name) {
-            this(action, -1, name, ROOT);
+            this(action, -1, name, null, ROOT);
         }
 
         public ComparerTreeNode(int action, int type, String name, int level) {
+            this(action, type, name, null, level);
+        }
+
+        public ComparerTreeNode(int action, int type, String name, String plugin, int level) {
             super();
             this.action = action;
             this.type = type;
             this.name = name;
+            this.plugin = plugin;
             this.level = level;
             this.isComponent = (level == COMPONENT);
         }

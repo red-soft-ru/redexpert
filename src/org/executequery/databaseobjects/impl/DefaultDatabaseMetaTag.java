@@ -207,7 +207,23 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     return;
                 }
 
-                while (!objects.get(i).getName().contentEquals(MiscUtils.trimEnd(rs.getString(1)))) {
+                String userName = MiscUtils.trimEnd(rs.getString(1));
+                if (objects.get(i) instanceof DefaultDatabaseUser) {
+
+                    DefaultDatabaseUser user = (DefaultDatabaseUser) objects.get(i);
+                    String pluginName = MiscUtils.trimEnd(rs.getString("SEC$PLUGIN"));
+
+                    while (!user.getName().contentEquals(userName) || !user.getPlugin().contentEquals(pluginName)) {
+
+                        i++;
+                        if (i >= objects.size())
+                            throw new DataSourceException("Error load info for" + metaDataKey);
+
+                        user = (DefaultDatabaseUser) objects.get(i);
+                        first = true;
+                    }
+
+                } else while (!objects.get(i).getName().contentEquals(userName)) {
                     i++;
                     if (i >= objects.size())
                         throw new DataSourceException("Error load info for" + metaDataKey);
@@ -726,7 +742,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      * Loads the database users
      */
     private AbstractDatabaseObject getUser(ResultSet rs) throws SQLException {
-        return new DefaultDatabaseUser(this, rs.getObject(1).toString(), rs.getObject(2).toString());
+        return new DefaultDatabaseUser(
+                this,
+                MiscUtils.trimEnd(rs.getObject(1).toString()),
+                MiscUtils.trimEnd(rs.getObject(2).toString())
+        );
     }
 
     /**
@@ -966,7 +986,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getUsersResultSet() throws SQLException {
 
-        String query = "SELECT CAST (SEC$USER_NAME as VARCHAR(1024)), SEC$PLUGIN FROM SEC$USERS ORDER BY 1";
+        String query = "SELECT\n" +
+                "CAST (SEC$USER_NAME as VARCHAR(1024)),\n" +
+                "SEC$PLUGIN\n" +
+                "FROM SEC$USERS\n" +
+                "ORDER BY 1,2";
 
         if (typeTree == TreePanel.DEPENDED_ON)
             query = getDependOnQuery(8);

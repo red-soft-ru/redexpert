@@ -191,7 +191,6 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         return getCatalogName(); // may still be null
     }
 
-
     /**
      * Returns the column from this table witt the specified name,
      * or null if the column does not exist.
@@ -1132,9 +1131,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     }
 
     protected void getObjectInfo() {
-        if (fullLoad) {
+
+        if (fullLoad)
             getMetaTagParent().loadFullInfoForObjects();
-        }
 
         if (querySender == null && someExecute)
             querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
@@ -1143,11 +1142,18 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 someExecute ? querySender : new DefaultStatementExecutor(getHost().getDatabaseConnection());
         try {
 
+            // get\create statement
             if (statementForLoadInfo == null || statementForLoadInfo.isClosed()) {
                 String query = queryForInfo();
                 statementForLoadInfo = (PooledStatement) executor.getPreparedStatement(query);
             }
+
+            // set statement parameters
             statementForLoadInfo.setString(1, getName());
+            if (this instanceof DefaultDatabaseUser)
+                statementForLoadInfo.setString(2, ((DefaultDatabaseUser) this).getPlugin());
+
+            // execute statement
             ResultSet rs = executor.getResultSet(-1, statementForLoadInfo).getResultSet();
             setInfoFromResultSet(rs);
 

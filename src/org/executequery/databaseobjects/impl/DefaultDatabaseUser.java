@@ -4,6 +4,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.log.Log;
 import org.executequery.sql.sqlbuilder.Condition;
 import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
@@ -27,16 +28,12 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     private String middleName;
     private String lastName;
 
-    public DefaultDatabaseUser(DatabaseMetaTag metaTagParent, String name) {
-        this(metaTagParent, name, "");
-    }
-
     public DefaultDatabaseUser(DatabaseMetaTag metaTagParent, String name, String plugin) {
         super(metaTagParent, name);
+        this.admin = false;
+        this.active = true;
         this.plugin = plugin;
-        active = true;
-        tags = new HashMap<>();
-        admin = false;
+        this.tags = new HashMap<>();
     }
 
     @Override
@@ -49,6 +46,7 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         return Table.createTable("SEC$USERS", "U");
     }
 
+    @Override
     protected Field getObjectField() {
         return Field.createField(getMainTable(), getFieldName()).setName("SEC$" + getFieldName());
     }
@@ -58,7 +56,8 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table table = getMainTable();
         sb.appendTable(table);
-        sb.setOrdering(getObjectField().getFieldTable());
+        Field plugin = Field.createField(table, "SEC$PLUGIN", "PLUGIN");
+        sb.setOrdering(getObjectField().getFieldTable() + "," + plugin.getFieldTable());
         return sb;
     }
 
@@ -95,33 +94,18 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
             setAdministrator(false);
         }
         try {
-            setRemarks(rs.getString(7));
+            setRemarks(getFromResultSet(rs, "SEC$DESCRIPTION"));
         } catch (NullPointerException e) {
             setRemarks("");
         }
-        try {
-            setPlugin(rs.getString(8).trim());
-        } catch (NullPointerException e) {
-            setPlugin("");
-        }
+
         return null;
-    }
-
-    @Override
-    public void prepareLoadingInfo() {
-
-    }
-
-    @Override
-    public void finishLoadingInfo() {
-
     }
 
     @Override
     public boolean isAnyRowsResultSet() {
         return false;
     }
-
 
     @Override
     public int getType() {
@@ -139,6 +123,8 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     public String getPassword() {
+        if (isMarkedForReload())
+            loadData();
         return password;
     }
 
@@ -147,6 +133,8 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     public String getFirstName() {
+        if (isMarkedForReload())
+            loadData();
         return firstName;
     }
 
@@ -155,6 +143,8 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     public String getMiddleName() {
+        if (isMarkedForReload())
+            loadData();
         return middleName;
     }
 
@@ -163,6 +153,8 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     public String getLastName() {
+        if (isMarkedForReload())
+            loadData();
         return lastName;
     }
 
@@ -171,6 +163,8 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     public Boolean getActive() {
+        if (isMarkedForReload())
+            loadData();
         return active;
     }
 
@@ -178,19 +172,9 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         this.active = active;
     }
 
-    public void setTag(String tag, String value) {
-        tags.put(tag, value);
-    }
-
-    public void dropTag(String tag) {
-        tags.remove(tag);
-    }
-
-    public String getTag(String tag) {
-        return tags.get(tag);
-    }
-
     public Map<String, String> getTags() {
+        if (isMarkedForReload())
+            loadData();
         return tags;
     }
 
@@ -198,7 +182,17 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         this.tags = tags;
     }
 
+    public String getTag(String tag) {
+        return getTags().get(tag);
+    }
+
+    public void setTag(String tag, String value) {
+        getTags().put(tag, value);
+    }
+
     public Boolean getAdministrator() {
+        if (isMarkedForReload())
+            loadData();
         return admin;
     }
 
@@ -220,15 +214,19 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     @Override
     public DefaultDatabaseUser copy() {
 
-        DefaultDatabaseUser user = new DefaultDatabaseUser((DatabaseMetaTag) getParent(), getName());
+        DefaultDatabaseUser user = new DefaultDatabaseUser(
+                (DatabaseMetaTag) getParent(),
+                getName(),
+                plugin
+        );
+
         user.setFirstName(firstName);
         user.setMiddleName(middleName);
         user.setLastName(lastName);
         user.setActive(active);
         user.setAdministrator(admin);
         user.setRemarks(remarks);
-        //user.setPassword(password);
-        user.setPlugin(plugin);
+
         user.tags = new HashMap<>();
         for (String key : tags.keySet())
             user.tags.put(key, tags.get(key));
@@ -236,31 +234,13 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
         return user;
     }
 
-    void loadTags() {
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
-        try {
-            String query = "SELECT * FROM SEC$USER_ATTRIBUTES WHERE SEC$USER_NAME = '" + getName() + "' and SEC$PLUGIN = '" + getPlugin() + "'";
-            ResultSet rs = querySender.getResultSet(query).getResultSet();
-            while (rs.next()) {
-                tags.put(rs.getString(2), rs.getString(3));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            querySender.releaseResources();
-        }
-    }
-
-    public void loadData() {
-        getObjectInfo();
-        loadTags();
-    }
-
     @Override
     protected String queryForInfo() {
+
         SelectBuilder sb = builderCommonQuery();
         sb.appendCondition(buildNameCondition(getObjectField()));
-        sb.appendCondition(Condition.createCondition().setStatement(String.format("SEC$PLUGIN = '%s'", getPlugin())));
+        sb.appendCondition(Condition.createCondition().setStatement("SEC$PLUGIN = ?"));
+
         return sb.getSQLQuery();
     }
 
@@ -288,6 +268,39 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseUser comparingUser = (DefaultDatabaseUser) databaseObject;
         return SQLUtils.generateAlterUser(this, comparingUser, Comparer.isCommentsNeed());
+    }
+
+    @Override
+    public void prepareLoadingInfo() {
+    }
+
+    @Override
+    public void finishLoadingInfo() {
+    }
+
+    public void loadData() {
+        getObjectInfo();
+        loadTags();
+    }
+
+    private void loadTags() {
+
+        String query = "SELECT *\n" +
+                "FROM SEC$USER_ATTRIBUTES\n" +
+                "WHERE SEC$USER_NAME = '" + getName() + "'\n" +
+                "AND SEC$PLUGIN = '" + getPlugin() + "'";
+
+        DefaultStatementExecutor executor = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        try {
+            ResultSet rs = executor.getResultSet(query).getResultSet();
+            while (rs.next())
+                tags.put(rs.getString(2), rs.getString(3));
+
+        } catch (Exception e) {
+            Log.error(e.getMessage(), e);
+        } finally {
+            executor.releaseResources();
+        }
     }
 
 }

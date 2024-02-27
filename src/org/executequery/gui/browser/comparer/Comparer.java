@@ -111,20 +111,19 @@ public class Comparer {
                 break;
 
             AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) obj;
-
             loadingObjectsHelper.preparingLoadForObjectAndCols(databaseObject);
 
             String sqlScript = databaseObject.getCompareCreateSQL();
-            loadingObjectsHelper.postProcessingLoadForObjectAndCols(databaseObject);
-
             if (!sqlScript.contains("Will be created with constraint defining")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
-                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.CREATE, type, obj.getName());
-                panel.getComparedObjectList().add(new ComparedObject(type, obj.getName(), sqlScript, null));
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.CREATE, type, obj);
+                panel.addComparedObject(new ComparedObject(type, databaseObject, sqlScript, null));
                 panel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[0]++;
             }
+
+            loadingObjectsHelper.postProcessingLoadForObjectAndCols(databaseObject);
 
             panel.incrementProgressBarValue();
         }
@@ -166,8 +165,8 @@ public class Comparer {
 
             if (!sqlScript.contains("Remove with table constraint")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
-                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.DROP, type, obj.getName());
-                panel.getComparedObjectList().add(new ComparedObject(type, obj.getName(), null, ((AbstractDatabaseObject) obj).getCreateSQLText()));
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.DROP, type, obj);
+                panel.addComparedObject(new ComparedObject(type, obj, null, ((AbstractDatabaseObject) obj).getCreateSQLText()));
                 panel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[1]++;
@@ -213,24 +212,23 @@ public class Comparer {
                 break;
 
             AbstractDatabaseObject masterObject = (AbstractDatabaseObject) obj;
+            loadingObjectsHelperMaster.preparingLoadForObjectAndCols(masterObject);
 
             AbstractDatabaseObject compareObject = (AbstractDatabaseObject) alterObjects.get(obj);
-
-            loadingObjectsHelperMaster.preparingLoadForObjectAndCols(masterObject);
             loadingObjectsHelperCompare.preparingLoadForObjectAndCols(compareObject);
 
             String sqlScript = masterObject.getCompareAlterSQL(compareObject);
-            loadingObjectsHelperMaster.postProcessingLoadForObjectAndCols(masterObject);
-            loadingObjectsHelperCompare.postProcessingLoadForObjectAndCols(compareObject);
-
             if (!sqlScript.contains("there are no changes")) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
-                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, type, obj.getName());
-                panel.getComparedObjectList().add(new ComparedObject(type, obj.getName(), compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, type, obj);
+                panel.addComparedObject(new ComparedObject(type, masterObject, compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
                 panel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[2]++;
             }
+
+            loadingObjectsHelperMaster.postProcessingLoadForObjectAndCols(masterObject);
+            loadingObjectsHelperCompare.postProcessingLoadForObjectAndCols(compareObject);
 
             panel.incrementProgressBarValue();
         }

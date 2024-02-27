@@ -176,7 +176,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
             try {
                 Map<String, IFBUser> userMap = getUserManager(userManager, databaseConnection).getUsers();
                 for (IFBUser user : userMap.values())
-                    users.add(getCreateUser(user.getUserName()));
+                    users.add(getCreateUser(user.getUserName(), user.getPlugin()));
 
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.toString());
@@ -186,7 +186,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
         return users;
     }
 
-    private DefaultDatabaseUser getCreateUser(String name) {
+    private DefaultDatabaseUser getCreateUser(String name, String plugin) {
         return new DefaultDatabaseUser(
                 new DefaultDatabaseMetaTag(
                         ConnectionsTreePanel
@@ -196,7 +196,8 @@ public class GrantManagerPanel extends JPanel implements TabView {
                         null,
                         NamedObject.META_TYPES[NamedObject.USER]
                 ),
-                name
+                name,
+                plugin
         );
     }
 
@@ -262,7 +263,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
         tags.add(NamedObject.META_TYPES[NamedObject.SYSTEM_ROLE]);
 
         getUserList(tags);
-        userListModel.addElement(getCreateUser("PUBLIC"));
+        userListModel.addElement(getCreateUser("PUBLIC", ""));
     }
 
     private void getViews() {

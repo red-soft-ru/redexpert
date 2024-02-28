@@ -11,7 +11,7 @@ public abstract class StatTableIndex extends TableModelObject {
 
     public FillDistribution getDistribution() {
         if(distribution==null)
-            distribution= new FillDistribution();
+            distribution = new FillDistribution();
         return distribution;
     }
 

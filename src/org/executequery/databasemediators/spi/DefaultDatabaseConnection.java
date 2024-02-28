@@ -599,6 +599,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         copy.setURL(getURL());
         copy.setUserName(getUserName());
         copy.setCharset(getCharset());
+        copy.setFolderId(getFolderId());
 
         if (getJdbcProperties() != null) {
 

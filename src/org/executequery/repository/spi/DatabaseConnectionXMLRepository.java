@@ -37,6 +37,7 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWriter<DatabaseConnection>
         implements DatabaseConnectionRepository {
@@ -102,6 +103,17 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
         return null;
     }
 
+    public List<DatabaseConnection> findByFolder(String folderId) {
+
+        List<DatabaseConnection> _connections = connections();
+        synchronized (_connections) {
+
+            return _connections.stream()
+                    .filter(conn -> Objects.equals(conn.getFolderId() != null ? conn.getFolderId() : "", folderId))
+                    .collect(Collectors.toList());
+        }
+    }
+
     @Override
     public DatabaseConnection findBySourceName(String sourceName) {
         List<DatabaseConnection> _connections = connections();
@@ -126,6 +138,20 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
         DatabaseConnection connection = findByName(name);
         return connection != null && connection != exclude;
 
+    }
+
+    public boolean canUseName(DatabaseConnection connection) {
+
+        String folderName = connection.getFolderId();
+        if (folderName == null)
+            folderName = "";
+
+        for (DatabaseConnection _connection : findByFolder(folderName))
+            if (Objects.equals(_connection.getName(), connection.getName()))
+                if (!Objects.equals(_connection, connection))
+                    return false;
+
+        return true;
     }
 
     public synchronized void save() {
@@ -204,14 +230,10 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     private boolean namesValid() {
 
         for (int i = 0; i < connections().size(); i++) {
+
             DatabaseConnection connection = connections().get(i);
-            if (nameExists(connection, connection.getName())) {
-
-                throw new RepositoryException(
-                        String.format("The connection name %s already exists.",
-                                connection.getName()));
-            }
-
+            if (!canUseName(connection))
+                throw new RepositoryException(String.format("The connection name %s already exists.", connection.getName()));
         }
 
         return true;

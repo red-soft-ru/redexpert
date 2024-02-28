@@ -26,6 +26,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.depend.DependPanel;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
@@ -54,6 +55,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Takis Diakoumis
@@ -275,7 +277,7 @@ public class SchemaTree extends DynamicTree
         DataFlavor[] flavors = new DataFlavor[1];
         DefaultMutableTreeNode[] nodesToRemove;
         List<DatabaseConnection> hostToAdd = new ArrayList<>();
-        int currentAction;
+        int currentAction = -1;
 
         public TreeTransferHandler() {
 
@@ -289,7 +291,6 @@ public class SchemaTree extends DynamicTree
             } catch (ClassNotFoundException e) {
                 Log.error("ClassNotFound: " + e.getMessage(), e);
             }
-
         }
 
         @Override
@@ -383,12 +384,6 @@ public class SchemaTree extends DynamicTree
             hostToAdd.clear();
             currentAction = action;
             super.exportAsDrag(comp, e, action);
-
-            if (action == 1 && !hostToAdd.isEmpty()) {
-                ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-                if (connectionsTreePanel != null)
-                    hostToAdd.forEach(connectionsTreePanel::copyConnection);
-            }
         }
 
         @Override
@@ -433,23 +428,16 @@ public class SchemaTree extends DynamicTree
             return false;
         }
 
-        /**
-         * Defensive copy used in createTransferable.
-         */
-        private DefaultMutableTreeNode copy(TreeNode node) {
-            return new DefaultMutableTreeNode(node);
-        }
-
         @Override
         protected void exportDone(JComponent source, Transferable data, int action) {
 
             TreePath[] paths = getSelectionPaths();
             final Object lastPathComponent = paths[0].getLastPathComponent();
 
-            if ((action & MOVE) == MOVE) {
+            JTree tree = (JTree) source;
+            DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 
-                JTree tree = (JTree) source;
-                DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+            if ((action & MOVE) == MOVE) {
 
                 // Remove nodes saved in nodesToRemove in createTransferable.
                 if (nodesToRemove != null)
@@ -493,9 +481,36 @@ public class SchemaTree extends DynamicTree
                         }
                     }
                 });
-
             }
 
+            if (!hostToAdd.isEmpty()) {
+
+                ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+                if (connectionsTreePanel != null) {
+                    for (DatabaseConnection host : hostToAdd) {
+
+                        DatabaseObjectNode node = connectionsTreePanel.getHostNode(host);
+                        TreePath targetTreePath = node.getTreePath();
+
+                        Object parentNode = targetTreePath.getPathComponent(targetTreePath.getPathCount() - 2);
+                        if (parentNode instanceof ConnectionsFolderNode) {
+                            ConnectionsFolder connectionsFolder = ((ConnectionsFolderNode) parentNode).getConnectionsFolder();
+
+                            connectionsFolder.addConnection(host.getId());
+                            host.setFolderId(connectionsFolder.getId());
+
+                        } else
+                            host.setFolderId("");
+
+                        if (currentAction == 1)
+                            connectionsTreePanel.copyConnection(host);
+                    }
+                }
+
+                reload();
+            }
+
+            currentAction = -1;
         }
 
         @Override

@@ -781,22 +781,27 @@ public class ConnectionsTreePanel extends TreePanel
 
     public void copyConnection(DatabaseConnection dc) {
 
+        String connectionFolderId = dc.getFolderId() != null ? dc.getFolderId() : "";
         List<String> sameNamesSuffixes = connections.stream()
+                .filter(conn -> Objects.equals(conn.getFolderId() != null ? conn.getFolderId() : "", connectionFolderId))
                 .map(DatabaseConnection::getName)
                 .filter(name -> name.startsWith(dc.getName()))
                 .map(name -> name.substring(dc.getName().length()))
                 .collect(Collectors.toList());
 
-        String newName = dc.getName() + "_copy";
-        for (int i = 1; i < sameNamesSuffixes.size() + 1; i++) {
-            String suffix = "_copy" + i;
-            if (!sameNamesSuffixes.contains(suffix)) {
-                newName += i;
-                break;
+        String newName = dc.getName();
+        if (!sameNamesSuffixes.isEmpty()) {
+            for (int i = 0; i < sameNamesSuffixes.size() + 1; i++) {
+                String suffix = i == 0 ? " (Copy)" : " (Copy " + i + ")";
+                if (!sameNamesSuffixes.contains(suffix)) {
+                    newName = dc.getName() + suffix;
+                    break;
+                }
             }
         }
 
         dc.setName(newName);
+
         connections.add(dc);
         connectionAdded(dc);
     }

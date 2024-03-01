@@ -219,7 +219,7 @@ inline std::string getCurrentDateTime()
         ZeroMemory(&bi, sizeof(bi));
         bi.hwndOwner = GetActiveWindow();
         bi.pszDisplayName = szDisplayName;
-        bi.lpszTitle = "";
+        bi.lpszTitle = L"";
         bi.ulFlags = BIF_RETURNONLYFSDIRS;
         pidl = SHBrowseForFolder(&bi);
         if (pidl) {

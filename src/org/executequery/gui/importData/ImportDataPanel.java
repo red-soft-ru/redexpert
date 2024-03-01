@@ -481,12 +481,9 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         String oldPathToFile = pathToFile;
         pathToFile = sourceFile.getAbsolutePath();
         fileName = FilenameUtils.getBaseName(sourceFile.getName());
-        fileType = FileNameUtils.getExtension(sourceFile.getName());
+        fileType = FileNameUtils.getExtension(sourceFile.getName()).toLowerCase();
 
-        if (!fileType.equalsIgnoreCase("csv")
-                && !fileType.equalsIgnoreCase("xlsx")
-                && !fileType.equalsIgnoreCase("xml")
-        ) {
+        if (!fileType.equals("csv") && !fileType.equals("xlsx") && !fileType.equals("xml")) {
             if (displayWarnings)
                 GUIUtilities.displayWarningMessage(bundleString("FileTypeNotSupported"));
             fileNameField.setText(oldPathToFile != null ? oldPathToFile : "");
@@ -527,9 +524,9 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
                 GUIUtilities.displayWarningMessage(bundleString("FileReadingErrorMessage") + "\n" + e.getMessage());
         }
 
-        firstRowIsNamesCheck.setVisible(fileType.equalsIgnoreCase("csv") || fileType.equalsIgnoreCase("xlsx"));
-        csvPropsPanel.setVisible(fileType.equalsIgnoreCase("csv"));
-        xlsxPropsPanel.setVisible(fileType.equalsIgnoreCase("xlsx"));
+        firstRowIsNamesCheck.setVisible(fileType.equals("csv") || fileType.equals("xlsx"));
+        csvPropsPanel.setVisible(fileType.equals("csv"));
+        xlsxPropsPanel.setVisible(fileType.equals("xlsx"));
 
         updateMappingTable();
     }

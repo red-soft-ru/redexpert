@@ -52,9 +52,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Takis Diakoumis
@@ -506,7 +504,10 @@ public class SchemaTree extends DynamicTree
                     }
                 }
 
+                Set<TreePath> expandedNodes = new HashSet<>();
+                saveExpandedNodes(expandedNodes, tree, ((DefaultMutableTreeNode) model.getRoot()));
                 reload();
+                restoreExpandedNodes(expandedNodes, tree, ((DefaultMutableTreeNode) model.getRoot()));
             }
 
             currentAction = -1;
@@ -583,6 +584,30 @@ public class SchemaTree extends DynamicTree
                 model.insertNodeInto(node, parent, index++);
 
             return true;
+        }
+
+        private void saveExpandedNodes(Set<TreePath> expandedNodes, JTree tree, DefaultMutableTreeNode node) {
+
+            if (tree.isExpanded(new TreePath(node.getPath())))
+                expandedNodes.add(new TreePath(node.getPath()));
+
+            Enumeration<?> children = node.children();
+            while (children.hasMoreElements()) {
+                DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+                saveExpandedNodes(expandedNodes, tree, child);
+            }
+        }
+
+        private void restoreExpandedNodes(Set<TreePath> expandedNodes, JTree tree, DefaultMutableTreeNode node) {
+
+            if (expandedNodes.contains(new TreePath(node.getPath())))
+                tree.expandPath(new TreePath(node.getPath()));
+
+            Enumeration<?> children = node.children();
+            while (children.hasMoreElements()) {
+                DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+                restoreExpandedNodes(expandedNodes, tree, child);
+            }
         }
 
         public class NodesTransferable implements Transferable {

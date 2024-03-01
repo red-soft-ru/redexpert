@@ -57,20 +57,31 @@ void gtkMessageBox(const char *title, const char *message)
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
 }
-char* gtkOpenFile()
+char* gtkOpenFile(std::string locale)
 {
     GtkWidget *dialog;
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
     gint res;
 
-    dialog = gtk_file_chooser_dialog_new ("Select java",
-                                          NULL,
-                                          action,
-                                          "_Cancel",
-                                          GTK_RESPONSE_CANCEL,
-                                          "_Open",
-                                          GTK_RESPONSE_ACCEPT,
-                                          NULL);
+    char* title = "Select Java";
+    char* firstButtonText = "_Cancel";
+    char* secondButtonText = "_Select";
+    if (locale.find("ru") != -1) {
+        title = "Выберите Java";
+        firstButtonText = "_Отмена";
+        secondButtonText = "_Выбрать";
+    }
+
+    dialog = gtk_file_chooser_dialog_new (
+        title,
+        NULL,
+        action,
+        firstButtonText,
+        GTK_RESPONSE_CANCEL,
+        secondButtonText,
+        GTK_RESPONSE_ACCEPT,
+        NULL
+    );
 
     res = gtk_dialog_run (GTK_DIALOG (dialog));
     char *filename=0;
@@ -94,7 +105,7 @@ destroy_jnf (GtkButton *widget,
     dialog_result = CANCEL;
     gtk_main_quit();
 }
-int gtkDialog(std::string path_to_glade,std::string url)
+int gtkDialog(std::string path_to_glade, std::string url, std::string locale)
 {
     dialog_result=0;
 
@@ -112,10 +123,20 @@ dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_jnf"));
         rb_download=GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_download"));
         rb_file=GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_file"));
         GtkLabel * msg = GTK_LABEL(gtk_builder_get_object(builder, "mes_lbl"));
-        std::string text_msg="Java not found. You can specify the path to jvm manually\n";
-        text_msg.append("or download java automatically or manually from\n");
-        text_msg.append(url);
-        text_msg.append("\nNote that you need Java 1.8 or higher.\n");
+
+        std::string text_msg = "";
+        if (locale.find("ru") != -1) {
+            text_msg.append("Java не найдена. Вы можете вручную указать путь к JVM\n");
+            text_msg.append("или скачать Java автоматически с\n");
+            text_msg.append(url);
+            text_msg.append("\nПримечание: приложение работает с Java 1.8 или выше.\n");
+        } else {
+            text_msg.append("Java not found. You can specify the path to JVM manually\n");
+            text_msg.append("or download Java automatically or manually from\n");
+            text_msg.append(url);
+            text_msg.append("\nNote that you need Java 1.8 or higher.\n");
+        }
+
         gtk_label_set_text(msg,text_msg.c_str());
         g_object_unref( G_OBJECT( builder ) );
 
@@ -154,65 +175,65 @@ inline std::string getCurrentDateTime()
     strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tstruct);
     return std::string(buf);
 }
+
 #ifdef WIN32
-TCHAR* basicOpenFile()
-{
-    OPENFILENAME ofn;       // common dialog box structure
-    wchar_t szFile[260];       // buffer for file name
-    HWND hwnd;              // owner window
-    TCHAR* res;              // file handle
 
-    // Initialize OPENFILENAME
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = GetActiveWindow();
-    ofn.lpstrFile = szFile;
-    // Set lpstrFile[0] to '\0' so that GetOpenFileName does not
-    // use the contents of szFile to initialize itself.
-    ofn.lpstrFile[0] = '\0';
-    ofn.nMaxFile = sizeof(szFile);
-    ofn.lpstrFilter = L"dll\0jvm.dll\0";
-    ofn.nFilterIndex = 1;
-    ofn.lpstrFileTitle = NULL;
-    ofn.nMaxFileTitle = 0;
-    ofn.lpstrInitialDir = NULL;
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+    TCHAR* basicOpenFile() {
 
-    // Display the Open dialog box.
+        OPENFILENAME ofn;       // common dialog box structure
+        wchar_t szFile[260];    // buffer for file name
+        HWND hwnd;              // owner window
+        TCHAR* res;             // file handle
 
-    if (GetOpenFileName(&ofn)==TRUE)
-        res =ofn.lpstrFile;
-    else res=0;
-    return res;
-}
-std::wstring basicOpenFolder() //если -1 - то вызов стандартного диалога выбора папки
-                      //иначе CSIDL_... (специальная папка, see SHGetSpecialFolderLocation) -возвращает путь
-                      //                                                                     к спецпапке
-{
-    BROWSEINFO bi;
-    TCHAR szDisplayName[MAX_PATH];
-    LPITEMIDLIST pidl;
-    ZeroMemory(&bi, sizeof(bi));
-    bi.hwndOwner = GetActiveWindow();
-    bi.pszDisplayName = szDisplayName;
-    bi.lpszTitle = TEXT("Select folder");
-    bi.ulFlags = BIF_RETURNONLYFSDIRS;
-    pidl = SHBrowseForFolder(&bi);
-    if  (pidl)
-    {
+        // Initialize OPENFILENAME
+        ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = GetActiveWindow();
+        ofn.lpstrFile = szFile;
 
-        SHGetPathFromIDList(pidl, szDisplayName);
-        //std::cout<<"2:"<<ws<<std::endl;
-        std::wstring ws=szDisplayName;
-        std::wcout<<L"w2:"<<ws<<std::endl;
-        return ws;
-        //return res;
-    } else return L"";
-}
+        // Set lpstrFile[0] to '\0' so that GetOpenFileName does not
+        // use the contents of szFile to initialize itself.
+        ofn.lpstrFile[0] = '\0';
+        ofn.nMaxFile = sizeof(szFile);
+        ofn.lpstrFilter = L"dll\0jvm.dll\0";
+        ofn.nFilterIndex = 1;
+        ofn.lpstrFileTitle = NULL;
+        ofn.nMaxFileTitle = 0;
+        ofn.lpstrInitialDir = NULL;
+        ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
+        // Display the Open dialog box.
+        if (GetOpenFileName(&ofn) == TRUE)
+            res = ofn.lpstrFile;
+        else
+            res = 0;
 
+        return res;
+    }
+
+    std::wstring basicOpenFolder() {
+
+        BROWSEINFO bi;
+        TCHAR szDisplayName[MAX_PATH];
+        LPITEMIDLIST pidl;
+        ZeroMemory(&bi, sizeof(bi));
+        bi.hwndOwner = GetActiveWindow();
+        bi.pszDisplayName = szDisplayName;
+        bi.lpszTitle = "";
+        bi.ulFlags = BIF_RETURNONLYFSDIRS;
+        pidl = SHBrowseForFolder(&bi);
+        if (pidl) {
+            SHGetPathFromIDList(pidl, szDisplayName);
+            std::wstring ws = szDisplayName;
+            std::wcout << L"w2:" << ws << std::endl;
+            return ws;
+
+        } else
+            return L"";
+    }
 
 #endif
+
 inline void printErrorToLogFile(const char* log_file, const std::string& app_mess)
 {    
     std::ofstream ofs(log_file, std::ofstream::out | std::ofstream::app);

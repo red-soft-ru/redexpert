@@ -66,8 +66,10 @@ else:unix: {
     QMAKE_CXXFLAGS += -std=c++0x
     LIBS += -ldl
     DISTFILES += \
-        resources/dialog_java_not_found.glade \
-        resources/download_dialog.glade
+        resources/dialog_java_not_found_en.glade \
+        resources/dialog_java_not_found_ru.glade \
+        resources/download_dialog_en.glade \
+        resources/download_dialog_ru.glade
 
 }
 

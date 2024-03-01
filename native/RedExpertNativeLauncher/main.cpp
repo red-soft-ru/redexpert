@@ -16,6 +16,7 @@
 #pragma comment(lib, "WinINet.lib")
 #pragma comment(lib, "shell32.lib")
 #include <windows.h>
+#include <cctype>
 #include <ShellAPI.h>
 #include <regex>
 #include <WinReg.hpp>
@@ -59,6 +60,7 @@ static std::string app_exe_path;
 static std::string bin_dir;
 static std::string app_dir;
 static int result_dialog;
+static std::string locale;
 typedef void* SharedLibraryHandle;
 bool startsWith(const std::string& st, const std::string& prefix)
 {
@@ -343,7 +345,7 @@ ok_button_clicked (GtkButton *button,
     }
     if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_file)))
     {
-        char* s = gtkOpenFile();
+        char* s = gtkOpenFile(locale);
         if (s == 0)
             return;
         djava_home = s;
@@ -453,8 +455,16 @@ void init_curl()
     curlHandle = dlopen("libcurl.so.4",RTLD_LAZY);
     if(curlHandle==0)
     {
-        gtkMessageBox("Error downloading java","libcurl not found. Please install libcurl4 to automatically download java");
-        status_downl=ERROR_DOWNLOAD;
+
+        char* error_title = "Error downloading Java";
+        char* error_message = "libcurl package not found. Please install libcurl4 to automatically download Java.";
+        if (locale.find("ru") != -1) {
+            error_title = "Ошибка скачивания Java";
+            error_message = "Пакет libcurl не найден. Пожалуйста, установите libcurl4, чтобы автоматически скачать Java.";
+        }
+
+        gtkMessageBox(error_title, error_message);
+        status_downl = ERROR_DOWNLOAD;
     }
     curl_easy_init_=(CURL* (*)(void))dlsym(curlHandle,"curl_easy_init");
     curl_easy_setopt_=(CURLcode (*)(CURL *, CURLoption , ...))dlsym(curlHandle,"curl_easy_setopt");
@@ -475,16 +485,20 @@ void init_curl()
         curl_easy_setopt_(curl, CURLOPT_HEADERFUNCTION, header_callback);
         http_code="0";
         res = curl_easy_perform_(curl);
-        if(res != CURLE_OK)
-        {
-              gtkMessageBox("Error downloading java" ,curl_easy_strerror_(res));
-              status_downl=ERROR_DOWNLOAD;
+
+        char* error_title = "Error downloading Java";
+        if (locale.find("ru") != -1) {
+            error_title = "Ошибка скачивания Java";
         }
-        else if(http_code.find("20")==std::string::npos&&http_code.find("30")==std::string::npos)
-        {
-            gtkMessageBox("Error downloading java" ,http_code.c_str());
+
+        if(res != CURLE_OK) {
+              gtkMessageBox(error_title, curl_easy_strerror_(res));
+              status_downl=ERROR_DOWNLOAD;
+        } else if (http_code.find("20") == std::string::npos&&http_code.find("30") == std::string::npos) {
+            gtkMessageBox(error_title, http_code.c_str());
             status_downl=ERROR_DOWNLOAD;
         }
+
         /* always cleanup */
         curl_easy_cleanup_(curl);
         if(status_downl==ERROR_DOWNLOAD)
@@ -527,7 +541,15 @@ CURLcode download_in_thread()
 }
 int showDialog()
 {
-    gtkDialog(bin_dir + file_separator() + "../resources/dialog_java_not_found.glade", url_manual);
+    std::string path_to_glade = bin_dir + file_separator();
+    if (locale.find("ru") != -1) {
+       path_to_glade += "../resources/dialog_java_not_found_ru.glade";
+    } else {
+        path_to_glade += "../resources/dialog_java_not_found_en.glade";
+    }
+
+    gtkDialog(path_to_glade, url_manual, locale);
+
     if (dialog_result == CANCEL)
         exit(1);
     if (dialog_result == CHOOSE_FILE) {
@@ -548,19 +570,34 @@ void download_java()
         return;
     GError* error = NULL;
     builder = gtk_builder_new();
-    std::string path_to_glade = bin_dir + file_separator() + "../resources/download_dialog.glade";
+
+    bool use_ru_language = locale.find("ru") != -1;
+
+    std::string path_to_glade = bin_dir + file_separator();
+    if (locale.find("ru") != -1) {
+        path_to_glade += "../resources/download_dialog_ru.glade";
+    } else {
+        path_to_glade += "../resources/download_dialog_en.glade";
+    }
+
     if (!gtk_builder_add_from_file(builder, path_to_glade.c_str(), &error)) {
         g_warning("%s", error->message);
         g_error_free(error);
         return;
     }
+
+    char* upLabelText = "Please wait while Java is downloading.";
+    if (locale.find("ru") != -1) {
+        upLabelText = "Пожалуйста, дождитесь полного скачивания Java";
+    }
+
     dialog_dwnl = GTK_WIDGET(gtk_builder_get_object(builder, "download_dialog"));
     gtk_builder_connect_signals(builder, NULL);
     Bar = GTK_WIDGET(gtk_builder_get_object(builder, "prog_bar"));
     upLabel=GTK_LABEL(gtk_builder_get_object(builder, "up_text"));
     downLabel=GTK_LABEL(gtk_builder_get_object(builder, "down_text"));
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(Bar), 0);
-    gtk_label_set_text(GTK_LABEL(upLabel),"Please wait while java is downloading.");
+    gtk_label_set_text(GTK_LABEL(upLabel), upLabelText);
     /* Init thread */
     //g_thread_init(NULL);
     //adj = (GtkAdjustment*)gtk_adjustment_new(0, 0, 100, 0, 0, 0);
@@ -575,12 +612,23 @@ void download_java()
     th.join();
     if (status_downl == ERROR_DOWNLOAD)
     {
+        char* error_title = "Error downloading java";
+        std::string timeout_error_message = "Timeout was reached";
+        std::string check_connection_message = "\nCheck internet connection";
+        if (locale.find("ru") != -1) {
+            error_title = "Ошибка скачивания Java";
+            timeout_error_message = "Превышено время ожидания ответа от сервера";
+            check_connection_message = "\nПожалуйста, проверьте интернет соединение.";
+        }
+
         std::stringstream stream;
-        if(timeout_error)
-            stream<<"Timeout was reached\nCheck internet connection";
+        if (timeout_error)
+            stream << timeout_error_message;
         else
-            stream<<curl_easy_strerror_(res)<<"\nCheck internet connection";
-        gtkMessageBox("Error downloading java",stream.str().c_str());
+            stream << curl_easy_strerror_(res);
+        stream << check_connection_message;
+
+        gtkMessageBox(error_title, stream.str().c_str());
     }
     if (status_downl == ABORT_DOWNLOAD||status_downl == ERROR_DOWNLOAD)
         return;
@@ -2098,91 +2146,126 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 #endif
     switch (msg) {
     case WM_INITDIALOG: /* сообщение о создании диалога */
+
         SendMessage(GetDlgItem(hw, CHOOSE_FILE), BM_SETCHECK, BST_CHECKED, 0);
-        if (err_rep.typeError == NOT_SUPPORTED_ARCH) {
-            m_mes.append(L"Java with invalid architecture found. ");
+        if (locale.find("ru") != -1) {
+
+            if (err_rep.typeError == NOT_SUPPORTED_ARCH) {
+                m_mes.append(L"Найдена Java с недопустимой архитектурой. ");
+            } else if (err_rep.typeError == NOT_SUPPORTED_ARCH) {
+                m_mes.append(L"Найдена Java с недопустимой версией. ");
+            } else {
+                m_mes.append(L"Java не найдена. ");
+            }
+
+            m_mes.append(L"Вы можете вручную указать путь к JVM\n");
+            m_mes.append(L"или скачать Java автоматически с ");
+            m_mes.append(L"<A HREF=\"");
+            m_mes.append(url_manual);
+            m_mes.append(L"\">");
+            m_mes.append(url_manual);
+            m_mes.append(L"</A>");
+            m_mes.append(L"\nПримечание: приложение работает с Java 1.8 или выше с архитектурой ");
+            m_mes.append(arch);
+
+        } else {
+
+            if (err_rep.typeError == NOT_SUPPORTED_ARCH) {
+                m_mes.append(L"Java with invalid architecture found. ");
+            } else if (err_rep.typeError == NOT_SUPPORTED_ARCH) {
+                m_mes.append(L"Java with invalid version found. ");
+            } else {
+                m_mes.append(L"Java not found. ");
+            }
+
+            m_mes.append(L"You can specify the path to JVM manually\n");
+            m_mes.append(L"or download Java automatically or manually from ");
+            m_mes.append(L"<A HREF=\"");
+            m_mes.append(url_manual);
+            m_mes.append(L"\">");
+            m_mes.append(url_manual);
+            m_mes.append(L"</A>");
+            m_mes.append(L"\nNote that you need Java 1.8 or higher with ");
+            m_mes.append(arch);
+            m_mes.append(L" architecture. ");
         }
-        else if (err_rep.typeError == NOT_SUPPORTED_ARCH) {
-            m_mes.append(L"Java with invalid version found. ");
-        }
-        else {
-            m_mes.append(L"Java not found. ");
-        }
-        m_mes.append(L"You can specify the path to jvm manually\nor download java automatically or manually from ");
-        m_mes.append(L"<A HREF=\"");
-        m_mes.append(url_manual);
-        m_mes.append(L"\">");
-        m_mes.append(url_manual);
-        m_mes.append(L"</A>");
-        m_mes.append(L"\nNote that you need Java 1.8 or higher with ");
-        m_mes.append(arch);
-        m_mes.append(L" architecture. ");
+
         SetDlgItemText(hw, 1, m_mes.c_str());
         return TRUE;
+
     case WM_COMMAND: /* сообщение от управляющих элементов */
         if (LOWORD(wp) == 6) {
-            if (IsDlgButtonChecked(hw, DOWNLOAD))
-            {
+            if (IsDlgButtonChecked(hw, DOWNLOAD)) {
+
                 HINSTANCE h = GetModuleHandle(NULL);
                 EnableWindow(hw, FALSE);
-                DialogBox(h, MAKEINTRESOURCEW(P_BAR_DIALOG), NULL, DlgDownloadProc);
+                if (locale.find("ru") != -1) {
+                    DialogBox(h, MAKEINTRESOURCEW(P_BAR_DIALOG_RU), NULL, DlgDownloadProc);
+                } else {
+                    DialogBox(h, MAKEINTRESOURCEW(P_BAR_DIALOG_EN), NULL, DlgDownloadProc);
+                }
+
                 th.join();
                 EnableWindow(hw, TRUE);
                 DeleteUrlCacheEntry(download_url);
-                if(showError==1)
-                {
+                if (showError == 1) {
+
                     LPTSTR errorText = NULL;
-                        std::wstring mes = L"Error code: ";
-                        mes.append(std::to_wstring(error_code));
+                    std::wstring mes = L"Error code: ";
+                    mes.append(std::to_wstring(error_code));
+                    if (locale.find("ru") != -1) {
+                        mes.append(L"\nПроверьте интернет соединение.");
+                        MessageBox(hw,mes.c_str(), TEXT("Ошибка скачивания"), MB_OK);
+                    } else {
                         mes.append(L"\nCheck internet connection.");
                         MessageBox(hw,mes.c_str(), TEXT("Error download"), MB_OK);
-                       // release memory allocated by FormatMessage()
-                       LocalFree(errorText);
-                       errorText = NULL;
-                       return TRUE;
+                    }
+
+                    // release memory allocated by FormatMessage()
+                    LocalFree(errorText);
+                    errorText = NULL;
+                    return TRUE;
                 }
+
                 if (ds.GetAbortDownl())
                     return TRUE;
+
                 HZIP hz = OpenZip(archive_path.c_str(), 0);
                 ZIPENTRY ze;
                 SetUnzipBaseDir(hz, archive_dir.c_str());
                 GetZipItem(hz, -1, &ze);
                 int numitems = ze.index;
+
                 // -1 gives overall information about the zipfile
                 for (int zi = 0; zi < numitems; zi++) {
                     ZIPENTRY ze;
                     GetZipItem(hz, zi, &ze); // fetch individual details
                     UnzipItem(hz, zi, ze.name); // e.g. the item's name.
                 }
+
                 CloseZip(hz);
                 _wremove(archive_path.c_str());
                 HANDLE dir;
                 WIN32_FIND_DATA file_data;
                 std::wstring str = archive_dir + wfile_separator() + L"*";
-                if ((dir = FindFirstFile(str.c_str(), &file_data)) != INVALID_HANDLE_VALUE)
-
+                if ((dir = FindFirstFile(str.c_str(), &file_data)) != INVALID_HANDLE_VALUE) {
                     do {
-                        //wide char array
-
-                        //convert from wide char to narrow char array
-
-
-                        //A std:string  using the char* constructor.
-
-                        std::string fileName=utils::convertUtf16ToUtf8(file_data.cFileName);
+                        std::string fileName = utils::convertUtf16ToUtf8(file_data.cFileName);
                         std::string full_file_name = utils::convertUtf16ToUtf8(archive_dir) + file_separator() + fileName;
 
                         if (fileName[0] == '.')
                             continue;
+
                         djava_home = full_file_name;
                     } while (FindNextFile(dir, &file_data));
+                }
 
                 FindClose(dir);
                 result_dialog = DOWNLOAD;
                 EndDialog(hw, 0);
-        }
-            if (IsDlgButtonChecked(hw, CHOOSE_FILE))
-            {
+            }
+
+            if (IsDlgButtonChecked(hw, CHOOSE_FILE)) {
                 std::wstring ws = basicOpenFolder();
                 if (ws != L"") {
                     //std::wcout<<L"temp="<<temp<<std::endl;
@@ -2192,16 +2275,15 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
                     result_dialog = CHOOSE_FILE;
                     EndDialog(hw, 0);
                 }
-
             }
-
         }
-        if(LOWORD(wp)==7)
-        {
+
+        if(LOWORD(wp) == 7) {
             result_dialog = CANCEL;
             EndDialog(hw, 0);
         }
         return TRUE;
+
     case WM_NOTIFY:
         if (LOWORD(wp) == 1) {
             switch (((LPNMHDR)lp)->code) {
@@ -2228,7 +2310,11 @@ int showDialog()
 {
     int res;
     HINSTANCE h = GetModuleHandle(NULL);
-    DialogBox(h, MAKEINTRESOURCEW(DIALOG_X), NULL, DlgProc);
+    if (locale.find("ru") != -1) {
+       DialogBox(h, MAKEINTRESOURCEW(DIALOG_X_RU), NULL, DlgProc);
+    } else {
+        DialogBox(h, MAKEINTRESOURCEW(DIALOG_X_EN), NULL, DlgProc);
+    }
 
     if (result_dialog == DOWNLOAD) {
 
@@ -2303,100 +2389,110 @@ static int runJvm(const NativeArguments& l_args)
     }
 }
 
-int main(int argc, char* argv[])
-{
-// if linux system is used need to set desktop environment to NONE,
-// otherwise launcher is crashed
-// TODO check it on Centos 7
-#ifdef __linux__
-    setenv("XDG_CURRENT_DESKTOP", "NONE", 1);
-#endif
+int main(int argc, char* argv[]) {
+
+    // get current OS locale
+    locale = std::locale("").name();
+    std::transform(locale.begin(), locale.end(), locale.begin(), [](unsigned char c){ return std::tolower(c); });
+//    std::cout << "Found locale: " << locale << std::endl;
+
+    // if linux system is used need to set desktop environment to NONE,
+    // otherwise launcher is crashed
+    // TODO check it on Centos 7
+    #ifdef __linux__
+        setenv("XDG_CURRENT_DESKTOP", "NONE", 1);
+    #endif
 
     std::string separator = ";";
-#ifdef __linux__
-    separator = ":";
-#endif
+    #ifdef __linux__
+        separator = ":";
+    #endif
 
     std::string paths("-Djava.class.path=");
-
     int app_pid;
-#ifdef __linux__
-    app_exe_path = getSelfPath();
-    std::string tmp_path = getSelfPath();
-    bin_dir = dirname((char*)tmp_path.c_str());
-    app_pid = getpid();
-#else
-    // hide console window
-    ::ShowWindow(::GetConsoleWindow(), SW_HIDE);
-    HMODULE h_module = GetModuleHandleW(NULL);
-    WCHAR path[MAX_PATH];
-    GetModuleFileNameW(h_module, path, MAX_PATH);
-    std::wstring ws(path);
-    std::string str=utils::convertUtf16ToUtf8(ws);
-    app_exe_path = str;
-    char buf[256];
-    GetCurrentDirectoryA(256, buf);
-    bin_dir = app_exe_path.substr(0, app_exe_path.find_last_of(file_separator()));
-    app_pid = GetCurrentProcessId();
-#endif
+
+    #ifdef __linux__
+        app_exe_path = getSelfPath();
+        std::string tmp_path = getSelfPath();
+        bin_dir = dirname((char*)tmp_path.c_str());
+        app_pid = getpid();
+    #else
+        // hide console window
+        ::ShowWindow(::GetConsoleWindow(), SW_HIDE);
+        HMODULE h_module = GetModuleHandleW(NULL);
+        WCHAR path[MAX_PATH];
+        GetModuleFileNameW(h_module, path, MAX_PATH);
+        std::wstring ws(path);
+        std::string str=utils::convertUtf16ToUtf8(ws);
+        app_exe_path = str;
+        char buf[256];
+        GetCurrentDirectoryA(256, buf);
+        bin_dir = app_exe_path.substr(0, app_exe_path.find_last_of(file_separator()));
+        app_pid = GetCurrentProcessId();
+    #endif
 
     app_dir = bin_dir + file_separator() + "..";
     paths.append(app_dir + file_separator() + "RedExpert.jar");
     paths.append(separator);
 
-#ifdef __linux__
-    paths.append(app_dir + "/createDesktopEntry.sh");
-    paths.append(separator);
-    paths.append(app_dir + "/redexpert.desktop");
-    paths.append(separator);
-#endif
+    #ifdef __linux__
+        paths.append(app_dir + "/createDesktopEntry.sh");
+        paths.append(separator);
+        paths.append(app_dir + "/redexpert.desktop");
+        paths.append(separator);
+    #endif
 
     std::string lib_dir(app_dir + file_separator() + "lib");
+    #ifdef __linux__
+        DIR* dir;
+        struct dirent* ent;
 
-#ifdef __linux__
-    DIR* dir;
-    struct dirent* ent;
-    if ((dir = opendir(lib_dir.c_str())) != NULL) {
-        while ((ent = readdir(dir)) != NULL) {
-            std::string conv_file(ent->d_name);
-            if (conv_file.rfind("fbplugin-impl", 0) == 0 || conv_file.rfind("fbclient", 0) == 0 || conv_file.rfind("jaybird", 0) == 0)
-                continue;
-            paths.append(lib_dir + "/" + ent->d_name);
-            paths.append(separator);
-        }
-        closedir(dir);
-    }
-    else {
-        err_rep.reportFatalException(std::system_error(ENOENT, std::generic_category(), "No library directory found"));
-        exit(EXIT_FAILURE);
-    }
-#else
-    WIN32_FIND_DATA data;
-    std::wstring wlib_dir(lib_dir.begin(), lib_dir.end());
-    wlib_dir.append(L"\\*");
-    HANDLE h_find = FindFirstFile(wlib_dir.c_str(), &data);
+        if ((dir = opendir(lib_dir.c_str())) != NULL) {
+            while ((ent = readdir(dir)) != NULL) {
+                std::string conv_file(ent->d_name);
+                if (conv_file.rfind("fbplugin-impl", 0) == 0 || conv_file.rfind("fbclient", 0) == 0 || conv_file.rfind("jaybird", 0) == 0)
+                    continue;
 
-    if (h_find != INVALID_HANDLE_VALUE) {
-        do {
-            // convert from wide char to narrow char array
-            char buffer[1024];
-            char def_char = '\0';
-            WideCharToMultiByte(CP_ACP, 0, data.cFileName, -1, buffer, 260, &def_char,
-                NULL);
-            std::string conv_file(buffer);
-            if (conv_file.rfind("fbplugin-impl", 0) == 0 || conv_file.rfind("fbclient", 0) == 0 || conv_file.rfind("jaybird", 0) == 0)
-                continue;
-            if (conv_file != "." && conv_file != "..") {
-                paths.append(lib_dir + "\\");
-                paths.append(conv_file);
+                paths.append(lib_dir + "/" + ent->d_name);
                 paths.append(separator);
             }
-        } while (FindNextFile(h_find, &data));
-        FindClose(h_find);
-        int localLength = paths.length();
-        paths.resize(paths.length() - 2);
-    }
-#endif
+            closedir(dir);
+        } else {
+            err_rep.reportFatalException(std::system_error(ENOENT, std::generic_category(), "No library directory found"));
+            exit(EXIT_FAILURE);
+        }
+
+    #else
+        WIN32_FIND_DATA data;
+        std::wstring wlib_dir(lib_dir.begin(), lib_dir.end());
+        wlib_dir.append(L"\\*");
+        HANDLE h_find = FindFirstFile(wlib_dir.c_str(), &data);
+
+        if (h_find != INVALID_HANDLE_VALUE) {
+            do {
+                // convert from wide char to narrow char array
+                char buffer[1024];
+                char def_char = '\0';
+
+                WideCharToMultiByte(CP_ACP, 0, data.cFileName, -1, buffer, 260, &def_char, NULL);
+
+                std::string conv_file(buffer);
+                if (conv_file.rfind("fbplugin-impl", 0) == 0 || conv_file.rfind("fbclient", 0) == 0 || conv_file.rfind("jaybird", 0) == 0)
+                    continue;
+
+                if (conv_file != "." && conv_file != "..") {
+                    paths.append(lib_dir + "\\");
+                    paths.append(conv_file);
+                    paths.append(separator);
+                }
+            } while (FindNextFile(h_find, &data));
+
+            FindClose(h_find);
+            int localLength = paths.length();
+            paths.resize(paths.length() - 2);
+        }
+
+    #endif
 
     int sep_idx = paths.find_last_of(separator);
     paths = paths.substr(0, sep_idx);
@@ -2410,23 +2506,22 @@ int main(int argc, char* argv[])
 
     err_rep.ARGV0 = *argv++;
     if (*argv != 0)
-       fileForOpenPath = *argv++;
-    while (*argv != 0) {
-        launcher_args.push_back(*argv++);
-    }
-    err_rep.launcher_args = launcher_args;
+        fileForOpenPath = *argv++;
 
+    while (*argv != 0)
+        launcher_args.push_back(*argv++);
+
+    err_rep.launcher_args = launcher_args;
     launcher_args.push_back(class_path);
     launcher_args.push_back("org/executequery/ExecuteQuery");
-
     launcher_args.push_back("-exe_path=" + app_exe_path);
-    std::string str_pid = utils::toString(app_pid);
-    launcher_args.push_back("-exe_pid=" + str_pid);
-    std::string path_config;
+    launcher_args.push_back("-exe_pid=" + utils::toString(app_pid));
 
+    std::string path_config;
     path_config = replaceFirstOccurrence(app_exe_path, "bin" + file_separator() + "RedExpert64" + extension_exe_file(), "config" + file_separator() + "redexpert_config.ini");
     path_config = replaceFirstOccurrence(path_config, "bin" + file_separator() + "RedExpert" + extension_exe_file(), "config" + file_separator() + "redexpert_config.ini");
-    std::ifstream in(path_config); // окрываем файл для чтения
+
+    std::ifstream in(path_config); // открываем файл для чтения
     bool f_open = in.is_open();
     std::string line;
     if (f_open) {
@@ -2436,8 +2531,10 @@ int main(int argc, char* argv[])
             }
         }
     }
+
     if (!fileForOpenPath.empty())
         launcher_args.push_back("FILE_FOR_OPEN=" + fileForOpenPath);
     in.close();
+
     return runJvm(launcher_args);
 }

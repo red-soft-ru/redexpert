@@ -9,6 +9,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.components.OpenConnectionsComboboxPanel;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.MiscUtils;
@@ -133,11 +134,8 @@ public class ImportConnectionsDBPanel extends JPanel {
 
     private boolean connectionNameExists(String name, DatabaseConnection databaseConnection) {
 
-
-        if (databaseConnectionRepository().nameExists(databaseConnection, name)) {
-
-            GUIUtilities.displayErrorMessage("The name [ " + name
-                    + " ] entered for this connection already exists");
+        if (databaseConnectionRepository().nameExists(databaseConnection, name, databaseConnection.getFolderId())) {
+            GUIUtilities.displayErrorMessage(String.format(Bundles.get("ConnectionPanel.error.nameExist"), name));
             return true;
         }
 

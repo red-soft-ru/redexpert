@@ -758,12 +758,18 @@ public class ConnectionsTreePanel extends TreePanel
      */
     public void newConnection(DatabaseConnection dc) {
 
+        validateConnectionCopyName(dc);
         DatabaseHost host = databaseObjectFactory().createDatabaseHost(dc);
         connections.add(dc);
-        ConnectionsFolderNode folderNode = getSelectedFolderNode();
+
+        ConnectionsFolderNode folderNode = getFolderNodes().stream()
+                .filter(node -> Objects.equals(
+                        MiscUtils.getNulladbleString(node.getConnectionsFolder().getId()),
+                        MiscUtils.getNulladbleString(dc.getFolderId()))
+                )
+                .findFirst().orElse(null);
 
         if (folderNode != null) {
-
             final DatabaseHostNode hostNode = new DatabaseHostNode(host, folderNode);
             folderNode.addNewHostNode(hostNode);
             tree.nodesWereInserted(folderNode, new int[]{folderNode.getChildCount() - 1});
@@ -780,10 +786,18 @@ public class ConnectionsTreePanel extends TreePanel
     }
 
     public void copyConnection(DatabaseConnection dc) {
+        validateConnectionCopyName(dc);
+        connections.add(dc);
+        connectionAdded(dc);
+    }
 
-        String connectionFolderId = dc.getFolderId() != null ? dc.getFolderId() : "";
+    private void validateConnectionCopyName(DatabaseConnection dc) {
+
         List<String> sameNamesSuffixes = connections.stream()
-                .filter(conn -> Objects.equals(conn.getFolderId() != null ? conn.getFolderId() : "", connectionFolderId))
+                .filter(conn -> Objects.equals(
+                        MiscUtils.getNulladbleString(conn.getFolderId()),
+                        MiscUtils.getNulladbleString(dc.getFolderId()))
+                )
                 .map(DatabaseConnection::getName)
                 .filter(name -> name.startsWith(dc.getName()))
                 .map(name -> name.substring(dc.getName().length()))
@@ -801,9 +815,6 @@ public class ConnectionsTreePanel extends TreePanel
         }
 
         dc.setName(newName);
-
-        connections.add(dc);
-        connectionAdded(dc);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

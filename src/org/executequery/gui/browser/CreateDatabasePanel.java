@@ -633,10 +633,8 @@ public class CreateDatabasePanel extends ActionPanel
     private boolean connectionNameExists() {
 
         String name = nameField.getText().trim();
-        if (databaseConnectionRepository().nameExists(databaseConnection, name)) {
-
-            GUIUtilities.displayErrorMessage("The name [ " + name
-                    + " ] entered for this connection already exists");
+        if (databaseConnectionRepository().nameExists(databaseConnection, name, databaseConnection.getFolderId())) {
+            GUIUtilities.displayErrorMessage(String.format(Bundles.get("ConnectionPanel.error.nameExist"), name));
             return true;
         }
 

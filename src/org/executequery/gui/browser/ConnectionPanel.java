@@ -807,10 +807,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     }
 
     private boolean connectionNameExists() {
-
-        String name = nameField.getText().trim();
-        return databaseConnectionRepository().nameExists(databaseConnection, name);
-
+        return databaseConnectionRepository().nameExists(databaseConnection, nameField.getText().trim(), databaseConnection.getFolderId());
     }
 
     private DatabaseConnectionRepository databaseConnectionRepository() {
@@ -1006,8 +1003,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private void checkNameUpdate() {
 
         if (connectionNameExists()) {
-            GUIUtilities.displayErrorMessage(bundleString("error.nameExist1") + nameField.getText().trim()
-                    + bundleString("error.nameExist2"));
+            GUIUtilities.displayErrorMessage(String.format(bundleString("error.nameExist"), nameField.getText().trim()));
             focusNameField();
             return;
         }

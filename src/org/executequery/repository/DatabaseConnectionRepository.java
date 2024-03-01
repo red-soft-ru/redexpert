@@ -40,7 +40,7 @@ public interface DatabaseConnectionRepository extends Repository {
 
     DatabaseConnection findBySourceName(String sourceName);
 
-    boolean nameExists(DatabaseConnection exclude, String name);
+    boolean nameExists(DatabaseConnection exclude, String name, String folderId);
 
     void save(String path, List<DatabaseConnection> databaseConnections);
 

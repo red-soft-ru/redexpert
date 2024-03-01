@@ -710,15 +710,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     }
 
     public void duplicate(ActionEvent e) {
-
-        if (currentSelection != null) {
-
-            String name = treePanel.buildConnectionName(
-                    currentSelection.getName() + " (" + Bundles.getCommon("copy")) + ")";
-            DatabaseConnection dc = currentSelection.copy().withName(name);
-            treePanel.newConnection(dc);
-        }
-
+        if (currentSelection != null)
+            treePanel.newConnection(currentSelection.copy());
     }
 
     public void duplicateWithSource(ActionEvent e) {

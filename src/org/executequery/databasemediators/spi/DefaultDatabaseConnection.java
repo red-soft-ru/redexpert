@@ -583,8 +583,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         return UUID.randomUUID().toString();
     }
 
+    @Override
     public DatabaseConnection copy() {
-
         DatabaseConnection copy = new DefaultDatabaseConnection(getName());
 
         copy.setId(generateId());
@@ -600,21 +600,6 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         copy.setUserName(getUserName());
         copy.setCharset(getCharset());
         copy.setFolderId(getFolderId());
-
-        if (getJdbcProperties() != null) {
-
-            copy.setJdbcProperties((Properties) getJdbcProperties().clone());
-        }
-
-        if (copy.isPasswordEncrypted()) {
-
-            copy.setEncryptedPassword(getPassword());
-        } else {
-
-            copy.setPassword(getPassword());
-        }
-
-
         copy.setSshHost(getSshHost());
         copy.setSshTunnel(isSshTunnel());
         copy.setSshUserName(getSshUserName());
@@ -630,6 +615,13 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         copy.setMajorServerVersion(getMajorServerVersion());
         copy.setMinorServerVersion(getMinorServerVersion());
         copy.setPathToTraceConfig(getPathToTraceConfig());
+        if (getJdbcProperties() != null)
+            copy.setJdbcProperties((Properties) getJdbcProperties().clone());
+        if (copy.isPasswordEncrypted())
+            copy.setEncryptedPassword(getPassword());
+        else
+            copy.setPassword(getPassword());
+
         return copy;
     }
 

@@ -861,6 +861,9 @@ public final class MiscUtils {
         return s1.equalsIgnoreCase(s2);
     }
 
+    public static String getNulladbleString(String value) {
+        return value != null ? value : "";
+    }
 
 }
 

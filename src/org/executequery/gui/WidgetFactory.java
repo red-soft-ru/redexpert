@@ -75,6 +75,7 @@ public final class WidgetFactory {
         JButton button = createButton(name, null);
         button.setIcon(icon);
         button.setToolTipText(toolTip);
+        button.setPreferredSize(getPreferredSize(button));
 
         return button;
     }
@@ -91,7 +92,10 @@ public final class WidgetFactory {
 
         JButton button = createButton(name, icon, toolTip);
         button.setText(text);
-        button.setPreferredSize(getPreferredSize(button));
+
+        Dimension defaultPrefered = getPreferredSize(button);
+        defaultPrefered.width += button.getFontMetrics(button.getFont()).stringWidth(text) + button.getMargin().left + button.getMargin().right;
+        button.setPreferredSize(defaultPrefered);
 
         return button;
     }

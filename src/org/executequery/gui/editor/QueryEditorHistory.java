@@ -38,12 +38,21 @@ public class QueryEditorHistory {
     }
 
     public static void addEditor(String connectionID, PathNumber pathNumber) {
-        getEditors(connectionID).add(pathNumber);
-        if (pathNumber.number != -1) {
-            numbers().add(pathNumber.number);
-            saveNumbers();
+        List<PathNumber> paths = getEditors(connectionID);
+        boolean contains = false;
+        for (PathNumber path : paths)
+            if (path.path.contentEquals(pathNumber.path)) {
+                contains = true;
+                break;
+            }
+        if (!contains) {
+            getEditors(connectionID).add(pathNumber);
+            if (pathNumber.number != -1) {
+                numbers().add(pathNumber.number);
+                saveNumbers();
+            }
+            saveEditors();
         }
-        saveEditors();
     }
 
     public static void removeEditor(String connectionID, String editor) {

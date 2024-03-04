@@ -27,11 +27,8 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.ProcedureParameterSorter;
 import org.executequery.databasemediators.QueryTypes;
-import org.executequery.databaseobjects.DatabaseExecutable;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseSource;
-import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.Types;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.editor.autocomplete.Parameter;
@@ -1110,6 +1107,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             case QueryTypes.RECREATE_OBJECT:
             case QueryTypes.CREATE_OR_ALTER:
             case QueryTypes.ALTER_OBJECT:
+            case QueryTypes.DECLARE_OBJECT:
                 return executeDDL(query);
 
             case QueryTypes.UNKNOWN:
@@ -1437,6 +1435,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             case QueryTypes.RECREATE_OBJECT:
             case QueryTypes.CREATE_OR_ALTER:
             case QueryTypes.ALTER_OBJECT:
+            case QueryTypes.DECLARE_OBJECT:
                 return executeDDL(statement);
 
             case QueryTypes.UNKNOWN:

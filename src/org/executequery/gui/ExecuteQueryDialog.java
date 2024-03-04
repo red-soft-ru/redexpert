@@ -582,8 +582,11 @@ public class ExecuteQueryDialog extends BaseDialog {
                 case QueryTypes.CREATE_OR_ALTER:
                     nameOperation = "CREATE OR ALTER " + q.getMetaName();
                     break;
+                case QueryTypes.DECLARE_OBJECT:
+                    nameOperation = "DECLARE " + q.getMetaName();
+                    break;
                 case QueryTypes.SET_STATISTICS:
-                    nameOperation="SET STATISTICS";
+                    nameOperation = "SET STATISTICS";
                     break;
                 default:
                     nameOperation = "OPERATION";

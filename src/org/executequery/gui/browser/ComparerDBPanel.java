@@ -168,6 +168,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
         attributesCheckBoxMap = new HashMap<>();
         for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++) {
 
+            if (objectType == NamedObject.USER)
+                continue;
+
             String checkBoxText = bundleString(NamedObject.META_TYPES_FOR_BUNDLE[objectType]);
             if (checkBoxText.isEmpty())
                 checkBoxText = Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType]);

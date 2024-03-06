@@ -183,7 +183,6 @@ public interface NamedObject extends Named, java.io.Serializable {
             SEQUENCE,
             EXCEPTION,
             ROLE,
-            USER,
             FUNCTION,
             PROCEDURE,
             JOB,

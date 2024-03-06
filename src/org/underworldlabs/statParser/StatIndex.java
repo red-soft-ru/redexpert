@@ -23,7 +23,9 @@ public class StatIndex extends StatTableIndex {
             {"average data length:", "f", "avg_data_length"},
             {"Clustering factor:", "f", null},
             {"ratio:", "f", null},
-            {"full size:", "i+", null}
+            {"leaf full size:", "i", null},
+            {"estimated full size:", "i", null},
+
     };
     public StatTable table;
     public String table_name;
@@ -43,7 +45,9 @@ public class StatIndex extends StatTableIndex {
     public float avg_prefix_length;
     public float clustering_factor;
     public float ratio;
-    public long full_size;
+
+    public long leaf_full_size;
+    public long estimated_full_size;
 
     public StatIndex(StatTable table) {
         this.table = table;
@@ -68,8 +72,9 @@ public class StatIndex extends StatTableIndex {
     @Override
     public void calculateValues() {
         table_name = table.name;
-        full_size = (long) (leaf_buckets * Math.pow(1 + (avg_node_length / page_size), depth - 1));
-        full_size *= page_size;
+        leaf_full_size = leaf_buckets * page_size;
+        estimated_full_size = (long) (leaf_buckets * Math.pow(1 + (avg_node_length / page_size), depth - 1));
+        estimated_full_size *= page_size;
         long temp = nodes - total_dup;
         real_selectivity = (1 / (double) temp);
         calculateTS();

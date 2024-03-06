@@ -94,7 +94,7 @@ public class StatTable extends StatTableIndex {
         long ind_size = 0;
         if (indices != null)
             for (StatIndex index : indices) {
-                ind_size += index.full_size;
+                ind_size += index.estimated_full_size;
             }
         size_with_indices = size_with_blob_pages + ind_size;
         calculateTS();

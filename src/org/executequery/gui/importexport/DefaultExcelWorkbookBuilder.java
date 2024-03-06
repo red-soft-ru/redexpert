@@ -93,7 +93,12 @@ public class DefaultExcelWorkbookBuilder implements ExcelWorkbookBuilder {
         for (int i = 0, n = values.size(); i < n; i++) {
             SXSSFCell cell = row.createCell(i);
             cell.setCellStyle(style);
-            cell.setCellValue(new XSSFRichTextString(values.get(i)));
+            try {
+                double doubleValue = Double.valueOf(values.get(i));
+                cell.setCellValue(doubleValue);
+            } catch (Exception e) {
+                cell.setCellValue(new XSSFRichTextString(values.get(i)));
+            }
         }
     }
 

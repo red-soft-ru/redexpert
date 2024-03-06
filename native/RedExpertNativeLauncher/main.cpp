@@ -139,7 +139,6 @@ static TCHAR *download_url = TEXT("https://github.com/adoptium/temurin17-binarie
 
 static HWND h_progress;
 static HWND h_dialog_download;
-static DownloadStatus ds;
 
 static std::thread th;
 static std::wstring archive_dir;
@@ -291,6 +290,8 @@ HRESULT DownloadStatus::OnProgress(
         return E_ABORT;
     return S_OK;
 }
+
+static DownloadStatus ds;
 
 std::string get_property_from_regex(std::string reg_property, std::string source)
 {
@@ -968,6 +969,7 @@ SharedLibraryHandle openSharedLibrary(
     SetEnvironmentVariableA("PATH", path.c_str());
     void *sl_handle = LoadLibraryA(sl_file.c_str());
     if (sl_handle == 0)
+    {
         DWORD l_err = GetLastError();
 
 #else
@@ -978,19 +980,19 @@ SharedLibraryHandle openSharedLibrary(
 
 #endif
 
-    os << std::endl;
-    os << "If you can't otherwise explain why this call failed, consider ";
-    os << "whether all of the shared libraries ";
-    os << "used by this shared library can be found.";
-    os << std::endl;
+        os << std::endl;
+        os << "If you can't otherwise explain why this call failed, consider ";
+        os << "whether all of the shared libraries ";
+        os << "used by this shared library can be found.";
+        os << std::endl;
 
 #ifdef _WIN32
 
-    os << "This command's output may help:" << std::endl;
-    os << "objdump -p \"" << sl_file << "\" | grep DLL" << std::endl;
-    os << "LoadLibrary(\"" << sl_file << "\")";
+        os << "This command's output may help:" << std::endl;
+        os << "objdump -p \"" << sl_file << "\" | grep DLL" << std::endl;
+        os << "LoadLibrary(\"" << sl_file << "\")";
 
-    throw utils::WindowsError(os.str(), l_err);
+        throw utils::WindowsError(os.str(), l_err);
 
 #else
 
@@ -998,18 +1000,19 @@ SharedLibraryHandle openSharedLibrary(
 
 #endif
 
-    if (!from_file_java_paths)
-    {
-        std::ofstream file_java_paths;                    // поток для записи
-        file_java_paths.open(path_to_java_paths.c_str()); // открываем файл для записи
-        if (file_java_paths.is_open())
+        if (!from_file_java_paths)
         {
-            file_java_paths << "jvm=" << sl_file << std::endl;
-            file_java_paths << "path=" << path << std::endl;
+            std::ofstream file_java_paths;                    // поток для записи
+            file_java_paths.open(path_to_java_paths.c_str()); // открываем файл для записи
+            if (file_java_paths.is_open())
+            {
+                file_java_paths << "jvm=" << sl_file << std::endl;
+                file_java_paths << "path=" << path << std::endl;
+            }
         }
-    }
 
-    return sl_handle;
+        return sl_handle;
+    }
 }
 
 SharedLibraryHandle openSharedLibrary(
@@ -2596,15 +2599,11 @@ static int showError = 0;
 HRESULT error_code;
 
 VOID CALLBACK TimerProc(
-VOID CALLBACK TimerProc(
-
-    VOID CALLBACK TimerProc(
-
-        HWND hwnd,
-        UINT uMsg,
-        UINT_PTR idEvent,
-        DWORD dwTime
-    ) {
+    HWND hwnd,
+    UINT uMsg,
+    UINT_PTR idEvent,
+    DWORD dwTime)
+{
     if (idEvent == 1001)
     {
         long filesize = ds.GetFileSize();
@@ -2625,12 +2624,12 @@ VOID CALLBACK TimerProc(
             }
         }
     }
-    }
+}
 
-    INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
+INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
+{
     switch (msg)
     {
-
     case WM_INITDIALOG:
     {
 
@@ -2657,21 +2656,21 @@ VOID CALLBACK TimerProc(
         /* сообщение о создании диалога */
         th = std::thread([]
                          {
+                        HRESULT res=URLDownloadToFile(
+                            0,
+                            download_url,
+                            archive_path.c_str(),
+                            0,
+                            &ds
+                        );
 
-                    HRESULT res=URLDownloadToFile(
-                        0,
-                        download_url,
-                        archive_path.c_str(),
-                        0,
-                        &ds
-                    );
+                        EndDialog(h_dialog_download, 0);
+                        KillTimer(h_dialog_download, 1001);
 
-                    EndDialog(h_dialog_download, 0);
-                    KillTimer(h_dialog_download, 1001);
-                    if (res != S_OK && res != E_ABORT) {
-                        showError = 1;
-                        error_code = res;
-                    } });
+                        if (res != S_OK && res != E_ABORT) {
+                            showError = 1;
+                            error_code = res;
+                        } });
 
         SetTimer(hw, 1001, 1000, TimerProc);
         return TRUE;
@@ -2689,9 +2688,10 @@ VOID CALLBACK TimerProc(
     }
 
     return FALSE;
-    }
+}
 
-    INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
+INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
+{
     std::wstring m_mes;
     std::wstring arch;
 
@@ -2893,9 +2893,10 @@ VOID CALLBACK TimerProc(
     }
 
     return FALSE;
-    }
+}
 
-    int showDialog() {
+int showDialog()
+{
     int res;
     HINSTANCE h = GetModuleHandle(NULL);
 
@@ -2908,13 +2909,15 @@ VOID CALLBACK TimerProc(
         return 1;
     else
         return 0;
-    }
+}
 
-    LONG CALLBACK handleVectoredException(PEXCEPTION_POINTERS) {
+LONG CALLBACK handleVectoredException(PEXCEPTION_POINTERS)
+{
     return EXCEPTION_CONTINUE_SEARCH;
-    }
+}
 
-    static void deferToHotSpotExceptionHandler() {
+static void deferToHotSpotExceptionHandler()
+{
     ULONG first_handler = 1;
 
     PVOID handle = AddVectoredContinueHandler(first_handler, &handleVectoredException);
@@ -2935,15 +2938,16 @@ VOID CALLBACK TimerProc(
 
     if (rc == 0)
         throw std::runtime_error("RemoveVectoredContinueHandler(handle) failed");
-    }
+}
 
 #else
 
 static void deferToHotSpotExceptionHandler() {}
 
-#endif 
+#endif
 
-static int runJvm(const NativeArguments& l_args) {
+static int runJvm(const NativeArguments &l_args)
+{
     try
     {
 
@@ -2974,7 +2978,8 @@ static int runJvm(const NativeArguments& l_args) {
     }
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
     // get current OS locale
     locale = std::locale("").name();
     std::transform(locale.begin(), locale.end(), locale.begin(), [](unsigned char c)

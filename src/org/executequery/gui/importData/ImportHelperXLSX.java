@@ -35,7 +35,7 @@ public class ImportHelperXLSX extends AbstractImportHelper {
         int executorIndex = 0;
         int linesCount = 0;
 
-        for (int rowIndex = isFirstRowHeaders ? 1 : 0; rowIndex < sheet.getLastRowNum(); rowIndex++) {
+        for (int rowIndex = isFirstRowHeaders ? 1 : 0; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
 
             if (parent.isCancel() || linesCount > lastRow)
                 break;
@@ -110,7 +110,7 @@ public class ImportHelperXLSX extends AbstractImportHelper {
         List<String> readData = new LinkedList<>();
         XSSFSheet sheet = workbook.getSheetAt(parent.getSheetNumber() - 1);
 
-        for (int rowIndex = 0; rowIndex < previewRowCount && rowIndex < sheet.getLastRowNum(); rowIndex++) {
+        for (int rowIndex = 0; rowIndex < previewRowCount && rowIndex <= sheet.getLastRowNum(); rowIndex++) {
 
             String stringRow = String.join(delimiter, getRowData(sheet.getRow(rowIndex)));
             if (rowIndex == 0 && isFirstRowHeaders) {

@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.DataTruncation;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,6 +68,8 @@ public class ImportHelperXLSX extends AbstractImportHelper {
                         insertStatement.setNull(fieldIndex + 1, columnType);
 
                     } else {
+                        insertParameter = insertParameter.toString();
+
                         if (parent.isIntegerType(columnTypeName))
                             insertParameter = getFormattedIntValue(insertParameter);
                         else if (parent.isTimeType(columnTypeName))
@@ -74,7 +77,11 @@ public class ImportHelperXLSX extends AbstractImportHelper {
                         else if (parent.isBlobType(columnTypeName) && columnProperty.equals("true"))
                             insertParameter = getFormattedBlobValue(insertParameter, false);
 
-                        insertStatement.setObject(fieldIndex + 1, insertParameter);
+                        try {
+                            insertStatement.setObject(fieldIndex + 1, insertParameter);
+                        } catch (DataTruncation e) {
+                            insertStatement.setObject(fieldIndex + 1, getFormattedIntValue(insertParameter));
+                        }
                     }
 
                     fieldIndex++;

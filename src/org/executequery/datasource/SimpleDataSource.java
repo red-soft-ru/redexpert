@@ -266,7 +266,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         return DRIVER_LOADER.load(databaseDriver);
     }
 
-    public static final String generateUrl(DatabaseConnection databaseConnection, Properties properties) {
+    public static String generateUrl(DatabaseConnection databaseConnection, Properties properties) {
 
         String url = databaseConnection.getURL();
 
@@ -284,7 +284,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             url = replacePart(url, databaseConnection.getPort(), PORT);
             url = replacePart(url, databaseConnection.getSourceName(), SOURCE);
             Log.info("JDBC URL generated: " + url);
-            Properties clone = (Properties)properties.clone();
+            Properties clone = (Properties) properties.clone();
             if (clone.getProperty("isc_dpb_repository_pin") != null)
                 clone.setProperty("isc_dpb_repository_pin", "********");
             Log.info("JDBC properties: " + clone);
@@ -292,6 +292,18 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         }
 
         return url;
+    }
+
+    public static String generateFormatedUrl(DatabaseConnection databaseConnection, Properties properties) {
+
+        String url = generateUrl(databaseConnection, properties);
+        url = url.replace("jdbc:firebirdsql://", "");
+
+        String host = url.split(":")[0];
+        String port = url.split(":")[1].split("/")[0];
+        String file = url.replace(host + ":" + port + "/", "");
+
+        return host + "/" + port + ":" + file;
     }
 
     private static String replacePart(String url, String value, String propertyName) {

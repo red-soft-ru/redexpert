@@ -491,11 +491,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
         settingScriptProps.append("\n/* Setting properties */\n\n");
         settingScriptProps.append("SET NAMES ").append(getMasterDBCharset()).append(";\n");
         settingScriptProps.append("SET SQL DIALECT ").append(getMasterDBDialect()).append(";\n");
-        settingScriptProps.append("CONNECT '").append(SimpleDataSource.generateUrl(
-                        comparer.getMasterConnection(),
-                        SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection()))
-                .replace("jdbc:firebirdsql://", "")
-        );
+        settingScriptProps.append("CONNECT '").append(SimpleDataSource.generateFormatedUrl(
+                comparer.getMasterConnection(),
+                SimpleDataSource.buildAdvancedProperties(comparer.getMasterConnection())));
         settingScriptProps.append("' USER '").append(comparer.getMasterConnection().getUserName());
         settingScriptProps.append("' PASSWORD '").append(comparer.getMasterConnection().getUnencryptedPassword());
         settingScriptProps.append("';\nSET AUTODDL ON;\n");

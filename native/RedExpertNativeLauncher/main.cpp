@@ -768,7 +768,9 @@ bool isUnreasonableVersion(std::ostream &os, const std::string &version)
     return false;
 }
 
+std::vector<std::string> get_potential_lib_paths();
 std::vector<std::string> get_potential_libjvm_paths();
+std::vector<std::string> get_potential_lib_paths_from_path(std::string path_parameter);
 std::vector<std::string> get_potential_libjvm_paths_from_path(std::string path_parameter);
 
 struct UsageError : std::runtime_error
@@ -1350,6 +1352,230 @@ SharedLibraryHandle tryHives(
 
 #endif
 
+std::vector<std::string> get_search_lib_suffixes()
+{
+    std::vector<std::string> search_suffixes;
+
+    search_suffixes.push_back("");
+    search_suffixes.push_back("" + file_separator() + "jre" + file_separator() + "lib");
+    search_suffixes.push_back("" + file_separator() + "lib");
+
+    return search_suffixes;
+}
+
+std::vector<std::string> get_search_lib_names()
+{
+    std::vector<std::string> search_names;
+
+    search_names.push_back("libawt_xawt.so");
+
+    return search_names;
+}
+
+std::vector<std::string> get_potential_lib_paths_from_path(std::string path_parameter)
+{
+    std::vector<std::string> lib_potential_paths;
+    std::vector<std::string> search_suffixes = get_search_lib_suffixes();
+    std::vector<std::string> search_names = get_search_lib_names();
+    std::string out;
+    std::string path = path_parameter;
+    std::string file_name;
+
+    std::string cmd = path_parameter + " -XshowSettings:properties -version";
+    executeCmdEx(cmd.c_str(), out);
+    if (out.find("Property settings") != std::string::npos)
+    {
+#ifdef __linux__
+
+        std::string jhome_pat = "java.home = ";
+        int jhome_pos = out.find(jhome_pat.c_str()) + jhome_pat.length();
+        int end_pos = out.find("\n", jhome_pos);
+        path = strdup(out.substr(jhome_pos, end_pos - jhome_pos).c_str());
+
+#endif
+    }
+
+    cmd = path_parameter + file_separator() + "java -XshowSettings:properties -version";
+    executeCmdEx(cmd.c_str(), out);
+    if (out.find("Property settings") != std::string::npos)
+    {
+#ifdef __linux__
+
+        std::string jhome_pat = "java.home = ";
+        int jhome_pos = out.find(jhome_pat.c_str()) + jhome_pat.length();
+        int end_pos = out.find("\n", jhome_pos);
+        path = strdup(out.substr(jhome_pos, end_pos - jhome_pos).c_str());
+
+#endif
+    }
+
+    for (std::vector<std::string>::iterator it_s = search_suffixes.begin(), en_s = search_suffixes.end(); it_s != en_s; ++it_s)
+    {
+        for (std::vector<std::string>::iterator it_n = search_names.begin(), en_n = search_names.end(); it_n != en_n; ++it_n)
+        {
+            std::string suffix = *it_s;
+            std::string file_name = *it_n;
+            std::string res_path = path + suffix + file_separator() + file_name;
+            lib_potential_paths.push_back(res_path);
+        }
+    }
+
+    return lib_potential_paths;
+}
+
+std::vector<std::string> get_potential_lib_paths()
+{
+
+    std::vector<std::string> lib_potential_paths;
+    std::vector<std::string> search_prefixes;
+    std::vector<std::string> search_suffixes = get_search_lib_suffixes();
+    std::vector<std::string> search_names = get_search_lib_names();
+
+#ifdef _WIN32
+
+    search_prefixes = {
+        ""};
+    search_suffixes = {
+        file_separator() + "jre" + file_separator() + "lib",
+        file_separator() + "lib"};
+
+#else
+
+    search_prefixes.push_back("/usr/lib/jvm/default-java");       // ubuntu / debian distros
+    search_prefixes.push_back("/usr/lib/jvm/java");               // rhel6
+    search_prefixes.push_back("/usr/lib/jvm");                    // centos6
+    search_prefixes.push_back("/usr/lib64/jvm");                  // opensuse 13
+    search_prefixes.push_back("/usr/local/lib/jvm/default-java"); // alt ubuntu / debian distros
+    search_prefixes.push_back("/usr/local/lib/jvm/java");         // alt rhel6
+    search_prefixes.push_back("/usr/local/lib/jvm");              // alt centos6
+    search_prefixes.push_back("/usr/local/lib64/jvm");            // alt opensuse 13
+
+    for (int i = 8; i < 20; i++)
+    {
+
+        std::stringstream ss;
+        ss << i;
+        std::string version = ss.str();
+
+        search_prefixes.push_back("/usr/lib/jvm/java-" + version + "-openjdk-amd64");
+        search_prefixes.push_back("/usr/local/lib/jvm/java-" + version + "-openjdk-amd64");
+        search_prefixes.push_back("/usr/lib/jvm/java-" + version + "-oracle");
+        search_prefixes.push_back("/usr/local/lib/jvm/java-" + version + "-oracle");
+    }
+
+    search_prefixes.push_back("/usr/lib/jvm/default"); // alt centos
+    search_prefixes.push_back("/usr/java/latest");     // alt centos
+
+#endif
+
+    char *env_value = NULL;
+    if ((env_value = getenv("JAVA_HOME")) != NULL)
+    {
+        search_prefixes.insert(search_prefixes.begin(), env_value);
+    }
+    else
+    {
+
+        // If the environment variable is not set, then there may be java is in global path?
+        std::string out;
+        executeCmdEx("java -XshowSettings:properties -version", out);
+
+#ifdef _WIN32
+
+        std::ostream &os = err_rep.progress_os;
+        os << out;
+
+        std::string str = get_property_from_regex("java\\.home", out);
+        if (!str.empty())
+        {
+            os << "java.home = " << str;
+            std::string str86 = replaceFirstOccurrence(str, "Program Files\\", "Program Files (x86)\\");
+            std::string str64 = replaceFirstOccurrence(str, "Program Files (x86)\\", "Program Files\\");
+            search_prefixes.insert(search_prefixes.begin(), _strdup(str86.c_str()));
+            search_prefixes.insert(search_prefixes.begin(), _strdup(str64.c_str()));
+            search_prefixes.insert(search_prefixes.begin(), _strdup(str.c_str()));
+        }
+
+        HANDLE dir;
+        WIN32_FIND_DATA file_data;
+        if ((dir = FindFirstFile(L"C:\\Program Files\\Java\\*", &file_data)) != INVALID_HANDLE_VALUE)
+        {
+            do
+            {
+
+                // convert from wide char to narrow char array
+                char ch[260];
+                char DefChar = ' ';
+                WideCharToMultiByte(CP_ACP, 0, file_data.cFileName, -1, ch, 260, &DefChar, NULL);
+
+                std::string fileName(ch);
+                std::string full_file_name = "C:\\Program Files\\Java\\" + fileName;
+
+                if (fileName[0] == '.')
+                    continue;
+                search_prefixes.push_back(full_file_name);
+
+            } while (FindNextFile(dir, &file_data));
+        }
+
+        FindClose(dir);
+        if ((dir = FindFirstFile(L"C:\\Program Files (x86)\\Java\\*", &file_data)) != INVALID_HANDLE_VALUE)
+        {
+            do
+            {
+
+                // convert from wide char to narrow char array
+                char ch[260];
+                char DefChar = ' ';
+                WideCharToMultiByte(CP_ACP, 0, file_data.cFileName, -1, ch, 260, &DefChar, NULL);
+
+                std::string fileName(ch);
+                std::string full_file_name = "C:\\Program Files (x86)\\Java\\" + fileName;
+
+                if (fileName[0] == '.')
+                    continue;
+                search_prefixes.push_back(full_file_name);
+
+            } while (FindNextFile(dir, &file_data));
+        }
+
+        FindClose(dir);
+        if (djava_home != "")
+            search_prefixes.insert(search_prefixes.begin(), djava_home);
+
+#elif __linux__
+
+        std::string jhome_pat = "java.home = ";
+        int jhome_pos = out.find(jhome_pat.c_str()) + jhome_pat.length();
+        int end_pos = out.find("\n", jhome_pos);
+
+        std::string java_env = out.substr(jhome_pos, end_pos - jhome_pos);
+        search_prefixes.insert(search_prefixes.begin(), java_env);
+        if (!djava_home.empty())
+            search_prefixes.insert(search_prefixes.begin(), djava_home);
+
+#endif
+    }
+
+    // Generate cross product between search_prefixes, search_suffixes, and file_name
+    for (std::vector<std::string>::const_iterator it = search_prefixes.begin(), en = search_prefixes.end(); it != en; ++it)
+    {
+        for (std::vector<std::string>::iterator it_s = search_suffixes.begin(), en_s = search_suffixes.end(); it_s != en_s; ++it_s)
+        {
+            for (std::vector<std::string>::iterator it_n = search_names.begin(), en_n = search_names.end(); it_n != en_n; ++it_n)
+            {
+                std::string prefix = *it;
+                std::string suffix = *it_s;
+                std::string file_name = *it_n;
+                std::string path = prefix + file_separator() + suffix + file_separator() + file_name;
+                lib_potential_paths.push_back(path.c_str());
+            }
+        }
+    }
+
+    return lib_potential_paths;
+}
+
 std::vector<std::string> get_search_suffixes()
 {
 
@@ -1778,24 +2004,29 @@ SharedLibraryHandle checkParameters(bool from_file)
 {
 
     std::vector<std::string> libjvm_paths;
+    std::vector<std::string> lib_paths;
 
     void *handler = 0;
     if (djvm != "")
     {
 
         libjvm_paths.push_back(djvm.c_str());
+        lib_paths = get_potential_lib_paths();
 
         if (try_dlopen(libjvm_paths, handler, from_file))
-            return static_cast<SharedLibraryHandle>(handler);
+            if (try_dlopen(lib_paths, handler, false))
+                return static_cast<SharedLibraryHandle>(handler);
     }
 
     if (djava_home != "")
     {
 
         libjvm_paths = get_potential_libjvm_paths_from_path(djava_home);
+        lib_paths = get_potential_lib_paths_from_path(djava_home);
 
         if (try_dlopen(libjvm_paths, handler, false))
-            return static_cast<SharedLibraryHandle>(handler);
+            if (try_dlopen(lib_paths, handler, false))
+                return static_cast<SharedLibraryHandle>(handler);
     }
 
     return handler;
@@ -1846,9 +2077,11 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
         return handler;
 
     std::vector<std::string> libjvm_paths = get_potential_libjvm_paths();
+    std::vector<std::string> lib_paths = get_potential_lib_paths();
 
     if (try_dlopen(libjvm_paths, handler, false))
-        return static_cast<SharedLibraryHandle>(handler);
+        if (try_dlopen(lib_paths, handler, false))
+            return static_cast<SharedLibraryHandle>(handler);
 
     std::ostringstream os;
     os << "dlopen failed with " << dlerror() << ".\n";

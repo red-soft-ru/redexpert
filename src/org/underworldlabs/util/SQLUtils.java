@@ -1692,7 +1692,7 @@ public final class SQLUtils {
         sb.append(generateCreateProcedureOrFunctionHeader(
                 obj.getName(), inputParams, NamedObject.META_TYPES[FUNCTION], null, obj.getHost().getDatabaseConnection()));
 
-        sb.append("RETURNS ");
+        sb.append("\nRETURNS ");
         if (returnType != null)
             sb.append(returnType.getFormattedDataType());
 
@@ -1721,7 +1721,7 @@ public final class SQLUtils {
 
         String formattedOutputParams = formattedParameters(outputParams, false);
         if (!MiscUtils.isNull(formattedOutputParams.trim()))
-            sb.append(String.format(" RETURNS (\n%s)", formattedOutputParams));
+            sb.append(String.format("\nRETURNS (\n%s)", formattedOutputParams));
 
         return sb.append("\nAS BEGIN END^\n").toString();
     }

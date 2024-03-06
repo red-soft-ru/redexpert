@@ -970,15 +970,25 @@ SharedLibraryHandle openSharedLibrary(
     void *sl_handle = LoadLibraryA(sl_file.c_str());
     if (sl_handle == 0)
     {
-        DWORD l_err = GetLastError();
+        os << std::endl;
+        os << "If you can't otherwise explain why this call failed, consider ";
+        os << "whether all of the shared libraries ";
+        os << "used by this shared library can be found.";
+        os << std::endl;
+
+        os << "This command's output may help:" << std::endl;
+        os << "objdump -p \"" << sl_file << "\" | grep DLL" << std::endl;
+        os << "LoadLibrary(\"" << sl_file << "\")" << std::endl;
+
+        throw utils::WindowsError(os.str(), GetLastError());
+    }
 
 #else
 
     void *sl_handle = dlopen(sl_file.c_str(), RTLD_LAZY);
     if (sl_handle == 0)
+    {
         os << "dlopen(\"" << sl_handle << "\") failed with " << dlerror() << ".";
-
-#endif
 
         os << std::endl;
         os << "If you can't otherwise explain why this call failed, consider ";
@@ -986,33 +996,23 @@ SharedLibraryHandle openSharedLibrary(
         os << "used by this shared library can be found.";
         os << std::endl;
 
-#ifdef _WIN32
-
-        os << "This command's output may help:" << std::endl;
-        os << "objdump -p \"" << sl_file << "\" | grep DLL" << std::endl;
-        os << "LoadLibrary(\"" << sl_file << "\")";
-
-        throw utils::WindowsError(os.str(), l_err);
-
-#else
-
-    throw std::runtime_error(os.str());
+        throw std::runtime_error(os.str());
+    }
 
 #endif
 
-        if (!from_file_java_paths)
+    if (!from_file_java_paths)
+    {
+        std::ofstream file_java_paths;                    // поток для записи
+        file_java_paths.open(path_to_java_paths.c_str()); // открываем файл для записи
+        if (file_java_paths.is_open())
         {
-            std::ofstream file_java_paths;                    // поток для записи
-            file_java_paths.open(path_to_java_paths.c_str()); // открываем файл для записи
-            if (file_java_paths.is_open())
-            {
-                file_java_paths << "jvm=" << sl_file << std::endl;
-                file_java_paths << "path=" << path << std::endl;
-            }
+            file_java_paths << "jvm=" << sl_file << std::endl;
+            file_java_paths << "path=" << path << std::endl;
         }
-
-        return sl_handle;
     }
+
+    return sl_handle;
 }
 
 SharedLibraryHandle openSharedLibrary(

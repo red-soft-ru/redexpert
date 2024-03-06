@@ -37,9 +37,8 @@ public class StatTable extends StatTableIndex {
             {"Level 1:", "i", null},
             {"Level 2:", "i", null},
             {"table size(without blobs):", "i", "table_size"},
-            {"table size+level0:", "i", "table_size_level0"},
-            {"level1+level2:", "i", "level12"},
             {"size with blobs:", "i", "size_with_blobs"},
+            {"size with blob_pages:", "i", "size_with_blob_pages"},
             {"full size with indices:", "i", "size_with_indices"}
 
     };
@@ -80,6 +79,7 @@ public class StatTable extends StatTableIndex {
     public long table_size_level0;
     public long level12;
     public long size_with_blobs;
+    public long size_with_blob_pages;
     public long size_with_indices;
 
     public StatTable() {
@@ -89,15 +89,14 @@ public class StatTable extends StatTableIndex {
     @Override
     public void calculateValues() {
         table_size = data_pages * page_size;
-        table_size_level0 = table_size + level_0;
-        level12 = level_1 + level_2;
-        size_with_blobs = table_size_level0 + level12;
+        size_with_blobs = table_size + blobs_total_length;
+        size_with_blob_pages = table_size + blob_pages * page_size;
         long ind_size = 0;
         if (indices != null)
             for (StatIndex index : indices) {
                 ind_size += index.full_size;
             }
-        size_with_indices = size_with_blobs + ind_size;
+        size_with_indices = size_with_blob_pages + ind_size;
         calculateTS();
     }
 

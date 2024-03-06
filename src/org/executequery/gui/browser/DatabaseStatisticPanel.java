@@ -19,10 +19,7 @@ import org.executequery.gui.browser.managment.dbstatistic.DbStatPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.statParser.*;
-import org.underworldlabs.swing.AbstractPanel;
-import org.underworldlabs.swing.DynamicComboBoxModel;
-import org.underworldlabs.swing.ListSelectionPanel;
-import org.underworldlabs.swing.RolloverButton;
+import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
@@ -58,6 +55,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
     protected JCheckBox headerPageStatBox;
     protected JCheckBox onlySelectTablesBox;
     protected JTextField tablesField;
+    protected IndeterminateProgressBar progressBar;
     ListSelectionPanel tablesStatPanel;
     ItemListener itemListener;
     ActionListener okListener;
@@ -162,6 +160,8 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
             }
         });
+        progressBar = new IndeterminateProgressBar(true);
+        toolBar.add(progressBar);
         getStatButton = WidgetFactory.createButton("getStatButton", bundleString("Start"));
         getStatButton.addActionListener(new ActionListener() {
             @Override
@@ -211,6 +211,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                         @Override
                         public Object construct() {
                             try {
+                                progressBar.start();
                                 if (defaultStatCheckBox.isSelected())
                                     statisticManager.getDatabaseStatistics();
                                 else if (headerPageStatBox.isSelected())
@@ -238,6 +239,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                             } finally {
                                 try {
                                     statisticManager.getLogger().close();
+                                    progressBar.stop();
                                 } catch (IOException ex) {
                                     ex.printStackTrace();
                                 }
@@ -250,7 +252,10 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                         @Override
                         public Object construct() {
                             try {
-                                readFromBufferedReader(bufferedReader, ((DatabaseConnection) databaseBox.getSelectedItem()).getName() + " " + LocalDateTime.now(), null);
+                                String dcName = "stat";
+                                if (databaseBox.getSelectedItem() != null)
+                                    dcName = ((DatabaseConnection) databaseBox.getSelectedItem()).getName();
+                                readFromBufferedReader(bufferedReader, dcName + " " + LocalDateTime.now(), null);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

@@ -202,5 +202,10 @@ public abstract class AbstractServiceManagerPanel extends AbstractPanel {
             fileLog.close();
             super.close();
         }
+
+        public void flush() throws IOException {
+            fileLog.flush();
+            super.flush();
+        }
     }
 }

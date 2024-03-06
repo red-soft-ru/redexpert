@@ -40,6 +40,10 @@ public class DbStatPanel extends AbstractPanel {
         tabPane.add(AbstractServiceManagerPanel.bundleString("tablespaces"), tablespacesPanel);
     }
 
+    public SimpleTextArea getTextPanel() {
+        return textPanel;
+    }
+
     @Override
     protected void arrangeComponents() {
         add(tabPane, gbh.fillBoth().spanX().spanY().get());

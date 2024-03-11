@@ -1083,6 +1083,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     public Map<Object, Object> getDatabaseProperties() throws DataSourceException {
 
         boolean isFirebird3 = getDatabaseConnection().getMajorServerVersion() >= 3;
+        boolean isFirebird4 = getDatabaseConnection().getMajorServerVersion() >= 4;
         boolean isRedDatabase5 = getDatabaseConnection().getMajorServerVersion() >= 5 && new DefaultDatabaseHost(getDatabaseConnection()).getDatabaseProductName().toLowerCase().contains("reddatabase");
 
         Table databaseTable = Table.createTable("MON$DATABASE", "D");
@@ -1103,22 +1104,25 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         sb.appendField(Field.createField(databaseTable, "MON$READ_ONLY", "READ_ONLY"));
         sb.appendField(Field.createField(databaseTable, "MON$FORCED_WRITES", "FORCED_WRITES"));
         sb.appendField(Field.createField(databaseTable, "MON$RESERVE_SPACE", "RESERVE_SPACE"));
+        sb.appendField(Field.createField(databaseTable, "MON$CREATION_DATE", "CREATION_DATE").setStatement("CAST(MON$CREATION_DATE AS TIMESTAMP)"));
         sb.appendField(Field.createField(databaseTable, "MON$PAGES", "PAGES"));
         sb.appendField(Field.createField(databaseTable, "MON$STAT_ID", "STAT_ID"));
         sb.appendField(Field.createField(databaseTable, "MON$BACKUP_STATE", "BACKUP_STATE"));
-        sb.appendField(Field.createField(databaseTable, "MON$GUID", "GUID"));
-        sb.appendField(Field.createField(databaseTable, "MON$FILE_ID", "FILE_ID"));
-        sb.appendField(Field.createField(databaseTable, "MON$NEXT_ATTACHMENT", "NEXT_ATTACHMENT"));
-        sb.appendField(Field.createField(databaseTable, "MON$NEXT_STATEMENT", "NEXT_STATEMENT"));
-        sb.appendField(Field.createField(databaseTable, "MON$REPLICA_MODE", "REPLICA_MODE"));
-        sb.appendField(Field.createField(databaseTable, "MON$CREATION_DATE", "CREATION_DATE").setStatement("CAST(MON$CREATION_DATE AS TIMESTAMP)"));
         if (isFirebird3) {
             sb.appendField(Field.createField(databaseTable, "MON$CRYPT_PAGE", "CRYPT_PAGE"));
             sb.appendField(Field.createField(databaseTable, "MON$OWNER", "OWNER"));
             sb.appendField(Field.createField(databaseTable, "MON$SEC_DATABASE", "SEC_DATABASE"));
         }
-        if (isRedDatabase5)
+        if (isFirebird4) {
+            sb.appendField(Field.createField(databaseTable, "MON$GUID", "GUID"));
+            sb.appendField(Field.createField(databaseTable, "MON$FILE_ID", "FILE_ID"));
+            sb.appendField(Field.createField(databaseTable, "MON$REPLICA_MODE", "REPLICA_MODE"));
+            sb.appendField(Field.createField(databaseTable, "MON$NEXT_STATEMENT", "NEXT_STATEMENT"));
+            sb.appendField(Field.createField(databaseTable, "MON$NEXT_ATTACHMENT", "NEXT_ATTACHMENT"));
+        }
+        if (isRedDatabase5) {
             sb.appendField(Field.createField(databaseTable, "MON$CRYPT_STATE", "CRYPT_STATE"));
+        }
 
         if (databaseProperties == null) {
             databaseProperties = new HashMap<>();
@@ -1177,26 +1181,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         value = bundleString("blockedBackup");
                     else
                         value = bundleString("activeBackup");
+
                     databaseProperties.put(bundleString("BACKUP_STATE"), value);
-
-                    // --- db encrypt mode ---
-
-                    if (isRedDatabase5) {
-
-                        value = rs.getInt("CRYPT_STATE");
-                        if (value.equals(0))
-                            value = bundleString("noEncrypt");
-                        else if (value.equals(1))
-                            value = bundleString("encrypted");
-                        else
-                            value = bundleString("activeEncrypt");
-                        databaseProperties.put(bundleString("CRYPT_STATE"), value);
-                    }
-
-                    // --- db file name ---
-
-                    value = rs.getString("DATABASE_NAME");
-                    databaseProperties.put(bundleString("DATABASE_NAME"), value);
 
                     // --- db file size ---
 
@@ -1222,8 +1208,39 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         databaseProperties.put(bundleString("SEC_DATABASE"), value);
                     }
 
+                    // --- db encrypt mode ---
+
+                    if (isFirebird4) {
+
+                        value = rs.getInt("REPLICA_MODE");
+                        if (value.equals(0))
+                            value = bundleString("notReplica");
+                        else if (value.equals(1))
+                            value = bundleString("read-onlyReplica");
+                        else
+                            value = bundleString("read-writeReplica");
+
+                        databaseProperties.put(bundleString("REPLICA_MODE"), value);
+                    }
+
+                    // --- db encrypt mode ---
+
+                    if (isRedDatabase5) {
+
+                        value = rs.getInt("CRYPT_STATE");
+                        if (value.equals(0))
+                            value = bundleString("noEncrypt");
+                        else if (value.equals(1))
+                            value = bundleString("encrypted");
+                        else
+                            value = bundleString("activeEncrypt");
+
+                        databaseProperties.put(bundleString("CRYPT_STATE"), value);
+                    }
+
                     // --- others ---
 
+                    databaseProperties.put(bundleString("DATABASE_NAME"), rs.getString("DATABASE_NAME"));           //  db file name
                     databaseProperties.put(bundleString("OLDEST_TRANSACTION"), rs.getInt("OLDEST_TRANSACTION"));    // oldest transaction number
                     databaseProperties.put(bundleString("OLDEST_ACTIVE"), rs.getInt("OLDEST_ACTIVE"));              // oldest active transaction number
                     databaseProperties.put(bundleString("OLDEST_SNAPSHOT"), rs.getInt("OLDEST_SNAPSHOT"));          // snapshot transaction number
@@ -1236,6 +1253,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     if (isFirebird3) {
                         databaseProperties.put(bundleString("CRYPT_PAGE"), rs.getInt("CRYPT_PAGE"));                // now encrypted db pages
                         databaseProperties.put(bundleString("OWNER"), rs.getString("OWNER"));                       // db owner name
+                    }
+                    if (isFirebird4) {
+                        databaseProperties.put(bundleString("GUID"), rs.getString("GUID"));                         // db GUID
+                        databaseProperties.put(bundleString("FILE_ID"), rs.getString("FILE_ID"));                   // db file id
+                        databaseProperties.put(bundleString("NEXT_STATEMENT"), rs.getString("NEXT_STATEMENT"));     // next statement ID counter
+                        databaseProperties.put(bundleString("NEXT_ATTACHMENT"), rs.getString("NEXT_ATTACHMENT"));   // next attachment ID counter
                     }
                 }
 

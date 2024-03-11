@@ -1736,7 +1736,7 @@ public final class SQLUtils {
             sb.append(" BEFORE INSERT");
 
         } else if (obj.getType() == DDL_TRIGGER)
-            sb.append("\n\tBEFORE CREATE|ALTER|DROP TABLE");
+            sb.append("\n\tBEFORE ANY DDL STATEMENT");
 
         else
             sb.append(" ON CONNECT");

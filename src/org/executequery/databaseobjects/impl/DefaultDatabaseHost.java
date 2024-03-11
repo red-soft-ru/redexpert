@@ -1078,18 +1078,52 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     @Override
     public Map<Object, Object> getDatabaseProperties() throws DataSourceException {
+
+        boolean isJaybird4 = getDatabaseConnection().getDriverMajorVersion() >= 4;
+        boolean isFirebird3 = getDatabaseConnection().getMajorServerVersion() >= 3;
+        boolean isRedDatabase5 = getDatabaseConnection().getMajorServerVersion() >= 5 && new DefaultDatabaseHost(getDatabaseConnection()).getDatabaseProductName().toLowerCase().contains("reddatabase");
+
+        String query = "SELECT\n" +
+                "MON$DATABASE_NAME,\n" +
+                "MON$PAGE_SIZE,\n" +
+                "MON$ODS_MAJOR,\n" +
+                "MON$ODS_MINOR,\n" +
+                "MON$OLDEST_TRANSACTION,\n" +
+                "MON$OLDEST_ACTIVE,\n" +
+                "MON$OLDEST_SNAPSHOT,\n" +
+                "MON$NEXT_TRANSACTION,\n" +
+                "MON$PAGE_BUFFERS,\n" +
+                "MON$SQL_DIALECT,\n" +
+                "MON$SHUTDOWN_MODE,\n" +
+                "MON$SWEEP_INTERVAL,\n" +
+                "MON$READ_ONLY,\n" +
+                "MON$FORCED_WRITES,\n" +
+                "MON$RESERVE_SPACE,\n" +
+                (isJaybird4 ? "MON$CREATION_DATE,\n" : "") +
+                "MON$PAGES,\n" +
+                "MON$STAT_ID,\n" +
+                "MON$BACKUP_STATE,\n" +
+                (isFirebird3 ? "MON$CRYPT_PAGE,\n" : "") +
+                (isFirebird3 ? "MON$OWNER,\n" : "") +
+                (isFirebird3 ? "MON$SEC_DATABASE,\n" : "") +
+                (isRedDatabase5 ? "MON$CRYPT_STATE,\n" : "") +
+                "MON$GUID,\n" +
+                "MON$FILE_ID,\n" +
+                "MON$NEXT_ATTACHMENT,\n" +
+                "MON$NEXT_STATEMENT,\n" +
+                "MON$REPLICA_MODE\n" +
+                "FROM MON$DATABASE";
+
         if (databaseProperties == null) {
             databaseProperties = new HashMap<>();
 
             try {
-
-                String query = "SELECT * FROM MON$DATABASE";
                 ResultSet rs = new DefaultStatementExecutor(getDatabaseConnection()).getResultSet(query).getResultSet();
 
                 databaseProperties.put(bundleString("ServerVersion"), getDatabaseProductNameVersion());
                 databaseProperties.put(bundleString("Driver"), getMetaProperties().get("DriverName") + " " + getMetaProperties().get("DriverVersion"));
 
-                if (rs.next()) {
+                if (rs != null && rs.next()) {
 
                     // --- ods version ---
 
@@ -1141,8 +1175,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
                     // --- db encrypt mode ---
 
-                    if (new DefaultDatabaseHost(getDatabaseConnection()).getDatabaseProductName().toLowerCase().contains("reddatabase") &&
-                            getDatabaseConnection().getMajorServerVersion() >= 5) {
+                    if (isRedDatabase5) {
 
                         value = rs.getInt("MON$CRYPT_STATE");
                         if (value.equals(0))
@@ -1170,7 +1203,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
                     // --- db security mode ---
 
-                    if (getDatabaseConnection().getMajorServerVersion() >= 3) {
+                    if (isFirebird3) {
 
                         value = rs.getString("MON$SEC_DATABASE");
                         if (value.equals("Default"))
@@ -1192,9 +1225,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     databaseProperties.put(bundleString("PAGE_BUFFERS"), rs.getInt("MON$PAGE_BUFFERS"));                // cached pages count
                     databaseProperties.put(bundleString("SQL_DIALECT"), rs.getInt("MON$SQL_DIALECT"));                  // SQL dialect
                     databaseProperties.put(bundleString("SWEEP_INTERVAL"), rs.getInt("MON$SWEEP_INTERVAL"));            // sweep interval
-                    databaseProperties.put(bundleString("CREATION_DATE"), rs.getTimestamp("MON$CREATION_DATE"));        // db creation date
+                    if (isJaybird4)
+                        databaseProperties.put(bundleString("CREATION_DATE"), rs.getTimestamp("MON$CREATION_DATE"));    // db creation date
                     databaseProperties.put(bundleString("STAT_ID"), rs.getInt("MON$STAT_ID"));                          // statistics index
-                    if (getDatabaseConnection().getMajorServerVersion() >= 3) {
+                    if (isFirebird3) {
                         databaseProperties.put(bundleString("CRYPT_PAGE"), rs.getInt("MON$CRYPT_PAGE"));                // now encrypted db pages
                         databaseProperties.put(bundleString("OWNER"), rs.getString("MON$OWNER"));                       // db owner name
                     }

@@ -31,6 +31,7 @@ import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
 import org.underworldlabs.util.MiscUtils;
@@ -108,42 +109,41 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
      *
      * @return the Component that the renderer uses to draw the value
      */
-    public Component getTreeCellRendererComponent(JTree tree,
-                                                  Object value,
-                                                  boolean isSelected,
-                                                  boolean isExpanded,
-                                                  boolean isLeaf,
-                                                  int row,
-                                                  boolean hasFocus) {
+    @Override
+    public Component getTreeCellRendererComponent(
+            JTree tree,
+            Object value,
+            boolean isSelected,
+            boolean isExpanded,
+            boolean isLeaf,
+            int row,
+            boolean hasFocus) {
 
         this.hasFocus = hasFocus;
-        DefaultMutableTreeNode child = (DefaultMutableTreeNode) value;
 
+        DefaultMutableTreeNode child = (DefaultMutableTreeNode) value;
         DatabaseObjectNode node = (DatabaseObjectNode) child;
-        int type = node.getType();
 
         String label = node.getDisplayName();
         NamedObject databaseObject = node.getDatabaseObject();
 
         setIcon(IconManager.getInstance().getIconFromNode(node));
 
+        int type = node.getType();
         if (type == NamedObject.HOST) {
-
-            DatabaseConnection connection =
-                    ((DatabaseHost) databaseObject).getDatabaseConnection();
-            setToolTipText(buildToolTip(connection));
-
-        } else {
-
-            if (databaseObject != null) {
-
-                setToolTipText(databaseObject.getDescription());
-
-            } else {
-
+            try {
+                DatabaseConnection connection = ((DatabaseHost) databaseObject).getDatabaseConnection();
+                setToolTipText(buildToolTip(connection));
+            } catch (Exception e) {
+                Log.error("Error genarating connection tooltip", e);
                 setToolTipText(label);
             }
-        }
+
+        } else if (databaseObject != null) {
+            setToolTipText(databaseObject.getDescription());
+
+        } else
+            setToolTipText(label);
 
         setBackgroundSelectionColor(selectedBackground);
 

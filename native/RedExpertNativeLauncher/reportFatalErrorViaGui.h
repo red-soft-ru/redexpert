@@ -126,12 +126,12 @@ dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_jnf"));
 
         std::string text_msg = "";
         if (locale.find("ru") != -1) {
-            text_msg.append("Java не найдена. Вы можете вручную указать путь к JVM\n");
+            text_msg.append("Java отсутствует или повреждена. Вы можете вручную указать путь к JVM\n");
             text_msg.append("или скачать Java автоматически с\n");
             text_msg.append(url);
             text_msg.append("\nПримечание: приложение работает с Java 1.8 или выше.\n");
         } else {
-            text_msg.append("Java not found. You can specify the path to JVM manually\n");
+            text_msg.append("Java is missing or damaged. You can specify the path to JVM manually\n");
             text_msg.append("or download Java automatically or manually from\n");
             text_msg.append(url);
             text_msg.append("\nNote that you need Java 1.8 or higher.\n");

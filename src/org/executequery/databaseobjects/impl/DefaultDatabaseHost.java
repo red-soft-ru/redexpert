@@ -1260,6 +1260,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         databaseProperties.put(bundleString("NEXT_STATEMENT"), rs.getString("NEXT_STATEMENT"));     // next statement ID counter
                         databaseProperties.put(bundleString("NEXT_ATTACHMENT"), rs.getString("NEXT_ATTACHMENT"));   // next attachment ID counter
                     }
+
+                } else {
+                    Log.error("Warning about loading database properties: the resultSet is null or empty");
                 }
 
             } catch (SQLException e) {

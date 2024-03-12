@@ -633,7 +633,9 @@ public class CreateDatabasePanel extends ActionPanel
     private boolean connectionNameExists() {
 
         String name = nameField.getText().trim();
-        if (databaseConnectionRepository().nameExists(databaseConnection, name, databaseConnection.getFolderId())) {
+        String folderId = databaseConnection != null ? databaseConnection.getFolderId() : "";
+
+        if (databaseConnectionRepository().nameExists(databaseConnection, name, folderId)) {
             GUIUtilities.displayErrorMessage(String.format(Bundles.get("ConnectionPanel.error.nameExist"), name));
             return true;
         }

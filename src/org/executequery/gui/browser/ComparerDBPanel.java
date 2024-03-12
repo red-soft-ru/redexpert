@@ -535,6 +535,13 @@ public class ComparerDBPanel extends JPanel implements TabView {
                             attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected(),
                             attributesCheckBoxMap.get(NamedObject.JOB).isSelected());
 
+                    if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !isCanceled()) {
+                        loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
+                        if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
+                            loggingOutputPanel.append(comparer.getComputedFieldsList());
+                        comparer.createComputedFields();
+                    }
+
                     continue;
                 }
 
@@ -616,13 +623,6 @@ public class ComparerDBPanel extends JPanel implements TabView {
             if (!Objects.equals(comparer.getConstraintsList(), "") && comparer.getConstraintsList() != null)
                 loggingOutputPanel.append(comparer.getConstraintsList());
             comparer.createConstraints();
-        }
-
-        if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !isCanceled()) {
-            loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
-            if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
-                loggingOutputPanel.append(comparer.getComputedFieldsList());
-            comparer.createComputedFields();
         }
 
     }

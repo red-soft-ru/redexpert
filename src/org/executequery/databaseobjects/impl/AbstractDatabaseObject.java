@@ -820,7 +820,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     public SelectBuilder getBuilderLoadColsCommon(boolean allTables) {
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         sb.appendTable(Table.createTable().setStatement(new SelectBuilder(getHost().getDatabaseConnection()).appendSelectBuilder(getBuilderForCols(allTables)).appendSelectBuilder(getBuilderForCons(allTables)).getSQLQuery()));
-        sb.setOrdering(RELATION_NAME + ", " + FIELD_POSITION + ", " + FIELD_TYPE + " NULLS LAST");
+        sb.setOrdering(RELATION_NAME + ", " + FIELD_POSITION + ", " + FIELD_NAME + ", " + FIELD_TYPE + " NULLS LAST");
         return sb;
     }
 

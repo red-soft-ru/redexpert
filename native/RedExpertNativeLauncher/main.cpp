@@ -2574,7 +2574,6 @@ std::string ErrorReporter::getUsage() const
 
 void ErrorReporter::generateReport(const std::exception &ex, const std::string &usage) const
 {
-
     std::ostringstream os;
 
 #ifdef _WIN32
@@ -2590,7 +2589,7 @@ void ErrorReporter::generateReport(const std::exception &ex, const std::string &
     os << "Command line was:" << std::endl;
     os << ARGV0 << " " << utils::join(" ", launcher_args) << std::endl;
 
-    reportFatalErrorViaGui("Red Expert", os.str(), support_address, typeError);
+    reportFatalErrorViaGui("Red Expert", os.str(), support_address, typeError, locale);
 }
 
 #ifdef _WIN32
@@ -2966,14 +2965,9 @@ static int runJvm(const NativeArguments &l_args)
 
         err_rep.reportUsageError(UsageError(ex));
     }
-    catch (const UsageError &ex)
+    catch (...)
     {
-        err_rep.reportUsageError(ex);
-        return 1;
-    }
-    catch (const std::exception &ex)
-    {
-        err_rep.reportFatalException(ex);
+        checkInputDialog();
         return 1;
     }
 }
@@ -3133,13 +3127,5 @@ int main(int argc, char *argv[])
         launcher_args.push_back("FILE_FOR_OPEN=" + fileForOpenPath);
     in.close();
 
-    try
-    {
-        return runJvm(launcher_args);
-    }
-    catch (const std::exception &ex)
-    {
-        checkInputDialog();
-        return 0;
-    }
+    return runJvm(launcher_args);
 }

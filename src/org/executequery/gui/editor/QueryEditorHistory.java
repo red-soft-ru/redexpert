@@ -55,6 +55,12 @@ public class QueryEditorHistory {
         }
     }
 
+    public static PathNumber getEditor(String connectionID, String editor) {
+        List<PathNumber> editors = getEditors(connectionID);
+        int ind = indexOfEditor(editor, editors);
+        return editors.get(ind);
+    }
+
     public static void removeEditor(String connectionID, String editor) {
         List<PathNumber> editors = getEditors(connectionID);
         int ind = indexOfEditor(editor, editors);

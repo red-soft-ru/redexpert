@@ -1335,8 +1335,9 @@ public class QueryEditor extends DefaultTabView
         if (!scriptFile.getAbsolutePath().contentEquals(oldAbsolutePath)) {
             String connectionID = (getSelectedConnection() != null) ?
                     getSelectedConnection().getId() : QueryEditorHistory.NULL_CONNECTION;
+            QueryEditorHistory.PathNumber editor = QueryEditorHistory.getEditor(connectionID, oldAbsolutePath);
             QueryEditorHistory.removeEditor(connectionID, oldAbsolutePath);
-            QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), -1);
+            QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number);
         }
         return SaveFunction.SAVE_COMPLETE;
     }

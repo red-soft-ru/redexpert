@@ -22,9 +22,9 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.databaseobjects.AbstractCreateUserPanel;
+import org.executequery.gui.databaseobjects.CreateDatabaseUserPanel;
 import org.executequery.gui.databaseobjects.CreateFbUserPanel;
 import org.executequery.gui.databaseobjects.CreateRolePanel;
-import org.executequery.gui.databaseobjects.CreateDatabaseUserPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -322,7 +322,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
             return;
 
         if (!getSelectedConnection().isConnected())
-            new DefaultConnectionBuilder(getSelectedConnection()).connect();
+            ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).connect();
 
         try {
             DatabaseMetaData metadata = new DefaultDatabaseHost(getSelectedConnection()).getDatabaseMetaData();

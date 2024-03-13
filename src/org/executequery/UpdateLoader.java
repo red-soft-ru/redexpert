@@ -2,7 +2,6 @@ package org.executequery;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.http.JSONAPI;
-import org.executequery.http.ReddatabaseAPI;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.util.ApplicationProperties;
@@ -21,7 +20,6 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -296,18 +294,18 @@ public class UpdateLoader extends JFrame {
 
                 //изменить эту строку в соответствии с форматом имени файла на сайте
                 String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
-                Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
+                //Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
 
-                if (heads != null) {
+                //if (heads != null) {
 
                     String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
                     String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                            JSONAPI.getJsonArray(prop + version, heads),
+                            JSONAPI.getJsonArray(prop + version),
                             "filename", filename)).getString("url");
 
-                    downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
-                    downloadArchive();
-                }
+                downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link");
+                downloadArchive();
+                //}
 
             }
         }
@@ -344,17 +342,17 @@ public class UpdateLoader extends JFrame {
 
                     //изменить эту строку в соответствии с форматом имени файла на сайте
                     String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
-                    Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
+                    //Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
 
-                    if (heads != null) {
+                    //if (heads != null) {
 
                         String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                                JSONAPI.getJsonArray(UserProperties.getInstance().getStringProperty("reddatabase.get-files.url") + version, heads),
+                                JSONAPI.getJsonArray(UserProperties.getInstance().getStringProperty("reddatabase.get-files.url") + version),
                                 "filename", filename)).getString("url");
 
-                        downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
-                        download();
-                    }
+                    downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link");
+                    download();
+                    //}
 
                 } catch (Exception e) {
                     e.printStackTrace(new PrintWriter(new CustomWriter()));

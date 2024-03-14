@@ -180,14 +180,18 @@ public class QueryEditorHistory {
     }
 
     private static void saveEditors() {
+        //Log.printStackTrace();
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(historyFile(), false);
             Writer writer = new OutputStreamWriter(fileOutputStream, SystemProperties.getProperty("user", "system.file.encoding"));
+            //int g = 0;
             for (String key : editors().keySet()) {
                 List<PathNumber> list = editors().get(key);
                 for (int i = 0; i < list.size(); i++) {
+                    //Log.info(g+";"+i+";"+key+";"+list.get(i).path+";"+list.get(i).number);
                     writer.append(key + ";" + list.get(i).path + ";" + list.get(i).number + "\n");
                 }
+                //g++;
             }
             writer.flush();
         } catch (IOException e) {
@@ -277,6 +281,8 @@ public class QueryEditorHistory {
                             true);
                 } else {
                     QueryEditor queryEditor = new QueryEditor("", copy.get(i).path);
+                    if (connection != null)
+                        queryEditor.setSelectedConnection(connection);
                     GUIUtilities.addCentralPane(QueryEditor.TITLE,
                             QueryEditor.FRAME_ICON,
                             queryEditor,

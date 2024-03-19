@@ -32,6 +32,7 @@ static int result_dialog;
 typedef void *SharedLibraryHandle;
 typedef std::deque<std::string> NativeArguments;
 
+std::string runnable_command();
 std::string file_separator();
 std::string other_file_separator();
 std::string extension_exe_file();
@@ -243,10 +244,12 @@ static int runJvm(const NativeArguments &l_args)
     catch (std::exception &ex)
     {
         checkInputDialog();
-        return runJvm(l_args);
 
-        // err_rep.reportFatalException(ex);
-        // return -1;
+        const char *command = runnable_command().c_str();
+        std::cout << "restart app using command: " << command << std::endl;
+        system(command);
+        
+        std::exit(EXIT_SUCCESS);
     }
 }
 

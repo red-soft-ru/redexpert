@@ -1136,6 +1136,11 @@ std::string extension_exe_file()
     return "";
 }
 
+std::string runnable_command()
+{
+    return "'" + getSelfPath() + "'";
+}
+
 static void deferToHotSpotExceptionHandler() {}
 
 int invokeExecuteQuery(const NativeArguments &l_args)

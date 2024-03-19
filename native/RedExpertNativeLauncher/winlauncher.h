@@ -1526,6 +1526,17 @@ std::string extension_exe_file()
     return ".exe";
 }
 
+std::string runnable_command()
+{
+    HMODULE h_module = GetModuleHandleW(NULL);
+    WCHAR path[MAX_PATH];
+    GetModuleFileNameW(h_module, path, MAX_PATH);
+    std::wstring ws(path);
+    std::string command = utils::convertUtf16ToUtf8(ws);
+
+    return command;
+}
+
 int invokeExecuteQuery(const NativeArguments &l_args)
 {
     LauncherArgumentParser parser(l_args);

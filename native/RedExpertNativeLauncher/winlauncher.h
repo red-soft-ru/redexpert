@@ -47,7 +47,9 @@ static int showError = 0;
 static std::wstring archive_dir;
 static std::wstring archive_path;
 static std::wstring archive_name = L"java.zip";
+
 static std::string readRegistryFile(const HKEY hive, const std::string &path);
+std::string get_property_from_regex(std::string reg_property, std::string source);
 
 extern "C"
 {

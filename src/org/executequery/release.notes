@@ -1,4 +1,35 @@
 --- RedExpert  - RELEASE NOTES -
+Major changes - v2024.03
+----------------------------------------
+Added:
+1.  Update without authorization on reddatabase.ru
+2.  Tablespaces support when working with database statistics
+3.  Displaying information about "sorting memory usage" in the Trace table
+4.  Minimum values columns on the "Analysis" tab in the "Trace Manager"
+5.  Ability to export statistics tables data
+6.  Buttons "connect to all databases" and "disconnect from all"
+Fixed:
+1.  Rows numbering in the Query Editor, when the "Row Transfer" option is enabled
+2.  Columns and constraints data display after table reloading
+3.  Graphical defects of the procedures and functions execution window
+4.  Parameters input dialog displaying at repeated execution of a parameterized query
+5.  SQL scripts generation for Functions, Procedures, Users, DDL-triggers, UDF, Database connection strings, Table comments, Table calculated fields
+6.  User manager behavior when GostPassword_Manager plugin is enabled
+7.  Rework "User Manager" module
+8.  Errors of "Metadata Export" module
+9.  Copying a database in the connection tree by drag’n’drop with CTRL
+10. Updating color settings for the "Query Editor" and the "Result Set" panel when switching between dark and light application themes
+11. Loading information about users with the same name but different plugins
+12. Case sensitivity of file type when importing data
+13. Errors when importing data from Excel file
+14. Displaying connection information
+15. Behavior when changing encoding in Trace Manager
+16. Duplicate Query Editor tabs
+17. Column editing errors when system object display is disabled
+18. Errors and freezing when quickly establishing/disconnecting database connection
+19. Data alignment on the "Result Set" panel
+20. Graphical defects when working with the application
+
 Major changes - v2024.01
 ----------------------------------------
 Added:

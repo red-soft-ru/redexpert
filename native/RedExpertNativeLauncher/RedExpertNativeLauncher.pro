@@ -77,6 +77,9 @@ SOURCES += \
     main.cpp
 
 HEADERS += \
+    baselauncher.h \
+    linlauncher.h \
+    winlauncher.h \
     JniError.h \
     JniString.h \
     PortableJni.h \

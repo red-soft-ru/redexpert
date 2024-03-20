@@ -82,10 +82,10 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
 
     // Transient variables (recalculated each time TabbedPane is layed out)
 
-    protected int tabRuns[] = new int[10];
+    protected int[] tabRuns = new int[10];
     protected int runCount = 0;
     protected int selectedRun = -1;
-    protected Rectangle rects[] = new Rectangle[0];
+    protected Rectangle[] rects = new Rectangle[0];
     protected int maxTabHeight;
     protected int maxTabWidth;
 
@@ -103,8 +103,8 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
 
     // Private instance data
 
-    private Insets currentPadInsets = new Insets(0, 0, 0, 0);
-    private Insets currentTabAreaInsets = new Insets(0, 0, 0, 0);
+    private final Insets currentPadInsets = new Insets(0, 0, 0, 0);
+    private final Insets currentTabAreaInsets = new Insets(0, 0, 0, 0);
 
     private Component visibleComponent;
     // PENDING(api): See comment for ContainerHandler
@@ -292,7 +292,7 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
         contentBorderInsets = null;
     }
 
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
 
     protected void installListeners() {
         if ((propertyChangeListener = createPropertyChangeListener()) != null) {
@@ -691,14 +691,14 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
 
     }
 
-    private Icon closeIcon = new TabCloseIcon();
+    private final Icon closeIcon = new TabCloseIcon();
 
     private Rectangle getCloseIconRectangle(Rectangle tabRect) {
         int iconWidth = closeIcon.getIconWidth();
         int iconHeight = closeIcon.getIconHeight();
 
         int y = tabRect.y + ((tabRect.height - iconHeight) / 2);
-        int x = tabRect.x + ((int) (tabRect.width - iconWidth - 6));
+        int x = tabRect.x + (tabRect.width - iconWidth - 6);
 
         return new Rectangle(x, y, iconWidth, iconHeight);
     }
@@ -725,8 +725,8 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
      * subtracting xCropLen[i] from (tab.y + tab.height) and adding yCropLen[i]
      * to (tab.x).
      */
-    private int xCropLen[] = {1, 1, 0, 0, 1, 1, 2, 2};
-    private int yCropLen[] = {0, 3, 3, 6, 6, 9, 9, 12};
+    private final int[] xCropLen = {1, 1, 0, 0, 1, 1, 2, 2};
+    private final int[] yCropLen = {0, 3, 3, 6, 6, 9, 9, 12};
     private static final int CROP_SEGMENT = 12;
 
     private Polygon createCroppedTabClip(int tabPlacement, Rectangle tabRect, int cropline) {
@@ -759,8 +759,8 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
         }
 
         int npts = 2 + (rcnt * 8);
-        int xp[] = new int[npts];
-        int yp[] = new int[npts];
+        int[] xp = new int[npts];
+        int[] yp = new int[npts];
         int pcnt = 0;
 
         xp[pcnt] = ostart;
@@ -848,7 +848,7 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
             tabPane.putClientProperty("html", v);
         }
 
-        SwingUtilities.layoutCompoundLabel((JComponent) tabPane,
+        SwingUtilities.layoutCompoundLabel(tabPane,
                 metrics, title, icon,
                 SwingUtilities.CENTER,
                 SwingUtilities.LEFT,
@@ -1871,10 +1871,8 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
             JComponent jComponent = (JComponent) visibleComponent;
 
             //************* CHECK THIS **********************************
-            if (jComponent.getFocusTraversalPolicy().
-                    getDefaultComponent(jComponent).requestFocusInWindow()) {
-                return true;
-            }
+            return jComponent.getFocusTraversalPolicy().
+                    getDefaultComponent(jComponent).requestFocusInWindow();
 
             //             if (((JComponent)visibleComponent).requestDefaultFocus()) {
             //                 return true;
@@ -1894,8 +1892,6 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
         }
     }
 
-    ;
-
     private static class LeftAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             JTabbedPane pane = (JTabbedPane) e.getSource();
@@ -1903,8 +1899,6 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
             ui.navigateSelectedTab(WEST);
         }
     }
-
-    ;
 
     private static class UpAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
@@ -1914,8 +1908,6 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
         }
     }
 
-    ;
-
     private static class DownAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             JTabbedPane pane = (JTabbedPane) e.getSource();
@@ -1923,8 +1915,6 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
             ui.navigateSelectedTab(SOUTH);
         }
     }
-
-    ;
 
     private static class NextAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
@@ -1934,8 +1924,6 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
         }
     }
 
-    ;
-
     private static class PreviousAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             JTabbedPane pane = (JTabbedPane) e.getSource();
@@ -1943,8 +1931,6 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
             ui.navigateSelectedTab(PREVIOUS);
         }
     }
-
-    ;
 
     private static class PageUpAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
@@ -1959,8 +1945,6 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
         }
     }
 
-    ;
-
     private static class PageDownAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             JTabbedPane pane = (JTabbedPane) e.getSource();
@@ -1974,16 +1958,12 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
         }
     }
 
-    ;
-
     private static class RequestFocusAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             JTabbedPane pane = (JTabbedPane) e.getSource();
             pane.requestFocus();
         }
     }
-
-    ;
 
     private static class RequestFocusForVisibleAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
@@ -1992,8 +1972,6 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
             ui.requestFocusForVisibleComponent();
         }
     }
-
-    ;
 
 
     /**
@@ -2010,7 +1988,7 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
                 String command = e.getActionCommand();
 
                 if (command != null && command.length() > 0) {
-                    int mnemonic = (int) e.getActionCommand().charAt(0);
+                    int mnemonic = e.getActionCommand().charAt(0);
                     if (mnemonic >= 'a' && mnemonic <= 'z') {
                         mnemonic -= ('a' - 'A');
                     }
@@ -2024,8 +2002,6 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
         }
     }
 
-    ;
-    
     /*
     private static class ScrollTabsForwardAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
@@ -2745,7 +2721,6 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
                                     if (totalTabWidth > tw) {
                                         // Need to allow space for scrollbuttons
                                         vw = Math.max(tw - 36, 36);
-                                        ;
                                         if (totalTabWidth - viewRect.x <= vw) {
                                             // Scrolled to the end, so ensure the viewport size is
                                             // such that the scroll offset aligns with a tab
@@ -2916,7 +2891,7 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
         public ScrollableTabButton scrollBackwardButton;
         public int leadingTabIndex;
 
-        private Point tabViewPosition = new Point(0, 0);
+        private final Point tabViewPosition = new Point(0, 0);
 
         ScrollableTabSupport(int tabPlacement) {
             viewport = new ScrollableTabViewport();
@@ -3463,7 +3438,7 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
                     Rectangle tabRect = rects[i];
                     if (tabRect.contains(x, y)) {
                         Rectangle iconRect = getCloseIconRectangle(tabRect);
-                        if (iconRect.contains(x, y)) {
+                        if (iconRect.contains(x, y) || (e.getButton() == MouseEvent.BUTTON2)) {
                             tabPane.remove(i);
                             e.consume();
                             return;

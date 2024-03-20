@@ -23,15 +23,9 @@
 
 static std::string arch = "amd64";
 
-static TCHAR *url_manual = TEXT("https://www.oracle.com/java/technologies/javase-downloads.html");
-static TCHAR *download_url = TEXT("https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8.1%2B1/OpenJDK17U-jre_x64_windows_hotspot_17.0.8.1_1.zip");
-
 #elif INTPTR_MAX == INT32_MAX
 
 static std::string arch = "x86";
-
-static TCHAR *url_manual = TEXT("https://www.java.com/ru/download/manual.jsp");
-static TCHAR *download_url = TEXT("https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8.1%2B1/OpenJDK17U-jre_x86-32_windows_hotspot_17.0.8.1_1.zip");
 
 #else
 #error "Environment not 32 or 64-bit."
@@ -1315,7 +1309,10 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
             m_mes.append(" architecture. ");
         }
 
-        SetDlgItemText(hw, 1, m_mes.c_str());
+        std::wstring wideString;
+        wideString.assign(m_mes.begin(), m_mes.end());
+        SetDlgItemText(hw, 1, wideString.c_str());
+
         return TRUE;
 
     case WM_COMMAND: // сообщение от управляющих элементов

@@ -47,7 +47,8 @@ public class TextUtilities {
     }
 
     public static void selectNone(JTextComponent textComponent) {
-        textComponent.setCaretPosition(0);
+        if (textComponent.getSelectionStart() >= 0)
+            textComponent.setCaretPosition(textComponent.getSelectionStart());
     }
 
     public static void changeSelectionToCamelCase(JTextComponent textComponent) {
@@ -279,7 +280,7 @@ public class TextUtilities {
 
             int index = textComponent.getCaretPosition();
             StringBuffer sb = new StringBuffer(textComponent.getText());
-            sb.insert(index, buf.toString());
+            sb.insert(index, buf);
             textComponent.setText(sb.toString());
             textComponent.setCaretPosition(index + buf.length());
 
@@ -291,11 +292,10 @@ public class TextUtilities {
                     "too large to\nopen for viewing.");
         } catch (IOException e) {
             e.printStackTrace();
-            StringBuffer sb = new StringBuffer();
-            sb.append("An error occurred opening the selected file.").
-                    append("\n\nThe system returned:\n").
-                    append(e.getMessage());
-            GUIUtilities.displayExceptionErrorDialog(sb.toString(), e);
+            String sb = "An error occurred opening the selected file." +
+                    "\n\nThe system returned:\n" +
+                    e.getMessage();
+            GUIUtilities.displayExceptionErrorDialog(sb, e);
         }
 
     }

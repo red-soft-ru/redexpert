@@ -217,17 +217,19 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                         i++;
                         if (i >= objects.size())
-                            throw new DataSourceException("Error load info for" + metaDataKey);
+                            throw new DataSourceException("Error load info for " + metaDataKey);
 
                         user = (DefaultDatabaseUser) objects.get(i);
                         first = true;
                     }
 
-                } else while (!objects.get(i).getName().contentEquals(userName)) {
-                    i++;
-                    if (i >= objects.size())
-                        throw new DataSourceException("Error load info for" + metaDataKey);
-                    first = true;
+                } else {
+                    while (!objects.get(i).getName().contentEquals(userName)) {
+                        i++;
+                        if (i >= objects.size())
+                            throw new DataSourceException("Error load info for " + metaDataKey);
+                        first = true;
+                    }
                 }
 
                 if (first) {
@@ -265,7 +267,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         boolean first = true;
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
         try {
-        String query = ((AbstractDatabaseObject) objects.get(0)).getBuilderLoadColsForAllTables().getSQLQuery();
+            String query = ((AbstractDatabaseObject) objects.get(0)).getBuilderLoadColsForAllTables().getSQLQuery();
 
             InterruptibleThread thread = null;
             if (Thread.currentThread() instanceof InterruptibleThread)
@@ -591,7 +593,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             return list;
 
         } catch (SQLException e) {
-           e.printStackTrace();
+            e.printStackTrace();
             return new ArrayList<>();
 
         } finally {

@@ -85,19 +85,22 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     }
 
     public void deleteObject(ActionEvent e) {
+
         if (currentPath != null && currentSelection != null) {
+
             DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
             DatabaseObject object = (DatabaseObject) node.getUserObject();
+
             StringBuilder sb = new StringBuilder();
-            sb.append(node.getShortName());
-            sb.append(":");
-            sb.append(node.getMetaDataKey());
-            sb.append(":");
-            sb.append(object.getHost());
+            sb.append(node.getShortName())
+                    .append(":").append(node.getMetaDataKey())
+                    .append(":").append(object.getHost());
+
             if (GUIUtilities.getOpenFrame(sb.toString()) != null) {
                 GUIUtilities.displayErrorMessage(bundledString("messageInUse", node.getShortName()));
                 return;
             }
+
             String type;
             if (node.getType() == NamedObject.GLOBAL_TEMPORARY)
                 type = NamedObject.META_TYPES[NamedObject.TABLE];
@@ -105,13 +108,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 type = NamedObject.META_TYPES[NamedObject.TRIGGER];
             else
                 type = NamedObject.META_TYPES[node.getType()];
+
+            DatabaseObjectNode indecesNode = null;
+            if (node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.TABLE]))
+                indecesNode = ((DatabaseHostNode) node.getParent().getParent()).getChildObjects().stream()
+                        .filter(child -> child.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
+                        .findFirst().orElse(null);
+
             String query = "DROP " + type + " " + MiscUtils.getFormattedObject(node.getName(), currentSelection);
             ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, currentSelection, true);
             eqd.display();
-            if (eqd.getCommit())
-                treePanel.reloadPath(currentPath.getParentPath());
-        }
 
+            if (eqd.getCommit()) {
+                treePanel.reloadPath(currentPath.getParentPath());
+                if (indecesNode != null)
+                    treePanel.reloadPath(indecesNode.getTreePath());
+            }
+        }
     }
 
     public void createObject(ActionEvent e) {

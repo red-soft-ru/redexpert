@@ -814,42 +814,56 @@ public class QueryDispatcher {
                     } else {
 
                         if (result.isException()) {
-
                             printExecutionPlan(before, anyConnections);
-                            setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true, anyConnections);
-                        } else {
+                            setOutputMessage(
+                                    querySender.getDatabaseConnection(),
+                                    SqlMessages.ERROR_MESSAGE,
+                                    result.getErrorMessage(),
+                                    true,
+                                    anyConnections
+                            );
 
+                        } else {
                             type = result.getType();
                             setResultText(querySender.getDatabaseConnection(), updateCount, query.getQueryType(), query.getMetaName(), anyConnections);
-                            if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT
-                                    || type == QueryTypes.CREATE_OR_ALTER || type == QueryTypes.RECREATE_OBJECT || type == QueryTypes.ALTER_OBJECT) {
+
+                            if (type == QueryTypes.CREATE_OBJECT
+                                    || type == QueryTypes.DROP_OBJECT
+                                    || type == QueryTypes.CREATE_OR_ALTER
+                                    || type == QueryTypes.RECREATE_OBJECT
+                                    || type == QueryTypes.ALTER_OBJECT) {
+
                                 DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
                                 String queryMetaName = query.getMetaName();
+
                                 for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
+
                                     String nodeMetaKey = metaTagNode.getMetaDataKey();
                                     if (nodeMetaKey.contains(queryMetaName) || queryMetaName.contains(nodeMetaKey)) {
                                         ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
 
                                     } else if ((NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(queryMetaName) || NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY].startsWith(queryMetaName)) && metaTagNode.isSystem()) {
                                         ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+
                                     } else if (NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(queryMetaName) && nodeMetaKey.contentEquals(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY])) {
                                         ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
                                     }
+
+                                    if (nodeMetaKey.contains(NamedObject.META_TYPES[NamedObject.TABLE])) {
+                                        hostNode.getChildObjects().stream()
+                                                .filter(node -> node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
+                                                .findFirst()
+                                                .ifPresent(node -> ConnectionsTreePanel.getPanelFromBrowser().reloadPath(node.getTreePath()));
+                                    }
                                 }
-
-
                             }
 
-                            if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {
-
+                            if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK)
                                 setStatusMessage(" " + result.getMessage());
-                            }
 
                             printExecutionPlan(before, anyConnections);
-
                         }
                     }
-
                 } else {
 
                     @SuppressWarnings("rawtypes")

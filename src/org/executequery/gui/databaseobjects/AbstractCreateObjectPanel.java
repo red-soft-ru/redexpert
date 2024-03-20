@@ -14,6 +14,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.BrowserTreePopupMenu;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.DependenciesPanel;
+import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.table.InsertColumnPanel;
@@ -263,29 +264,39 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     }
 
     protected void displayExecuteQueryDialog(String query, String delimiter) {
-        if (query != null && !query.isEmpty() && (!editing || !query.contentEquals(firstQuery))) {
-            String titleDialog;
 
-            if (editing)
-                titleDialog = getEditTitle();
-            else titleDialog = getCreateTitle();
+        if (query != null && !query.isEmpty() && (!editing || !query.contentEquals(firstQuery))) {
+
+            String titleDialog = editing ? getEditTitle() : getCreateTitle();
             ExecuteQueryDialog eqd = new ExecuteQueryDialog(titleDialog, query, connection, true, delimiter);
             eqd.display();
+
             if (eqd.getCommit()) {
                 commit = true;
+
                 if (treePanel != null && currentPath != null) {
+
                     DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-                    if (node.getDatabaseObject() instanceof DefaultDatabaseMetaTag)
+                    if (editing || node.getDatabaseObject() instanceof DefaultDatabaseMetaTag)
                         treePanel.reloadPath(currentPath);
-                    else if (editing) {
-                        treePanel.reloadPath(currentPath);
-                    } else treePanel.reloadPath(currentPath.getParentPath());
+                    else
+                        treePanel.reloadPath(currentPath.getParentPath());
+
+                    if (node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.TABLE]))
+                        ((DatabaseHostNode) node.getParent()).getChildObjects().stream()
+                                .filter(child -> child.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
+                                .findFirst()
+                                .ifPresent(child -> ConnectionsTreePanel.getPanelFromBrowser().reloadPath(child.getTreePath()));
                 }
+
                 if (parent != null)
                     parent.finished();
-                else firstQuery = generateQuery();
+                else
+                    firstQuery = generateQuery();
             }
-        } else if (parent != null) parent.finished();
+
+        } else if (parent != null)
+            parent.finished();
     }
 
     public boolean isCommit() {

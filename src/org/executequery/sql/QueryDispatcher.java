@@ -824,11 +824,15 @@ public class QueryDispatcher {
                             if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT
                                     || type == QueryTypes.CREATE_OR_ALTER || type == QueryTypes.RECREATE_OBJECT || type == QueryTypes.ALTER_OBJECT) {
                                 DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
+                                String queryMetaName = query.getMetaName();
                                 for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                                    if (metaTagNode.getMetaDataKey().equals(query.getMetaName())) {
+                                    String nodeMetaKey = metaTagNode.getMetaDataKey();
+                                    if (nodeMetaKey.contains(queryMetaName) || queryMetaName.contains(nodeMetaKey)) {
                                         ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
 
-                                    } else if ((NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(query.getMetaName()) || NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY].contentEquals(query.getMetaName())) && metaTagNode.isSystem()) {
+                                    } else if ((NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(queryMetaName) || NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY].startsWith(queryMetaName)) && metaTagNode.isSystem()) {
+                                        ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+                                    } else if (NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(queryMetaName) && nodeMetaKey.contentEquals(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY])) {
                                         ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
                                     }
                                 }
@@ -1255,9 +1259,15 @@ public class QueryDispatcher {
             DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
 
             for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                if (createsMetaNames.contains(metaTagNode.getMetaDataKey()) || metaTagNode.isSystem()) {
+                String nodemetakey = metaTagNode.getMetaDataKey();
+                if (metaTagNode.isSystem()) {
                     ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-                }
+                } else
+                    for (String metaName : createsMetaNames)
+                        if (nodemetakey.contains(metaName) || metaName.contains(nodemetakey)) {
+                            ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+                        }
+
             }
             statementExecuted(script);
 
@@ -1541,7 +1551,7 @@ public class QueryDispatcher {
             DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
 
             for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                if (metaTagNode.getMetaDataKey().equals(procQuery.getMetaName()) || metaTagNode.isSystem()) {
+                if (metaTagNode.getMetaDataKey().contains(procQuery.getMetaName()) || metaTagNode.isSystem()) {
                     ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
                 }
             }

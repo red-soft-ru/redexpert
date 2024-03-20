@@ -40,7 +40,7 @@ public class TextAreaSearch {
 
     public static final char[] REGEX_SPECIAL = {
             '.', '(', ')', '[', ']', '{', '}',
-            '^', '$', '*', '|', '+', '?'
+            '^', '$', '*', '|', '+', '?', '\\'
     };
 
     /**

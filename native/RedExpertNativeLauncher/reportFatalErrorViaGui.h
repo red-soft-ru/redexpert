@@ -226,7 +226,6 @@ std::wstring basicOpenFolder()
 
     ZeroMemory(&bi, sizeof(bi));
 
-    bi.lpszTitle = L"";
     bi.hwndOwner = GetActiveWindow();
     bi.pszDisplayName = szDisplayName;
     bi.ulFlags = BIF_RETURNONLYFSDIRS;

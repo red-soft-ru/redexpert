@@ -1261,13 +1261,13 @@ INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 
 INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 {
-    std::wstring m_mes;
-    std::wstring arch;
+    std::string m_mes;
+    std::string arch;
 
 #if INTPTR_MAX == INT32_MAX
-    arch = L"x86";
+    arch = "x86";
 #elif INTPTR_MAX == INT64_MAX
-    arch = L"amd64";
+    arch = "amd64";
 #endif
 
     switch (msg)
@@ -1278,41 +1278,41 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         if (locale.find("ru") != -1)
         {
             if (err_rep.typeError == NOT_SUPPORTED_ARCH)
-                m_mes.append(L"Найдена Java с недопустимой архитектурой. ");
+                m_mes.append("Найдена Java с недопустимой архитектурой. ");
             else if (err_rep.typeError == NOT_SUPPORTED_ARCH)
-                m_mes.append(L"Найдена Java с недопустимой версией. ");
+                m_mes.append("Найдена Java с недопустимой версией. ");
             else
-                m_mes.append(L"Java не найдена. ");
+                m_mes.append("Java не найдена. ");
 
-            m_mes.append(L"Вы можете вручную указать путь к JVM\n");
-            m_mes.append(L"или скачать Java автоматически с ");
-            m_mes.append(L"<A HREF=\"");
+            m_mes.append("Вы можете вручную указать путь к JVM\n");
+            m_mes.append("или скачать Java автоматически с ");
+            m_mes.append("<A HREF=\"");
             m_mes.append(url_manual);
-            m_mes.append(L"\">");
+            m_mes.append("\">");
             m_mes.append(url_manual);
-            m_mes.append(L"</A>");
-            m_mes.append(L"\nПримечание: приложение работает с Java 1.8 или выше с архитектурой ");
+            m_mes.append("</A>");
+            m_mes.append("\nПримечание: приложение работает с Java 1.8 или выше с архитектурой ");
             m_mes.append(arch);
         }
         else
         {
             if (err_rep.typeError == NOT_SUPPORTED_ARCH)
-                m_mes.append(L"Java with invalid architecture found. ");
+                m_mes.append("Java with invalid architecture found. ");
             else if (err_rep.typeError == NOT_SUPPORTED_ARCH)
-                m_mes.append(L"Java with invalid version found. ");
+                m_mes.append("Java with invalid version found. ");
             else
-                m_mes.append(L"Java not found. ");
+                m_mes.append("Java not found. ");
 
-            m_mes.append(L"You can specify the path to JVM manually\n");
-            m_mes.append(L"or download Java automatically or manually from ");
-            m_mes.append(L"<A HREF=\"");
+            m_mes.append("You can specify the path to JVM manually\n");
+            m_mes.append("or download Java automatically or manually from ");
+            m_mes.append("<A HREF=\"");
             m_mes.append(url_manual);
-            m_mes.append(L"\">");
+            m_mes.append("\">");
             m_mes.append(url_manual);
-            m_mes.append(L"</A>");
-            m_mes.append(L"\nNote that you need Java 1.8 or higher with ");
+            m_mes.append("</A>");
+            m_mes.append("\nNote that you need Java 1.8 or higher with ");
             m_mes.append(arch);
-            m_mes.append(L" architecture. ");
+            m_mes.append(" architecture. ");
         }
 
         SetDlgItemText(hw, 1, m_mes.c_str());

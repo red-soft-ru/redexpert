@@ -202,7 +202,8 @@ SharedLibraryHandle checkInputDialog()
     if (showDialog() == 0)
         return 0;
 
-    SharedLibraryHandle handle = checkParameters(false);
+    SharedLibraryHandle handle = 0;
+    handle = checkParameters(false);
     if (handle != 0)
         return handle;
 
@@ -243,12 +244,19 @@ static int runJvm(const NativeArguments &l_args)
     }
     catch (std::exception &ex)
     {
+        // clear cached java path
+        djvm = "";
+
+        // offer to download java
         checkInputDialog();
 
         const char *command = runnable_command().c_str();
-        std::cout << "restart app using command: " << command << std::endl;
+        std::cout << std::endl
+                  << "Restarting aplication..." << std::endl
+                  << "Command: " << command << std::endl;
+
+        // restart native launcher
         system(command);
-        
         std::exit(EXIT_SUCCESS);
     }
 }

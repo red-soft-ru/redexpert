@@ -83,9 +83,10 @@ public class ProfilerPanel extends JPanel
         init();
         this.sessionId = sessionId;
         this.profilerExecutor = new DefaultProfilerExecutor(connection, null);
-        connectionsComboBox.setSelectedItem(connection);
-        generateTree(false);
+        this.connectionsComboBox.setSelectedItem(connection);
 
+        generateTree(false);
+        profilerTree.expandPath(profilerTree.getPathForRow(0));
     }
 
     private void init() {

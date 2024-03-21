@@ -49,7 +49,7 @@ prepare:
         BRANCH=${TAG_BRANCH}
         CONTEXT=tag
       else
-        VERSION=$("2024.01")
+        VERSION=$(date +"%Y.%m")
         BUILDNO=$(relmanager_client genbuildno ${RELEASE_HUB_PROJECT} ${VERSION}-SNAPSHOT)
         VERSION=${VERSION}-SNAPSHOT.${BUILDNO}
         BRANCH=${CI_COMMIT_REF_NAME}

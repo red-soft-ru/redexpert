@@ -42,6 +42,7 @@ static std::wstring archive_dir;
 static std::wstring archive_path;
 static std::wstring archive_name = L"java.zip";
 
+std::wstring get_download_url();
 static std::string readRegistryFile(const HKEY hive, const std::string &path);
 std::string get_property_from_regex(std::string reg_property, std::string source);
 
@@ -1229,7 +1230,7 @@ INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         showError = 0;
         th = std::thread([]
                          {
-                            HRESULT res=URLDownloadToFile(0,download_url,archive_path.c_str(),0,&ds);
+                            HRESULT res = URLDownloadToFile(0, get_download_url(), archive_path.c_str(), 0, &ds);
                             EndDialog(h_dialog_download, 0);
                             KillTimer(h_dialog_download, 1001);
                             if (res != S_OK && res != E_ABORT)
@@ -1309,7 +1310,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
             m_mes.append(" architecture. ");
         }
 
-        std::wstring wideString;
+        std::wstring wideString = L"";
         wideString.assign(m_mes.begin(), m_mes.end());
         SetDlgItemText(hw, 1, wideString.c_str());
 
@@ -1331,7 +1332,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 
                 th.join();
                 EnableWindow(hw, TRUE);
-                DeleteUrlCacheEntry(download_url);
+                DeleteUrlCacheEntry(get_download_url());
 
                 if (showError == 1)
                 {
@@ -1534,6 +1535,14 @@ std::string runnable_command()
     std::string command = utils::convertUtf16ToUtf8(ws);
 
     return command;
+}
+
+std::wstring get_download_url()
+{
+    std::wstring download_url_w = L"";
+    download_url_w.assign(download_url.begin(), download_url.end());
+
+    return download_url_w;
 }
 
 int invokeExecuteQuery(const NativeArguments &l_args)

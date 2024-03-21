@@ -669,7 +669,7 @@ public class QueryDispatcher {
             boolean removeQueryComments = userProperties().getBooleanProperty("editor.execute.remove.comments");
 
             DerivedQuery query = new DerivedQuery(sql);
-
+            query.setQueryWithoutComments(noCommentsQuery);
             if (!query.isExecutable()) {
 
                 setOutputMessage(querySender.getDatabaseConnection(),
@@ -1278,7 +1278,7 @@ public class QueryDispatcher {
                     ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
                 } else
                     for (String metaName : createsMetaNames)
-                        if (nodemetakey.contains(metaName) || metaName.contains(nodemetakey)) {
+                        if (nodemetakey.contains(metaName) || metaName.contains(nodemetakey) || (nodemetakey.contentEquals(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]) && metaName.contains("TABLE"))) {
                             ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
                         }
 

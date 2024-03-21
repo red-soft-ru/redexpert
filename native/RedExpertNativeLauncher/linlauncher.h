@@ -12,6 +12,20 @@
 
 #include "baselauncher.h"
 
+#if INTPTR_MAX == INT64_MAX
+
+static std::string url_manual = "https://www.oracle.com/java/technologies/javase-downloads.html";
+static std::string download_url = "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8.1%2B1/OpenJDK17U-jre_x64_linux_hotspot_17.0.8.1_1.tar.gz";
+
+#elif INTPTR_MAX == INT32_MAX
+
+static std::string url_manual = "https://www.java.com/ru/download/manual.jsp";
+static std::string download_url = "https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-linux-i586.tar.gz";
+
+#else
+#error "Environment not 32 or 64-bit."
+#endif
+
 static double d = 0;
 static double t = 0;
 static double last_d;

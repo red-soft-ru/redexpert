@@ -23,9 +23,15 @@
 
 static std::string arch = "amd64";
 
+static TCHAR *url_manual = TEXT("https://www.oracle.com/java/technologies/javase-downloads.html");
+static TCHAR *download_url = TEXT("https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8.1%2B1/OpenJDK17U-jre_x64_windows_hotspot_17.0.8.1_1.zip");
+
 #elif INTPTR_MAX == INT32_MAX
 
 static std::string arch = "x86";
+
+static TCHAR *url_manual = TEXT("https://www.java.com/ru/download/manual.jsp");
+static TCHAR *download_url = TEXT("https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8.1%2B1/OpenJDK17U-jre_x86-32_windows_hotspot_17.0.8.1_1.zip");
 
 #else
 #error "Environment not 32 or 64-bit."
@@ -42,7 +48,6 @@ static std::wstring archive_dir;
 static std::wstring archive_path;
 static std::wstring archive_name = L"java.zip";
 
-std::wstring get_download_url();
 static std::string readRegistryFile(const HKEY hive, const std::string &path);
 std::string get_property_from_regex(std::string reg_property, std::string source);
 
@@ -1230,7 +1235,7 @@ INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         showError = 0;
         th = std::thread([]
                          {
-                            HRESULT res = URLDownloadToFile(0, get_download_url(), archive_path.c_str(), 0, &ds);
+                            HRESULT res=URLDownloadToFile(0,download_url,archive_path.c_str(),0,&ds);
                             EndDialog(h_dialog_download, 0);
                             KillTimer(h_dialog_download, 1001);
                             if (res != S_OK && res != E_ABORT)
@@ -1256,13 +1261,13 @@ INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 
 INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 {
-    std::string m_mes;
-    std::string arch;
+    std::wstring m_mes;
+    std::wstring arch;
 
 #if INTPTR_MAX == INT32_MAX
-    arch = "x86";
+    arch = L"x86";
 #elif INTPTR_MAX == INT64_MAX
-    arch = "amd64";
+    arch = L"amd64";
 #endif
 
     switch (msg)
@@ -1273,47 +1278,44 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         if (locale.find("ru") != -1)
         {
             if (err_rep.typeError == NOT_SUPPORTED_ARCH)
-                m_mes.append("Найдена Java с недопустимой архитектурой. ");
+                m_mes.append(L"Найдена Java с недопустимой архитектурой. ");
             else if (err_rep.typeError == NOT_SUPPORTED_ARCH)
-                m_mes.append("Найдена Java с недопустимой версией. ");
+                m_mes.append(L"Найдена Java с недопустимой версией. ");
             else
-                m_mes.append("Java не найдена. ");
+                m_mes.append(L"Java не найдена. ");
 
-            m_mes.append("Вы можете вручную указать путь к JVM\n");
-            m_mes.append("или скачать Java автоматически с ");
-            m_mes.append("<A HREF=\"");
+            m_mes.append(L"Вы можете вручную указать путь к JVM\n");
+            m_mes.append(L"или скачать Java автоматически с ");
+            m_mes.append(L"<A HREF=\"");
             m_mes.append(url_manual);
-            m_mes.append("\">");
+            m_mes.append(L"\">");
             m_mes.append(url_manual);
-            m_mes.append("</A>");
-            m_mes.append("\nПримечание: приложение работает с Java 1.8 или выше с архитектурой ");
+            m_mes.append(L"</A>");
+            m_mes.append(L"\nПримечание: приложение работает с Java 1.8 или выше с архитектурой ");
             m_mes.append(arch);
         }
         else
         {
             if (err_rep.typeError == NOT_SUPPORTED_ARCH)
-                m_mes.append("Java with invalid architecture found. ");
+                m_mes.append(L"Java with invalid architecture found. ");
             else if (err_rep.typeError == NOT_SUPPORTED_ARCH)
-                m_mes.append("Java with invalid version found. ");
+                m_mes.append(L"Java with invalid version found. ");
             else
-                m_mes.append("Java not found. ");
+                m_mes.append(L"Java not found. ");
 
-            m_mes.append("You can specify the path to JVM manually\n");
-            m_mes.append("or download Java automatically or manually from ");
-            m_mes.append("<A HREF=\"");
+            m_mes.append(L"You can specify the path to JVM manually\n");
+            m_mes.append(L"or download Java automatically or manually from ");
+            m_mes.append(L"<A HREF=\"");
             m_mes.append(url_manual);
-            m_mes.append("\">");
+            m_mes.append(L"\">");
             m_mes.append(url_manual);
-            m_mes.append("</A>");
-            m_mes.append("\nNote that you need Java 1.8 or higher with ");
+            m_mes.append(L"</A>");
+            m_mes.append(L"\nNote that you need Java 1.8 or higher with ");
             m_mes.append(arch);
-            m_mes.append(" architecture. ");
+            m_mes.append(L" architecture. ");
         }
 
-        std::wstring wideString = L"";
-        wideString.assign(m_mes.begin(), m_mes.end());
-        SetDlgItemText(hw, 1, wideString.c_str());
-
+        SetDlgItemTextW(hw, 1, m_mes.c_str());
         return TRUE;
 
     case WM_COMMAND: // сообщение от управляющих элементов
@@ -1332,7 +1334,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 
                 th.join();
                 EnableWindow(hw, TRUE);
-                DeleteUrlCacheEntry(get_download_url());
+                DeleteUrlCacheEntry(download_url);
 
                 if (showError == 1)
                 {
@@ -1535,14 +1537,6 @@ std::string runnable_command()
     std::string command = utils::convertUtf16ToUtf8(ws);
 
     return command;
-}
-
-std::wstring get_download_url()
-{
-    std::wstring download_url_w = L"";
-    download_url_w.assign(download_url.begin(), download_url.end());
-
-    return download_url_w;
 }
 
 int invokeExecuteQuery(const NativeArguments &l_args)

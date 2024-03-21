@@ -39,10 +39,8 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
@@ -59,6 +57,7 @@ public class ResultSetTable extends JTable implements StandardTable {
     private DateCellEditor dateEditor;
     private DateTimeCellEditor dateTimeCellEditor;
     private TimeCellEditor timeCellEditor;
+    private TableCellEditor previousEditor;
 
     private boolean isAutoResizeable;
     private List<Integer> foreignColumnsIndexes;
@@ -246,29 +245,6 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     }
 
-    public void selectColumn(Point point) {
-
-        if (point != null) {
-
-            setColumnSelectionAllowed(true);
-            setRowSelectionAllowed(false);
-
-            int columnCount = getSelectedColumnCount();
-            if (columnCount > 1) {
-
-                int[] selectedColumns = getSelectedColumns();
-                setColumnSelectionInterval(selectedColumns[0], selectedColumns[selectedColumns.length - 1]);
-
-            } else {
-
-                clearSelection();
-                int column = columnAtPoint(point);
-                setColumnSelectionInterval(column, column);
-            }
-        }
-
-    }
-
     public void copySelectedCells() {
         copySelectedCells('\t', false, false);
     }
@@ -291,7 +267,7 @@ public class ResultSetTable extends JTable implements StandardTable {
         int[] selectedCols = getSelectedColumns();
         List<String> list = new ArrayList<>();
         for (int j = 0; j < cols; j++)
-          list.add(getColumnName(selectedCols[j]));
+            list.add(getColumnName(selectedCols[j]));
         sb.append(StringUtils.join(list, ", ")).append('\n');
         GUIUtilities.copyToClipBoard(sb.toString());
     }
@@ -439,6 +415,19 @@ public class ResultSetTable extends JTable implements StandardTable {
     @Override
     public TableCellEditor getCellEditor(int row, int column) {
 
+        if (previousEditor instanceof ForeignKeyCellEditor) {
+            ((ForeignKeyCellEditor) previousEditor).restoreCellSize();
+
+        } else if (Objects.equals(previousEditor, dateEditor)) {
+            dateEditor.restoreCellSize();
+
+        } else if (Objects.equals(previousEditor, timeCellEditor)) {
+            timeCellEditor.restoreCellSize();
+
+        } else if (Objects.equals(previousEditor, dateTimeCellEditor)) {
+            dateTimeCellEditor.restoreCellSize();
+        }
+
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
         if (isComboColumn(column)) {
 
@@ -450,13 +439,15 @@ public class ResultSetTable extends JTable implements StandardTable {
                 }
             }
 
-            return new ForeignKeyCellEditor(
+            previousEditor = new ForeignKeyCellEditor(
                     getModel(),
                     foreignColumnsData.get(columnIndex).getTableModel(),
                     foreignColumnsData.get(columnIndex).getItems(),
                     foreignColumnsData.get(columnIndex).getNames(),
                     value.getValue(), row,
                     foreignColumnsData.get(columnIndex).getChildColumnIndexes());
+
+            return previousEditor;
         }
 
         int sqlType = value.getDataType();
@@ -468,37 +459,47 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.NCHAR:
             case Types.VARCHAR:
             case Types.NVARCHAR:
+                previousEditor = multiLineCellEditor;
                 return multiLineCellEditor;
 
             case Types.INT128:
+                previousEditor = int128CellEditor;
                 return int128CellEditor;
 
             case Types.BIGINT:
+                previousEditor = bigintCellEditor;
                 return bigintCellEditor;
 
             case Types.INTEGER:
+                previousEditor = integerCellEditor;
                 return integerCellEditor;
 
             case Types.SMALLINT:
+                previousEditor = smallintCellEditor;
                 return smallintCellEditor;
 
             case Types.DATE:
+                previousEditor = dateEditor;
                 return dateEditor;
 
             case Types.TIMESTAMP:
                 dateTimeCellEditor.getDateTimePicker().setVisibleTimeZone(false);
+                previousEditor = dateTimeCellEditor;
                 return dateTimeCellEditor;
 
             case Types.TIMESTAMP_WITH_TIMEZONE:
                 dateTimeCellEditor.getDateTimePicker().setVisibleTimeZone(true);
+                previousEditor = dateTimeCellEditor;
                 return dateTimeCellEditor;
 
             case Types.TIME_WITH_TIMEZONE:
                 timeCellEditor.getPicker().setVisibleTimeZone(true);
+                previousEditor = timeCellEditor;
                 return timeCellEditor;
 
             case Types.TIME:
                 timeCellEditor.getPicker().setVisibleTimeZone(false);
+                previousEditor = timeCellEditor;
                 return timeCellEditor;
 
             case Types.BOOLEAN:
@@ -513,10 +514,13 @@ public class ResultSetTable extends JTable implements StandardTable {
                     comboBox.setSelectedIndex(1);
                 else
                     comboBox.setSelectedItem(2);
-                return new DefaultCellEditor(comboBox);
 
+
+                previousEditor = new DefaultCellEditor(comboBox);
+                return previousEditor;
         }
 
+        previousEditor = defaultCellEditor;
         return defaultCellEditor;
     }
 
@@ -618,18 +622,6 @@ public class ResultSetTable extends JTable implements StandardTable {
         }
 
     } // class ResultsTableColumnModel
-
-    static class ComboBoxRenderer extends JTable implements ListCellRenderer {
-
-        public DefaultTableModel rowTableModel;
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            setModel(rowTableModel);
-            return this;
-        }
-
-    } // class ComboBoxRenderer
 
     private static class ForeignData {
 

@@ -341,17 +341,17 @@ public class DefaultRemoteHttpClient implements RemoteHttpClient {
     }
 
 
-    private boolean hasProxyAuthentication() {
+    public boolean hasProxyAuthentication() {
 
         return StringUtils.isNotBlank(getProxyUser()) && StringUtils.isNotBlank(getProxyPassword());
     }
 
-    private boolean isUsingProxy() {
+    public boolean isUsingProxy() {
 
         return (getProxyHost() != null && getProxyPort() != null);
     }
 
-    private Integer getProxyPort() {
+    public Integer getProxyPort() {
 
         if (System.getProperty("http.proxyPort") != null) {
 
@@ -361,17 +361,17 @@ public class DefaultRemoteHttpClient implements RemoteHttpClient {
         return null;
     }
 
-    private String getProxyHost() {
+    public String getProxyHost() {
 
         return System.getProperty("http.proxyHost");
     }
 
-    private String getProxyUser() {
+    public String getProxyUser() {
 
         return SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "internet.proxy.user");
     }
 
-    private String getProxyPassword() {
+    public String getProxyPassword() {
 
         return SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "internet.proxy.password");
     }
@@ -383,6 +383,7 @@ public class DefaultRemoteHttpClient implements RemoteHttpClient {
     public void setHttpPort(int port) {
         HTTP_PORT = port;
     }
+
 }
 
 

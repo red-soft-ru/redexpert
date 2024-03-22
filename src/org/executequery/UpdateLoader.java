@@ -2,6 +2,7 @@ package org.executequery;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.http.JSONAPI;
+import org.executequery.http.spi.DefaultRemoteHttpClient;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.util.ApplicationProperties;
@@ -12,9 +13,7 @@ import org.underworldlabs.util.MiscUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -361,12 +360,78 @@ public class UpdateLoader extends JFrame {
         }
     }
 
+    private final static char[] base64Array = {
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+            'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+            'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+            'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+            'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+            'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+            'w', 'x', 'y', 'z', '0', '1', '2', '3',
+            '4', '5', '6', '7', '8', '9', '+', '/'
+    };
+
+    private static String base64Encode(String string) {
+        String encodedString = "";
+        byte[] bytes = string.getBytes();
+        int i = 0;
+        int pad = 0;
+        while (i < bytes.length) {
+            byte b1 = bytes[i++];
+            byte b2;
+            byte b3;
+            if (i >= bytes.length) {
+                b2 = 0;
+                b3 = 0;
+                pad = 2;
+            } else {
+                b2 = bytes[i++];
+                if (i >= bytes.length) {
+                    b3 = 0;
+                    pad = 1;
+                } else
+                    b3 = bytes[i++];
+            }
+            byte c1 = (byte) (b1 >> 2);
+            byte c2 = (byte) (((b1 & 0x3) << 4) | (b2 >> 4));
+            byte c3 = (byte) (((b2 & 0xf) << 2) | (b3 >> 6));
+            byte c4 = (byte) (b3 & 0x3f);
+            encodedString += base64Array[c1];
+            encodedString += base64Array[c2];
+            switch (pad) {
+                case 0:
+                    encodedString += base64Array[c3];
+                    encodedString += base64Array[c4];
+                    break;
+                case 1:
+                    encodedString += base64Array[c3];
+                    encodedString += "=";
+                    break;
+                case 2:
+                    encodedString += "==";
+                    break;
+            }
+        }
+        return encodedString;
+    }
+
     private void downloadFile(String link) throws IOException {
 
         if (!canDownload(false))
             return;
+        URL url = new URL(link);
+        URLConnection conn = null;
+        DefaultRemoteHttpClient defaultRemoteHttpClient = new DefaultRemoteHttpClient();
+        if (defaultRemoteHttpClient.isUsingProxy()) {
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(defaultRemoteHttpClient.getProxyHost(), defaultRemoteHttpClient.getProxyPort()));
+            conn = url.openConnection(proxy);
+            if (defaultRemoteHttpClient.hasProxyAuthentication()) {
+                String userPassword = defaultRemoteHttpClient.getProxyUser() + ":" + defaultRemoteHttpClient.getProxyPassword();
+                String encoded = base64Encode(userPassword);
+                conn.setRequestProperty("Proxy-Authorization", "Basic " + encoded);
+            }
 
-        URLConnection conn = new URL(link).openConnection();
+        } else conn = url.openConnection();
         InputStream inputStream = conn.getInputStream();
         long max = conn.getContentLength();
 

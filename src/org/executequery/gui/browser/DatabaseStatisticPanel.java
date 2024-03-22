@@ -235,7 +235,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                                     statisticManager.getDatabaseStatistics(options);
                                 }
                             } catch (SQLException ex) {
-                                ex.printStackTrace();
+                                GUIUtilities.displayExceptionErrorDialog(ex.getMessage(), ex);
                             } finally {
                                 try {
                                     statisticManager.getLogger().close();

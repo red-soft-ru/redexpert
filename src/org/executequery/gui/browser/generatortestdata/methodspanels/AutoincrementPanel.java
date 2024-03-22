@@ -103,11 +103,11 @@ public class AutoincrementPanel extends AbstractMethodPanel {
         }
         if (col.getFormattedDataType().contentEquals(T.TIME) || col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
             startValueTime = new EQTimePicker();
-            startValueTime.setVisibleNullBox(false);
+            startValueTime.setVisibleNullCheck(false);
             startValueTime.setTime(LocalTime.MIN);
             startValueTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE));
             iterationTime = new EQTimePicker();
-            iterationTime.setVisibleNullBox(false);
+            iterationTime.setVisibleNullCheck(false);
             iterationTime.setTime(LocalTime.of(1, 1, 1));
             iterationTime.setVisibleTimeZone(false);
 
@@ -140,7 +140,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             startValueDateTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE));
             iterationDate = new DateDifferenceSetter();
             iterationTime = new EQTimePicker();
-            iterationTime.setVisibleNullBox(false);
+            iterationTime.setVisibleNullCheck(false);
             iterationTime.setTime(LocalTime.of(0, 0, 0));
             iterationTime.setVisibleTimeZone(false);
 

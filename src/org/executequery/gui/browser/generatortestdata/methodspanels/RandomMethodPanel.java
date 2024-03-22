@@ -113,11 +113,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         if (col.getFormattedDataType().contentEquals(T.TIME)
                 || col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
             minTime = new EQTimePicker();
-            minTime.setVisibleNullBox(false);
+            minTime.setVisibleNullCheck(false);
             minTime.setTime(LocalTime.MIN);
             minTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE));
             maxTime = new EQTimePicker();
-            maxTime.setVisibleNullBox(false);
+            maxTime.setVisibleNullCheck(false);
             maxTime.setTime(LocalTime.MAX);
             maxTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE));
             JLabel label = new JLabel(bundles("Min"));

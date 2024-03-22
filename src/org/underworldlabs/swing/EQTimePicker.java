@@ -1,76 +1,158 @@
 package org.underworldlabs.swing;
 
 
+import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class EQTimePicker extends JPanel {
-    JSpinner timeSpinner;
-    JSpinner.DateEditor timeEditor;
-    JCheckBox nullBox;
-    JComboBox plusminusCombox;
-    JSpinner timezoneSpinner;
-    JSpinner.DateEditor timezoneEditor;
 
+    protected JSpinner timeSpinner;
+    protected JCheckBox isNullCheck;
+    protected JSpinner timezoneSpinner;
+    protected JComboBox<?> plusminusCombox;
 
     public EQTimePicker() {
         init();
+        arrange();
+        setUpdateNull();
+        setCurrentTime();
     }
 
-    public EQTimePicker(boolean enabled) {
-        init();
-        nullBox.setSelected(!enabled);
-        setEnable(enabled);
+    public EQTimePicker(boolean isNull) {
+        this();
+        setEnableComponents(!isNull);
     }
 
     void init() {
-        timeSpinner = new JSpinner(new SpinnerDateModel());
-        timeEditor = new JSpinner.DateEditor(timeSpinner, "HH:mm:ss.SSS");
-        timeSpinner.setEditor(timeEditor);
-        timezoneSpinner = new JSpinner(new SpinnerDateModel());
-        timezoneEditor = new JSpinner.DateEditor(timezoneSpinner, "HH:mm");
-        timezoneSpinner.setEditor(timezoneEditor);
+
+        timeSpinner = WidgetFactory.createSpinner("timeSpinner", new SpinnerDateModel());
+        timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, "HH:mm:ss.SSS"));
+
+        timezoneSpinner = WidgetFactory.createSpinner("timezoneSpinner", new SpinnerDateModel());
+        timezoneSpinner.setEditor(new JSpinner.DateEditor(timezoneSpinner, "HH:mm"));
         timezoneSpinner.setVisible(false);
-        plusminusCombox = new JComboBox(new String[]{"+", "-"});
+
+        plusminusCombox = WidgetFactory.createComboBox("plusminusCombox", new String[]{"+", "-"});
         plusminusCombox.setVisible(false);
-        nullBox = new JCheckBox("NULL");
-        nullBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                timeSpinner.setEnabled(!nullBox.isSelected());
-            }
-        });
-        this.setLayout(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaults(new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
-                new Insets(0, 0, 0, 0), 0, 0));
-        gbh.defaults();
+
+        isNullCheck = WidgetFactory.createCheckBox("isNullCheck", "NULL");
+        isNullCheck.addActionListener(e -> setUpdateNull());
+    }
+
+    private void arrange() {
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillBoth().spanY();
+
+        setLayout(new GridBagLayout());
         add(timeSpinner, gbh.setMaxWeightX().get());
         add(plusminusCombox, gbh.setMinWeightX().nextCol().get());
         add(timezoneSpinner, gbh.setMaxWeightX().nextCol().get());
-        add(nullBox, gbh.setMinWeightX().nextCol().get());
-        clear();
+        add(isNullCheck, gbh.anchorNorthEast().setMinWeightX().nextCol().get());
+
+        setPreferredSize(new Dimension(200, timezoneSpinner.getPreferredSize().height));
     }
 
     public String getStringValue() {
-        if (nullBox.isSelected())
+
+        if (isNull())
             return "";
+
         Instant instant = Instant.ofEpochMilli(((Date) (timeSpinner).getValue()).getTime());
-        LocalDateTime temp = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
-        String time = temp.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));//temp.getHour() + ":" + temp.getMinute() + ":" + temp.getSecond() + "." + temp.getNano();
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
+        String time = localDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
+
         if (timezoneSpinner.isVisible()) {
             instant = Instant.ofEpochMilli(((Date) (timezoneSpinner).getValue()).getTime());
-            temp = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
-            time += plusminusCombox.getSelectedItem() + temp.format(DateTimeFormatter.ofPattern("HH:mm"));
+            localDateTime = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
+            time += plusminusCombox.getSelectedItem() + localDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
         }
+
         return time;
+    }
+
+    public void setTime(LocalTime time) {
+
+        if (time == null) {
+            setNull(true);
+            return;
+        }
+
+        Instant instant = time
+                .atDate(LocalDate.of(1970, 1, 1))
+                .atZone(ZoneId.of(ZoneId.systemDefault().getId()))
+                .toInstant();
+
+        setNull(false);
+        timeSpinner.setValue(Date.from(instant));
+    }
+
+    public void setTime(OffsetTime time) {
+
+        if (time == null) {
+            setNull(true);
+            return;
+        }
+
+        Instant instant = LocalTime
+                .of(time.getHour(), time.getMinute(), time.getSecond(), time.getNano())
+                .atDate(LocalDate.of(1970, 1, 1))
+                .atZone(ZoneId.of(ZoneId.systemDefault().getId()))
+                .toInstant();
+
+        setNull(false);
+        timeSpinner.setValue(Date.from(instant));
+        setZoneOffset(time.getOffset());
+    }
+
+    public void setZoneOffset(ZoneOffset offset) {
+
+        Instant instant = LocalTime
+                .ofSecondOfDay(Math.abs(offset.getTotalSeconds()))
+                .atDate(LocalDate.of(1970, 1, 1))
+                .atZone(ZoneId.of(ZoneId.systemDefault().getId()))
+                .toInstant();
+
+        plusminusCombox.setSelectedIndex(offset.getTotalSeconds() < 0 ? 1 : 0);
+        timezoneSpinner.setValue(Date.from(instant));
+    }
+
+    public void setEnableComponents(boolean enable) {
+        setNull(!enable);
+        setEnabled(enable);
+        isNullCheck.setEnabled(enable);
+    }
+
+    private void setUpdateNull() {
+        timeSpinner.setEnabled(!isNull());
+        timezoneSpinner.setEnabled(!isNull());
+        plusminusCombox.setEnabled(!isNull());
+    }
+
+    private void setNull(boolean isNull) {
+        isNullCheck.setSelected(isNull);
+        setUpdateNull();
+    }
+
+    public void setVisibleNullCheck(boolean visible) {
+        isNullCheck.setVisible(visible);
+    }
+
+    public void setVisibleTimeZone(boolean visible) {
+        timezoneSpinner.setVisible(visible);
+        plusminusCombox.setVisible(visible);
+    }
+
+    public boolean isNull() {
+        return isNullCheck.isSelected();
+    }
+
+    public void setCurrentTime() {
+        setTime(OffsetTime.now());
     }
 
     public OffsetTime getOffsetTime() {
@@ -82,74 +164,4 @@ public class EQTimePicker extends JPanel {
         return LocalDateTime.ofInstant(instant, ZoneId.systemDefault()).toLocalTime();
     }
 
-
-    /*public OffsetDateTime getTime() {
-        Instant instant = Instant.ofEpochMilli(((Date) (timeSpinner).getValue()).getTime());
-        return OffsetDateTime.ofInstant(instant, ZoneOffset.of(getTimeZone()));
-    }*/
-
-    public String getTimeZone() {
-        if (!timezoneSpinner.isVisible())
-            return ZoneId.systemDefault().getId();
-        Instant instant = Instant.ofEpochMilli(((Date) (timezoneSpinner).getValue()).getTime());
-        LocalDateTime temp = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
-        return "" + plusminusCombox.getSelectedItem() + temp.getHour() + ":" + temp.getMinute();
-    }
-
-    public void setTime(LocalTime time) {
-        if (time != null) {
-            Instant instant = time.atDate(LocalDate.of(1970, 1, 1)).
-                    atZone(ZoneId.of(ZoneId.systemDefault().getId())).toInstant();
-            Date date = Date.from(instant);
-            timeSpinner.setValue(date);
-        } else {
-            nullBox.setSelected(true);
-        }
-    }
-
-    public void setTime(OffsetTime time) {
-        if (time != null) {
-            nullBox.setSelected(false);
-            LocalTime localTime = LocalTime.of(time.getHour(), time.getMinute(), time.getSecond(), time.getNano());
-            Instant instant = localTime.atDate(LocalDate.of(1970, 1, 1)).
-                    atZone(ZoneId.of(ZoneId.systemDefault().getId())).toInstant();
-            Date date = Date.from(instant);
-            timeSpinner.setValue(date);
-            ZoneOffset offset = time.getOffset();
-            setZoneOffset(offset);
-        } else nullBox.setSelected(true);
-    }
-
-    public void setZoneOffset(ZoneOffset offset) {
-        plusminusCombox.setSelectedIndex(offset.getTotalSeconds() < 0 ? 1 : 0);
-        Instant instant = LocalTime.ofSecondOfDay(Math.abs(offset.getTotalSeconds())).atDate(LocalDate.of(1970, 1, 1)).
-                atZone(ZoneId.of(ZoneId.systemDefault().getId())).toInstant();
-        Date date = Date.from(instant);
-        timezoneSpinner.setValue(date);
-    }
-
-    public void setEnable(boolean enable) {
-        setEnabled(enable);
-        nullBox.setSelected(!enable);
-        nullBox.setEnabled(enable);
-        timeSpinner.setEnabled(enable);
-        timezoneSpinner.setEnabled(enable);
-        plusminusCombox.setEnabled(enable);
-    }
-
-    public void setVisibleNullBox(boolean flag) {
-        nullBox.setVisible(flag);
-    }
-
-    public void setVisibleTimeZone(boolean flag) {
-        timezoneSpinner.setVisible(flag);
-        plusminusCombox.setVisible(flag);
-    }
-
-    public boolean isNull()
-    {return nullBox.isSelected();}
-
-    public void clear() {
-        setTime(OffsetTime.now());
-    }
 }

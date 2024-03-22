@@ -16,7 +16,7 @@ public class EQDateTimePicker extends JPanel {
 
     public EQDateTimePicker() {
         datePicker = new EQDatePicker();
-        timePicker = new EQTimePicker(false);
+        timePicker = new EQTimePicker(true);
         init();
     }
 
@@ -24,7 +24,7 @@ public class EQDateTimePicker extends JPanel {
         datePicker.addDateChangeListener(new DateChangeListener() {
             @Override
             public void dateChanged(DateChangeEvent dateChangeEvent) {
-                timePicker.setEnable(!datePicker.getDateStringOrEmptyString().equals(""));
+                timePicker.setEnableComponents(!datePicker.getDateStringOrEmptyString().equals(""));
 
             }
         });
@@ -75,12 +75,12 @@ public class EQDateTimePicker extends JPanel {
 
     public void clear() {
         datePicker.clear();
-        timePicker.clear();
-        timePicker.setEnable(false);
+        timePicker.setCurrentTime();
+        timePicker.setEnableComponents(false);
     }
 
     public void setVisibleNullBox(boolean flag) {
-        timePicker.setVisibleNullBox(flag);
+        timePicker.setVisibleNullCheck(flag);
     }
 
     public void setVisibleTimeZone(boolean flag) {

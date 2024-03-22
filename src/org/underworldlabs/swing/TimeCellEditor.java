@@ -29,8 +29,8 @@ public class TimeCellEditor extends AbstractCellEditor implements TableCellEdito
 
         this.autoAdjustMinimumTableRowHeight = true;
         this.autoAdjustMinimumTableColWidth = true;
-        this.minimumRowHeightInPixels = picker.getPreferredSize().height + 1;
-        this.minimumColWidthInPixels = picker.getPreferredSize().width + 1;
+        this.minimumRowHeightInPixels = picker.getPreferredSize().height;
+        this.minimumColWidthInPixels = picker.getPreferredSize().width;
     }
 
     @Override

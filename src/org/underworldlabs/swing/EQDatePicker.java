@@ -13,7 +13,7 @@ public class EQDatePicker extends DatePicker {
         getComponentToggleCalendarButton().setText("");
         getComponentToggleCalendarButton().setIcon(GUIUtilities.loadIcon("clndr_ico.svg", 16));
         getComponentDateTextField().setMargin(new Insets(0, 0, 0, 0));
-        getComponentDateTextField().setColumns(20);
+        getComponentDateTextField().setColumns(10);
         repaint();
     }
 }

@@ -53,6 +53,7 @@ public class ResultSetTable extends JTable implements StandardTable {
     private DefaultCellEditor multiLineCellEditor;
     private DateCellEditor dateEditor;
     private DateTimeCellEditor dateTimeCellEditor;
+    private DateTimezoneCellEditor dateTimezoneCellEditor;
     private TimeCellEditor timeCellEditor;
     private TimezoneCellEditor timezoneCellEditor;
     private TableCellEditor previousEditor;
@@ -140,6 +141,7 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         dateEditor = new DateCellEditor();
         dateTimeCellEditor = new DateTimeCellEditor();
+        dateTimezoneCellEditor = new DateTimezoneCellEditor();
         timeCellEditor = new TimeCellEditor();
         timezoneCellEditor = new TimezoneCellEditor();
 
@@ -428,6 +430,9 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         } else if (Objects.equals(previousEditor, timezoneCellEditor)) {
             timezoneCellEditor.restoreCellSize();
+
+        } else if(Objects.equals(previousEditor, dateTimezoneCellEditor)) {
+            dateTimezoneCellEditor.restoreCellSize();
         }
 
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
@@ -485,14 +490,12 @@ public class ResultSetTable extends JTable implements StandardTable {
                 return dateEditor;
 
             case Types.TIMESTAMP:
-                dateTimeCellEditor.getDateTimePicker().setVisibleTimeZone(false);
                 previousEditor = dateTimeCellEditor;
                 return dateTimeCellEditor;
 
             case Types.TIMESTAMP_WITH_TIMEZONE:
-                dateTimeCellEditor.getDateTimePicker().setVisibleTimeZone(true);
-                previousEditor = dateTimeCellEditor;
-                return dateTimeCellEditor;
+                previousEditor = dateTimezoneCellEditor;
+                return dateTimezoneCellEditor;
 
             case Types.TIME_WITH_TIMEZONE:
                 previousEditor = timezoneCellEditor;

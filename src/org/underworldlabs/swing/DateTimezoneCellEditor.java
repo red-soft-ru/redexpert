@@ -10,11 +10,12 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.EventObject;
 
-public class DateTimeCellEditor extends AbstractCellEditor implements TableCellEditor, TableCellRenderer {
+public class DateTimezoneCellEditor extends AbstractCellEditor implements TableCellEditor, TableCellRenderer {
 
-    private final EQDateTimePicker dateTimePicker;
+    private final EQDateTimezonePicker dateTimezonePicker;
     private JTable table;
     private int col;
 
@@ -23,27 +24,22 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
     private int oldRowHeightInPixels;
     private int oldColWidthInPixels;
 
-    public DateTimeCellEditor() {
+    public DateTimezoneCellEditor() {
 
-        dateTimePicker = new EQDateTimePicker();
-        dateTimePicker.getDatePicker().getSettings().setGapBeforeButtonPixels(0);
+        dateTimezonePicker = new EQDateTimezonePicker();
+        dateTimezonePicker.getDatePicker().getSettings().setGapBeforeButtonPixels(0);
 
-        minimumRowHeightInPixels = dateTimePicker.getPreferredSize().height;
-        minimumColWidthInPixels = dateTimePicker.getPreferredSize().width;
+        minimumRowHeightInPixels = dateTimezonePicker.getPreferredSize().height;
+        minimumColWidthInPixels = dateTimezonePicker.getPreferredSize().width;
     }
 
     @Override
     public Object getCellEditorValue() {
 
-        if (dateTimePicker.getStringValue().isEmpty())
+        if (dateTimezonePicker.getStringValue().isEmpty())
             return null;
 
-        try {
-            return Timestamp.valueOf(dateTimePicker.getStringValue());
-
-        } catch (IllegalArgumentException e) {
-            return dateTimePicker.getStringValue();
-        }
+        return dateTimezonePicker.getOffsetDateTime();
     }
 
     @Override
@@ -51,11 +47,11 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
         this.table = table;
         this.col = column;
 
-        setCellEditorValue(value);
-        adjustTableRowHeight();
         adjustTableColWidth();
+        adjustTableRowHeight();
+        setCellEditorValue(value);
 
-        return dateTimePicker;
+        return dateTimezonePicker;
     }
 
     @Override
@@ -64,16 +60,16 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
         this.col = column;
 
         Color color = isSelected ? table.getSelectionBackground() : table.getBackground();
-        dateTimePicker.setBackground(color);
-        dateTimePicker.getTimePicker().setBackground(color);
-        dateTimePicker.getDatePicker().setBackground(color);
-        dateTimePicker.getDatePicker().getComponentDateTextField().setBackground(color);
+        dateTimezonePicker.setBackground(color);
+        dateTimezonePicker.getTimezonePicker().setBackground(color);
+        dateTimezonePicker.getDatePicker().setBackground(color);
+        dateTimezonePicker.getDatePicker().getComponentDateTextField().setBackground(color);
 
         setCellEditorValue(value);
         adjustTableRowHeight();
         adjustTableColWidth();
 
-        return dateTimePicker;
+        return dateTimezonePicker;
     }
 
     @Override
@@ -81,15 +77,15 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
         return !(e instanceof MouseEvent) || ((MouseEvent) e).getClickCount() >= 1;
     }
 
-    private void setCellEditorValue(Object value) {
+    public void setCellEditorValue(Object value) {
 
         if (value == null) {
-            dateTimePicker.setDateTime(null);
+            dateTimezonePicker.setDateTime((OffsetDateTime) null);
             return;
         }
 
         if (value instanceof LocalDateTime) {
-            dateTimePicker.setDateTime((LocalDateTime) value);
+            dateTimezonePicker.setDateTime((LocalDateTime) value);
             return;
         }
 
@@ -97,10 +93,13 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
             RecordDataItem item = ((RecordDataItem) value);
 
             if (item.getDisplayValue() instanceof LocalDateTime) {
-                dateTimePicker.setDateTime((LocalDateTime) item.getDisplayValue());
+                dateTimezonePicker.setDateTime((LocalDateTime) item.getDisplayValue());
+
+            } else if (item.getDisplayValue() instanceof OffsetDateTime) {
+                dateTimezonePicker.setDateTime((OffsetDateTime) item.getDisplayValue());
 
             } else if (item.getDisplayValue() instanceof Timestamp) {
-                dateTimePicker.setDateTime(((Timestamp) item.getDisplayValue()).toLocalDateTime());
+                dateTimezonePicker.setDateTime(((Timestamp) item.getDisplayValue()).toLocalDateTime());
 
             } else if (item.getDisplayValue() instanceof String) {
 
@@ -114,22 +113,23 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
                 String time = dateTime.substring(dateTime.indexOf(' ') + 1, indexTimezone);
                 LocalDateTime localDateTime = Timestamp.valueOf(date + " " + time).toLocalDateTime();
 
-                dateTimePicker.setDateTime(localDateTime);
+                dateTimezonePicker.setDateTime(localDateTime);
 
             } else
-                dateTimePicker.setDateTime(null);
+                dateTimezonePicker.setDateTime((OffsetDateTime) null);
 
         } else {
             String shorterText = InternalUtilities.safeSubstring(value.toString(), 0, 100);
-            dateTimePicker.getDatePicker().setText(shorterText);
+            dateTimezonePicker.getDatePicker().setText(shorterText);
         }
     }
 
     private void adjustTableRowHeight() {
         oldRowHeightInPixels = table.getRowHeight();
 
-        if (table.getRowHeight() < minimumRowHeightInPixels)
+        if (table.getRowHeight() < minimumRowHeightInPixels) {
             table.setRowHeight(minimumRowHeightInPixels);
+        }
     }
 
     private void adjustTableColWidth() {
@@ -141,18 +141,18 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
         }
     }
 
-    private void restoreTableRowHeigh() {
+    private void zRestoreTableRowHeigh() {
         table.setRowHeight(oldRowHeightInPixels);
     }
 
-    private void restoreTableColWidth() {
+    private void zRestoreTableColWidth() {
         table.getColumnModel().getColumn(col).setWidth(oldColWidthInPixels);
         table.getColumnModel().getColumn(col).setPreferredWidth(oldColWidthInPixels);
     }
 
     public void restoreCellSize() {
-        restoreTableRowHeigh();
-        restoreTableColWidth();
+        zRestoreTableRowHeigh();
+        zRestoreTableColWidth();
     }
 
 }

@@ -105,10 +105,10 @@ public class InputParametersDialog extends BaseDialog {
                     ((DatePicker) component).setDate((LocalDate) parameter.getValue());
                     break;
                 case Types.TIMESTAMP:
-                    ((EQDateTimePicker) component).setDateTimePermissive((LocalDateTime) parameter.getValue());
+                    ((EQDateTimePicker) component).setDateTime((LocalDateTime) parameter.getValue());
                     break;
                 case Types.TIMESTAMP_WITH_TIMEZONE:
-                    ((EQDateTimePicker) component).setDateTimePermissive((OffsetDateTime) parameter.getValue());
+                    ((EQDateTimezonePicker) component).setDateTime((OffsetDateTime) parameter.getValue());
                     break;
                 case Types.TIME:
                     ((EQTimePicker) component).setTime((LocalTime) parameter.getValue());
@@ -145,9 +145,7 @@ public class InputParametersDialog extends BaseDialog {
                 component = new EQDateTimePicker();
                 break;
             case Types.TIMESTAMP_WITH_TIMEZONE:
-                EQDateTimePicker dtp = new EQDateTimePicker();
-                dtp.setVisibleTimeZone(true);
-                component = dtp;
+                component = new EQDateTimezonePicker();
                 break;
             case Types.TIME:
                 component = new EQTimePicker();
@@ -192,7 +190,7 @@ public class InputParametersDialog extends BaseDialog {
                     parameter.setValue(((EQDateTimePicker) component).getDateTime());
                     break;
                 case Types.TIMESTAMP_WITH_TIMEZONE:
-                    parameter.setValue(((EQDateTimePicker) component).getOffsetDateTime());
+                    parameter.setValue(((EQDateTimezonePicker) component).getOffsetDateTime());
                     break;
                 case Types.TIME:
                     parameter.setValue(((EQTimePicker) component).getLocalTime());

@@ -6,24 +6,25 @@ import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
-public class EQDateTimePicker extends JPanel {
+public class EQDateTimezonePicker extends JPanel {
 
     private EQDatePicker datePicker;
-    private EQTimePicker timePicker;
+    private EQTimezonePicker timezonePicker;
 
-    public EQDateTimePicker() {
+    public EQDateTimezonePicker() {
         init();
         arrange();
     }
 
-    void init() {
-        timePicker = new EQTimePicker();
+    private void init() {
         datePicker = new EQDatePicker();
+        timezonePicker = new EQTimezonePicker();
 
-        timePicker.addNullCheckActionListener(e -> datePicker.setEnabled(!timePicker.isNull()));
-        timePicker.addNullCheckActionListener(e -> setCurrentDate());
         datePicker.addDateChangeListener(e -> setCurrentDate());
+        timezonePicker.addNullCheckActionListener(e -> setCurrentDate());
+        timezonePicker.addNullCheckActionListener(e -> datePicker.setEnabled(!timezonePicker.isNull()));
     }
 
     private void arrange() {
@@ -31,18 +32,18 @@ public class EQDateTimePicker extends JPanel {
 
         setLayout(new GridBagLayout());
         add(datePicker, gbh.get());
-        add(timePicker, gbh.nextCol().spanX().get());
+        add(timezonePicker, gbh.nextCol().spanX().get());
 
-        setPreferredSize(new Dimension(320, timePicker.getPreferredSize().height));
+        setPreferredSize(new Dimension(450, timezonePicker.getPreferredSize().height));
     }
 
     public String getStringValue() {
 
-        if (timePicker.isNull())
+        if (timezonePicker.isNull())
             return "";
 
         String date = datePicker.getDateStringOrEmptyString();
-        String time = timePicker.getStringValue().trim();
+        String time = timezonePicker.getStringValue().trim();
 
         if (time.isEmpty() && !date.isEmpty())
             time = "0:00:00";
@@ -59,11 +60,27 @@ public class EQDateTimePicker extends JPanel {
 
         setNull(false);
         datePicker.setDate(dateTime.toLocalDate());
-        timePicker.setTime(dateTime.toLocalTime());
+        timezonePicker.setTime(dateTime.toLocalTime());
+    }
+
+    public void setDateTime(OffsetDateTime dateTime) {
+
+        if (dateTime == null) {
+            setNull(true);
+            return;
+        }
+
+        setNull(false);
+        datePicker.setDate(dateTime.toLocalDate());
+        timezonePicker.setTime(dateTime.toOffsetTime());
     }
 
     public LocalDateTime getDateTime() {
-        return LocalDateTime.of(datePicker.getDate(), timePicker.getLocalTime());
+        return LocalDateTime.of(datePicker.getDate(), timezonePicker.getLocalTime());
+    }
+
+    public OffsetDateTime getOffsetDateTime() {
+        return OffsetDateTime.of(getDateTime(), timezonePicker.getOffsetTime().getOffset());
     }
 
     private void setCurrentDate() {
@@ -72,7 +89,7 @@ public class EQDateTimePicker extends JPanel {
     }
 
     public void setVisibleNullBox(boolean flag) {
-        timePicker.setVisibleNullCheck(flag);
+        timezonePicker.setVisibleNullCheck(flag);
     }
 
     public boolean isNull() {
@@ -83,12 +100,12 @@ public class EQDateTimePicker extends JPanel {
         return datePicker;
     }
 
-    public EQTimePicker getTimePicker() {
-        return timePicker;
+    public EQTimezonePicker getTimezonePicker() {
+        return timezonePicker;
     }
 
     public void setNull(boolean isNull) {
-        timePicker.setNull(isNull);
+        timezonePicker.setNull(isNull);
         datePicker.setEnabled(!isNull);
     }
 

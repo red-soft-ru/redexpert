@@ -25,7 +25,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
     private EQTimePicker startValueTime;
     private EQTimePicker iterationTime;
     private EQDateTimePicker startValueDateTime;
-    private EQDateTimePicker iterationDateTime;
+    private EQDateTimezonePicker startValueDateTimezone;
     private DateDifferenceSetter iterationDate;
     private DatePicker startValueDate;
     private JComboBox plusMinusBox;
@@ -147,12 +147,11 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
         }
 
-        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP) || col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
+        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
 
             startValueDateTime = new EQDateTimePicker();
             startValueDateTime.setVisibleNullBox(false);
-            startValueDateTime.setDateTimePermissive(LocalDateTime.now());
-            startValueDateTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE));
+            startValueDateTime.setDateTime(LocalDateTime.now());
 
             iterationDate = new DateDifferenceSetter();
 
@@ -163,6 +162,26 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             gbh.setXY(0, 0);
             settingsPanel.add(new JLabel(bundles("StartValue")), gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueDateTime, gbh.defaults().nextCol().setMaxWeightX().get());
+            settingsPanel.add(new JLabel(bundles("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
+            settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
+            settingsPanel.add(iterationTime, gbh.defaults().nextRow().setMaxWeightX().get());
+        }
+
+        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
+
+            startValueDateTimezone = new EQDateTimezonePicker();
+            startValueDateTimezone.setVisibleNullBox(false);
+            startValueDateTimezone.setDateTime(LocalDateTime.now());
+
+            iterationDate = new DateDifferenceSetter();
+
+            iterationTime = new EQTimePicker();
+            iterationTime.setVisibleNullCheck(false);
+            iterationTime.setTime(LocalTime.of(0, 0, 0));
+
+            gbh.setXY(0, 0);
+            settingsPanel.add(new JLabel(bundles("StartValue")), gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(startValueDateTimezone, gbh.defaults().nextCol().setMaxWeightX().get());
             settingsPanel.add(new JLabel(bundles("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
             settingsPanel.add(iterationTime, gbh.defaults().nextRow().setMaxWeightX().get());
@@ -274,7 +293,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
         }
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
             if (first) {
-                current_offset_date_time = startValueDateTime.getOffsetDateTime();
+                current_offset_date_time = startValueDateTimezone.getOffsetDateTime();
                 first = false;
                 return current_offset_date_time;
             }

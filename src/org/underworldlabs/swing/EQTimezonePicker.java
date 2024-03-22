@@ -5,6 +5,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -129,7 +130,7 @@ public class EQTimezonePicker extends JPanel {
         plusMinusCombox.setEnabled(!isNull());
     }
 
-    private void setNull(boolean isNull) {
+    public void setNull(boolean isNull) {
         isNullCheck.setSelected(isNull);
         setUpdateNull();
     }
@@ -153,6 +154,10 @@ public class EQTimezonePicker extends JPanel {
     public LocalTime getLocalTime() {
         Instant instant = Instant.ofEpochMilli(((Date) (timeSpinner).getValue()).getTime());
         return LocalDateTime.ofInstant(instant, ZoneId.systemDefault()).toLocalTime();
+    }
+
+    public void addNullCheckActionListener(ActionListener l) {
+        isNullCheck.addActionListener(l);
     }
 
 }

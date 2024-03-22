@@ -52,8 +52,8 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
         if(job.getJobType()==DefaultDatabaseJob.PSQL_TYPE)
             sqlTextPanel.setSQLText(job.getSource());
         else bashTextPanel.getTextAreaComponent().setText(job.getSource());
-        startDatePicker.setDateTimePermissive(job.getStartDate());
-        endDatePicker.setDateTimePermissive(job.getEndDate());
+        startDatePicker.setDateTime(job.getStartDate());
+        endDatePicker.setDateTime(job.getEndDate());
         activeBox.setSelected(job.isActive());
         idField.setText(job.getId());
         databaseField.setText(job.getDatabase());

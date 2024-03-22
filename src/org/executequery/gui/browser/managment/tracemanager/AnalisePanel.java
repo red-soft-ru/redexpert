@@ -168,14 +168,14 @@ public class AnalisePanel extends JPanel {
                 if (index > messages.size())
                     return;
             }
-            startTimePicker.setDateTimePermissive(messages.get(index).getTimestamp().toLocalDateTime());
+            startTimePicker.setDateTime(messages.get(index).getTimestamp().toLocalDateTime());
             index = messages.size() - 1;
             while (messages.get(index).getTimestamp() == null) {
                 index--;
                 if (index < 0)
                     return;
             }
-            endTimePicker.setDateTimePermissive(messages.get(index).getTimestamp().toLocalDateTime());
+            endTimePicker.setDateTime(messages.get(index).getTimestamp().toLocalDateTime());
         }
     }
 

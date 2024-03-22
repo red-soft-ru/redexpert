@@ -24,10 +24,10 @@ import biz.redsoft.IFBBlob;
 import biz.redsoft.IFBClob;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
-import org.executequery.databaseobjects.Types;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.Types;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledResultSet;
 import org.executequery.datasource.PooledStatement;
@@ -964,17 +964,19 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     @Override
     public boolean isCellEditable(int row, int column) {
-        RecordDataItem recordDataItem = tableData.get(row).get(asVisibleColumnIndex(column));
+        if (isTable) {
+            RecordDataItem recordDataItem = tableData.get(row).get(asVisibleColumnIndex(column));
 
-        if (!visibleColumnHeaders.get(column).isEditable()) {
-            return recordDataItem.isNew() && cellsEditable;
-        }
-        if (recordDataItem.isBlob()) {
+            if (!visibleColumnHeaders.get(column).isEditable()) {
+                return recordDataItem.isNew() && cellsEditable;
+            }
+            if (recordDataItem.isBlob()) {
 
-            return false;
-        }
+                return false;
+            }
 
-        return cellsEditable;
+            return cellsEditable;
+        } else return false;
     }
 
     public void setNonEditableColumns(List<String> nonEditableColumns) {

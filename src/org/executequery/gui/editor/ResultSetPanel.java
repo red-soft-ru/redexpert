@@ -102,7 +102,9 @@ public class ResultSetPanel extends JPanel {
         table = new ResultSetTable() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return !UserPreferencesManager.doubleClickOpenItemView();
+                if (super.isCellEditable(row, column))
+                    return !UserPreferencesManager.doubleClickOpenItemView();
+                else return false;
             }
         };
 

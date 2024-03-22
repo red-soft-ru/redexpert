@@ -563,13 +563,13 @@ public class ResultSetTable extends JTable implements StandardTable {
         TableColumnModel tcm = getColumnModel();
         TableColumn col;
 
+        final int increment = 10;
         for (int i = 0; i < tcm.getColumnCount(); i++) {
             ResultSetColumnHeader header = tableModel.getColumnHeaders().get(i);
             col = tcm.getColumn(i);
-            col.setWidth(header.getColWidth());
-            col.setPreferredWidth(header.getColWidth());
+            col.setWidth(header.getColWidth() + increment);
+            col.setPreferredWidth(header.getColWidth() + increment);
         }
-
     }
 
     public void setForeignKeyTable(
@@ -593,6 +593,8 @@ public class ResultSetTable extends JTable implements StandardTable {
     }
 
     public void switchAutoResizeMode() {
+        setTableColumnWidthFromContents();
+
         isAutoResizeable = !isAutoResizeable;
         setAutoResizeMode(isAutoResizeable ? JTable.AUTO_RESIZE_ALL_COLUMNS : JTable.AUTO_RESIZE_OFF);
     }

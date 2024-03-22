@@ -4,10 +4,7 @@ import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.T;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.DateDifferenceSetter;
-import org.underworldlabs.swing.EQDateTimePicker;
-import org.underworldlabs.swing.EQTimePicker;
-import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -24,6 +21,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
     private JPanel settingsPanel;
     private JTextField iterationField;
     private JTextField startValueField;
+    private EQTimezonePicker startValueTimezone;
     private EQTimePicker startValueTime;
     private EQTimePicker iterationTime;
     private EQDateTimePicker startValueDateTime;
@@ -101,58 +99,75 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             settingsPanel.add(iterationField, gbh.defaults().nextCol().setMaxWeightX().get());
 
         }
-        if (col.getFormattedDataType().contentEquals(T.TIME) || col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
+
+        if (col.getFormattedDataType().contentEquals(T.TIME)) {
+
             startValueTime = new EQTimePicker();
             startValueTime.setVisibleNullCheck(false);
             startValueTime.setTime(LocalTime.MIN);
-            startValueTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE));
+
             iterationTime = new EQTimePicker();
             iterationTime.setVisibleNullCheck(false);
             iterationTime.setTime(LocalTime.of(1, 1, 1));
-            iterationTime.setVisibleTimeZone(false);
 
             gbh.setXY(0, 0);
-
-            JLabel label = new JLabel(bundles("StartValue"));
-            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundles("StartValue")), gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel(bundles("Iteration"));
-            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundles("Iteration")), gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(iterationTime, gbh.defaults().nextCol().setMaxWeightX().get());
         }
+
+        if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
+
+            startValueTimezone = new EQTimezonePicker();
+            startValueTimezone.setVisibleNullCheck(false);
+            startValueTimezone.setTime(LocalTime.MIN);
+
+            iterationTime = new EQTimePicker();
+            iterationTime.setVisibleNullCheck(false);
+            iterationTime.setTime(LocalTime.of(1, 1, 1));
+
+            gbh.setXY(0, 0);
+            settingsPanel.add(new JLabel(bundles("StartValue")), gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(startValueTimezone, gbh.defaults().nextCol().setMaxWeightX().get());
+            settingsPanel.add(new JLabel(bundles("Iteration")), gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(iterationTime, gbh.defaults().nextCol().setMaxWeightX().get());
+        }
+
         if (col.getFormattedDataType().contentEquals(T.DATE)) {
+
             startValueDate = new DatePicker();
             startValueDate.setDate(LocalDate.now());
+
             iterationDate = new DateDifferenceSetter();
 
-
-            JLabel label = new JLabel(bundles("StartValue"));
-            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundles("StartValue")), gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueDate, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel(bundles("Iteration"));
-            settingsPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundles("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
         }
+
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP) || col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
+
             startValueDateTime = new EQDateTimePicker();
             startValueDateTime.setVisibleNullBox(false);
             startValueDateTime.setDateTimePermissive(LocalDateTime.now());
             startValueDateTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE));
+
             iterationDate = new DateDifferenceSetter();
+
             iterationTime = new EQTimePicker();
             iterationTime.setVisibleNullCheck(false);
             iterationTime.setTime(LocalTime.of(0, 0, 0));
-            iterationTime.setVisibleTimeZone(false);
 
             gbh.setXY(0, 0);
-            JLabel label = new JLabel(bundles("StartValue"));
-            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundles("StartValue")), gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueDateTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel(bundles("Iteration"));
-            settingsPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundles("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
             settingsPanel.add(iterationTime, gbh.defaults().nextRow().setMaxWeightX().get());
         }
+
         setLayout(new GridBagLayout());
         gbh.setXY(0, 0);
         add(plusMinusBox, gbh.defaults().spanX().get());
@@ -195,7 +210,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
         }
         if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
             if (first) {
-                current_offset_date_time = startValueTime.getOffsetTime().atDate(LocalDate.of(1970, 1, 1));
+                current_offset_date_time = startValueTimezone.getOffsetTime().atDate(LocalDate.of(1970, 1, 1));
                 first = false;
                 return current_offset_date_time.toOffsetTime();
             }

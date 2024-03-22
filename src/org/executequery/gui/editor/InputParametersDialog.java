@@ -114,7 +114,7 @@ public class InputParametersDialog extends BaseDialog {
                     ((EQTimePicker) component).setTime((LocalTime) parameter.getValue());
                     break;
                 case Types.TIME_WITH_TIMEZONE:
-                    ((EQTimePicker) component).setTime((OffsetTime) parameter.getValue());
+                    ((EQTimezonePicker) component).setTime((OffsetTime) parameter.getValue());
                     break;
                 case Types.BOOLEAN:
                     ((RDBCheckBox) component).setStingValue((String) parameter.getValue());
@@ -132,9 +132,10 @@ public class InputParametersDialog extends BaseDialog {
     }
 
     private void addParameter(Parameter parameter) {
-        int count = componentList.size();
+
         panel.add(new JLabel(parameter.getName()), gbh.nextRowFirstCol().setLabelDefault().get());
         panel.add(new JLabel(parameter.getTypeName()), gbh.nextCol().get());
+
         JComponent component;
         switch (parameter.getType()) {
             case Types.DATE:
@@ -152,9 +153,7 @@ public class InputParametersDialog extends BaseDialog {
                 component = new EQTimePicker();
                 break;
             case Types.TIME_WITH_TIMEZONE:
-                EQTimePicker tp = new EQTimePicker();
-                tp.setVisibleTimeZone(true);
-                component = tp;
+                component = new EQTimezonePicker();
                 break;
             case Types.BOOLEAN:
                 component = new RDBCheckBox();
@@ -175,6 +174,7 @@ public class InputParametersDialog extends BaseDialog {
                 component = new ValueOrNullParameterField(new JTextField(14));
                 break;
         }
+
         setValueToComponent(parameter, component);
         componentList.add(component);
         panel.add(component, gbh.nextCol().fillHorizontally().spanX().get());
@@ -197,7 +197,7 @@ public class InputParametersDialog extends BaseDialog {
                 case Types.TIME:
                     parameter.setValue(((EQTimePicker) component).getLocalTime());
                 case Types.TIME_WITH_TIMEZONE:
-                    parameter.setValue(((EQTimePicker) component).getOffsetTime());
+                    parameter.setValue(((EQTimezonePicker) component).getOffsetTime());
                     break;
                 case Types.BOOLEAN:
                     parameter.setValue(((RDBCheckBox) component).getStringValue());

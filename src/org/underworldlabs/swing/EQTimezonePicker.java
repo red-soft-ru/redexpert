@@ -1,6 +1,5 @@
 package org.underworldlabs.swing;
 
-
 import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
@@ -10,19 +9,21 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
-public class EQTimePicker extends JPanel {
+public class EQTimezonePicker extends JPanel {
 
     protected JSpinner timeSpinner;
     protected JCheckBox isNullCheck;
+    protected JSpinner timezoneSpinner;
+    protected JComboBox<?> plusMinusCombox;
 
-    public EQTimePicker() {
+    public EQTimezonePicker() {
         init();
         arrange();
         setUpdateNull();
         setCurrentTime();
     }
 
-    public EQTimePicker(boolean isNull) {
+    public EQTimezonePicker(boolean isNull) {
         this();
         setEnableComponents(!isNull);
     }
@@ -31,6 +32,12 @@ public class EQTimePicker extends JPanel {
 
         timeSpinner = WidgetFactory.createSpinner("timeSpinner", new SpinnerDateModel());
         timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, "HH:mm:ss.SSS"));
+
+        timezoneSpinner = WidgetFactory.createSpinner("timezoneSpinner", new SpinnerDateModel());
+        timezoneSpinner.setEditor(new JSpinner.DateEditor(timezoneSpinner, "HH:mm"));
+
+        plusMinusCombox = WidgetFactory.createComboBox("plusMinusCombox", new String[]{"+", "-"});
+        plusMinusCombox.setPreferredSize(new Dimension(plusMinusCombox.getPreferredSize().width + 5, plusMinusCombox.getPreferredSize().height));
 
         isNullCheck = WidgetFactory.createCheckBox("isNullCheck", "NULL");
         isNullCheck.addActionListener(e -> setUpdateNull());
@@ -41,9 +48,11 @@ public class EQTimePicker extends JPanel {
 
         setLayout(new GridBagLayout());
         add(timeSpinner, gbh.setMaxWeightX().get());
+        add(plusMinusCombox, gbh.setMinWeightX().nextCol().get());
+        add(timezoneSpinner, gbh.setMaxWeightX().nextCol().get());
         add(isNullCheck, gbh.anchorNorthEast().setMinWeightX().nextCol().get());
 
-        setPreferredSize(new Dimension(200, timeSpinner.getPreferredSize().height));
+        setPreferredSize(new Dimension(300, timezoneSpinner.getPreferredSize().height));
     }
 
     public String getStringValue() {
@@ -53,8 +62,13 @@ public class EQTimePicker extends JPanel {
 
         Instant instant = Instant.ofEpochMilli(((Date) (timeSpinner).getValue()).getTime());
         LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
+        String time = localDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
 
-        return localDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
+        instant = Instant.ofEpochMilli(((Date) (timezoneSpinner).getValue()).getTime());
+        localDateTime = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
+        time += plusMinusCombox.getSelectedItem() + localDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+        return time;
     }
 
     public void setTime(LocalTime time) {
@@ -73,6 +87,36 @@ public class EQTimePicker extends JPanel {
         timeSpinner.setValue(Date.from(instant));
     }
 
+    public void setTime(OffsetTime time) {
+
+        if (time == null) {
+            setNull(true);
+            return;
+        }
+
+        Instant instant = LocalTime
+                .of(time.getHour(), time.getMinute(), time.getSecond(), time.getNano())
+                .atDate(LocalDate.of(1970, 1, 1))
+                .atZone(ZoneId.of(ZoneId.systemDefault().getId()))
+                .toInstant();
+
+        setNull(false);
+        timeSpinner.setValue(Date.from(instant));
+        setZoneOffset(time.getOffset());
+    }
+
+    public void setZoneOffset(ZoneOffset offset) {
+
+        Instant instant = LocalTime
+                .ofSecondOfDay(Math.abs(offset.getTotalSeconds()))
+                .atDate(LocalDate.of(1970, 1, 1))
+                .atZone(ZoneId.of(ZoneId.systemDefault().getId()))
+                .toInstant();
+
+        plusMinusCombox.setSelectedIndex(offset.getTotalSeconds() < 0 ? 1 : 0);
+        timezoneSpinner.setValue(Date.from(instant));
+    }
+
     public void setEnableComponents(boolean enable) {
         setNull(!enable);
         setEnabled(enable);
@@ -81,6 +125,8 @@ public class EQTimePicker extends JPanel {
 
     private void setUpdateNull() {
         timeSpinner.setEnabled(!isNull());
+        timezoneSpinner.setEnabled(!isNull());
+        plusMinusCombox.setEnabled(!isNull());
     }
 
     private void setNull(boolean isNull) {
@@ -97,7 +143,11 @@ public class EQTimePicker extends JPanel {
     }
 
     public void setCurrentTime() {
-        setTime(LocalTime.now());
+        setTime(OffsetTime.now());
+    }
+
+    public OffsetTime getOffsetTime() {
+        return OffsetTime.parse(getStringValue());
     }
 
     public LocalTime getLocalTime() {

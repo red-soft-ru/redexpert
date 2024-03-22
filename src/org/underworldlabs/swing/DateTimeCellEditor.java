@@ -79,8 +79,8 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
         if (this.dateTimePicker.getStringValue().isEmpty())
             return null;
 
-        if (dateTimePicker.timePicker.timezoneSpinner.isVisible())
-            return this.dateTimePicker.getOffsetDateTime();
+//        if (dateTimePicker.timePicker.timezoneSpinner.isVisible())
+//            return this.dateTimePicker.getOffsetDateTime();
 
         try {
             return Timestamp.valueOf(this.dateTimePicker.getStringValue());

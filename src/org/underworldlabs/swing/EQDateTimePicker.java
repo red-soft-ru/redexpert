@@ -46,7 +46,8 @@ public class EQDateTimePicker extends JPanel {
     }
 
     public OffsetDateTime getOffsetDateTime() {
-        return OffsetDateTime.of(getDateTime(), timePicker.getOffsetTime().getOffset());
+//        return OffsetDateTime.of(getDateTime(), timePicker.getOffsetTime().getOffset());
+        return null;
     }
 
     public void setDateTimePermissive(LocalDateTime time) {
@@ -55,17 +56,17 @@ public class EQDateTimePicker extends JPanel {
             timePicker.setTime(time.toLocalTime());
         } else {
             datePicker.setDate(null);
-            timePicker.setTime((OffsetTime) null);
+//            timePicker.setTime((OffsetTime) null);
         }
     }
 
     public void setDateTimePermissive(OffsetDateTime time) {
         if (time != null) {
             datePicker.setDate(time.toLocalDate());
-            timePicker.setTime(time.toOffsetTime());
+//            timePicker.setTime(time.toOffsetTime());
         } else {
             datePicker.setDate(null);
-            timePicker.setTime((OffsetTime) null);
+//            timePicker.setTime((OffsetTime) null);
         }
     }
 
@@ -84,7 +85,7 @@ public class EQDateTimePicker extends JPanel {
     }
 
     public void setVisibleTimeZone(boolean flag) {
-        timePicker.setVisibleTimeZone(flag);
+//        timePicker.setVisibleTimeZone(flag);
     }
 
     public boolean isNull()

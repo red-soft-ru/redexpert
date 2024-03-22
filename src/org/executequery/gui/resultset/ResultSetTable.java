@@ -24,10 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.Types;
 import org.executequery.gui.StandardTable;
-import org.underworldlabs.swing.DateCellEditor;
-import org.underworldlabs.swing.DateTimeCellEditor;
-import org.underworldlabs.swing.ForeignKeyCellEditor;
-import org.underworldlabs.swing.TimeCellEditor;
+import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.table.MultiLineStringCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.swing.table.TableSorter;
@@ -57,6 +54,7 @@ public class ResultSetTable extends JTable implements StandardTable {
     private DateCellEditor dateEditor;
     private DateTimeCellEditor dateTimeCellEditor;
     private TimeCellEditor timeCellEditor;
+    private TimezoneCellEditor timezoneCellEditor;
     private TableCellEditor previousEditor;
 
     private boolean isAutoResizeable;
@@ -143,6 +141,7 @@ public class ResultSetTable extends JTable implements StandardTable {
         dateEditor = new DateCellEditor();
         dateTimeCellEditor = new DateTimeCellEditor();
         timeCellEditor = new TimeCellEditor();
+        timezoneCellEditor = new TimezoneCellEditor();
 
         isAutoResizeable = false;
     }
@@ -426,6 +425,9 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         } else if (Objects.equals(previousEditor, dateTimeCellEditor)) {
             dateTimeCellEditor.restoreCellSize();
+
+        } else if (Objects.equals(previousEditor, timezoneCellEditor)) {
+            timezoneCellEditor.restoreCellSize();
         }
 
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
@@ -493,12 +495,10 @@ public class ResultSetTable extends JTable implements StandardTable {
                 return dateTimeCellEditor;
 
             case Types.TIME_WITH_TIMEZONE:
-                timeCellEditor.getPicker().setVisibleTimeZone(true);
-                previousEditor = timeCellEditor;
-                return timeCellEditor;
+                previousEditor = timezoneCellEditor;
+                return timezoneCellEditor;
 
             case Types.TIME:
-                timeCellEditor.getPicker().setVisibleTimeZone(false);
                 previousEditor = timeCellEditor;
                 return timeCellEditor;
 

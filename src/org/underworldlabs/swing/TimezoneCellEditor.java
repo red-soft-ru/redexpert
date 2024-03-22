@@ -12,8 +12,8 @@ import java.time.LocalTime;
 import java.time.OffsetTime;
 import java.util.EventObject;
 
-public class TimeCellEditor extends AbstractCellEditor implements TableCellEditor {
-    private final EQTimePicker picker;
+public class TimezoneCellEditor extends AbstractCellEditor implements TableCellEditor {
+    private final EQTimezonePicker picker;
     private JTable table;
     private int col;
 
@@ -24,8 +24,8 @@ public class TimeCellEditor extends AbstractCellEditor implements TableCellEdito
     private int oldRowHeightInPixels;
     private int oldColWidthInPixels;
 
-    public TimeCellEditor() {
-        picker = new EQTimePicker();
+    public TimezoneCellEditor() {
+        picker = new EQTimezonePicker();
 
         this.autoAdjustMinimumTableRowHeight = true;
         this.autoAdjustMinimumTableColWidth = true;
@@ -48,7 +48,11 @@ public class TimeCellEditor extends AbstractCellEditor implements TableCellEdito
 
     public void setCellEditorValue(Object value) {
 
-        if (value instanceof LocalTime) {
+        if (value instanceof OffsetTime) {
+            OffsetTime nativeValue = (OffsetTime) value;
+            this.picker.setTime(nativeValue);
+
+        } else if (value instanceof LocalTime) {
             LocalTime nativeValue = (LocalTime) value;
             this.picker.setTime(nativeValue);
 
@@ -64,13 +68,16 @@ public class TimeCellEditor extends AbstractCellEditor implements TableCellEdito
             }
 
             if (value == null)
-                picker.setTime(null);
+                picker.setTime((OffsetTime) null);
         }
     }
 
     @Override
     public Object getCellEditorValue() {
-        return picker.getStringValue().isEmpty() ? null : picker.getLocalTime();
+        if (!picker.getStringValue().isEmpty())
+            return picker.timezoneSpinner.isVisible() ? picker.getOffsetTime() : picker.getLocalTime();
+        else
+            return null;
     }
 
     @Override

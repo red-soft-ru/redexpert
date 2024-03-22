@@ -40,11 +40,12 @@ win32: {
     LIBS += -lcomdlg32
     RC_FILE += ResourceScript.rc
     HEADERS +=\
+           winlauncher.h \
            resource.h \
            unzip.h
     DISTFILES += ResourceScript.rc
     SOURCES +=\
-    unzip.cpp
+        unzip.cpp
     DEFINES += UNICODE
     DEFINES += _UNICODE
 }
@@ -79,7 +80,6 @@ SOURCES += \
 HEADERS += \
     baselauncher.h \
     linlauncher.h \
-    winlauncher.h \
     JniError.h \
     JniString.h \
     PortableJni.h \

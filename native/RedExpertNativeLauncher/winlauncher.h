@@ -1282,7 +1282,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
             else if (err_rep.typeError == NOT_SUPPORTED_ARCH)
                 m_mes.append(L"Найдена Java с недопустимой версией. ");
             else
-                m_mes.append(L"Java не найдена. ");
+                m_mes.append(L"Java отсутствует или повреждена. ");
 
             m_mes.append(L"Вы можете вручную указать путь к JVM\n");
             m_mes.append(L"или скачать Java автоматически с ");
@@ -1301,7 +1301,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
             else if (err_rep.typeError == NOT_SUPPORTED_ARCH)
                 m_mes.append(L"Java with invalid version found. ");
             else
-                m_mes.append(L"Java not found. ");
+                m_mes.append(L"Java is missing or damaged. ");
 
             m_mes.append(L"You can specify the path to JVM manually\n");
             m_mes.append(L"or download Java automatically or manually from ");
@@ -1315,7 +1315,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
             m_mes.append(L" architecture. ");
         }
 
-        SetDlgItemTextW(hw, 1, m_mes.c_str());
+        SetDlgItemText(hw, 1, m_mes.c_str());
         return TRUE;
 
     case WM_COMMAND: // сообщение от управляющих элементов

@@ -13,13 +13,6 @@ abstract class AbstractAdjustableCellEditor extends AbstractCellEditor
     private int oldRowHeight;
     private int oldColWidth;
 
-    protected final void updateSizePreferences(JTable table, int column, JPanel picker) {
-        this.table = table;
-        this.column = column;
-        this.minimumColWidth = picker.getPreferredSize().width + 2;
-        this.minimumRowHeight = picker.getPreferredSize().height + 2;
-    }
-
     private void adjustTableRowHeight() {
         this.oldRowHeight = table.getRowHeight();
 
@@ -45,6 +38,16 @@ abstract class AbstractAdjustableCellEditor extends AbstractCellEditor
         table.getColumnModel().getColumn(column).setPreferredWidth(this.oldColWidth);
     }
 
+    protected final void adjustCellSize(JTable table, int column, JPanel picker) {
+
+        this.table = table;
+        this.column = column;
+        this.minimumColWidth = picker.getPreferredSize().width;
+        this.minimumRowHeight = picker.getPreferredSize().height;
+
+        adjustCellSize();
+    }
+
     @Override
     public final void adjustCellSize() {
         adjustTableRowHeight();
@@ -55,6 +58,18 @@ abstract class AbstractAdjustableCellEditor extends AbstractCellEditor
     public final void restoreCellSize() {
         restoreTableRowHeigh();
         restoreTableColWidth();
+    }
+
+    @Override
+    public boolean stopCellEditing() {
+        restoreCellSize();
+        return super.stopCellEditing();
+    }
+
+    @Override
+    public void cancelCellEditing() {
+        restoreCellSize();
+        super.cancelCellEditing();
     }
 
 }

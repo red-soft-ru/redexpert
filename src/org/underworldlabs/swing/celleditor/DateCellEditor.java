@@ -47,8 +47,7 @@ public class DateCellEditor extends AbstractAdjustableCellEditor {
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 
         setCellEditorValue(((RecordDataItem) value).getDisplayValue());
-        updateSizePreferences(table, column, picker);
-        adjustCellSize();
+        adjustCellSize(table, column, picker);
 
         return picker;
     }

@@ -56,7 +56,6 @@ public class ResultSetTable extends JTable implements StandardTable {
     private DateTimezoneCellEditor dateTimezoneCellEditor;
     private TimeCellEditor timeCellEditor;
     private TimezoneCellEditor timezoneCellEditor;
-    private TableCellEditor previousEditor;
 
     private boolean isAutoResizeable;
     private List<Integer> foreignColumnsIndexes;
@@ -416,9 +415,6 @@ public class ResultSetTable extends JTable implements StandardTable {
     @Override
     public TableCellEditor getCellEditor(int row, int column) {
 
-        if (previousEditor instanceof AdjustableCellEditor)
-            ((AdjustableCellEditor) previousEditor).restoreCellSize();
-
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
         if (isComboColumn(column)) {
 
@@ -430,15 +426,13 @@ public class ResultSetTable extends JTable implements StandardTable {
                 }
             }
 
-            previousEditor = new ForeignKeyCellEditor(
+            return new ForeignKeyCellEditor(
                     getModel(),
                     foreignColumnsData.get(columnIndex).getTableModel(),
                     foreignColumnsData.get(columnIndex).getItems(),
                     foreignColumnsData.get(columnIndex).getNames(),
                     value.getValue(), row,
                     foreignColumnsData.get(columnIndex).getChildColumnIndexes());
-
-            return previousEditor;
         }
 
         int sqlType = value.getDataType();
@@ -450,43 +444,33 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.NCHAR:
             case Types.VARCHAR:
             case Types.NVARCHAR:
-                previousEditor = multiLineCellEditor;
                 return multiLineCellEditor;
 
             case Types.INT128:
-                previousEditor = int128CellEditor;
                 return int128CellEditor;
 
             case Types.BIGINT:
-                previousEditor = bigintCellEditor;
                 return bigintCellEditor;
 
             case Types.INTEGER:
-                previousEditor = integerCellEditor;
                 return integerCellEditor;
 
             case Types.SMALLINT:
-                previousEditor = smallintCellEditor;
                 return smallintCellEditor;
 
             case Types.DATE:
-                previousEditor = dateEditor;
                 return dateEditor;
 
             case Types.TIMESTAMP:
-                previousEditor = dateTimeCellEditor;
                 return dateTimeCellEditor;
 
             case Types.TIMESTAMP_WITH_TIMEZONE:
-                previousEditor = dateTimezoneCellEditor;
                 return dateTimezoneCellEditor;
 
             case Types.TIME_WITH_TIMEZONE:
-                previousEditor = timezoneCellEditor;
                 return timezoneCellEditor;
 
             case Types.TIME:
-                previousEditor = timeCellEditor;
                 return timeCellEditor;
 
             case Types.BOOLEAN:
@@ -502,12 +486,9 @@ public class ResultSetTable extends JTable implements StandardTable {
                 else
                     comboBox.setSelectedItem(2);
 
-
-                previousEditor = new DefaultCellEditor(comboBox);
-                return previousEditor;
+                return new DefaultCellEditor(comboBox);
         }
 
-        previousEditor = defaultCellEditor;
         return defaultCellEditor;
     }
 

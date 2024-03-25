@@ -39,9 +39,8 @@ public class DateTimeCellEditor extends AbstractAdjustableCellEditor
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 
-        updateSizePreferences(table, column, picker);
+        adjustCellSize(table, column, picker);
         setCellEditorValue(value);
-        adjustCellSize();
 
         return picker;
     }
@@ -55,9 +54,9 @@ public class DateTimeCellEditor extends AbstractAdjustableCellEditor
         picker.getDatePicker().setBackground(color);
         picker.getDatePicker().getComponentDateTextField().setBackground(color);
 
-        updateSizePreferences(table, column, picker);
+        adjustCellSize(table, column, picker);
         setCellEditorValue(value);
-        adjustCellSize();
+//        adjustCellSize();
 
         return picker;
     }

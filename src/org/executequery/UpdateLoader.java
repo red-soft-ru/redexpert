@@ -691,6 +691,11 @@ public class UpdateLoader extends JFrame {
         UpdateLoader updateLoader = new UpdateLoader(repo);
         boolean launch = true;
 
+        System.out.println("\n-------------------------------");
+        System.out.println("------ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy  HH:mm")) + " ------");
+        System.out.println("------ Performing update ------");
+        System.out.println("-------------------------------");
+
         for (String arg : args) {
 
             if (arg.equalsIgnoreCase("usereleasehub")) {
@@ -703,10 +708,6 @@ public class UpdateLoader extends JFrame {
             } else if (arg.contains("-repo")) {
                 updateLoader.setRepoArg(arg);
 
-//            } else if (arg.contains("externalProcessName")) {
-//                String external = arg.substring(arg.indexOf('=') + 1);
-//                updateLoader.setExternalArg(external);
-
             } else if (arg.contains("-root")) {
                 String root = arg.substring(arg.indexOf('=') + 1);
                 updateLoader.setRoot(root);
@@ -716,10 +717,9 @@ public class UpdateLoader extends JFrame {
             }
         }
 
-        System.out.println("\n-------------------------------");
-        System.out.println("------ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy  HH:mm")) + " ------");
-        System.out.println("------ Performing update ------");
-        System.out.println("-------------------------------");
+        System.out.println("\nUpdate arguments:");
+        System.out.println("\t> version: " + updateLoader.version);
+        System.out.println("\t> root: " + updateLoader.root);
 
         updateLoader.replaceFiles();
         if (launch)

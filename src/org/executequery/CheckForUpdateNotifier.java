@@ -46,6 +46,7 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -266,10 +267,14 @@ public class CheckForUpdateNotifier implements Interruptible {
                         if (!file.exists())
                             file = new File("../RedExpert.jar");
 
-                        String[] updaterArguments = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
+                        String javaPath = "java";
+                        if (!System.getProperty("os.name").toLowerCase().contains("win"))
+                            javaPath = System.getProperty("java.home") + "/bin/java";
+
+                        String[] updaterArguments = new String[]{javaPath, "-cp", file.getPath(), "org.executequery.UpdateLoader"};
                         updaterArguments = (String[]) ArrayUtils.addAll(updaterArguments, argsList.toArray(new String[0]));
 
-                        File outputLog = new File(ApplicationContext.getInstance().getUserSettingsHome() + System.getProperty("file.separator") + "updater.log");
+                        File outputLog = new File(ApplicationContext.getInstance().getUserSettingsHome() + FileSystems.getDefault().getSeparator() + "updater.log");
 
                         ProcessBuilder updateProcessBuilder = new ProcessBuilder(updaterArguments);
                         updateProcessBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(outputLog));

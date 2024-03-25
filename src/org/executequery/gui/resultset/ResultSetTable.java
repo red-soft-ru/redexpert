@@ -24,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.Types;
 import org.executequery.gui.StandardTable;
-import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.celleditor.*;
 import org.underworldlabs.swing.table.MultiLineStringCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.swing.table.TableSorter;
@@ -416,24 +416,8 @@ public class ResultSetTable extends JTable implements StandardTable {
     @Override
     public TableCellEditor getCellEditor(int row, int column) {
 
-        if (previousEditor instanceof ForeignKeyCellEditor) {
-            ((ForeignKeyCellEditor) previousEditor).restoreCellSize();
-
-        } else if (Objects.equals(previousEditor, dateEditor)) {
-            dateEditor.restoreCellSize();
-
-        } else if (Objects.equals(previousEditor, timeCellEditor)) {
-            timeCellEditor.restoreCellSize();
-
-        } else if (Objects.equals(previousEditor, dateTimeCellEditor)) {
-            dateTimeCellEditor.restoreCellSize();
-
-        } else if (Objects.equals(previousEditor, timezoneCellEditor)) {
-            timezoneCellEditor.restoreCellSize();
-
-        } else if(Objects.equals(previousEditor, dateTimezoneCellEditor)) {
-            dateTimezoneCellEditor.restoreCellSize();
-        }
+        if (previousEditor instanceof AdjustableCellEditor)
+            ((AdjustableCellEditor) previousEditor).restoreCellSize();
 
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
         if (isComboColumn(column)) {

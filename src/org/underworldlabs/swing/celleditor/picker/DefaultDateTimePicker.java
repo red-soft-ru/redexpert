@@ -1,4 +1,4 @@
-package org.underworldlabs.swing;
+package org.underworldlabs.swing.celleditor.picker;
 
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
@@ -7,19 +7,19 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class EQDateTimePicker extends JPanel {
+public class DefaultDateTimePicker extends JPanel {
 
-    private EQDatePicker datePicker;
-    private EQTimePicker timePicker;
+    private DefaultDatePicker datePicker;
+    private DefaultTimePicker timePicker;
 
-    public EQDateTimePicker() {
+    public DefaultDateTimePicker() {
         init();
         arrange();
     }
 
     void init() {
-        timePicker = new EQTimePicker();
-        datePicker = new EQDatePicker();
+        timePicker = new DefaultTimePicker();
+        datePicker = new DefaultDatePicker();
 
         timePicker.addNullCheckActionListener(e -> datePicker.setEnabled(!timePicker.isNull()));
         timePicker.addNullCheckActionListener(e -> setCurrentDate());
@@ -79,11 +79,11 @@ public class EQDateTimePicker extends JPanel {
         return datePicker.getDate() == null;
     }
 
-    public EQDatePicker getDatePicker() {
+    public DefaultDatePicker getDatePicker() {
         return datePicker;
     }
 
-    public EQTimePicker getTimePicker() {
+    public DefaultTimePicker getTimePicker() {
         return timePicker;
     }
 

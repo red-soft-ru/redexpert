@@ -1,10 +1,10 @@
-package org.underworldlabs.swing;
+package org.underworldlabs.swing.celleditor;
 
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTableModel;
+import org.underworldlabs.swing.celleditor.picker.ForeignKeyPicker;
 
 import javax.swing.*;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.util.HashMap;
@@ -14,17 +14,9 @@ import java.util.Vector;
 /**
  * @author Alexey Kozlov
  */
-public class ForeignKeyCellEditor extends AbstractCellEditor
-        implements TableCellEditor {
+public class ForeignKeyCellEditor extends AbstractAdjustableCellEditor {
 
     private final ForeignKeyPicker picker;
-    private JTable table;
-    private int col;
-
-    private final int minimumRowHeight;
-    private final int minimumColWidth;
-    private int oldRowHeightInPixels;
-    private int oldColWidthInPixels;
 
     private final TableModel resultSetTableModel;
     private final int[] childColumnIndices;
@@ -50,31 +42,12 @@ public class ForeignKeyCellEditor extends AbstractCellEditor
                 selectedValue,
                 getForeignSelectedValues()
         );
-
-        this.minimumRowHeight = picker.getPreferredSize().height + 1;
-        this.minimumColWidth = picker.getPreferredSize().width + 1;
     }
 
     public void setCellEditorValue(Object value) {
         picker.clear();
         if (value != null)
             this.picker.setText(value.toString());
-    }
-
-    private void adjustTableRowHeight() {
-        this.oldRowHeightInPixels = table.getRowHeight();
-
-        if (table.getRowHeight() < this.minimumRowHeight)
-            table.setRowHeight(this.minimumRowHeight);
-    }
-
-    private void adjustTableColWidth() {
-        this.oldColWidthInPixels = table.getColumnModel().getColumn(col).getWidth();
-
-        if (table.getColumnModel().getColumn(col).getWidth() < this.minimumColWidth) {
-            table.getColumnModel().getColumn(col).setWidth(this.minimumColWidth);
-            table.getColumnModel().getColumn(col).setPreferredWidth(this.minimumColWidth);
-        }
     }
 
     private Map<Integer, String> getForeignSelectedValues() {
@@ -97,13 +70,10 @@ public class ForeignKeyCellEditor extends AbstractCellEditor
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        this.table = table;
-        this.col = column;
 
         setCellEditorValue(((RecordDataItem) value).getDisplayValue());
-        adjustTableRowHeight();
-        adjustTableColWidth();
-        picker.setMinimumSize(new Dimension(0, 0));
+        updateSizePreferences(table, column, picker);
+        adjustCellSize();
 
         return picker;
     }
@@ -121,20 +91,6 @@ public class ForeignKeyCellEditor extends AbstractCellEditor
         }
 
         return picker.getText();
-    }
-
-    private void zRestoreTableRowHeigh() {
-        table.setRowHeight(this.oldRowHeightInPixels);
-    }
-
-    private void zRestoreTableColWidth() {
-        table.getColumnModel().getColumn(col).setWidth(this.oldColWidthInPixels);
-        table.getColumnModel().getColumn(col).setPreferredWidth(this.oldColWidthInPixels);
-    }
-
-    public void restoreCellSize() {
-        zRestoreTableRowHeigh();
-        zRestoreTableColWidth();
     }
 
 }

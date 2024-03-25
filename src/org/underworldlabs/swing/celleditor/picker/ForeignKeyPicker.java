@@ -1,4 +1,4 @@
-package org.underworldlabs.swing;
+package org.underworldlabs.swing.celleditor.picker;
 
 import com.github.lgooddatepicker.zinternaltools.CustomPopup;
 import com.github.lgooddatepicker.zinternaltools.InternalUtilities;
@@ -14,12 +14,9 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -27,7 +24,11 @@ import java.util.Vector;
  * @author Alexey Kozlov
  */
 public class ForeignKeyPicker extends JPanel
-        implements DefaultDataPicker {
+        implements DataPicker {
+
+    private static final Color BACKGROUND_COLOR = SystemProperties.getColourProperty(
+            "user", "editor.results.background.colour"
+    );
 
     private final ResultSetTableModel foreignKeyTableModel;
     private final Vector<Vector<Object>> foreignKeysItems;
@@ -35,8 +36,6 @@ public class ForeignKeyPicker extends JPanel
     private final Map<Integer, String> selectedValues;
 
     private ResultSetTable foreignTable;
-    private JScrollPane scroller;
-
     private Object selectedValue;
     private int selectedIndex;
 
@@ -54,17 +53,18 @@ public class ForeignKeyPicker extends JPanel
         this.foreignKeysNames = foreignKeysNames;
         this.selectedValues = selectedValues;
 
-        initCell();
+        init();
         setText((selectedValue != null) ? selectedValue.toString() : "");
     }
 
-    private void initCell() {
+    private void init() {
 
         textField = new JTextField();
         textField.setMargin(new Insets(1, 3, 2, 2));
         textField.setBorder(new CompoundBorder(
                 new MatteBorder(1, 1, 1, 1, new Color(122, 138, 153)),
-                new EmptyBorder(1, 3, 2, 2)));
+                new EmptyBorder(1, 3, 2, 2))
+        );
 
         toggleButton = new JButton();
         toggleButton.setText("...");
@@ -82,8 +82,9 @@ public class ForeignKeyPicker extends JPanel
         this.add(toggleButton, CC.xy(3, 1));
     }
 
-    private void setPopupLocation(CustomPopup popup, int defaultX, int defaultY,
-                                  JComponent picker, JComponent verticalFlipReference) {
+    private void setPopupLocation(
+            CustomPopup popup, int defaultX, int defaultY,
+            JComponent picker, JComponent verticalFlipReference) {
 
         Window topWindowOrNull = SwingUtilities.getWindowAncestor(picker);
         Rectangle workingArea = InternalUtilities.getScreenWorkingArea(topWindowOrNull);
@@ -112,6 +113,7 @@ public class ForeignKeyPicker extends JPanel
     }
 
     private ResultSetTable getCreateTable() {
+
         selectedIndex = -1;
         foreignTable = new ResultSetTable() {
             @Override
@@ -119,13 +121,10 @@ public class ForeignKeyPicker extends JPanel
                 return false;
             }
         };
-        Color bg = SystemProperties.getColourProperty("user",
-                "editor.results.background.colour");
 
         // this is set for the bg of any remaining
         // header region outside the cells themselves
-        foreignTable.getTableHeader().setBackground(bg);
-
+        foreignTable.getTableHeader().setBackground(BACKGROUND_COLOR);
 
         int rowCount = foreignKeyTableModel.getRowCount();
         if (rowCount > 0) {
@@ -136,9 +135,10 @@ public class ForeignKeyPicker extends JPanel
             foreignTable.applyUserPreferences();
             foreignTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             foreignTable.setTableColumnWidthFromContents();
-        } else {
+
+        } else
             foreignTable.setTableColumnWidth(SystemProperties.getIntProperty("user", "results.table.column.width"));
-        }
+
         boolean notSelected = true;
         for (String s : selectedValues.values()) {
             if (s != null) {
@@ -146,6 +146,7 @@ public class ForeignKeyPicker extends JPanel
                 break;
             }
         }
+
         if (!notSelected) {
             for (int row = 0; row < foreignTable.getRowCount(); row++) {
 
@@ -153,17 +154,23 @@ public class ForeignKeyPicker extends JPanel
                 for (int col : selectedValues.keySet()) {
 
                     RecordDataItem value = (RecordDataItem) foreignTable.getValueAt(row, foreignTable.getColumn(foreignKeysNames.get(col)).getModelIndex());
-                    if (value.getValue() != null)
+                    if (value.getValue() != null) {
+
                         if (value.getValue() instanceof Number && selectedValues.get(col) != null) {
                             if (value.getValue().toString().contentEquals(selectedValues.get(col)))
                                 matchCounter++;
-                            else break;
+                            else
+                                break;
+
                         } else {
                             if (value.getValue().equals(selectedValues.get(col)))
                                 matchCounter++;
-                            else break;
+                            else
+                                break;
                         }
-                    else break;
+
+                    } else
+                        break;
                 }
 
                 if (matchCounter == selectedValues.size()) {
@@ -171,7 +178,6 @@ public class ForeignKeyPicker extends JPanel
                     break;
                 }
             }
-
         }
 
         foreignTable.addMouseListener(new MouseAdapter() {
@@ -186,6 +192,7 @@ public class ForeignKeyPicker extends JPanel
                 }
             }
         });
+
         return foreignTable;
     }
 
@@ -209,32 +216,39 @@ public class ForeignKeyPicker extends JPanel
 
             if (!textField.hasFocus())
                 textField.requestFocusInWindow();
-            Color bg = SystemProperties.getColourProperty("user",
-                    "editor.results.background.colour");
-            editorPanel = new JPanel(new GridBagLayout());
+
             ResultSetTable table = getCreateTable();
-            scroller = new JScrollPane(table,
+            JScrollPane scroller = new JScrollPane(
+                    table,
                     JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            scroller.setBackground(bg);
+                    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+            );
+            scroller.setBackground(BACKGROUND_COLOR);
             scroller.setBorder(null);
-            scroller.getViewport().setBackground(bg);
+            scroller.getViewport().setBackground(BACKGROUND_COLOR);
+
+            editorPanel = new JPanel(new GridBagLayout());
             editorPanel.add(scroller);
 
-            popup = new CustomPopup(this.editorPanel, SwingUtilities.getWindowAncestor(this),
-                    this, BorderFactory.createLineBorder(Color.BLACK));
+            popup = new CustomPopup(
+                    this.editorPanel,
+                    SwingUtilities.getWindowAncestor(this),
+                    this,
+                    BorderFactory.createLineBorder(Color.BLACK)
+            );
 
             if (selectedIndex > -1) {
                 foreignTable.setRowSelectionInterval(selectedIndex, selectedIndex);
                 foreignTable.scrollRectToVisible(new Rectangle(foreignTable.getCellRect(selectedIndex, 0, true)));
             }
+
             int defaultX = this.toggleButton.getLocationOnScreen().x + this.toggleButton.getBounds().width - this.popup.getBounds().width - 2;
             int defaultY = this.toggleButton.getLocationOnScreen().y + this.toggleButton.getBounds().height + 2;
             setPopupLocation(this.popup, defaultX, defaultY, this, this.textField);
+
             popup.show();
             editorPanel.requestFocus();
         }
-
     }
 
     @Override
@@ -271,46 +285,5 @@ public class ForeignKeyPicker extends JPanel
         popup = null;
         editorPanel = null;
     }
-
-    private static class ForeignKeyTableModel extends DefaultTableModel {
-
-        private final List<String> columnNames;
-
-        protected ForeignKeyTableModel(DefaultTableModel defaultTableModel) {
-
-            columnNames = new ArrayList<>();
-
-            for (int j = 0; j < defaultTableModel.getColumnCount(); j++)
-                addColumn("");
-
-            for (int i = -1; i < defaultTableModel.getRowCount(); i++) {
-
-                if (i != -1)
-                    addRow(new Object[]{});
-
-                for (int j = 0; j < defaultTableModel.getColumnCount(); j++)
-                    if (i != -1)
-                        setValueAt(defaultTableModel.getValueAt(i, j), getRowCount() - 1, j);
-                    else
-                        columnNames.add(String.valueOf(defaultTableModel.getColumnName(j)));
-            }
-
-        }
-
-        @Override
-        public String getColumnName(int columnIndex) {
-
-            if (columnIndex < 0)
-                return null;
-
-            return columnNames.get(columnIndex);
-        }
-
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return false;
-        }
-
-    } // class ForeignKeyTableModel
 
 }

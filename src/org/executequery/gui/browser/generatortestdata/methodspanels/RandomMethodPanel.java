@@ -6,6 +6,10 @@ import org.executequery.databaseobjects.T;
 import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
+import org.underworldlabs.swing.celleditor.picker.DefaultDateTimezonePicker;
+import org.underworldlabs.swing.celleditor.picker.DefaultTimePicker;
+import org.underworldlabs.swing.celleditor.picker.DefaultTimezonePicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -18,14 +22,14 @@ public class RandomMethodPanel extends AbstractMethodPanel {
     private JPanel settingsPanel;
     private JTextField maxField;
     private JTextField minField;
-    private EQTimePicker minTime;
-    private EQTimePicker maxTime;
-    private EQTimezonePicker minTimezone;
-    private EQTimezonePicker maxTimezone;
-    private EQDateTimePicker minDateTime;
-    private EQDateTimePicker maxDateTime;
-    private EQDateTimezonePicker minDateTimezone;
-    private EQDateTimezonePicker maxDateTimezone;
+    private DefaultTimePicker minTime;
+    private DefaultTimePicker maxTime;
+    private DefaultTimezonePicker minTimezone;
+    private DefaultTimezonePicker maxTimezone;
+    private DefaultDateTimePicker minDateTime;
+    private DefaultDateTimePicker maxDateTime;
+    private DefaultDateTimezonePicker minDateTimezone;
+    private DefaultDateTimezonePicker maxDateTimezone;
     private DatePicker maxDate;
     private DatePicker minDate;
     private NumberTextField countSymbolsAfterComma;
@@ -115,11 +119,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIME)) {
 
-            minTime = new EQTimePicker();
+            minTime = new DefaultTimePicker();
             minTime.setVisibleNullCheck(false);
             minTime.setTime(LocalTime.MIN);
 
-            maxTime = new EQTimePicker();
+            maxTime = new DefaultTimePicker();
             maxTime.setVisibleNullCheck(false);
             maxTime.setTime(LocalTime.MAX);
 
@@ -131,11 +135,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
 
-            minTimezone = new EQTimezonePicker();
+            minTimezone = new DefaultTimezonePicker();
             minTimezone.setVisibleNullCheck(false);
             minTimezone.setTime(LocalTime.MIN);
 
-            maxTimezone = new EQTimezonePicker();
+            maxTimezone = new DefaultTimezonePicker();
             maxTimezone.setVisibleNullCheck(false);
             maxTimezone.setTime(LocalTime.MAX);
 
@@ -160,11 +164,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
 
-            minDateTime = new EQDateTimePicker();
+            minDateTime = new DefaultDateTimePicker();
             minDateTime.setVisibleNullBox(false);
             minDateTime.setDateTime(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
 
-            maxDateTime = new EQDateTimePicker();
+            maxDateTime = new DefaultDateTimePicker();
             maxDateTime.setVisibleNullBox(false);
             maxDateTime.setDateTime(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
 
@@ -176,11 +180,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
 
-            minDateTimezone = new EQDateTimezonePicker();
+            minDateTimezone = new DefaultDateTimezonePicker();
             minDateTimezone.setVisibleNullBox(false);
             minDateTimezone.setDateTime(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
 
-            maxDateTimezone = new EQDateTimezonePicker();
+            maxDateTimezone = new DefaultDateTimezonePicker();
             maxDateTimezone.setVisibleNullBox(false);
             maxDateTimezone.setDateTime(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
 

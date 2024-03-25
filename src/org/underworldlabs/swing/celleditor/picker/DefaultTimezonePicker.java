@@ -1,4 +1,4 @@
-package org.underworldlabs.swing;
+package org.underworldlabs.swing.celleditor.picker;
 
 import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -10,23 +10,18 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
-public class EQTimezonePicker extends JPanel {
+public class DefaultTimezonePicker extends JPanel {
 
-    protected JSpinner timeSpinner;
-    protected JCheckBox isNullCheck;
-    protected JSpinner timezoneSpinner;
-    protected JComboBox<?> plusMinusCombox;
+    private JSpinner timeSpinner;
+    private JCheckBox isNullCheck;
+    private JSpinner timezoneSpinner;
+    private JComboBox<?> plusMinusCombox;
 
-    public EQTimezonePicker() {
+    public DefaultTimezonePicker() {
         init();
         arrange();
         setUpdateNull();
         setCurrentTime();
-    }
-
-    public EQTimezonePicker(boolean isNull) {
-        this();
-        setEnableComponents(!isNull);
     }
 
     void init() {
@@ -116,12 +111,6 @@ public class EQTimezonePicker extends JPanel {
 
         plusMinusCombox.setSelectedIndex(offset.getTotalSeconds() < 0 ? 1 : 0);
         timezoneSpinner.setValue(Date.from(instant));
-    }
-
-    public void setEnableComponents(boolean enable) {
-        setNull(!enable);
-        setEnabled(enable);
-        isNullCheck.setEnabled(enable);
     }
 
     private void setUpdateNull() {

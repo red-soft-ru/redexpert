@@ -1,4 +1,4 @@
-package org.underworldlabs.swing;
+package org.underworldlabs.swing.celleditor.picker;
 
 
 import org.executequery.gui.WidgetFactory;
@@ -11,12 +11,12 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
-public class EQTimePicker extends JPanel {
+public class DefaultTimePicker extends JPanel {
 
     protected JSpinner timeSpinner;
     protected JCheckBox isNullCheck;
 
-    public EQTimePicker() {
+    public DefaultTimePicker() {
         init();
         arrange();
         setUpdateNull();

@@ -6,7 +6,7 @@ import org.japura.gui.event.ListCheckListener;
 import org.japura.gui.event.ListEvent;
 import org.underworldlabs.swing.CheckBoxPanel;
 import org.underworldlabs.swing.EQCheckCombox;
-import org.underworldlabs.swing.EQDatePicker;
+import org.underworldlabs.swing.celleditor.picker.DefaultDatePicker;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
@@ -31,7 +31,7 @@ public class WindowsSchedulerPanel extends JPanel {
     JRadioButton everyDayButton;
     JRadioButton everyWeekDayButton;
     JRadioButton everyMonthButton;
-    EQDatePicker datePicker;
+    DefaultDatePicker datePicker;
     JSpinner timeSpinner;
     JSpinner.DateEditor timeEditor;
     EQCheckCombox monthCheckBox;
@@ -104,7 +104,7 @@ public class WindowsSchedulerPanel extends JPanel {
                 generateCron();
             }
         });
-        datePicker = new EQDatePicker();
+        datePicker = new DefaultDatePicker();
         datePicker.getComponentDateTextField().getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {

@@ -81,6 +81,7 @@ public class TableDataTab extends JPanel
 
     private final boolean displayRowCount;
     private ResultSetTableModel tableModel;
+    private ResultSetTablePopupMenu popupMenuListener;
     private ResultSetTable table;
     private JScrollPane scroller;
     private DatabaseObject databaseObject;
@@ -745,7 +746,8 @@ public class TableDataTab extends JPanel
     private void createResultSetTable() {
 
         table = new ResultSetTable();
-        table.addMouseListener(new ResultSetTablePopupMenu(table, this, asDatabaseTableObject()));
+        popupMenuListener = new ResultSetTablePopupMenu(table, this, asDatabaseTableObject());
+        table.addMouseListener(popupMenuListener);
         setTableProperties();
     }
 
@@ -1199,12 +1201,7 @@ public class TableDataTab extends JPanel
         switchAutoresizeModeButton.setIcon(GUIUtilities.loadIcon("Zoom16.png"));
         switchAutoresizeModeButton.setToolTipText(bundleString("SwitchTableAutoresizeMode"));
         switchAutoresizeModeButton.setMnemonic(KeyEvent.VK_ADD);
-        switchAutoresizeModeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                table.switchAutoResizeMode();
-            }
-        });
+        switchAutoresizeModeButton.addActionListener(e -> popupMenuListener.autoWidthForCols(null));
         bar.add(switchAutoresizeModeButton);
 
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,

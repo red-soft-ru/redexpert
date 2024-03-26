@@ -606,11 +606,12 @@ public class ResultSetTable extends JTable implements StandardTable {
             getCellEditor().stopCellEditing();
     }
 
-    public void switchAutoResizeMode() {
-        setTableColumnWidthFromContents();
+    public boolean isAutoResizeable() {
+        return isAutoResizeable;
+    }
 
-        isAutoResizeable = !isAutoResizeable;
-        setAutoResizeMode(isAutoResizeable ? JTable.AUTO_RESIZE_ALL_COLUMNS : JTable.AUTO_RESIZE_OFF);
+    public void setAutoResizeable(boolean autoResizeable) {
+        isAutoResizeable = autoResizeable;
     }
 
     class ResultsTableColumnModel extends DefaultTableColumnModel {

@@ -534,8 +534,10 @@ public class ColumnData implements Serializable {
         columnSize = domainSize;
         columnScale = domainScale;
         columnSubtype = domainSubType;
+        setCheck(domainCheck);
         setCharset(domainCharset);
         setCollate(domainCollate);
+        setDefaultValue(domainDefault);
         setDimensions(domainDimensions);
 
         if (!find)
@@ -646,17 +648,7 @@ public class ColumnData implements Serializable {
     }
 
     public String getFormattedDomainDataType() {
-
-        sqlType = domainType;
-        columnSize = domainSize;
-        columnScale = domainScale;
-        columnSubtype = domainSubType;
-        setCharset(domainCharset);
-        setCollate(domainCollate);
-        setCheck(domainCheck);
-        setDefaultValue(domainDefault);
         setColumnType(domainTypeName);
-
         return getFormattedDataType();
     }
 

@@ -547,7 +547,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.CREATE))
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
                             .add(new ComparerTreeNode(ComparerTreeNode.CREATE, type,
                                     Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
 
@@ -577,7 +577,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.ALTER))
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
                             .add(new ComparerTreeNode(ComparerTreeNode.ALTER, type,
                                     Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
 
@@ -607,7 +607,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.DROP))
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
                             .add(new ComparerTreeNode(ComparerTreeNode.DROP, type,
                                     Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
 

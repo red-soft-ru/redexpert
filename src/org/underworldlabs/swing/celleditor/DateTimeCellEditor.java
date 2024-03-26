@@ -24,16 +24,7 @@ public class DateTimeCellEditor extends AbstractAdjustableCellEditor
 
     @Override
     public Object getCellEditorValue() {
-
-        if (picker.getStringValue().isEmpty())
-            return null;
-
-        try {
-            return Timestamp.valueOf(picker.getStringValue());
-
-        } catch (IllegalArgumentException e) {
-            return picker.getStringValue();
-        }
+        return picker.getStringValue().isEmpty() ? null : picker.getDateTime();
     }
 
     @Override

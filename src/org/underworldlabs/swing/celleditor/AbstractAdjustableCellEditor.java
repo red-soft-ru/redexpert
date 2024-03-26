@@ -5,8 +5,9 @@ import javax.swing.*;
 abstract class AbstractAdjustableCellEditor extends AbstractCellEditor
         implements AdjustableCellEditor {
 
+    private boolean updateOldSize = true;
+    private int column = -1;
     private JTable table;
-    private int column;
 
     private int minimumRowHeight;
     private int minimumColWidth;
@@ -14,14 +15,16 @@ abstract class AbstractAdjustableCellEditor extends AbstractCellEditor
     private int oldColWidth;
 
     private void adjustTableRowHeight() {
-        this.oldRowHeight = table.getRowHeight();
+        if (updateOldSize)
+            this.oldRowHeight = table.getRowHeight();
 
         if (table.getRowHeight() < this.minimumRowHeight)
             table.setRowHeight(this.minimumRowHeight);
     }
 
     private void adjustTableColWidth() {
-        this.oldColWidth = table.getColumnModel().getColumn(column).getWidth();
+        if (updateOldSize)
+            this.oldColWidth = table.getColumnModel().getColumn(column).getWidth();
 
         if (table.getColumnModel().getColumn(column).getWidth() < this.minimumColWidth) {
             table.getColumnModel().getColumn(column).setWidth(this.minimumColWidth);
@@ -40,6 +43,7 @@ abstract class AbstractAdjustableCellEditor extends AbstractCellEditor
 
     protected final void adjustCellSize(JTable table, int column, JPanel picker) {
 
+        this.updateOldSize = this.column != column;
         this.table = table;
         this.column = column;
         this.minimumColWidth = picker.getPreferredSize().width;
@@ -62,7 +66,6 @@ abstract class AbstractAdjustableCellEditor extends AbstractCellEditor
 
     @Override
     public boolean stopCellEditing() {
-        restoreCellSize();
         return super.stopCellEditing();
     }
 

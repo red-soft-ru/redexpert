@@ -35,9 +35,12 @@ import org.underworldlabs.util.SystemProperties;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
@@ -64,6 +67,9 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     private final TableColumn dummyColumn = new TableColumn();
     private final ArrayList<ForeignData> foreignColumnsData = new ArrayList<>();
+
+    private int oldColumn;
+    private TableCellEditor oldCellEditor;
 
     public ResultSetTable() {
 
@@ -415,6 +421,9 @@ public class ResultSetTable extends JTable implements StandardTable {
     @Override
     public TableCellEditor getCellEditor(int row, int column) {
 
+        restoreOldCellSize();
+        oldColumn = column;
+
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
         if (isComboColumn(column)) {
 
@@ -426,13 +435,16 @@ public class ResultSetTable extends JTable implements StandardTable {
                 }
             }
 
-            return new ForeignKeyCellEditor(
+            oldCellEditor = new ForeignKeyCellEditor(
                     getModel(),
                     foreignColumnsData.get(columnIndex).getTableModel(),
                     foreignColumnsData.get(columnIndex).getItems(),
                     foreignColumnsData.get(columnIndex).getNames(),
                     value.getValue(), row,
-                    foreignColumnsData.get(columnIndex).getChildColumnIndexes());
+                    foreignColumnsData.get(columnIndex).getChildColumnIndexes()
+            );
+
+            return oldCellEditor;
         }
 
         int sqlType = value.getDataType();
@@ -444,34 +456,44 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.NCHAR:
             case Types.VARCHAR:
             case Types.NVARCHAR:
-                return multiLineCellEditor;
+                oldCellEditor = multiLineCellEditor;
+                break;
 
             case Types.INT128:
-                return int128CellEditor;
+                oldCellEditor = int128CellEditor;
+                break;
 
             case Types.BIGINT:
-                return bigintCellEditor;
+                oldCellEditor = bigintCellEditor;
+                break;
 
             case Types.INTEGER:
-                return integerCellEditor;
+                oldCellEditor = integerCellEditor;
+                break;
 
             case Types.SMALLINT:
-                return smallintCellEditor;
+                oldCellEditor = smallintCellEditor;
+                break;
 
             case Types.DATE:
-                return dateEditor;
+                oldCellEditor = dateEditor;
+                break;
 
             case Types.TIMESTAMP:
-                return dateTimeCellEditor;
+                oldCellEditor = dateTimeCellEditor;
+                break;
 
             case Types.TIMESTAMP_WITH_TIMEZONE:
-                return dateTimezoneCellEditor;
+                oldCellEditor = dateTimezoneCellEditor;
+                break;
 
             case Types.TIME_WITH_TIMEZONE:
-                return timezoneCellEditor;
+                oldCellEditor = timezoneCellEditor;
+                break;
 
             case Types.TIME:
-                return timeCellEditor;
+                oldCellEditor = timeCellEditor;
+                break;
 
             case Types.BOOLEAN:
                 JComboBox comboBox = new JComboBox(new String[]{"true", "false", "null"});
@@ -486,10 +508,14 @@ public class ResultSetTable extends JTable implements StandardTable {
                 else
                     comboBox.setSelectedItem(2);
 
-                return new DefaultCellEditor(comboBox);
+                oldCellEditor = new DefaultCellEditor(comboBox);
+                break;
+
+            default:
+                oldCellEditor = defaultCellEditor;
         }
 
-        return defaultCellEditor;
+        return oldCellEditor;
     }
 
     private int getUserPreferredColumnWidth() {
@@ -509,7 +535,27 @@ public class ResultSetTable extends JTable implements StandardTable {
                 col.setPreferredWidth(columnWidth);
             }
         }
+    }
 
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+
+        int keyCode = e.getKeyCode();
+        if (keyCode == KeyEvent.VK_TAB
+                || keyCode == KeyEvent.VK_LEFT
+                || keyCode == KeyEvent.VK_RIGHT
+                || keyCode == KeyEvent.VK_KP_LEFT
+                || keyCode == KeyEvent.VK_KP_RIGHT
+        ) {
+            restoreOldCellSize();
+        }
+
+        return super.processKeyBinding(ks, e, condition, pressed);
+    }
+
+    public void restoreOldCellSize() {
+        if (oldColumn != getSelectedColumn() && oldCellEditor instanceof AdjustableCellEditor)
+            ((AdjustableCellEditor) oldCellEditor).restoreCellSize();
     }
 
     public void setTableColumnWidthFromContents() {

@@ -52,7 +52,6 @@ public class DateTimezoneCellEditor extends AbstractAdjustableCellEditor
 
         adjustCellSize(table, column, picker);
         setCellEditorValue(value);
-//        adjustCellSize();
 
         return picker;
     }

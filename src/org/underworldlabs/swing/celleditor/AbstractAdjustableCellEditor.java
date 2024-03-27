@@ -1,11 +1,13 @@
 package org.underworldlabs.swing.celleditor;
 
 import javax.swing.*;
+import java.awt.*;
 
 abstract class AbstractAdjustableCellEditor extends AbstractCellEditor
         implements AdjustableCellEditor {
 
     private boolean updateOldSize = true;
+    private boolean adjusted = false;
     private int column = -1;
     private JTable table;
 
@@ -52,16 +54,34 @@ abstract class AbstractAdjustableCellEditor extends AbstractCellEditor
         adjustCellSize();
     }
 
+    private void scrollToSelection(boolean increment) {
+
+        int rowToView = table.getSelectedRow();
+        rowToView += table.getVisibleRect().height / table.getRowHeight() / 2 * (increment ? 1 : -1);
+
+        Rectangle rectangleToView = table.getCellRect(rowToView, table.getSelectedColumn(), true);
+        table.scrollRectToVisible(rectangleToView);
+    }
+
     @Override
     public final void adjustCellSize() {
+
         adjustTableRowHeight();
         adjustTableColWidth();
+
+        if (!adjusted)
+            scrollToSelection(true);
+
+        adjusted = true;
     }
 
     @Override
     public final void restoreCellSize() {
         restoreTableRowHeigh();
         restoreTableColWidth();
+        scrollToSelection(false);
+
+        adjusted = false;
     }
 
     @Override

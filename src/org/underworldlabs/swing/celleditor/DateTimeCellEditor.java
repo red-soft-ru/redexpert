@@ -47,7 +47,6 @@ public class DateTimeCellEditor extends AbstractAdjustableCellEditor
 
         adjustCellSize(table, column, picker);
         setCellEditorValue(value);
-//        adjustCellSize();
 
         return picker;
     }

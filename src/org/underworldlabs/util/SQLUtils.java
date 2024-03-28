@@ -15,8 +15,8 @@ import javax.swing.table.TableModel;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 
 import static org.executequery.databaseobjects.NamedObject.*;
 import static org.executequery.gui.browser.ColumnConstraint.RESTRICT;
@@ -1508,6 +1508,7 @@ public final class SQLUtils {
         int BY_VALUE = 0;
         int BY_REFERENCE = 1;
         int BY_DESCRIPTOR = 2;
+        int BY_BLOB_DESCRIPTOR = 3;
 
         StringBuilder sb = new StringBuilder();
 
@@ -1525,13 +1526,14 @@ public final class SQLUtils {
             if (returnArg == 0 && i == 0)
                 continue;
 
-            args += "\t" + mapParameters.get(parameters.get(i)).getFormattedDataType();
+            args += "\t" + mapParameters.get(parameters.get(i)).getFormattedDataType(true);
             if (parameters.get(i).getMechanism() != BY_VALUE && parameters.get(i).getMechanism() != BY_REFERENCE)
                 if (parameters.get(i).isNotNull() || parameters.get(i).getMechanism() == BY_DESCRIPTOR)
                     args += " " + parameters.get(i).getStringMechanism();
 
             if (!parameters.get(i).isNotNull() && parameters.get(i).getMechanism() != BY_DESCRIPTOR &&
-                    parameters.get(i).getMechanism() != BY_REFERENCE && returnArg - 1 != i)
+                    parameters.get(i).getMechanism() != BY_REFERENCE &&
+                    parameters.get(i).getMechanism() != BY_BLOB_DESCRIPTOR && returnArg - 1 != i)
                 args += " " + "NULL";
 
             args += ",\n";
@@ -1544,7 +1546,7 @@ public final class SQLUtils {
 
         if (returnArg == 0) {
 
-            sb.append(mapParameters.get(parameters.get(0)).getFormattedDataType());
+            sb.append(mapParameters.get(parameters.get(0)).getFormattedDataType(true));
             if (parameters.get(0).getMechanism() != BY_REFERENCE && parameters.get(0).getMechanism() != -1)
                 sb.append(" ").append(parameters.get(0).getStringMechanism());
 

@@ -567,13 +567,17 @@ public class ColumnData implements Serializable {
                 || sqlType == Types.NCLOB;
     }
 
+    public String getFormattedDataType() {
+        return getFormattedDataType(false);
+    }
+
     /**
      * Returns a formatted string representation of the
      * column's data type and size - eg. VARCHAR(10).
      *
      * @return the formatted type string
      */
-    public String getFormattedDataType() {
+    public String getFormattedDataType(boolean isUdfParameter) {
 
         if (typeOf) {
             return (getTypeOfFrom() == TYPE_OF_FROM_DOMAIN) ?
@@ -607,7 +611,7 @@ public class ColumnData implements Serializable {
         ) {
 
             if (type == Types.BLOB || type == Types.LONGVARCHAR || type == Types.LONGVARBINARY) {
-                if (getColumnSize() != 80)
+                if (getColumnSize() != 80 && !isUdfParameter)
                     sb.append(" SEGMENT SIZE ").append(getColumnSize());
 
             } else if (isEditSize()

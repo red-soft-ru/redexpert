@@ -655,6 +655,8 @@ public class UDFDefinitionPanel extends JPanel
 
             switch (col) {
                 case TYPE_COLUMN:
+                    if (value == null)
+                        return;
                     if (value.getClass() == String.class) {
                         cd.setSQLType(DatabaseTypeConverter.getSQLDataTypeFromName((String) value));
                         cd.setColumnType((String) value);

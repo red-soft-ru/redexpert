@@ -43,7 +43,6 @@ import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
-import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -104,7 +103,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     DefaultStatementExecutor executor;
 
-    private JTable fakeTable;
+    private ResultSetTable table;
 
     public ResultSetTableModel(boolean isTable) throws SQLException {
 
@@ -126,20 +125,17 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         this.maxRecords = maxRecords;
         this.query = query;
         this.isTable = isTable;
-        columnHeaders = new ArrayList<ResultSetColumnHeader>();
-        visibleColumnHeaders = new ArrayList<ResultSetColumnHeader>();
 
-        tableData = new ArrayList<List<RecordDataItem>>();
+        table = new ResultSetTable();
+        tableData = new ArrayList<>();
+        columnHeaders = new ArrayList<>();
+        visibleColumnHeaders = new ArrayList<>();
         recordDataItemFactory = new RecordDataItemFactory();
 
-        fakeTable=new JTable();
         holdMetaData = UserProperties.getInstance().getBooleanProperty("editor.results.metadata");
 
-        if (resultSet != null) {
-
+        if (resultSet != null)
             createTable(resultSet);
-        }
-
     }
 
     public ResultSetTableModel(List<String> columnHeaders, List<List<RecordDataItem>> tableData) {
@@ -684,7 +680,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 if (value.getDisplayValue() != null) {
 
                     int width = -1;
-                    FontMetrics metrics = fakeTable.getFontMetrics(fakeTable.getFont());
+                    FontMetrics metrics = table.getFontMetrics(table.getFont());
 
                     int valueType = value.getDataType();
                     if (valueType == Types.DATE) {
@@ -981,19 +977,20 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     @Override
     public boolean isCellEditable(int row, int column) {
-        if (isTable) {
-            RecordDataItem recordDataItem = tableData.get(row).get(asVisibleColumnIndex(column));
 
-            if (!visibleColumnHeaders.get(column).isEditable()) {
-                return recordDataItem.isNew() && cellsEditable;
-            }
-            if (recordDataItem.isBlob()) {
+        if (!isTable)
+            return false;
 
-                return false;
-            }
+        RecordDataItem recordDataItem = tableData.get(row).get(asVisibleColumnIndex(column));
+        if (!visibleColumnHeaders.get(column).isEditable())
+            return recordDataItem.isNew() && cellsEditable;
 
-            return cellsEditable;
-        } else return false;
+        if (recordDataItem.isBlob()) {
+            table.restoreOldCellSize(column);
+            return false;
+        }
+
+        return cellsEditable;
     }
 
     public void setNonEditableColumns(List<String> nonEditableColumns) {
@@ -1140,15 +1137,19 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 return Object.class;
 
         }
+    }
 
+    public void setTable(ResultSetTable table) {
+        this.table = table != null ? table : new ResultSetTable();
     }
 
     public void closeResultSet() throws SQLException {
+
         if (rs != null && !rs.isClosed())
             rs.close();
+
         if (executor != null)
             executor.releaseResources();
     }
+
 }
-
-

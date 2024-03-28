@@ -510,7 +510,9 @@ public class TableDataTab extends JPanel
                     return false;
                 }
             });
+
             table.setModel(sorter);
+            tableModel.setTable(table);
             sorter.setTableHeader(table.getTableHeader());
 
             if (isDatabaseTable()) {

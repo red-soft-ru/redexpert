@@ -421,8 +421,7 @@ public class ResultSetTable extends JTable implements StandardTable {
     @Override
     public TableCellEditor getCellEditor(int row, int column) {
 
-        restoreOldCellSize();
-        oldColumn = column;
+        restoreOldCellSize(column);
 
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
         if (isComboColumn(column)) {
@@ -547,15 +546,18 @@ public class ResultSetTable extends JTable implements StandardTable {
                 || keyCode == KeyEvent.VK_KP_LEFT
                 || keyCode == KeyEvent.VK_KP_RIGHT
         ) {
-            restoreOldCellSize();
+            restoreOldCellSize(getSelectedColumn());
         }
 
         return super.processKeyBinding(ks, e, condition, pressed);
     }
 
-    public void restoreOldCellSize() {
-        if (oldColumn != getSelectedColumn() && oldCellEditor instanceof AdjustableCellEditor)
+    public void restoreOldCellSize(int column) {
+
+        if (oldColumn != column && oldCellEditor instanceof AdjustableCellEditor)
             ((AdjustableCellEditor) oldCellEditor).restoreCellSize();
+
+        oldColumn = column;
     }
 
     public void setTableColumnWidthFromContents() {

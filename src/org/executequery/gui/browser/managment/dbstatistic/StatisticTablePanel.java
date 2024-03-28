@@ -82,8 +82,23 @@ public class StatisticTablePanel extends AbstractPanel {
         headerRows.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (headerRows.getSelectedRow() != table.getSelectedRow())
+                if (headerRows.getSelectedRow() != table.getSelectedRow()) {
                     table.getSelectionModel().setSelectionInterval(headerRows.getSelectedRow(), headerRows.getSelectedRow());
+                }
+            }
+        });
+        headerRows.addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+            }
+
+            @Override
+            public void ancestorRemoved(AncestorEvent event) {
+            }
+
+            @Override
+            public void ancestorMoved(AncestorEvent event) {
+                scrollPane.getViewport().setViewPosition(scrollPane.getRowHeader().getViewPosition());
             }
         });
     }
@@ -240,7 +255,7 @@ public class StatisticTablePanel extends AbstractPanel {
                     comp.setBackground(table.getBackground());
                 else comp.setBackground(table.getSelectionBackground());
             }
-            String str = String.format("%.5f", v);
+            String str = String.format("%.20f", v);
             setValue(str);
             return comp;
         }

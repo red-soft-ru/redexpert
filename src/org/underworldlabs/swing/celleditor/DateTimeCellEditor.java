@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class DateTimeCellEditor extends AbstractAdjustableCellEditor
-        implements TableCellRenderer {
+        implements TableCellRenderer, BlockableCellEditor {
 
     private final DefaultDateTimePicker picker;
 
@@ -29,6 +29,7 @@ public class DateTimeCellEditor extends AbstractAdjustableCellEditor
 
         adjustCellSize(table, column, picker);
         setCellEditorValue(value);
+        setBlock(true);
 
         return picker;
     }
@@ -44,6 +45,7 @@ public class DateTimeCellEditor extends AbstractAdjustableCellEditor
 
         adjustCellSize(table, column, picker);
         setCellEditorValue(value);
+        setBlock(true);
 
         return picker;
     }
@@ -90,6 +92,12 @@ public class DateTimeCellEditor extends AbstractAdjustableCellEditor
             String shorterText = InternalUtilities.safeSubstring(value.toString(), 0, 100);
             picker.getDatePicker().setText(shorterText);
         }
+    }
+
+    @Override
+    public void setBlock(boolean block) {
+        picker.setVisibleNullCheck(!block);
+        picker.setEnabled(!block && !picker.isNull());
     }
 
 }

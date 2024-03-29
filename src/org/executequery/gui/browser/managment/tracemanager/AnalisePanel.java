@@ -342,8 +342,8 @@ public class AnalisePanel extends JPanel {
         });
         startTimePicker = new DefaultDateTimePicker();
         endTimePicker = new DefaultDateTimePicker();
-        startTimePicker.setVisibleNullBox(false);
-        endTimePicker.setVisibleNullBox(false);
+        startTimePicker.setVisibleNullCheck(false);
+        endTimePicker.setVisibleNullCheck(false);
         planPanel = new LoggingOutputPanel();
         planPanel.setBorder(BorderFactory.createTitledBorder(bundleString("Plan")));
         GridBagLayout gridBagLayout = new GridBagLayout();

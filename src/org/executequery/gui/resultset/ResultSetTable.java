@@ -37,10 +37,8 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
@@ -515,6 +513,14 @@ public class ResultSetTable extends JTable implements StandardTable {
         }
 
         return oldCellEditor;
+    }
+
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        super.processMouseEvent(e);
+
+        if (oldCellEditor instanceof AdjustableCellEditor)
+            ((BlockableCellEditor) oldCellEditor).setBlock(false);
     }
 
     private int getUserPreferredColumnWidth() {

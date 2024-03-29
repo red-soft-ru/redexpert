@@ -10,7 +10,8 @@ import java.awt.*;
 import java.sql.Date;
 import java.time.LocalDate;
 
-public class DateCellEditor extends AbstractAdjustableCellEditor {
+public class DateCellEditor extends AbstractAdjustableCellEditor
+        implements BlockableCellEditor {
 
     private final DefaultDatePicker picker;
 
@@ -48,8 +49,14 @@ public class DateCellEditor extends AbstractAdjustableCellEditor {
 
         setCellEditorValue(((RecordDataItem) value).getDisplayValue());
         adjustCellSize(table, column, picker);
+        setBlock(true);
 
         return picker;
+    }
+
+    @Override
+    public void setBlock(boolean block) {
+        picker.setEnabled(!block);
     }
 
 }

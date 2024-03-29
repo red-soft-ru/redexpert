@@ -94,9 +94,10 @@ public class DefaultDateTimezonePicker extends JPanel {
     @Override
     public void setEnabled(boolean enabled) {
         datePicker.setEnabled(enabled);
+        timezonePicker.setEnabled(enabled);
     }
 
-    public void setVisibleNullBox(boolean flag) {
+    public void setVisibleNullCheck(boolean flag) {
         timezonePicker.setVisibleNullCheck(flag);
     }
 

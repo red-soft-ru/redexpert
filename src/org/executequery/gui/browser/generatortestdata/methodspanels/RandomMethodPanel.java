@@ -165,11 +165,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
 
             minDateTime = new DefaultDateTimePicker();
-            minDateTime.setVisibleNullBox(false);
+            minDateTime.setVisibleNullCheck(false);
             minDateTime.setDateTime(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
 
             maxDateTime = new DefaultDateTimePicker();
-            maxDateTime.setVisibleNullBox(false);
+            maxDateTime.setVisibleNullCheck(false);
             maxDateTime.setDateTime(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
 
             settingsPanel.add(new JLabel(bundles("Min")), gbh.defaults().setLabelDefault().get());
@@ -181,11 +181,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
 
             minDateTimezone = new DefaultDateTimezonePicker();
-            minDateTimezone.setVisibleNullBox(false);
+            minDateTimezone.setVisibleNullCheck(false);
             minDateTimezone.setDateTime(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
 
             maxDateTimezone = new DefaultDateTimezonePicker();
-            maxDateTimezone.setVisibleNullBox(false);
+            maxDateTimezone.setVisibleNullCheck(false);
             maxDateTimezone.setDateTime(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
 
             settingsPanel.add(new JLabel(bundles("Min")), gbh.defaults().setLabelDefault().get());

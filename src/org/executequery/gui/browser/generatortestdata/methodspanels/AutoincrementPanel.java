@@ -154,7 +154,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
 
             startValueDateTime = new DefaultDateTimePicker();
-            startValueDateTime.setVisibleNullBox(false);
+            startValueDateTime.setVisibleNullCheck(false);
             startValueDateTime.setDateTime(LocalDateTime.now());
 
             iterationDate = new DateDifferenceSetter();
@@ -174,7 +174,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
 
             startValueDateTimezone = new DefaultDateTimezonePicker();
-            startValueDateTimezone.setVisibleNullBox(false);
+            startValueDateTimezone.setVisibleNullCheck(false);
             startValueDateTimezone.setDateTime(LocalDateTime.now());
 
             iterationDate = new DateDifferenceSetter();

@@ -10,7 +10,8 @@ import java.sql.Time;
 import java.time.LocalTime;
 import java.time.OffsetTime;
 
-public class TimeCellEditor extends AbstractAdjustableCellEditor {
+public class TimeCellEditor extends AbstractAdjustableCellEditor
+        implements BlockableCellEditor {
 
     private final DefaultTimePicker picker;
 
@@ -45,6 +46,7 @@ public class TimeCellEditor extends AbstractAdjustableCellEditor {
 
         setCellEditorValue(((RecordDataItem) value).getDisplayValue());
         adjustCellSize(table, column, picker);
+        setBlock(true);
 
         return picker;
     }
@@ -52,6 +54,12 @@ public class TimeCellEditor extends AbstractAdjustableCellEditor {
     @Override
     public Object getCellEditorValue() {
         return picker.isNull() ? "" : picker.getLocalTime();
+    }
+
+    @Override
+    public void setBlock(boolean block) {
+        picker.setVisibleNullCheck(!block);
+        picker.setEnabled(!block && !picker.isNull());
     }
 
 }

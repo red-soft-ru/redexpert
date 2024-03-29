@@ -76,9 +76,9 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
         });
         activeBox = new JCheckBox(bundleStaticString("active"));
         startDatePicker = new DefaultDateTimePicker();
-        startDatePicker.setVisibleNullBox(true);
+        startDatePicker.setVisibleNullCheck(true);
         endDatePicker = new DefaultDateTimePicker();
-        endDatePicker.setVisibleNullBox(true);
+        endDatePicker.setVisibleNullCheck(true);
         cronPanel = new CronPanel(editing);
 
         topGbh.addLabelFieldPair(topPanel, bundleString("startDate"), startDatePicker, null, true, false);

@@ -77,9 +77,10 @@ public class DefaultDateTimePicker extends JPanel {
     @Override
     public void setEnabled(boolean enabled) {
         datePicker.setEnabled(enabled);
+        timePicker.setEnabled(enabled);
     }
 
-    public void setVisibleNullBox(boolean flag) {
+    public void setVisibleNullCheck(boolean flag) {
         timePicker.setVisibleNullCheck(flag);
     }
 

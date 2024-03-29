@@ -555,6 +555,9 @@ public class ResultSetTable extends JTable implements StandardTable {
             restoreOldCellSize(getSelectedColumn());
         }
 
+        if (oldCellEditor instanceof AdjustableCellEditor)
+            ((BlockableCellEditor) oldCellEditor).setBlock(false);
+
         return super.processKeyBinding(ks, e, condition, pressed);
     }
 

@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -27,12 +28,12 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() throws DataSourceException {
-        return SQLUtils.generateCreateRole(getName(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateRole(getName(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
-        return getCreateSQLText();
+        return SQLUtils.generateCreateRole(getName(), null, getHost().getDatabaseConnection());
     }
 
 
@@ -43,7 +44,9 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return this.getCreateSQLText();
+        return Comparer.isCommentsNeed() ?
+                getCreateSQLText() :
+                getCreateSQLTextWithoutComment();
     }
 
     @Override

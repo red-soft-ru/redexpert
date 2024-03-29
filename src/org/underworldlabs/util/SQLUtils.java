@@ -1584,8 +1584,15 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateCreateRole(String name, DatabaseConnection dc) {
-        return "CREATE ROLE " + format(name, dc) + ";\n";
+    public static String generateCreateRole(String name, String comment, DatabaseConnection dc) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE ROLE ").append(format(name, dc)).append(";\n");
+
+        if (!MiscUtils.isNull(comment))
+            sb.append(generateComment(format(name, dc), "ROLE", comment, ";"));
+
+        return sb.toString();
     }
 
     public static String generateCreateIndex(

@@ -129,6 +129,22 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 bundledString("TimestampPatternFormat"),
                 stringUserProperty(key)));
 
+        key = "results.time.timezone.pattern";
+        list.add(new UserPreference(
+                UserPreference.STRING_TYPE,
+                -1,
+                key,
+                bundledString("TimeTimezonePatternFormat"),
+                stringUserProperty(key)));
+
+        key = "results.timestamp.timezone.pattern";
+        list.add(new UserPreference(
+                UserPreference.STRING_TYPE,
+                -1,
+                key,
+                bundledString("TimestampTimezonePatternFormat"),
+                stringUserProperty(key)));
+
         key = "results.table.cell.null.text";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,

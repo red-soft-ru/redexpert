@@ -30,9 +30,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 
 // much of this from the article Christmas Tree Applications at
@@ -83,6 +81,8 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private DateTimeFormatter dateFormat;
     private DateTimeFormatter timeFormat;
     private DateTimeFormatter timestampFormat;
+    private DateTimeFormatter timeTimezoneFormat;
+    private DateTimeFormatter timestampTimezoneFormat;
 
     ResultSetTableCellRenderer() {
 
@@ -254,6 +254,8 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 case Types.DATE:
                 case Types.TIME:
                 case Types.TIMESTAMP:
+                case Types.TIME_WITH_TIMEZONE:
+                case Types.TIMESTAMP_WITH_TIMEZONE:
                     color = dateValueDisplayColor;
                     isDateValue = true;
                     break;
@@ -279,6 +281,10 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 setValue(timeFormatted((LocalTime) value));
             else if (value instanceof LocalDateTime)
                 setValue(timestampFormatted((LocalDateTime) value));
+            else if (value instanceof OffsetTime)
+                setValue(timeTimezoneFormatted((OffsetTime) value));
+            else if (value instanceof OffsetDateTime)
+                setValue(timestampTimezoneFormatted((OffsetDateTime) value));
             else
                 setValue(value);
 
@@ -326,9 +332,18 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 Constants.USER_PROPERTIES_KEY, "results.time.pattern");
         timeFormat = !MiscUtils.isNull(timePattern) ? DateTimeFormatter.ofPattern(timePattern) : null;
 
+        String timeTimezonePattern = SystemProperties.getProperty(
+                Constants.USER_PROPERTIES_KEY, "results.time.timezone.pattern");
+        timeTimezoneFormat = !MiscUtils.isNull(timeTimezonePattern) ? DateTimeFormatter.ofPattern(timeTimezonePattern) : null;
+
         String timestampPattern = SystemProperties.getProperty(
                 Constants.USER_PROPERTIES_KEY, "results.timestamp.pattern");
         timestampFormat = !MiscUtils.isNull(timestampPattern) ? DateTimeFormatter.ofPattern(timestampPattern) : null;
+
+        String timestampTimezonePattern = SystemProperties.getProperty(
+                Constants.USER_PROPERTIES_KEY, "results.timestamp.timezone.pattern");
+        timestampTimezoneFormat = !MiscUtils.isNull(timestampTimezonePattern) ? DateTimeFormatter.ofPattern(timestampTimezonePattern) : null;
+
 
         alignNumeric = getAlignKey(SystemProperties.getStringProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.align.numeric"));
@@ -405,6 +420,14 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
     private String timestampFormatted(LocalDateTime date) {
         return (timestampFormat != null) ? timestampFormat.format(date) : date.toString();
+    }
+
+    private String timeTimezoneFormatted(OffsetTime date) {
+        return (timeTimezoneFormat != null) ? timeTimezoneFormat.format(date) : date.toString();
+    }
+
+    private String timestampTimezoneFormatted(OffsetDateTime date) {
+        return (timestampTimezoneFormat != null) ? timestampTimezoneFormat.format(date) : date.toString();
     }
 
     public void setTableBackground(Color c) {

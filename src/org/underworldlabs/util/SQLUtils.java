@@ -1215,15 +1215,26 @@ public final class SQLUtils {
     }
 
     public static String generateAlterException(
-            DefaultDatabaseException thisException, DefaultDatabaseException comparingException) {
+            DefaultDatabaseException thisException, DefaultDatabaseException comparingException, boolean isCommentNeed) {
 
-        String comparingExceptionText = comparingException.getExceptionText();
-        if (Objects.equals(thisException.getExceptionText(), comparingExceptionText))
-            return "/* there are no changes */\n";
+        StringBuilder sb = new StringBuilder();
 
-        String sb = "ALTER EXCEPTION " + format(thisException.getName(), thisException.getHost().getDatabaseConnection()) +
-                SPACE + comparingExceptionText + ";\n";
-        return sb;
+        String name = format(thisException.getName(), thisException.getHost().getDatabaseConnection());
+        if (!Objects.equals(thisException.getExceptionText(), comparingException.getExceptionText()))
+            sb.append("ALTER EXCEPTION ").append(name).append("\n\t'").append(comparingException.getExceptionText()).append("';\n");
+
+        if (isCommentNeed) {
+            if (!Objects.equals(thisException.getRemarks(), comparingException.getRemarks())) {
+                sb.append("COMMENT ON EXCEPTION ").append(name).append(" IS ");
+                if (!Objects.equals(comparingException.getRemarks(), "") && comparingException.getRemarks() != null)
+                    sb.append("'").append(comparingException.getRemarks()).append("'");
+                else
+                    sb.append("NULL");
+                sb.append(";\n");
+            }
+        }
+
+        return sb.toString().trim().isEmpty() ? "/* there are no changes */\n" : sb.toString();
     }
 
     public static String generateAlterSequence(
@@ -1477,10 +1488,17 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateCreateException(String name, String exceptionText, DatabaseConnection dc) {
-        String sb = "CREATE EXCEPTION " + format(name, dc) +
-                "\n'" + exceptionText + "';\n";
-        return sb;
+    public static String generateCreateException(String name, String exceptionText, String comment, boolean isCommentNeed, DatabaseConnection dc) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CREATE EXCEPTION ").append(format(name, dc));
+        sb.append("\n\t'").append(exceptionText).append("';\n");
+
+        if (isCommentNeed && !MiscUtils.isNull(comment))
+            sb.append(generateComment(format(name, dc), "EXCEPTION", comment, ";"));
+
+        return sb.toString();
     }
 
     public static String generateCreatePackage(

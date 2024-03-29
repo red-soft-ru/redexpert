@@ -6,11 +6,9 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.sql.Time;
 import java.time.LocalTime;
 import java.time.OffsetTime;
-import java.util.EventObject;
 
 public class TimezoneCellEditor extends AbstractAdjustableCellEditor {
     private final DefaultTimezonePicker picker;
@@ -56,15 +54,7 @@ public class TimezoneCellEditor extends AbstractAdjustableCellEditor {
 
     @Override
     public Object getCellEditorValue() {
-        return picker.getStringValue().isEmpty() ? null : picker.getOffsetTime();
-    }
-
-    @Override
-    public boolean isCellEditable(EventObject anEvent) {
-        if (anEvent instanceof MouseEvent)
-            return ((MouseEvent) anEvent).getClickCount() >= 1;
-        else
-            return true;
+        return picker.isNull() ? null : picker.getOffsetTime();
     }
 
 }

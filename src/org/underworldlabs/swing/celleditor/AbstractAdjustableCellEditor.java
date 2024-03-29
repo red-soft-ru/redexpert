@@ -2,6 +2,8 @@ package org.underworldlabs.swing.celleditor;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.util.EventObject;
 
 abstract class AbstractAdjustableCellEditor extends AbstractCellEditor
         implements AdjustableCellEditor {
@@ -85,8 +87,11 @@ abstract class AbstractAdjustableCellEditor extends AbstractCellEditor
     }
 
     @Override
-    public boolean stopCellEditing() {
-        return super.stopCellEditing();
+    public boolean isCellEditable(EventObject e) {
+        if (e instanceof MouseEvent)
+            return ((MouseEvent) e).getClickCount() >= 1;
+        else
+            return true;
     }
 
     @Override

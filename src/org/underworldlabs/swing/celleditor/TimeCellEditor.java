@@ -6,11 +6,9 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.sql.Time;
 import java.time.LocalTime;
 import java.time.OffsetTime;
-import java.util.EventObject;
 
 public class TimeCellEditor extends AbstractAdjustableCellEditor {
 
@@ -53,15 +51,7 @@ public class TimeCellEditor extends AbstractAdjustableCellEditor {
 
     @Override
     public Object getCellEditorValue() {
-        return picker.getStringValue().isEmpty() ? null : picker.getLocalTime();
-    }
-
-    @Override
-    public boolean isCellEditable(EventObject anEvent) {
-        if (anEvent instanceof MouseEvent)
-            return ((MouseEvent) anEvent).getClickCount() >= 1;
-        else
-            return true;
+        return picker.isNull() ? "" : picker.getLocalTime();
     }
 
 }

@@ -19,7 +19,7 @@ public class DefaultTimePicker extends JPanel {
     public DefaultTimePicker() {
         init();
         arrange();
-        setUpdateNull();
+        update();
     }
 
     void init() {
@@ -28,7 +28,7 @@ public class DefaultTimePicker extends JPanel {
         timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, "HH:mm:ss.SSS"));
 
         isNullCheck = WidgetFactory.createCheckBox("isNullCheck", "NULL");
-        isNullCheck.addActionListener(e -> setUpdateNull());
+        isNullCheck.addActionListener(e -> update());
     }
 
     private void arrange() {
@@ -44,7 +44,7 @@ public class DefaultTimePicker extends JPanel {
     public String getStringValue() {
 
         if (isNull())
-            return "";
+            return null;
 
         Instant instant = Instant.ofEpochMilli(((Date) (timeSpinner).getValue()).getTime());
         LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
@@ -68,13 +68,19 @@ public class DefaultTimePicker extends JPanel {
         timeSpinner.setValue(Date.from(instant));
     }
 
-    private void setUpdateNull() {
-        timeSpinner.setEnabled(!isNull());
+    private void update() {
+        setTime(isNull() ? null : LocalTime.now());
+        setEnabled(!isNull());
     }
 
     public void setNull(boolean isNull) {
         isNullCheck.setSelected(isNull);
-        setUpdateNull();
+        setEnabled(!isNull());
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        timeSpinner.setEnabled(enabled);
     }
 
     public void setVisibleNullCheck(boolean visible) {
@@ -86,6 +92,10 @@ public class DefaultTimePicker extends JPanel {
     }
 
     public LocalTime getLocalTime() {
+
+        if (isNull())
+            return null;
+
         Instant instant = Instant.ofEpochMilli(((Date) (timeSpinner).getValue()).getTime());
         return LocalDateTime.ofInstant(instant, ZoneId.systemDefault()).toLocalTime();
     }

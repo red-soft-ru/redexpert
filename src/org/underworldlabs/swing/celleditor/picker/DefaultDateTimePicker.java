@@ -4,7 +4,6 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class DefaultDateTimePicker extends JPanel {
@@ -15,15 +14,14 @@ public class DefaultDateTimePicker extends JPanel {
     public DefaultDateTimePicker() {
         init();
         arrange();
+        update();
     }
 
     void init() {
-        timePicker = new DefaultTimePicker();
         datePicker = new DefaultDatePicker();
 
-        timePicker.addNullCheckActionListener(e -> datePicker.setEnabled(!timePicker.isNull()));
-        timePicker.addNullCheckActionListener(e -> setCurrentDate());
-        datePicker.addDateChangeListener(e -> setCurrentDate());
+        timePicker = new DefaultTimePicker();
+        timePicker.addNullCheckActionListener(e -> update());
     }
 
     private void arrange() {
@@ -38,10 +36,10 @@ public class DefaultDateTimePicker extends JPanel {
 
     public String getStringValue() {
 
-        if (timePicker.isNull())
-            return "";
+        if (isNull())
+            return null;
 
-        String date = datePicker.getDateStringOrEmptyString();
+        String date = datePicker.getDateStringOrEmptyString().trim();
         String time = timePicker.getStringValue().trim();
 
         if (time.isEmpty() && !date.isEmpty())
@@ -63,12 +61,22 @@ public class DefaultDateTimePicker extends JPanel {
     }
 
     public LocalDateTime getDateTime() {
-        return LocalDateTime.of(datePicker.getDate(), timePicker.getLocalTime());
+        return isNull() ? null : LocalDateTime.of(datePicker.getDate(), timePicker.getLocalTime());
     }
 
-    private void setCurrentDate() {
-        if (datePicker.getDateStringOrEmptyString().isEmpty())
-            datePicker.setDate(LocalDate.now());
+    private void update() {
+        setDateTime(isNull() ? null : LocalDateTime.now());
+        setEnabled(!isNull());
+    }
+
+    public void setNull(boolean isNull) {
+        timePicker.setNull(isNull);
+        setEnabled(!isNull());
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        datePicker.setEnabled(enabled);
     }
 
     public void setVisibleNullBox(boolean flag) {
@@ -76,7 +84,7 @@ public class DefaultDateTimePicker extends JPanel {
     }
 
     public boolean isNull() {
-        return datePicker.getDate() == null;
+        return timePicker.isNull();
     }
 
     public DefaultDatePicker getDatePicker() {
@@ -85,11 +93,6 @@ public class DefaultDateTimePicker extends JPanel {
 
     public DefaultTimePicker getTimePicker() {
         return timePicker;
-    }
-
-    public void setNull(boolean isNull) {
-        timePicker.setNull(isNull);
-        datePicker.setEnabled(!isNull);
     }
 
 }

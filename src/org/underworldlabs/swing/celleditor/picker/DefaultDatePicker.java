@@ -15,6 +15,7 @@ public class DefaultDatePicker extends DatePicker {
         getComponentToggleCalendarButton().setIcon(GUIUtilities.loadIcon("clndr_ico.svg", 16));
         getComponentDateTextField().setMargin(new Insets(0, 0, 0, 0));
         getComponentDateTextField().setColumns(10);
+        getSettings().setGapBeforeButtonPixels(0);
 
         repaint();
     }

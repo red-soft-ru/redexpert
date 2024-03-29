@@ -20,8 +20,7 @@ public class DefaultTimezonePicker extends JPanel {
     public DefaultTimezonePicker() {
         init();
         arrange();
-        setUpdateNull();
-        setCurrentTime();
+        update();
     }
 
     void init() {
@@ -36,7 +35,7 @@ public class DefaultTimezonePicker extends JPanel {
         plusMinusCombox.setPreferredSize(new Dimension(plusMinusCombox.getPreferredSize().width + 5, plusMinusCombox.getPreferredSize().height));
 
         isNullCheck = WidgetFactory.createCheckBox("isNullCheck", "NULL");
-        isNullCheck.addActionListener(e -> setUpdateNull());
+        isNullCheck.addActionListener(e -> update());
     }
 
     private void arrange() {
@@ -54,7 +53,7 @@ public class DefaultTimezonePicker extends JPanel {
     public String getStringValue() {
 
         if (isNull())
-            return "";
+            return null;
 
         Instant instant = Instant.ofEpochMilli(((Date) (timeSpinner).getValue()).getTime());
         LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
@@ -113,15 +112,21 @@ public class DefaultTimezonePicker extends JPanel {
         timezoneSpinner.setValue(Date.from(instant));
     }
 
-    private void setUpdateNull() {
-        timeSpinner.setEnabled(!isNull());
-        timezoneSpinner.setEnabled(!isNull());
-        plusMinusCombox.setEnabled(!isNull());
+    private void update() {
+        setTime(isNull() ? null : OffsetTime.now());
+        setEnabled(!isNull());
     }
 
     public void setNull(boolean isNull) {
         isNullCheck.setSelected(isNull);
-        setUpdateNull();
+        setEnabled(!isNull());
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        timeSpinner.setEnabled(enabled);
+        timezoneSpinner.setEnabled(enabled);
+        plusMinusCombox.setEnabled(enabled);
     }
 
     public void setVisibleNullCheck(boolean visible) {
@@ -132,15 +137,15 @@ public class DefaultTimezonePicker extends JPanel {
         return isNullCheck.isSelected();
     }
 
-    public void setCurrentTime() {
-        setTime(OffsetTime.now());
-    }
-
     public OffsetTime getOffsetTime() {
-        return OffsetTime.parse(getStringValue());
+        return isNull() ? null : OffsetTime.parse(getStringValue());
     }
 
     public LocalTime getLocalTime() {
+
+        if (isNull())
+            return null;
+
         Instant instant = Instant.ofEpochMilli(((Date) (timeSpinner).getValue()).getTime());
         return LocalDateTime.ofInstant(instant, ZoneId.systemDefault()).toLocalTime();
     }

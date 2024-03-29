@@ -20,16 +20,11 @@ public class DateTimezoneCellEditor extends AbstractAdjustableCellEditor
 
     public DateTimezoneCellEditor() {
         picker = new DefaultDateTimezonePicker();
-        picker.getDatePicker().getSettings().setGapBeforeButtonPixels(0);
     }
 
     @Override
     public Object getCellEditorValue() {
-
-        if (picker.getStringValue().isEmpty())
-            return null;
-
-        return picker.getOffsetDateTime();
+        return picker.isNull() ? null : picker.getOffsetDateTime();
     }
 
     @Override
@@ -54,11 +49,6 @@ public class DateTimezoneCellEditor extends AbstractAdjustableCellEditor
         setCellEditorValue(value);
 
         return picker;
-    }
-
-    @Override
-    public boolean isCellEditable(EventObject e) {
-        return !(e instanceof MouseEvent) || ((MouseEvent) e).getClickCount() >= 1;
     }
 
     public void setCellEditorValue(Object value) {

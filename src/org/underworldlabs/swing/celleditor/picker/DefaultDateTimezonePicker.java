@@ -4,7 +4,6 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
@@ -16,15 +15,14 @@ public class DefaultDateTimezonePicker extends JPanel {
     public DefaultDateTimezonePicker() {
         init();
         arrange();
+        update();
     }
 
     private void init() {
         datePicker = new DefaultDatePicker();
-        timezonePicker = new DefaultTimezonePicker();
 
-        datePicker.addDateChangeListener(e -> setCurrentDate());
-        timezonePicker.addNullCheckActionListener(e -> setCurrentDate());
-        timezonePicker.addNullCheckActionListener(e -> datePicker.setEnabled(!timezonePicker.isNull()));
+        timezonePicker = new DefaultTimezonePicker();
+        timezonePicker.addNullCheckActionListener(e -> update());
     }
 
     private void arrange() {
@@ -39,10 +37,10 @@ public class DefaultDateTimezonePicker extends JPanel {
 
     public String getStringValue() {
 
-        if (timezonePicker.isNull())
-            return "";
+        if (isNull())
+            return null;
 
-        String date = datePicker.getDateStringOrEmptyString();
+        String date = datePicker.getDateStringOrEmptyString().trim();
         String time = timezonePicker.getStringValue().trim();
 
         if (time.isEmpty() && !date.isEmpty())
@@ -76,16 +74,26 @@ public class DefaultDateTimezonePicker extends JPanel {
     }
 
     public LocalDateTime getDateTime() {
-        return LocalDateTime.of(datePicker.getDate(), timezonePicker.getLocalTime());
+        return isNull() ? null : LocalDateTime.of(datePicker.getDate(), timezonePicker.getLocalTime());
     }
 
     public OffsetDateTime getOffsetDateTime() {
-        return OffsetDateTime.of(getDateTime(), timezonePicker.getOffsetTime().getOffset());
+        return isNull() ? null : OffsetDateTime.of(getDateTime(), timezonePicker.getOffsetTime().getOffset());
     }
 
-    private void setCurrentDate() {
-        if (datePicker.getDateStringOrEmptyString().isEmpty())
-            datePicker.setDate(LocalDate.now());
+    private void update() {
+        setDateTime(isNull() ? null : OffsetDateTime.now());
+        setEnabled(!isNull());
+    }
+
+    public void setNull(boolean isNull) {
+        timezonePicker.setNull(isNull);
+        setEnabled(!isNull());
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        datePicker.setEnabled(enabled);
     }
 
     public void setVisibleNullBox(boolean flag) {
@@ -93,7 +101,7 @@ public class DefaultDateTimezonePicker extends JPanel {
     }
 
     public boolean isNull() {
-        return datePicker.getDate() == null;
+        return timezonePicker.isNull();
     }
 
     public DefaultDatePicker getDatePicker() {
@@ -102,11 +110,6 @@ public class DefaultDateTimezonePicker extends JPanel {
 
     public DefaultTimezonePicker getTimezonePicker() {
         return timezonePicker;
-    }
-
-    public void setNull(boolean isNull) {
-        timezonePicker.setNull(isNull);
-        datePicker.setEnabled(!isNull);
     }
 
 }

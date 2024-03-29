@@ -7,10 +7,8 @@ import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.EventObject;
 
 public class DateTimeCellEditor extends AbstractAdjustableCellEditor
         implements TableCellRenderer {
@@ -19,12 +17,11 @@ public class DateTimeCellEditor extends AbstractAdjustableCellEditor
 
     public DateTimeCellEditor() {
         picker = new DefaultDateTimePicker();
-        picker.getDatePicker().getSettings().setGapBeforeButtonPixels(0);
     }
 
     @Override
     public Object getCellEditorValue() {
-        return picker.getStringValue().isEmpty() ? null : picker.getDateTime();
+        return picker.isNull() ? null : picker.getDateTime();
     }
 
     @Override
@@ -49,11 +46,6 @@ public class DateTimeCellEditor extends AbstractAdjustableCellEditor
         setCellEditorValue(value);
 
         return picker;
-    }
-
-    @Override
-    public boolean isCellEditable(EventObject e) {
-        return !(e instanceof MouseEvent) || ((MouseEvent) e).getClickCount() >= 1;
     }
 
     private void setCellEditorValue(Object value) {

@@ -374,6 +374,10 @@ public final class SQLUtils {
         return sb.toString();
     }
 
+    public static String generateComment(String name, String metaTag, String comment, String delimiter) {
+        return generateComment(name, metaTag, comment,delimiter, true, null);
+    }
+
     public static String generateComment(
             String name, String metaTag, String comment, String delimiter,
             boolean nameAlreadyFormatted, DatabaseConnection dc) {
@@ -894,20 +898,23 @@ public final class SQLUtils {
         else
             sb.append(columnData.getFormattedDataType());
 
-        sb.append("\n");
-        if (!MiscUtils.isNull(columnData.getDefaultValue().getValue()))
-            sb.append(format(columnData.getDefaultValue(), columnData.getSQLType(), columnData.getDatabaseConnection()));
-        sb.append(columnData.isRequired() ? " NOT NULL" : "");
-        if (!MiscUtils.isNull(columnData.getCheck()))
-            sb.append(" CHECK (").append(columnData.getCheck()).append(")");
-        if (columnData.getCollate() != null && !columnData.getCollate().trim().contentEquals("NONE")
-                && !columnData.getCollate().trim().contentEquals(""))
-            sb.append(" COLLATE ").append(columnData.getCollate());
-        sb.append(";");
+        if (!MiscUtils.isNull(columnData.getDomainDefault()))
+            sb.append("\n\tDEFAULT ").append(columnData.getDomainDefault());
 
-        if (setComment && !MiscUtils.isNull(columnData.getDescription()))
-            sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS '")
-                    .append(columnData.getDescription()).append("';");
+        if (columnData.isRequired())
+            sb.append("\n\tNOT NULL");
+
+        if (!MiscUtils.isNull(columnData.getDomainCheck()))
+            sb.append("\n\tCHECK (").append(columnData.getDomainCheck()).append(")");
+
+        if (columnData.getCollate() != null
+                && !columnData.getCollate().trim().contentEquals("NONE")
+                && !columnData.getCollate().trim().contentEquals(""))
+            sb.append("\n\tCOLLATE ").append(columnData.getCollate());
+        sb.append(";\n");
+
+        if (setComment && !MiscUtils.isNull(columnData.getDomainDescription()))
+            sb.append(generateComment(name, "DOMAIN", columnData.getDomainDescription(), ";"));
 
         return sb.toString();
     }
@@ -962,38 +969,29 @@ public final class SQLUtils {
         if (!thisDomainData.getColumnName().contentEquals(domainData.getColumnName()))
             sb.append("TO ").append(domainData.getFormattedColumnName()).append("\n");
 
-        if (!Objects.equals(thisDomainData.getDefaultValue().getValue(), domainData.getDefaultValue().getValue())) {
+        if (!Objects.equals(thisDomainData.getDomainDefault(), domainData.getDomainDefault())) {
 
-            if (MiscUtils.isNull(domainData.getDefaultValue().getValue()))
+            if (MiscUtils.isNull(domainData.getDomainDefault()))
                 sb.append("DROP DEFAULT\n");
 
             else {
 
                 sb.append("SET DEFAULT ");
-                if (domainData.getDefaultValue().getValue().toUpperCase().trim().equals("NULL"))
+                if (domainData.getDomainDefault().toUpperCase().trim().equals("NULL"))
                     sb.append("NULL");
                 else
-                    sb.append(MiscUtils.formattedSQLValue(domainData.getDefaultValue(), domainData.getSQLType(), domainData.getDatabaseConnection()));
+                    sb.append(domainData.getDomainDefault());
                 sb.append("\n");
             }
         }
 
-        if (thisDomainData.isDomainNotNull() != domainData.isRequired()) {
+        if (thisDomainData.isRequired() != domainData.isRequired())
+            sb.append(domainData.isRequired() ? "SET " : "DROP ").append("NOT NULL\n");
 
-            if (domainData.isRequired())
-                sb.append("SET ");
-            else
-                sb.append("DROP ");
-
-            sb.append("NOT NULL\n");
-
-        }
-        if (!Objects.equals(thisDomainData.getCheck(), domainData.getCheck())) {
-
+        if (!Objects.equals(thisDomainData.getDomainCheck(), domainData.getDomainCheck())) {
             sb.append("DROP CONSTRAINT\n");
-            if (!MiscUtils.isNull(domainData.getCheck()))
-                sb.append("ADD CHECK (").append(domainData.getCheck()).append(")\n");
-
+            if (!MiscUtils.isNull(domainData.getDomainCheck()))
+                sb.append("ADD CHECK (").append(domainData.getDomainCheck()).append(")\n");
         }
 
         if (!Objects.equals(thisDomainData.getDomainTypeName(), domainData.getDomainTypeName()))
@@ -1004,15 +1002,15 @@ public final class SQLUtils {
         else
             sb.append(";\n");
 
-        if (!Objects.equals(thisDomainData.getDescription(), domainData.getDescription())) {
+        if (!Objects.equals(thisDomainData.getDomainDescription(), domainData.getDomainDescription())) {
             sb.append("COMMENT ON DOMAIN ").append(thisDomainData.getFormattedColumnName()).append(" IS ");
-            if (!Objects.equals(domainData.getDescription(), "") && domainData.getDescription() != null)
-                sb.append("'").append(domainData.getDescription()).append("'");
+            if (!Objects.equals(domainData.getDomainDescription(), "") && domainData.getDomainDescription() != null)
+                sb.append("'").append(domainData.getDomainDescription()).append("'");
             else
                 sb.append("NULL");
         }
 
-        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */\n";
+        return !sb.toString().isEmpty() ? sb.toString() : "/* there are no changes */\n";
     }
 
     public static String generateAlterDomain(ColumnData columnData, String domainName) {
@@ -1049,14 +1047,14 @@ public final class SQLUtils {
             sb.append(";\n");
 
         if (columnData.isDescriptionChanged()) {
-            sb.append("COMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS ");
-            if (columnData.getDescription() != null)
-                sb.append("'").append(columnData.getDescription()).append("'");
+            sb.append("COMMENT ON DOMAIN ").append(domainName).append(" IS ");
+            if (columnData.getDomainDescription() != null)
+                sb.append("'").append(columnData.getDomainDescription()).append("'");
             else
                 sb.append("NULL");
         }
 
-        return !sb.toString().equals("") ? sb.toString() : "/* there are no changes */\n";
+        return !sb.toString().isEmpty() ? sb.toString() : "/* there are no changes */\n";
     }
 
 
@@ -1909,7 +1907,7 @@ public final class SQLUtils {
     }
 
     private static String format(ColumnData.DefaultValue defaultValue, int type, DatabaseConnection dc) {
-        return MiscUtils.formattedDefaultValue(defaultValue, type, dc);
+        return MiscUtils.formattedDefaultValue(defaultValue, type, dc).trim();
     }
 
 }

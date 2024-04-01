@@ -685,17 +685,27 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                     int valueType = value.getDataType();
                     if (valueType == Types.DATE) {
                         String stringValue = SystemProperties.getProperty("user", "results.date.pattern");
-                        if (stringValue != null)
+                        if (!MiscUtils.isNull(stringValue))
                             width = metrics.stringWidth(stringValue);
 
                     } else if (valueType == Types.TIME) {
                         String stringValue = SystemProperties.getProperty("user", "results.time.pattern");
-                        if (stringValue != null)
+                        if (!MiscUtils.isNull(stringValue))
                             width = metrics.stringWidth(stringValue);
 
                     } else if (valueType == Types.TIMESTAMP) {
                         String stringValue = SystemProperties.getProperty("user", "results.timestamp.pattern");
-                        if (stringValue != null)
+                        if (!MiscUtils.isNull(stringValue))
+                            width = metrics.stringWidth(stringValue);
+
+                    } else if (valueType == Types.TIME_WITH_TIMEZONE) {
+                        String stringValue = SystemProperties.getProperty("user", "results.time.timezone.pattern");
+                        if (!MiscUtils.isNull(stringValue))
+                            width = metrics.stringWidth(stringValue);
+
+                    } else if (valueType == Types.TIMESTAMP_WITH_TIMEZONE) {
+                        String stringValue = SystemProperties.getProperty("user", "results.timestamp.timezone.pattern");
+                        if (!MiscUtils.isNull(stringValue))
                             width = metrics.stringWidth(stringValue);
                     }
 

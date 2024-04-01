@@ -28,10 +28,10 @@ public class DefaultDateTimePicker extends JPanel {
         GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillBoth().spanY();
 
         setLayout(new GridBagLayout());
-        add(datePicker, gbh.get());
-        add(timePicker, gbh.nextCol().spanX().get());
+        add(datePicker, gbh.setWeightX(0.4).get());
+        add(timePicker, gbh.nextCol().setWeightX(0.6).spanX().get());
 
-        setPreferredSize(new Dimension(320, timePicker.getPreferredSize().height));
+        setPreferredSize(new Dimension(350, timePicker.getPreferredSize().height));
     }
 
     public String getStringValue() {

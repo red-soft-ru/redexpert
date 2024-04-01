@@ -547,6 +547,7 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         int keyCode = e.getKeyCode();
         if (keyCode == KeyEvent.VK_TAB
+                || keyCode == KeyEvent.VK_ESCAPE
                 || keyCode == KeyEvent.VK_LEFT
                 || keyCode == KeyEvent.VK_RIGHT
                 || keyCode == KeyEvent.VK_KP_LEFT

@@ -20,7 +20,7 @@
 
 package org.executequery.actions.helpcommands;
 
-import org.executequery.CheckForUpdateNotifier;
+import org.executequery.update.UpdateChecker;
 import org.underworldlabs.swing.actions.BaseCommand;
 
 import java.awt.event.ActionEvent;
@@ -30,22 +30,11 @@ import java.awt.event.ActionEvent;
  *
  * @author Takis Diakoumis
  */
-public class CheckVersionCommand implements BaseCommand {
+public class CheckUpdateCommand implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        new CheckForUpdateNotifier().checkForUpdate(true);
+        new UpdateChecker().forceCheckForUpdate(true);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

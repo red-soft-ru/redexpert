@@ -35,6 +35,7 @@ import org.underworldlabs.util.SystemProperties;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.*;
@@ -149,6 +150,16 @@ public class ResultSetTable extends JTable implements StandardTable {
         timezoneCellEditor = new TimezoneCellEditor();
 
         isAutoResizeable = false;
+
+        // ---
+
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                restoreOldCellSize(e);
+            }
+        });
+
     }
 
     public ResultSetTable(TableModel model) {
@@ -545,21 +556,31 @@ public class ResultSetTable extends JTable implements StandardTable {
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
 
-        int keyCode = e.getKeyCode();
-        if (keyCode == KeyEvent.VK_TAB
-                || keyCode == KeyEvent.VK_ESCAPE
-                || keyCode == KeyEvent.VK_LEFT
-                || keyCode == KeyEvent.VK_RIGHT
-                || keyCode == KeyEvent.VK_KP_LEFT
-                || keyCode == KeyEvent.VK_KP_RIGHT
-        ) {
-            restoreOldCellSize(getSelectedColumn());
-        }
-
         if (oldCellEditor instanceof AdjustableCellEditor)
             ((BlockableCellEditor) oldCellEditor).setBlock(false);
 
         return super.processKeyBinding(ks, e, condition, pressed);
+    }
+
+    private void restoreOldCellSize(KeyEvent e) {
+
+        int newColumn = -1;
+        int keyCode = e.getKeyCode();
+
+        if (keyCode == KeyEvent.VK_TAB) {
+            newColumn = oldColumn < getColumnCount() - 1 ? oldColumn + 1 : 0;
+
+        } else if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_KP_RIGHT) {
+            newColumn = oldColumn < getColumnCount() - 1 ? oldColumn + 1 : oldColumn;
+
+        } else if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_KP_LEFT) {
+            newColumn = oldColumn > 0 ? oldColumn - 1 : 0;
+
+        } else if (keyCode == KeyEvent.VK_ESCAPE)
+            newColumn = oldColumn;
+
+        if (newColumn != -1)
+            restoreOldCellSize(newColumn);
     }
 
     public void restoreOldCellSize(int column) {

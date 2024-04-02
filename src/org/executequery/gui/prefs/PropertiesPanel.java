@@ -59,6 +59,7 @@ public class PropertiesPanel extends JPanel
     private static final List<String> PROPERTIES_KEYS_NEED_RESTART = Arrays.asList(
             // -- PropertiesGeneral --
             "startup.unstableversions.load",
+            "startup.majorversions.load",
             "system.file.encoding",
             "startup.java.path",
             "internet.proxy.set",

@@ -640,7 +640,7 @@
             name="Check for Update"
             mnemonic="U"
             accel-editable="true"
-            execute-class="org.executequery.actions.helpcommands.CheckUpdateCommand"/>
+            execute-class="org.executequery.actions.helpcommands.CheckVersionCommand"/>
 
     <action id="drivers-command"
             name="Drivers"

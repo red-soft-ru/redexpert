@@ -109,6 +109,13 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                 bundledString("LoadUnstableVersions"),
                 Boolean.valueOf(stringUserProperty(key))));
 
+        key = "startup.majorversions.load";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("CheckMajorVersions"),
+                Boolean.valueOf(stringUserProperty(key))));
+
         key = "system.file.encoding";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,

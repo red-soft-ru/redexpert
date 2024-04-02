@@ -33,7 +33,6 @@ import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
-import org.executequery.update.UpdateChecker;
 import org.executequery.util.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.CustomKeyboardFocusManager;
@@ -442,8 +441,14 @@ public class ApplicationLauncher {
     }
 
     private void doCheckForUpdate() {
-        if (booleanUserProperty("startup.version.check"))
-            new UpdateChecker().startupCheckForUpdate();
+
+        boolean doUpdateCheck = booleanUserProperty("startup.version.check");
+
+        if (doUpdateCheck) {
+
+            new CheckForUpdateNotifier().startupCheckForUpdate();
+        }
+
     }
 
     private boolean booleanUserProperty(String key) {

@@ -1,10 +1,6 @@
-package org.executequery.update;
+package org.executequery;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.ApplicationContext;
-import org.executequery.ApplicationVersion;
-import org.executequery.ExecuteQuery;
-import org.executequery.GUIUtilities;
 import org.executequery.http.JSONAPI;
 import org.executequery.http.spi.DefaultRemoteHttpClient;
 import org.executequery.localization.Bundles;

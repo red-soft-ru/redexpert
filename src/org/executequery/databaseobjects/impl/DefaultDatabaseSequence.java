@@ -230,4 +230,9 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         return getDatabaseMajorVersion();
     }
 
+    public void reset() {
+        super.reset();
+        currentValue = null;
+    }
+
 }

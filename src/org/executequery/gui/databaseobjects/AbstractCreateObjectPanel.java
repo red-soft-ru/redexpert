@@ -293,6 +293,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                     parent.finished();
                 else
                     firstQuery = generateQuery();
+                reset();
             }
 
         } else if (parent != null)

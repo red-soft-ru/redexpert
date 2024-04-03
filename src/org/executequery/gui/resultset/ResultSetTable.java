@@ -35,11 +35,12 @@ import org.underworldlabs.util.SystemProperties;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
@@ -150,15 +151,6 @@ public class ResultSetTable extends JTable implements StandardTable {
         timezoneCellEditor = new TimezoneCellEditor();
 
         isAutoResizeable = false;
-
-        // ---
-
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                restoreOldCellSize(e);
-            }
-        });
 
     }
 
@@ -555,40 +547,43 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        boolean result = super.processKeyBinding(ks, e, condition, pressed);
 
         if (oldCellEditor instanceof BlockableCellEditor)
             ((BlockableCellEditor) oldCellEditor).setBlock(false);
 
-        return super.processKeyBinding(ks, e, condition, pressed);
-    }
-
-    private void restoreOldCellSize(KeyEvent e) {
+        int keyCode = e.getKeyCode();
+        if (keyCode == KeyEvent.VK_ESCAPE) {
+            restoreOldCellSize();
+            return result;
+        }
 
         int newColumn = -1;
-        int keyCode = e.getKeyCode();
-
         if (keyCode == KeyEvent.VK_TAB) {
             newColumn = oldColumn < getColumnCount() - 1 ? oldColumn + 1 : 0;
 
         } else if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_KP_RIGHT) {
             newColumn = oldColumn < getColumnCount() - 1 ? oldColumn + 1 : oldColumn;
 
-        } else if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_KP_LEFT) {
+        } else if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_KP_LEFT)
             newColumn = oldColumn > 0 ? oldColumn - 1 : 0;
-
-        } else if (keyCode == KeyEvent.VK_ESCAPE)
-            newColumn = oldColumn;
 
         if (newColumn != -1)
             restoreOldCellSize(newColumn);
+
+        return result;
     }
 
     public void restoreOldCellSize(int column) {
+        if (oldColumn != column) {
+            oldColumn = column;
+            restoreOldCellSize();
+        }
+    }
 
-        if (oldColumn != column && oldCellEditor instanceof AdjustableCellEditor)
+    private void restoreOldCellSize() {
+        if (oldCellEditor instanceof AdjustableCellEditor)
             ((AdjustableCellEditor) oldCellEditor).restoreCellSize();
-
-        oldColumn = column;
     }
 
     public void setTableColumnWidthFromContents() {

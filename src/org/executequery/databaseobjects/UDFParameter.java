@@ -1,7 +1,8 @@
 package org.executequery.databaseobjects;
 
+import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
+
 import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_REFERENCE_WITH_NULL;
-import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.getStringMechanismFromInt;
 
 public class UDFParameter extends FunctionArgument {
     int mechanism;
@@ -13,7 +14,7 @@ public class UDFParameter extends FunctionArgument {
         this.mechanism = mechanism;
         if (this.mechanism == BY_REFERENCE_WITH_NULL)
             this.nullable = 1;
-        this.stringMechanism = getStringMechanismFromInt(this.mechanism);
+        this.stringMechanism = DefaultDatabaseUDF.getMechanism(this.mechanism);
         if (dataType == 40)
             isCString = true;
     }

@@ -530,7 +530,7 @@ public class ResultSetTable extends JTable implements StandardTable {
     protected void processMouseEvent(MouseEvent e) {
         super.processMouseEvent(e);
 
-        if (oldCellEditor instanceof AdjustableCellEditor)
+        if (oldCellEditor instanceof BlockableCellEditor)
             ((BlockableCellEditor) oldCellEditor).setBlock(false);
     }
 
@@ -556,7 +556,7 @@ public class ResultSetTable extends JTable implements StandardTable {
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
 
-        if (oldCellEditor instanceof AdjustableCellEditor)
+        if (oldCellEditor instanceof BlockableCellEditor)
             ((BlockableCellEditor) oldCellEditor).setBlock(false);
 
         return super.processKeyBinding(ks, e, condition, pressed);

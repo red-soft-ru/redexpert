@@ -197,6 +197,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             propertiesCheckBoxMap.remove(CHECK_CREATE);
             propertiesCheckBoxMap.remove(CHECK_ALTER);
             propertiesCheckBoxMap.remove(CHECK_DROP);
+            propertiesCheckBoxMap.remove(IGNORE_FIELDS_POSITIONS);
 
         } else {
             propertiesCheckBoxMap.get(CHECK_CREATE).setSelected(true);
@@ -423,25 +424,25 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 new Comparer(
                         this, targetConnection, masterConnection,
                         new boolean[]{
-                                !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
+                                !isPropertySelected(IGNORE_PK),
+                                !isPropertySelected(IGNORE_FK),
+                                !isPropertySelected(IGNORE_UK),
+                                !isPropertySelected(IGNORE_CK)
                         },
-                        !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
+                        !isPropertySelected(IGNORE_COMMENTS),
+                        !isPropertySelected(IGNORE_COMPUTED_FIELDS),
+                        !isPropertySelected(IGNORE_FIELDS_POSITIONS)
                 ) :
                 new Comparer(this, targetConnection,
                         new boolean[]{
-                                !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
+                                !isPropertySelected(IGNORE_PK),
+                                !isPropertySelected(IGNORE_FK),
+                                !isPropertySelected(IGNORE_UK),
+                                !isPropertySelected(IGNORE_CK)
                         },
-                        !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
+                        !isPropertySelected(IGNORE_COMMENTS),
+                        !isPropertySelected(IGNORE_COMPUTED_FIELDS),
+                        !isPropertySelected(IGNORE_FIELDS_POSITIONS)
                 );
 
         if (!isExtractMetadata)
@@ -537,7 +538,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                             attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected(),
                             attributesCheckBoxMap.get(NamedObject.JOB).isSelected());
 
-                    if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !isCanceled()) {
+                    if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
                         loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
                         if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
                             loggingOutputPanel.append(comparer.getComputedFieldsList());
@@ -652,9 +653,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 return;
             }
 
-            if (!propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() &&
-                    !propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() &&
-                    !propertiesCheckBoxMap.get(CHECK_DROP).isSelected()) {
+            if (!isPropertySelected(CHECK_CREATE) && !isPropertySelected(CHECK_ALTER) && !isPropertySelected(CHECK_DROP)) {
                 GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoProperties"));
                 return;
             }

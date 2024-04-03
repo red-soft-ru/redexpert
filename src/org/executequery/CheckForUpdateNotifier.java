@@ -24,6 +24,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.executequery.components.SimpleHtmlContentPane;
 import org.executequery.gui.InformationDialog;
 import org.executequery.http.JSONAPI;
+import org.executequery.http.spi.DefaultRemoteHttpClient;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.LatestVersionRepository;
@@ -136,7 +137,8 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private void checkFromReddatabase() {
         Log.info(String.format(bundledString("CheckingForNewVersion"), "https://reddatabase.ru"));
-
+        new DefaultRemoteHttpClient().setHttp("https");
+        new DefaultRemoteHttpClient().setHttpPort(443);
         try {
             updateLoader = new UpdateLoader("");
 
@@ -170,6 +172,8 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private void checkFromReleaseHub() {
         Log.info(String.format(bundledString("CheckingForNewVersion"), "http://builds.red-soft.biz"));
+        new DefaultRemoteHttpClient().setHttp("http");
+        new DefaultRemoteHttpClient().setHttpPort(80);
 
         try {
             updateLoader = new UpdateLoader("");
@@ -203,6 +207,9 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             useReleaseHub = false;
             checkFromReddatabase();
+        } finally {
+            new DefaultRemoteHttpClient().setHttp("https");
+            new DefaultRemoteHttpClient().setHttpPort(443);
         }
     }
 

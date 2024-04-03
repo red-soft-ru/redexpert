@@ -1274,27 +1274,50 @@ public final class SQLUtils {
     }
 
     public static String generateAlterIndex(
-            DefaultDatabaseIndex thisIndex, DefaultDatabaseIndex comparingIndex) {
+            DefaultDatabaseIndex thisIndex, DefaultDatabaseIndex comparingIndex, boolean isCommentNeed) {
 
         StringBuilder sb = new StringBuilder();
+        DatabaseConnection dc = thisIndex.getHost().getDatabaseConnection();
 
-        String comparedIndexCreateQuery = comparingIndex.getCreateSQLText();
-        String thisIndexCreateQuery = thisIndex.getCreateSQLText();
-        if (!thisIndexCreateQuery.equals(comparedIndexCreateQuery) &&
-                (thisIndexCreateQuery.contains(" INACTIVE;") || comparedIndexCreateQuery.contains(" INACTIVE;"))) {
-
-            sb.append("ALTER INDEX ").append(format(thisIndex.getName(), thisIndex.getHost().getDatabaseConnection()));
-            sb.append(comparingIndex.isActive() ? " ACTIVE" : " INACTIVE").append(";\n");
-            return sb.toString();
-        }
-
-        if (!thisIndexCreateQuery.equals(comparedIndexCreateQuery)) {
+        if (!Objects.equals(thisIndex.isUnique(), comparingIndex.isUnique())
+                || !Objects.equals(thisIndex.getIndexType(), comparingIndex.getIndexType())
+                || !Objects.equals(thisIndex.getExpression(), comparingIndex.getExpression())
+                || !Objects.equals(thisIndex.getConstraint_type(), comparingIndex.getConstraint_type())
+                || !Objects.equals(thisIndex.getTableName(), comparingIndex.getTableName())
+                || !Objects.equals(thisIndex.getCondition(), comparingIndex.getCondition())
+                || !Objects.equals(thisIndex.getType(), comparingIndex.getType())
+        ) {
             sb.append(generateDefaultDropQuery("INDEX", thisIndex.getName(), thisIndex.getHost().getDatabaseConnection()));
-            sb.append(comparedIndexCreateQuery);
-            return sb.toString();
+            sb.append(comparingIndex.getCreateSQLTextWithoutComment());
+
+        } else {
+            sb.append("ALTER INDEX ").append(format(thisIndex.getName(), dc));
+            String noChangesCheckString = sb.toString();
+
+            if (!Objects.equals(thisIndex.isActive(), comparingIndex.isActive()))
+                sb.append(comparingIndex.isActive() ? " ACTIVE" : " INACTIVE");
+
+            if (!Objects.equals(thisIndex.getTablespace(), comparingIndex.getTablespace()))
+                sb.append("\nSET TABLESPACE TO ").append(format(comparingIndex.getTablespace(), dc));
+
+            if (!Objects.equals(noChangesCheckString, sb.toString()))
+                sb.append(";\n");
+            else
+                sb.setLength(0);
         }
 
-        return "/* there are no changes */\n";
+        if (isCommentNeed) {
+            if (!Objects.equals(thisIndex.getRemarks(), comparingIndex.getRemarks())) {
+                sb.append("COMMENT ON INDEX ").append(format(thisIndex.getName(), dc)).append(" IS ");
+                if (!Objects.equals(comparingIndex.getRemarks(), "") && comparingIndex.getRemarks() != null)
+                    sb.append("'").append(comparingIndex.getRemarks()).append("'");
+                else
+                    sb.append("NULL");
+                sb.append(";\n");
+            }
+        }
+
+        return sb.toString().isEmpty() ? "/* there are no changes */\n" : sb.toString();
     }
 
     public static String generateAlterUser(DefaultDatabaseUser thisUser, DefaultDatabaseUser compareUser, boolean setComment) {
@@ -1597,7 +1620,8 @@ public final class SQLUtils {
 
     public static String generateCreateIndex(
             String name, boolean isDescending, boolean isUnique, String tableName, String expression, String condition,
-            List indexColumns, String tablespace, boolean isActive, String comment, DatabaseConnection dc) {
+            List<DefaultDatabaseIndex.DatabaseIndexColumn> indexColumns, String tablespace, boolean isActive,
+            String comment, boolean isCommentNeed, DatabaseConnection dc) {
 
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE ");
@@ -1641,12 +1665,13 @@ public final class SQLUtils {
         if (!MiscUtils.isNull(tablespace))
             sb.append("\nTABLESPACE ").append(format(tablespace, dc));
 
-        sb.append(";");
+        sb.append(";\n");
 
         if (!isActive)
-            sb.append("ALTER INDEX ").append(format(name, dc)).append(" INACTIVE;");
-        if (!MiscUtils.isNull(comment))
-            sb.append("COMMENT ON INDEX ").append(format(name, dc)).append(" IS '").append(comment).append("';");
+            sb.append("ALTER INDEX ").append(format(name, dc)).append(" INACTIVE;\n");
+
+        if (isCommentNeed && !MiscUtils.isNull(comment))
+            sb.append(generateComment(format(name, dc), "INDEX", comment, ";"));
 
         return sb.toString();
     }

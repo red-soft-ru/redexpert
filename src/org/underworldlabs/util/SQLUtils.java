@@ -1257,20 +1257,36 @@ public final class SQLUtils {
     }
 
     public static String generateAlterUDF(
-            DefaultDatabaseUDF thisUDF, DefaultDatabaseUDF comparingUDF) {
+            DefaultDatabaseUDF thisUDF, DefaultDatabaseUDF comparingUDF, boolean isCommentNeed) {
+        String name = format(thisUDF.getName(), thisUDF.getHost().getDatabaseConnection());
 
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER EXTERNAL FUNCTION ").append(format(thisUDF.getName(), thisUDF.getHost().getDatabaseConnection()));
+        sb.append("ALTER EXTERNAL FUNCTION ").append(name);
         String noChangesCheckString = sb.toString();
 
         if (!Objects.equals(thisUDF.getEntryPoint(), comparingUDF.getEntryPoint()))
             sb.append("\nENTRY_POINT '").append(comparingUDF.getEntryPoint()).append("'");
+
         if (!Objects.equals(thisUDF.getModuleName(), comparingUDF.getModuleName()))
             sb.append("\nMODULE_NAME '").append(comparingUDF.getModuleName()).append("'");
 
         if (noChangesCheckString.contentEquals(sb))
-            return "/* there are no changes */\n";
-        return sb.append(";\n").toString();
+            sb.setLength(0);
+        else
+            sb.append(";\n");
+
+        if (isCommentNeed) {
+            if (!Objects.equals(thisUDF.getRemarks(), comparingUDF.getRemarks())) {
+                sb.append("COMMENT ON EXCEPTION ").append(name).append(" IS ");
+                if (!Objects.equals(comparingUDF.getRemarks(), "") && comparingUDF.getRemarks() != null)
+                    sb.append("'").append(comparingUDF.getRemarks()).append("'");
+                else
+                    sb.append("NULL");
+                sb.append(";\n");
+            }
+        }
+
+        return sb.toString().isEmpty() ? "/* there are no changes */\n" : sb.toString();
     }
 
     public static String generateAlterIndex(
@@ -1541,53 +1557,60 @@ public final class SQLUtils {
     }
 
     public static String generateCreateUDF(
-            String name, List<UDFParameter> parameters, int returnArg,
-            String entryPoint, String moduleName, boolean freeIt, DatabaseConnection dc) {
-
-        int BY_VALUE = 0;
-        int BY_REFERENCE = 1;
-        int BY_DESCRIPTOR = 2;
-        int BY_BLOB_DESCRIPTOR = 3;
+            String name,
+            List<UDFParameter> parameters,
+            int returnArg,
+            String entryPoint,
+            String moduleName,
+            boolean freeIt,
+            String comment,
+            boolean isCommentNeed,
+            DatabaseConnection dc) {
 
         StringBuilder sb = new StringBuilder();
-
         sb.append("DECLARE EXTERNAL FUNCTION ").append(format(name, dc)).append("\n");
 
-        String args = "";
+        StringBuilder argumentssBuilder = new StringBuilder();
         Map<UDFParameter, ColumnData> mapParameters = new HashMap<>();
 
         for (UDFParameter parameter : parameters) {
             ColumnData cd = columnDataFromProcedureParameter(parameter, dc, false);
             mapParameters.put(parameter, cd);
         }
+
         for (int i = 0; i < parameters.size(); i++) {
+            UDFParameter parameter = parameters.get(i);
 
             if (returnArg == 0 && i == 0)
                 continue;
 
-            args += "\t" + mapParameters.get(parameters.get(i)).getFormattedDataType(true);
-            if (parameters.get(i).getMechanism() != BY_VALUE && parameters.get(i).getMechanism() != BY_REFERENCE)
-                if (parameters.get(i).isNotNull() || parameters.get(i).getMechanism() == BY_DESCRIPTOR)
-                    args += " " + parameters.get(i).getStringMechanism();
+            argumentssBuilder.append("\t").append(mapParameters.get(parameter).getFormattedDataType(true));
+            if (!DefaultDatabaseUDF.byValue(parameter) && !DefaultDatabaseUDF.byReference(parameter))
+                if (parameter.isNotNull() || DefaultDatabaseUDF.byDescriptor(parameter))
+                    argumentssBuilder.append(SPACE).append(parameter.getStringMechanism());
 
-            if (!parameters.get(i).isNotNull() && parameters.get(i).getMechanism() != BY_DESCRIPTOR &&
-                    parameters.get(i).getMechanism() != BY_REFERENCE &&
-                    parameters.get(i).getMechanism() != BY_BLOB_DESCRIPTOR && returnArg - 1 != i)
-                args += " " + "NULL";
+            if (!parameter.isNotNull() && (returnArg - 1) != i
+                    && !DefaultDatabaseUDF.byReference(parameter)
+                    && !DefaultDatabaseUDF.byDescriptor(parameter)
+                    && !DefaultDatabaseUDF.byBlobDescriptor(parameter)
+            ) {
+                argumentssBuilder.append(" NULL");
+            }
 
-            args += ",\n";
+            argumentssBuilder.append(",\n");
         }
 
-        if (!args.isEmpty())
-            args = args.substring(0, args.length() - 2);
+        if (!argumentssBuilder.toString().isEmpty())
+            sb.append(argumentssBuilder.substring(0, argumentssBuilder.length() - 2));
 
-        sb.append(args).append("\nRETURNS\n");
+        sb.append("\nRETURNS\n");
 
         if (returnArg == 0) {
+            UDFParameter parameter = parameters.get(0);
 
-            sb.append(mapParameters.get(parameters.get(0)).getFormattedDataType(true));
-            if (parameters.get(0).getMechanism() != BY_REFERENCE && parameters.get(0).getMechanism() != -1)
-                sb.append(" ").append(parameters.get(0).getStringMechanism());
+            sb.append("\t").append(mapParameters.get(parameter).getFormattedDataType(true));
+            if (parameter.getMechanism() != -1 && !DefaultDatabaseUDF.byReference(parameter))
+                sb.append(SPACE).append(parameter.getStringMechanism());
 
         } else
             sb.append("PARAMETER ").append(returnArg);
@@ -1603,6 +1626,9 @@ public final class SQLUtils {
         if (!MiscUtils.isNull(moduleName))
             sb.append(moduleName.replace("'", "''"));
         sb.append("';\n");
+
+        if (isCommentNeed && !MiscUtils.isNull(comment))
+            sb.append(generateComment(format(name, dc), "EXTERNAL FUNCTION", comment, ";"));
 
         return sb.toString();
     }

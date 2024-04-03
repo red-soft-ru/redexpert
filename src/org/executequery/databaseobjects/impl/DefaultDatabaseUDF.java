@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.UDFParameter;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SQLUtils;
@@ -19,13 +20,14 @@ import java.util.Map;
 /**
  * Created by vasiliy on 13.02.17.
  */
+@SuppressWarnings({"BooleanMethodIsAlwaysInverted", "unused"})
 public class DefaultDatabaseUDF extends DefaultDatabaseFunction
         implements DatabaseProcedure {
 
-    protected final static String MODULE_NAME = "MODULE_NAME";
-    protected static final String PARAMETER_MECHANISM = "MECHANISM";
-    protected static final String BYTES_PER_CHARACTER = "BYTES_PER_CHARACTER";
-    public static final String[] MECHANISMS = {
+    private final static String MODULE_NAME = "MODULE_NAME";
+    private static final String PARAMETER_MECHANISM = "MECHANISM";
+    private static final String BYTES_PER_CHARACTER = "BYTES_PER_CHARACTER";
+    private static final String[] MECHANISMS = {
             "BY VALUE",
             "BY REFERENCE",
             "BY DESCRIPTOR",
@@ -69,13 +71,25 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
                 getEntryPoint(),
                 getModuleName(),
                 freeIt,
+                getRemarks(),
+                true,
                 getHost().getDatabaseConnection()
         );
     }
 
     @Override
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
-        return getCreateSQLText();
+        return SQLUtils.generateCreateUDF(
+                getName(),
+                parameters,
+                returnArg,
+                getEntryPoint(),
+                getModuleName(),
+                freeIt,
+                null,
+                false,
+                getHost().getDatabaseConnection()
+        );
     }
 
     @Override
@@ -85,13 +99,15 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateSQLText();
+        return Comparer.isCommentsNeed() ?
+                getCreateSQLText() :
+                getCreateSQLTextWithoutComment();
     }
 
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseUDF comparingUDF = (DefaultDatabaseUDF) databaseObject;
-        return SQLUtils.generateAlterUDF(this, comparingUDF);
+        return SQLUtils.generateAlterUDF(this, comparingUDF, Comparer.isCommentsNeed());
     }
 
     @Override
@@ -197,13 +213,14 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
 
         StringBuilder inputParamenersBuilder = new StringBuilder();
         for (int i = 0; i < parameters.size(); i++) {
+            UDFParameter parameter = parameters.get(i);
 
             if (returnArg == 0 && i == 0)
                 continue;
 
-            inputParamenersBuilder.append(mapParameters.get(parameters.get(i)).getFormattedDataType());
-            if (parameters.get(i).getMechanism() != BY_REFERENCE && parameters.get(i).getMechanism() != BY_VALUE)
-                inputParamenersBuilder.append(" ").append(parameters.get(i).getStringMechanism());
+            inputParamenersBuilder.append(mapParameters.get(parameter).getFormattedDataType());
+            if (!byReference(parameter) && !byValue(parameter))
+                inputParamenersBuilder.append(" ").append(parameter.getStringMechanism());
             inputParamenersBuilder.append(", ");
         }
         if (!inputParamenersBuilder.toString().isEmpty())
@@ -213,10 +230,11 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
             returns = "Parameter " + returnArg;
 
         } else {
-            returns = mapParameters.get(parameters.get(0)).getFormattedDataType();
+            UDFParameter parameter = parameters.get(0);
 
-            if (parameters.get(0).getMechanism() != BY_REFERENCE && parameters.get(0).getMechanism() != -1)
-                returns += " " + parameters.get(0).getStringMechanism();
+            returns = mapParameters.get(parameter).getFormattedDataType();
+            if (!byReference(parameter) && parameter.getMechanism() != -1)
+                returns += " " + parameter.getStringMechanism();
         }
     }
 
@@ -254,7 +272,6 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
         this.returnArg = returnArg;
     }
 
-    @SuppressWarnings("unused")
     public String getReturnMechanism() {
         checkOnReload(returnMechanism);
         return returnMechanism;
@@ -265,7 +282,6 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
         return returns;
     }
 
-    @SuppressWarnings("unused")
     public String getInputParameters() {
         return inputParameters;
     }
@@ -277,6 +293,30 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
 
     public boolean getFreeIt() {
         return freeIt;
+    }
+
+    public static boolean byValue(UDFParameter parameter) {
+        return parameter.getMechanism() == DefaultDatabaseUDF.BY_VALUE;
+    }
+
+    public static boolean byReference(UDFParameter parameter) {
+        return parameter.getMechanism() == DefaultDatabaseUDF.BY_REFERENCE;
+    }
+
+    public static boolean byDescriptor(UDFParameter parameter) {
+        return parameter.getMechanism() == DefaultDatabaseUDF.BY_DESCRIPTOR;
+    }
+
+    public static boolean byBlobDescriptor(UDFParameter parameter) {
+        return parameter.getMechanism() == DefaultDatabaseUDF.BY_BLOB_DESCRIPTOR;
+    }
+
+    public static boolean byScalarArrayDescriptor(UDFParameter parameter) {
+        return parameter.getMechanism() == DefaultDatabaseUDF.BY_SCALAR_ARRAY_DESCRIPTOR;
+    }
+
+    public static boolean byReferenceWithNull(UDFParameter parameter) {
+        return parameter.getMechanism() == DefaultDatabaseUDF.BY_REFERENCE_WITH_NULL;
     }
 
 }

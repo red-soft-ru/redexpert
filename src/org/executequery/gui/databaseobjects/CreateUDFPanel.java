@@ -16,8 +16,6 @@ import org.underworldlabs.util.MiscUtils;
 import javax.swing.*;
 import java.util.Vector;
 
-import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_DESCRIPTOR;
-import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_VALUE;
 import static org.underworldlabs.util.SQLUtils.columnDataFromProcedureParameter;
 
 public class CreateUDFPanel extends AbstractCreateObjectPanel {
@@ -245,9 +243,9 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 selectTypePanel.setColumnData(returnsType);
                 selectTypePanel.refresh();
 
-                if (udfParameter.getMechanism() == BY_DESCRIPTOR)
+                if (DefaultDatabaseUDF.byDescriptor(udfParameter))
                     mechanismBox.setSelectedIndex(2);
-                else if (udfParameter.getMechanism() == BY_VALUE)
+                else if (DefaultDatabaseUDF.byValue(udfParameter))
                     mechanismBox.setSelectedIndex(1);
                 else mechanismBox.setSelectedIndex(0);
             }

@@ -1983,7 +1983,7 @@ public final class SQLUtils {
     }
 
     private static String format(ColumnData.DefaultValue defaultValue, int type, DatabaseConnection dc) {
-        return MiscUtils.formattedDefaultValue(defaultValue, type, dc).trim();
+        return MiscUtils.formattedDefaultValue(defaultValue, type, dc);
     }
 
 }

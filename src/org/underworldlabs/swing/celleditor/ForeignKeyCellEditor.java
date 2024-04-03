@@ -14,12 +14,12 @@ import java.util.Vector;
 /**
  * @author Alexey Kozlov
  */
-public class ForeignKeyCellEditor extends AbstractAdjustableCellEditor {
-
-    private final ForeignKeyPicker picker;
+public class ForeignKeyCellEditor extends AbstractAdjustableCellEditor
+        implements BlockableCellEditor {
 
     private final TableModel resultSetTableModel;
     private final int[] childColumnIndices;
+    private final ForeignKeyPicker picker;
     private final int selectedRow;
 
     public ForeignKeyCellEditor(
@@ -73,6 +73,7 @@ public class ForeignKeyCellEditor extends AbstractAdjustableCellEditor {
 
         setCellEditorValue(((RecordDataItem) value).getDisplayValue());
         adjustCellSize(table, column, picker);
+        setBlock(true);
 
         return picker;
     }
@@ -90,6 +91,11 @@ public class ForeignKeyCellEditor extends AbstractAdjustableCellEditor {
         }
 
         return picker.getText();
+    }
+
+    @Override
+    public void setBlock(boolean block) {
+        picker.setEnabled(!block);
     }
 
 }

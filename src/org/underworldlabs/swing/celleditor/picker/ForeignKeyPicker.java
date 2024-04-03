@@ -2,11 +2,12 @@ package org.underworldlabs.swing.celleditor.picker;
 
 import com.github.lgooddatepicker.zinternaltools.CustomPopup;
 import com.github.lgooddatepicker.zinternaltools.InternalUtilities;
-import com.privatejgoodies.forms.factories.CC;
-import com.privatejgoodies.forms.layout.FormLayout;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
+import org.executequery.util.UserProperties;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.util.SystemProperties;
 
@@ -26,9 +27,8 @@ import java.util.Vector;
 public class ForeignKeyPicker extends JPanel
         implements DataPicker {
 
-    private static final Color BACKGROUND_COLOR = SystemProperties.getColourProperty(
-            "user", "editor.results.background.colour"
-    );
+    private static final Color BACKGROUND_COLOR = UserProperties.getInstance()
+            .getColourProperty("editor.results.background.colour");
 
     private final ResultSetTableModel foreignKeyTableModel;
     private final Vector<Vector<Object>> foreignKeysItems;
@@ -38,6 +38,7 @@ public class ForeignKeyPicker extends JPanel
     private ResultSetTable foreignTable;
     private Object selectedValue;
     private int selectedIndex;
+    private boolean isPopupOpen = true;
 
     private CustomPopup popup;
     private JPanel editorPanel;
@@ -45,8 +46,11 @@ public class ForeignKeyPicker extends JPanel
     private JButton toggleButton;
 
     public ForeignKeyPicker(
-            ResultSetTableModel foreignKeysTableModel, Vector<Vector<Object>> foreignKeysItems,
-            Map<Integer, String> foreignKeysNames, Object selectedValue, Map<Integer, String> selectedValues) {
+            ResultSetTableModel foreignKeysTableModel,
+            Vector<Vector<Object>> foreignKeysItems,
+            Map<Integer, String> foreignKeysNames,
+            Object selectedValue, Map<Integer,
+            String> selectedValues) {
 
         this.foreignKeyTableModel = foreignKeysTableModel;
         this.foreignKeysItems = foreignKeysItems;
@@ -54,32 +58,37 @@ public class ForeignKeyPicker extends JPanel
         this.selectedValues = selectedValues;
 
         init();
+        arrange();
         setText((selectedValue != null) ? selectedValue.toString() : "");
     }
 
     private void init() {
 
-        textField = new JTextField();
-        textField.setMargin(new Insets(1, 3, 2, 2));
+        textField = WidgetFactory.createTextField("textField");
         textField.setBorder(new CompoundBorder(
                 new MatteBorder(1, 1, 1, 1, new Color(122, 138, 153)),
                 new EmptyBorder(1, 3, 2, 2))
         );
 
-        toggleButton = new JButton();
-        toggleButton.setText("...");
-        toggleButton.setFocusPainted(false);
-        toggleButton.setFocusable(false);
-        toggleButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                openPopup();
-            }
-        });
+        toggleButton = WidgetFactory.createButton("toggleButton", "...");
+        toggleButton.addActionListener(e -> togglePopup());
 
-        this.setLayout(new FormLayout("pref:grow, [3px,pref], [26px,pref]", "fill:pref:grow"));
-        this.add(this.textField, CC.xy(1, 1));
-        this.add(toggleButton, CC.xy(3, 1));
+    }
+
+    private void arrange() {
+
+        GridBagHelper gbh = new GridBagHelper()
+                .anchorNorthWest()
+                .fillBoth();
+
+        setLayout(new GridBagLayout());
+        add(textField, gbh.setMaxWeightX().get());
+        add(toggleButton, gbh.nextCol().setMinWeightX().get());
+
+        setPreferredSize(new Dimension(
+                getWidth() + toggleButton.getMinimumSize().width,
+                toggleButton.getPreferredSize().height)
+        );
     }
 
     private void setPopupLocation(
@@ -204,13 +213,17 @@ public class ForeignKeyPicker extends JPanel
         return (selectedValue != null && selectedIndex > -1) ? foreignKeysItems.get(col).get(selectedIndex).toString() : textField.getText();
     }
 
+    private void togglePopup() {
+        if (isPopupOpen())
+            closePopup();
+        else
+            openPopup();
+
+        isPopupOpen = !isPopupOpen;
+    }
+
     @Override
     public void openPopup() {
-
-        if (isPopupOpen()) {
-            closePopup();
-            return;
-        }
 
         if (isEnabled()) {
 
@@ -253,7 +266,7 @@ public class ForeignKeyPicker extends JPanel
 
     @Override
     public boolean isPopupOpen() {
-        return popup != null;
+        return isPopupOpen;
     }
 
     @Override

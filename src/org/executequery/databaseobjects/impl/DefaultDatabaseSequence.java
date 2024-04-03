@@ -68,33 +68,49 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
         return getCreateSQLText(true);
     }
 
-
-    public String getCreateSQLText(boolean addComment) {
-
-        String query = "";
-        try {
-
-            long firstValue = (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue();
-            query = SQLUtils.generateCreateSequence(getName(), firstValue,
-                    getIncrement(), addComment ? getRemarks() : null, getVersion(), false, getHost().getDatabaseConnection());
-
-        } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
-            e.printStackTrace();
-        }
-
-        return query;
-    }
-
     @Override
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
         return getCreateSQLText(false);
     }
 
+    @Override
+    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
+
+        DefaultDatabaseSequence comparingSequence = (DefaultDatabaseSequence) databaseObject;
+        int version = 0;
+        try {
+            version = getVersion();
+        } catch (SQLException ignored) {
+        }
+
+        return SQLUtils.generateAlterSequence(this, comparingSequence, version);
+    }
 
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("SEQUENCE", getName(), getHost().getDatabaseConnection());
+    }
+
+    private String getCreateSQLText(boolean addComment) {
+
+        String query = "";
+        try {
+            query = SQLUtils.generateCreateSequence(
+                    getName(),
+                    (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue(),
+                    getIncrement(),
+                    addComment ? getRemarks() : null,
+                    getVersion(),
+                    false,
+                    getHost().getDatabaseConnection()
+            );
+
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            Log.error(e.getMessage(), e);
+        }
+
+        return query;
     }
 
     public long getSequenceCurrentValue() {
@@ -146,37 +162,6 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
     public int getIncrement() {
         checkOnReload(increment);
         return increment;
-    }
-
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-
-        String query = "";
-        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
-        try {
-            long firstValue = (getVersion() >= 3) ? getSequenceFirstValue() : getSequenceCurrentValue();
-            query = SQLUtils.generateCreateSequence(getName(), firstValue,
-                    getIncrement(), comment, getVersion(), false, getHost().getDatabaseConnection());
-
-        } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
-            e.printStackTrace();
-        }
-
-        return query;
-    }
-
-    @Override
-    public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-
-        DefaultDatabaseSequence comparingSequence = (DefaultDatabaseSequence) databaseObject;
-        int version = 0;
-        try {
-            version = getVersion();
-        } catch (SQLException ignored) {
-        }
-
-        return SQLUtils.generateAlterSequence(this, comparingSequence, version);
     }
 
     @Override

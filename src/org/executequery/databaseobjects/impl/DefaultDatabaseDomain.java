@@ -100,11 +100,6 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return SQLUtils.generateCreateDomain(getDomainData(), getName(), true, Comparer.isCommentsNeed());
-    }
-
-    @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseDomain comparingDomain = (DefaultDatabaseDomain) databaseObject;
         return SQLUtils.generateAlterDomain(getDomainData(), comparingDomain.getDomainData());

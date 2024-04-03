@@ -630,13 +630,26 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getCreateSQLText() throws DataSourceException {
-
         updateListCD();
         updateListCC();
 
-        return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, true,
-                true, true, null, getExternalFile(),
-                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
+        return SQLUtils.generateCreateTable(
+                getName(),
+                listCD,
+                listCC,
+                true,
+                false,
+                true,
+                true,
+                true,
+                null,
+                getExternalFile(),
+                getAdapter(),
+                getSqlSecurity(),
+                getTablespace(),
+                getRemarks(),
+                ";"
+        );
     }
 
     @Override
@@ -644,9 +657,23 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         updateListCD();
         updateListCC();
 
-        return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, true,
-                true, false, null, getExternalFile(),
-                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
+        return SQLUtils.generateCreateTable(
+                getName(),
+                listCD,
+                listCC,
+                true,
+                false,
+                true,
+                true,
+                false,
+                null,
+                getExternalFile(),
+                getAdapter(),
+                getSqlSecurity(),
+                getTablespace(),
+                null,
+                ";"
+        );
     }
 
     @Override
@@ -656,16 +683,29 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-
         updateListCD();
         updateListCC();
 
         if (Comparer.isComputedFieldsNeed())
             listCD.stream().filter(cd -> !MiscUtils.isNull(cd.getComputedBy())).forEach(cd -> cd.setComputedBy(null));
 
-        return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, false,
-                false, Comparer.isCommentsNeed(), null, getExternalFile(),
-                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
+        return SQLUtils.generateCreateTable(
+                getName(),
+                listCD,
+                listCC,
+                true,
+                false,
+                false,
+                false,
+                Comparer.isCommentsNeed(),
+                null,
+                getExternalFile(),
+                getAdapter(),
+                getSqlSecurity(),
+                getTablespace(),
+                getRemarks(),
+                ";"
+        );
     }
 
     @Override

@@ -199,8 +199,16 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateCollation(getName(), getCharacterSet(), getBaseCollate(),
-                getAttributes(), isPadSpace(), isCaseSensitive(), isAccentSensitive(), isExternal());
+        return SQLUtils.generateCreateCollation(
+                getName(),
+                getCharacterSet(),
+                getBaseCollate(),
+                getAttributes(),
+                isPadSpace(),
+                isCaseSensitive(),
+                isAccentSensitive(),
+                isExternal()
+        );
     }
 
     @Override
@@ -211,11 +219,6 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("COLLATION", getName(), getHost().getDatabaseConnection());
-    }
-
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateSQLText();
     }
 
     @Override

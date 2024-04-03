@@ -61,14 +61,8 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
         return null;
     }
 
-
     @Override
     public String getDropSQL() throws DataSourceException {
-        return null;
-    }
-
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
         return null;
     }
 

@@ -260,11 +260,6 @@ public class DefaultDatabaseUser extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return SQLUtils.generateCreateUser(this, Comparer.isCommentsNeed());
-    }
-
-    @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseUser comparingUser = (DefaultDatabaseUser) databaseObject;
         return SQLUtils.generateAlterUser(this, comparingUser, Comparer.isCommentsNeed());

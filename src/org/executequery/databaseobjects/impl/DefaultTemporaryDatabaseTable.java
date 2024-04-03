@@ -36,13 +36,26 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     @Override
     public String getCreateSQLText() throws DataSourceException {
-
         updateListCD();
         updateListCC();
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, true, true, true, true,
-                getTypeTemporary(), getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
+                getName(),
+                listCD,
+                listCC,
+                true,
+                true,
+                true,
+                true,
+                true,
+                getTypeTemporary(),
+                getExternalFile(),
+                getAdapter(),
+                getSqlSecurity(),
+                getTablespace(),
+                getRemarks(),
+                ";"
+        );
     }
 
     @Override
@@ -51,13 +64,22 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         updateListCC();
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, true, true, true, false,
-                getTypeTemporary(), getExternalFile(), getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
-    }
-
-    @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("TABLE", getName(), getHost().getDatabaseConnection());
+                getName(),
+                listCD,
+                listCC,
+                true,
+                true,
+                true,
+                true,
+                false,
+                getTypeTemporary(),
+                getExternalFile(),
+                getAdapter(),
+                getSqlSecurity(),
+                getTablespace(),
+                null,
+                ";"
+        );
     }
 
     @Override
@@ -72,9 +94,22 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
                     cd.setComputedBy(null);
 
         return SQLUtils.generateCreateTable(
-                getName(), listCD, listCC, true, true, false, false,
-                Comparer.isCommentsNeed(), getTypeTemporary(), getExternalFile(),
-                getAdapter(), getSqlSecurity(), getTablespace(), getRemarks(), ";");
+                getName(),
+                listCD,
+                listCC,
+                true,
+                true,
+                false,
+                false,
+                Comparer.isCommentsNeed(),
+                getTypeTemporary(),
+                getExternalFile(),
+                getAdapter(),
+                getSqlSecurity(),
+                getTablespace(),
+                getRemarks(),
+                ";"
+        );
     }
 
     @Override

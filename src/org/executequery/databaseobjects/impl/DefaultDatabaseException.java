@@ -76,13 +76,6 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return Comparer.isCommentsNeed() ?
-                getCreateSQLText() :
-                getCreateSQLTextWithoutComment();
-    }
-
-    @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseException comparingException = (DefaultDatabaseException) databaseObject;
         return SQLUtils.generateAlterException(this, comparingException, Comparer.isCommentsNeed());

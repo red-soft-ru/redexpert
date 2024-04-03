@@ -257,13 +257,9 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-
-        if (!MiscUtils.isNull(this.getConstraint_type()))
-            return "/* Will be created with constraint defining */\n";
-
-        return Comparer.isCommentsNeed() ?
-                getCreateSQLText() :
-                getCreateSQLTextWithoutComment();
+        return MiscUtils.isNull(this.getConstraint_type()) ?
+                super.getCompareCreateSQL() :
+                "/* Will be created with constraint defining */\n";
     }
 
     @Override

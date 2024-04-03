@@ -27,6 +27,7 @@ import org.executequery.databaseobjects.Types;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledStatement;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.log.Log;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -609,7 +610,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     public abstract String getDropSQL() throws DataSourceException;
 
-    public abstract String getCompareCreateSQL() throws DataSourceException;
+    public String getCompareCreateSQL() throws DataSourceException {
+        return Comparer.isCommentsNeed() ? getCreateSQLText() : getCreateSQLTextWithoutComment();
+    }
 
     public abstract String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException;
 

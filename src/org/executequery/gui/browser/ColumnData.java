@@ -728,6 +728,10 @@ public class ColumnData implements Serializable {
         return domainDefault;
     }
 
+    public String getFormattedDomainDefault() {
+        return "'" + domainDefault + "'";
+    }
+
     public void makeCopy() {
         if (copy == null) {
             copy = new ColumnData(dc);

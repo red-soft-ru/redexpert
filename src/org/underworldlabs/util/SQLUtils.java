@@ -899,7 +899,7 @@ public final class SQLUtils {
             sb.append(columnData.getFormattedDataType());
 
         if (!MiscUtils.isNull(columnData.getDomainDefault()))
-            sb.append("\n\tDEFAULT ").append(columnData.getDomainDefault());
+            sb.append("\n\tDEFAULT ").append(columnData.getFormattedDomainDefault());
 
         if (columnData.isRequired())
             sb.append("\n\tNOT NULL");
@@ -980,7 +980,7 @@ public final class SQLUtils {
                 if (domainData.getDomainDefault().toUpperCase().trim().equals("NULL"))
                     sb.append("NULL");
                 else
-                    sb.append(domainData.getDomainDefault());
+                    sb.append(domainData.getFormattedDomainDefault());
                 sb.append("\n");
             }
         }

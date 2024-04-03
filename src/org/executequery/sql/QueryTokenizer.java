@@ -113,12 +113,14 @@ public class QueryTokenizer {
 
     private List<DerivedQuery> deriveQueries(String query) {
 
+        if (!query.endsWith(queryDelimiter))
+            query += queryDelimiter;
+
         int index = 0;
         int lastIndex = 0;
         boolean setTermToSet = false;
 
         List<DerivedQuery> queries = new ArrayList<>();
-
         while ((index = query.indexOf(queryDelimiter, index + 1)) != -1) {
 
             if (Thread.interrupted())
@@ -159,7 +161,6 @@ public class QueryTokenizer {
                 queries.add(new DerivedQuery(substring, null, queryDelimiter, setTermToSet));
                 lastIndex = index + queryDelimiter.length();
             }
-
         }
 
         if (queries.isEmpty())

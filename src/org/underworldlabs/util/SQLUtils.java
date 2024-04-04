@@ -38,7 +38,7 @@ public final class SQLUtils {
                 CreateTableSQLSyntax.CREATE_TABLE);
         DatabaseConnection dc = null;
         if (columnDataList.size() > 0)
-            dc = columnDataList.get(0).getDatabaseConnection();
+            dc = columnDataList.get(0).getConnection();
         sb.append(format(name, dc));
 
         if (!MiscUtils.isNull(externalFile))
@@ -182,9 +182,9 @@ public final class SQLUtils {
             }
 
             if (!MiscUtils.isNull(cd.getDefaultValue().getValue()))
-                sb.append(format(cd.getDefaultValue(), cd.getSQLType(), cd.getDatabaseConnection()));
+                sb.append(format(cd.getDefaultValue(), cd.getSQLType(), cd.getConnection()));
 
-            sb.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
+            sb.append(cd.isNotNull() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
             if (!MiscUtils.isNull(cd.getCheck()))
                 sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
 
@@ -367,15 +367,15 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         for (ColumnData cd : cols) {
-            String name = format(relationName, cd.getDatabaseConnection()) + "." + cd.getFormattedColumnName();
-            sb.append(generateComment(name, metaTag, cd.getDescription(), delimiter, true, cd.getDatabaseConnection()));
+            String name = format(relationName, cd.getConnection()) + "." + cd.getFormattedColumnName();
+            sb.append(generateComment(name, metaTag, cd.getRemarks(), delimiter, true, cd.getConnection()));
         }
 
         return sb.toString();
     }
 
     public static String generateComment(String name, String metaTag, String comment, String delimiter) {
-        return generateComment(name, metaTag, comment,delimiter, true, null);
+        return generateComment(name, metaTag, comment, delimiter, true, null);
     }
 
     public static String generateComment(
@@ -561,10 +561,10 @@ public final class SQLUtils {
 
         StringBuilder sb = new StringBuilder();
         StringBuilder alterTableTemplate = new StringBuilder()
-                .append("ALTER TABLE ").append(format(tableName, columnData.getDatabaseConnection())).append("\n\tALTER COLUMN ");
+                .append("ALTER TABLE ").append(format(tableName, columnData.getConnection())).append("\n\tALTER COLUMN ");
 
         if (column.isNameChanged())
-            sb.append(alterTableTemplate).append(format(column.getOriginalColumn().getName(), columnData.getDatabaseConnection()))
+            sb.append(alterTableTemplate).append(format(column.getOriginalColumn().getName(), columnData.getConnection()))
                     .append(" TO ").append(columnData.getFormattedColumnName())
                     .append(delimiter).append("\n");
 
@@ -582,7 +582,7 @@ public final class SQLUtils {
 
         if (column.isDefaultValueChanged())
             sb.append(alterTableTemplate)
-                    .append(" SET ").append(format(columnData.getDefaultValue(), columnData.getSQLType(), columnData.getDatabaseConnection()))
+                    .append(" SET ").append(format(columnData.getDefaultValue(), columnData.getSQLType(), columnData.getConnection()))
                     .append(delimiter).append("\n");
 
         if (column.isComputedChanged())
@@ -597,7 +597,7 @@ public final class SQLUtils {
 
         if (column.isDescriptionChanged())
             sb.append("COMMENT ON COLUMN ")
-                    .append(format(tableName, columnData.getDatabaseConnection())).append(".").append(columnData.getFormattedColumnName())
+                    .append(format(tableName, columnData.getConnection())).append(".").append(columnData.getFormattedColumnName())
                     .append(" IS '").append(column.getColumnDescription()).append("'")
                     .append(delimiter).append("\n");
 
@@ -611,7 +611,7 @@ public final class SQLUtils {
         if (MiscUtils.isNull(thisCD.getComputedBy()) == MiscUtils.isNull(comparingCD.getComputedBy())) {
             if (thisCD.isAutoincrement() == comparingCD.isAutoincrement()) {
 
-                String alterColumnTemplate = "\n\tALTER COLUMN " + format(thisCD.getColumnName(), thisCD.getDatabaseConnection());
+                String alterColumnTemplate = "\n\tALTER COLUMN " + format(thisCD.getColumnName(), thisCD.getConnection());
 
                 if (MiscUtils.isNull(thisCD.getComputedBy())) {
                     if (!comparingCD.isAutoincrement()) {
@@ -621,7 +621,7 @@ public final class SQLUtils {
                                     !Objects.equals(thisCD.getFormattedDataType(), comparingCD.getFormattedDataType())) {
 
                                 if (thisCD.getFormattedDataType().contains("BLOB") || comparingCD.getFormattedDataType().contains("BLOB")) {
-                                    sb.append("\n\tDROP ").append(format(thisCD.getColumnName(), thisCD.getDatabaseConnection())).append(COMMA);
+                                    sb.append("\n\tDROP ").append(format(thisCD.getColumnName(), thisCD.getConnection())).append(COMMA);
                                     sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, computedNeed, false, true));
                                     return sb.toString();
 
@@ -641,10 +641,10 @@ public final class SQLUtils {
                         else if (!Objects.equals(thisCD.getDefaultValue().getValue(), comparingCD.getDefaultValue().getValue()))
                             sb.append(alterColumnTemplate).append(" SET DEFAULT ").append(comparingCD.getDefaultValue().getValue()).append(COMMA);
 
-                        if (thisCD.isRequired() && !comparingCD.isRequired())
+                        if (thisCD.isNotNull() && !comparingCD.isNotNull())
                             sb.append(alterColumnTemplate).append(" DROP NOT NULL").append(COMMA);
 
-                        else if (!thisCD.isRequired() && comparingCD.isRequired())
+                        else if (!thisCD.isNotNull() && comparingCD.isNotNull())
                             sb.append(alterColumnTemplate).append(" SET NOT NULL").append(COMMA);
 
                     } else if (!Objects.equals(thisCD.getAutoincrement().getStartValue(), comparingCD.getAutoincrement().getStartValue()))
@@ -655,7 +655,7 @@ public final class SQLUtils {
 
                     sb.append(alterColumnTemplate);
 
-                    if (!Objects.equals(thisCD.getColumnType(), comparingCD.getColumnType()))
+                    if (!Objects.equals(thisCD.getTypeName(), comparingCD.getTypeName()))
                         sb.append(" TYPE ").append((MiscUtils.isNull(comparingCD.getDomain())) ?
                                 comparingCD.getFormattedDataType() : comparingCD.getDomain()).append(COMMA);
 
@@ -663,12 +663,12 @@ public final class SQLUtils {
                 }
 
             } else {
-                sb.append("\n\tDROP ").append(format(thisCD.getColumnName(), thisCD.getDatabaseConnection())).append(COMMA);
+                sb.append("\n\tDROP ").append(format(thisCD.getColumnName(), thisCD.getConnection())).append(COMMA);
                 sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, computedNeed, false, true));
             }
 
         } else {
-            sb.append("\n\tDROP ").append(format(thisCD.getColumnName(), thisCD.getDatabaseConnection())).append(COMMA);
+            sb.append("\n\tDROP ").append(format(thisCD.getColumnName(), thisCD.getConnection())).append(COMMA);
             sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, computedNeed, false, true));
         }
 
@@ -706,13 +706,13 @@ public final class SQLUtils {
                 if (variable) {
 
                     sb.append(";");
-                    if (cd.getDescription() != null && !cd.getDescription().isEmpty()) {
-                        if (cd.isDescriptionAsSingleComment()) {
+                    if (cd.getRemarks() != null && !cd.getRemarks().isEmpty()) {
+                        if (cd.isRemarkAsSingleComment()) {
                             sb.append(" --");
-                            sb.append(cd.getDescription());
+                            sb.append(cd.getRemarks());
                         } else {
                             sb.append(" /*");
-                            sb.append(cd.getDescription());
+                            sb.append(cd.getRemarks());
                             sb.append("*/");
                         }
                     }
@@ -729,11 +729,11 @@ public final class SQLUtils {
 
     public static String formattedParameter(ColumnData cd) {
         StringBuilder sb = new StringBuilder();
-        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : format(cd.getColumnName(), cd.getDatabaseConnection())).
+        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : format(cd.getColumnName(), cd.getConnection())).
                 append(" ");
         if (MiscUtils.isNull(cd.getComputedBy())) {
             if (MiscUtils.isNull(cd.getDomain())) {
-                if (cd.getColumnType() != null || cd.isTypeOf()) {
+                if (cd.getTypeName() != null || cd.isTypeOf()) {
                     sb.append(cd.getFormattedDataType());
                 }
             } else {
@@ -742,9 +742,9 @@ public final class SQLUtils {
                 else
                     sb.append(cd.getFormattedDomain());
             }
-            sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
+            sb.append(cd.isNotNull() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
             if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && cd.getDefaultValue().getValue() != null && cd.getDefaultValue().getValue().length() != 0 && !cd.getDefaultValue().isDomain()) {
-                sb.append(format(cd.getDefaultValue(), cd.getSQLType(), cd.getDatabaseConnection()));
+                sb.append(format(cd.getDefaultValue(), cd.getSQLType(), cd.getConnection()));
             }
             if (!MiscUtils.isNull(cd.getCheck())) {
                 sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
@@ -759,20 +759,20 @@ public final class SQLUtils {
         ColumnData cd = new ColumnData(true, dc);
         cd.setColumnName(parameter.getName());
         cd.setDomain(parameter.getDomain(), loadDomainInfo);
-        cd.setColumnSubtype(parameter.getSubType());
+        cd.setSubtype(parameter.getSubType());
         cd.setSQLType(parameter.getDataType());
-        cd.setColumnSize(parameter.getSize());
-        cd.setColumnType(parameter.getSqlType());
-        cd.setColumnScale(parameter.getScale());
+        cd.setSize(parameter.getSize());
+        cd.setTypeName(parameter.getSqlType());
+        cd.setScale(parameter.getScale());
         cd.setNotNull(parameter.getNullable() == 0);
         cd.setCharset(parameter.getEncoding());
-        cd.setDescription(parameter.getDescription());
+        cd.setRemarks(parameter.getDescription());
         cd.setTypeOf(parameter.isTypeOf());
         cd.setTypeOfFrom(parameter.getTypeOfFrom());
         cd.setTable(parameter.getRelationName());
         cd.setColumnTable(parameter.getFieldName());
         cd.setDefaultValue(parameter.getDefaultValue(), true, parameter.isDefaultValueFromDomain());
-        cd.setDescriptionAsSingleComment(parameter.isDescriptionAsSingleComment());
+        cd.setRemarkAsSingleComment(parameter.isDescriptionAsSingleComment());
         String[] dataTypes = dc.getDataTypesArray();
         int[] intDataTypes = dc.getIntDataTypesArray();
         for (int i = 0; i < dataTypes.length; i++) {
@@ -891,21 +891,17 @@ public final class SQLUtils {
             ColumnData columnData, String name, boolean useDomainType, boolean setComment) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE DOMAIN ").append(name).append(" AS ");
+        sb.append("CREATE DOMAIN ").append(name);
+        sb.append(" AS ").append(columnData.getFormattedDataType());
 
-        if (useDomainType)
-            sb.append(columnData.getFormattedDomainDataType());
-        else
-            sb.append(columnData.getFormattedDataType());
+        if (!MiscUtils.isNull(columnData.getDefaultValue().getValue()))
+            sb.append("\n\tDEFAULT ").append(columnData.getFormattedDefaultValue());
 
-        if (!MiscUtils.isNull(columnData.getDomainDefault()))
-            sb.append("\n\tDEFAULT ").append(columnData.getFormattedDomainDefault());
-
-        if (columnData.isRequired())
+        if (columnData.isNotNull())
             sb.append("\n\tNOT NULL");
 
-        if (!MiscUtils.isNull(columnData.getDomainCheck()))
-            sb.append("\n\tCHECK (").append(columnData.getDomainCheck()).append(")");
+        if (!MiscUtils.isNull(columnData.getCheck()))
+            sb.append("\n\tCHECK (").append(columnData.getCheck()).append(")");
 
         if (columnData.getCollate() != null
                 && !columnData.getCollate().trim().contentEquals("NONE")
@@ -913,8 +909,8 @@ public final class SQLUtils {
             sb.append("\n\tCOLLATE ").append(columnData.getCollate());
         sb.append(";\n");
 
-        if (setComment && !MiscUtils.isNull(columnData.getDomainDescription()))
-            sb.append(generateComment(name, "DOMAIN", columnData.getDomainDescription(), ";"));
+        if (setComment && !MiscUtils.isNull(columnData.getRemarks()))
+            sb.append(generateComment(name, "DOMAIN", columnData.getRemarks(), ";"));
 
         return sb.toString();
     }
@@ -969,43 +965,43 @@ public final class SQLUtils {
         if (!thisDomainData.getColumnName().contentEquals(domainData.getColumnName()))
             sb.append("TO ").append(domainData.getFormattedColumnName()).append("\n");
 
-        if (!Objects.equals(thisDomainData.getDomainDefault(), domainData.getDomainDefault())) {
+        if (!Objects.equals(thisDomainData.getDefaultValue(), domainData.getDefaultValue())) {
 
-            if (MiscUtils.isNull(domainData.getDomainDefault()))
+            if (MiscUtils.isNull(domainData.getDefaultValue().getValue()))
                 sb.append("DROP DEFAULT\n");
 
             else {
 
                 sb.append("SET DEFAULT ");
-                if (domainData.getDomainDefault().toUpperCase().trim().equals("NULL"))
+                if (domainData.getDefaultValue().getValue().toUpperCase().trim().equals("NULL"))
                     sb.append("NULL");
                 else
-                    sb.append(domainData.getFormattedDomainDefault());
+                    sb.append(domainData.getFormattedDefaultValue());
                 sb.append("\n");
             }
         }
 
-        if (thisDomainData.isRequired() != domainData.isRequired())
-            sb.append(domainData.isRequired() ? "SET " : "DROP ").append("NOT NULL\n");
+        if (thisDomainData.isNotNull() != domainData.isNotNull())
+            sb.append(domainData.isNotNull() ? "SET " : "DROP ").append("NOT NULL\n");
 
-        if (!Objects.equals(thisDomainData.getDomainCheck(), domainData.getDomainCheck())) {
+        if (!Objects.equals(thisDomainData.getCheck(), domainData.getCheck())) {
             sb.append("DROP CONSTRAINT\n");
-            if (!MiscUtils.isNull(domainData.getDomainCheck()))
-                sb.append("ADD CHECK (").append(domainData.getDomainCheck()).append(")\n");
+            if (!MiscUtils.isNull(domainData.getCheck()))
+                sb.append("ADD CHECK (").append(domainData.getCheck()).append(")\n");
         }
 
-        if (!Objects.equals(thisDomainData.getDomainTypeName(), domainData.getDomainTypeName()))
-            sb.append("TYPE ").append(domainData.getDomainTypeName());
+        if (!Objects.equals(thisDomainData.getTypeName(), domainData.getTypeName()))
+            sb.append("TYPE ").append(domainData.getTypeName());
 
         if (noChangesCheckString.contentEquals(sb))
             sb = new StringBuilder();
         else
             sb.append(";\n");
 
-        if (!Objects.equals(thisDomainData.getDomainDescription(), domainData.getDomainDescription())) {
+        if (!Objects.equals(thisDomainData.getRemarks(), domainData.getRemarks())) {
             sb.append("COMMENT ON DOMAIN ").append(thisDomainData.getFormattedColumnName()).append(" IS ");
-            if (!Objects.equals(domainData.getDomainDescription(), "") && domainData.getDomainDescription() != null)
-                sb.append("'").append(domainData.getDomainDescription()).append("'");
+            if (!Objects.equals(domainData.getRemarks(), "") && domainData.getRemarks() != null)
+                sb.append("'").append(domainData.getRemarks()).append("'");
             else
                 sb.append("NULL");
         }
@@ -1016,7 +1012,7 @@ public final class SQLUtils {
     public static String generateAlterDomain(ColumnData columnData, String domainName) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER DOMAIN ").append(format(domainName, columnData.getDatabaseConnection())).append("\n");
+        sb.append("ALTER DOMAIN ").append(format(domainName, columnData.getConnection())).append("\n");
         String noChangesCheckString = sb.toString();
 
         if (columnData.isNameChanged())
@@ -1025,12 +1021,12 @@ public final class SQLUtils {
         if (columnData.isDefaultChanged())
             if (!MiscUtils.isNull(columnData.getDefaultValue().getValue()))
                 sb.append("SET DEFAULT ").append(MiscUtils.formattedSQLValue(
-                        columnData.getDefaultValue(), columnData.getSQLType(), columnData.getDatabaseConnection())).append("\n");
+                        columnData.getDefaultValue(), columnData.getSQLType(), columnData.getConnection())).append("\n");
             else
                 sb.append("DROP DEFAULT\n");
 
-        if (columnData.isRequiredChanged())
-            sb.append(columnData.isRequired() ? "SET" : "DROP").append(" NOT NULL\n");
+        if (columnData.isNotNullChanged())
+            sb.append(columnData.isNotNull() ? "SET" : "DROP").append(" NOT NULL\n");
 
         if (columnData.isCheckChanged()) {
             sb.append("DROP CONSTRAINT\n");
@@ -1048,8 +1044,8 @@ public final class SQLUtils {
 
         if (columnData.isDescriptionChanged()) {
             sb.append("COMMENT ON DOMAIN ").append(domainName).append(" IS ");
-            if (columnData.getDomainDescription() != null)
-                sb.append("'").append(columnData.getDomainDescription()).append("'");
+            if (columnData.getRemarks() != null)
+                sb.append("'").append(columnData.getRemarks()).append("'");
             else
                 sb.append("NULL");
         }
@@ -1095,14 +1091,14 @@ public final class SQLUtils {
                     sb.append(generateAlterDefinitionColumn(thisCD, comparingCD, computed, fieldsPositions));
 
                     if (comments) {
-                        if (!Objects.equals(thisCD.getDescription(), comparingCD.getDescription())) {
+                        if (!Objects.equals(thisCD.getRemarks(), comparingCD.getRemarks())) {
                             columnComments.append(generateComment(
-                                    format(thisCD.getTableName(), thisCD.getDatabaseConnection()) + "." + thisCD.getFormattedColumnName(),
+                                    format(thisCD.getTableName(), thisCD.getConnection()) + "." + thisCD.getFormattedColumnName(),
                                     "COLUMN",
-                                    comparingCD.getDescription(),
+                                    comparingCD.getRemarks(),
                                     ";",
                                     true,
-                                    thisCD.getDatabaseConnection()
+                                    thisCD.getConnection()
                             ));
                         }
                     }
@@ -1130,12 +1126,12 @@ public final class SQLUtils {
 
                 if (comments) {
                     columnComments.append(generateComment(
-                            format(comparingCD.getTableName(), comparingCD.getDatabaseConnection()) + "." + comparingCD.getFormattedColumnName(),
+                            format(comparingCD.getTableName(), comparingCD.getConnection()) + "." + comparingCD.getFormattedColumnName(),
                             "COLUMN",
-                            comparingCD.getDescription(),
+                            comparingCD.getRemarks(),
                             ";",
                             true,
-                            comparingCD.getDatabaseConnection()
+                            comparingCD.getConnection()
                     ));
                 }
             }

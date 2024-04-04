@@ -463,7 +463,7 @@ public class ImportDelimitedWorker extends AbstractImportExportWorker {
 
                             if (fileImportedColumns.containsKey(cd)) {
 
-                                if (cd.isDateDataType()) {
+                                if (cd.isDate()) {
 
                                     hasDate = true;
                                     break;

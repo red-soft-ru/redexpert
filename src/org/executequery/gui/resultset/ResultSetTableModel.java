@@ -595,7 +595,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                         if (columnDataList != null) {
                             ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getCharset());
                             if (MiscUtils.isNull(columnDataList.get(i - 1).getCharset()) || Objects.equals(columnDataList.get(i - 1).getCharset(), CreateTableSQLSyntax.NONE))
-                                ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getDatabaseConnection().getCharset());
+                                ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getConnection().getCharset());
                         } else ((ClobRecordDataItem) value).setCharset(CreateTableSQLSyntax.NONE);
                         break;
                     case Types.LONGVARBINARY:
@@ -1049,7 +1049,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             if (rdi instanceof ClobRecordDataItem) {
                 ((ClobRecordDataItem) rdi).setCharset(columnDataList.get(i).getCharset());
                 if (MiscUtils.isNull(columnDataList.get(i).getCharset()) || Objects.equals(columnDataList.get(i).getCharset(), CreateTableSQLSyntax.NONE))
-                    ((ClobRecordDataItem) rdi).setCharset(columnDataList.get(i).getDatabaseConnection().getCharset());
+                    ((ClobRecordDataItem) rdi).setCharset(columnDataList.get(i).getConnection().getCharset());
             }
             row.add(rdi);
         }

@@ -74,7 +74,7 @@ public class ResultSetDelimitedFileWriter {
                     value = resultSet.getString(i);
                     if (!resultSet.wasNull()) {
 
-                        boolean willQuoteValue = (quoteCharacterValues && columns[i - 1].isCharacterType());
+                        boolean willQuoteValue = (quoteCharacterValues && columns[i - 1].isChar());
                         if (willQuoteValue) {
 
                             sb.append("\"");

@@ -676,8 +676,8 @@ public final class MiscUtils {
         StringBuilder sqlText = new StringBuilder();
         String value = formattedSQLValue(defaultValue, type, dc);
         sqlText.append(" ");
-        if (defaultValue.getOriginOperator() != null)
-            sqlText.append(defaultValue.getOriginOperator());
+        if (defaultValue.getOperator() != null)
+            sqlText.append(defaultValue.getOperator());
         else sqlText.append("DEFAULT");
         sqlText.append(" ").append(value);
         return sqlText.toString();

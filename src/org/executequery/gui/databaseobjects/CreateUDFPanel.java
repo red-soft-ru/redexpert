@@ -102,7 +102,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         for (int i = 0; i < params.size(); i++) {
             ColumnData param = params.elementAt(i);
             if (param.isCString())
-                sb.append("CSTRING (").append(param.getColumnSize()).append(") ");
+                sb.append("CSTRING (").append(param.getSize()).append(") ");
             else {
                 if (param.getSQLType() == Types.BLOB ||
                         param.getSQLType() == Types.LONGVARBINARY ||
@@ -117,7 +117,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                         !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
                     sb.append(param.getMechanism()).append(" ");
             }
-            if (param.isRequired() && param.getMechanism() != null && !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
+            if (param.isNotNull() && param.getMechanism() != null && !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
                 sb.append(" NULL ");
             if (i < params.size() - 1)
                 sb.append(",");

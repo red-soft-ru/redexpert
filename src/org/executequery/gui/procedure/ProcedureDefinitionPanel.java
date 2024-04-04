@@ -443,7 +443,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         dc = databaseConnection;
         tableEditorModel.setElements(new ColumnData(dc).getTableNames());
         for (ColumnData cd : tableVector) {
-            cd.setDatabaseConnection(dc);
+            cd.setConnection(dc);
         }
     }
 
@@ -875,7 +875,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     return cd.getColumnName();
 
                 case TYPE_COLUMN:
-                    return cd.getColumnType();
+                    return cd.getTypeName();
 
                 case TYPE_OF_COLUMN:
                     return cd.isTypeOf();
@@ -890,16 +890,16 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     return cd.getColumnTable();
 
                 case SIZE_COLUMN:
-                    return cd.getColumnSize();
+                    return cd.getSize();
 
                 case SCALE_COLUMN:
-                    return cd.getColumnScale();
+                    return cd.getScale();
 
                 case SUBTYPE_COLUMN:
-                    return cd.getColumnSubtype();
+                    return cd.getSubtype();
 
                 case DESCRIPTION_COLUMN:
-                    return cd.getDescription();
+                    return cd.getRemarks();
 
                 case DEFAULT_COLUMN:
                     if (cd.getDefaultValue() != null)
@@ -910,7 +910,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     return cd.getCharset();
 
                 case REQUIRED_COLUMN:
-                    return cd.isRequired();
+                    return cd.isNotNull();
 
                 default:
                     return null;
@@ -930,8 +930,8 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     break;
                 case TYPE_COLUMN:
                     if (value.getClass() == String.class) {
-                        cd.setColumnType((String) value);
-                        if (cd.getSQLType() != cd.getDomainType()) {
+                        cd.setTypeName((String) value);
+                        if (cd.getSQLType() != cd.getSQLType()) {
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
@@ -949,20 +949,20 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
-                                _model.setValueAt(String.valueOf(cd.getColumnSize()), row, SIZE_COLUMN);
+                                _model.setValueAt(String.valueOf(cd.getSize()), row, SIZE_COLUMN);
                             if (!isEditScale(row))
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
-                                _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                                _model.setValueAt(String.valueOf(cd.getScale()), row, SCALE_COLUMN);
                             if (!isEditSubtype(row))
                                 _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
                             else
-                                _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
+                                _model.setValueAt(String.valueOf(cd.getSubtype()), row, SUBTYPE_COLUMN);
                         }
                     } else {
-                        cd.setColumnType(dataTypes[(int) value]);
+                        cd.setTypeName(dataTypes[(int) value]);
                         cd.setSQLType(intDataTypes[(int) value]);
-                        if (cd.getSQLType() != cd.getDomainType()) {
+                        if (cd.getSQLType() != cd.getSQLType()) {
                             _model.setValueAt("", row, DOMAIN_COLUMN);
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
@@ -981,15 +981,15 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
-                                _model.setValueAt(String.valueOf(cd.getColumnSize()), row, SIZE_COLUMN);
+                                _model.setValueAt(String.valueOf(cd.getSize()), row, SIZE_COLUMN);
                             if (!isEditScale(row))
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
-                                _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                                _model.setValueAt(String.valueOf(cd.getScale()), row, SCALE_COLUMN);
                             if (!isEditSubtype(row))
                                 _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
                             else
-                                _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
+                                _model.setValueAt(String.valueOf(cd.getSubtype()), row, SUBTYPE_COLUMN);
                         }
                         if (!isEditEncoding(row))
                             cd.setCharset(charsets.get(0));
@@ -1002,10 +1002,10 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     if (value.getClass() == String.class) {
                         cd.setDomain((String) value);
                     } else {
-                        cd.setDatabaseConnection(dc);
+                        cd.setConnection(dc);
                         cd.setDomain(domains[(int) value]);
-                        cd.setColumnType(getStringType(cd.getDomainType()));
-                        _model.setValueAt(cd.getColumnType(), row, TYPE_COLUMN);
+                        cd.setTypeName(getStringType(cd.getSQLType()));
+                        _model.setValueAt(cd.getTypeName(), row, TYPE_COLUMN);
                     }
                     cd.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
                     break;
@@ -1020,16 +1020,16 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     cd.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
                     break;
                 case SIZE_COLUMN:
-                    cd.setColumnSize(Integer.parseInt((String) value));
+                    cd.setSize(Integer.parseInt((String) value));
                     break;
                 case SCALE_COLUMN:
-                    cd.setColumnScale(Integer.parseInt((String) value));
+                    cd.setScale(Integer.parseInt((String) value));
                     break;
                 case SUBTYPE_COLUMN:
-                    cd.setColumnSubtype(Integer.parseInt(value.toString()));
+                    cd.setSubtype(Integer.parseInt(value.toString()));
                     break;
                 case DESCRIPTION_COLUMN:
-                    cd.setDescription((String) value);
+                    cd.setRemarks((String) value);
                     break;
                 case DEFAULT_COLUMN:
                     cd.setDefaultValue((String) value);
@@ -1059,11 +1059,11 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
         boolean isEditSize(int row) {
             ColumnData cd = tableVector.elementAt(row);
-            return cd.getColumnType() != null && (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
+            return cd.getTypeName() != null && (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
                     || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
                     || cd.getSQLType() == Types.LONGVARBINARY
-                    || cd.getColumnType().equalsIgnoreCase("VARCHAR")
-                    || cd.getColumnType().equalsIgnoreCase("CHAR"));
+                    || cd.getTypeName().equalsIgnoreCase("VARCHAR")
+                    || cd.getTypeName().equalsIgnoreCase("CHAR"));
         }
 
         boolean isEditScale(int row) {

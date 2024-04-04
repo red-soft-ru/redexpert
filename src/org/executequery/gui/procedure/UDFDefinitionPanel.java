@@ -259,7 +259,7 @@ public class UDFDefinitionPanel extends JPanel
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
         dc = databaseConnection;
         for (ColumnData cd : tableVector) {
-            cd.setDatabaseConnection(dc);
+            cd.setConnection(dc);
         }
     }
 
@@ -619,16 +619,16 @@ public class UDFDefinitionPanel extends JPanel
             switch (col) {
 
                 case TYPE_COLUMN:
-                    return cd.getColumnType();
+                    return cd.getTypeName();
 
                 case SIZE_COLUMN:
-                    return cd.getColumnSize();
+                    return cd.getSize();
 
                 case SCALE_COLUMN:
-                    return cd.getColumnScale();
+                    return cd.getScale();
 
                 case SUBTYPE_COLUMN:
-                    return cd.getColumnSubtype();
+                    return cd.getSubtype();
 
                 case ENCODING_COLUMN:
                     return cd.getCharset();
@@ -637,7 +637,7 @@ public class UDFDefinitionPanel extends JPanel
                     return cd.getMechanism() == "BY DESCRIPTOR";
 
                 case NULL_COLUMN:
-                    return cd.isRequired();
+                    return cd.isNotNull();
 
                 case CSTRING_COLUMN:
                     return cd.isCString();
@@ -659,7 +659,7 @@ public class UDFDefinitionPanel extends JPanel
                         return;
                     if (value.getClass() == String.class) {
                         cd.setSQLType(DatabaseTypeConverter.getSQLDataTypeFromName((String) value));
-                        cd.setColumnType((String) value);
+                        cd.setTypeName((String) value);
                         if (!isEditSize(row))
                             _model.setValueAt("-1", row, SIZE_COLUMN);
                         else
@@ -679,13 +679,13 @@ public class UDFDefinitionPanel extends JPanel
                     }
                     break;
                 case SIZE_COLUMN:
-                    cd.setColumnSize(Integer.parseInt((String) value));
+                    cd.setSize(Integer.parseInt((String) value));
                     break;
                 case SCALE_COLUMN:
-                    cd.setColumnScale(Integer.parseInt((String) value));
+                    cd.setScale(Integer.parseInt((String) value));
                     break;
                 case SUBTYPE_COLUMN:
-                    cd.setColumnSubtype(Integer.parseInt(value.toString()));
+                    cd.setSubtype(Integer.parseInt(value.toString()));
                     break;
                 case ENCODING_COLUMN:
                     cd.setCharset((String) value);
@@ -719,16 +719,16 @@ public class UDFDefinitionPanel extends JPanel
         boolean isEditEncoding(int row) {
             ColumnData cd = tableVector.elementAt(row);
             return isEditSize(row) && cd.getSQLType() != Types.NUMERIC && cd.getSQLType() != Types.DECIMAL
-                    && cd.getSQLType() != Types.BLOB && cd.getColumnType() != "CSTRING";
+                    && cd.getSQLType() != Types.BLOB && cd.getTypeName() != "CSTRING";
         }
 
         boolean isEditSize(int row) {
             ColumnData cd = tableVector.elementAt(row);
-            return cd.getColumnType() != null && (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
+            return cd.getTypeName() != null && (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
                     || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
                     || cd.getSQLType() == Types.LONGVARBINARY
-                    || cd.getColumnType().equalsIgnoreCase("VARCHAR")
-                    || cd.getColumnType().equalsIgnoreCase("CHAR"))
+                    || cd.getTypeName().equalsIgnoreCase("VARCHAR")
+                    || cd.getTypeName().equalsIgnoreCase("CHAR"))
                     || cd.isCString();
         }
 

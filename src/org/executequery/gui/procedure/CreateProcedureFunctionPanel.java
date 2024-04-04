@@ -322,11 +322,11 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                                     String description = var.comment().getText();
                                     if (description.startsWith("--")) {
                                         description = description.substring(2);
-                                        cursor.setDescriptionAsSingleComment(true);
+                                        cursor.setRemarkAsSingleComment(true);
                                     } else if (description.startsWith("/*"))
                                         description = description.substring(2, description.length() - 2);
 
-                                    cursor.setDescription(description);
+                                    cursor.setRemarks(description);
                                 }
 
                                 if (firstCursor)
@@ -466,13 +466,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     private void columnChangeConnection(DatabaseConnection dc) {
 
         Vector<ColumnData> columnDataVector = inputParametersPanel.getTableColumnDataVector();
-        columnDataVector.forEach(c -> c.setDatabaseConnection(dc));
+        columnDataVector.forEach(c -> c.setConnection(dc));
 
         columnDataVector = outputParametersPanel.getTableColumnDataVector();
-        columnDataVector.forEach(c -> c.setDatabaseConnection(dc));
+        columnDataVector.forEach(c -> c.setConnection(dc));
 
         columnDataVector = variablesPanel.getTableColumnDataVector();
-        columnDataVector.forEach(c -> c.setDatabaseConnection(dc));
+        columnDataVector.forEach(c -> c.setConnection(dc));
 
     }
 

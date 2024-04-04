@@ -17,7 +17,7 @@ public class TypeOfPanel extends JPanel {
     private JCheckBox typeOfBox;
 
     public TypeOfPanel(ColumnData cd) {
-        columnData = new ColumnData(cd.getDatabaseConnection());
+        columnData = new ColumnData(cd.getConnection());
         init(cd);
     }
 

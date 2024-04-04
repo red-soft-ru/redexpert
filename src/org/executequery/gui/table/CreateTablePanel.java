@@ -445,7 +445,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     private void columnChangeConnection(DatabaseConnection dc) {
         Vector<ColumnData> cd = getTableColumnDataVector();
         for (ColumnData c : cd) {
-            c.setDatabaseConnection(dc);
+            c.setConnection(dc);
         }
     }
 
@@ -586,7 +586,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
 
     protected boolean checkFullType() {
         for (int i = 0; i < getTableColumnData().length; i++) {
-            if (getTableColumnData()[i].getColumnType() == null) {
+            if (getTableColumnData()[i].getTypeName() == null) {
                 GUIUtilities.displayErrorMessage(bundledString("error.select-type"));
                 tabbedPane.setSelectedIndex(0);
                 return false;

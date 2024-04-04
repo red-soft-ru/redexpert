@@ -411,9 +411,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
         try {
 
             if (!isExtractMetadata && !masterConnection.isConnected())
-                ConnectionManager.createDataSource(masterConnection);
+                ConnectionManager.createDataSource(masterConnection, true);
             if (!targetConnection.isConnected())
-                ConnectionManager.createDataSource(targetConnection);
+                ConnectionManager.createDataSource(targetConnection, true);
 
         } catch (DataSourceException e) {
             GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));

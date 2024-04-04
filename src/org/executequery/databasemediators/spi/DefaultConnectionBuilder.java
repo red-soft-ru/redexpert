@@ -92,7 +92,7 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
                         props.setProperty("process_name", path);
 
                     databaseConnection.setJdbcProperties(props);
-                    ConnectionManager.createDataSource(databaseConnection, connectionBuilder);
+                    ConnectionManager.createDataSource(databaseConnection, connectionBuilder, false);
 
                 } catch (DataSourceException e) {
 

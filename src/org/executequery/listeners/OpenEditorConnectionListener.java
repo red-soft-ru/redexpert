@@ -28,10 +28,10 @@ import org.executequery.event.ConnectionListener;
 import org.executequery.gui.ComponentPanel;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.editor.QueryEditorHistory;
+import org.executequery.log.Log;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,84 +40,83 @@ import java.util.Vector;
 
 public class OpenEditorConnectionListener implements ConnectionListener {
 
+    @Override
     public void connected(ConnectionEvent connectionEvent) {
+        DatabaseConnection connection = connectionEvent.getDatabaseConnection();
+
         List<QueryEditorHistory.PathNumber> listEditors = QueryEditorHistory.getEditors(connectionEvent.getDatabaseConnection());
-        if (listEditors == null || listEditors.isEmpty()) {
-            if (openEditorOnConnect()) {
+        if (listEditors.isEmpty()) {
+            if (openEditorOnConnect() && !connection.isAutoConnected()) {
 
-                QueryEditor queryEditor = null;
-                DatabaseConnection databaseConnection = connectionEvent.getDatabaseConnection();
-
+                QueryEditor queryEditor;
                 if (isQueryEditorTheCentralPanel() && queryEditor().getSelectedConnection() == null) {
                     queryEditor = queryEditor();
-                } else {
 
+                } else {
                     queryEditor = new QueryEditor();
-                    GUIUtilities.addCentralPane(QueryEditor.TITLE,
+
+                    GUIUtilities.addCentralPane(
+                            QueryEditor.TITLE,
                             QueryEditor.FRAME_ICON,
                             queryEditor,
                             null,
-                            true);
+                            true
+                    );
+
                     File file = new File(queryEditor.getAbsolutePath());
                     if (file.exists()) {
                         try {
-                            queryEditor.setEditorText(FileUtils.loadFile(file, SystemProperties.getProperty("user", "system.file.encoding")));
+                            queryEditor.setEditorText(FileUtils.loadFile(
+                                    file,
+                                    SystemProperties.getProperty("user", "system.file.encoding")
+                            ));
+
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            Log.error(e.getMessage(), e);
                         }
                     }
                 }
 
-                queryEditor.setSelectedConnection(databaseConnection);
+                queryEditor.setSelectedConnection(connection);
                 queryEditor.focusGained();
             }
-        } else {
+
+        } else
             QueryEditorHistory.restoreTabs(connectionEvent.getDatabaseConnection());
+    }
+
+    @Override
+    public void disconnected(ConnectionEvent connectionEvent) {
+
+        Vector<String> closeTabs = new Vector<>();
+        for (ComponentPanel panel : GUIUtilities.getOpenPanels()) {
+            if (panel.getComponent() instanceof QueryEditor) {
+                QueryEditor queryEditor = (QueryEditor) panel.getComponent();
+                if (queryEditor.getSelectedConnection() == connectionEvent.getDatabaseConnection())
+                    closeTabs.add(panel.getName());
+            }
         }
+        closeTabs.forEach(GUIUtilities::closeTab);
+
+        List<QueryEditorHistory.PathNumber> copy = new ArrayList<>(QueryEditorHistory.getEditors(connectionEvent.getDatabaseConnection()));
+        copy.forEach(number -> QueryEditorHistory.addEditor(connectionEvent.getDatabaseConnection().getId(), number));
+    }
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return event instanceof ConnectionEvent;
     }
 
     private boolean isQueryEditorTheCentralPanel() {
-
-        JPanel panel = GUIUtilities.getSelectedCentralPane();
-        return (panel instanceof QueryEditor);
+        return GUIUtilities.getSelectedCentralPane() instanceof QueryEditor;
     }
 
     private QueryEditor queryEditor() {
-
         return (QueryEditor) GUIUtilities.getSelectedCentralPane();
     }
 
     private boolean openEditorOnConnect() {
-
         return SystemProperties.getBooleanProperty("user", "editor.open.on-connect");
     }
 
-    public void disconnected(ConnectionEvent connectionEvent) {
-        List<ComponentPanel> panels = GUIUtilities.getOpenPanels();
-        Vector<String> closeTabs = new Vector();
-        for (int i = 0; i < panels.size(); i++) {
-            if (panels.get(i).getComponent() instanceof QueryEditor) {
-                QueryEditor queryEditor = (QueryEditor) panels.get(i).getComponent();
-                if (queryEditor.getSelectedConnection() == connectionEvent.getDatabaseConnection())
-                    closeTabs.add(panels.get(i).getName());
-            }
-        }
-        List<QueryEditorHistory.PathNumber> copy = new ArrayList<>();
-        copy.addAll(QueryEditorHistory.getEditors(connectionEvent.getDatabaseConnection()));
-        for (String name : closeTabs)
-            GUIUtilities.closeTab(name);
-        for (QueryEditorHistory.PathNumber s : copy)
-            QueryEditorHistory.addEditor(connectionEvent.getDatabaseConnection().getId(), s);
-    }
-
-    public boolean canHandleEvent(ApplicationEvent event) {
-
-        return (event instanceof ConnectionEvent);
-    }
-
 }
-
-
-
-
-

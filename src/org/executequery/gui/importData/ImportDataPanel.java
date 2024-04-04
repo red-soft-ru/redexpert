@@ -788,7 +788,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
         targetHost = new DefaultDatabaseHost((DatabaseConnection) targetConnectionsCombo.getSelectedItem());
         if (!targetHost.isConnected())
-            ConnectionManager.createDataSource(targetHost.getDatabaseConnection());
+            ConnectionManager.createDataSource(targetHost.getDatabaseConnection(), true);
 
         targetTablesList.clear();
         targetTablesList.add(bundleString("SelectTable"));
@@ -816,7 +816,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
         DefaultDatabaseHost host = new DefaultDatabaseHost((DatabaseConnection) sourceConnectionsCombo.getSelectedItem());
         if (!host.isConnected())
-            ConnectionManager.createDataSource(host.getDatabaseConnection());
+            ConnectionManager.createDataSource(host.getDatabaseConnection(), true);
 
         sourceTablesList.clear();
         sourceTablesList.add(bundleString("SelectTable"));

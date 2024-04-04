@@ -393,7 +393,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
                 connection = getSelectedConnection();
                 if (connection != null && !connection.isConnected()) {
                     outputPanel.appendAction("Connecting to the DB...");
-                    ConnectionManager.createDataSource(connection);
+                    ConnectionManager.createDataSource(connection, true);
                 }
             }
 

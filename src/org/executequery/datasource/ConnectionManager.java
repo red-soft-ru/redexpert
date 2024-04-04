@@ -64,14 +64,18 @@ public final class ConnectionManager {
      * Creates a stored data source for the specified database
      * connection properties object.
      *
-     * @param the database connection properties object
+     * @param databaseConnection database connection properties object
+     * @param isAutoconnect      is connection opened automaticaly
      */
-    public static synchronized void createDataSource(DatabaseConnection databaseConnection) throws IllegalArgumentException {
-        createDataSource(databaseConnection, null);
+    public static synchronized void createDataSource(DatabaseConnection databaseConnection, boolean isAutoconnect) throws IllegalArgumentException {
+        createDataSource(databaseConnection, null, isAutoconnect);
     }
 
-    public static synchronized void createDataSource(DatabaseConnection databaseConnection, ConnectionBuilder connectionBuilder)
-            throws IllegalArgumentException {
+    public static synchronized void createDataSource(
+            DatabaseConnection databaseConnection, ConnectionBuilder connectionBuilder, boolean isAutoconnect
+    ) throws IllegalArgumentException {
+
+        databaseConnection.setAutoConnect(isAutoconnect);
 
         // check the connection has a driver
         if (databaseConnection.getJDBCDriver() == null) {
@@ -165,7 +169,7 @@ public final class ConnectionManager {
 
             if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
 
-                createDataSource(databaseConnection);
+                createDataSource(databaseConnection, false);
             }
 
             ConnectionPool pool = connectionPools.get(databaseConnection);
@@ -191,7 +195,7 @@ public final class ConnectionManager {
 
             if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
 
-                createDataSource(databaseConnection);
+                createDataSource(databaseConnection, false);
             }
 
             ConnectionPool pool = connectionPools.get(databaseConnection);

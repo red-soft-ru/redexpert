@@ -490,11 +490,11 @@ public class DesktopMediator implements DockedTabDragListener {
      * Adds the specified component as a docked tab component in the
      * specified position.
      *
-     * @param title tab title
-     * @param icon tab icon
+     * @param title     tab title
+     * @param icon      tab icon
      * @param component component
-     * @param tip tab's tool tip
-     * @param position position
+     * @param tip       tab's tool tip
+     * @param position  position
      */
     public void addDockedTab(
             String title,
@@ -537,6 +537,7 @@ public class DesktopMediator implements DockedTabDragListener {
         if (tabContainer != null) {
             tabContainer.addDockedTab(title, icon, component, tip, position);
             tabContainer.updateDividerLocation();
+            baseWindowPane.updateDividerLocation(SwingConstants.LEFT);
 
             if (selected) {
                 int tabCount = tabContainer.getTabCount(position);

@@ -166,6 +166,22 @@ public class BaseApplicationPane extends JPanel
         }
     }
 
+    public void updateDividerLocation(int position) {
+
+        if (position == SwingConstants.LEFT) {
+            if (leftSplitPane != null)
+                if (leftSplitPane.getLeftComponent() != null && leftSplitPane.getRightComponent() != null)
+                    if (leftSplitPane.getDividerLocation() > leftSplitPane.getMaximumDividerLocation())
+                        leftSplitPane.setDividerLocation(leftSplitPane.getMaximumDividerLocation());
+
+        } else if (position == SwingConstants.RIGHT) {
+            if (rightSplitPane != null)
+                if (rightSplitPane.getLeftComponent() != null && rightSplitPane.getRightComponent() != null)
+                    if (rightSplitPane.getDividerLocation() > rightSplitPane.getMaximumDividerLocation())
+                        rightSplitPane.setDividerLocation(rightSplitPane.getMaximumDividerLocation());
+        }
+    }
+
     /**
      * Notifies all registered listeners of a tab minimised event.
      *

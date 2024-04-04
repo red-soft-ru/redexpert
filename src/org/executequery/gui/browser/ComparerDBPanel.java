@@ -535,8 +535,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                             attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
                             attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
                             attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.JOB).isSelected());
+                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected());
 
                     if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
                         loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");

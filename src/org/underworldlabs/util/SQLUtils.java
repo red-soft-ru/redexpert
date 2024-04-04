@@ -1736,10 +1736,6 @@ public final class SQLUtils {
             case (DATABASE_TRIGGER):
                 sb.append(generateCreateTriggerStub((DefaultDatabaseTrigger) object));
                 break;
-
-            case (JOB):
-                sb.append(generateCreateJobStub((DefaultDatabaseJob) object));
-                break;
         }
 
         sb.append("\nSET TERM ;^\n");
@@ -1818,14 +1814,6 @@ public final class SQLUtils {
             sb.append(" ON CONNECT");
 
         return sb.append("\nAS BEGIN END^\n").toString();
-    }
-
-    public static String generateCreateJobStub(DefaultDatabaseJob obj) {
-
-        String sb = "CREATE JOB " + format(obj.getName(), obj.getHost().getDatabaseConnection()) + "\n" +
-                "\t'' COMMAND ''^";
-
-        return sb;
     }
 
     public static String generateCreateCollation(

@@ -287,7 +287,8 @@ public class UpdateLoader extends JFrame {
         Log.info("Contacting Download Server...");
 
         if (releaseHub) {
-
+            new DefaultRemoteHttpClient().setHttp("http");
+            new DefaultRemoteHttpClient().setHttpPort(80);
             String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
                     JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
                     "artifact_id", "red_expert:bin:" + version + ":zip")).getString("file");

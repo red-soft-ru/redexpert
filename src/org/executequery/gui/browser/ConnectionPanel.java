@@ -67,10 +67,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * @author Takis Diakoumis
@@ -187,6 +185,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         super(new BorderLayout());
         this.controller = controller;
         init();
+        addListeners();
     }
 
     GridBagHelper gbh;
@@ -533,6 +532,29 @@ public class ConnectionPanel extends AbstractConnectionPanel
         EventMediator.registerListener(this);
         standardComponents.addAll(basicComponents);
         checkVisibleComponents();
+    }
+
+    private void addListeners() {
+
+        userField.addKeyListener(getKeyAdapter());
+        passwordField.addKeyListener(getKeyAdapter());
+        hostField.addKeyListener(getKeyAdapter());
+        portField.addKeyListener(getKeyAdapter());
+        sourceField.addKeyListener(getKeyAdapter());
+        urlField.addKeyListener(getKeyAdapter());
+        roleField.addKeyListener(getKeyAdapter());
+        certificateFileField.addKeyListener(getKeyAdapter());
+        containerPasswordField.addKeyListener(getKeyAdapter());
+
+        authCombo.addActionListener(this::processActionEvent);
+        methodCombo.addActionListener(this::processActionEvent);
+        driverCombo.addActionListener(this::processActionEvent);
+        savePwdCheck.addActionListener(this::processActionEvent);
+        charsetsCombo.addActionListener(this::processActionEvent);
+        namesToUpperBox.addActionListener(this::processActionEvent);
+        encryptPwdCheck.addActionListener(this::processActionEvent);
+        saveContPwdCheck.addActionListener(this::processActionEvent);
+        verifyServerCertCheck.addActionListener(this::processActionEvent);
     }
 
     public void addTab(String title, Component component) {
@@ -966,9 +988,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         populateConnectionObject();
 
-        EventMediator.fireEvent(
-                new DefaultConnectionRepositoryEvent(
-                        this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) null));
+        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(
+                this,
+                ConnectionRepositoryEvent.CONNECTION_MODIFIED,
+                (DatabaseConnection) null
+        ));
 
         return true;
     }
@@ -1416,39 +1440,35 @@ public class ConnectionPanel extends AbstractConnectionPanel
      */
     private void populateConnectionObject() {
 
-        if (databaseConnection == null) {
-
+        if (databaseConnection == null)
             return;
-        }
-        String path = sourceField.getText().replace("\\", "/");
+
         databaseConnection.setPasswordStored(savePwdCheck.isSelected());
         databaseConnection.setPasswordEncrypted(encryptPwdCheck.isSelected());
         databaseConnection.setUserName(userField.getText());
         databaseConnection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
         databaseConnection.setHost(hostField.getText());
         databaseConnection.setPort(portField.getText());
-        databaseConnection.setSourceName(path);
+        databaseConnection.setSourceName(sourceField.getText().replace("\\", "/"));
         databaseConnection.setURL(urlField.getText());
         databaseConnection.setRole(roleField.getText());
         databaseConnection.setCertificate(certificateFileField.getText());
         databaseConnection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
         databaseConnection.setContainerPasswordStored(saveContPwdCheck.isSelected());
         databaseConnection.setVerifyServerCertCheck(verifyServerCertCheck.isSelected());
-        databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());
-        databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
-        databaseConnection.setConnectionMethod(methodCombo.getSelectedItem().toString());
+        databaseConnection.setCharset((String) charsetsCombo.getSelectedItem());
+        databaseConnection.setAuthMethod((String) authCombo.getSelectedItem());
+        databaseConnection.setConnectionMethod((String) methodCombo.getSelectedItem());
         databaseConnection.setNamesToUpperCase(namesToUpperBox.isSelected());
+
         // jdbc driver selection
         int driverIndex = driverCombo.getSelectedIndex();
         if (driverIndex >= jdbcDrivers.size() + 1) {
-
             driverIndex = jdbcDrivers.size();
-
             driverCombo.setSelectedIndex(driverIndex);
         }
 
         if (driverIndex >= 0) {
-
             DatabaseDriver driver = jdbcDrivers.get(driverIndex);
 
             databaseConnection.setJDBCDriver(driver);
@@ -1457,7 +1477,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
             databaseConnection.setDatabaseType(Integer.toString(driver.getType()));
 
         } else {
-
             databaseConnection.setDriverId(0);
             databaseConnection.setJDBCDriver(null);
             databaseConnection.setDriverName(null);
@@ -1465,15 +1484,112 @@ public class ConnectionPanel extends AbstractConnectionPanel
         }
 
         sshTunnelConnectionPanel.update(databaseConnection);
+        storeJdbcProperties(); // retrieve the jdbc properties
+        getTransactionIsolationLevel(); // set the tx level on the connection props object
+    }
 
-        // retrieve the jdbc properties
+    private KeyAdapter getKeyAdapter() {
+        return new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                processActionEvent(e);
+            }
+        };
+    }
+
+    private void processActionEvent(KeyEvent e) {
+
+        if (databaseConnection == null)
+            return;
+
+        Object source = e.getSource();
+        if (Objects.equals(source, containerPasswordField)) {
+            databaseConnection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
+
+        } else if (Objects.equals(source, certificateFileField)) {
+            databaseConnection.setCertificate(certificateFileField.getText());
+
+        } else if (Objects.equals(source, roleField)) {
+            databaseConnection.setRole(roleField.getText());
+
+        } else if (Objects.equals(source, urlField)) {
+            databaseConnection.setURL(urlField.getText());
+
+        } else if (Objects.equals(source, sourceField)) {
+            databaseConnection.setSourceName(sourceField.getText().replace("\\", "/"));
+
+        } else if (Objects.equals(source, portField)) {
+            databaseConnection.setPort(portField.getText());
+
+        } else if (Objects.equals(source, hostField)) {
+            databaseConnection.setHost(hostField.getText());
+
+        } else if (Objects.equals(source, passwordField)) {
+            databaseConnection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
+
+        } else if (Objects.equals(source, userField))
+            databaseConnection.setUserName(userField.getText());
+
         storeJdbcProperties();
+    }
+    
+    private void processActionEvent(ActionEvent e) {
 
-        // set the tx level on the connection props object
-        getTransactionIsolationLevel();
+        if (databaseConnection == null)
+            return;
 
-        // check if the name has to update the tree display
-        //checkNameUpdate();
+        Object source = e.getSource();
+        if (Objects.equals(source, savePwdCheck)) {
+            databaseConnection.setPasswordStored(savePwdCheck.isSelected());
+
+        } else if (Objects.equals(source, encryptPwdCheck)) {
+            databaseConnection.setPasswordEncrypted(encryptPwdCheck.isSelected());
+
+        } else if (Objects.equals(source, saveContPwdCheck)) {
+            databaseConnection.setContainerPasswordStored(saveContPwdCheck.isSelected());
+
+        } else if (Objects.equals(source, verifyServerCertCheck)) {
+            databaseConnection.setVerifyServerCertCheck(verifyServerCertCheck.isSelected());
+
+        } else if (Objects.equals(source, charsetsCombo)) {
+            databaseConnection.setCharset((String) charsetsCombo.getSelectedItem());
+
+        } else if (Objects.equals(source, authCombo)) {
+            databaseConnection.setAuthMethod((String) authCombo.getSelectedItem());
+
+        } else if (Objects.equals(source, methodCombo)) {
+            databaseConnection.setConnectionMethod((String) methodCombo.getSelectedItem());
+
+        } else if (Objects.equals(source, namesToUpperBox)) {
+            databaseConnection.setNamesToUpperCase(namesToUpperBox.isSelected());
+
+        } else if (Objects.equals(source, driverCombo)) {
+
+            int driverIndex = driverCombo.getSelectedIndex();
+            if (driverIndex >= jdbcDrivers.size() + 1) {
+                driverIndex = jdbcDrivers.size();
+                driverCombo.setSelectedIndex(driverIndex);
+            }
+
+            long driverId = 0;
+            String driverName = null;
+            String databaseType = null;
+            DatabaseDriver driver = null;
+
+            if (driverIndex >= 0) {
+                driver = jdbcDrivers.get(driverIndex);
+                driverName = driver.getName();
+                driverId = driver.getId();
+                databaseType = Integer.toString(driver.getType());
+            }
+
+            databaseConnection.setDriverId(driverId);
+            databaseConnection.setJDBCDriver(driver);
+            databaseConnection.setDriverName(driverName);
+            databaseConnection.setDatabaseType(databaseType);
+        }
+
+        storeJdbcProperties();
     }
 
     /**

@@ -1218,14 +1218,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
      * @param databaseConnection connection properties object
      */
     public void connected(DatabaseConnection databaseConnection) {
-
         populateConnectionFields(databaseConnection);
-
-        /*
-        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this,
-                        ConnectionRepositoryEvent.CONNECTION_MODIFIED,
-                        databaseConnection));
-        */
     }
 
     /**
@@ -1417,21 +1410,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
         // assign as the current connection
         this.databaseConnection = databaseConnection;
 
-        // set the correct driver selected
-        selectDriver();
-
-        // set the jdbc properties
-        setJdbcProperties();
-
-        // the tx level
-        setTransactionIsolationLevel();
-
-        // enable/disable fields
-        enableFields(databaseConnection.isConnected());
-
-        // shh tunnel where applicable
-        sshTunnelConnectionPanel.setValues(databaseConnection);
-
+        selectDriver(); // set the correct driver selected
+        setJdbcProperties(); // set the jdbc properties
+        setTransactionIsolationLevel(); // the tx level
+        enableFields(databaseConnection.isConnected()); // enable/disable fields
+        sshTunnelConnectionPanel.setValues(databaseConnection); // SSH tunnel where applicable
     }
 
     /**
@@ -1604,23 +1587,21 @@ public class ConnectionPanel extends AbstractConnectionPanel
         connectButton.setEnabled(false);
         disconnectButton.setEnabled(false);
 
-        if (databaseConnection != null) {
-
+        if (databaseConnection != null)
             populateConnectionObject();
-        }
 
         this.host = host;
 
         populateConnectionFields(host.getDatabaseConnection());
-
-        // set the focus field
+        populateAndSave();
         focusNameField();
 
         // queue a save
-        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this,
+        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(
+                this,
                 ConnectionRepositoryEvent.CONNECTION_MODIFIED,
-                databaseConnection));
-
+                databaseConnection)
+        );
     }
 
     private void focusNameField() {

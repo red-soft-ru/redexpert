@@ -356,7 +356,7 @@ public final class SQLUtils {
         }
 
         if (setTerm)
-            sb.append("\n^\nSET TERM ;^");
+            sb.append("SET TERM ;^\n");
 
         return sb.toString();
     }

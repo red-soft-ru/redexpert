@@ -127,6 +127,23 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return SQLUtils.generateCreateProcedure(
+                getName(),
+                getEntryPoint(),
+                getEngine(),
+                getParameters(),
+                getSqlSecurity(),
+                getAuthid(),
+                getSourceCode(),
+                Comparer.isCommentsNeed() ? getRemarks() : null,
+                getHost().getDatabaseConnection(),
+                true,
+                Comparer.isCommentsNeed()
+        );
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName(), getHost().getDatabaseConnection());
     }

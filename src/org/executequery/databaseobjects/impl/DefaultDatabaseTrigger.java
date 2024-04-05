@@ -395,6 +395,23 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
         );
     }
 
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return SQLUtils.generateCreateTriggerStatement(
+                getName(),
+                getTriggerTableName(),
+                isTriggerActive(),
+                getStringTriggerType(),
+                getTriggerSequence(),
+                getTriggerSourceCode(),
+                getEngine(),
+                getEntryPoint(),
+                getSqlSecurity(),
+                Comparer.isCommentsNeed() ? getRemarks() : null,
+                true,
+                getHost().getDatabaseConnection()
+        );
+    }
 
     @Override
     public String getDropSQL() throws DataSourceException {

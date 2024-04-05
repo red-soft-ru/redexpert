@@ -136,6 +136,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         );
     }
 
+    @Override
     public String getCreateSQLTextWithoutComment() {
         return SQLUtils.generateCreateFunction(
                 getName(),
@@ -147,6 +148,23 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 null,
                 false,
                 false,
+                isDeterministic(),
+                getHost().getDatabaseConnection()
+        );
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return SQLUtils.generateCreateFunction(
+                getName(),
+                getFunctionArguments(),
+                getSourceCode(),
+                getEntryPoint(),
+                getEngine(),
+                getSqlSecurity(),
+                Comparer.isCommentsNeed() ? getRemarks() : null,
+                true,
+                Comparer.isCommentsNeed(),
                 isDeterministic(),
                 getHost().getDatabaseConnection()
         );

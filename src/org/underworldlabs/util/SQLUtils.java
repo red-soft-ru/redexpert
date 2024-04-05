@@ -182,7 +182,7 @@ public final class SQLUtils {
             }
 
             if (!MiscUtils.isNull(cd.getDefaultValue().getValue()))
-                sb.append(format(cd.getDefaultValue(), cd.getSQLType(), cd.getConnection()));
+                sb.append(SPACE).append(format(cd.getDefaultValue(), cd));
 
             sb.append(cd.isNotNull() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
             if (!MiscUtils.isNull(cd.getCheck()))
@@ -195,7 +195,6 @@ public final class SQLUtils {
             sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
 
         return (!sb.toString().equals(checkValid)) ? sb.append(setComma ? COMMA : "").toString() : "";
-
     }
 
     public static String generateDefinitionColumnConstraint(
@@ -582,7 +581,7 @@ public final class SQLUtils {
 
         if (column.isDefaultValueChanged())
             sb.append(alterTableTemplate)
-                    .append(" SET ").append(format(columnData.getDefaultValue(), columnData.getSQLType(), columnData.getConnection()))
+                    .append(" SET ").append(format(columnData.getDefaultValue(), columnData))
                     .append(delimiter).append("\n");
 
         if (column.isComputedChanged())
@@ -639,7 +638,7 @@ public final class SQLUtils {
                             sb.append(alterColumnTemplate).append(" DROP DEFAULT").append(COMMA);
 
                         else if (!Objects.equals(thisCD.getDefaultValue().getValue(), comparingCD.getDefaultValue().getValue()))
-                            sb.append(alterColumnTemplate).append(" SET DEFAULT ").append(comparingCD.getDefaultValue().getValue()).append(COMMA);
+                            sb.append(alterColumnTemplate).append(" SET ").append(format(comparingCD.getDefaultValue(), comparingCD)).append(COMMA);
 
                         if (thisCD.isNotNull() && !comparingCD.isNotNull())
                             sb.append(alterColumnTemplate).append(" DROP NOT NULL").append(COMMA);
@@ -743,8 +742,11 @@ public final class SQLUtils {
                     sb.append(cd.getFormattedDomain());
             }
             sb.append(cd.isNotNull() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
-            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && cd.getDefaultValue().getValue() != null && cd.getDefaultValue().getValue().length() != 0 && !cd.getDefaultValue().isDomain()) {
-                sb.append(format(cd.getDefaultValue(), cd.getSQLType(), cd.getConnection()));
+            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER
+                    && !MiscUtils.isNull(cd.getDefaultValue().getValue())
+                    && !cd.getDefaultValue().isDomain()
+            ) {
+                sb.append(SPACE).append(format(cd.getDefaultValue(), cd));
             }
             if (!MiscUtils.isNull(cd.getCheck())) {
                 sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
@@ -895,7 +897,7 @@ public final class SQLUtils {
         sb.append(" AS ").append(columnData.getFormattedDataType());
 
         if (!MiscUtils.isNull(columnData.getDefaultValue().getValue()))
-            sb.append("\n\tDEFAULT ").append(columnData.getFormattedDefaultValue());
+            sb.append("\n\t").append(format(columnData.getDefaultValue(), columnData));
 
         if (columnData.isNotNull())
             sb.append("\n\tNOT NULL");
@@ -965,18 +967,18 @@ public final class SQLUtils {
         if (!thisDomainData.getColumnName().contentEquals(domainData.getColumnName()))
             sb.append("TO ").append(domainData.getFormattedColumnName()).append("\n");
 
-        if (!Objects.equals(thisDomainData.getDefaultValue(), domainData.getDefaultValue())) {
+        if (!Objects.equals(thisDomainData.getDefaultValue().getValue(), domainData.getDefaultValue().getValue())) {
 
             if (MiscUtils.isNull(domainData.getDefaultValue().getValue()))
                 sb.append("DROP DEFAULT\n");
 
             else {
 
-                sb.append("SET DEFAULT ");
+                sb.append("SET ");
                 if (domainData.getDefaultValue().getValue().toUpperCase().trim().equals("NULL"))
-                    sb.append("NULL");
+                    sb.append("DEFAULT NULL");
                 else
-                    sb.append(domainData.getFormattedDefaultValue());
+                    sb.append(format(domainData.getDefaultValue(), domainData));
                 sb.append("\n");
             }
         }
@@ -1020,8 +1022,7 @@ public final class SQLUtils {
 
         if (columnData.isDefaultChanged())
             if (!MiscUtils.isNull(columnData.getDefaultValue().getValue()))
-                sb.append("SET DEFAULT ").append(MiscUtils.formattedSQLValue(
-                        columnData.getDefaultValue(), columnData.getSQLType(), columnData.getConnection())).append("\n");
+                sb.append("SET ").append(format(columnData.getDefaultValue(), columnData)).append("\n");
             else
                 sb.append("DROP DEFAULT\n");
 
@@ -1978,8 +1979,16 @@ public final class SQLUtils {
         return MiscUtils.getFormattedObject(object, dc);
     }
 
-    private static String format(ColumnData.DefaultValue defaultValue, int type, DatabaseConnection dc) {
-        return MiscUtils.formattedDefaultValue(defaultValue, type, dc);
+    /**
+     * Returns formatted default value
+     * of the specified column data
+     *
+     * @param value value to be formatted
+     * @param cd    column data instance
+     * @return formatted default value
+     */
+    private static String format(ColumnData.DefaultValue value, ColumnData cd) {
+        return MiscUtils.formattedDefaultValue(value, cd.getSQLType(), cd.getConnection()).trim();
     }
 
 }

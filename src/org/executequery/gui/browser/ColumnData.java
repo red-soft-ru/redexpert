@@ -326,10 +326,6 @@ public class ColumnData implements Serializable {
         return getFormattedObject(columnName);
     }
 
-    public String getFormattedDefaultValue() {
-        return "'" + getDefaultValue().getValue() + "'";
-    }
-
     public Vector<ColumnConstraint> getColumnConstraintsVector() {
         return columnConstraints;
     }

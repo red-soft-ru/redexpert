@@ -103,7 +103,7 @@ public final class ConnectionManager {
             DatabaseObjectNode hostNode = panel.getHostNode(databaseConnection);
             ((DefaultDatabaseHost) hostNode.getDatabaseObject()).resetCountFinishedMetaTags();
             loadTree(hostNode, connectionBuilder);
-            panel.repaint();
+            panel.getTree().nodeChanged(hostNode);
         }
 
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(databaseConnection);

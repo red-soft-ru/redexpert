@@ -103,13 +103,11 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
         DefaultMutableTreeNode child = (DefaultMutableTreeNode) value;
         DatabaseObjectNode node = (DatabaseObjectNode) child;
         NamedObject databaseObject = node.getDatabaseObject();
-
         String label = node.getDisplayName();
-        String labelWrapper = "<html><p>%s</p></html>";
 
         setBackgroundSelectionColor(selectedBackground);
         setIcon(IconManager.getInstance().getIconFromNode(node));
-        setText(String.format(labelWrapper, label));
+        setText(label);
 
         int type = node.getType();
         if (type == NamedObject.HOST) {

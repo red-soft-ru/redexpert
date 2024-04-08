@@ -20,8 +20,10 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.util.SwingWorker;
 
@@ -280,6 +282,27 @@ public class GUIUtils {
         } else {
             runnable.run();
         }
+    }
+
+    public static void invokeNewThread(String threadName, Runnable runnable) {
+
+        SwingWorker worker = new SwingWorker(threadName) {
+
+            @Override
+            public Object construct() {
+                try {
+                    runnable.run();
+
+                } catch (Exception e) {
+                    Log.error(e.getMessage(), e);
+                    return Constants.WORKER_FAIL;
+                }
+
+                return Constants.WORKER_SUCCESS;
+            }
+        };
+
+        worker.start();
     }
 
     /**

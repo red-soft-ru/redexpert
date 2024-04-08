@@ -24,6 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTreeCellRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultConnectionBuilder;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ConnectionsFolder;
@@ -244,10 +245,20 @@ public class SchemaTree extends DynamicTree
                 return;
 
             DatabaseObjectNode node = (DatabaseObjectNode) selectionPath.getLastPathComponent();
+            if (node instanceof DatabaseHostNode) {
+                DatabaseHostNode hostNode = (DatabaseHostNode) node;
+                if (!hostNode.isConnected())
+                    new DefaultConnectionBuilder(hostNode.getDatabaseConnection()).connect();
+            }
+
+            if (isExpanded(selectionPath))
+                collapsePath(selectionPath);
+            else
+                expandPath(selectionPath);
+
             if (!node.isCatalog())
                 panel.valueChanged(node);
         }
-
     }
 
     @Override

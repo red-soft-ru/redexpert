@@ -53,22 +53,25 @@ import java.util.List;
  *
  * @author Takis Diakoumis
  */
+@SuppressWarnings("WriteOnlyObject")
 public class CheckForUpdateNotifier implements Interruptible {
 
     private static final int LABEL_INDEX = 2;
 
     private SwingWorker worker;
     private ApplicationVersion version;
+    private UpdateLoader updateLoader = null;
     private InterruptibleProgressDialog progressDialog;
 
     private boolean checkUnstable = false;
     private boolean useReleaseHub = false;
     private boolean monitorProgress = false;
-    private UpdateLoader updateLoader = null;
+    private static boolean waitingForRestart = false;
 
     public void startupCheckForUpdate() {
 
         worker = new SwingWorker("startupCheckUpdate") {
+            @Override
             public Object construct() {
                 checkForUpdate();
                 return Constants.WORKER_SUCCESS;
@@ -80,6 +83,11 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     public void forceCheckForUpdate(boolean monitorProgress) {
         this.monitorProgress = monitorProgress;
+
+        if (waitingForRestart) {
+            GUIUtilities.displayInformationMessage(bundledString("restart.message.postpone"));
+            return;
+        }
 
         worker = new SwingWorker("forceCheckForUpdate") {
             @Override
@@ -137,8 +145,10 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private void checkFromReddatabase() {
         Log.info(String.format(bundledString("CheckingForNewVersion"), "https://reddatabase.ru"));
+
         new DefaultRemoteHttpClient().setHttp("https");
         new DefaultRemoteHttpClient().setHttpPort(443);
+
         try {
             updateLoader = new UpdateLoader("");
 
@@ -297,6 +307,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             updateLoader.setReleaseHub(useReleaseHub);
             updateLoader.downloadUpdate();
             updateLoader.unzipLocale();
+            waitingForRestart = true;
 
             boolean restartNow = GUIUtilities.displayYesNoDialog(
                     bundledString("restart.message"),
@@ -368,7 +379,8 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private void runProgressDialog(String labelTextKey) {
-        GUIUtils.invokeLater(() -> {
+
+        GUIUtils.invokeNewThread("Check for update progress bar", () -> {
 
             progressDialog = new InterruptibleProgressDialog(
                     GUIUtilities.getParentFrame(),
@@ -413,8 +425,10 @@ public class CheckForUpdateNotifier implements Interruptible {
                 @Override
                 public Object construct() {
 
-                    if (displayNewVersionMessage("newVersionMessage") == JOptionPane.YES_OPTION)
-                        displayReleaseNotes();
+                    if (version.getTagValue() == ApplicationVersion.RELEASE)
+                        if (displayNewVersionMessage("newVersionMessage") == JOptionPane.YES_OPTION)
+                            displayReleaseNotes();
+
                     displayDownloadDialog(listener);
 
                     return Constants.WORKER_SUCCESS;

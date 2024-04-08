@@ -294,7 +294,7 @@ public class ErdTable extends ErdMoveableComponent
                 originalData = new ColumnData[columns.length];
 
                 for (int i = 0; i < columns.length; i++) {
-                    originalData[i] = new ColumnData(columns[i].getDatabaseConnection());
+                    originalData[i] = new ColumnData(columns[i].getConnection());
                     originalData[i].setValues(columns[i]);
                 }
 

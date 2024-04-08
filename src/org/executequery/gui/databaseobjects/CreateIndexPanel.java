@@ -297,14 +297,14 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 List<ColumnData> cols = new ArrayList<>();
                 while (rs.next()) {
                     ColumnData col = new ColumnData(rs.getString(1).trim(), connection);
-                    col.setDescription(rs.getString(2).trim());
+                    col.setDomain(rs.getString(2).trim());
                     cols.add(col);
                 }
                 sender.releaseResources();
 
                 for (ColumnData col : cols) {
-                    col.setDomain(col.getDescription());
-                    if (!col.isLOB() && col.getSQLType() != Types.ARRAY && col.getDomainComputedBy() == null)
+                    col.setDomain(col.getDomain());
+                    if (!col.isLOB() && col.getSQLType() != Types.ARRAY && col.getComputedBy() == null)
                         fieldsPanel.addAvailableItem(col.getColumnName().trim());
                 }
 

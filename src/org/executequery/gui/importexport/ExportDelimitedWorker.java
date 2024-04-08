@@ -233,7 +233,7 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                         } else {
 
                             if ((parseDateValues && dateFormat != null) &&
-                                    column.isDateDataType()) {
+                                    column.isDate()) {
 
                                 value = dateFormat.format(rset.getDate(j));
 
@@ -249,7 +249,7 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
 
                         }
 
-                        boolean isCharType = column.isCharacterType();
+                        boolean isCharType = column.isChar();
                         if (isCharType && quoteCharacterValues) {
 
                             rowData.append("\"");

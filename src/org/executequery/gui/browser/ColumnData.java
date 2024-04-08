@@ -49,206 +49,122 @@ import java.util.Vector;
  * @author Takis Diakoumis
  */
 public class ColumnData implements Serializable {
-
     private static final long serialVersionUID = -4937385038396757064L;
-    private boolean descriptionAsSingleComment = false;
 
+    public static final int TYPE_OF_FROM_DOMAIN = 0;
+    public static final int TYPE_OF_FROM_COLUMN = 1;
     public static final int INPUT_PARAMETER = 0;
     public static final int OUTPUT_PARAMETER = 1;
     public static final int VARIABLE = 2;
-    public static final int TYPE_OF_FROM_DOMAIN = 0;
-    public static final int TYPE_OF_FROM_COLUMN = 1;
 
-    private String catalog;
-    private String schema;
-    private String tableName;
-    private String columnName;
-    private String columnType;
-    private int columnSize;
-    private int columnScale;
-    private int columnSubtype;
-    private boolean notNull;
+    private int size;
+    private int scale;
+    private int subtype;
     private int sqlType;
-    private DefaultValue defaultValue;
-    private Vector<ColumnConstraint> columnConstraints;
+    private int typeOfFrom;
+    private int typeParameter;
     private int columnPosition;
 
-    private String keyType;
-    private boolean primaryKey;
-    private boolean foreignKey;
-
-    private boolean newColumn;
-    private boolean markedDeleted;
-
-    private String domain;
-    private int domainType;
-    private String domainTypeName;
-    private int domainSubType;
-    private int domainSize = -1;
-    private int domainScale = -1;
-    private String domainCharset;
-    private String domainCheck;
-    private String domainDescription;
-    private boolean domainNotNull;
-    private String domainDefault;
-
-    private String check;
-    private String description;
-
-    private String computedBy;
-    private String domainComputedBy;
-
-    private final Autoincrement ai;
-    private DatabaseConnection dc;
-    private ColumnData copy;
-
-    private String charset;
-    private int typeParameter;
     private boolean typeOf;
-    private int typeOfFrom;
-
-    private String collate;
-    private String domainCollate;
-
-    private String mechanism;
-    private boolean cString;
-
-    private String columnTable;
-    private DefaultDatabaseObject table;
-    private final List<String> columns;
-    private final List<NamedObject> tables;
-
     private boolean cursor;
     private boolean scroll;
+    private boolean cString;
+    private boolean notNull;
+    private boolean newColumn;
+    private boolean primaryKey;
+    private boolean foreignKey;
+    private boolean markedDeleted;
+    private boolean remarkAsSingleComment;
+
+    private String check;
+    private String schema;
+    private String domain;
+    private String catalog;
+    private String charset;
+    private String remarks;
+    private String collate;
+    private String keyType;
+    private String typeName;
+    private String tableName;
+    private String mechanism;
+    private String computedBy;
+    private String columnName;
+    private String columnTable;
     private String selectOperator;
 
-    private List<ColumnData.Dimension> dimensions;
-    private List<ColumnData.Dimension> domainDimensions;
+    private ColumnData copy;
+    private DefaultValue defaultValue;
+    private DefaultDatabaseObject table;
+    private DatabaseConnection connection;
 
+    private List<Dimension> dimensions;
+    private Vector<ColumnConstraint> columnConstraints;
+
+    private final Autoincrement autoincrement;
+    private final List<String> columns;
+    private final List<NamedObject> tables;
     private final DefaultStatementExecutor executor;
 
-    public ColumnData(DatabaseConnection databaseConnection) {
-        primaryKey = false;
-        foreignKey = false;
-        newColumn = false;
-        keyType = null;
-        dc = databaseConnection;
-        ai = new Autoincrement();
-        setCharset("");
-        executor = new DefaultStatementExecutor(dc, true);
-        tables = new ArrayList<>();
-        columns = new ArrayList<>();
-        defaultValue = new DefaultValue();
-    }
-
-    public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn) {
-        this(databaseConnection);
+    public ColumnData(DatabaseConnection connection, DatabaseColumn databaseColumn) {
+        this(connection);
         setValues(databaseColumn, true);
     }
 
-    public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn, boolean loadDomainInfo) {
-        this(databaseConnection);
+    public ColumnData(DatabaseConnection connection, DatabaseColumn databaseColumn, boolean loadDomainInfo) {
+        this(connection);
         setValues(databaseColumn, loadDomainInfo);
     }
 
-    public ColumnData(String columnName, DatabaseConnection databaseConnection) {
-        this(databaseConnection);
-        this.columnName = columnName;
+    public ColumnData(String columnName, DatabaseConnection connection) {
+        this(connection);
+        setColumnName(columnName);
     }
 
-    public ColumnData(boolean newColumn, DatabaseConnection databaseConnection) {
-        this(databaseConnection);
-        this.newColumn = newColumn;
+    public ColumnData(boolean newColumn, DatabaseConnection connection) {
+        this(connection);
+        setNewColumn(newColumn);
     }
 
-    public ColumnConstraint[] getColumnConstraintsArray() {
-        return columnConstraints.toArray(new ColumnConstraint[columnConstraints.size()]);
-    }
+    public ColumnData(DatabaseConnection connection) {
+        this.connection = connection;
 
-    public Vector<ColumnConstraint> getColumnConstraintsVector() {
-        return columnConstraints;
-    }
+        tables = new ArrayList<>();
+        columns = new ArrayList<>();
+        defaultValue = new DefaultValue();
+        autoincrement = new Autoincrement();
+        executor = new DefaultStatementExecutor(this.connection, true);
 
-    public void addConstraint(ColumnConstraint cc) {
-
-        if (columnConstraints == null)
-            columnConstraints = new Vector<>();
-        columnConstraints.add(cc);
-    }
-
-    public void resetConstraints() {
-        if (columnConstraints != null)
-            columnConstraints.clear();
-    }
-
-    public void removeConstraint(ColumnConstraint cc) {
-        columnConstraints.remove(cc);
-    }
-
-    public boolean isNewColumn() {
-        return newColumn;
-    }
-
-    public boolean isValid() {
-        return (columnName != null && !columnName.isEmpty()) &&
-                (tableName != null && !tableName.isEmpty()) &&
-                (columnType != null && !columnType.isEmpty());
-    }
-
-    public void setNewColumn(boolean newColumn) {
-        this.newColumn = newColumn;
-    }
-
-    public int getColumnScale() {
-        return columnScale;
-    }
-
-    public void setColumnScale(int columnScale) {
-        this.columnScale = columnScale;
-    }
-
-    public void setColumnSubtype(int columnSubtype) {
-        this.columnSubtype = columnSubtype;
-    }
-
-    public int getColumnSubtype() {
-        return columnSubtype;
-    }
-
-    public void setNamesToUpper() {
-
-        if (tableName != null)
-            tableName = tableName.toUpperCase();
-        if (columnName != null)
-            columnName = columnName.toUpperCase();
+        setCharset("");
+        setKeyType(null);
+        setNewColumn(false);
+        setPrimaryKey(false);
+        setForeignKey(false);
+        setRemarkAsSingleComment(false);
     }
 
     @SuppressWarnings("unchecked")
     public void setValues(ColumnData cd) {
 
-        tableName = cd.getTableName();
-        columnName = cd.getColumnName();
-        columnType = cd.getColumnType();
+        size = cd.getSize();
+        check = cd.getCheck();
+        scale = cd.getScale();
+        table = cd.getTable();
+        typeOf = cd.isTypeOf();
+        domain = cd.getDomain();
+        notNull = cd.isNotNull();
         keyType = cd.getKeyType();
+        sqlType = cd.getSQLType();
+        remarks = cd.getRemarks();
+        typeName = cd.getTypeName();
+        tableName = cd.getTableName();
         primaryKey = cd.isPrimaryKey();
         foreignKey = cd.isForeignKey();
-        columnSize = cd.getColumnSize();
-        columnScale = cd.getColumnScale();
-        notNull = cd.isNotNull();
-        sqlType = cd.getSQLType();
-        domain = cd.getDomain();
-        dc = cd.getDatabaseConnection();
-        description = cd.getDescription();
-        check = cd.getCheck();
-        computedBy = cd.getComputedBy();
-        defaultValue = new DefaultValue();
-        defaultValue.value = cd.getDefaultValue().value;
-        defaultValue.originOperator = cd.getDefaultValue().originOperator;
-        defaultValue.useQuotes = cd.getDefaultValue().useQuotes;
-        table = cd.getTable();
-        columnTable = cd.getColumnTable();
-        typeOf = cd.isTypeOf();
         dimensions = cd.getDimensions();
+        columnName = cd.getColumnName();
+        computedBy = cd.getComputedBy();
+        connection = cd.getConnection();
+        columnTable = cd.getColumnTable();
+        defaultValue = new DefaultValue(cd.getDefaultValue());
 
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
         if (constraints != null)
@@ -257,133 +173,424 @@ public class ColumnData implements Serializable {
 
     public void setValues(DatabaseColumn cd, boolean loadDomainInfo) {
 
-        setTableName(cd.getParentsName());
         setColumnName(cd.getName());
-        setColumnType(cd.getTypeName());
-        setColumnPosition(cd.getPosition());
+        setSize(cd.getColumnSize());
+        setNotNull(cd.isRequired());
+        setSQLType(cd.getTypeInt());
+        setScale(cd.getColumnScale());
+        setTypeName(cd.getTypeName());
         setPrimaryKey(cd.isPrimaryKey());
         setForeignKey(cd.isForeignKey());
-        setColumnSize(cd.getColumnSize());
-        setColumnScale(cd.getColumnScale());
-        setNotNull(cd.isRequired());
-        setDomainNotNull(cd.isDomainNotNull());
-        setSQLType(cd.getTypeInt());
-        setDomain(cd.getDomain(), loadDomainInfo);
-        setDescription(cd.getColumnDescription());
+        setDimensions(cd.getDimensions());
+        setTableName(cd.getParentsName());
+        setColumnPosition(cd.getPosition());
+        setRemarks(cd.getColumnDescription());
         setComputedBy(cd.getComputedSource());
         setDefaultValue(cd.getDefaultValue());
-        setDomainDefault(cd.getDomainDefaultValue());
-        setDimensions(cd.getDimensions());
-        if (cd.isIdentity()) ai.setIdentity(true);
+        setDomain(cd.getDomain(), loadDomainInfo);
+        autoincrement.setIdentity(cd.isIdentity());
     }
+
+    private void getDomainInfo() {
+        setDomain(MiscUtils.trimEnd(domain), false);
+
+        DefaultDatabaseDomain databaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain);
+        if (databaseDomain == null)
+            databaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.SYSTEM_DOMAIN, domain);
+
+        if (databaseDomain == null) {
+
+            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(connection);
+            for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
+                boolean isDomain = Objects.equals(metaTagNode.getMetaDataKey(), NamedObject.META_TYPES[NamedObject.DOMAIN]);
+                boolean isSystemDomain = Objects.equals(metaTagNode.getMetaDataKey(), NamedObject.META_TYPES[NamedObject.SYSTEM_DOMAIN]);
+
+                if (isDomain || isSystemDomain)
+                    ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
+            }
+
+            if (!SystemProperties.getBooleanProperty("user", "browser.show.system.objects"))
+                ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).reloadMetaTag(NamedObject.SYSTEM_DOMAIN);
+
+            databaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.DOMAIN, domain);
+            if (databaseDomain == null)
+                databaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.SYSTEM_DOMAIN, domain);
+        }
+
+        if (databaseDomain != null) {
+            ColumnData domainData = databaseDomain.getDomainData();
+
+            setSize(domainData.size);
+            setScale(domainData.scale);
+            setCheck(domainData.check);
+            setSQLType(domainData.sqlType);
+            setRemarks(domainData.remarks);
+            setSubtype(domainData.subtype);
+            setCharset(domainData.charset);
+            setNotNull(domainData.notNull);
+            setCollate(domainData.collate);
+            setComputedBy(domainData.computedBy);
+            setDimensions(domainData.dimensions);
+            setDefaultValue(domainData.defaultValue.value);
+
+        } else
+            Log.error("Error get Domain '" + domain + "'");
+    }
+
+    public String getFormattedDataType() {
+        return getFormattedDataType(false);
+    }
+
+    public String getFormattedDataType(boolean isUdfParameter) {
+
+        if (typeOf) {
+            return (getTypeOfFrom() == TYPE_OF_FROM_DOMAIN) ?
+                    "TYPE OF " + getFormattedDomain() :
+                    "TYPE OF COLUMN " + getFormattedTable() + "." + getFormattedColumnTable();
+        }
+
+        String typeString = getTypeName();
+        if (StringUtils.isBlank(typeString))
+            return "";
+
+        if (typeString.contains("<0")) {
+            typeString = (subtype < 0) ?
+                    typeString.replace("<0", String.valueOf(subtype)) :
+                    typeString.replace("<0", "0");
+        }
+
+        int type = getSQLType();
+        StringBuilder sb = new StringBuilder(typeString);
+        if (!typeString.matches("\\b\\D+\\d+\\b") || (type == Types.CHAR
+                || type == Types.VARCHAR
+                || type == Types.BLOB
+                || type == Types.LONGVARCHAR
+                || type == Types.LONGVARBINARY
+                || isCString())
+        ) {
+
+            if (type == Types.BLOB || type == Types.LONGVARCHAR || type == Types.LONGVARBINARY) {
+                if (getSize() != 80 && !isUdfParameter)
+                    sb.append(" SEGMENT SIZE ").append(getSize());
+
+            } else if (isEditSize()
+                    && getSize() > 0
+                    && !isDate()
+                    && !isBit()
+                    && (!getTypeName().equalsIgnoreCase(T.DECFLOAT) || getTypeName().equalsIgnoreCase(T.DECFLOAT)
+                    && (getSize() == 16 || getSize() == 34))
+            ) {
+                sb.append("(").append(getSize());
+                if (getScale() > 0)
+                    sb.append(",").append(getScale());
+                sb.append(")");
+            }
+
+            if (!MiscUtils.isNull(getCharset()) && connection != null && !getCharset().equalsIgnoreCase(connection.getDBCharset()))
+                sb.append(" CHARACTER SET ").append(getCharset());
+
+            if (dimensions != null) {
+                sb.append("[");
+
+                boolean first = true;
+                for (Dimension dimension : dimensions) {
+
+                    if (!first)
+                        sb.append(",");
+                    first = false;
+
+                    if (dimension.lowerBound != 1)
+                        sb.append(dimension.lowerBound).append(":");
+                    sb.append(dimension.upperBound);
+                }
+                sb.append("]");
+            }
+        }
+
+        return sb.toString().trim();
+    }
+
+    public String getFormattedTable() {
+        return getFormattedObject(table.getName());
+    }
+
+    public String getFormattedColumnTable() {
+        return getFormattedObject(columnTable);
+    }
+
+    public String getFormattedDomain() {
+        return getFormattedObject(domain);
+    }
+
+    public String getFormattedColumnName() {
+        return getFormattedObject(columnName);
+    }
+
+    public Vector<ColumnConstraint> getColumnConstraintsVector() {
+        return columnConstraints;
+    }
+
+    public ColumnConstraint[] getColumnConstraintsArray() {
+        return getColumnConstraintsVector().toArray(new ColumnConstraint[0]);
+    }
+
+    public void addConstraint(ColumnConstraint cc) {
+        if (columnConstraints == null)
+            columnConstraints = new Vector<>();
+
+        columnConstraints.add(cc);
+    }
+
+    public void removeConstraint(ColumnConstraint cc) {
+        columnConstraints.remove(cc);
+    }
+
+    public void resetConstraints() {
+        if (columnConstraints != null)
+            columnConstraints.clear();
+    }
+
+    public void makeCopy() {
+        if (copy == null) {
+            copy = new ColumnData(connection);
+            copy.setValues(this);
+        }
+    }
+
+    public void setNamesToUpper() {
+        if (tableName != null)
+            tableName = tableName.toUpperCase();
+
+        if (columnName != null)
+            columnName = columnName.toUpperCase();
+    }
+
+    public String processedDefaultValue(String defaultValue, boolean isDomain) {
+
+        if (!MiscUtils.isNull(defaultValue)) {
+            defaultValue = defaultValue.trim();
+
+            if (defaultValue.toUpperCase().startsWith("DEFAULT")) {
+                defaultValue = defaultValue.substring(7).trim();
+                this.defaultValue.setOperator("DEFAULT");
+            }
+
+            if (defaultValue.toUpperCase().startsWith("=")) {
+                defaultValue = defaultValue.substring(1).trim();
+                this.defaultValue.setOperator("=");
+            }
+
+            if (defaultValue.startsWith("'") && defaultValue.endsWith("'") && defaultValue.length() > 2) {
+                defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+                this.defaultValue.setUseQuotes(true);
+            }
+        }
+        this.defaultValue.isDomain = isDomain;
+
+        return defaultValue;
+    }
+
+    private String getFormattedObject(String obj) {
+        return MiscUtils.getFormattedObject(obj, connection);
+    }
+
+    @Override
+    public String toString() {
+        return columnName == null ? ColumnConstraint.EMPTY : columnName;
+    }
+
+    // --- change check methods ---
+
+    public boolean isHasCopy() {
+        return copy != null;
+    }
+
+    public boolean isEditSize() {
+        return getTypeName() != null && (getSQLType() == Types.NUMERIC
+                || getSQLType() == Types.INT128
+                || getSQLType() == Types.CHAR
+                || getSQLType() == Types.VARCHAR
+                || getSQLType() == Types.DECIMAL
+                || getSQLType() == Types.BLOB
+                || getSQLType() == Types.LONGVARCHAR
+                || getSQLType() == Types.LONGVARBINARY
+                || getTypeName().equalsIgnoreCase("CSTRING")
+                || getTypeName().equalsIgnoreCase("VARCHAR")
+                || getTypeName().equalsIgnoreCase("CHAR")
+        ) || getTypeName().equalsIgnoreCase(T.DECFLOAT);
+    }
+
+    public boolean isValid() {
+        return !MiscUtils.isNull(columnName)
+                && !MiscUtils.isNull(tableName)
+                && !MiscUtils.isNull(typeName);
+    }
+
+    public boolean isChanged() {
+        return isHasCopy() && (isTypeChanged()
+                || isNameChanged()
+                || isCheckChanged()
+                || isDefaultChanged()
+                || isDescriptionChanged()
+                || isNotNullChanged()
+        );
+    }
+
+    public boolean isTypeChanged() {
+        return isHasCopy() && (!getTypeName().equals(copy.getTypeName())
+                || getSize() != copy.getSize()
+                || getScale() != copy.getScale()
+                || !Objects.equals(getCharset(), copy.getCharset())
+        );
+    }
+
+    public boolean isNameChanged() {
+        return isHasCopy() && !getColumnName().equals(copy.getColumnName());
+    }
+
+    public boolean isCheckChanged() {
+
+        if (!isHasCopy())
+            return false;
+
+        if (MiscUtils.isNull(copy.getCheck()))
+            return !MiscUtils.isNull(getCheck());
+
+        if (MiscUtils.isNull(getCheck()))
+            return true;
+
+        return !copy.getCheck().equalsIgnoreCase(getCheck());
+    }
+
+    public boolean isDefaultChanged() {
+
+        if (!isHasCopy())
+            return false;
+
+        if (MiscUtils.isNull(copy.getDefaultValue().getValue()))
+            return !MiscUtils.isNull(getDefaultValue().getValue());
+
+        if (MiscUtils.isNull(getDefaultValue().getValue()))
+            return true;
+
+        return !copy.getDefaultValue().getValue().equalsIgnoreCase(getDefaultValue().getValue());
+    }
+
+    public boolean isDescriptionChanged() {
+
+        if (!isHasCopy())
+            return false;
+
+        if (MiscUtils.isNull(copy.getRemarks()))
+            return !MiscUtils.isNull(getRemarks());
+
+        if (MiscUtils.isNull(getRemarks()))
+            return true;
+
+        return !copy.getRemarks().equalsIgnoreCase(getRemarks());
+    }
+
+    public boolean isNotNullChanged() {
+        return isHasCopy() && (isNotNull() != copy.isNotNull());
+    }
+
+    // --- get/set methods ---
 
     public boolean isPrimaryKey() {
         return primaryKey;
-    }
-
-    public boolean isForeignKey() {
-        return foreignKey;
-    }
-
-    public boolean isKey() {
-        return isPrimaryKey() || isForeignKey();
     }
 
     public void setPrimaryKey(boolean primaryKey) {
         this.primaryKey = primaryKey;
     }
 
-    public void setForeignKey(boolean foreignKey) {
-        this.foreignKey = foreignKey;
+    public boolean isForeignKey() {
+        return foreignKey;
     }
 
-    public void setNotNull(boolean notNull) {
-        this.notNull = notNull;
+    public void setForeignKey(boolean foreignKey) {
+        this.foreignKey = foreignKey;
     }
 
     public boolean isNotNull() {
         return notNull;
     }
 
-    /**
-     * Returns whether this is a required column determined by
-     * whether the column allows null values.
-     *
-     * @return true | false
-     */
-    public boolean isRequired() {
-        return notNull;
+    public void setNotNull(boolean notNull) {
+        this.notNull = notNull;
     }
 
-    public void setKeyType(String keyType) {
-        this.keyType = keyType;
+    public boolean isNewColumn() {
+        return newColumn;
     }
 
-    /**
-     * Returns whether this column is a date type or
-     * extension of <code>Types.DATE, Types.TIME, Types.TIMESTAMP</code>.
-     *
-     * @return true | false
-     */
-    public boolean isDateDataType() {
-        return sqlType == Types.DATE
-                || sqlType == Types.TIME
-                || sqlType == Types.TIMESTAMP
-                || sqlType == Types.TIME_WITH_TIMEZONE
-                || sqlType == Types.TIMESTAMP_WITH_TIMEZONE;
+    public void setNewColumn(boolean newColumn) {
+        this.newColumn = newColumn;
     }
 
-    public boolean isCharacterType() {
-        return sqlType == Types.CHAR || sqlType == Types.VARCHAR || sqlType == Types.LONGVARCHAR;
+    public int getScale() {
+        return scale;
     }
 
-    public boolean isNonPrecisionType() {
-        return sqlType == Types.BIT;
+    public void setScale(int scale) {
+        this.scale = scale;
+    }
+
+    public int getSubtype() {
+        return subtype;
+    }
+
+    public void setSubtype(int subtype) {
+        this.subtype = subtype;
     }
 
     public String getKeyType() {
         return keyType;
     }
 
-    public void setColumnType(String columnType) {
-        this.columnType = columnType;
+    public void setKeyType(String keyType) {
+        this.keyType = keyType;
     }
 
-    public String getColumnType() {
-        return columnType;
+    public String getTypeName() {
+        return typeName;
     }
 
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
-    }
-
-    public void setSQLType(int sqlType) {
-        this.sqlType = sqlType;
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
     }
 
     public int getSQLType() {
         return sqlType;
     }
 
+    public void setSQLType(int sqlType) {
+        this.sqlType = sqlType;
+    }
+
     public String getTableName() {
         return tableName;
     }
 
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
-        ai.setFieldName(columnName);
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 
     public String getColumnName() {
         return columnName;
     }
 
-    public void setColumnSize(int columnSize) {
-        this.columnSize = columnSize;
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
+        autoincrement.setFieldName(columnName);
     }
 
-    public int getColumnSize() {
-        return columnSize;
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public int getSize() {
+        return size;
     }
 
     public String getCatalog() {
@@ -414,407 +621,57 @@ public class ColumnData implements Serializable {
         return defaultValue;
     }
 
-    public void setDefaultValue(DefaultValue defaultValue) {
-        this.defaultValue = defaultValue;
+    public DatabaseConnection getConnection() {
+        return connection;
     }
 
-    public void setDefaultValue(String defaultValue) {
-        this.defaultValue.value = defaultValue;
-    }
-
-    public String getDomain() {
-        return domain != null ? MiscUtils.trimEnd(domain) : null;
-    }
-
-    public void setDomain(String domain) {
-        setDomain(domain, true);
-    }
-
-    public void setDomain(String domain, boolean loadDomainInfo) {
-        this.domain = domain;
-        if (!MiscUtils.isNull(domain) && loadDomainInfo)
-            getDomainInfo();
-    }
-
-    public void setDomainType(int domainType) {
-        this.domainType = domainType;
-    }
-
-    public void setDomainCharset(String domainCharset) {
-        this.domainCharset = domainCharset;
-    }
-
-    public void setDomainCheck(String domainCheck) {
-        this.domainCheck = domainCheck;
-    }
-
-    public void setDomainDescription(String domainDescription) {
-        this.domainDescription = domainDescription;
-    }
-
-    public void setDomainNotNull(boolean domainNotNull) {
-        this.domainNotNull = domainNotNull;
-    }
-
-    public void setDomainDefault(String domainDefault) {
-        this.domainDefault = domainDefault;
-    }
-
-    public void setDomainComputedBy(String domainComputedBy) {
-
-        if (!MiscUtils.isNull(domainComputedBy) && domainComputedBy.startsWith("(") && domainComputedBy.endsWith(")"))
-            domainComputedBy = domainComputedBy.substring(1, domainComputedBy.length() - 1);
-
-        this.domainComputedBy = domainComputedBy;
-    }
-
-    public void setDomainSize(int domainSize) {
-        this.domainSize = domainSize;
-    }
-
-    public void setDomainScale(int domainScale) {
-        this.domainScale = domainScale;
-    }
-
-    public int getDomainSubType() {
-        return domainSubType;
-    }
-
-    public void setDomainSubType(int domainSubType) {
-        this.domainSubType = domainSubType;
-    }
-
-    public void setDomainCollate(String domainCollate) {
-        this.domainCollate = domainCollate;
-    }
-
-    private void getDomainInfo() {
-
-        domain = MiscUtils.trimEnd(domain);
-
-        DefaultDatabaseDomain defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.DOMAIN, domain);
-        if (defaultDatabaseDomain == null)
-            defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.SYSTEM_DOMAIN, domain);
-
-        if (defaultDatabaseDomain == null) {
-
-            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(dc);
-            for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                if (metaTagNode.getMetaDataKey().equals(NamedObject.META_TYPES[NamedObject.DOMAIN])
-                        || metaTagNode.getMetaDataKey().equals(NamedObject.META_TYPES[NamedObject.SYSTEM_DOMAIN])) {
-                    ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-                }
-            }
-            if (!SystemProperties.getBooleanProperty("user", "browser.show.system.objects")) {
-                ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).reloadMetaTag(NamedObject.SYSTEM_DOMAIN);
-            }
-
-            defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.DOMAIN, domain);
-            if (defaultDatabaseDomain == null)
-                defaultDatabaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(dc, NamedObject.SYSTEM_DOMAIN, domain);
-        }
-
-        boolean find = defaultDatabaseDomain != null;
-        if (find) {
-            domainType = defaultDatabaseDomain.getDomainData().domainType;
-            domainSize = defaultDatabaseDomain.getDomainData().domainSize;
-            domainScale = defaultDatabaseDomain.getDomainData().domainScale;
-            domainSubType = defaultDatabaseDomain.getDomainData().domainSubType;
-            domainCharset = defaultDatabaseDomain.getDomainData().domainCharset;
-            domainCheck = defaultDatabaseDomain.getDomainData().domainCheck;
-            domainDescription = defaultDatabaseDomain.getDomainData().domainDescription;
-            domainNotNull = defaultDatabaseDomain.getDomainData().domainNotNull;
-            domainDefault = defaultDatabaseDomain.getDomainData().domainDefault;
-            domainComputedBy = defaultDatabaseDomain.getDomainData().domainComputedBy;
-            domainCollate = defaultDatabaseDomain.getDomainData().domainCollate;
-            domainDimensions = defaultDatabaseDomain.getDomainData().getDimensions();
-        }
-
-        sqlType = domainType;
-        columnSize = domainSize;
-        columnScale = domainScale;
-        columnSubtype = domainSubType;
-        setCheck(domainCheck);
-        setCharset(domainCharset);
-        setCollate(domainCollate);
-        setDefaultValue(domainDefault);
-        setDimensions(domainDimensions);
-
-        if (!find)
-            Log.error("Error get Domain '" + domain + "'");
-    }
-
-    public int getDomainType() {
-        return domainType;
-    }
-
-    public void setDatabaseConnection(DatabaseConnection databaseConnection) {
-        dc = databaseConnection;
-        executor.setDatabaseConnection(dc);
-    }
-
-    public DatabaseConnection getDatabaseConnection() {
-        return dc;
-    }
-
-    public boolean isLOB() {
-        return sqlType == Types.BINARY
-                || sqlType == Types.BLOB
-                || sqlType == Types.CLOB
-                || sqlType == Types.LONGNVARCHAR
-                || sqlType == Types.LONGVARBINARY
-                || sqlType == Types.LONGVARCHAR
-                || sqlType == Types.NCLOB;
-    }
-
-    public String getFormattedDataType() {
-        return getFormattedDataType(false);
-    }
-
-    /**
-     * Returns a formatted string representation of the
-     * column's data type and size - eg. VARCHAR(10).
-     *
-     * @return the formatted type string
-     */
-    public String getFormattedDataType(boolean isUdfParameter) {
-
-        if (typeOf) {
-            return (getTypeOfFrom() == TYPE_OF_FROM_DOMAIN) ?
-                    "TYPE OF " + getFormattedDomain() :
-                    "TYPE OF COLUMN " + getFormattedTable() + "." + getFormattedColumnTable();
-        }
-
-        String typeString = getColumnType();
-        if (StringUtils.isBlank(typeString))
-            return "";
-
-        if (typeString.contains("<0")) {
-            typeString = (columnSubtype < 0) ?
-                    typeString.replace("<0", String.valueOf(columnSubtype)) :
-                    typeString.replace("<0", "0");
-        }
-
-        StringBuilder sb = new StringBuilder(typeString);
-
-        // if the type doesn't end with a digit, or it
-        // is a char type then add the size - attempt
-        // here to avoid int4, int8 etc. type values
-
-        int type = getSQLType();
-        if (!typeString.matches("\\b\\D+\\d+\\b") || (type == Types.CHAR
-                || type == Types.VARCHAR
-                || type == Types.BLOB
-                || type == Types.LONGVARCHAR
-                || type == Types.LONGVARBINARY
-                || isCString())
-        ) {
-
-            if (type == Types.BLOB || type == Types.LONGVARCHAR || type == Types.LONGVARBINARY) {
-                if (getColumnSize() != 80 && !isUdfParameter)
-                    sb.append(" SEGMENT SIZE ").append(getColumnSize());
-
-            } else if (isEditSize()
-                    && getColumnSize() > 0
-                    && !isDateDataType()
-                    && !isNonPrecisionType()
-                    && (!getColumnType().equalsIgnoreCase(T.DECFLOAT) || getColumnType().equalsIgnoreCase(T.DECFLOAT)
-                    && (getColumnSize() == 16 || getColumnSize() == 34))
-            ) {
-                sb.append("(").append(getColumnSize());
-                if (getColumnScale() > 0)
-                    sb.append(",").append(getColumnScale());
-                sb.append(")");
-            }
-
-            if (!MiscUtils.isNull(getCharset()) && dc != null && !getCharset().equalsIgnoreCase(dc.getDBCharset()))
-                sb.append(" CHARACTER SET ").append(getCharset());
-
-            if (dimensions != null) {
-                sb.append("[");
-
-                boolean first = true;
-                for (Dimension dimension : dimensions) {
-
-                    if (!first)
-                        sb.append(",");
-                    first = false;
-
-                    if (dimension.lowerBound != 1)
-                        sb.append(dimension.lowerBound).append(":");
-                    sb.append(dimension.upperBound);
-                }
-                sb.append("]");
-            }
-        }
-
-        return sb.toString().trim();
-    }
-
-    public String getFormattedDomainDataType() {
-        setColumnType(domainTypeName);
-        return getFormattedDataType();
-    }
-
-    public boolean isEditSize() {
-        return getColumnType() != null && (getSQLType() == Types.NUMERIC
-                || getSQLType() == Types.INT128
-                || getSQLType() == Types.CHAR
-                || getSQLType() == Types.VARCHAR
-                || getSQLType() == Types.DECIMAL
-                || getSQLType() == Types.BLOB
-                || getSQLType() == Types.LONGVARCHAR
-                || getSQLType() == Types.LONGVARBINARY
-                || getColumnType().equalsIgnoreCase("CSTRING")
-                || getColumnType().equalsIgnoreCase("VARCHAR")
-                || getColumnType().equalsIgnoreCase("CHAR")
-        ) || getColumnType().equalsIgnoreCase(T.DECFLOAT);
-    }
-
-    public void setCheck(String Check) {
-        check = Check;
+    public void setConnection(DatabaseConnection connection) {
+        this.connection = connection;
+        executor.setDatabaseConnection(this.connection);
     }
 
     public String getCheck() {
         return check;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setCheck(String check) {
+        this.check = check;
     }
 
-    public String getDescription() {
-        return description;
+    public String getRemarks() {
+        return remarks;
     }
 
-    public void setComputedBy(String computedBy) {
-        this.computedBy = computedBy;
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
     }
 
     public String getComputedBy() {
         return computedBy;
     }
 
-    public boolean isAutoincrement() {
-        return ai.isAutoincrement();
-    }
+    public void setComputedBy(String computedBy) {
 
-    public Autoincrement getAutoincrement() {
-        ai.setFieldName(getColumnName());
-        return ai;
-    }
+        if (!MiscUtils.isNull(computedBy) && computedBy.startsWith("(") && computedBy.endsWith(")"))
+            computedBy = computedBy.substring(1, computedBy.length() - 1);
 
-    public void setCharset(String charset) {
-        this.charset = charset;
+        this.computedBy = computedBy;
     }
 
     public String getCharset() {
         return charset;
     }
 
-    public String getDomainCheck() {
-        return domainCheck;
-    }
-
-    public String getDomainDescription() {
-        return domainDescription;
-    }
-
-    public boolean isDomainNotNull() {
-        return domainNotNull;
-    }
-
-    public String getDomainDefault() {
-        return domainDefault;
-    }
-
-    public String getFormattedDomainDefault() {
-        return "'" + domainDefault + "'";
-    }
-
-    public void makeCopy() {
-        if (copy == null) {
-            copy = new ColumnData(dc);
-            copy.setValues(this);
-        }
-    }
-
-    public boolean hasCopy() {
-        return copy != null;
-    }
-
-    public boolean isNameChanged() {
-        return hasCopy() && !getColumnName().equals(copy.getColumnName());
-    }
-
-    public boolean isDefaultChanged() {
-
-        if (!hasCopy())
-            return false;
-
-        if (MiscUtils.isNull(copy.getDefaultValue().getValue()))
-            return !MiscUtils.isNull(getDefaultValue().getValue());
-        else if (MiscUtils.isNull(getDefaultValue().getValue()))
-            return true;
-
-        return !copy.getDefaultValue().getValue().equalsIgnoreCase(getDefaultValue().getValue());
-    }
-
-    public boolean isCheckChanged() {
-
-        if (!hasCopy())
-            return false;
-
-        if (MiscUtils.isNull(copy.getCheck()))
-            return !MiscUtils.isNull(getCheck());
-        else if (MiscUtils.isNull(getCheck()))
-            return true;
-
-        return !copy.getCheck().equalsIgnoreCase(getCheck());
-    }
-
-    public boolean isTypeChanged() {
-        return hasCopy() && (!getColumnType().equals(copy.getColumnType())
-                || getColumnSize() != copy.getColumnSize()
-                || getColumnScale() != copy.getColumnScale()
-                || !Objects.equals(getCharset(), copy.getCharset()));
-    }
-
-    public boolean isDescriptionChanged() {
-
-        if (!hasCopy())
-            return false;
-
-        if (MiscUtils.isNull(copy.getDescription()))
-            return !MiscUtils.isNull(getDescription());
-        else if (MiscUtils.isNull(getDescription()))
-            return true;
-
-        return !copy.getDescription().equalsIgnoreCase(getDescription());
-    }
-
-    public boolean isRequiredChanged() {
-        return hasCopy() && (isRequired() != copy.isRequired());
-    }
-
-    public boolean isChanged() {
-        return hasCopy() && (isCheckChanged()
-                || isDefaultChanged()
-                || isNameChanged()
-                || isDescriptionChanged()
-                || isTypeChanged());
-    }
-
-    public void setTypeParameter(int typeParameter) {
-        this.typeParameter = typeParameter;
+    public void setCharset(String charset) {
+        this.charset = charset;
     }
 
     public int getTypeParameter() {
         return typeParameter;
     }
 
-    public String getDomainComputedBy() {
-        return domainComputedBy;
+    public void setTypeParameter(int typeParameter) {
+        this.typeParameter = typeParameter;
     }
 
     public boolean isTypeOf() {
@@ -825,105 +682,12 @@ public class ColumnData implements Serializable {
         this.typeOf = typeOf;
     }
 
-    public DefaultDatabaseObject getTable() {
-        return table;
-    }
-
-    public void setDefaultValue(String defaultValue, boolean needProcessing, boolean isDomain) {
-
-        if (needProcessing)
-            defaultValue = processedDefaultValue(defaultValue, isDomain);
-        setDefaultValue(defaultValue);
-    }
-
-    public String processedDefaultValue(String defaultValue, boolean isDomain) {
-
-        if (!MiscUtils.isNull(defaultValue)) {
-            defaultValue = defaultValue.trim();
-
-            if (defaultValue.toUpperCase().startsWith("DEFAULT")) {
-                defaultValue = defaultValue.substring(7).trim();
-                this.defaultValue.setOriginOperator("DEFAULT");
-            }
-
-            if (defaultValue.toUpperCase().startsWith("=")) {
-                defaultValue = defaultValue.substring(1).trim();
-                this.defaultValue.setOriginOperator("=");
-            }
-
-            if (defaultValue.startsWith("'") && defaultValue.endsWith("'") && defaultValue.length() > 2) {
-                defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
-                this.defaultValue.setUseQuotes(true);
-            }
-        }
-        this.defaultValue.isDomain = isDomain;
-
-        return defaultValue;
-    }
-
-    public void setTable(String table) {
-
-        if (table == null)
-            return;
-
-        for (NamedObject namedObject : getTables()) {
-            if (namedObject.getName().contentEquals(table)) {
-                this.table = (DefaultDatabaseObject) namedObject;
-                break;
-            }
-        }
-
-        columns.clear();
-        this.table.getColumns().forEach(column -> columns.add(column.getName()));
-
-        if (!columns.isEmpty())
-            setColumnTable(columns.get(0));
-
-    }
-
-    public String getFormattedTable() {
-        return getFormattedObject(table.getName());
-    }
-
-    public void setTable(int tableIndex) {
-        setTable(getTables().get(tableIndex).getName());
-    }
-
     public String getColumnTable() {
         return columnTable;
     }
 
-    public String getFormattedColumnTable() {
-        return getFormattedObject(columnTable);
-    }
-
     public void setColumnTable(String columnTable) {
         this.columnTable = columnTable;
-    }
-
-    public List<String> getColumns() {
-        return columns;
-    }
-
-    public List<NamedObject> getTables() {
-
-        if (tables.isEmpty()) {
-            tables.addAll(ConnectionsTreePanel
-                    .getPanelFromBrowser()
-                    .getDefaultDatabaseHostFromConnection(dc)
-                    .getTables()
-            );
-        }
-
-        return tables;
-    }
-
-    public List<String> getTableNames() {
-
-        ArrayList<String> list = new ArrayList<>();
-        getTables().forEach(table -> list.add(table.getName()));
-
-        return list;
     }
 
     public int getTypeOfFrom() {
@@ -950,20 +714,12 @@ public class ColumnData implements Serializable {
         this.cString = cString;
     }
 
-    public String getFormattedDomain() {
-        return getFormattedObject(domain);
+    public boolean isRemarkAsSingleComment() {
+        return remarkAsSingleComment;
     }
 
-    public String getFormattedColumnName() {
-        return getFormattedObject(columnName);
-    }
-
-    public boolean isDescriptionAsSingleComment() {
-        return descriptionAsSingleComment;
-    }
-
-    public void setDescriptionAsSingleComment(boolean descriptionAsSingleComment) {
-        this.descriptionAsSingleComment = descriptionAsSingleComment;
+    public void setRemarkAsSingleComment(boolean remarkAsSingleComment) {
+        this.remarkAsSingleComment = remarkAsSingleComment;
     }
 
     public String getCollate() {
@@ -972,14 +728,6 @@ public class ColumnData implements Serializable {
 
     public void setCollate(String collate) {
         this.collate = collate;
-    }
-
-    public String getDomainTypeName() {
-        return domainTypeName;
-    }
-
-    public void setDomainTypeName(String domainTypeName) {
-        this.domainTypeName = domainTypeName;
     }
 
     public boolean isCursor() {
@@ -1006,27 +754,6 @@ public class ColumnData implements Serializable {
         this.selectOperator = selectOperator;
     }
 
-    public void appendDimension(int orderNumber, int lowerBound, int upperBound) {
-
-        if (dimensions == null)
-            dimensions = new ArrayList<>();
-
-        ColumnData.Dimension dimension = new ColumnData.Dimension(lowerBound, upperBound);
-        if (orderNumber >= dimensions.size())
-            dimensions.add(dimension);
-        else
-            dimensions.add(orderNumber, dimension);
-
-    }
-
-    public List<ColumnData.Dimension> getDimensions() {
-        return dimensions;
-    }
-
-    public void setDimensions(List<ColumnData.Dimension> dimensions) {
-        this.dimensions = dimensions;
-    }
-
     public int getColumnPosition() {
         return columnPosition;
     }
@@ -1035,32 +762,166 @@ public class ColumnData implements Serializable {
         this.columnPosition = columnPosition;
     }
 
-    // ---
-
-    private String getFormattedObject(String obj) {
-        return MiscUtils.getFormattedObject(obj, dc);
+    public void setDefaultValue(DefaultValue defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
-    @Override
-    public String toString() {
-        return columnName == null ? ColumnConstraint.EMPTY : columnName;
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue.value = defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue, boolean needProcessing, boolean isDomain) {
+        setDefaultValue(needProcessing ? processedDefaultValue(defaultValue, isDomain) : defaultValue);
+    }
+
+    public String getDomain() {
+        return domain != null ? MiscUtils.trimEnd(domain) : null;
+    }
+
+    public void setDomain(String domain) {
+        setDomain(domain, true);
+    }
+
+    public void setDomain(String domain, boolean loadDomainInfo) {
+        this.domain = domain;
+        if (!MiscUtils.isNull(domain) && loadDomainInfo)
+            getDomainInfo();
+    }
+
+    public DefaultDatabaseObject getTable() {
+        return table;
+    }
+
+    public void setTable(int tableIndex) {
+        setTable(getTables().get(tableIndex).getName());
+    }
+
+    public void setTable(String table) {
+
+        if (table == null)
+            return;
+
+        for (NamedObject namedObject : getTables()) {
+            if (namedObject.getName().contentEquals(table)) {
+                this.table = (DefaultDatabaseObject) namedObject;
+                break;
+            }
+        }
+
+        columns.clear();
+        this.table.getColumns().forEach(column -> columns.add(column.getName()));
+
+        if (!columns.isEmpty())
+            setColumnTable(columns.get(0));
+    }
+
+    public List<Dimension> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<Dimension> dimensions) {
+        this.dimensions = dimensions;
+    }
+
+    public void appendDimension(int orderNumber, int lowerBound, int upperBound) {
+
+        if (dimensions == null)
+            dimensions = new ArrayList<>();
+
+        Dimension dimension = new Dimension(lowerBound, upperBound);
+        if (orderNumber >= dimensions.size())
+            dimensions.add(dimension);
+        else
+            dimensions.add(orderNumber, dimension);
+    }
+
+    public List<String> getColumns() {
+        return columns;
+    }
+
+    public List<NamedObject> getTables() {
+
+        if (tables.isEmpty()) {
+            tables.addAll(ConnectionsTreePanel
+                    .getPanelFromBrowser()
+                    .getDefaultDatabaseHostFromConnection(connection)
+                    .getTables()
+            );
+        }
+
+        return tables;
+    }
+
+    public List<String> getTableNames() {
+
+        ArrayList<String> list = new ArrayList<>();
+        getTables().forEach(table -> list.add(table.getName()));
+
+        return list;
+    }
+
+    public boolean isAutoincrement() {
+        return autoincrement.isAutoincrement();
+    }
+
+    public Autoincrement getAutoincrement() {
+        autoincrement.setFieldName(getColumnName());
+        return autoincrement;
+    }
+
+    // ---
+
+    public boolean isKey() {
+        return isPrimaryKey() || isForeignKey();
+    }
+
+    public boolean isBit() {
+        return sqlType == Types.BIT;
+    }
+
+    public boolean isChar() {
+        return sqlType == Types.CHAR
+                || sqlType == Types.VARCHAR
+                || sqlType == Types.LONGVARCHAR;
+    }
+
+    public boolean isLOB() {
+        return sqlType == Types.BINARY
+                || sqlType == Types.BLOB
+                || sqlType == Types.CLOB
+                || sqlType == Types.LONGNVARCHAR
+                || sqlType == Types.LONGVARBINARY
+                || sqlType == Types.LONGVARCHAR
+                || sqlType == Types.NCLOB;
+    }
+
+    public boolean isDate() {
+        return sqlType == Types.DATE
+                || sqlType == Types.TIME
+                || sqlType == Types.TIMESTAMP
+                || sqlType == Types.TIME_WITH_TIMEZONE
+                || sqlType == Types.TIMESTAMP_WITH_TIMEZONE;
     }
 
     // ---
 
     public static class DefaultValue implements Serializable {
 
-        String originOperator;
-        String value;
-        boolean useQuotes = false;
-        boolean isDomain = false;
+        protected String value;
+        protected String operator;
+        protected boolean isDomain;
+        protected boolean useQuotes;
 
-        public String getOriginOperator() {
-            return originOperator;
+        public DefaultValue() {
+            this.isDomain = false;
+            this.useQuotes = false;
         }
 
-        public void setOriginOperator(String originOperator) {
-            this.originOperator = originOperator;
+        public DefaultValue(DefaultValue defaultValue) {
+            this.value = defaultValue.value;
+            this.operator = defaultValue.operator;
+            this.isDomain = defaultValue.isDomain;
+            this.useQuotes = defaultValue.useQuotes;
         }
 
         public String getValue() {
@@ -1071,12 +932,12 @@ public class ColumnData implements Serializable {
             this.value = value;
         }
 
-        public boolean isUseQuotes() {
-            return useQuotes;
+        public String getOperator() {
+            return operator;
         }
 
-        public void setUseQuotes(boolean useQuotes) {
-            this.useQuotes = useQuotes;
+        public void setOperator(String operator) {
+            this.operator = operator;
         }
 
         public boolean isDomain() {
@@ -1087,12 +948,20 @@ public class ColumnData implements Serializable {
             isDomain = domain;
         }
 
+        public boolean isUseQuotes() {
+            return useQuotes;
+        }
+
+        public void setUseQuotes(boolean useQuotes) {
+            this.useQuotes = useQuotes;
+        }
+
     } // DefaultValue class
 
     public static class Dimension {
 
-        int lowerBound;
-        int upperBound;
+        protected int lowerBound;
+        protected int upperBound;
 
         public Dimension(int lowerBound, int upperBound) {
             this.lowerBound = lowerBound;

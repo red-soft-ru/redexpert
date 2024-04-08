@@ -310,7 +310,7 @@ public class QueryDispatcher {
             executing = false;
         }
     }
-
+    ProfilerPanel profilerPanel;
     public void executeSQLQueryInProfiler(
             DatabaseConnection dc, final String query, final boolean executeAsBlock) {
 
@@ -326,6 +326,7 @@ public class QueryDispatcher {
         querySender.setTpb(tpp.getTpb(dc));
         statementCancelled = false;
 
+
         worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
 
             @Override
@@ -339,8 +340,9 @@ public class QueryDispatcher {
                     if (sessionId != -1) {
                         executeSQL(query, executeAsBlock, false);
                         profilerExecutor.finishSession();
+                        profilerPanel = new ProfilerPanel(sessionId, dc);
                         GUIUtilities.addCentralPane(ProfilerPanel.TITLE,
-                                (Icon) null, new ProfilerPanel(sessionId, dc), null, true);
+                                (Icon) null, profilerPanel, null, true);
 
                     } else {
                         GUIUtilities.displayWarningMessage(Bundles.get(ProfilerPanel.class, "VersionNotSupported"));
@@ -367,6 +369,7 @@ public class QueryDispatcher {
                 querySender.setCloseConnectionAfterQuery(false);
                 querySender.releaseResourcesWithoutCommit();
                 executing = false;
+                profilerPanel.updateUI();
             }
 
         };

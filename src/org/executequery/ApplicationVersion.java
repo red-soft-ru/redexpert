@@ -22,6 +22,7 @@ package org.executequery;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,88 +30,100 @@ import java.util.regex.Pattern;
  * @author Takis Diakoumis
  */
 public final class ApplicationVersion {
-    private final String version;
 
-    int x = -1;
+    public static final int SNAPSHOT = 0;
+    public static final int ALPHA = SNAPSHOT + 1;
+    public static final int BETA = ALPHA + 1;
+    public static final int RC = BETA + 1;
+    public static final int RELEASE = RC + 1;
 
-    int y = -1;
+    private final static String VERSION_PATTERN =
+            "^(?<x>\\d+)\\.(?<y>\\d+)(\\.(?<z>\\d+))?(.(?<abc>\\d))?(-(?<tag>[a-zA-Z]+)(\\.(?<build>\\d+))?)?$";
 
-    int z = -1;
+    private final static Map<String, Integer> TAGS_VALUES = new HashMap<String, Integer>() {{
+        put("SNAPSHOT", SNAPSHOT);
+        put("ALPHA", ALPHA);
+        put("BETA", BETA);
+        put("RC", RC);
+        put("", RELEASE);
+    }};
 
-    int abc = 99999;
+    private int abc;
+    private int build;
+    private int xValue;
+    private int yValue;
+    private int zValue;
 
-    String tag = "";
-
-    int build = -1;
-
-    Map<String, Integer> tagsValues = new HashMap<>();
+    private String tag;
+    private String version;
 
     public ApplicationVersion(String version) {
-        tagsValues.put("SNAPSHOT", 0);
-        tagsValues.put("ALPHA", 1);
-        tagsValues.put("BETA", 2);
-        tagsValues.put("RC", 3);
-        tagsValues.put("", 4);
 
-        Pattern p = Pattern.compile("^(?<x>\\d+)\\.(?<y>\\d+)(\\.(?<z>\\d+))?(.(?<abc>\\d))?(-(?<tag>[a-zA-Z]+)(\\.(?<build>\\d+))?)?$");
-        Matcher m = p.matcher(version);
-        if(m.matches())
-        {
-            x = Integer.parseInt(m.group("x"));
-            y = Integer.parseInt(m.group("y"));
-            if (m.group("z") != null)
-                z = Integer.parseInt(m.group("z"));
-            if (m.group("abc") != null) {
-                abc = Integer.parseInt(m.group("abc"));
+        tag = "";
+        build = -1;
+        xValue = -1;
+        yValue = -1;
+        zValue = -1;
+        abc = 99999;
+
+        setVersion(version);
+    }
+
+    public void setVersion(String version) {
+        Matcher matcher = Pattern.compile(VERSION_PATTERN).matcher(version);
+
+        if (matcher.matches()) {
+            xValue = Integer.parseInt(matcher.group("x"));
+            yValue = Integer.parseInt(matcher.group("y"));
+
+            if (matcher.group("z") != null)
+                zValue = Integer.parseInt(matcher.group("z"));
+
+            if (matcher.group("abc") != null)
+                abc = Integer.parseInt(matcher.group("abc"));
+
+            if (matcher.group("tag") != null) {
+                tag = matcher.group("tag");
+                if (matcher.group("build") != null)
+                    build = Integer.parseInt(matcher.group("build"));
             }
-            if (m.group("tag") != null) {
-                tag = m.group("tag");
-                if (m.group("build") != null)
-                    build = Integer.parseInt(m.group("build"));
-            }
-        }
-        else
-        {
+
+        } else
             throw new java.lang.RuntimeException("Unable to parse version string " + version);
-        }
 
         this.version = version;
     }
 
-    public String constructVersion() {
-        String s = null;
-        if (z < 0)
-            s = String.format("%d.%d", x, y);
-        else
-            s = String.format("%d.%d.%d", x, y, z);
-        if (!tag.equals("")) {
-            s += "-" + tag;
-            if (build != -1)
-                s += "." + build;
-        }
-        return s;
-    }
+    public boolean isNewerThan(String version) {
+        ApplicationVersion comparedVersion = new ApplicationVersion(version);
 
-    public boolean isNewerThan(String anotherVersion) {
-        ApplicationVersion o = new ApplicationVersion(anotherVersion);
-        if (x == o.x && y == o.y && z == o.z && abc == o.abc && tag.equals(o.tag) && build == o.build)
-            return false;
-        if (x != o.x) return x > o.x;
-        if (y != o.y) return y > o.y;
-        if (z != o.z) return z > o.z;
-        if (abc != o.abc) return abc > o.abc;
-        if (getTagValue() != o.getTagValue()) return getTagValue() > o.getTagValue();
-        if (build != o.build) return build > o.build;
+        if (!Objects.equals(xValue, comparedVersion.xValue))
+            return xValue > comparedVersion.xValue;
+
+        if (!Objects.equals(yValue, comparedVersion.yValue))
+            return yValue > comparedVersion.yValue;
+
+        if (!Objects.equals(zValue, comparedVersion.zValue))
+            return zValue > comparedVersion.zValue;
+
+        if (!Objects.equals(abc, comparedVersion.abc))
+            return abc > comparedVersion.abc;
+
+        if (!Objects.equals(tag, comparedVersion.tag))
+            return getTagValue() > comparedVersion.getTagValue();
+
+        if (!Objects.equals(build, comparedVersion.build))
+            return build > comparedVersion.build;
+
         return false;
     }
 
     public String getVersion() {
-
         return version;
     }
 
-    public int getTagValue()
-    {
-        return tagsValues.getOrDefault(tag.toUpperCase(), -1);
+    public int getTagValue() {
+        return TAGS_VALUES.getOrDefault(tag.toUpperCase(), -1);
     }
+
 }

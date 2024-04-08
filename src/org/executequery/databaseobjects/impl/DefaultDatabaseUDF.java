@@ -93,6 +93,13 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
     }
 
     @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return Comparer.isCommentsNeed() ?
+                getCreateSQLText() :
+                getCreateSQLTextWithoutComment();
+    }
+
+    @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("UDF", getName(), getHost().getDatabaseConnection());
     }

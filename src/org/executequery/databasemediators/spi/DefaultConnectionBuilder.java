@@ -31,6 +31,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import java.lang.management.ManagementFactory;
@@ -67,29 +68,26 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
                 try {
 
                     Properties props = databaseConnection.getJdbcProperties();
-                    props.setProperty("connectTimeout", String.valueOf(connectionTimeout));
+                    if (!props.containsKey("connectTimeout"))
+                        props.setProperty("connectTimeout", String.valueOf(connectionTimeout));
 
                     String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-                    if (ApplicationContext.getInstance().getExternalPID() != null &&
-                            !ApplicationContext.getInstance().getExternalPID().isEmpty()) {
+                    if (!MiscUtils.isNull(ApplicationContext.getInstance().getExternalPID()))
                         pid = ApplicationContext.getInstance().getExternalPID();
-                    }
                     props.setProperty("process_id", pid);
 
                     String path = null;
-                    if (ApplicationContext.getInstance().getExternalProcessName() != null &&
-                            !ApplicationContext.getInstance().getExternalProcessName().isEmpty()) {
-                        path = ApplicationContext.getInstance().getExternalProcessName();
-                    }
-                    if (path == null) {
-                        try {
+                    try {
+                        if (!MiscUtils.isNull(ApplicationContext.getInstance().getExternalProcessName()))
+                            path = ApplicationContext.getInstance().getExternalProcessName();
+
+                        if (path == null)
                             path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-                            props.setProperty("process_name", path);
-                        } catch (URISyntaxException e) {
-                            Log.error(e.getMessage(), e);
-                        }
-                    } else
-                        props.setProperty("process_name", path);
+
+                    } catch (URISyntaxException e) {
+                        Log.error(e.getMessage(), e);
+                    }
+                    props.setProperty("process_name", path);
 
                     databaseConnection.setJdbcProperties(props);
                     ConnectionManager.createDataSource(databaseConnection, connectionBuilder, false);

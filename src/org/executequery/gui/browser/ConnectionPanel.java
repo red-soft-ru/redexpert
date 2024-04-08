@@ -52,10 +52,7 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -461,6 +458,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         // create the advanced panel
 
         model = new JdbcPropertiesTableModel();
+        model.addTableModelListener(e -> updateJdbcProperties());
+
         JTable table = new DefaultTable(model);
         table.getTableHeader().setReorderingAllowed(false);
 
@@ -1059,19 +1058,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private void storeJdbcProperties() {
 
         Properties properties = databaseConnection.getJdbcProperties();
-        if (properties == null) {
-
+        if (properties == null)
             properties = new Properties();
 
-        } else {
+        for (String[] advancedProperty : advancedProperties) {
 
-            properties.clear();
-        }
-
-        for (int i = 0; i < advancedProperties.length; i++) {
-
-            String key = advancedProperties[i][0];
-            String value = advancedProperties[i][1];
+            String key = advancedProperty[0];
+            String value = advancedProperty[1];
 
             if (!MiscUtils.isNull(key) && !MiscUtils.isNull(value)) {
 
@@ -1084,10 +1077,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
                     continue;
                 properties.setProperty(key, value);
             }
-
         }
 
-        properties.setProperty("connectTimeout", String.valueOf(SystemProperties.getIntProperty("user", "connection.connect.timeout")));
+        if (!properties.containsKey("connectTimeout")) {
+            String connectTimeout = String.valueOf(SystemProperties.getIntProperty("user", "connection.connect.timeout"));
+            properties.setProperty("connectTimeout", connectTimeout);
+        }
 
         if (!properties.containsKey("lc_ctype"))
             properties.setProperty("lc_ctype", charsetsCombo.getSelectedItem().toString());
@@ -1132,8 +1127,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
             if (path == null)
                 path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
             properties.setProperty("process_name", path);
+
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
         }
 
         databaseConnection.setJdbcProperties(properties);
@@ -1185,31 +1181,70 @@ public class ConnectionPanel extends AbstractConnectionPanel
      */
     private void setJdbcProperties() {
         advancedProperties = new String[20][2];
+
         Properties properties = databaseConnection.getJdbcProperties();
-        if (properties == null || properties.size() == 0) {
+        if (properties == null || properties.isEmpty()) {
             model.fireTableDataChanged();
             return;
         }
 
         int count = 0;
         for (Enumeration<?> i = properties.propertyNames(); i.hasMoreElements(); ) {
-            String name = (String) i.nextElement();
-            if (!name.equalsIgnoreCase("password") && !name.equalsIgnoreCase("lc_ctype")
-                    && !name.equalsIgnoreCase("useGSSAuth")
-                    && !name.equalsIgnoreCase("process_id")
-                    && !name.equalsIgnoreCase("process_name")
-                    && !name.equalsIgnoreCase("roleName")
-                    && !name.equalsIgnoreCase("isc_dpb_trusted_auth")
-                    && !name.equalsIgnoreCase("isc_dpb_multi_factor_auth")
-                    && !name.equalsIgnoreCase("isc_dpb_certificate_base64")
-                    && !name.equalsIgnoreCase("isc_dpb_repository_pin")
-                    && !name.equalsIgnoreCase("isc_dpb_verify_server")) {
-                advancedProperties[count][0] = name;
-                advancedProperties[count][1] = properties.getProperty(name);
-                count++;
-            }
+
+            String key = (String) i.nextElement();
+            if (propertyKeyIgnored(key))
+                continue;
+
+            advancedProperties[count][0] = key;
+            advancedProperties[count][1] = properties.getProperty(key);
+            count++;
         }
+
         model.fireTableDataChanged();
+    }
+
+    /**
+     * Update the values of the current database connection
+     * from the jdbc properties table.
+     */
+    private void updateJdbcProperties() {
+
+        Properties properties = databaseConnection.getJdbcProperties();
+        for (String[] property : advancedProperties) {
+
+            String key = property[0];
+            if (propertyKeyIgnored(key))
+                continue;
+
+            String value = property[1];
+            if (MiscUtils.isNull(value)) {
+                properties.remove(key);
+                continue;
+            }
+
+            properties.setProperty(key, value);
+        }
+
+        databaseConnection.setJdbcProperties(properties);
+        sshTunnelConnectionPanel.update(databaseConnection);
+    }
+
+    private boolean propertyKeyIgnored(String key) {
+
+        if (MiscUtils.isNull(key))
+            return true;
+
+        return key.equalsIgnoreCase("password")
+                || key.equalsIgnoreCase("lc_ctype")
+                || key.equalsIgnoreCase("useGSSAuth")
+                || key.equalsIgnoreCase("process_id")
+                || key.equalsIgnoreCase("process_name")
+                || key.equalsIgnoreCase("roleName")
+                || key.equalsIgnoreCase("isc_dpb_trusted_auth")
+                || key.equalsIgnoreCase("isc_dpb_multi_factor_auth")
+                || key.equalsIgnoreCase("isc_dpb_certificate_base64")
+                || key.equalsIgnoreCase("isc_dpb_repository_pin")
+                || key.equalsIgnoreCase("isc_dpb_verify_server");
     }
 
     /**

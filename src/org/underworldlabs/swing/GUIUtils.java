@@ -303,6 +303,7 @@ public class GUIUtils {
         };
 
         worker.start();
+        Log.debug(String.format("Thread '%s' initialised", threadName));
     }
 
     /**

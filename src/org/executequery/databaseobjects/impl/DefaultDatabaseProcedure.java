@@ -41,6 +41,8 @@ import java.util.ArrayList;
 public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
 
+    public static final int SELECTABLE = 1;
+
     /**
      * Creates a new instance of DefaultDatabaseProcedure
      */
@@ -162,6 +164,9 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     protected static final String PARAMETER_TYPE = "PARAMETER_TYPE";
     protected static final String PARAMETER_NUMBER = "PARAMETER_NUMBER";
     protected static final String PARAMETER_MECHANISM = "PARAMETER_MECHANISM";
+    public static final int EXECUTABLE = 2;
+    protected static final String PROCEDURE_TYPE = "PROCEDURE_TYPE";
+    private int procedureType;
 
     @Override
     protected String getFieldName() {
@@ -182,7 +187,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CR");
         Table collations1 = Table.createTable("RDB$COLLATIONS", "CO1");
         Table collations2 = Table.createTable("RDB$COLLATIONS", "CO2");
-        sb.appendFields(procedures, getFieldName(), PROCEDURE_SOURCE, DESCRIPTION, VALID_BLR);
+        sb.appendFields(procedures, getFieldName(), PROCEDURE_SOURCE, PROCEDURE_TYPE, DESCRIPTION, VALID_BLR);
         sb.appendFields(procedures, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
         sb.appendField(buildSqlSecurityField(procedures));
         Field authid = Field.createField(procedures, PROCEDURE_CONTEXT);
@@ -236,6 +241,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
             setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
             setAuthid(getFromResultSet(rs, AUTHID));
             setValid(rs.getInt(VALID_BLR) == 1);
+            setProcedureType(rs.getInt(PROCEDURE_TYPE));
         }
         return null;
     }
@@ -249,11 +255,23 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     @Override
     public void finishLoadingInfo() {
-
+        if (getProcedureType() == 0) {
+            if (procedureOutputParameters.size() > 0)
+                setProcedureType(SELECTABLE);
+            else setProcedureType(EXECUTABLE);
+        }
     }
 
     @Override
     public boolean isAnyRowsResultSet() {
         return true;
+    }
+
+    public int getProcedureType() {
+        return procedureType;
+    }
+
+    public void setProcedureType(int procedureType) {
+        this.procedureType = procedureType;
     }
 }
